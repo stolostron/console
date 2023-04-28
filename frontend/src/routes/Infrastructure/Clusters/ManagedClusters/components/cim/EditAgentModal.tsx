@@ -1,12 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import { AgentK8sResource, EditAgentModal as AIEditAgentModal } from '@openshift-assisted/ui-lib/cim'
 import { onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
 
-const { EditAgentModal: AIEditAgentModal } = CIM
-
 const EditAgentModal: React.FC<{
-  agent: CIM.AgentK8sResource | undefined
-  setAgent: (a: CIM.AgentK8sResource | undefined) => void
+  agent: AgentK8sResource | undefined
+  setAgent: (a: AgentK8sResource | undefined) => void
   usedHostnames: string[]
 }> = ({ agent, setAgent, usedHostnames }) => (
   <AIEditAgentModal

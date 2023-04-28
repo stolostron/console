@@ -3,18 +3,18 @@
 import { Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { RecoilRoot } from 'recoil'
 import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './NodePoolsProgress'
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
 import userEvent from '@testing-library/user-event'
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const t = (string: string) => {
   return string
 }
 
-const mockClusterImageSet0: CIM.ClusterImageSetK8sResource = {
+const mockClusterImageSet0: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,
   kind: ClusterImageSetKind,
   metadata: {

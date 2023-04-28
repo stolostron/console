@@ -29,6 +29,7 @@ import {
 import {
   ClusterImageSetK8sResource,
   getOCPVersions,
+  getVersionFromReleaseImage,
   HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
@@ -44,9 +45,6 @@ import {
   resultsSettled,
 } from '../../../../../resources'
 import { Fragment, useEffect, useState } from 'react'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
-
-const { getVersionFromReleaseImage } = CIM
 
 export type ListItems = {
   key: string

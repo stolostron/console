@@ -2,7 +2,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, useContext } from 'react'
 import { FormikProps } from 'formik'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import {
+  HostedClusterDetailsStep,
+  labelsToArray,
+  LoadingState,
+  getSupportedCM,
+  ClusterDetailsValues,
+  ConfigMapK8sResource,
+  ClusterImageSetK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { set, get, isEqual, startCase, camelCase } from 'lodash'
 import { getValue } from '../../../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
@@ -17,10 +25,8 @@ import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 
-const { HostedClusterDetailsStep, labelsToArray, LoadingState, getSupportedCM } = CIM
-
 type FormControl = {
-  active: CIM.ClusterDetailsValues & {
+  active: ClusterDetailsValues & {
     managedClusterSet?: string
     additionalLabels?: {
       [x: string]: string
@@ -28,7 +34,7 @@ type FormControl = {
     releaseImage?: string
   }
   disabled?: VoidFunction
-  reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
+  reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
   validate?: VoidFunction
   summary?: VoidFunction
   step?: any
@@ -63,7 +69,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
   const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
-  const supportedVersionCM = getSupportedCM(configMaps as CIM.ConfigMapK8sResource[])
+  const supportedVersionCM = getSupportedCM(configMaps as ConfigMapK8sResource[])
 
   useEffect(() => {
     if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -180,7 +186,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     <HostedClusterDetailsStep
       formRef={formRef}
       onValuesChanged={onValuesChanged}
-      clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}
+      clusterImages={clusterImages as ClusterImageSetK8sResource[]}
       usedClusterNames={usedClusterNames}
       extensionAfter={extensionAfter}
       supportedVersionsCM={supportedVersionCM}

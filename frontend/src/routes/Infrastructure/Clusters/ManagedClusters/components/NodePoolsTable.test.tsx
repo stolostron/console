@@ -2,7 +2,6 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
@@ -16,8 +15,9 @@ import {
 } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
+import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 
-const mockHostedCluster0: CIM.HostedClusterK8sResource = {
+const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
   kind: 'HostedCluster',
   metadata: {
@@ -263,7 +263,7 @@ const mockHostedCluster0: CIM.HostedClusterK8sResource = {
   },
 }
 
-const mockHostedCluster1: CIM.HostedClusterK8sResource = {
+const mockHostedCluster1: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
   kind: 'HostedCluster',
   metadata: {
@@ -512,7 +512,7 @@ const mockHostedCluster1: CIM.HostedClusterK8sResource = {
   },
 }
 
-const mockHostedCluster2: CIM.HostedClusterK8sResource = {
+const mockHostedCluster2: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
   kind: 'HostedCluster',
   metadata: {
@@ -652,7 +652,7 @@ const mockHostedCluster2: CIM.HostedClusterK8sResource = {
   },
 }
 
-const mockClusterImageSet0: CIM.ClusterImageSetK8sResource = {
+const mockClusterImageSet0: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,
   kind: ClusterImageSetKind,
   metadata: {

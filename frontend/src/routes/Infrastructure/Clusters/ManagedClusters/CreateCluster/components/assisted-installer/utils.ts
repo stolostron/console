@@ -3,7 +3,22 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { generatePath } from 'react-router'
 import { isEqual } from 'lodash'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import {
+  getAnnotationsFromAgentSelector,
+  AGENT_BMH_NAME_LABEL_KEY,
+  getBareMetalHostCredentialsSecret,
+  getBareMetalHost,
+  isAgentOfCluster,
+  BMH_HOSTNAME_ANNOTATION,
+  ClusterDeploymentK8sResource,
+  AgentClusterInstallK8sResource,
+  ClusterDeploymentNetworkingValues,
+  ConfigMapK8sResource,
+  InfraEnvK8sResource,
+  NMStateK8sResource,
+  AddBmcValues,
+  DiscoveryImageFormValues,
+} from '@openshift-assisted/ui-lib/cim'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
@@ -28,26 +43,17 @@ import { AgentK8sResource, BareMetalHostK8sResource } from '@openshift-assisted/
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 
-const {
-  getAnnotationsFromAgentSelector,
-  AGENT_BMH_NAME_LABEL_KEY,
-  getBareMetalHostCredentialsSecret,
-  getBareMetalHost,
-  isAgentOfCluster,
-  BMH_HOSTNAME_ANNOTATION,
-} = CIM
-
 type OnHostsNext = {
   values: any
-  clusterDeployment: CIM.ClusterDeploymentK8sResource
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource
-  agents: CIM.AgentK8sResource[]
+  clusterDeployment: ClusterDeploymentK8sResource
+  agentClusterInstall: AgentClusterInstallK8sResource
+  agents: AgentK8sResource[]
 }
 
 type OnDiscoverHostsNext = {
-  clusterDeployment: CIM.ClusterDeploymentK8sResource
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource
-  agents: CIM.AgentK8sResource[]
+  clusterDeployment: ClusterDeploymentK8sResource
+  agentClusterInstall: AgentClusterInstallK8sResource
+  agents: AgentK8sResource[]
 }
 
 const addAgentsToCluster = async ({
@@ -56,7 +62,7 @@ const addAgentsToCluster = async ({
   namespace,
   hostIds,
 }: {
-  agents: CIM.AgentK8sResource[]
+  agents: AgentK8sResource[]
   name: string
   namespace: string
   hostIds: string[]
@@ -83,7 +89,7 @@ const addAgentsToCluster = async ({
 }
 
 export const setProvisionRequirements = (
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource,
+  agentClusterInstall: AgentClusterInstallK8sResource,
   workerCount: number | undefined,
   masterCount: number | undefined
 ) => {
@@ -189,8 +195,8 @@ const appendPatch = (
 }
 
 export const getNetworkingPatches = (
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource,
-  values: CIM.ClusterDeploymentNetworkingValues
+  agentClusterInstall: AgentClusterInstallK8sResource,
+  values: ClusterDeploymentNetworkingValues
 ) => {
   const agentClusterInstallPatches: any = []
 
@@ -304,8 +310,8 @@ export const getNetworkingPatches = (
 }
 
 export const onSaveNetworking = async (
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource,
-  values: CIM.ClusterDeploymentNetworkingValues
+  agentClusterInstall: AgentClusterInstallK8sResource,
+  values: ClusterDeploymentNetworkingValues
 ) => {
   try {
     const patches = getNetworkingPatches(agentClusterInstall, values)
@@ -335,7 +341,7 @@ export const useAssistedServiceConfigMap = () => {
   return useMemo(
     () =>
       configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === namespace) as
-        | CIM.ConfigMapK8sResource
+        | ConfigMapK8sResource
         | undefined,
     [configMaps]
   )
@@ -347,7 +353,7 @@ export const useClusterDeployment = ({
 }: {
   name?: string
   namespace?: string
-}): CIM.ClusterDeploymentK8sResource | undefined => {
+}): ClusterDeploymentK8sResource | undefined => {
   const { clusterDeploymentsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
   const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
@@ -356,7 +362,7 @@ export const useClusterDeployment = ({
       name
         ? (clusterDeployments.find(
             (cd) => cd.metadata?.name === name && cd.metadata?.namespace === namespace
-          ) as CIM.ClusterDeploymentK8sResource)
+          ) as ClusterDeploymentK8sResource)
         : undefined,
     [name, namespace, clusterDeployments]
   )
@@ -368,7 +374,7 @@ export const useAgentClusterInstall = ({
 }: {
   name?: string
   namespace?: string
-}): CIM.AgentClusterInstallK8sResource | undefined => {
+}): AgentClusterInstallK8sResource | undefined => {
   const { agentClusterInstallsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
   const [agentClusterInstalls] = useRecoilValue(waitForAll([agentClusterInstallsState]))
@@ -400,13 +406,13 @@ export const useClusterDeploymentInfraEnv = (cdName: string, cdNamespace: string
 
 export const findInfraEnvByClusterRef = (
   clusterRef: { name: string; namespace: string },
-  infraEnvs: CIM.InfraEnvK8sResource[]
+  infraEnvs: InfraEnvK8sResource[]
 ) => {
   const { name, namespace } = clusterRef
   return infraEnvs.find((ie) => ie.spec?.clusterRef?.name === name && ie.spec?.clusterRef?.namespace === namespace)
 }
 
-export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
+export const onApproveAgent = (agent: AgentK8sResource) =>
   patchResource(agent as IResource, [
     {
       op: 'replace',
@@ -433,11 +439,11 @@ export const fetchKlusterletAddonConfig = () =>
 
 export const getDeleteHostAction =
   (
-    bareMetalHosts: CIM.BareMetalHostK8sResource[],
-    agentClusterInstall?: CIM.AgentClusterInstallK8sResource,
-    nmStates?: CIM.NMStateK8sResource[],
-    agent?: CIM.AgentK8sResource,
-    bareMetalHost?: CIM.BareMetalHostK8sResource
+    bareMetalHosts: BareMetalHostK8sResource[],
+    agentClusterInstall?: AgentClusterInstallK8sResource,
+    nmStates?: NMStateK8sResource[],
+    agent?: AgentK8sResource,
+    bareMetalHost?: BareMetalHostK8sResource
   ) =>
   () => {
     const resources = []
@@ -478,7 +484,7 @@ export const getDeleteHostAction =
     return deleteResources(resources as IResource[])
   }
 
-export const getAgentName = (resource?: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string => {
+export const getAgentName = (resource?: AgentK8sResource | BareMetalHostK8sResource): string => {
   if (resource && 'spec' in resource && resource.spec && 'hostname' in resource.spec) {
     return resource.spec.hostname || resource?.metadata?.name || '-'
   }
@@ -486,28 +492,26 @@ export const getAgentName = (resource?: CIM.AgentK8sResource | CIM.BareMetalHost
 }
 
 export const agentNameSortFunc = (
-  a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,
-  b: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource
+  a: AgentK8sResource | BareMetalHostK8sResource,
+  b: AgentK8sResource | BareMetalHostK8sResource
 ) => getAgentName(a).localeCompare(getAgentName(b))
 
 export const useOnDeleteHost = (
-  toggleDialog: (
-    props: BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
-  ) => void,
-  bareMetalHosts: CIM.BareMetalHostK8sResource[],
-  agentClusterInstall?: CIM.AgentClusterInstallK8sResource,
-  nmStates?: CIM.NMStateK8sResource[]
+  toggleDialog: (props: BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }) => void,
+  bareMetalHosts: BareMetalHostK8sResource[],
+  agentClusterInstall?: AgentClusterInstallK8sResource,
+  nmStates?: NMStateK8sResource[]
 ) => {
   const { t } = useTranslation()
 
   return useCallback(
-    (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => {
+    (agent?: AgentK8sResource, bmh?: BareMetalHostK8sResource) => {
       toggleDialog({
         open: true,
         title: t('host.action.title.delete'),
         action: t('delete'),
         processing: t('deleting'),
-        items: [agent, bmh].filter(Boolean) as (CIM.AgentK8sResource | CIM.BareMetalHostK8sResource)[],
+        items: [agent, bmh].filter(Boolean) as (AgentK8sResource | BareMetalHostK8sResource)[],
         emptyState: undefined, // nothing displayed if neither agent nor bmh supplied
         description: t('host.action.message.delete'),
         columns: [
@@ -522,7 +526,7 @@ export const useOnDeleteHost = (
             sort: 'metadata.namespace',
           },
         ],
-        keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) => resource.metadata?.uid as string,
+        keyFn: (resource: AgentK8sResource | BareMetalHostK8sResource) => resource.metadata?.uid as string,
         actionFn: getDeleteHostAction(bareMetalHosts, agentClusterInstall, nmStates, agent, bmh),
         close: () => {
           toggleDialog({ open: false })
@@ -536,7 +540,7 @@ export const useOnDeleteHost = (
 }
 
 export const onSaveBMH =
-  (editModal: ModalProps | undefined) => async (values: CIM.AddBmcValues, nmState?: CIM.NMStateK8sResource) => {
+  (editModal: ModalProps | undefined) => async (values: AddBmcValues, nmState?: NMStateK8sResource) => {
     let newSecret
     if (editModal?.secret) {
       const patches: any[] = []
@@ -594,26 +598,26 @@ export const onSaveBMH =
   }
 
 export const getOnCreateBMH =
-  (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.AddBmcValues, nmState?: CIM.NMStateK8sResource) => {
+  (infraEnv: InfraEnvK8sResource) => async (values: AddBmcValues, nmState?: NMStateK8sResource) => {
     const secret = getBareMetalHostCredentialsSecret(values, infraEnv.metadata?.namespace || '')
     const secretRes = await createResource<any>(secret).promise
     if (nmState) {
       await createResource<any>(nmState).promise
     }
-    const bmh: CIM.BareMetalHostK8sResource = getBareMetalHost(values, infraEnv, secretRes)
-    return createResource(bmh as IResource).promise as CIM.InfraEnvK8sResource
+    const bmh: BareMetalHostK8sResource = getBareMetalHost(values, infraEnv, secretRes)
+    return createResource(bmh as IResource).promise as InfraEnvK8sResource
   }
 
-export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string) =>
+export const onSaveAgent = async (agent: AgentK8sResource, hostname: string) =>
   patchResource(agent as IResource, [
     {
       op: 'replace',
       path: '/spec/hostname',
       value: hostname,
     },
-  ]).promise as Promise<CIM.AgentK8sResource>
+  ]).promise as Promise<AgentK8sResource>
 
-export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hostname: string) =>
+export const onChangeBMHHostname = async (bmh: BareMetalHostK8sResource, hostname: string) =>
   patchResource(bmh as IResource, [
     {
       op: 'replace',
@@ -647,7 +651,7 @@ export const useClusterImages = () => {
   return clusterImages
 }
 
-const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
+const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
   await getResource({
     apiVersion: infraEnv.apiVersion!,
     kind: infraEnv.kind!,
@@ -656,56 +660,55 @@ const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
 
 const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export const getOnSaveISOParams =
-  (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
-    const patches: any[] = []
-    if (values.sshPublicKey) {
-      appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
-    } else if (infraEnv.spec?.sshAuthorizedKey) {
-      patches.push({
-        op: 'remove',
-        path: '/spec/sshAuthorizedKey',
-      })
-    }
-
-    const proxy = values.enableProxy
-      ? {
-          httpProxy: values.httpProxy,
-          httpsProxy: values.httpsProxy,
-          noProxy: values.noProxy,
-        }
-      : undefined
-
-    if (proxy) {
-      appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
-    } else if (infraEnv.spec?.proxy) {
-      patches.push({
-        op: 'remove',
-        path: '/spec/proxy',
-      })
-    }
-
-    // TODO(mlibra): Once implemented on the backend, persist values.imageType
-
-    // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
-    const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
-
-    if (patches.length) {
-      await patchResource(infraEnv as IResource, patches).promise
-      // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
-      // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
-      // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
-      let polledInfraEnv: CIM.InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
-      let maxPollingCounter = 10
-      while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
-        await sleep(5 * 1000)
-        polledInfraEnv = await refetchInfraEnv(infraEnv)
-      }
-      // quit anyway ...
-    }
+export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (values: DiscoveryImageFormValues) => {
+  const patches: any[] = []
+  if (values.sshPublicKey) {
+    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
+  } else if (infraEnv.spec?.sshAuthorizedKey) {
+    patches.push({
+      op: 'remove',
+      path: '/spec/sshAuthorizedKey',
+    })
   }
 
-export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+  const proxy = values.enableProxy
+    ? {
+        httpProxy: values.httpProxy,
+        httpsProxy: values.httpsProxy,
+        noProxy: values.noProxy,
+      }
+    : undefined
+
+  if (proxy) {
+    appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+  } else if (infraEnv.spec?.proxy) {
+    patches.push({
+      op: 'remove',
+      path: '/spec/proxy',
+    })
+  }
+
+  // TODO(mlibra): Once implemented on the backend, persist values.imageType
+
+  // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
+  const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
+
+  if (patches.length) {
+    await patchResource(infraEnv as IResource, patches).promise
+    // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
+    // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
+    // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
+    let polledInfraEnv: InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
+    let maxPollingCounter = 10
+    while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
+      await sleep(5 * 1000)
+      polledInfraEnv = await refetchInfraEnv(infraEnv)
+    }
+    // quit anyway ...
+  }
+}
+
+export const saveSSHKey = async (values: any, infraEnv: InfraEnvK8sResource) => {
   const patches: any[] = []
   appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
   if (patches.length) {
@@ -713,7 +716,7 @@ export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource)
   }
 }
 
-export const onEditProxy = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+export const onEditProxy = async (values: any, infraEnv: InfraEnvK8sResource) => {
   const patches: any[] = []
   const proxySettings: {
     httpProxy?: string
@@ -735,7 +738,7 @@ export const onEditProxy = async (values: any, infraEnv: CIM.InfraEnvK8sResource
   }
 }
 
-export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+export const savePullSecret = (values: any, infraEnv: InfraEnvK8sResource) => {
   const secret = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -763,7 +766,7 @@ export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) =
   }
 }
 
-export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+export const onEditNtpSources = (values: any, infraEnv: InfraEnvK8sResource) => {
   const patches: any[] = []
   if (values.enableNtpSources === 'auto') {
     if (infraEnv.spec?.additionalNTPSources) {
@@ -780,13 +783,13 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
       infraEnv.spec?.additionalNTPSources
     )
   }
-  return patchResource(infraEnv as IResource, patches).promise as Promise<CIM.InfraEnvK8sResource>
+  return patchResource(infraEnv as IResource, patches).promise as Promise<InfraEnvK8sResource>
 }
 
 export const onMassDeleteHost = (
-  agent?: CIM.AgentK8sResource,
-  bmh?: CIM.BareMetalHostK8sResource,
-  nmStates: CIM.NMStateK8sResource[] = []
+  agent?: AgentK8sResource,
+  bmh?: BareMetalHostK8sResource,
+  nmStates: NMStateK8sResource[] = []
 ) => {
   const toDelete = []
   if (agent) {
@@ -840,12 +843,12 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 
 export const getDefault = (values: (string | undefined)[]): string => values.filter(Boolean)?.[0] || ''
 
-export const onSetInstallationDiskId = (agent: CIM.AgentK8sResource, diskId: string) => {
+export const onSetInstallationDiskId = (agent: AgentK8sResource, diskId: string) => {
   return patchResource(agent as IResource, [
     {
       op: 'replace',
       path: '/spec/installation_disk_id',
       value: diskId,
     },
-  ]).promise as Promise<CIM.AgentK8sResource>
+  ]).promise as Promise<AgentK8sResource>
 }

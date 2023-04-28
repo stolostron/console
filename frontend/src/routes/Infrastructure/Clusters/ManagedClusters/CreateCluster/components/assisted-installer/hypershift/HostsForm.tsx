@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterHostsStep, LoadingState } from '@openshift-assisted/ui-lib/cim'
 import { FormikProps } from 'formik'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 
-const { HostedClusterHostsStep, LoadingState } = CIM
 type FormControl = {
   active: any // CIM.HostsFormValues
   disabled?: VoidFunction

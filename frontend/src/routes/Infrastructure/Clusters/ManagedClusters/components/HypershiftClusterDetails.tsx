@@ -5,7 +5,7 @@ import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress
 import { AcmExpandableCard } from '../../../../../ui-components'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const HypershiftClusterDetails = (props: { handleModalToggle: () => void }) => {
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ const HypershiftClusterDetails = (props: { handleModalToggle: () => void }) => {
             <HypershiftClusterInstallProgress
               hostedCluster={hostedCluster}
               nodePools={clusterNodePools}
-              clusterImages={clusterImageSets as CIM.ClusterImageSetK8sResource[]}
+              clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
               handleModalToggle={props.handleModalToggle}
             />
           </AcmExpandableCard>

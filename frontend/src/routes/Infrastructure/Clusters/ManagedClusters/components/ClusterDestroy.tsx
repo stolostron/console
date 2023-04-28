@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext } from 'react'
+import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { AcmButton, AcmPageProcess, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -8,12 +9,9 @@ import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClusterContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
-
-const { LogsDownloadButton } = CIM
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) {
   const { t } = useTranslation()

@@ -4,8 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -281,7 +280,7 @@ mockAIClusterDeployment.spec!.clusterInstallRef = {
   version: AgentClusterInstallVersion,
 }
 
-const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
+const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
   apiVersion: AgentClusterInstallApiVersion,
   kind: AgentClusterInstallKind,
   metadata: {

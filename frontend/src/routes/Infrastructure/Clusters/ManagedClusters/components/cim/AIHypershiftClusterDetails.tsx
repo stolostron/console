@@ -1,8 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
-import { ClusterInstallationProgress, getSupportedCM, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
+import {
+  ClusterInstallationProgress,
+  ConfigMapK8sResource,
+  getSupportedCM,
+  HostedClusterK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { createResource, deleteResource, getResource, IResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { launchToOCP } from '../../../../../../lib/ocp-utils'
@@ -23,7 +27,7 @@ const AIHypershiftClusterDetails: React.FC = () => {
       np.spec.clusterName === hostedCluster?.metadata?.name
   )
 
-  const supportedVersionsCM = getSupportedCM(configMaps as CIM.ConfigMapK8sResource[])
+  const supportedVersionsCM = getSupportedCM(configMaps as ConfigMapK8sResource[])
 
   return (
     <>

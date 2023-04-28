@@ -20,14 +20,11 @@ import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
-import * as CIM from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
-
-const { getVersionFromReleaseImage } = CIM
 
 export function DistributionField(props: {
   cluster?: Cluster

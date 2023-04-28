@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as CIM from '@openshift-assisted/ui-lib/cim'
-
-const { getVersionFromReleaseImage } = CIM
+import { getVersionFromReleaseImage } from '@openshift-assisted/ui-lib/cim'
 
 export const getClusterImageSet = (clusterImageSets: any[], versionName = '') =>
   clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
