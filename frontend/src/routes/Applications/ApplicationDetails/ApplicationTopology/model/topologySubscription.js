@@ -129,6 +129,7 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
   } = subscription
   const subscriptionId = `member--subscription--${namespace}--${name}`
   const rule = get(subscription, 'rules[0]')
+  const isBlocked = get(subscription, 'status.message') === 'Blocked'
   nodes.push({
     name,
     namespace,
@@ -140,6 +141,7 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
       isDesign: true,
       hasRules: !!rule,
       isPlaced,
+      isBlocked,
       raw: subscription,
       clustersNames,
     },

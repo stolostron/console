@@ -27,6 +27,7 @@ import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
 const specIsDesign = 'specs.isDesign'
+const specIsBlocked = 'specs.isBlocked'
 const showResourceYaml = 'show_resource_yaml'
 export const checkmarkStatus = 'checkmark'
 export const warningStatus = 'warning'
@@ -54,6 +55,7 @@ const redPulse = 'red'
 const greenPulse = 'green'
 const yellowPulse = 'yellow'
 const orangePulse = 'orange'
+const blockedPulse = 'blocked'
 ///////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// COMPUTE EACH DIAGRAM NODE STATUS ////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -71,6 +73,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
 
   const isDeployable = isDeployableResource(node)
   const isDesign = _.get(node, specIsDesign, false)
+  const isBlocked = _.get(node, specIsBlocked, false)
   switch (node.type) {
     case 'fluxapplication':
     case 'ocpapplication':
@@ -110,7 +113,9 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
       }
       break
     case 'subscription':
-      if (isDeployable || !isDesign) {
+      if (isBlocked) {
+        pulse = blockedPulse
+      } else if (isDeployable || !isDesign) {
         pulse = getPulseStatusForGenericNode(node, t)
       } else {
         pulse = getPulseStatusForSubscription(node)
@@ -737,6 +742,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
   const timezone = _.get(node, 'specs.raw.spec.timewindow.location', 'NA')
   const timeWindowDays = _.get(node, 'specs.raw.spec.timewindow.daysofweek')
   const timeWindowHours = _.get(node, 'specs.raw.spec.timewindow.hours', [])
+  const isCurrentlyBlocked = _.get(node, 'specs.isBlocked')
 
   let windowStatusArray = []
 
@@ -768,6 +774,11 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     details.push({
       labelValue: t('Time zone'),
       value: timezone,
+    })
+
+    details.push({
+      labelValue: t('Currently blocked'),
+      value: isCurrentlyBlocked ? t('Yes') : t('No'),
     })
   }
 

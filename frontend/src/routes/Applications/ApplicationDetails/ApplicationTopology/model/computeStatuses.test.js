@@ -158,6 +158,7 @@ describe('setSubscriptionDeployStatus with time window', () => {
     { labelValue: 'Time Window days', value: '["Monday", "Tuesday"]' },
     { labelValue: 'Time Window hours', value: '09:18AM-09:18PM' },
     { labelValue: 'Time zone', value: 'America/Toronto' },
+    { labelValue: 'Currently blocked', value: 'No' },
     { type: 'spacer' },
     { labelValue: 'Subscription deployed on local cluster', value: 'true' },
     { type: 'spacer' },
