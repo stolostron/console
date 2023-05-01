@@ -139,10 +139,10 @@ export function AnsibleAutomationsForm(props: {
     { name: string; description?: string; id: string }[]
   >([])
 
-  const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
+  const [ansibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
     { name: string; description?: string; id: string }[] | undefined
   >()
-  const [AnsibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
+  const [ansibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
     useState<{ name: string; description?: string; id: string }[]>()
   const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
@@ -330,7 +330,7 @@ export function AnsibleAutomationsForm(props: {
     const errors: any[] = []
     let selectedInventory: SetStateAction<string> = ansibleInventory
     if (testInventory !== ansibleInventory) {
-      if (!!testInventory && !ansibleTowerInventoryList.includes(testInventory)) {
+      if (!!testInventory && ansibleTowerInventoryList.findIndex(({ name }) => name === testInventory) === -1) {
         errors.push({
           path: `ClusterCurator[0].spec.inventory`,
           message: t('{{testInventory}} is not an existing Ansible inventory', { testInventory }),
@@ -348,18 +348,26 @@ export function AnsibleAutomationsForm(props: {
   function setCustomHook(type: string, preHook: boolean, value: any) {
     const errors: any[] = []
     if (Array.isArray(value)) {
-      value.forEach(({ type: jobType, name }, index) => {
+      value.forEach(({ type: jobType, name: valueName }, index) => {
         const path = `ClusterCurator[0].spec.${type}.${preHook ? 'prehook' : 'posthook'}.${index}`
         if (!['Job', 'Workflow'].includes(jobType)) {
           errors.push({ path: `${path}.type`, message: t('Must be Job or Workflow') })
         }
-        if (name) {
-          if (jobType === 'Job' && !AnsibleTowerJobTemplateList?.includes(name)) {
+        if (valueName) {
+          if (
+            jobType === 'Job' &&
+            ansibleTowerJobTemplateList &&
+            ansibleTowerJobTemplateList.findIndex(({ name }) => valueName === name) === -1
+          ) {
             errors.push({ path: `${path}.name`, message: t('"{{name}}" is not an existing Ansible job', { name }) })
-          } else if (jobType === 'Workflow' && !AnsibleTowerWorkflowTemplateList?.includes(name)) {
+          } else if (
+            jobType === 'Workflow' &&
+            ansibleTowerWorkflowTemplateList &&
+            ansibleTowerWorkflowTemplateList.findIndex(({ name }) => valueName === name) === -1
+          ) {
             errors.push({
               path: `${path}.name`,
-              message: t('"{{name}}" is not an existing Ansible workflow', { name }),
+              message: t('"{{name}}" is not an existing Ansible workflow', { valueName }),
             })
           }
         }
@@ -762,8 +770,8 @@ export function AnsibleAutomationsForm(props: {
         ansibleSelection={ansibleSelection}
         setAnsibleJob={updateAnsibleJob}
         ansibleCredentials={ansibleCredentials}
-        ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
-        ansibleTowerWorkflowTemplateList={AnsibleTowerWorkflowTemplateList}
+        ansibleTowerTemplateList={ansibleTowerJobTemplateList}
+        ansibleTowerWorkflowTemplateList={ansibleTowerWorkflowTemplateList}
         ansibleJobList={editAnsibleJobList?.jobs}
       />
     </Fragment>
