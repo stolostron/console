@@ -71,7 +71,6 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
     case ClusterAction.DestroyHosted:
       return cluster.isHypershift && !!cluster.hypershift?.agent && cluster.status !== ClusterStatus.destroying
     case ClusterAction.UpdateAutomationTemplate:
-    case ClusterAction.RemoveAutomationTemplate:
       return (
         !!cluster.name && // name is set
         !!cluster.distribution?.ocp?.version && // is OpenShift
@@ -82,6 +81,8 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         cluster.provider !== Provider.ibm && // is not ROKS
         !cluster.isHostedCluster // is not HyperShift
       )
+    case ClusterAction.RemoveAutomationTemplate:
+      return !!cluster.hasAutomationTemplates
     default:
       return false
   }

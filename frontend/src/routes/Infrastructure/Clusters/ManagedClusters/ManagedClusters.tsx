@@ -200,14 +200,6 @@ export function ClustersTable(props: {
     open: false,
   })
 
-  const [hasAllAutomationTemplates, setHasAllAutomationTemplates] = useState<boolean | undefined>(false)
-
-  useEffect(() => {
-    setHasAllAutomationTemplates(
-      props.clusters && props.clusters.every(({ hasAutomationTemplates }) => !!hasAutomationTemplates)
-    )
-  }, [props.clusters])
-
   const mckeyFn = useCallback(function mckeyFn(cluster: Cluster) {
     return cluster.name!
   }, [])
@@ -262,8 +254,8 @@ export function ClustersTable(props: {
     ]
   )
 
-  const tableActions = useMemo<IAcmTableAction<Cluster>[]>(() => {
-    const actions: IAcmTableAction<Cluster>[] = [
+  const tableActions = useMemo<IAcmTableAction<Cluster>[]>(
+    () => [
       {
         id: 'upgradeClusters',
         title: t('managed.upgrade.plural'),
@@ -292,11 +284,20 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
+      {
+        id: 'removeAutomationTemplates',
+        title: t('Remove automation templates'),
+        click: (managedClusters: Array<Cluster>) => {
+          if (!managedClusters) return
+          setRemoveAutomationTemplates(managedClusters)
+        },
+        variant: 'bulk-action',
+      },
       { id: 'seperator-1', variant: 'action-seperator' },
       {
         id: 'hibernate-cluster',
         title: t('managed.hibernate.plural'),
-        click: (clusters: Array<Cluster>) => {
+        click: (clusters) => {
           setModalProps({
             open: true,
             title: t('bulk.title.hibernate'),
@@ -336,7 +337,7 @@ export function ClustersTable(props: {
       {
         id: 'resume-cluster',
         title: t('managed.resume.plural'),
-        click: (clusters: Array<Cluster>) => {
+        click: (clusters) => {
           setModalProps({
             open: true,
             title: t('bulk.title.resume'),
@@ -377,7 +378,7 @@ export function ClustersTable(props: {
       {
         id: 'detachCluster',
         title: t('managed.detach.plural'),
-        click: (clusters: Array<Cluster>) => {
+        click: (clusters) => {
           setModalProps({
             open: true,
             title: t('bulk.title.detach'),
@@ -406,7 +407,7 @@ export function ClustersTable(props: {
       {
         id: 'destroyCluster',
         title: t('managed.destroy.plural'),
-        click: (clusters: Array<Cluster>) => {
+        click: (clusters) => {
           setModalProps({
             open: true,
             title: t('bulk.title.destroy'),
@@ -436,20 +437,9 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
-    ]
-    if (hasAllAutomationTemplates) {
-      actions.splice(4, 0, {
-        id: 'removeAutomationTemplates',
-        title: t('Remove automation templates'),
-        click: (managedClusters: Array<Cluster>) => {
-          if (!managedClusters) return
-          setRemoveAutomationTemplates(managedClusters)
-        },
-        variant: 'bulk-action',
-      })
-    }
-    return actions
-  }, [modalColumns, hasAllAutomationTemplates, t])
+    ],
+    [modalColumns, t]
+  )
 
   const rowActions = useMemo(() => [], [])
 
