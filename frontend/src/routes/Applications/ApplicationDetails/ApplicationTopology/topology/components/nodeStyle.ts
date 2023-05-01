@@ -132,6 +132,10 @@ const getStatus = (node: {
       status = NodeStatus.default
       statusIcon = statusToIconMap['spinner']
       break
+    case 'blocked':
+      status = NodeStatus.success
+      statusIcon = statusToIconMap['blocked']
+      break
     /* istanbul ignore next */
     default:
       break

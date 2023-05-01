@@ -923,6 +923,7 @@ function ArgoWizardPlacementSection(props: {
             clusters={props.clusters}
             hideName
             createClusterSetCallback={props.createClusterSetCallback}
+            alertTitle={t('ClusterSets failed to load. Check the GitOpsCluster and Placement YAML for status errors.')}
           />
         </WizItemSelector>
       ) : (

@@ -1,0 +1,7 @@
+:root:where(.pf-theme-dark) .ibm-icon .mask {
+  fill: #000000;
+}
+
+:root:where(.pf-theme-dark) path.ibm-icon.base {
+  fill: #ffffff;
+}

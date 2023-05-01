@@ -536,6 +536,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }
   }, [statusChanges])
 
+  /* eslint-enable react-hooks/exhaustive-deps */
   const toolbarControls = useMemo(() => {
     return (
       <>
@@ -619,7 +620,22 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         </div>
       </>
     )
-  }, [hasUndo, hasRedo, showSecrets, copyHint])
+  }, [
+    allCopiedCopy,
+    copiedCopy,
+    copyHint,
+    editorTitle,
+    defaultCopy,
+    hasUndo,
+    hasRedo,
+    lastUnredactedChange,
+    onClose,
+    readonly,
+    secrets,
+    showSecrets,
+    t,
+  ])
+  /* eslint-disable react-hooks/exhaustive-deps */
 
   useResizeObserver(pageRef, (entry) => {
     const { width } = entry.contentRect

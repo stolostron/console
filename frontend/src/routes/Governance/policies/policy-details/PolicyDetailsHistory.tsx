@@ -12,6 +12,7 @@ import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStri
 interface HistoryTableData {
   message: string
   timestamp: moment.MomentInput
+  index: number
 }
 
 export function PolicyDetailsHistory(props: {
@@ -37,10 +38,12 @@ export function PolicyDetailsHistory(props: {
       .filter((detail) => detail?.templateMeta?.name === templateName)
       .forEach((detail: PolicyStatusDetails) => {
         const history = detail.history ?? []
+        let i = 0
         history.forEach((status) => {
           statuses.push({
             message: status.message ?? '-',
             timestamp: status.lastTimestamp ?? '-',
+            index: i--, // decrement to make the sort work by default
           })
         })
       })
@@ -100,7 +103,7 @@ export function PolicyDetailsHistory(props: {
       },
       {
         header: 'Last report',
-        sort: 'timestamp',
+        sort: 'index',
         cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
       },
     ],

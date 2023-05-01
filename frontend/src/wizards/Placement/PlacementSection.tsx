@@ -236,6 +236,9 @@ export function PlacementSection(props: {
               namespaceClusterSetNames={namespaceClusterSetNames}
               clusters={props.clusters}
               createClusterSetCallback={props.createClusterSetCallback}
+              alertTitle={t(
+                'ClusterSets failed to load. Check the ManagedClusterSetBinding for your selected namespace.'
+              )}
             />
           </WizItemSelector>
         </Fragment>

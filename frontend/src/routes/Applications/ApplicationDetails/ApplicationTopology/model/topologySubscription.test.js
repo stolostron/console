@@ -8544,6 +8544,7 @@ describe('getSubscriptionTopology', () => {
         specs: {
           clustersNames: ['feng-managed', 'local-cluster'],
           hasRules: false,
+          isBlocked: false,
           isDesign: true,
           isPlaced: true,
           raw: {

@@ -14,7 +14,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, SetStateAction, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
@@ -781,32 +781,59 @@ function EditAnsibleJobModal(props: {
 }) {
   const { t } = useTranslation()
   const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-  const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
-  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>()
+  const [filterForJobTemplates, setFilterForJobTemplates] = useState<boolean>(true)
+  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>('')
   const {
     ansibleTowerTemplateList = [],
     ansibleTowerWorkflowTemplateList = [],
     ansibleSelection,
     ansibleCredentials,
   } = props
-  useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
 
-  const newTemplateSelection = (jobName: string | undefined) => {
-    if (ansibleJob) {
-      const copy = { ...ansibleJob }
-      copy.name = jobName as string
-      copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
-      setAnsibleJob(copy)
-    }
-  }
+  const updateTemplateUrl = useCallback(
+    (jobName: string | undefined, filterForJobTemplates: boolean) => {
+      if (jobName && ansibleCredentials.length) {
+        const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
+        const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)?.stringData?.host
+        const jobID = filterForJobTemplates
+          ? ansibleTowerTemplateList.find((template) => template.name === jobName)?.id
+          : ansibleTowerWorkflowTemplateList.find((template) => template.name === jobName)?.id
+        setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+      } else {
+        setAnsibleTemplateUrl('')
+      }
+    },
+    [ansibleCredentials, ansibleTowerTemplateList, ansibleTowerWorkflowTemplateList, ansibleSelection]
+  )
 
-  const clearTemplateName = () => {
-    if (ansibleJob) {
-      const copy = { ...ansibleJob }
-      copy.name = ''
-      setAnsibleJob(copy)
-    }
-  }
+  const updateTemplateSelection = useCallback(
+    (jobName: string | undefined) => {
+      if (ansibleJob) {
+        const copy = { ...ansibleJob }
+        copy.name = jobName ?? ''
+        copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
+        setAnsibleJob(copy)
+      }
+      updateTemplateUrl(jobName, filterForJobTemplates)
+    },
+    [ansibleJob, filterForJobTemplates, updateTemplateUrl]
+  )
+
+  const updateFilterForJobTemplates = useCallback(
+    (filterForJobTemplates: boolean) => {
+      setFilterForJobTemplates(filterForJobTemplates)
+      updateTemplateSelection('')
+    },
+    [updateTemplateSelection]
+  )
+
+  useEffect(() => {
+    const filterForJobTemplates = props.ansibleJob?.type !== 'Workflow'
+    setAnsibleJob(props.ansibleJob)
+    setFilterForJobTemplates(filterForJobTemplates)
+    updateTemplateUrl(props.ansibleJob?.name, filterForJobTemplates)
+  }, [props.ansibleJob, updateTemplateUrl])
+
   return (
     <AcmModal
       variant={ModalVariant.medium}
@@ -822,20 +849,14 @@ function EditAnsibleJobModal(props: {
             id="job-template"
             label={t('Job template')}
             isChecked={filterForJobTemplates}
-            onChange={() => {
-              setFilterForJobTemplates(true)
-              clearTemplateName()
-            }}
+            onChange={() => updateFilterForJobTemplates(true)}
           />
           <Radio
             name={'workflow-template'}
             id={'workflow-template'}
             label={t('Workflow job template')}
             isChecked={!filterForJobTemplates}
-            onChange={() => {
-              setFilterForJobTemplates(false)
-              clearTemplateName()
-            }}
+            onChange={() => updateFilterForJobTemplates(false)}
           />
         </FormGroup>
         <AcmSelect
@@ -844,18 +865,7 @@ function EditAnsibleJobModal(props: {
           label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
           id="job-name"
           value={ansibleJob?.name}
-          onChange={(name) => {
-            newTemplateSelection(name)
-            if (ansibleCredentials.length) {
-              const templateType = filterForJobTemplates ? 'job_template' : 'workflow_job_template'
-              const hostURL = ansibleCredentials.find((cred) => ansibleSelection === cred?.metadata?.name)!.stringData
-                ?.host
-              const jobID = filterForJobTemplates
-                ? ansibleTowerTemplateList.find((template) => template.name === name)?.id
-                : ansibleTowerWorkflowTemplateList.find((template) => template.name === name)?.id
-              setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
-            }
-          }}
+          onChange={(name) => updateTemplateSelection(name)}
           variant={SelectVariant.typeahead}
           placeholder={
             filterForJobTemplates ? t('template.modal.name.placeholder') : t('template.workflow.modal.name.placeholder')

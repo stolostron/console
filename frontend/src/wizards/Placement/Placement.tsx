@@ -28,6 +28,7 @@ export function Placements(props: {
   bindingKind: string
   clusters: IResource[]
   createClusterSetCallback?: () => void
+  alertTitle?: string
 }) {
   const editMode = useEditMode()
   const resources = useItem() as IResource[]
@@ -69,6 +70,7 @@ export function Placements(props: {
         namespaceClusterSetNames={namespaceClusterSetNames}
         clusters={props.clusters}
         createClusterSetCallback={props.createClusterSetCallback}
+        alertTitle={props.alertTitle}
       />
     </WizArrayInput>
   )
@@ -79,6 +81,7 @@ export function Placement(props: {
   clusters: IResource[]
   hideName?: boolean
   createClusterSetCallback?: () => void
+  alertTitle?: string
 }) {
   const editMode = useEditMode()
   const placement = useItem() as IPlacement
@@ -121,11 +124,8 @@ export function Placement(props: {
         options={props.namespaceClusterSetNames}
       />
 
-      {!props.namespaceClusterSetNames.length ? (
-        <Alert
-          variant="warning"
-          title={t('ClusterSets failed to fetch. Check the GitOpsCluster and Placement YAML for status errors.')}
-        />
+      {!props.namespaceClusterSetNames.length && props.alertTitle ? (
+        <Alert variant="warning" title={props.alertTitle} />
       ) : null}
 
       <WizHidden
