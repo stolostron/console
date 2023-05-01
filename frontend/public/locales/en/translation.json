@@ -2261,6 +2261,7 @@
   "show.less": "Show less",
   "show.more": "{{count}} more",
   "show.more_plural": "{{count}} more",
+  "Simple Table": "Simple Table",
   "Single cluster": "Single cluster",
   "Single node OpenShift": "Single node OpenShift",
   "Skip tags": "Skip tags",
