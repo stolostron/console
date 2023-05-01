@@ -777,7 +777,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     })
 
     details.push({
-      labelValue: t('Currently Blocked'),
+      labelValue: t('Currently blocked'),
       value: isCurrentlyBlocked ? t('Yes') : t('No'),
     })
   }
