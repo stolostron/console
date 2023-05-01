@@ -252,6 +252,7 @@ export type Cluster = {
   isHive: boolean
   isManaged: boolean
   isCurator: boolean
+  hasAutomationTemplates?: boolean
   isHostedCluster: boolean
   isRegionalHubCluster: boolean
   clusterSet?: string
@@ -367,9 +368,7 @@ export function mapClusters(
     const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
-    const clusterCurator = clusterCurators.find(
-      (cc) => cc.metadata.namespace === cluster && cc.spec && Object.keys(cc.spec).length > 0
-    )
+    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
     const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
@@ -476,6 +475,7 @@ export function getCluster(
     isHypershift: !!hostedCluster || !!selectedHostedCluster,
     isManaged: !!managedCluster || !!managedClusterInfo,
     isCurator: !!clusterCurator,
+    hasAutomationTemplates: hasAutomationTemplates(clusterCurator),
     isHostedCluster: getIsHostedCluster(managedCluster),
     isSNOCluster: agentClusterInstall ? getIsSNOCluster(agentClusterInstall) : false,
     isRegionalHubCluster: getIsRegionalHubCluster(managedCluster),
@@ -507,6 +507,10 @@ export function getCluster(
         }
       : undefined,
   }
+}
+
+export function hasAutomationTemplates(clusterCurator?: ClusterCurator) {
+  return !!clusterCurator
 }
 
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {

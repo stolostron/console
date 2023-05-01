@@ -114,16 +114,20 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             rbacCreate(SecretDefinition, cluster.namespace),
           ],
         },
-        {
-          id: ClusterAction.RemoveAutomationTemplate,
-          text: t('Remove automation template'),
-          click: () => setShowRemoveAutomationModal(true),
-          isAriaDisabled: true,
-          rbac: [
-            rbacDelete(ClusterCuratorDefinition, cluster.namespace),
-            rbacDelete(SecretDefinition, cluster.namespace),
-          ],
-        },
+        ...(cluster.hasAutomationTemplates
+          ? [
+              {
+                id: ClusterAction.RemoveAutomationTemplate,
+                text: t('Remove automation template'),
+                click: () => setShowRemoveAutomationModal(true),
+                isAriaDisabled: true,
+                rbac: [
+                  rbacDelete(ClusterCuratorDefinition, cluster.namespace),
+                  rbacDelete(SecretDefinition, cluster.namespace),
+                ],
+              },
+            ]
+          : []),
         {
           id: ClusterAction.EditLabels,
           text: t('managed.editLabels'),
@@ -382,11 +386,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         open={showUpdateAutomationModal}
         close={() => setShowUpdateAutomationModal(false)}
       />
-      <RemoveAutomationModal
-        clusters={[cluster]}
-        open={showRemoveAutomationModal}
-        close={() => setShowRemoveAutomationModal(false)}
-      />
+      {cluster.hasAutomationTemplates && (
+        <RemoveAutomationModal
+          clusters={[cluster]}
+          open={showRemoveAutomationModal}
+          close={() => setShowRemoveAutomationModal(false)}
+        />
+      )}
       <EditLabels
         resource={
           showEditLabels
