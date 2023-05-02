@@ -307,7 +307,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
 export const getTargetNsForNode = (node, resourcesForCluster, clusterName, defaultNS) => {
   // list of target namespaces per cluster
   const targetNamespaces = _.get(node, 'clusters.specs.targetNamespaces', {})
-  const deployedResourcesNS = !_.get(node, 'namespace')
+  const deployedResourcesNS = !isResourceNamespaceScoped(node)
     ? _.map(resourcesForCluster, 'name')
     : _.map(resourcesForCluster, 'namespace')
   //get cluster target namespaces
@@ -383,4 +383,19 @@ export const mustRefreshTopologyMap = (topology, currentUpdate) => {
     _.set(firstNode, '_lastUpdated', currentUpdate)
   }
   return true
+}
+
+export const isResourceNamespaceScoped = (node) => {
+  if (_.get(node, 'namespace')) {
+    return true
+  }
+
+  const resources = _.get(node, 'specs.resources', [])
+  if (resources.length > 0) {
+    if (_.get(resources[0], 'namespace')) {
+      return true
+    }
+  }
+
+  return false
 }

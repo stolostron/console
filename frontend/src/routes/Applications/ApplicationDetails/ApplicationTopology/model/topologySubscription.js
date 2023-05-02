@@ -212,6 +212,7 @@ const processReport = (report, clustersNames, clusterId, links, nodes, relatedRe
   // for each resource, add what it's related to
   report = cloneDeep(report)
   const resources = report.resources || []
+  const results = report.results || []
   if (relatedResources) {
     resources.forEach((resource) => {
       const { name, namespace } = resource
@@ -242,7 +243,13 @@ const processReport = (report, clustersNames, clusterId, links, nodes, relatedRe
     return !includes(['Route', 'Ingress', 'StatefulSet', 'Service'], kind)
   })
 
-  processMultiples(others).forEach((resource) => {
+  let numOfClustersDeployed = 0
+  results.forEach((result) => {
+    if (result.result === 'deployed') {
+      numOfClustersDeployed++
+    }
+  })
+  processMultiples(others, numOfClustersDeployed).forEach((resource) => {
     addSubscriptionDeployedResource(clusterId, clustersNames, resource, links, nodes)
   })
 }

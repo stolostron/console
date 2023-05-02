@@ -2475,6 +2475,7 @@ describe('getPulseStatusForGenericNode resources has different length', () => {
           name: 'cm2',
         },
       ],
+      resourceCount: 2,
     },
   }
   it('should process configmap node', () => {

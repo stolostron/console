@@ -172,8 +172,10 @@ export const getAppSetArgoCluster = (search, clusters) => {
   return clusters.find((cluster) => cluster.name === search || cluster.url === search)
 }
 
-export const processMultiples = (resources) => {
-  if (resources.length > 5) {
+export const processMultiples = (resources, numOfDeployedClusters = 0) => {
+  // Need to multiply the number of success clusters
+  const rCount = numOfDeployedClusters > 0 ? resources.length * numOfDeployedClusters : resources.length
+  if (rCount > 5) {
     const groupByKind = _.groupBy(resources, 'kind')
     return Object.entries(groupByKind).map(([kind, _resources]) => {
       if (_resources.length === 1) {
@@ -184,7 +186,7 @@ export const processMultiples = (resources) => {
           name: '',
           namespace: '',
           resources: _resources,
-          resourceCount: _resources.length,
+          resourceCount: numOfDeployedClusters > 0 ? _resources.length * numOfDeployedClusters : _resources.length,
         }
       }
     })

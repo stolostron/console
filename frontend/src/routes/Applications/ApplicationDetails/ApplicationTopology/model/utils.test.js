@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, addClusters, getApplicationData } from './utils'
+import { getClusterName, addClusters, getApplicationData, processMultiples } from './utils'
 
 describe('getClusterName', () => {
   it('get the cluster name from the id', () => {
@@ -185,5 +185,202 @@ describe('getApplicationData', () => {
       subscription: null,
     }
     expect(getApplicationData(nodes)).toEqual(result)
+  })
+})
+
+describe('processMultiples', () => {
+  const resources = [
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello2',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello3',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello5',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello7',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello8',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello1',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello4',
+      namespace: 'feng-cronjob',
+    },
+    {
+      apiVersion: 'batch/v1',
+      kind: 'CronJob',
+      name: 'hello6',
+      namespace: 'feng-cronjob',
+    },
+  ]
+
+  const result1 = [
+    {
+      kind: 'CronJob',
+      name: '',
+      namespace: '',
+      resourceCount: 18,
+      resources: [
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello2',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello3',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello5',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello7',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello8',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello1',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello4',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello6',
+          namespace: 'feng-cronjob',
+        },
+      ],
+    },
+  ]
+
+  const result2 = [
+    {
+      kind: 'CronJob',
+      name: '',
+      namespace: '',
+      resourceCount: 9,
+      resources: [
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello2',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello3',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello5',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello7',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello8',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello1',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello4',
+          namespace: 'feng-cronjob',
+        },
+        {
+          apiVersion: 'batch/v1',
+          kind: 'CronJob',
+          name: 'hello6',
+          namespace: 'feng-cronjob',
+        },
+      ],
+    },
+  ]
+
+  it('can process resources', () => {
+    expect(processMultiples(resources, 2)).toEqual(result1)
+  })
+
+  it('can process resources zero numOfDeployedClusters', () => {
+    expect(processMultiples(resources, 0)).toEqual(result2)
   })
 })
