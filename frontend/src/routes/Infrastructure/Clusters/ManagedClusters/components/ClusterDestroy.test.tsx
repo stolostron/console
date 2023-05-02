@@ -26,6 +26,7 @@ const mockDestroyCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -59,6 +60,7 @@ const mockDetachCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,

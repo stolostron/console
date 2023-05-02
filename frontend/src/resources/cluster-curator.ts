@@ -108,3 +108,7 @@ export function LinkAnsibleCredential(template: ClusterCurator, ansibleCredentia
 export function curatorActionHasJobs(curatorAction: CuratorAction | undefined) {
   return !!(curatorAction?.prehook?.length || curatorAction?.posthook?.length)
 }
+
+export function isAutomationTemplate(clusterCurator: ClusterCurator) {
+  return getTemplateJobsNum(clusterCurator) > 0
+}

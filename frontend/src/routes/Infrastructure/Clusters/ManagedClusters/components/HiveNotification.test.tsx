@@ -35,6 +35,7 @@ const mockCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -199,6 +200,7 @@ describe('HiveNotification', () => {
       nodes: undefined,
       kubeApiServer: '',
       consoleURL: '',
+      hasAutomationTemplate: false,
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -255,6 +257,7 @@ test('wont render if cluster has statusMessage', async () => {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: '',
+    hasAutomationTemplate: false,
     hive: {
       isHibernatable: true,
       clusterPool: undefined,

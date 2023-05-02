@@ -49,7 +49,7 @@ const mockCluster: Cluster = {
     displayVersion: '4.6',
     isManagedOpenShift: false,
   },
-  hasAutomationTemplates: true,
+  hasAutomationTemplate: true,
   labels: undefined,
   nodes: undefined,
   kubeApiServer: '',
@@ -257,8 +257,6 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),
-      nockRBAC(await rbacDeleteClusterCurator()),
-      nockRBAC(await rbacDeleteSecret()),
     ]
     await clickByLabel('Actions')
     await waitForNocks(rbacNocks)

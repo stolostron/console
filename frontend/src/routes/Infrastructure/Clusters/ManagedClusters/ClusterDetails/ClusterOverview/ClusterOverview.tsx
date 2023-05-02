@@ -5,6 +5,7 @@ import {
   ClusterDeployment,
   ClusterStatus,
   ManagedClusterDefinition,
+  isAutomationTemplate,
 } from '../../../../../../resources'
 import {
   AcmButton,
@@ -301,11 +302,12 @@ export function ClusterOverviewPageContent(props: {
     },
     automationTemplate: {
       key: t('Automation template'),
-      value: clusterCurator && (
-        <AcmButton variant="link" isInline onClick={() => setCuratorSummaryModalIsOpen(true)}>
-          {t('View template')}
-        </AcmButton>
-      ),
+      value:
+        clusterCurator && isAutomationTemplate(clusterCurator) ? (
+          <AcmButton variant="link" isInline onClick={() => setCuratorSummaryModalIsOpen(true)}>
+            {t('View template')}
+          </AcmButton>
+        ) : undefined,
     },
   }
 

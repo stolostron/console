@@ -14,7 +14,7 @@ import {
 } from 'openshift-assisted-ui-lib/cim'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
-import { ClusterCurator, getTemplateJobsNum } from '../cluster-curator'
+import { ClusterCurator, isAutomationTemplate } from '../cluster-curator'
 import { ClusterDeployment } from '../cluster-deployment'
 import { ManagedCluster } from '../managed-cluster'
 import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
@@ -241,6 +241,7 @@ export type Cluster = {
   kubeApiServer?: string
   consoleURL?: string
   acmConsoleURL?: string
+  hasAutomationTemplate: boolean
   hive: {
     clusterPool?: string
     clusterPoolNamespace?: string
@@ -252,7 +253,6 @@ export type Cluster = {
   isHive: boolean
   isManaged: boolean
   isCurator: boolean
-  hasAutomationTemplates?: boolean
   isHostedCluster: boolean
   isRegionalHubCluster: boolean
   clusterSet?: string
@@ -475,7 +475,7 @@ export function getCluster(
     isHypershift: !!hostedCluster || !!selectedHostedCluster,
     isManaged: !!managedCluster || !!managedClusterInfo,
     isCurator: !!clusterCurator,
-    hasAutomationTemplates: hasAutomationTemplates(clusterCurator),
+    hasAutomationTemplate: !!(clusterCurator && isAutomationTemplate(clusterCurator)),
     isHostedCluster: getIsHostedCluster(managedCluster),
     isSNOCluster: agentClusterInstall ? getIsSNOCluster(agentClusterInstall) : false,
     isRegionalHubCluster: getIsRegionalHubCluster(managedCluster),
@@ -507,10 +507,6 @@ export function getCluster(
         }
       : undefined,
   }
-}
-
-export function hasAutomationTemplates(clusterCurator?: ClusterCurator) {
-  return clusterCurator && getTemplateJobsNum(clusterCurator) > 0
 }
 
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {

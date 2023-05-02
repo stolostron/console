@@ -48,6 +48,7 @@ const mockClusterNoAvailable: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -98,6 +99,7 @@ const mockClusterReady1: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -143,6 +145,7 @@ const mockClusterNonOCP: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -187,6 +190,7 @@ const mockClusterPending: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -234,6 +238,7 @@ const mockClusterRoks: Cluster = {
       latestJob: {},
     },
   },
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -281,6 +286,7 @@ const mockClusterHosted: Cluster = {
       latestJob: {},
     },
   },
+  hasAutomationTemplate: true,
   hive: {
     isHibernatable: false,
     secrets: {},
