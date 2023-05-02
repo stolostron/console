@@ -45,9 +45,10 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../components/AutomationProviderHint'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../shared-recoil'
+import { useRecoilValue, useSharedSelectors } from '../../shared-recoil'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { CreateArgoResources } from './CreateArgoResources'
+import { GitOpsCluster } from '../../resources'
 
 interface Channel {
   metadata?: {
@@ -107,7 +108,7 @@ export interface ArgoWizardProps {
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
   ansibleCredentials: string[]
-  argoServers: { label: string; value: string; description?: string }[]
+  argoServers: { label: string; value: GitOpsCluster; description?: string }[]
   namespaces: string[]
   onSubmit: WizardSubmit
   onCancel: WizardCancel
@@ -188,8 +189,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceHelmChannels ?? []), ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
-  const { gitOpsClustersState } = useSharedAtoms()
-  const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
@@ -382,15 +381,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 footer={
                   <CreateCredentialModal buttonText={t('Add Argo Server')} handleModalToggle={handleModalToggle} />
                 }
-                onValueChange={(value) => {
-                  // find gitopscluster in the namespace
-                  const matchingGitOps = gitOpsClusters.filter((resource) => resource.metadata.namespace === value)
-
-                  // find placement
-                  const placementRefName = matchingGitOps.length && matchingGitOps[0].spec?.placementRef?.name
+                onValueChange={(value: any, item: ApplicationSet) => {
+                  const placementRefName = value.spec?.placementRef?.name
                   const placement = props.placements.find(
                     (placement) =>
-                      placement.metadata?.namespace === value && placement.metadata?.name === placementRefName
+                      placement.metadata?.namespace === value.metadata.namespace &&
+                      placement.metadata?.name === placementRefName
                   )
 
                   // set filtered cluster set
@@ -399,6 +395,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   })
 
                   setFilteredClusterSets(clusterSets)
+
+                  // set namespace
+                  if (value) {
+                    item.metadata.namespace = value.metadata.namespace
+                  }
                 }}
               />
               <Select

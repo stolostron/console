@@ -9,6 +9,7 @@ import { waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
 import { nockIgnoreApiPaths } from '../../lib/nock-util'
+import { GitOpsClusterApiVersion, GitOpsClusterKind } from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
 const mockGetgitchannelbranches = jest.fn().mockImplementation(() => {
@@ -351,7 +352,19 @@ describe('ArgoWizard tests', () => {
 const props: ArgoWizardProps = {
   createClusterSetCallback: mockCreateclustersetcallback,
   ansibleCredentials: [],
-  argoServers: [{ value: 'http://argoserver.com', label: 'http://argoserver.com' }],
+  argoServers: [
+    {
+      value: {
+        apiVersion: GitOpsClusterApiVersion,
+        kind: GitOpsClusterKind,
+        metadata: {
+          name: 'http://argoserver.com',
+          namespace: 'http://argoserver.com',
+        },
+      },
+      label: 'http://argoserver.com',
+    },
+  ],
   namespaces: [
     'aap',
     'default',
