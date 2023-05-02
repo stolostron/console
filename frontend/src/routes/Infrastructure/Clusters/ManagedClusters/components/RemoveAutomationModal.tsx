@@ -9,6 +9,7 @@ import {
   SecretDefinition,
   ClusterCuratorKind,
   deleteResource,
+  isAutomationTemplate,
 } from '../../../../../resources'
 import { makeStyles } from '@mui/styles'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
@@ -54,9 +55,11 @@ export function RemoveAutomationModal(props: {
   const removableClusters = useMemo<Cluster[] | undefined>(
     () =>
       props.clusters &&
-      props.clusters.filter(({ name }) => {
-        return clusterCurators.findIndex(({ metadata }) => name === metadata.name && name === metadata.namespace) !== -1
-      }),
+      props.clusters.filter(({ name }) =>
+        clusterCurators.find(
+          (cc) => name === cc.metadata.name && name === cc.metadata.namespace && isAutomationTemplate(cc)
+        )
+      ),
     [props.clusters, clusterCurators]
   )
 

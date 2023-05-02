@@ -29,6 +29,7 @@ const mockCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,

@@ -38,6 +38,7 @@ const mockCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -89,6 +90,7 @@ const mockClusterUpdatesAvailable: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -123,6 +125,7 @@ const mockClusterPosthook: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,

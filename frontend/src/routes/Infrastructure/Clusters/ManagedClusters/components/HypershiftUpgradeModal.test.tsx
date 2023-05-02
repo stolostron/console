@@ -290,6 +290,7 @@ const mockCluster: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -335,6 +336,7 @@ const mockClusterHigherVersion: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -371,6 +373,7 @@ const mockClusterNoDistribution: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -410,6 +413,7 @@ const mockClusterNoOCP: Cluster = {
   nodes: undefined,
   kubeApiServer: '',
   consoleURL: '',
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: true,
     clusterPool: undefined,
@@ -469,6 +473,7 @@ const mockBMCluster: Cluster = {
   isHostedCluster: false,
   isSNOCluster: false,
   isRegionalHubCluster: false,
+  hasAutomationTemplate: false,
   hive: {
     isHibernatable: false,
     secrets: {},

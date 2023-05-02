@@ -49,6 +49,7 @@ const mockCluster: Cluster = {
     displayVersion: '4.6',
     isManagedOpenShift: false,
   },
+  hasAutomationTemplate: true,
   labels: undefined,
   nodes: undefined,
   kubeApiServer: '',

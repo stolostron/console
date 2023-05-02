@@ -639,6 +639,7 @@ describe('DistributionField', () => {
       nodes: undefined,
       kubeApiServer: '',
       consoleURL: '',
+      hasAutomationTemplate: false,
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -821,6 +822,7 @@ describe('DistributionField hypershift clusters', () => {
     nodes: undefined,
     kubeApiServer: '',
     consoleURL: 'some url',
+    hasAutomationTemplate: false,
     hive: {
       isHibernatable: true,
       clusterPool: undefined,
@@ -868,6 +870,7 @@ describe('DistributionField hypershift clusters', () => {
       nodes: undefined,
       kubeApiServer: '',
       consoleURL: 'some url',
+      hasAutomationTemplate: false,
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -924,6 +927,7 @@ describe('DistributionField hypershift clusters', () => {
       nodes: undefined,
       kubeApiServer: '',
       consoleURL: '',
+      hasAutomationTemplate: false,
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -981,6 +985,7 @@ describe('DistributionField hypershift clusters', () => {
       nodes: undefined,
       kubeApiServer: '',
       consoleURL: '',
+      hasAutomationTemplate: false,
       hive: {
         isHibernatable: true,
         clusterPool: undefined,
@@ -1079,6 +1084,7 @@ describe('DistributionField hypershift clusters', () => {
       distribution: mockDistributionInfo,
       owner: {},
       isHypershift: true,
+      hasAutomationTemplate: false,
       hypershift: {
         agent: false,
         secretNames: [],
