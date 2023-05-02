@@ -21,7 +21,7 @@ export function AcmChipGroup(
     <ChipGroup
       closeBtnAriaLabel={closeBtnAriaLabel ?? t('Clear all')}
       collapsedText={collapsedText ?? t('{{remaining}} more', { remaining: '${remaining}' })}
-      expandedText={expandedText || t('Show less')}
+      expandedText={expandedText ?? t('Show less')}
       {...otherProps}
     >
       {children}
