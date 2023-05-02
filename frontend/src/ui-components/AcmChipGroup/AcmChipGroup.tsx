@@ -7,10 +7,19 @@ export function AcmChipGroup(
   props: Omit<ChipGroupProps, 'ref'> &
     ({ categoryName: string; 'aria-label'?: never } | { categoryName?: never; 'aria-label': string })
 ) {
-  const { categoryName, 'aria-label': ariaLabel, collapsedText, expandedText, children, ...otherProps } = props
+  const {
+    'aria-label': ariaLabel,
+    categoryName,
+    closeBtnAriaLabel,
+    collapsedText,
+    expandedText,
+    children,
+    ...otherProps
+  } = props
   const { t } = useTranslation()
   return (
     <ChipGroup
+      closeBtnAriaLabel={closeBtnAriaLabel ?? t('Clear all')}
       collapsedText={collapsedText ?? t('{{remaining}} more', { remaining: '${remaining}' })}
       expandedText={expandedText || t('Show less')}
       {...otherProps}
