@@ -29,7 +29,7 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
     !cluster.distribution?.upgradeInfo?.isUpgrading && // is not currently upgrading
     cluster.provider !== Provider.ibm && // is not ROKS
     !cluster.isHostedCluster // is not HyperShift
-  ) 
+  )
 }
 
 export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAction): boolean {
