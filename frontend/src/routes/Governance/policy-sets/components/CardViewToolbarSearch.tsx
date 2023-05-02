@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
-  Chip,
-  ChipGroup,
   Divider,
   Menu,
   MenuContent,
@@ -17,6 +15,7 @@ import { SearchIcon, TimesIcon } from '@patternfly/react-icons/dist/js/icons'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
+import { AcmChip, AcmChipGroup } from '../../../../ui-components'
 
 function formatSearchSelections(currentSelections: string[]) {
   const searchChipObjects = currentSelections.map((chip: string) => {
@@ -253,13 +252,13 @@ export default function CardViewToolbarSearch(props: {
           onFocus={() => setMenuIsOpen(true)}
           onKeyDown={handleTextInputKeyDown}
         >
-          <ChipGroup>
+          <AcmChipGroup aria-label={t('Attribute filters')}>
             {currentChips.map((currentChip) => (
-              <Chip key={currentChip} onClick={() => deleteChip(currentChip)}>
+              <AcmChip key={currentChip} onClick={() => deleteChip(currentChip)}>
                 {currentChip}
-              </Chip>
+              </AcmChip>
             ))}
-          </ChipGroup>
+          </AcmChipGroup>
         </TextInputGroupMain>
         <TextInputGroupUtilities>
           {showClearButton && (
