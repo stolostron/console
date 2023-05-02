@@ -37,6 +37,21 @@
               "items": {
                 "type": "object",
                 "properties": {
+                  "objectDefinition": {
+                    "type": "object",
+                    "properties": {
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "validateTemplateName": true
+                          }
+                        },
+                        "required": ["name"]
+                      }
+                    },
+                    "required": ["metadata"]
+                  },
                   "extraDependencies": {
                     "type": "array",
                     "items": {

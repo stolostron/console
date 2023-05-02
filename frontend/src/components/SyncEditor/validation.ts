@@ -53,6 +53,18 @@ export const addAjvKeywords = (ajv: Ajv) => {
     },
   })
   ajv.addKeyword({
+    keyword: 'validateTemplateName',
+    schemaType: 'boolean',
+    validate: (_schema: null, data: any) => {
+      return (
+        !data ||
+        (typeof data === 'string' &&
+          /^(\{\{)*[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\}\})*$/.test(data) &&
+          data.length <= 63)
+      )
+    },
+  })
+  ajv.addKeyword({
     keyword: 'validateDep',
     schemaType: 'boolean',
     validate: (_schema: null, data: any) => {
@@ -238,6 +250,11 @@ export function validateResource(
             case 'validateName':
               errorMsg.message =
                 'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
+              errorMsg.linePos.start.col = mapping.$gv.start.col
+              errorMsg.linePos.end.col = mapping.$gv.end.col
+              break
+            case 'validateTemplateName':
+              errorMsg.message = 'If this is a template name, it must be in this form "{{ name }}"'
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break

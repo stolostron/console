@@ -178,19 +178,21 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
   // areas are so only previous decorations do
   const model = editorRef.current?.getModel()
-  return model.getAllDecorations().filter(
-    (decoration: {
-      options: {
-        inlineClassName: string
-        glyphMarginClassName: string
-        className: string
-        description: string
-      }
-    }) =>
-      decoration?.options?.className?.startsWith('squiggly-') ||
-      (!!decoration?.options?.glyphMarginClassName &&
-        (decoration?.options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
-  )
+  return model
+    ? model.getAllDecorations().filter(
+        (decoration: {
+          options: {
+            inlineClassName: string
+            glyphMarginClassName: string
+            className: string
+            description: string
+          }
+        }) =>
+          decoration?.options?.className?.startsWith('squiggly-') ||
+          (!!decoration?.options?.glyphMarginClassName &&
+            (decoration?.options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
+      )
+    : []
 }
 
 const scrollToChangeDecoration = (editorRef: any, errors: any[], decorations: any[]) => {
