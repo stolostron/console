@@ -22,11 +22,12 @@ import PlacementRuleDeprecationAlert from '../../components/PlacementRuleDepreca
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
-import { IPlacementRule, PlacementRuleKind } from '../common/resources/IPlacementRule'
+import { IPlacementRule, PlacementRuleApiGroup, PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
 import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
+import { PlacementRuleApiVersion } from '../../resources'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -116,7 +117,7 @@ export function PlacementSection(props: {
       resources.push({
         ...PlacementBindingType,
         metadata: { name: '', namespace: '' },
-        placementRef: { apiGroup: PlacementApiGroup, kind: PlacementKind, name: '' },
+        placementRef: { apiGroup: PlacementRuleApiGroup, kind: PlacementRuleKind, name: '' },
         subjects: [{ apiGroup: props.bindingSubjectApiGroup, kind: props.bindingSubjectKind, name: '' }],
       } as IResource)
       update()
@@ -204,7 +205,7 @@ export function PlacementSection(props: {
       // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
       autohide={false}
     >
-      {placementRuleCount != 0 && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
+      {usesPlacementRule && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
       {showPlacementSelector && (
         <PlacementSelector
           placementCount={placementCount}
@@ -214,6 +215,7 @@ export function PlacementSection(props: {
           bindingSubjectApiGroup={props.bindingSubjectApiGroup}
           allowNoPlacement={props.allowNoPlacement}
           withoutOnlineClusterCondition={props.withoutOnlineClusterCondition}
+          usesPlacementRule={usesPlacementRule}
         />
       )}
       {placementCount === 1 && (
@@ -295,6 +297,7 @@ export function PlacementSelector(props: {
   bindingSubjectApiGroup: string
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
+  usesPlacementRule?: boolean
 }) {
   const resources = useItem() as IResource[]
   const { placementCount, placementRuleCount, placementBindingCount, bindingSubjectKind } = props
@@ -323,18 +326,32 @@ export function PlacementSelector(props: {
                 ? uniqueResourceName(`${bindingSubject.metadata?.name ?? ''}-placement-binding`, newResources)
                 : ''
               const namespace = bindingSubject?.metadata?.namespace ?? ''
-              newResources.push({
-                apiVersion: PlacementApiVersion,
-                kind: PlacementKind,
-                metadata: { name: placementName, namespace },
-                spec: {},
-              } as IResource)
+
+              if (props.usesPlacementRule) {
+                newResources.push({
+                  apiVersion: PlacementRuleApiVersion,
+                  kind: PlacementRuleKind,
+                  metadata: { name: placementName, namespace },
+                  spec: {
+                    clusterSelector: { matchExpressions: [] },
+                    clusterConditions: [],
+                  },
+                } as IResource)
+              } else {
+                newResources.push({
+                  apiVersion: PlacementApiVersion,
+                  kind: PlacementKind,
+                  metadata: { name: placementName, namespace },
+                  spec: {},
+                } as IResource)
+              }
+
               newResources.push({
                 ...PlacementBindingType,
                 metadata: { name: placementBindingName, namespace },
                 placementRef: {
-                  apiGroup: PlacementApiGroup,
-                  kind: PlacementKind,
+                  apiGroup: props.usesPlacementRule ? PlacementRuleApiGroup : PlacementApiGroup,
+                  kind: props.usesPlacementRule ? PlacementRuleKind : PlacementKind,
                   name: placementName,
                 },
                 subjects: [
@@ -369,8 +386,8 @@ export function PlacementSelector(props: {
                   namespace: namespace,
                 },
                 placementRef: {
-                  apiGroup: PlacementApiGroup,
-                  kind: PlacementKind,
+                  apiGroup: props.usesPlacementRule ? PlacementRuleApiGroup : PlacementApiGroup,
+                  kind: props.usesPlacementRule ? PlacementRuleKind : PlacementKind,
                   name: '',
                 },
                 subjects: [

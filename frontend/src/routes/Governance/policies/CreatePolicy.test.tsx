@@ -20,6 +20,7 @@ import {
   mockClusterSetBinding,
   mockManagedClusters,
   mockNamespaces,
+  mockPlacementBindings,
   mockPlacementRules,
   mockPlacements,
   mockPolicy,
@@ -173,6 +174,21 @@ describe('Create Policy Page', () => {
     await waitForNocks(policyNock)
     await waitForNocks(placementNock)
     await waitForNocks(placementBindingNock)
+  })
+
+  test('can switch to existing placement in PlacementRule mode', async () => {
+    // The PlacementBinding points to a PlacementRule to activate PlacementRule mode
+    render(<TestCreatePolicyPage initialResources={[mockPolicy[2], mockPlacementBindings[0]]} />)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.getByRole('button', { name: 'Next' }).click()
+    screen.getByRole('button', { name: 'Next' }).click()
+
+    await waitForText('How do you want to select clusters?')
+    screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
+    screen.getByRole('button', { name: 'Existing placement' }).click()
+    screen.getByText(/select the placement rule/i)
+    screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
   })
 
   test('can cancel create policy', async () => {
