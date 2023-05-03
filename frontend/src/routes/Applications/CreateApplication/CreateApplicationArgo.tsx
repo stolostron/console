@@ -31,7 +31,7 @@ export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
     .map((gitOpsCluster) => {
       const description = `name: ${gitOpsCluster.metadata.name}; namespace: ${gitOpsCluster.metadata.namespace}`
       const name = gitOpsCluster.spec?.argoServer?.argoNamespace!
-      return { value: name, label: name, description: description }
+      return { value: gitOpsCluster, label: name, description: description }
     })
     .filter(isType)
 }
