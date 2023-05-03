@@ -783,7 +783,13 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
     case 'Select':
     case 'Tiles': {
       const selectedOption = input.options.find((option) => option.value === input.value)
-      if (!selectedOption) return <Fragment>not found</Fragment>
+      if (!selectedOption)
+        return (
+          <DescriptionListGroup key={input.label}>
+            <DescriptionListTerm>{input.label}</DescriptionListTerm>
+            <DescriptionListDescription>{input.value}</DescriptionListDescription>
+          </DescriptionListGroup>
+        )
       return (
         <DescriptionListGroup key={input.label}>
           <DescriptionListTerm>{input.label}</DescriptionListTerm>
