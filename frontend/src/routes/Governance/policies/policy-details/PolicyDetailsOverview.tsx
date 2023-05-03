@@ -339,7 +339,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 <span key={`${status}-status-list`}>
                   <LabelGroup
                     collapsedText={t('show.more', { count: clusterList[status].size - 2 })}
-                    expandedText={t('show.less')}
+                    expandedText={t('Show less')}
                     numLabels={2}
                   >
                     {Array.from(clusterList[status]).map((cluster: string, index) => {

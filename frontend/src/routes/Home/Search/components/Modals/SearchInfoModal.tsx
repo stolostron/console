@@ -2,10 +2,9 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@mui/styles'
-import { Chip, ChipGroup } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmModal } from '../../../../../ui-components'
+import { AcmChip, AcmChipGroup, AcmModal } from '../../../../../ui-components'
 
 const useStyles = makeStyles({
   root: {
@@ -61,15 +60,15 @@ export const SearchInfoModal = (props: any) => {
         <div>
           <p>{t('To search for a keyword, type the word in the search box.')}</p>
           <div className={classes.exampleRow}>
-            <ChipGroup>
-              <Chip isReadOnly>{t('Type')}</Chip>
-            </ChipGroup>
+            <AcmChipGroup aria-label={t('Type')}>
+              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+            </AcmChipGroup>
             <p>OpenShift</p>
           </div>
           <div className={classes.exampleRow}>
-            <ChipGroup>
-              <Chip isReadOnly>{t('Show')}</Chip>
-            </ChipGroup>
+            <AcmChipGroup aria-label={t('Show')}>
+              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+            </AcmChipGroup>
             <p>{t('A list of resources that contain the keyword "OpenShift" in any field.')}</p>
           </div>
         </div>
@@ -81,15 +80,15 @@ export const SearchInfoModal = (props: any) => {
             )}
           </p>
           <div className={classes.exampleRow}>
-            <ChipGroup>
-              <Chip isReadOnly>{t('Type')}</Chip>
-            </ChipGroup>
+            <AcmChipGroup aria-label={t('Type')}>
+              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+            </AcmChipGroup>
             <p>status:failed,pending</p>
           </div>
           <div className={classes.exampleRow}>
-            <ChipGroup>
-              <Chip isReadOnly>{t('Show')}</Chip>
-            </ChipGroup>
+            <AcmChipGroup aria-label={t('Show')}>
+              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+            </AcmChipGroup>
             <p>{t('Resources with "failed" or "pending" status.')}</p>
           </div>
         </div>

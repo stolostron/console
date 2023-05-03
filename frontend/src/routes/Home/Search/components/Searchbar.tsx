@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
-  Chip,
-  ChipGroup,
   Divider,
   Menu,
   MenuContent,
@@ -21,7 +19,7 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton } from '../../../../ui-components/AcmButton'
+import { AcmButton, AcmChip, AcmChipGroup } from '../../../../ui-components'
 import { operators } from '../search-helper'
 
 type SearchbarTag = {
@@ -399,18 +397,18 @@ export function Searchbar(props: SearchbarProps) {
           onKeyDown={handleTextInputKeyDown}
           aria-label={t('Search input')}
         >
-          <ChipGroup collapsedText={t('{{remaining}} more', { remaining: '${remaining}' })}>
+          <AcmChipGroup aria-label={t('Search filters')}>
             {searchbarTags.map((searchbarTag, idx) => (
-              <Chip
+              <AcmChip
                 key={searchbarTag.id}
                 onClick={() => deleteChip(idx)}
                 closeBtnAriaLabel={t('delete-chip')}
                 textMaxWidth={'100%'}
               >
                 {searchbarTag.name}
-              </Chip>
+              </AcmChip>
             ))}
-          </ChipGroup>
+          </AcmChipGroup>
         </TextInputGroupMain>
         {showClearButton && (
           <TextInputGroupUtilities>

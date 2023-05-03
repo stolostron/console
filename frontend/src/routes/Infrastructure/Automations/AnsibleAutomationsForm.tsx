@@ -2,8 +2,6 @@
 import {
   ActionGroup,
   Button,
-  Chip,
-  ChipGroup,
   Flex,
   FlexItem,
   FormGroup,
@@ -45,6 +43,8 @@ import {
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,
+  AcmChip,
+  AcmChipGroup,
   AcmForm,
   AcmKubernetesLabelsInput,
   AcmModal,
@@ -417,13 +417,13 @@ export function AnsibleAutomationsForm(props: {
         </FlexItem>
         <FlexItem>{ansibleJob.name}</FlexItem>
         {ansibleJob.extra_vars && (
-          <ChipGroup>
+          <AcmChipGroup aria-label={t('Extra variables')}>
             {Object.keys(ansibleJob.extra_vars).map((key) => (
-              <Chip isReadOnly key={`${ansibleJob.name}-${key}`}>
+              <AcmChip isReadOnly key={`${ansibleJob.name}-${key}`}>
                 {key}={ansibleJob.extra_vars![key]}
-              </Chip>
+              </AcmChip>
             ))}
-          </ChipGroup>
+          </AcmChipGroup>
         )}
       </Flex>,
     ]

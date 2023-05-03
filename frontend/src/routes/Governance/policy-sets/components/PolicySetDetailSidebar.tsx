@@ -207,7 +207,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             return (
               <AcmLabels
                 labels={clusterMatch.metadata.labels}
-                expandedText={t('show.less')}
+                expandedText={t('Show less')}
                 collapsedText={t('show.more', { count: collapse.length })}
                 allCollapsedText={t('count.labels', { count: collapse.length })}
                 collapse={collapse}

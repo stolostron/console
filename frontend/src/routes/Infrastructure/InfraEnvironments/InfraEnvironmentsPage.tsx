@@ -433,7 +433,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     return (
                       <AcmLabels
                         labels={infraEnv.metadata.labels}
-                        expandedText={t('show.less')}
+                        expandedText={t('Show less')}
                         collapsedText={t('show.more', { count: collapse.length })}
                         collapse={collapse}
                       />
