@@ -5,7 +5,7 @@ import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { getServiceAccountToken } from './serviceAccountToken'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
 interface APIPathResponse {
   paths: string[]

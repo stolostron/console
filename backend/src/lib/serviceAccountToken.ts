@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'fs'
 import { rootCertificates } from 'tls'
-import { logger } from '../lib/logger'
+import { logger } from './logger'
 
 function readServiceAccountFile(name: string, defaultValue: string, exitOnError?: boolean): string {
   let serviceAccountValue: string

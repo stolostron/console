@@ -13,7 +13,7 @@ import { logger } from '../lib/logger'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from './serviceAccountToken'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
