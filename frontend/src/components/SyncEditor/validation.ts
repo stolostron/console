@@ -59,7 +59,9 @@ export const addAjvKeywords = (ajv: Ajv) => {
       return (
         !data ||
         (typeof data === 'string' &&
-          /^(\{\{)*[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\}\})*$/.test(data) &&
+          (data.startsWith('{')
+            ? /^(\{\{)[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\}\})$/.test(data)
+            : /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data)) &&
           data.length <= 63)
       )
     },

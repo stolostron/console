@@ -53,10 +53,10 @@ describe('SyncEditor component', () => {
           enumTest: 'xst', // enum test -- must be ['ost', 'vmw']
           typeTest: 3, //type test--must be string
           validateLabelTest: '1234567890123456789012345678901234567890123456789012345678901234567890', //validateLabel--must be less then 63 chars
+          validateTemplateNameTest: '{name}}', //validateTemplateName--must be "{{name}}"
           kind: 'IamPolicy', // 'validateDep' --IamPolicy cannot have namespace
           patternTest: 'abcd', // must match pattern
           immutableTest: 1234, // sematxci errors ignored on immutable lines
-          validateTemplateNameTest: '"{{name}}"', //validateTemplateName--must be "{{name}}"
         },
       },
     ]
@@ -1303,14 +1303,14 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
+      overviewRuler: { color: '#ff0000', position: 4 },
+      minimap: { color: '#ff000060', position: 1 },
       glyphMarginHoverMessage: {
         value:
           '```html\n' +
           'Dependencies on ConfigurationPolicies, IamPolicies, and CertificatePolicies cannot contain a namespace \n' +
           '```',
       },
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
     },
   },
@@ -1333,9 +1333,9 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: "```html\nMust have required property 'name' \n```" },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
+      glyphMarginHoverMessage: { value: "```html\nMust have required property 'name' \n```" },
       description: 'resource-editor',
     },
   },
@@ -1358,14 +1358,14 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
+      overviewRuler: { color: '#ff0000', position: 4 },
+      minimap: { color: '#ff000060', position: 1 },
       glyphMarginHoverMessage: {
         value:
           '```html\n' +
           'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters \n' +
           '```',
       },
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
     },
   },
@@ -1388,9 +1388,9 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: Test \n```' },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
+      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: Test \n```' },
       description: 'resource-editor',
     },
   },
@@ -1413,11 +1413,11 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'warningDecoration',
+      overviewRuler: { color: '#ffff00', position: 4 },
+      minimap: { color: '#ffff0060', position: 1 },
       glyphMarginHoverMessage: {
         value: '```html\n' + 'Must be equal to one of the allowed values: "ost", "vmw" \n' + '```',
       },
-      overviewRuler: { color: '#ffff00', position: 4 },
-      minimap: { color: '#ffff0060', position: 1 },
       description: 'resource-editor',
     },
   },
@@ -1440,9 +1440,9 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      glyphMarginHoverMessage: { value: '```html\nMust be string \n```' },
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
+      glyphMarginHoverMessage: { value: '```html\nMust be string \n```' },
       description: 'resource-editor',
     },
   },
@@ -1465,14 +1465,14 @@ const semanticErrors = [
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
+      overviewRuler: { color: '#ff0000', position: 4 },
+      minimap: { color: '#ff000060', position: 1 },
       glyphMarginHoverMessage: {
         value:
           '```html\n' +
           'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters \n' +
           '```',
       },
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
     },
   },
@@ -1487,36 +1487,63 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 11,
+      endLineNumber: 12,
       endColumn: 132,
-      startLineNumber: 11,
+      startLineNumber: 12,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
+      overviewRuler: { color: '#ff0000', position: 4 },
+      minimap: { color: '#ff000060', position: 1 },
       glyphMarginHoverMessage: {
         value: '```html\nMust match pattern "[%d] [%p] [application-ui] [%c] %m" \n```',
       },
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
       description: 'resource-editor',
     },
   },
   {
     range: {
-      endLineNumber: 11,
+      endLineNumber: 12,
       endColumn: 20,
-      startLineNumber: 11,
+      startLineNumber: 12,
       startColumn: 16,
     },
     options: { className: 'squiggly-error' },
   },
   {
     range: {
-      endLineNumber: 12,
+      endLineNumber: 10,
       endColumn: 132,
-      startLineNumber: 12,
+      startLineNumber: 10,
+      startColumn: 0,
+    },
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: 'errorDecoration',
+      overviewRuler: { color: '#ff0000', position: 4 },
+      minimap: { color: '#ff000060', position: 1 },
+      glyphMarginHoverMessage: {
+        value: '```html\n' + 'If this is a template name, it must be in this form "{{ name }}" \n' + '```',
+      },
+      description: 'resource-editor',
+    },
+  },
+  {
+    range: {
+      endLineNumber: 10,
+      endColumn: 38,
+      startLineNumber: 10,
+      startColumn: 29,
+    },
+    options: { className: 'squiggly-error' },
+  },
+  {
+    range: {
+      endLineNumber: 13,
+      endColumn: 132,
+      startLineNumber: 13,
       startColumn: 1,
     },
     options: {
@@ -1525,6 +1552,7 @@ const semanticErrors = [
     },
   },
 ]
+
 const syntaxError = [
   {
     range: {
