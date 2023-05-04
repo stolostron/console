@@ -38,6 +38,7 @@ describe('SyncEditor component', () => {
     // case 'validateName':
     // case 'validateDep':
     // case 'validateLabel':
+    // case 'validateTemplateName':
     // case 'enum':
     // case 'type':
 
@@ -55,6 +56,7 @@ describe('SyncEditor component', () => {
           kind: 'IamPolicy', // 'validateDep' --IamPolicy cannot have namespace
           patternTest: 'abcd', // must match pattern
           immutableTest: 1234, // sematxci errors ignored on immutable lines
+          validateTemplateNameTest: '"{{name}}"', //validateTemplateName--must be "{{name}}"
         },
       },
     ]
@@ -93,6 +95,9 @@ describe('SyncEditor component', () => {
             },
             patternTest: {
               pattern: '[%d] [%p] [application-ui] [%c] %m',
+            },
+            validateTemplateNameTest: {
+              validateTemplateName: true,
             },
           },
           validateDep: true,
@@ -1311,7 +1316,7 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 13,
+      endLineNumber: 14,
       endColumn: 1,
       startLineNumber: 4,
       startColumn: 3,
