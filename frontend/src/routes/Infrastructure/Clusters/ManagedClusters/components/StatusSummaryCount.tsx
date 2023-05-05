@@ -156,7 +156,7 @@ export function StatusSummaryCount() {
         return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
       })[0]
       // determine whether the matched decision has placed an appSet in the current cluster.
-      const clusterMatch = decision.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
+      const clusterMatch = decision?.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
       return clusterMatch > -1
     })
     return filteredAppSets
