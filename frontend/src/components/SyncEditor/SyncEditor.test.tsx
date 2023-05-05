@@ -1525,7 +1525,7 @@ const semanticErrors = [
       overviewRuler: { color: '#ff0000', position: 4 },
       minimap: { color: '#ff000060', position: 1 },
       glyphMarginHoverMessage: {
-        value: '```html\n' + 'If this is a template name, it must be in this form "{{ name }}" \n' + '```',
+        value: '```html\n' + 'If this is a template name, it must be in the form "{{ name }}" \n' + '```',
       },
       description: 'resource-editor',
     },

@@ -256,7 +256,7 @@ export function validateResource(
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
             case 'validateTemplateName':
-              errorMsg.message = 'If this is a template name, it must be in this form "{{ name }}"'
+              errorMsg.message = 'If this is a template name, it must be in the form "{{ name }}"'
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
