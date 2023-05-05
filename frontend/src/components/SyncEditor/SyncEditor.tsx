@@ -448,7 +448,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       // report new resources/errors/useredits to form
       // if there are validation errors still pass it to form
       let customErrors = []
-      if (errors.syntax.length === 0) {
+      if (
+        errors.syntax.length === 0 &&
+        errors.validation.filter(({ errorType }) => errorType === 'error').length === 0
+      ) {
         const clonedUnredactedChange = cloneDeep(unredactedChange)
         setResourceChanges(clonedUnredactedChange)
         customErrors = setFormValues(syncs, clonedUnredactedChange) || []

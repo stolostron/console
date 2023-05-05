@@ -142,10 +142,12 @@ export const updateReferences = (
     return xreferences.every((xrefs) => {
       if (xrefs.references[path]) {
         const remaining = edit.$f.replace(xrefs.value, '')
-        const change = edit.$u.replace(remaining, '')
-        Object.values(xrefs.references).forEach((path) => {
-          set(unredactedChange.parsed, path, change)
-        })
+        if (typeof edit.$u === 'string') {
+          const change = edit.$u.replace(remaining, '')
+          Object.values(xrefs.references).forEach((path) => {
+            set(unredactedChange.parsed, path, change)
+          })
+        }
         return false
       }
       return true
