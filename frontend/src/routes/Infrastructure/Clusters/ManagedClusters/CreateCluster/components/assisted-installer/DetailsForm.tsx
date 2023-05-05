@@ -34,6 +34,7 @@ type FormControl = {
     additionalLabels?: {
       [x: string]: string
     }[]
+    sshPublicKey?: string
   }
   disabled?: VoidFunction
   reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
@@ -255,6 +256,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       ...control.active,
       pullSecret: getDefault([controlProps?.stringData?.pullSecret, control.active.pullSecret, '']),
       baseDnsDomain: getDefault([controlProps?.stringData?.baseDomain, control.active.baseDnsDomain, '']),
+      sshPublicKey: getDefault([controlProps?.stringData?.['ssh-publickey'], control.active.sshPublicKey, '']),
     }
     handleChange(control)
   }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
