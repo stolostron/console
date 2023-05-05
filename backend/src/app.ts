@@ -16,6 +16,7 @@ import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
+import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
@@ -30,32 +31,33 @@ const eventsEnabled = process.env.DISABLE_EVENTS !== 'true'
 // Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
 // If the route exceeds 500 chars the route will not be found from this fn: router.find()
 export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
-router.get(`/readinessProbe`, readiness)
-router.get(`/livenessProbe`, liveness)
-router.get(`/ping`, respondOK)
-router.all(`/api`, proxy)
-router.all(`/api/*`, proxy)
-router.all(`/apis`, proxy)
-router.all(`/apis/*`, proxy)
-router.all(`/apiPaths`, apiPaths)
-router.all(`/version`, proxy)
-router.all(`/version/`, proxy)
+router.get('/readinessProbe', readiness)
+router.get('/livenessProbe', liveness)
+router.get('/ping', respondOK)
+router.all('/api', proxy)
+router.all('/api/*', proxy)
+router.all('/apis', proxy)
+router.all('/apis/*', proxy)
+router.get('/apiPaths', apiPaths)
+router.get('/version', proxy)
+router.get('/version/', proxy)
+router.post('/operatorCheck', operatorCheck)
 if (!isProduction) {
   router.get('/configure', configure)
-  router.get(`/login`, login)
-  router.get(`/login/callback`, loginCallback)
-  router.get(`/logout`, logout)
-  router.get(`/logout/`, logout)
+  router.get('/login', login)
+  router.get('/login/callback', loginCallback)
+  router.get('/logout', logout)
+  router.get('/logout/', logout)
 }
 if (eventsEnabled) {
-  router.get(`/events`, events)
+  router.get('/events', events)
 }
-router.post(`/proxy/search`, search)
-router.get(`/authenticated`, authenticated)
-router.post(`/ansibletower`, ansibleTower)
+router.post('/proxy/search', search)
+router.get('/authenticated', authenticated)
+router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
-router.get(`/*`, serve)
+router.get('/*', serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (!isProduction) {
@@ -66,7 +68,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   if (req.url === '/multicloud') (req as any).url = '/'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-  else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substr(11)
+  else if (req.url.startsWith('/multicloud')) (req as any).url = req.url.substring(11)
 
   const route = router.find(req.method as Router.HTTPMethod, req.url)
   if (!route) {
