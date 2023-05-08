@@ -25,7 +25,7 @@ describe(`ansibletower Route`, function () {
       towerHost: TOWER_HOST + '/badPath',
       token: '12345',
     })
-    expect(res.statusCode).toEqual(200)
+    expect(res.statusCode).toEqual(400)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 
