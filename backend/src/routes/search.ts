@@ -51,7 +51,11 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
         res.writeHead(response.statusCode, response.headers)
         pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
       }),
-      () => logger.error
+      (err) => {
+        if (err) {
+          logger.error(err)
+        }
+      }
     )
   }
 }
