@@ -2,8 +2,7 @@
 
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { jsonRequest } from '../lib/json-request'
-import { logger } from '../lib/logger'
-import { catchInternalServerError, respondInternalServerError } from '../lib/respond'
+import { catchInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
