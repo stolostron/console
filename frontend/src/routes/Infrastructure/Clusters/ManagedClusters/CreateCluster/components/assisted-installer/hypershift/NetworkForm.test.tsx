@@ -22,7 +22,8 @@ spec:
     name: sshkey-cluster-test-cluster-name
   networking:
     podCIDR: 1.2.3.4/18
-    serviceCIDR: 4.5.6.7/16
+    serviceNetwork:
+      - cidr: 4.5.6.7/16
     machineCIDR: 2.4.6.8/12
   configuration:
     items:
