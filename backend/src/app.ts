@@ -20,7 +20,7 @@ import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
-import { serve } from './routes/serve'
+import { serveHandler } from './routes/serve'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 
@@ -57,7 +57,7 @@ router.get('/authenticated', authenticated)
 router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
-router.get('/*', serve)
+router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (!isProduction) {

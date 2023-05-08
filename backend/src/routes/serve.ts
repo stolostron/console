@@ -6,6 +6,7 @@ import { extname } from 'path'
 import { logger } from '../lib/logger'
 import { pipeline } from 'stream'
 import { stat } from 'fs/promises'
+import { catchInternalServerError } from '../lib/respond'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 const localesCacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-store'
@@ -152,6 +153,10 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
     res.writeHead(404).end()
     return
   }
+}
+
+export function serveHandler(req: Http2ServerRequest, res: Http2ServerResponse): void {
+  serve(req, res).catch(catchInternalServerError(res))
 }
 
 const contentTypes: Record<string, string> = {
