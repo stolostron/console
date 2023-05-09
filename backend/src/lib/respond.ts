@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { logger } from './logger'
 
 const {
   HTTP_STATUS_OK,
@@ -57,4 +58,11 @@ export function respondConflict(_req: Http2ServerRequest, res: Http2ServerRespon
 
 export function respondInternalServerError(_req: Http2ServerRequest, res: Http2ServerResponse): void {
   res.writeHead(HTTP_STATUS_INTERNAL_SERVER_ERROR).end()
+}
+
+export function catchInternalServerError(res: Http2ServerResponse): (err: unknown) => void {
+  return (err) => {
+    logger.error(err)
+    respondInternalServerError(undefined, res)
+  }
 }

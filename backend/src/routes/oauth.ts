@@ -76,7 +76,7 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
   }
 }
 
-export async function logout(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
 
@@ -93,18 +93,19 @@ export async function logout(req: Http2ServerRequest, res: Http2ServerResponse):
       .replace(/\//g, '_')}`
   }
 
-  try {
-    const url =
-      process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`
-    await got.delete(url, gotOptions)
-  } catch (err) {
-    logger.error(err)
-  }
+  const url =
+    process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`
+  got
+    .delete(url, gotOptions)
+    .then(() => {
+      const host = req.headers.host
 
-  const host = req.headers.host
-
-  deleteCookie(res, { cookie: 'connect.sid' })
-  deleteCookie(res, { cookie: 'acm-access-token-cookie' })
-  deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host}` })
-  res.writeHead(200).end()
+      deleteCookie(res, { cookie: 'connect.sid' })
+      deleteCookie(res, { cookie: 'acm-access-token-cookie' })
+      deleteCookie(res, { cookie: '_oauth_proxy', domain: `.${host}` })
+      res.writeHead(200).end()
+    })
+    .catch((err) => {
+      logger.error(err)
+    })
 }

@@ -6,15 +6,18 @@ import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, respondOK } from '../lib/respond'
 import { getOauthInfoPromise } from './oauth'
-import { getServiceAccountToken } from './serviceAccountToken'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
 // The kubelet uses liveness probes to know when to restart a container.
-export async function liveness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function liveness(req: Http2ServerRequest, res: Http2ServerResponse): void {
   if (!isLive) return respondInternalServerError(req, res)
-  const oauthInfo = await getOauthInfoPromise()
-  if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
-  return respondOK(req, res)
+  getOauthInfoPromise()
+    .then((oauthInfo) => {
+      if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
+      respondOK(req, res)
+    })
+    .catch(() => respondInternalServerError(req, res))
 }
 
 export let isLive = true

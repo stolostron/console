@@ -2,10 +2,9 @@
 
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { jsonRequest } from '../lib/json-request'
-import { logger } from '../lib/logger'
-import { respondInternalServerError } from '../lib/respond'
+import { catchInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { getServiceAccountToken } from './serviceAccountToken'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
 interface APIPathResponse {
   paths: string[]
@@ -32,12 +31,13 @@ export interface APIResourceMeta {
   pluralName: string
 }
 
-export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-  if (await getAuthenticatedToken(req, res)) {
-    const serviceAccountToken = getServiceAccountToken()
-    try {
-      const paths = await jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken).then(
-        async (response: APIPathResponse) => {
+export function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): void {
+  const errorCatcher = catchInternalServerError(res)
+  getAuthenticatedToken(req, res)
+    .then(() => {
+      const serviceAccountToken = getServiceAccountToken()
+      jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken)
+        .then(async (response: APIPathResponse) => {
           const apiResourceLists = await Promise.allSettled(
             response.paths
               .filter((path) => {
@@ -53,18 +53,13 @@ export async function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse
               })
           )
           // return apiResourceLists
-          return buildPathObject(apiResourceLists)
-        }
-      )
-
-      res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify(paths))
-    } catch (err) {
-      logger.error(err)
-      console.log(err)
-      respondInternalServerError(req, res)
-    }
-  }
+          const paths = buildPathObject(apiResourceLists)
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(paths))
+        })
+        .catch(errorCatcher)
+    })
+    .catch(errorCatcher)
 }
 
 function buildPathObject(apiResourcePathResponse: PromiseSettledResult<APIResourcePathResponse>[]) {

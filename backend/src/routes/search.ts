@@ -7,7 +7,7 @@ import { logger } from '../lib/logger'
 import { notFound } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
-import { getNamespace, getServiceCACertificate } from './serviceAccountToken'
+import { getNamespace, getServiceCACertificate } from '../lib/serviceAccountToken'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -51,7 +51,11 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
         res.writeHead(response.statusCode, response.headers)
         pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
       }),
-      () => logger.error
+      (err) => {
+        if (err) {
+          logger.error(err)
+        }
+      }
     )
   }
 }
