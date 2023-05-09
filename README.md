@@ -25,7 +25,8 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
 ```
-main → release-2.8 → backplane-2.3
+main → release-2.9 → backplane-2.4
+     ↳ release-2.8 → backplane-2.3
 release-2.7 → backplane-2.2
 release-2.6 → backplane-2.1
 release-2.5
