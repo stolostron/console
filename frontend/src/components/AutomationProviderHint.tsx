@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, AlertVariant, Button, Hint, HintBody, HintFooter } from '@patternfly/react-core'
 import { useRecoilValue, useSharedSelectors } from '../shared-recoil'
 import { useTranslation } from '../lib/acm-i18next'
-import { Link } from 'react-router-dom'
 import { coerce, gte } from 'semver'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { OperatorAlert } from './OperatorAlert'
 
 const WORKFLOW_SUPPORT_VERSION = '2.2.1'
 
@@ -18,9 +16,6 @@ export function AutomationProviderHint(props: {
   /** Indicates whether to show an upgrade notice if installed operator version does not support workflow job templates.
    * If not defined, defaults to true when any automation template uses workflow job templates. */
   workflowSupportRequired?: boolean
-  notAnsible?: boolean
-  message?: string
-  operatorName?: string
 }) {
   const { ansibleOperatorSubscriptionsValue, clusterCuratorSupportedCurationsValue, clusterCuratorTemplatesValue } =
     useSharedSelectors()
@@ -36,18 +31,8 @@ export function AutomationProviderHint(props: {
     )
   )
 
-  const {
-    component,
-    className,
-    operatorNotRequired,
-    workflowSupportRequired = workflowJobTemplatesInUse,
-    notAnsible,
-    operatorName = 'ansible+automation+platform',
-  } = props
-  let showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
-  if (notAnsible) {
-    showInstallPrompt = !operatorNotRequired
-  }
+  const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
+  const showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
   const showUpgradePrompt =
     !!ansibleOperators.length &&
     workflowSupportRequired &&
@@ -62,43 +47,16 @@ export function AutomationProviderHint(props: {
     })
 
   const { t } = useTranslation()
-
-  const title = showInstallPrompt ? t('Operator required') : t('Operator upgrade required')
-  let message = ''
-  if (showInstallPrompt) {
-    if (props.message) {
-      message = props.message
-    } else {
-      message = t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
-    }
-  } else {
-    message = t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
-  }
-
-  const linkTarget = showInstallPrompt
-    ? `/operatorhub/all-namespaces?keyword=${operatorName}`
-    : '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'
-  const link = (
-    <Link to={linkTarget} target={'_blank'}>
-      <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
-        {showInstallPrompt ? t('Install the operator') : t('View installed operators')}
-      </Button>
-    </Link>
-  )
+  const message = showInstallPrompt
+    ? t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
+    : t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  const operatorName = 'Ansible Automation Platform'
 
   return (
     <>
-      {(showInstallPrompt || showUpgradePrompt) &&
-        (component === 'hint' ? (
-          <Hint className={className}>
-            <HintBody>{message}</HintBody>
-            <HintFooter>{link}</HintFooter>
-          </Hint>
-        ) : (
-          <Alert className={className} isInline title={title} actionLinks={link} variant={AlertVariant.danger}>
-            {message}
-          </Alert>
-        ))}
+      {(showInstallPrompt || showUpgradePrompt) && (
+        <OperatorAlert {...{ component, message, operatorName, className }} isUpgrade={showUpgradePrompt} />
+      )}
     </>
   )
 }

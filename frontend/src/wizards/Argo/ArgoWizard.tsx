@@ -44,11 +44,11 @@ import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
-import { AutomationProviderHint } from '../../components/AutomationProviderHint'
 import { useRecoilValue, useSharedSelectors } from '../../shared-recoil'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { CreateArgoResources } from './CreateArgoResources'
 import { GitOpsCluster } from '../../resources'
+import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 
 interface Channel {
   metadata?: {
@@ -331,13 +331,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             suffix="-{{name}}"
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <AutomationProviderHint
-              component="alert"
-              operatorNotRequired={hideInstallPrompt}
-              notAnsible={true}
-              message={t('OpenShift GitOps Operator is required to create ApplicationSets.')}
-              operatorName={'Red+Hat+OpenShift+GitOps'}
-            />
+            <GitOpsOperatorAlert showAlert={!hideInstallPrompt} />
             <Section label={t('General')}>
               <WizTextInput
                 path="metadata.name"
