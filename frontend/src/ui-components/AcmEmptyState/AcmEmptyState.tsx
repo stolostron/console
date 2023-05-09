@@ -3,8 +3,9 @@
 import { EmptyState, EmptyStateBody, EmptyStatePrimary, EmptyStateVariant, Title } from '@patternfly/react-core'
 import { ReactNode } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import emptyPagePng from '../assets/EmptyPageIcon.png'
+import { emptyPagePng as emptyPageLightPng } from '../assets/EmptyPageIcon.png'
 import emptyTablePng from '../assets/EmptyTableIcon.png'
+import emptyPageDarkModePng from '../assets/EmptyPageIconDarkMode.png'
 import Folder from '../assets/Folder.png'
 
 export enum AcmEmptyStateImage {
@@ -19,6 +20,8 @@ export function AcmEmptyState(props: {
   image?: AcmEmptyStateImage
   isEmptyTableState?: boolean
 }) {
+  const theme = localStorage.getItem('theme')
+  const emptyPagePng = theme === 'light' ? emptyPageLightPng : emptyPageDarkModePng
   const { t } = useTranslation()
   return (
     <EmptyState variant={EmptyStateVariant.large}>
