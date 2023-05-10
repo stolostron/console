@@ -442,7 +442,7 @@ const getResource = (url: any, reqBody: any) => {
   if (isSearch) {
     kind = 'search'
   } else {
-    if (isLocalhost && !url.endsWith('apiPaths')) {
+    if (isLocalhost && !(url.endsWith('apiPaths') || url.endsWith('operatorCheck'))) {
       url = url.split('?')[0] // strip any queries
       const [, rest] = url.split('/api') //assume they're all api calls
       const parts = rest.split('/')

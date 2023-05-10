@@ -17,7 +17,8 @@ export enum SupportedOperator {
 type OperatorCheckRequest = {
   operator: SupportedOperator
 }
-type OperatorCheckResponse = {
+
+export type OperatorCheckResponse = {
   operator: SupportedOperator
   installed: boolean
   version?: string

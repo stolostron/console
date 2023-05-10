@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../../../atoms'
+import { nockIgnoreOperatorCheck } from '../../../lib/nock-util'
 
 const mockGetwizardsynceditor = jest.fn()
 const mockCreatecredentialscallback = jest.fn()
@@ -30,6 +31,7 @@ describe('PolicyAutomationWizard tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    nockIgnoreOperatorCheck()
   })
 
   test('create policy automation', async () => {

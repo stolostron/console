@@ -3,7 +3,13 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockIgnoreRBAC, nockAnsibleTower, nockCreate, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import {
+  nockIgnoreRBAC,
+  nockAnsibleTower,
+  nockCreate,
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+} from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicyAutomation } from './CreatePolicyAutomation'
@@ -46,6 +52,7 @@ describe('Create Policy Automation Wizard', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck(true)
   })
 
   test('can create policy automation', async () => {
@@ -87,7 +94,7 @@ describe('Create Policy Automation Wizard', () => {
 
   test('render warning when Ansible operator is not installed', async () => {
     render(<CreatePolicyAutomationTest configMaps={[mockOpenShiftConsoleConfigMap]} />)
-    waitForText('The Ansible Automation Platform Operator is required to use automation templates.')
+    await waitForText('The Ansible Automation Platform Operator is required to use policy automations.')
     screen
       .getByRole('button', {
         name: /Install the operator/i,

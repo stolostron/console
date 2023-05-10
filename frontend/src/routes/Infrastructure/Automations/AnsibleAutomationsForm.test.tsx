@@ -27,6 +27,7 @@ import {
   nockAnsibleTowerInventory,
   nockCreate,
   nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
 } from '../../../lib/nock-util'
 import {
@@ -196,6 +197,7 @@ describe('add automation template page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck(true)
   })
 
   it('should create a curator template', async () => {
@@ -381,7 +383,9 @@ describe('add automation template page', () => {
 
   it('should render warning when Ansible operator is not installed', async () => {
     render(<AddAnsibleTemplateTest />)
-    waitForText('The Ansible Automation Platform Operator is required to use automation templates.')
+    await waitForText(
+      'The Ansible Automation Platform Operator is required to use automation templates. Version 2.2.1 or greater is required to use workflow job templates.'
+    )
   })
 
   it('should not render warning when Ansible operator is installed', async () => {

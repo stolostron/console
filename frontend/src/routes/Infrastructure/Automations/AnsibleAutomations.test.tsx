@@ -16,7 +16,13 @@ import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { mockBadRequestStatus, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import {
+  mockBadRequestStatus,
+  nockDelete,
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+  nockIgnoreRBAC,
+} from '../../../lib/nock-util'
 import {
   clickBulkAction,
   clickByLabel,
@@ -177,10 +183,11 @@ function EmptyStateAutomationPage(props: { providerConnections: ProviderConnecti
   )
 }
 
-describe('automation page', () => {
+describe('Automations page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
   })
 
   test('should render emptyState', async () => {
@@ -248,14 +255,17 @@ describe('automation page', () => {
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })
-
+})
+describe('Automations page - operator checking', () => {
   test('should render hint when ansible operator is not installed', async () => {
+    nockIgnoreOperatorCheck(true)
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator1.metadata!.name!)
     await waitForText('Install the operator')
   })
 
   test('should not render hint when ansible operator is installed', async () => {
+    nockIgnoreOperatorCheck()
     render(
       <TestIntegrationPage
         providerConnections={mockProviderConnections}
