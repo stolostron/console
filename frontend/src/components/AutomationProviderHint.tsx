@@ -3,6 +3,7 @@ import { useRecoilValue, useSharedSelectors } from '../shared-recoil'
 import { useTranslation } from '../lib/acm-i18next'
 import { coerce, gte } from 'semver'
 import { OperatorAlert } from './OperatorAlert'
+import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 
 const WORKFLOW_SUPPORT_VERSION = '2.2.1'
 
@@ -19,7 +20,7 @@ export function AutomationProviderHint(props: {
 }) {
   const { ansibleOperatorSubscriptionsValue, clusterCuratorSupportedCurationsValue, clusterCuratorTemplatesValue } =
     useSharedSelectors()
-  const ansibleOperators = useRecoilValue(ansibleOperatorSubscriptionsValue)
+  const ansibleOperator = useOperatorCheck(SupportedOperator.ansible, ansibleOperatorSubscriptionsValue)
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const clusterCuratorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
 
@@ -32,19 +33,16 @@ export function AutomationProviderHint(props: {
   )
 
   const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
-  const showInstallPrompt = !(ansibleOperators.length || operatorNotRequired)
+  const showInstallPrompt = !(ansibleOperator.installed || operatorNotRequired)
+  let workflowSupported = false
+  try {
+    const version = coerce(ansibleOperator.version)
+    workflowSupported = !!(version && gte(version, WORKFLOW_SUPPORT_VERSION))
+  } catch (err) {
+    // assume too old; workflow job templates not supported
+  }
   const showUpgradePrompt =
-    !!ansibleOperators.length &&
-    workflowSupportRequired &&
-    !showInstallPrompt &&
-    !ansibleOperators.some((operator) => {
-      try {
-        const version = coerce(operator?.status?.installedCSV)
-        return version && gte(version, WORKFLOW_SUPPORT_VERSION)
-      } catch (err) {
-        return false // assume too old
-      }
-    })
+    ansibleOperator.installed && workflowSupportRequired && !showInstallPrompt && !workflowSupported
 
   const { t } = useTranslation()
   const message = showInstallPrompt
@@ -54,7 +52,7 @@ export function AutomationProviderHint(props: {
 
   return (
     <>
-      {(showInstallPrompt || showUpgradePrompt) && (
+      {!ansibleOperator.pending && (showInstallPrompt || showUpgradePrompt) && (
         <OperatorAlert {...{ component, message, operatorName, className }} isUpgrade={showUpgradePrompt} />
       )}
     </>

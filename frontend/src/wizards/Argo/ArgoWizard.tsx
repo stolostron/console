@@ -44,11 +44,12 @@ import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
-import { useRecoilValue, useSharedSelectors } from '../../shared-recoil'
+import { useSharedSelectors } from '../../shared-recoil'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { CreateArgoResources } from './CreateArgoResources'
 import { GitOpsCluster } from '../../resources'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
+import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 
 interface Channel {
   metadata?: {
@@ -195,8 +196,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const editMode = useEditMode()
 
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
-  const gitOpsOperators = useRecoilValue(gitOpsOperatorSubscriptionsValue)
-  const hideInstallPrompt = gitOpsOperators.length > 0
+  const gitOpsOperator = useOperatorCheck(SupportedOperator.gitOps, gitOpsOperatorSubscriptionsValue)
+  const showAlert = !gitOpsOperator.pending && !gitOpsOperator.installed
+  const disableForm = gitOpsOperator.pending || !gitOpsOperator.installed
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const handleModalToggle = () => {
@@ -331,7 +333,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             suffix="-{{name}}"
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <GitOpsOperatorAlert showAlert={!hideInstallPrompt} />
+            <GitOpsOperatorAlert showAlert={showAlert} />
             <Section label={t('General')}>
               <WizTextInput
                 path="metadata.name"
@@ -340,14 +342,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 required
                 id="name"
                 validation={validateAppSetName}
-                disabled={!hideInstallPrompt}
+                disabled={disableForm}
               />
               <Select
                 id="namespace"
                 path="metadata.namespace"
                 label={t('Argo server')}
                 placeholder={t('Select the Argo server')}
-                disabled={!hideInstallPrompt}
+                disabled={disableForm}
                 labelHelp={
                   <Fragment>
                     <Text>{t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}</Text>
@@ -402,7 +404,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 options={requeueTimes}
                 labelHelp={t('Cluster decision resource requeue time in seconds')}
                 required
-                disabled={!hideInstallPrompt}
+                disabled={disableForm}
               />
             </Section>
           </WizItemSelector>
