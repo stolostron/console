@@ -55,7 +55,7 @@ export function useOperatorCheck(
 
   const queryFunc = useCallback(() => {
     if (installed) {
-      return { promise: new Promise<OperatorCheckResponse>((resolve) => resolve(defaultResponse)), abort: () => {} }
+      return { promise: Promise.resolve(defaultResponse), abort: () => {} }
     } else {
       return operatorCheck(operator)
     }
@@ -66,7 +66,7 @@ export function useOperatorCheck(
   useEffect(() => {
     startPolling()
     return () => {
-      stopPolling
+      stopPolling()
     }
   }, [startPolling, stopPolling])
   return { ...(data?.[0] ?? defaultResponse), pending: !installed && loading }
