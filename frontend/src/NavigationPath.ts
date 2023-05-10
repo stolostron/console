@@ -6,6 +6,8 @@ import { generatePath } from 'react-router'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Cluster } from './resources'
 
+export const UNKNOWN_NAMESPACE = '~managed-cluster'
+
 export const getClusterNavPath = (
   navPath:
     | NavigationPath.editCluster
@@ -18,7 +20,7 @@ export const getClusterNavPath = (
 ) =>
   generatePath(navPath, {
     name: cluster.name,
-    namespace: (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) || '~managed-cluster',
+    namespace: (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) || UNKNOWN_NAMESPACE,
   })
 
 export enum NavigationPath {

@@ -26,7 +26,7 @@ import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
   ClusterCurator,
   ClusterCuratorDefinition,
@@ -405,7 +405,7 @@ export default function ImportClusterPage() {
               history.push(
                 generatePath(NavigationPath.clusterDetails, {
                   name: state.clusterName,
-                  namespace: '~managed-cluster',
+                  namespace: UNKNOWN_NAMESPACE,
                 })
               )
             }, 2000)
