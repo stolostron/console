@@ -28,25 +28,31 @@ export async function request(
   if (body) {
     headers[constants.HTTP2_HEADER_CONTENT_TYPE] = 'application/json'
   }
-  const req = new Http2ServerRequest(stream as ServerHttp2Stream, headers, {}, [])
-  const res = mockResponse()
-  const result = requestHandler(req, res)
+
+  const result = new Promise<Http2ServerResponse>((resolve) => {
+    const req = new Http2ServerRequest(stream as ServerHttp2Stream, headers, {}, [])
+    const res = mockResponse(resolve)
+    void requestHandler(req, res)
+  })
+
   if (body) {
     stream.write(Buffer.from(JSON.stringify(body)))
-    stream.end()
   }
-  await result
-  return res
+  stream.end()
+
+  return result
 }
 
-export function mockResponse(): Http2ServerResponse {
+export function mockResponse(resolve: (value: Http2ServerResponse) => void): Http2ServerResponse {
   const stream = createReadWriteStream() as ServerHttp2Stream
   const res = new Http2ServerResponse(stream)
   stream.respond = (headers?: OutgoingHttpHeaders, _options?: ServerStreamResponseOptions) => {
     if (headers) {
       res.statusCode = Number(headers[constants.HTTP2_HEADER_STATUS])
     }
+    resolve(res)
   }
+  setTimeout(() => resolve(res), 2000) // time out after 2 seconds
   return res
 }
 

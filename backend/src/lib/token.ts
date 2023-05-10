@@ -39,5 +39,5 @@ export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2S
   } else {
     unauthorized(req, res)
   }
-  return undefined
+  throw new Error('Unauthenticated request')
 }

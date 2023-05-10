@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'fs'
 import { rootCertificates } from 'tls'
-import { logger } from '../lib/logger'
+import { logger } from './logger'
 
 function readServiceAccountFile(name: string, defaultValue: string, exitOnError?: boolean): string {
   let serviceAccountValue: string
@@ -14,7 +14,7 @@ function readServiceAccountFile(name: string, defaultValue: string, exitOnError?
     if (!serviceAccountValue) {
       const msg = `Error reading service account ${name}`
       if (err instanceof Error) {
-        logger.error(msg, err && err.message)
+        logger.error(msg, err?.message)
       } else {
         logger.error({ msg, err })
       }

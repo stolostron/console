@@ -6,7 +6,7 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
-import { getCACertificate } from './serviceAccountToken'
+import { getCACertificate } from '../lib/serviceAccountToken'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
