@@ -52,11 +52,11 @@ describe('Infrastructure Environment Details page', () => {
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
     render(<Component />)
-    await waitForText('ai:Environment details')
+    await waitForText('ai:Infrastructure environment details')
     await waitForNocks(initialNocks)
 
     // The Overview tab
-    await waitForText('ai:Infrastructure Environment name')
+    await waitForText('ai:Name')
 
     // Open discovery ISO dialog
     await clickHostAction('ai:With Discovery ISO')
