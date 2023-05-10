@@ -106,12 +106,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       }
     >
       <Step label={t('Automation')} id="automation-step">
-        <AutomationProviderHint
-          component="alert"
-          workflowSupportRequired={
-            false /* TODO: remove workflowSupportRequired attribute once GRC supports workflow templates */
-          }
-        />
+        <AutomationProviderHint component="alert" policyAutomation />
         <Section label={t('Policy automation')}>
           {alert && (
             <WizDetailsHidden>

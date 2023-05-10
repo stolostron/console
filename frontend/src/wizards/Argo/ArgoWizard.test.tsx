@@ -8,7 +8,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
-import { nockIgnoreApiPaths } from '../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
 import { GitOpsClusterApiVersion, GitOpsClusterKind } from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
@@ -46,6 +46,7 @@ describe('ArgoWizard tests', () => {
   })
 
   test('should have danger alert', async () => {
+    nockIgnoreOperatorCheck(true)
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>

@@ -13,6 +13,7 @@ import {
   SubscriptionOperatorKind,
 } from '../resources'
 import { AutomationProviderHint } from './AutomationProviderHint'
+import { nockIgnoreOperatorCheck } from '../lib/nock-util'
 
 const automationTemplate: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
@@ -136,6 +137,9 @@ function WrappedAutomationProviderHint(props: {
 }
 
 describe('AutomationProviderHint', () => {
+  beforeEach(() => {
+    nockIgnoreOperatorCheck(true)
+  })
   it('displays install alert when operator not installed', async () => {
     render(<WrappedAutomationProviderHint componentProps={{ component: 'alert' }} />)
     await waitForText('Operator required')

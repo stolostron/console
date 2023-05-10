@@ -39,7 +39,13 @@ import {
   settingsState,
   subscriptionOperatorsState,
 } from '../../../../../atoms'
-import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
+import {
+  nockCreate,
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+  nockIgnoreRBAC,
+  nockList,
+} from '../../../../../lib/nock-util'
 import {
   clickByPlaceholderText,
   clickByRole,
@@ -668,6 +674,7 @@ describe('CreateCluster AWS', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
   })
 
   test('can create AWS cluster without ansible template', async () => {
@@ -705,7 +712,6 @@ describe('CreateCluster AWS', () => {
     await clickByText('Next')
 
     // step 6 -- automation
-    await waitForText('Install the operator')
     await clickByPlaceholderText('Select an automation template')
     await clickByText(mockClusterCurators[0].metadata.name!)
 
@@ -980,6 +986,7 @@ describe('CreateCluster on premise', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
   })
 
   test(

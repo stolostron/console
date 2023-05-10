@@ -8,7 +8,7 @@ import { catchInternalServerError, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
-enum SupportedOperator {
+export enum SupportedOperator {
   ansible = 'ansible-automation-platform-operator',
   gitOps = 'openshift-gitops-operator',
 }

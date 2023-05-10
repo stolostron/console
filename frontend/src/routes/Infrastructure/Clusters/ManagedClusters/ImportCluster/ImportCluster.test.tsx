@@ -47,6 +47,7 @@ import {
   nockCreate,
   nockGet,
   nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
 } from '../../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
@@ -412,6 +413,7 @@ describe('ImportCluster', () => {
     window.sessionStorage.clear()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck(true)
   })
 
   test('can create resources and generate the import command', async () => {
@@ -648,6 +650,7 @@ describe('Import Discovered Cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
   })
   window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
   const Component = () => {

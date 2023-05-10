@@ -23,6 +23,7 @@ import {
 import { AnsibleTowerInventoryList } from '../resources/ansible-inventory'
 import { APIResourceNames } from './api-resource-list'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
+import { OperatorCheckResponse, SupportedOperator } from './operatorCheck'
 
 export type ISearchRelatedResult = {
   data: {
@@ -374,12 +375,19 @@ export function nockAnsibleTowerError(data: AnsibleCredentialPostBody | unknown,
 }
 
 export function nockIgnoreApiPaths() {
-  const scope = nocked(process.env.JEST_DEFAULT_HOST as string)
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
     .persist()
     .get('/apiPaths')
     .optionally()
     .reply(200, mockApiPathList)
-  return scope
+}
+
+export function nockIgnoreOperatorCheck(noAnsible?: boolean) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/operatorCheck')
+    .optionally()
+    .reply(200, noAnsible ? mockOperatorCheckResponseNoAnsible : mockOperatorCheckResponse)
 }
 
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
@@ -609,4 +617,15 @@ const mockApiPathList: APIResourceNames = {
       pluralName: 'applications',
     },
   },
+}
+
+const mockOperatorCheckResponse: OperatorCheckResponse = {
+  operator: SupportedOperator.ansible,
+  installed: true,
+  version: 'aap-operator.v2.3.0-0.1681368991',
+}
+
+const mockOperatorCheckResponseNoAnsible: OperatorCheckResponse = {
+  operator: SupportedOperator.ansible,
+  installed: false,
 }
