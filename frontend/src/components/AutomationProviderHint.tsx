@@ -11,6 +11,9 @@ export function AutomationProviderHint(props: {
   component: 'hint' | 'alert'
   className?: string
   /**
+   * Indicates the hint is being used for policy automation rather than automation templates. */
+  policyAutomation?: boolean
+  /**
    * Indicates no hint is required when the operator is not installed, but an upgrade hint may be displayed if workflow support is required and not met.
    * Useful if a hint is already visible but the user is about to add an automation template that requires workflow job templates. */
   operatorNotRequired?: boolean
@@ -32,7 +35,13 @@ export function AutomationProviderHint(props: {
     )
   )
 
-  const { component, className, operatorNotRequired, workflowSupportRequired = workflowJobTemplatesInUse } = props
+  const {
+    component,
+    className,
+    policyAutomation,
+    operatorNotRequired,
+    workflowSupportRequired = !policyAutomation && workflowJobTemplatesInUse,
+  } = props
   const showInstallPrompt = !(ansibleOperator.installed || operatorNotRequired)
   let workflowSupported = false
   try {
@@ -45,9 +54,15 @@ export function AutomationProviderHint(props: {
     ansibleOperator.installed && workflowSupportRequired && !showInstallPrompt && !workflowSupported
 
   const { t } = useTranslation()
-  const message = showInstallPrompt
-    ? t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
-    : t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  let message = ''
+
+  if (showInstallPrompt) {
+    message = policyAutomation
+      ? t('ansible.operator.requirements.policy', { version: WORKFLOW_SUPPORT_VERSION })
+      : t('ansible.operator.requirements', { version: WORKFLOW_SUPPORT_VERSION })
+  } else if (showUpgradePrompt) {
+    message = t('ansible.operator.requirements.workflow', { version: WORKFLOW_SUPPORT_VERSION })
+  }
   const operatorName = 'Ansible Automation Platform'
 
   return (

@@ -174,12 +174,7 @@ export function AutomationDetailsSidebar(props: {
   return (
     <div>
       <BulkActionModal<PolicyAutomation> {...modalProps} />
-      <AutomationProviderHint
-        component="alert"
-        workflowSupportRequired={
-          false /* TODO: remove workflowSupportRequired attribute once GRC supports workflow templates */
-        }
-      />
+      <AutomationProviderHint component="alert" policyAutomation />
       <Stack hasGutter>
         <DescriptionList>
           <DescriptionListGroup>
