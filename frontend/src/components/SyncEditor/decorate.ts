@@ -5,6 +5,18 @@ import { ErrorType } from './validation'
 const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
+
+interface Decoration {
+  id: string
+  options: {
+    inlineClassName: string
+    glyphMarginClassName: string
+    linesDecorationsClassName: string
+    className: string
+    description: string
+  }
+}
+
 export const decorate = (
   isCustomEdit: boolean,
   editorHasFocus: boolean,
@@ -16,7 +28,7 @@ export const decorate = (
     parsed: { [name: string]: any[] }
     mappings: { [name: string]: any[] }
   },
-  userEdits: any[],
+  preservedUserEdits: any[],
   protectedRanges: any[],
   filteredRows: number[]
 ) => {
@@ -30,8 +42,8 @@ export const decorate = (
   addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
 
   // if form is making changes, layer any editor changes decorations on top of form changes
-  if (userEdits.length) {
-    addChangeDecorations(true, monacoRef, userEdits, change, decorations)
+  if (preservedUserEdits.length) {
+    addChangeDecorations(true, monacoRef, preservedUserEdits, change, decorations)
   }
 
   // add protected decorations
@@ -160,7 +172,7 @@ const addChangeDecorations = (
           description: 'resource-editor',
         },
       })
-      if ($f != null && $f.toString().length < 32 && !obj.$s) {
+      if ($f != null && $f.toString().length < 132 && !obj.$s) {
         decorations.push({
           range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
           options: {
@@ -178,21 +190,16 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
   // areas are so only previous decorations do
   const model = editorRef.current?.getModel()
-  return model
-    ? model.getAllDecorations().filter(
-        (decoration: {
-          options: {
-            inlineClassName: string
-            glyphMarginClassName: string
-            className: string
-            description: string
-          }
-        }) =>
-          decoration?.options?.className?.startsWith('squiggly-') ||
-          (!!decoration?.options?.glyphMarginClassName &&
-            (decoration?.options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
-      )
-    : []
+  let decorations: Decoration[] = model ? model.getAllDecorations() : []
+  decorations = decorations.filter(({ options }) => {
+    return (
+      options?.className?.startsWith('squiggly-') ||
+      ['customLineDecoration', 'insertedLineDecoration'].includes(options?.linesDecorationsClassName) ||
+      (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
+    )
+  })
+  // these are the handles that are removed before adding new decorators
+  return decorations
 }
 
 const scrollToChangeDecoration = (editorRef: any, errors: any[], decorations: any[]) => {
