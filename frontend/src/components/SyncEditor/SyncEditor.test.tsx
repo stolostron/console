@@ -38,7 +38,6 @@ describe('SyncEditor component', () => {
     // case 'validateName':
     // case 'validateDep':
     // case 'validateLabel':
-    // case 'validateTemplateName':
     // case 'enum':
     // case 'type':
 
@@ -53,7 +52,6 @@ describe('SyncEditor component', () => {
           enumTest: 'xst', // enum test -- must be ['ost', 'vmw']
           typeTest: 3, //type test--must be string
           validateLabelTest: '1234567890123456789012345678901234567890123456789012345678901234567890', //validateLabel--must be less then 63 chars
-          validateTemplateNameTest: '{name}}', //validateTemplateName--must be "{{name}}"
           kind: 'IamPolicy', // 'validateDep' --IamPolicy cannot have namespace
           patternTest: 'abcd', // must match pattern
           immutableTest: 1234, // sematxci errors ignored on immutable lines
@@ -95,9 +93,6 @@ describe('SyncEditor component', () => {
             },
             patternTest: {
               pattern: '[%d] [%p] [application-ui] [%c] %m',
-            },
-            validateTemplateNameTest: {
-              validateTemplateName: true,
             },
           },
           validateDep: true,
@@ -1316,7 +1311,7 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 14,
+      endLineNumber: 13,
       endColumn: 1,
       startLineNumber: 4,
       startColumn: 3,
@@ -1487,9 +1482,9 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 12,
+      endLineNumber: 11,
       endColumn: 132,
-      startLineNumber: 12,
+      startLineNumber: 11,
       startColumn: 0,
     },
     options: {
@@ -1505,45 +1500,18 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 12,
+      endLineNumber: 11,
       endColumn: 20,
-      startLineNumber: 12,
+      startLineNumber: 11,
       startColumn: 16,
     },
     options: { className: 'squiggly-error' },
   },
   {
     range: {
-      endLineNumber: 10,
+      endLineNumber: 12,
       endColumn: 132,
-      startLineNumber: 10,
-      startColumn: 0,
-    },
-    options: {
-      isWholeLine: true,
-      glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
-      glyphMarginHoverMessage: {
-        value: '```html\n' + 'If this is a template name, it must be in the form "{{ name }}" \n' + '```',
-      },
-      description: 'resource-editor',
-    },
-  },
-  {
-    range: {
-      endLineNumber: 10,
-      endColumn: 38,
-      startLineNumber: 10,
-      startColumn: 29,
-    },
-    options: { className: 'squiggly-error' },
-  },
-  {
-    range: {
-      endLineNumber: 13,
-      endColumn: 132,
-      startLineNumber: 13,
+      startLineNumber: 12,
       startColumn: 1,
     },
     options: {

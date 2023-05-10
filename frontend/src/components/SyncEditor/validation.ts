@@ -3,6 +3,7 @@ import Ajv from 'ajv'
 import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep } from 'lodash'
 import { getPathArray } from './synchronize'
+import { MappingType } from './process'
 
 export enum ErrorType {
   error = 'error',
@@ -12,8 +13,8 @@ export enum ErrorType {
 
 export interface ErrorMessageType {
   linePos: {
-    end: { line: 1; col: 1 }
-    start: { line: 1; col: 1 }
+    end: { line: number; col: number }
+    start: { line: number; col: number }
   }
   message: string
   errorType?: ErrorType
@@ -255,11 +256,6 @@ export function validateResource(
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
-            case 'validateTemplateName':
-              errorMsg.message = 'If this is a template name, it must be in the form "{{ name }}"'
-              errorMsg.linePos.start.col = mapping.$gv.start.col
-              errorMsg.linePos.end.col = mapping.$gv.end.col
-              break
             // validateDep
             case 'validateDep':
               errorMsg.message =
@@ -304,6 +300,35 @@ export function validateResource(
         }
       }
     })
+  }
+  validateTemplateSyntax(mappings, errors)
+}
+
+export const validateTemplateSyntax = (object: any, errors: any[]) => {
+  if (object) {
+    object = (object.$v !== undefined ? object.$v : object) as { [name: string]: any | any[] }
+    if (Array.isArray(object)) {
+      object.forEach((o) => {
+        validateTemplateSyntax(o, errors)
+      })
+    } else if (!!object && typeof object === 'object') {
+      Object.values(object).forEach((o) => {
+        const obj = o as unknown as MappingType
+        if (obj && obj.$v !== undefined && Object.keys(obj.$v)[0] === 'undefined') {
+          const errorMsg: ErrorMessageType = {
+            linePos: {
+              end: { line: obj.$r, col: obj.$gv.end.col },
+              start: { line: obj.$r, col: obj.$gv.start.col },
+            },
+            errorType: ErrorType.error,
+            message: 'If this is a template name, it must be in the form "{{ name }}"',
+          }
+          errors.push(errorMsg)
+        } else {
+          validateTemplateSyntax(o, errors)
+        }
+      })
+    }
   }
 }
 
