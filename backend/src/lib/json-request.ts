@@ -9,10 +9,10 @@ const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCE
 
 const agent = new Agent({ rejectUnauthorized: false })
 
-export function jsonRequest<T>(url: string, token?: string): Promise<T> {
+export function jsonRequest<T>(url: string, token?: string, retry?: number): Promise<T> {
   const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: 'application/json' }
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
-  return fetchRetry(url, { headers, agent, compress: true }).then(
+  return fetchRetry(url, { headers, agent, compress: true }, retry).then(
     (response) => response.json() as unknown as Promise<T>
   )
 }

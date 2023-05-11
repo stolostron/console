@@ -49,7 +49,11 @@ export function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): voi
                 )
               })
               .map(async (path) => {
-                return jsonRequest<APIResourcePathResponse>(process.env.CLUSTER_API_URL + path, serviceAccountToken)
+                return jsonRequest<APIResourcePathResponse>(
+                  process.env.CLUSTER_API_URL + path,
+                  serviceAccountToken,
+                  1 // Limit to 1 retry for misbehaving APIServices
+                )
               })
           )
           // return apiResourceLists
