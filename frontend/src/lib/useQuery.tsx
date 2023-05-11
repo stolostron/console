@@ -82,6 +82,10 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
         })
       return () => {
         requestResult.abort()
+        if (dataRef.current.timeout) {
+          clearTimeout(dataRef.current.timeout)
+          dataRef.current.timeout = undefined
+        }
       }
     },
     [restFunc]
