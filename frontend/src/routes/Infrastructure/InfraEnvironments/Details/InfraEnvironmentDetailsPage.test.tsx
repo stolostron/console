@@ -2,7 +2,6 @@
 import { render } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
@@ -13,8 +12,9 @@ import { IResource } from '../../../../resources/resource'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
 import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
+import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 
-const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
+const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
 
 // This will be changed after MGMT-7255
 const mockInfraEnvRegeneratedISO = cloneDeep(mockInfraEnv1)
@@ -52,11 +52,11 @@ describe('Infrastructure Environment Details page', () => {
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
     render(<Component />)
-    await waitForText('ai:Environment details')
+    await waitForText('ai:Infrastructure environment details')
     await waitForNocks(initialNocks)
 
     // The Overview tab
-    await waitForText('ai:Infrastructure Environment name')
+    await waitForText('ai:Name')
 
     // Open discovery ISO dialog
     await clickHostAction('ai:With Discovery ISO')

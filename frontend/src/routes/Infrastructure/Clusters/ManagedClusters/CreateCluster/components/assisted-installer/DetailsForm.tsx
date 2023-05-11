@@ -2,7 +2,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
 import { FormikProps } from 'formik'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 // eslint-disable-next-line
 import { TFunction } from 'react-i18next'
@@ -17,19 +16,20 @@ import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from 
 import { getValue } from '../../../../../../../components/TemplateEditor'
 import { AcmKubernetesLabelsInput, AcmSelect } from '../../../../../../../ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
-
-const {
+import {
   ACMClusterDeploymentDetailsStep,
-  FeatureGateContextProvider,
   ACMFeatureSupportLevelProvider,
   ACM_ENABLED_FEATURES,
-  labelsToArray,
+  ClusterDetailsValues,
+  ClusterImageSetK8sResource,
+  FeatureGateContextProvider,
   LoadingState,
   getVersionFromReleaseImage,
-} = CIM
+  labelsToArray,
+} from '@openshift-assisted/ui-lib/cim'
 
 type FormControl = {
-  active: CIM.ClusterDetailsValues & {
+  active: ClusterDetailsValues & {
     managedClusterSet?: string
     additionalLabels?: {
       [x: string]: string
@@ -37,7 +37,7 @@ type FormControl = {
     sshPublicKey?: string
   }
   disabled?: VoidFunction
-  reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
+  reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
   validate?: VoidFunction
   summary?: VoidFunction
   step?: any
@@ -263,11 +263,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
   return clusterImages ? (
     <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-      <ACMFeatureSupportLevelProvider clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}>
+      <ACMFeatureSupportLevelProvider clusterImages={clusterImages as ClusterImageSetK8sResource[]}>
         <ACMClusterDeploymentDetailsStep
           formRef={formRef}
           onValuesChanged={onValuesChanged}
-          clusterImages={clusterImages as CIM.ClusterImageSetK8sResource[]}
+          clusterImages={clusterImages as ClusterImageSetK8sResource[]}
           usedClusterNames={usedClusterNames}
           extensionAfter={extensionAfter}
         />

@@ -1,8 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { AgentServiceConfigK8sResource } from 'openshift-assisted-ui-lib/cim'
+import {
+  AgentK8sResource,
+  AgentServiceConfigK8sResource,
+  InfraEnvK8sResource,
+  SecretK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
@@ -20,7 +24,7 @@ import InfraEnvironmentsPage, {
 
 export const infraEnvName = 'infra-env-name'
 
-export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
+export const mockInfraEnv1: InfraEnvK8sResource = {
   apiVersion: 'agent-install.openshift.io/v1beta1',
   kind: 'InfraEnv',
   metadata: {
@@ -59,7 +63,7 @@ export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
   },
 }
 
-const mockAgent1: CIM.AgentK8sResource = {
+const mockAgent1: AgentK8sResource = {
   apiVersion: 'agent-install.openshift.io/v1beta1',
   kind: 'Agent',
   metadata: {
@@ -76,7 +80,7 @@ const mockAgent1: CIM.AgentK8sResource = {
   },
 }
 
-const mockAgent2: CIM.AgentK8sResource = {
+const mockAgent2: AgentK8sResource = {
   apiVersion: 'agent-install.openshift.io/v1beta1',
   kind: 'Agent',
   metadata: {
@@ -93,7 +97,7 @@ const mockAgent2: CIM.AgentK8sResource = {
   },
 }
 
-export const mockPullSecret: CIM.SecretK8sResource = {
+export const mockPullSecret: SecretK8sResource = {
   apiVersion: 'v1',
   kind: 'Secret',
   metadata: {
@@ -108,7 +112,7 @@ export const mockPullSecret: CIM.SecretK8sResource = {
   type: 'kubernetes.io/dockerconfigjson',
 }
 
-const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
+const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
 
 const Component = () => {
   return (

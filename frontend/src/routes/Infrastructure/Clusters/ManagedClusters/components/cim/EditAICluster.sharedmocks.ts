@@ -1,15 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
+import {
+  AgentClusterInstallK8sResource,
+  AgentK8sResource,
+  ClusterDeploymentK8sResource,
+  InfraEnvK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 
 import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../../resources'
 
 export const clusterName = 'my-cluster-name'
 export const baseDomain = 'base.domain.com'
 
-export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
+export const mockInfraEnv1: InfraEnvK8sResource = {
   apiVersion: 'agent-install.openshift.io/v1beta1',
   kind: 'InfraEnv',
   metadata: {
@@ -59,7 +63,7 @@ export const mockClusterImageSet: ClusterImageSet = {
   },
 }
 
-export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
+export const mockClusterDeploymentAI: ClusterDeploymentK8sResource = {
   apiVersion: 'hive.openshift.io/v1',
   kind: 'ClusterDeployment',
   metadata: {
@@ -89,7 +93,7 @@ export const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
   },
 }
 
-export const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
+export const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
   apiVersion: 'extensions.hive.openshift.io/v1beta1',
   kind: 'AgentClusterInstall',
   metadata: {

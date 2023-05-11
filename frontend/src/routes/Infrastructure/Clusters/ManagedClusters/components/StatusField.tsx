@@ -14,14 +14,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
-
-const { LogsDownloadButton } = CIM
+import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
 
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()

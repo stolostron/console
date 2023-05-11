@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { CIM } from 'openshift-assisted-ui-lib'
 import {
   AnsibleJob,
   AnsibleJobApiVersion,
@@ -29,7 +28,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
 import { Router } from 'react-router-dom'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 
 const mockDistributionInfo: DistributionInfo = {
@@ -352,7 +351,7 @@ const ansibleJob: AnsibleJob = {
   },
 }
 
-const mockNodepools: CIM.NodePoolK8sResource[] = [
+const mockNodepools: NodePoolK8sResource[] = [
   {
     apiVersion: 'hypershift.openshift.io/v1alpha1',
     kind: 'NodePool',
@@ -761,7 +760,7 @@ describe('DistributionField hypershift clusters', () => {
     hasUpgrade = false,
     clusterCurator?: ClusterCurator,
     nodepool?: NodePool,
-    hostedCluster?: CIM.HostedClusterK8sResource,
+    hostedCluster?: HostedClusterK8sResource,
     setClusterImageSet = true,
     resource = 'managedclusterpage'
   ) => {

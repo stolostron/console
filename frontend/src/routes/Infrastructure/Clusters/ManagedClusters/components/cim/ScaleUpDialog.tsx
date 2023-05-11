@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
-
 import { patchResource } from '../../../../../../resources/utils/resource-request'
 import {
   useClusterDeployment,
@@ -10,8 +8,7 @@ import {
 } from '../../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 import { IResource } from '../../../../../../resources'
-
-const { ScaleUpModal } = CIM
+import { AgentK8sResource, ScaleUpModal } from '@openshift-assisted/ui-lib/cim'
 
 type ScaleUpDialogProps = {
   isOpen: boolean
@@ -26,7 +23,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
   const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
 
   const addHostsToCluster = useCallback(
-    async (agentsToAdd: CIM.AgentK8sResource[]) => {
+    async (agentsToAdd: AgentK8sResource[]) => {
       const name = clusterDeployment?.metadata?.name
       const namespace = clusterDeployment?.metadata?.namespace
 

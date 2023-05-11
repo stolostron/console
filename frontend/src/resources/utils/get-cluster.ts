@@ -11,7 +11,7 @@ import {
   HostedClusterK8sResource,
   NodePoolK8sResource,
   ClusterDeploymentK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator, isAutomationTemplate } from '../cluster-curator'

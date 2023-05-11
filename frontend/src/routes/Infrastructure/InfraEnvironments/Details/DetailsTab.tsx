@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmPageContent } from '../../../../ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
   fetchSecret,
@@ -10,13 +9,18 @@ import {
   onEditNtpSources,
   onEditProxy,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-
-const { EnvironmentDetails, EnvironmentErrors } = CIM
+import {
+  AgentK8sResource,
+  BareMetalHostK8sResource,
+  EnvironmentDetails,
+  EnvironmentErrors,
+  InfraEnvK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 
 type DetailsTabProps = {
-  infraEnv: CIM.InfraEnvK8sResource
-  infraAgents: CIM.AgentK8sResource[]
-  bareMetalHosts: CIM.BareMetalHostK8sResource[]
+  infraEnv: InfraEnvK8sResource
+  infraAgents: AgentK8sResource[]
+  bareMetalHosts: BareMetalHostK8sResource[]
 }
 
 const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => (

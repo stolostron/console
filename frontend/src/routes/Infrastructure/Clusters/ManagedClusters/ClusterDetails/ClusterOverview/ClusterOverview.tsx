@@ -22,9 +22,14 @@ import {
 import { AlertVariant, ButtonVariant, Modal, ModalVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useState } from 'react'
+import {
+  AgentClusterInstallK8sResource,
+  ClusterDeploymentK8sResource,
+  HostedClusterK8sResource,
+  getClusterProperties,
+} from '@openshift-assisted/ui-lib/cim'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -45,15 +50,12 @@ import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
-import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../../components/GetProjects'
 
-const { getClusterProperties } = CIM
-
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource
+  agentClusterInstall: AgentClusterInstallK8sResource
 ) {
   const aiClusterProperties = getClusterProperties(
     clusterDeployment as ClusterDeploymentK8sResource,

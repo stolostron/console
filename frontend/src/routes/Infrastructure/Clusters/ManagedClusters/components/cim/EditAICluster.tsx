@@ -2,8 +2,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { ClusterDeploymentWizardStepsType, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
+import {
+  ACM_ENABLED_FEATURES,
+  AgentClusterInstallK8sResource,
+  AgentK8sResource,
+  BareMetalHostK8sResource,
+  ClusterDeploymentDetailsValues,
+  ClusterDeploymentWizard,
+  ClusterDeploymentWizardStepsType,
+  ClusterImageSetK8sResource,
+  FeatureGateContextProvider,
+  LoadingState,
+  getAgentsHostsNames,
+  isAgentOfInfraEnv,
+} from '@openshift-assisted/ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
@@ -38,15 +50,6 @@ import { BulkActionModal, BulkActionModalProps } from '../../../../../../compone
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
-const {
-  ClusterDeploymentWizard,
-  FeatureGateContextProvider,
-  ACM_ENABLED_FEATURES,
-  LoadingState,
-  getAgentsHostsNames,
-  isAgentOfInfraEnv,
-} = CIM
-
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }, StaticContext>
@@ -62,7 +65,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
   const history = useHistory()
   const { agentsState, clusterImageSetsState, nmStateConfigsState, infrastructuresState } = useSharedAtoms()
-  const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+  const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const { waitForAll } = useSharedRecoil()
   const [clusterImageSets, agents, nmStateConfigs, infrastructures] = useRecoilValue(
     waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState, infrastructuresState])
@@ -82,7 +85,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 
   const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
 
-  const onSaveDetails = (values: CIM.ClusterDeploymentDetailsValues) => {
+  const onSaveDetails = (values: ClusterDeploymentDetailsValues) => {
     return patchResource(agentClusterInstall as IResource, [
       {
         op: 'replace',
@@ -103,22 +106,22 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   )
 
   const [bulkModalProps, setBulkModalProps] = useState<
-    BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }
   >({ open: false })
   const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
 
   const hostActions = {
-    onEditHost: (agent: CIM.AgentK8sResource) => {
+    onEditHost: (agent: AgentK8sResource) => {
       setEditAgent(agent)
     },
-    onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
+    onEditRole: (agent: AgentK8sResource, role: string | undefined) => {
       return patchResource(agent as IResource, [
         {
           op: 'replace',
           path: '/spec/role',
           value: role,
         },
-      ]).promise as Promise<CIM.AgentK8sResource>
+      ]).promise as Promise<AgentK8sResource>
     },
     onDeleteHost,
     onSetInstallationDiskId,
@@ -162,7 +165,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     ]).promise
 
     history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
-    return res as CIM.AgentClusterInstallK8sResource
+    return res as AgentClusterInstallK8sResource
   }
 
   return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
@@ -203,7 +206,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
       <AcmErrorBoundary>
         <AcmPageContent id="edit-cluster">
           <PageSection variant="light" type="wizard" isFilled>
-            <BulkActionModal<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
+            <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
             <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
               <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"

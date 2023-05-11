@@ -7,7 +7,7 @@ import {
   INFRAENV_AGENTINSTALL_LABEL_KEY,
   getAgentsHostsNames,
   AddHostDropdown,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'

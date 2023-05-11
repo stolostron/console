@@ -17,6 +17,9 @@ const config: Config.InitialOptions = {
     '@patternfly/react-topology': '<rootDir>/node_modules/@patternfly/react-topology',
     'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
+    '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cim',
+    '@openshift-assisted/locales/([a-z]{2,3}/translation.json)':
+      '<rootDir>/node_modules/@openshift-assisted/locales/lib/$1/translation.json',
   },
   watchAll: false,
   slowTestThreshold: 30,
@@ -43,7 +46,7 @@ const config: Config.InitialOptions = {
     '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
+    'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
   ],
   ci: true,
   collectCoverage: true,

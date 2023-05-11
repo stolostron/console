@@ -4,7 +4,6 @@ import { useMemo, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -12,29 +11,33 @@ import { BulkActionModal, BulkActionModalProps } from '../../../../../../compone
 import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
 import { listMultiClusterEngines } from '../../../../../../resources/multi-cluster-engine'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-
-const {
-  ClusterDeploymentProgress,
-  ClusterInstallationError,
+import {
+  AgentK8sResource,
   AgentTable,
   Alerts,
   AlertsContextProvider,
-  shouldShowClusterInstallationProgress,
-  shouldShowClusterCredentials,
-  shouldShowClusterInstallationError,
-  getConsoleUrl,
+  BareMetalHostK8sResource,
   ClusterDeploymentCredentials,
+  ClusterDeploymentK8sResource,
   ClusterDeploymentKubeconfigDownload,
-  EventsModalButton,
-  getAICluster,
-  LogsDownloadButton,
-  getOnFetchEventsHandler,
+  ClusterDeploymentProgress,
   ClusterDeploymentValidationsOverview,
+  ClusterInstallationError,
+  EventsModalButton,
+  FetchSecret,
+  LogsDownloadButton,
+  SecretK8sResource,
+  getAICluster,
   getClusterStatus,
+  getConsoleUrl,
+  getOnFetchEventsHandler,
+  shouldShowClusterCredentials,
   shouldShowClusterDeploymentValidationOverview,
-} = CIM
+  shouldShowClusterInstallationError,
+  shouldShowClusterInstallationProgress,
+} from '@openshift-assisted/ui-lib/cim'
 
-const fetchSecret: CIM.FetchSecret = (name, namespace) =>
+const fetchSecret: FetchSecret = (name, namespace) =>
   getResource<Secret>({
     apiVersion: SecretApiVersion,
     kind: SecretKind,
@@ -42,7 +45,7 @@ const fetchSecret: CIM.FetchSecret = (name, namespace) =>
       name,
       namespace,
     },
-  }).promise as Promise<CIM.SecretK8sResource>
+  }).promise as Promise<SecretK8sResource>
 
 const fetchEvents = async (url: string) => {
   const abortController = new AbortController()
@@ -60,7 +63,7 @@ const AIClusterDetails: React.FC = () => {
   const cdNamespace = clusterDeployment?.metadata?.namespace
 
   const [bulkModalProps, setBulkModalProps] = useState<
-    BulkActionModalProps<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> | { open: false }
+    BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }
   >({ open: false })
 
   const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
@@ -89,7 +92,7 @@ const AIClusterDetails: React.FC = () => {
 
     const cluster = cdName
       ? getAICluster({
-          clusterDeployment: clusterDeployment as CIM.ClusterDeploymentK8sResource,
+          clusterDeployment: clusterDeployment as ClusterDeploymentK8sResource,
           agentClusterInstall,
           agents: clusterAgents,
         })
@@ -130,7 +133,7 @@ const AIClusterDetails: React.FC = () => {
               <Stack hasGutter>
                 <StackItem>
                   <ClusterDeploymentProgress
-                    clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
+                    clusterDeployment={clusterDeployment as ClusterDeploymentK8sResource}
                     agentClusterInstall={agentClusterInstall}
                     agents={clusterAgents}
                     onFetchEvents={onFetchEvents}
@@ -140,20 +143,19 @@ const AIClusterDetails: React.FC = () => {
                 {shouldShowClusterCredentials(agentClusterInstall) && (
                   <StackItem>
                     <ClusterDeploymentCredentials
-                      clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
+                      clusterDeployment={clusterDeployment as ClusterDeploymentK8sResource}
                       agentClusterInstall={agentClusterInstall}
                       agents={clusterAgents}
                       fetchSecret={fetchSecret}
                       consoleUrl={
-                        getConsoleUrl(clusterDeployment as CIM.ClusterDeploymentK8sResource, agentClusterInstall) ||
-                        'N/A'
+                        getConsoleUrl(clusterDeployment as ClusterDeploymentK8sResource, agentClusterInstall) || 'N/A'
                       }
                     />
                   </StackItem>
                 )}
                 <StackItem>
                   <ClusterDeploymentKubeconfigDownload
-                    clusterDeployment={clusterDeployment as CIM.ClusterDeploymentK8sResource}
+                    clusterDeployment={clusterDeployment as ClusterDeploymentK8sResource}
                     agentClusterInstall={agentClusterInstall}
                     fetchSecret={fetchSecret}
                   />
@@ -192,7 +194,7 @@ const AIClusterDetails: React.FC = () => {
         <AcmExpandableCard title={t('Cluster hosts')} id="aihosts">
           {!!agentClusterInstall && (
             <>
-              <BulkActionModal<CIM.AgentK8sResource | CIM.BareMetalHostK8sResource> {...bulkModalProps} />
+              <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
               <AgentTable
                 agents={clusterAgents}
                 className="agents-table"
