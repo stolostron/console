@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Text, TextVariants } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { AcmButton } from '../ui-components'
 
 export const DOC_VERSION = '2.8'
 
@@ -64,19 +64,20 @@ export const DOC_LINKS = {
 
 export function viewDocumentation(doclink: string, t: TFunction) {
   return (
-    <Text
-      component={TextVariants.a}
-      isVisitedLink
-      href={doclink}
-      target="_blank"
-      style={{
-        cursor: 'pointer',
-        display: 'inline-block',
-        padding: '15px 10px',
-        fontSize: '14px',
-      }}
-    >
-      {t('View documentation')} <ExternalLinkAltIcon />
-    </Text>
+    <a href={doclink} target="_blank" rel="noreferrer">
+      <AcmButton
+        variant="link"
+        isInline
+        icon={<ExternalLinkAltIcon />}
+        iconPosition="right"
+        style={{
+          display: 'inline-block',
+          padding: '15px 10px',
+          fontSize: '14px',
+        }}
+      >
+        {t('View documentation')}
+      </AcmButton>
+    </a>
   )
 }
