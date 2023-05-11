@@ -959,13 +959,15 @@ export function AcmDataFormInputs(props: {
 export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
   const { input, validated, isReadOnly } = props
   const [showSecrets, setShowSecrets] = useState(input.type === 'TextArea' && input.value === '')
+
   switch (input.type) {
     case 'Text': {
       const value = input.value
+      const { onChange, validation, ...textInputProps } = input
       return (
         <InputGroup>
           <TextInput
-            {...input}
+            {...textInputProps}
             validated={validated}
             spellCheck="false"
             isReadOnly={isReadOnly}
