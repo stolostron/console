@@ -4,7 +4,12 @@ import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
 import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
 
-export function useAllClusters() {
+/**
+ * Hook to retrieve aggregated list of all clusters
+ * @param excludeUnclaimed Excludes unclaimed clusters in cluster pools (or claimed clusters for which the user can not see the claim)
+ * @returns 
+ */
+export function useAllClusters(excludeUnclaimed?: boolean) {
   const { waitForAll } = useSharedRecoil()
   const {
     managedClustersState,
@@ -60,7 +65,14 @@ export function useAllClusters() {
         agentClusterInstalls,
         hostedClusters,
         nodePools
-      ),
+      ).filter((cluster) => {
+        if (excludeUnclaimed) {
+          if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+          }
+        }
+        return true
+      }),
     [
       clusterDeployments,
       managedClusterInfos,

@@ -86,15 +86,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [namespaces] = useRecoilState(namespacesState)
 
-  let managedClusters = useAllClusters()
-  managedClusters = managedClusters.filter((cluster) => {
-    // don't show clusters in cluster pools in table
-    if (cluster.hive.clusterPool) {
-      return cluster.hive.clusterClaimName !== undefined
-    } else {
-      return true
-    }
-  })
+  const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
   const [showSubCards, setShowSubCards] = useState(false)
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({

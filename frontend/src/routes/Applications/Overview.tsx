@@ -249,19 +249,7 @@ export default function ApplicationsOverview() {
 
   const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
-  const allClusters = useAllClusters()
-  const managedClusters = useMemo(
-    () =>
-      allClusters.filter((cluster) => {
-        // don't show clusters in cluster pools in table
-        if (cluster.hive.clusterPool) {
-          return cluster.hive.clusterClaimName !== undefined
-        } else {
-          return true
-        }
-      }),
-    [allClusters]
-  )
+  const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,

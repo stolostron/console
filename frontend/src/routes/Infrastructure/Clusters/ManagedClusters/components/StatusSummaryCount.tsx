@@ -47,17 +47,7 @@ export function StatusSummaryCount() {
 
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
   const { cluster } = useContext(ClusterContext)
-  const allClusters: Cluster[] = useAllClusters()
-  const clusters: Cluster[] = useMemo(() => {
-    return allClusters.filter((cluster) => {
-      // don't show clusters in cluster pools in table
-      if (cluster.hive.clusterPool) {
-        return cluster.hive.clusterClaimName !== undefined
-      } else {
-        return true
-      }
-    })
-  }, [allClusters])
+  const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)

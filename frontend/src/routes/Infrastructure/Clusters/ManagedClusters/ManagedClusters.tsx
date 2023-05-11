@@ -68,15 +68,7 @@ const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
 export default function ManagedClusters() {
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
-  let clusters = useAllClusters()
-  clusters = clusters.filter((cluster) => {
-    // don't show clusters in cluster pools in table
-    if (cluster.hive.clusterPool) {
-      return cluster.hive.clusterClaimName !== undefined
-    } else {
-      return true
-    }
-  })
+  const clusters = useAllClusters(true)
 
   const onBoardingModalID = `${window.location.href}/clusteronboardingmodal`
   const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
