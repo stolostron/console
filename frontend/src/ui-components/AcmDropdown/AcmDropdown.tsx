@@ -15,7 +15,7 @@ import {
 import { makeStyles } from '@mui/styles'
 import { TooltipWrapper } from '../utils'
 
-type Props = Omit<DropdownProps, 'toggle' | 'onSelect'>
+type Props = Omit<DropdownProps, 'toggle' | 'onSelect' | 'dropdownItems'>
 
 export type AcmDropdownProps = Props & {
   dropdownItems: AcmDropdownItems[]
@@ -39,10 +39,6 @@ export type AcmDropdownProps = Props & {
 export type AcmDropdownItems = {
   id: string
   component?: string | React.ReactNode
-  /**
-   * @deprecated Use isAriaDisabled for accessibility
-   */
-  isDisabled?: boolean
   isAriaDisabled?: boolean
   tooltip?: string | React.ReactNode
   text: string | React.ReactNode
@@ -50,7 +46,7 @@ export type AcmDropdownItems = {
   icon?: React.ReactNode
   tooltipPosition?: TooltipPosition
   label?: string
-  labelColor?: string
+  labelColor?: LabelProps['color']
 }
 
 const useStyles = makeStyles({
@@ -125,21 +121,27 @@ export function AcmDropdown(props: AcmDropdownProps) {
         className={classes.button}
         onMouseOver={props.onHover}
         position={props.dropdownPosition || DropdownPosition.right}
-        dropdownItems={props.dropdownItems.map((item) => (
-          <DropdownItem
-            key={item.id}
-            tooltipProps={{ position: item.tooltipPosition }}
-            {...item}
-            onClick={() => onSelect(item.id)}
-          >
-            {item.text}
-            {item.label && item.labelColor && (
-              <Label className={classes.label} color={item.labelColor}>
-                {item.label}
-              </Label>
-            )}
-          </DropdownItem>
-        ))}
+        dropdownItems={props.dropdownItems.map((item) => {
+          return (
+            <DropdownItem
+              key={item.id}
+              tooltip={item.tooltip}
+              tooltipProps={{ position: item.tooltipPosition }}
+              href={item.href}
+              id={item.id}
+              isAriaDisabled={item.isAriaDisabled}
+              icon={item.icon}
+              onClick={() => onSelect(item.id)}
+            >
+              {item.text}
+              {item.label && item.labelColor && (
+                <Label className={classes.label} color={item.labelColor}>
+                  {item.label}
+                </Label>
+              )}
+            </DropdownItem>
+          )
+        })}
         toggle={
           props.isKebab ? (
             <KebabToggle

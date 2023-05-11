@@ -974,20 +974,16 @@ export default function ApplicationsOverview() {
         dropdownItems={[
           {
             id: 'psuedo.group.label',
-            isDisabled: true,
+            isAriaDisabled: true,
             text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
           },
           {
             id: 'create-argo',
             text: t('Application set'),
-            isDisabled: false,
-            path: NavigationPath.createApplicationArgo,
           },
           {
             id: 'create-subscription',
             text: t('Subscription'),
-            isDisabled: false,
-            path: NavigationPath.createApplicationSubscription,
           },
         ]}
         isKebab={false}

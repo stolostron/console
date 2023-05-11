@@ -2,7 +2,7 @@
 
 import { Card, CardBody } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { AcmDropdown } from './AcmDropdown'
+import { AcmDropdown, AcmDropdownItems } from './AcmDropdown'
 
 export default {
   title: 'Dropdown',
@@ -16,7 +16,7 @@ export default {
 }
 
 export const Dropdown = (args: any) => {
-  const dropdownItems = [
+  const dropdownItems: AcmDropdownItems[] = [
     { id: 'install-config', text: 'Install config' },
     { id: 'kubeconfig', text: 'Kubeconfig' },
     { id: 'other-config', text: 'Other config', isAriaDisabled: true, tooltip: 'Forbidden' },

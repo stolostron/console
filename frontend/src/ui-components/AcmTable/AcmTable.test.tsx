@@ -219,7 +219,6 @@ describe('AcmTable', () => {
               dropdownItems={[
                 {
                   id: 'action1',
-                  isDisabled: false,
                   text: 'Action 1',
                   tooltip: 'Disabled',
                   href: '/action1',
@@ -227,7 +226,6 @@ describe('AcmTable', () => {
                 },
                 {
                   id: 'action2',
-                  isDisabled: false,
                   text: 'Action 2',
                   tooltip: 'Disabled',
                   href: '/action1',
