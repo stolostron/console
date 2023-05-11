@@ -7,7 +7,6 @@ import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../
 /**
  * Hook to retrieve aggregated list of all clusters
  * @param excludeUnclaimed Excludes unclaimed clusters in cluster pools (or claimed clusters for which the user can not see the claim)
- * @returns 
  */
 export function useAllClusters(excludeUnclaimed?: boolean) {
   const { waitForAll } = useSharedRecoil()
@@ -85,6 +84,7 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
       agentClusterInstalls,
       hostedClusters,
       nodePools,
+      excludeUnclaimed,
     ]
   )
   return clusters as Cluster[]

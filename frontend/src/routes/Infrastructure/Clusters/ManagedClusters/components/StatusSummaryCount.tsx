@@ -11,7 +11,7 @@ import {
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { Application, ApplicationSet, ApplicationSetKind, Cluster } from '../../../../../resources'
+import { Application, ApplicationSet, ApplicationSetKind } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
