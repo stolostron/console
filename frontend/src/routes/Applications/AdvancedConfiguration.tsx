@@ -699,7 +699,7 @@ export default function AdvancedConfiguration() {
               width: '100%',
             }}
           >
-            <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+            {viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}
           </Text>
         </TextContent>
       </AcmExpandableCard>

@@ -459,6 +459,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   useEffect(() => {
     setInternalSearchWithDebounce(search)
+    return () => {
+      if ('clear' in setInternalSearchWithDebounce) {
+        setInternalSearchWithDebounce.clear()
+      }
+    }
   }, [search, setInternalSearchWithDebounce])
 
   useEffect(() => {

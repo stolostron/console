@@ -9,7 +9,7 @@ import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
-import { NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
 
 interface resultsTableData {
@@ -88,7 +88,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             to={{
               pathname: generatePath(NavigationPath.clusterOverview, {
                 name: item.cluster,
-                namespace: item.clusterNamespace || '~managed-cluster',
+                namespace: item.clusterNamespace || UNKNOWN_NAMESPACE,
               }),
             }}
           >

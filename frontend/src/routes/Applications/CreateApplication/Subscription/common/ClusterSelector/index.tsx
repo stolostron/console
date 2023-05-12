@@ -291,6 +291,7 @@ const ClusterSelector = (props: {
               id={`clusterSelector-checkbox-${controlId}`}
               onChange={handleMode}
               name={'clusterSelector-checkbox'}
+              aria-label={i18n('creation.app.settings.clusterSelector')}
             />
             <FormGroup
               id="clusterSelector-container"

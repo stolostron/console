@@ -959,23 +959,25 @@ export function AcmDataFormInputs(props: {
 export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
   const { input, validated, isReadOnly } = props
   const [showSecrets, setShowSecrets] = useState(input.type === 'TextArea' && input.value === '')
+
   switch (input.type) {
     case 'Text': {
       const value = input.value
+      const { isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
       return (
         <InputGroup>
           <TextInput
-            {...input}
+            {...textInputProps}
             validated={validated}
             spellCheck="false"
             isReadOnly={isReadOnly}
-            type={!input.isSecret || showSecrets ? 'text' : 'password'}
+            type={!isSecret || showSecrets ? 'text' : 'password'}
           />
           {value === '' ? (
             <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
           ) : (
             <Fragment>
-              {input.isSecret && <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />}
+              {isSecret && <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />}
               {!isReadOnly && !input.isDisabled && <ClearInputButton onClick={() => input.onChange('')} />}
             </Fragment>
           )}
@@ -1036,7 +1038,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'Multiselect':
     case 'GroupedMultiselect': {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { onChange, placeholder, ...inputProps } = input
+      const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
       const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
         switch (input.type) {
           case 'Select':
@@ -1375,9 +1377,10 @@ function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
   // TODO support isReadOnly
   const { validated, autoClose: closeOnSelect } = props
   const [open, setOpen] = useState(false)
+  const { autoClose, ...selectProps } = props
   return (
     <Select
-      {...props}
+      {...selectProps}
       isOpen={open}
       onToggle={() => setOpen(!open)}
       onSelect={(e, v) => {

@@ -33,6 +33,7 @@ import { usePluginDataContextValue } from './lib/PluginDataContext'
 import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { LoadPluginData } from './components/LoadPluginData'
 import { Truncate } from './components/Truncate'
+import { ResourceError, ResourceErrorCode } from './resources'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -77,10 +78,13 @@ function UserDropdownToggle() {
         payload && payload.body && payload.body.username ? setName(payload.body.username) : setName('undefined')
       })
       .catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error(error)
-        setName('undefined')
+        if (!(error instanceof ResourceError) || error.code !== ResourceErrorCode.RequestAborted) {
+          // eslint-disable-next-line no-console
+          console.error(error)
+          setName('undefined')
+        }
       })
+    return resp.abort
   }, [])
 
   return (

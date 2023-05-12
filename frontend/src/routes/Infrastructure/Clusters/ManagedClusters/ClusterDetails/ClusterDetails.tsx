@@ -14,7 +14,7 @@ import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
-import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
+import { getClusterNavPath, NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath'
 import {
   Addon,
   Cluster,
@@ -185,9 +185,11 @@ export default function ClusterDetailsPage({
 
   const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
   useEffect(() => {
-    const canGetSecret = canUser('get', SecretDefinition, namespace)
-    canGetSecret.promise.then((result) => setCanGetSecret(result.status?.allowed!)).catch((err) => console.error(err))
-    return () => canGetSecret.abort()
+    if (namespace !== UNKNOWN_NAMESPACE) {
+      const canGetSecret = canUser('get', SecretDefinition, namespace)
+      canGetSecret.promise.then((result) => setCanGetSecret(result.status?.allowed!)).catch((err) => console.error(err))
+      return () => canGetSecret.abort()
+    }
   }, [namespace])
 
   if (
