@@ -12,7 +12,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, SetStateAction, useCallback, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useCallback, useEffect, useReducer, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
@@ -55,6 +55,190 @@ import {
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import get from 'lodash/get'
 import schema from './schema.json'
+
+type State = {
+  editAnsibleJob: ClusterCuratorAnsibleJob | undefined
+  editAnsibleJobList: {
+    jobs: ClusterCuratorAnsibleJob[]
+    setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void
+  }
+  ansibleSelection: string
+  ansibleInventory: string
+  templateName: string
+  ansibleTowerInventoryList: { name: string; description?: string; id: string }[]
+  ansibleTowerJobTemplateList: { name: string; description?: string; id: string }[]
+  ansibleTowerWorkflowTemplateList: { name: string; description?: string; id: string }[]
+  ansibleTowerAuthError: string
+  installPreJobs: ClusterCuratorAnsibleJob[]
+  installPostJobs: ClusterCuratorAnsibleJob[]
+  upgradePreJobs: ClusterCuratorAnsibleJob[]
+  upgradePostJobs: ClusterCuratorAnsibleJob[]
+  scalePreJobs: ClusterCuratorAnsibleJob[]
+  scalePostJobs: ClusterCuratorAnsibleJob[]
+  destroyPreJobs: ClusterCuratorAnsibleJob[]
+  destroyPostJobs: ClusterCuratorAnsibleJob[]
+}
+
+type Action =
+  | ({ type: 'setEditAnsibleJob' } & Pick<State, 'editAnsibleJob'>)
+  | ({ type: 'setEditAnsibleJobList' } & Pick<State, 'editAnsibleJobList'>)
+  | ({ type: 'setAnsibleSelection' } & Pick<State, 'ansibleSelection'>)
+  | ({ type: 'setAnsibleInventory' } & Pick<State, 'ansibleInventory'>)
+  | ({ type: 'setTemplateName' } & Pick<State, 'templateName'>)
+  | ({ type: 'setAnsibleTowerInventoryList' } & Pick<State, 'ansibleTowerInventoryList'>)
+  | ({ type: 'setAnsibleTowerJobTemplateList' } & Pick<State, 'ansibleTowerJobTemplateList'>)
+  | ({ type: 'setAnsibleTowerWorkflowTemplateList' } & Pick<State, 'ansibleTowerWorkflowTemplateList'>)
+  | ({ type: 'setAnsibleTowerAuthError' } & Pick<State, 'ansibleTowerAuthError'>)
+  | ({ type: 'setInstallPreJobs' } & Pick<State, 'installPreJobs'>)
+  | ({ type: 'setInstallPostJobs' } & Pick<State, 'installPostJobs'>)
+  | ({ type: 'setUpgradePreJobs' } & Pick<State, 'upgradePreJobs'>)
+  | ({ type: 'setUpgradePostJobs' } & Pick<State, 'upgradePostJobs'>)
+  | ({ type: 'setScalePreJobs' } & Pick<State, 'scalePreJobs'>)
+  | ({ type: 'setScalePostJobs' } & Pick<State, 'scalePostJobs'>)
+  | ({ type: 'setDestroyPreJobs' } & Pick<State, 'destroyPreJobs'>)
+  | ({ type: 'setDestroyPostJobs' } & Pick<State, 'destroyPostJobs'>)
+  | { type: 'clearLists' }
+  | { type: 'clearListsAndErrors' }
+  | {
+      type: 'setAnsibleJobAndJobList'
+      editAnsibleJobList: State['editAnsibleJobList']
+      editAnsibleJob: State['editAnsibleJob']
+    }
+// setAnsibleJobAndJobList
+
+const getInitialState = () => {
+  return {
+    ansibleSelection: '',
+    ansibleInventory: '',
+    editAnsibleJob: undefined,
+    editAnsibleJobList: { jobs: [], setJobs: () => {} },
+    templateName: '',
+    ansibleTowerInventoryList: [],
+    ansibleTowerJobTemplateList: [],
+    ansibleTowerWorkflowTemplateList: [],
+    ansibleTowerAuthError: '',
+    installPreJobs: [],
+    installPostJobs: [],
+    upgradePreJobs: [],
+    upgradePostJobs: [],
+    scalePreJobs: [],
+    scalePostJobs: [],
+    destroyPreJobs: [],
+    destroyPostJobs: [],
+  }
+}
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'setAnsibleSelection':
+      return {
+        ...state,
+        ansibleSelection: action.ansibleSelection,
+      }
+    case 'setAnsibleInventory':
+      return {
+        ...state,
+        ansibleInventory: action.ansibleInventory,
+      }
+    case 'setEditAnsibleJob':
+      return {
+        ...state,
+        editAnsibleJob: action.editAnsibleJob,
+      }
+    case 'setEditAnsibleJobList':
+      return {
+        ...state,
+        editAnsibleJobList: action.editAnsibleJobList,
+      }
+    case 'setTemplateName':
+      return {
+        ...state,
+        templateName: action.templateName,
+      }
+    case 'setAnsibleTowerInventoryList':
+      return {
+        ...state,
+        ansibleTowerInventoryList: action.ansibleTowerInventoryList,
+      }
+    case 'setAnsibleTowerJobTemplateList':
+      return {
+        ...state,
+        ansibleTowerJobTemplateList: action.ansibleTowerJobTemplateList,
+      }
+    case 'setAnsibleTowerWorkflowTemplateList':
+      return {
+        ...state,
+        ansibleTowerWorkflowTemplateList: action.ansibleTowerWorkflowTemplateList,
+      }
+    case 'setAnsibleTowerAuthError':
+      return {
+        ...state,
+        ansibleTowerAuthError: action.ansibleTowerAuthError,
+      }
+    case 'setInstallPreJobs':
+      return {
+        ...state,
+        installPreJobs: action.installPreJobs,
+      }
+    case 'setInstallPostJobs':
+      return {
+        ...state,
+        installPostJobs: action.installPostJobs,
+      }
+    case 'setUpgradePreJobs':
+      return {
+        ...state,
+        upgradePreJobs: action.upgradePreJobs,
+      }
+    case 'setUpgradePostJobs':
+      return {
+        ...state,
+        upgradePostJobs: action.upgradePostJobs,
+      }
+    case 'setScalePreJobs':
+      return {
+        ...state,
+        scalePreJobs: action.scalePreJobs,
+      }
+    case 'setScalePostJobs':
+      return {
+        ...state,
+        scalePostJobs: action.scalePostJobs,
+      }
+    case 'setDestroyPreJobs':
+      return {
+        ...state,
+        destroyPreJobs: action.destroyPreJobs,
+      }
+    case 'setDestroyPostJobs':
+      return {
+        ...state,
+        destroyPostJobs: action.destroyPostJobs,
+      }
+    case 'clearLists':
+      return {
+        ...state,
+        ansibleTowerJobTemplateList: [],
+        ansibleTowerWorkflowTemplateList: [],
+        ansibleTowerInventoryList: [],
+      }
+    case 'clearListsAndErrors':
+      return {
+        ...state,
+        ansibleTowerAuthError: '',
+        ansibleTowerJobTemplateList: [],
+        ansibleTowerWorkflowTemplateList: [],
+        ansibleTowerInventoryList: [],
+      }
+    case 'setAnsibleJobAndJobList':
+      return {
+        ...state,
+        editAnsibleJobList: action.editAnsibleJobList,
+        editAnsibleJob: action.editAnsibleJob,
+      }
+  }
+  return state
+}
 
 export default function AnsibleAutomationsFormPage({
   match,
@@ -127,49 +311,45 @@ export function AnsibleAutomationsForm(props: {
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const history = useHistory()
-  const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-  const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
-    jobs: ClusterCuratorAnsibleJob[]
-    setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void
-  }>()
-  const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
-  const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
-  const [ansibleInventory, setAnsibleInventory] = useState(clusterCurator?.spec?.inventory ?? '')
-  const [ansibleTowerInventoryList, setAnsibleTowerInventoryList] = useState<
-    { name: string; description?: string; id: string }[]
-  >([])
+  const [state, dispatch] = useReducer(reducer, getInitialState())
 
-  const [ansibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<
-    { name: string; description?: string; id: string }[] | undefined
-  >()
-  const [ansibleTowerWorkflowTemplateList, setAnsibleTowerWorkflowTemplateList] =
-    useState<{ name: string; description?: string; id: string }[]>()
-  const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
+  const installPreJobSetter = (installPreJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setInstallPreJobs', installPreJobs })
+  const installPostJobSetter = (installPostJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setInstallPostJobs', installPostJobs })
+  const upgradePreJobSetter = (upgradePreJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setUpgradePreJobs', upgradePreJobs })
+  const upgradePostJobSetter = (upgradePostJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setUpgradePostJobs', upgradePostJobs })
+  const scalePreJobSetter = (scalePreJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setScalePreJobs', scalePreJobs })
+  const scalePostJobSetter = (scalePostJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setScalePostJobs', scalePostJobs })
 
-  const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.install?.prehook ?? []
-  )
-  const [installPostJobs, setInstallPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.install?.posthook ?? []
-  )
-  const [upgradePreJobs, setUpgradePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.upgrade?.prehook ?? []
-  )
-  const [upgradePostJobs, setUpgradePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.upgrade?.posthook ?? []
-  )
-  const [scalePreJobs, setScalePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.scale?.prehook ?? []
-  )
-  const [scalePostJobs, setScalePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.scale?.posthook ?? []
-  )
-  const [destroyPreJobs, setDestroyPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.destroy?.prehook ?? []
-  )
-  const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
-    clusterCurator?.spec?.destroy?.posthook ?? []
-  )
+  const destroyPreJobSetter = (destroyPreJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setDestroyPreJobs', destroyPreJobs })
+  const destroyPostJobSetter = (destroyPostJobs: ClusterCuratorAnsibleJob[]) =>
+    dispatch({ type: 'setDestroyPostJobs', destroyPostJobs })
+
+  const {
+    ansibleTowerAuthError,
+    editAnsibleJob,
+    editAnsibleJobList,
+    ansibleSelection,
+    ansibleInventory,
+    ansibleTowerInventoryList,
+    ansibleTowerJobTemplateList,
+    ansibleTowerWorkflowTemplateList,
+    templateName,
+    installPreJobs,
+    installPostJobs,
+    upgradePreJobs,
+    upgradePostJobs,
+    scalePreJobs,
+    scalePostJobs,
+    destroyPreJobs,
+    destroyPostJobs,
+  } = state
 
   const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
@@ -179,16 +359,13 @@ export function AnsibleAutomationsForm(props: {
 
   useEffect(() => {
     if (newSecret) {
-      setAnsibleSelection(newSecret.metadata.name as string)
+      dispatch({ type: 'setAnsibleSelection', ansibleSelection: newSecret.metadata.name as string })
     }
   }, [newSecret])
 
   useEffect(() => {
     // clear error and lists before fetching
-    setAnsibleTowerAuthError('')
-    setAnsibleTowerJobTemplateList([])
-    setAnsibleTowerWorkflowTemplateList([])
-    setAnsibleTowerInventoryList([])
+    dispatch({ type: 'clearListsAndErrors' })
 
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
@@ -214,8 +391,8 @@ export function AnsibleAutomationsForm(props: {
                   })
                 }
               })
-              setAnsibleTowerJobTemplateList(jobList)
-              setAnsibleTowerWorkflowTemplateList(workflowList)
+              dispatch({ type: 'setAnsibleTowerJobTemplateList', ansibleTowerJobTemplateList: jobList })
+              dispatch({ type: 'setAnsibleTowerWorkflowTemplateList', ansibleTowerWorkflowTemplateList: workflowList })
             }
           }
         ),
@@ -231,20 +408,20 @@ export function AnsibleAutomationsForm(props: {
                   })
                 }
               })
-              setAnsibleTowerInventoryList(inventoryList)
+              dispatch({ type: 'setAnsibleTowerInventoryList', ansibleTowerInventoryList: inventoryList })
             }
           }
         ),
       ]).catch((err) => {
-        setAnsibleTowerAuthError(
-          err.code === ResourceErrorCode.InternalServerError && err.reason
-            ? t('validate.ansible.reason', { reason: err.reason })
-            : t('validate.ansible.host')
-        )
+        dispatch({
+          type: 'setAnsibleTowerAuthError',
+          ansibleTowerAuthError:
+            err.code === ResourceErrorCode.InternalServerError && err.reason
+              ? t('validate.ansible.reason', { reason: err.reason })
+              : t('validate.ansible.host'),
+        })
         // clear lists again in case only some requests failed
-        setAnsibleTowerJobTemplateList([])
-        setAnsibleTowerWorkflowTemplateList([])
-        setAnsibleTowerInventoryList([])
+        dispatch({ type: 'clearLists' })
       })
     }
   }, [ansibleSelection, ansibleCredentials, t])
@@ -257,7 +434,7 @@ export function AnsibleAutomationsForm(props: {
         editAnsibleJobList.setJobs([...editAnsibleJobList.jobs, ...[ansibleJob]])
       }
     }
-    setEditAnsibleJob(undefined)
+    dispatch({ type: 'setEditAnsibleJob', editAnsibleJob: undefined })
   }
 
   function stateToData() {
@@ -320,7 +497,7 @@ export function AnsibleAutomationsForm(props: {
         }
       })
       if (!errors.length) {
-        setAnsibleSelection(secret)
+        dispatch({ type: 'setAnsibleSelection', ansibleSelection: secret })
       }
     }
     return errors
@@ -340,7 +517,7 @@ export function AnsibleAutomationsForm(props: {
       }
     }
     if (!errors.length) {
-      setAnsibleInventory(selectedInventory)
+      dispatch({ type: 'setAnsibleInventory', ansibleInventory: selectedInventory as string })
     }
     return errors
   }
@@ -375,16 +552,16 @@ export function AnsibleAutomationsForm(props: {
       if (!errors.length) {
         switch (type) {
           case 'install':
-            preHook ? setInstallPreJobs(value) : setInstallPostJobs(value)
+            preHook ? installPreJobSetter(value) : installPostJobSetter(value)
             break
           case 'upgrade':
-            preHook ? setUpgradePreJobs(value) : setUpgradePostJobs(value)
+            preHook ? upgradePreJobSetter(value) : upgradePostJobSetter(value)
             break
           case 'scale':
-            preHook ? setScalePreJobs(value) : setScalePostJobs(value)
+            preHook ? scalePreJobSetter(value) : scalePostJobSetter(value)
             break
           case 'destroy':
-            preHook ? setDestroyPreJobs(value) : setDestroyPostJobs(value)
+            preHook ? destroyPreJobSetter(value) : destroyPostJobSetter(value)
             break
         }
         return undefined
@@ -395,7 +572,10 @@ export function AnsibleAutomationsForm(props: {
 
   function stateToSyncs() {
     let syncs: any = [
-      { path: 'ClusterCurator[0].metadata.name', setState: setTemplateName },
+      {
+        path: 'ClusterCurator[0].metadata.name',
+        setState: (templateName: string) => dispatch({ type: 'setTemplateName', templateName }),
+      },
       { path: 'ClusterCurator[0].spec.inventory', setter: setAnsibleInventorySelection.bind(null) },
       { path: 'ClusterCurator[0].spec', setter: setAnsibleSelections.bind(null) },
     ]
@@ -456,7 +636,7 @@ export function AnsibleAutomationsForm(props: {
             label: t('template.create.name'),
             placeholder: t('template.create.placeholder'),
             value: templateName,
-            onChange: setTemplateName,
+            onChange: (templateName) => dispatch({ type: 'setTemplateName', templateName }),
             isRequired: true,
             isDisabled: isEditing,
             validation: (value) => validateKubernetesDnsName(value, t),
@@ -467,7 +647,7 @@ export function AnsibleAutomationsForm(props: {
             label: t('credentialsForm.ansibleCredentials.label'),
             placeholder: t('credentialsForm.ansibleCredentials.placeholder'),
             value: ansibleSelection,
-            onChange: setAnsibleSelection,
+            onChange: (ansibleSelection) => dispatch({ type: 'setAnsibleSelection', ansibleSelection }),
             isRequired: true,
             options: ansibleCredentials.map((credential) => ({
               id: credential.metadata.name as string,
@@ -476,9 +656,9 @@ export function AnsibleAutomationsForm(props: {
             footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
             isDisabled: isEditing,
             validation: () => {
-              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+              if (ansibleTowerAuthError) return ansibleTowerAuthError
             },
-            validate: !!AnsibleTowerAuthError,
+            validate: !!ansibleTowerAuthError,
           },
           {
             id: 'Inventory',
@@ -486,7 +666,7 @@ export function AnsibleAutomationsForm(props: {
             label: t('Ansible inventory'),
             placeholder: t('Select an inventory'),
             value: ansibleInventory,
-            onChange: setAnsibleInventory,
+            onChange: (ansibleInventory) => dispatch({ type: 'setAnsibleInventory', ansibleInventory }),
             isRequired: false,
             options: ansibleTowerInventoryList.map(({ name, description }) => ({
               id: name as string,
@@ -525,17 +705,23 @@ export function AnsibleAutomationsForm(props: {
                 label: t('template.preInstall.label'),
                 placeholder: t('template.job.placeholder'),
                 value: installPreJobs,
-                onChange: setInstallPreJobs,
+                onChange: installPreJobSetter,
                 keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                 summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                 cellsFn,
                 onEdit: (ansibleJob) => {
-                  setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
-                  setEditAnsibleJob(ansibleJob)
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: installPreJobs, setJobs: installPreJobSetter },
+                    editAnsibleJob: ansibleJob,
+                  })
                 },
                 onCreate: () => {
-                  setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
-                  setEditAnsibleJob({ name: '', extra_vars: {} })
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: installPreJobs, setJobs: installPreJobSetter },
+                    editAnsibleJob: { name: '', extra_vars: {} },
+                  })
                 },
               },
               {
@@ -544,17 +730,23 @@ export function AnsibleAutomationsForm(props: {
                 label: t('template.postInstall.label'),
                 placeholder: t('template.job.placeholder'),
                 value: installPostJobs,
-                onChange: setInstallPostJobs,
+                onChange: installPostJobSetter,
                 keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                 summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                 cellsFn,
                 onEdit: (ansibleJob) => {
-                  setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
-                  setEditAnsibleJob(ansibleJob)
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: installPostJobs, setJobs: installPostJobSetter },
+                    editAnsibleJob: ansibleJob,
+                  })
                 },
                 onCreate: () => {
-                  setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
-                  setEditAnsibleJob({ name: '', extra_vars: {} })
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: installPostJobs, setJobs: installPostJobSetter },
+                    editAnsibleJob: { name: '', extra_vars: {} },
+                  })
                 },
               },
             ],
@@ -571,17 +763,23 @@ export function AnsibleAutomationsForm(props: {
                 label: t('template.preUpgrade.label'),
                 placeholder: t('template.job.placeholder'),
                 value: upgradePreJobs,
-                onChange: setUpgradePreJobs,
+                onChange: upgradePreJobSetter,
                 keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                 summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                 cellsFn,
                 onEdit: (ansibleJob) => {
-                  setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
-                  setEditAnsibleJob(ansibleJob)
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: upgradePreJobs, setJobs: upgradePreJobSetter },
+                    editAnsibleJob: ansibleJob,
+                  })
                 },
                 onCreate: () => {
-                  setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
-                  setEditAnsibleJob({ name: '', extra_vars: {} })
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: upgradePreJobs, setJobs: upgradePreJobSetter },
+                    editAnsibleJob: { name: '', extra_vars: {} },
+                  })
                 },
               },
               {
@@ -590,17 +788,23 @@ export function AnsibleAutomationsForm(props: {
                 label: t('template.postUpgrade.label'),
                 placeholder: t('template.job.placeholder'),
                 value: upgradePostJobs,
-                onChange: setUpgradePostJobs,
+                onChange: upgradePostJobSetter,
                 keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                 summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                 cellsFn,
                 onEdit: (ansibleJob) => {
-                  setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
-                  setEditAnsibleJob(ansibleJob)
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: upgradePostJobs, setJobs: upgradePostJobSetter },
+                    editAnsibleJob: ansibleJob,
+                  })
                 },
                 onCreate: () => {
-                  setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
-                  setEditAnsibleJob({ name: '', extra_vars: {} })
+                  dispatch({
+                    type: 'setAnsibleJobAndJobList',
+                    editAnsibleJobList: { jobs: upgradePostJobs, setJobs: upgradePostJobSetter },
+                    editAnsibleJob: { name: '', extra_vars: {} },
+                  })
                 },
               },
             ],
@@ -619,17 +823,23 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.preScale.label'),
                       placeholder: t('template.job.placeholder'),
                       value: scalePreJobs,
-                      onChange: setScalePreJobs,
+                      onChange: scalePreJobSetter,
                       keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                       summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                       cellsFn,
                       onEdit: (ansibleJob) => {
-                        setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
-                        setEditAnsibleJob(ansibleJob)
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: { jobs: scalePreJobs, setJobs: scalePreJobSetter },
+                          editAnsibleJob: ansibleJob,
+                        })
                       },
                       onCreate: () => {
-                        setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
-                        setEditAnsibleJob({ name: '', extra_vars: {} })
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: { jobs: scalePreJobs, setJobs: scalePreJobSetter },
+                          editAnsibleJob: { name: '', extra_vars: {} },
+                        })
                       },
                     },
                     {
@@ -638,17 +848,23 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.postScale.label'),
                       placeholder: t('template.job.placeholder'),
                       value: scalePostJobs,
-                      onChange: setScalePostJobs,
+                      onChange: scalePostJobSetter,
                       keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                       summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                       cellsFn,
                       onEdit: (ansibleJob) => {
-                        setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
-                        setEditAnsibleJob(ansibleJob)
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: { jobs: scalePostJobs, setJobs: scalePostJobSetter },
+                          editAnsibleJob: ansibleJob,
+                        })
                       },
                       onCreate: () => {
-                        setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
-                        setEditAnsibleJob({ name: '', extra_vars: {} })
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: { jobs: scalePostJobs, setJobs: scalePostJobSetter },
+                          editAnsibleJob: { name: '', extra_vars: {} },
+                        })
                       },
                     },
                   ],
@@ -665,23 +881,29 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.preDestroy.label'),
                       placeholder: t('template.job.placeholder'),
                       value: destroyPreJobs,
-                      onChange: setDestroyPreJobs,
+                      onChange: destroyPreJobSetter,
                       keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                       summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                       cellsFn,
                       onEdit: (ansibleJob) => {
-                        setEditAnsibleJobList({
-                          jobs: destroyPreJobs,
-                          setJobs: setDestroyPreJobs,
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: {
+                            jobs: destroyPreJobs,
+                            setJobs: destroyPreJobSetter,
+                          },
+                          editAnsibleJob: ansibleJob,
                         })
-                        setEditAnsibleJob(ansibleJob)
                       },
                       onCreate: () => {
-                        setEditAnsibleJobList({
-                          jobs: destroyPreJobs,
-                          setJobs: setDestroyPreJobs,
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: {
+                            jobs: destroyPreJobs,
+                            setJobs: destroyPreJobSetter,
+                          },
+                          editAnsibleJob: { name: '', extra_vars: {} },
                         })
-                        setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
                     },
                     {
@@ -690,23 +912,29 @@ export function AnsibleAutomationsForm(props: {
                       label: t('template.postDestroy.label'),
                       placeholder: t('template.job.placeholder'),
                       value: destroyPostJobs,
-                      onChange: setDestroyPostJobs,
+                      onChange: destroyPostJobSetter,
                       keyFn: (_ansibleJob: ClusterCuratorAnsibleJob, index) => String(index),
                       summaryFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                       cellsFn,
                       onEdit: (ansibleJob) => {
-                        setEditAnsibleJobList({
-                          jobs: destroyPostJobs,
-                          setJobs: setDestroyPostJobs,
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: {
+                            jobs: destroyPostJobs,
+                            setJobs: destroyPostJobSetter,
+                          },
+                          editAnsibleJob: ansibleJob,
                         })
-                        setEditAnsibleJob(ansibleJob)
                       },
                       onCreate: () => {
-                        setEditAnsibleJobList({
-                          jobs: destroyPostJobs,
-                          setJobs: setDestroyPostJobs,
+                        dispatch({
+                          type: 'setAnsibleJobAndJobList',
+                          editAnsibleJobList: {
+                            jobs: destroyPostJobs,
+                            setJobs: destroyPostJobSetter,
+                          },
+                          editAnsibleJob: { name: '', extra_vars: {} },
                         })
-                        setEditAnsibleJob({ name: '', extra_vars: {} })
                       },
                     },
                   ],
