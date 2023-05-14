@@ -112,28 +112,28 @@ type Action =
     }
 // setAnsibleJobAndJobList
 
-const getInitialState = () => {
+const getInitialState = (clusterCurator?: ClusterCurator) => {
   return {
-    ansibleSelection: '',
-    ansibleInventory: '',
+    ansibleSelection: clusterCurator?.spec?.install?.towerAuthSecret ?? '',
+    ansibleInventory: clusterCurator?.spec?.inventory ?? '',
     ansibleJobInEdit: undefined,
     editAnsibleJob: undefined,
     editAnsibleJobList: { jobs: [], setJobs: () => {} },
     filterForJobTemplates: true,
-    templateName: '',
+    templateName: clusterCurator?.metadata.name ?? '',
     ansibleTemplateUrl: '',
     ansibleTowerInventoryList: [],
     ansibleTowerJobTemplateList: [],
     ansibleTowerWorkflowTemplateList: [],
     ansibleTowerAuthError: '',
-    installPreJobs: [],
-    installPostJobs: [],
-    upgradePreJobs: [],
-    upgradePostJobs: [],
-    scalePreJobs: [],
-    scalePostJobs: [],
-    destroyPreJobs: [],
-    destroyPostJobs: [],
+    installPreJobs: clusterCurator?.spec?.install?.prehook ?? [],
+    installPostJobs: clusterCurator?.spec?.install?.posthook ?? [],
+    upgradePreJobs: clusterCurator?.spec?.upgrade?.prehook ?? [],
+    upgradePostJobs: clusterCurator?.spec?.upgrade?.posthook ?? [],
+    scalePreJobs: clusterCurator?.spec?.scale?.prehook ?? [],
+    scalePostJobs: clusterCurator?.spec?.scale?.posthook ?? [],
+    destroyPreJobs: clusterCurator?.spec?.destroy?.prehook ?? [],
+    destroyPostJobs: clusterCurator?.spec?.destroy?.posthook ?? [],
   }
 }
 
@@ -335,7 +335,7 @@ export function AnsibleAutomationsForm(props: {
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const history = useHistory()
-  const [state, dispatch] = useReducer(reducer, getInitialState())
+  const [state, dispatch] = useReducer(reducer, getInitialState(clusterCurator))
 
   const installPreJobSetter = (installPreJobs: ClusterCuratorAnsibleJob[]) =>
     dispatch({ type: 'setInstallPreJobs', installPreJobs })
