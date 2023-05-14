@@ -260,8 +260,9 @@ function reducer(state: State, action: Action): State {
         ansibleTowerWorkflowTemplateList: [],
         ansibleTowerInventoryList: [],
       }
+    default:
+      return state
   }
-  return state
 }
 
 export default function AnsibleAutomationsFormPage({

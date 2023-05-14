@@ -20,7 +20,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import {
+  clusterCuratorsState,
+  namespacesState,
+  secretsState,
+  settingsState,
+  subscriptionOperatorsState,
+} from '../../../atoms'
 import {
   nockAnsibleTower,
   nockAnsibleTowerError,
@@ -69,7 +75,10 @@ const mockSecret: Secret = {
   },
 }
 
-function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] }) {
+function AddAnsibleTemplateTest(props: {
+  subscriptions?: SubscriptionOperator[]
+  ansibleIntegrationEnabled?: boolean
+}) {
   return (
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -77,6 +86,9 @@ function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] 
         snapshot.set(secretsState, [mockSecret])
         snapshot.set(clusterCuratorsState, [mockClusterCurator])
         snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+        snapshot.set(settingsState, {
+          ansibleIntegration: props.ansibleIntegrationEnabled ? 'enabled' : 'disabled',
+        })
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.addAnsibleAutomation]}>
@@ -108,6 +120,16 @@ const mockClusterCurator: ClusterCurator = {
       prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {}, type: 'Job' }],
       posthook: [{ name: 'test-job-post-upgrade', extra_vars: {}, type: 'Job' }],
     },
+    scale: {
+      towerAuthSecret: 'ansible-test-secret',
+      prehook: [{ name: 'test-job-pre-scale', extra_vars: {}, type: 'Job' }],
+      posthook: [{ name: 'test-job-post-scale', extra_vars: {}, type: 'Job' }],
+    },
+    destroy: {
+      towerAuthSecret: 'ansible-test-secret',
+      prehook: [{ name: 'test-job-pre-destroy', extra_vars: {}, type: 'Job' }],
+      posthook: [{ name: 'test-job-post-destroy', extra_vars: {}, type: 'Job' }],
+    },
     inventory: 'test-inventory',
   },
 }
@@ -131,22 +153,42 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
     {
       name: 'test-job-pre-install',
       type: 'job_template',
-      id: '1',
+      id: '0',
     },
     {
       name: 'test-job-post-install',
       type: 'job_template',
-      id: '2',
+      id: '1',
     },
     {
       name: 'test-job-pre-upgrade',
       type: 'job_template',
-      id: '3',
+      id: '2',
     },
     {
       name: 'test-job-post-upgrade',
       type: 'job_template',
+      id: '3',
+    },
+    {
+      name: 'test-job-pre-scale',
+      type: 'job_template',
       id: '4',
+    },
+    {
+      name: 'test-job-post-scale',
+      type: 'job_template',
+      id: '5',
+    },
+    {
+      name: 'test-job-pre-destroy',
+      type: 'job_template',
+      id: '6',
+    },
+    {
+      name: 'test-job-post-destroy',
+      type: 'job_template',
+      id: '7',
     },
   ],
 }
@@ -199,7 +241,7 @@ describe('add automation template page', () => {
   })
 
   it('should create a curator template', async () => {
-    render(<AddAnsibleTemplateTest />)
+    render(<AddAnsibleTemplateTest ansibleIntegrationEnabled={true} />)
 
     // template information
     const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
@@ -250,6 +292,32 @@ describe('add automation template page', () => {
     await clickByText('Add an Ansible template', 1)
     await clickByPlaceholderText('Search or select a job template name', 0)
     await clickByText(mockTemplateList.results![3].name!, 0)
+    await clickByText('Save')
+
+    await clickByText('Next')
+
+    // scale templates
+    await clickByText('Add an Ansible template', 0)
+    await clickByText('Job template')
+    await clickByPlaceholderText('Search or select a job template name', 0)
+    await clickByText(mockTemplateList.results![4].name!, 0)
+    await clickByText('Save')
+    await clickByText('Add an Ansible template', 1)
+    await clickByPlaceholderText('Search or select a job template name', 0)
+    await clickByText(mockTemplateList.results![5].name!, 0)
+    await clickByText('Save')
+
+    await clickByText('Next')
+
+    //destroy templates
+    await clickByText('Add an Ansible template', 0)
+    await clickByText('Job template')
+    await clickByPlaceholderText('Search or select a job template name', 0)
+    await clickByText(mockTemplateList.results![6].name!, 0)
+    await clickByText('Save')
+    await clickByText('Add an Ansible template', 1)
+    await clickByPlaceholderText('Search or select a job template name', 0)
+    await clickByText(mockTemplateList.results![7].name!, 0)
     await clickByText('Save')
 
     // open yaml and use yaml to change stuff
@@ -342,7 +410,7 @@ describe('add automation template page', () => {
     await clickByText(mockTemplateList.results![0].name!, 0)
     window.open = jest.fn()
     await clickByText('View selected template')
-    expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/templates/job_template/1')
+    expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/templates/job_template/0')
   })
 
   it('should visit the correct Ansible tower workflow job template url', async () => {
