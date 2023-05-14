@@ -64,11 +64,14 @@ type State = {
   }
   ansibleSelection: string
   ansibleInventory: string
+  ansibleTemplateUrl: string
   templateName: string
+  ansibleJobInEdit: ClusterCuratorAnsibleJob | undefined
   ansibleTowerInventoryList: { name: string; description?: string; id: string }[]
   ansibleTowerJobTemplateList: { name: string; description?: string; id: string }[]
   ansibleTowerWorkflowTemplateList: { name: string; description?: string; id: string }[]
   ansibleTowerAuthError: string
+  filterForJobTemplates: boolean
   installPreJobs: ClusterCuratorAnsibleJob[]
   installPostJobs: ClusterCuratorAnsibleJob[]
   upgradePreJobs: ClusterCuratorAnsibleJob[]
@@ -85,6 +88,9 @@ type Action =
   | ({ type: 'setAnsibleSelection' } & Pick<State, 'ansibleSelection'>)
   | ({ type: 'setAnsibleInventory' } & Pick<State, 'ansibleInventory'>)
   | ({ type: 'setTemplateName' } & Pick<State, 'templateName'>)
+  | ({ type: 'setAnsibleJobInEdit' } & Pick<State, 'ansibleJobInEdit'>)
+  | ({ type: 'setFilterForJobTemplates' } & Pick<State, 'filterForJobTemplates'>)
+  | ({ type: 'setAnsibleTemplateUrl' } & Pick<State, 'ansibleTemplateUrl'>)
   | ({ type: 'setAnsibleTowerInventoryList' } & Pick<State, 'ansibleTowerInventoryList'>)
   | ({ type: 'setAnsibleTowerJobTemplateList' } & Pick<State, 'ansibleTowerJobTemplateList'>)
   | ({ type: 'setAnsibleTowerWorkflowTemplateList' } & Pick<State, 'ansibleTowerWorkflowTemplateList'>)
@@ -110,9 +116,12 @@ const getInitialState = () => {
   return {
     ansibleSelection: '',
     ansibleInventory: '',
+    ansibleJobInEdit: undefined,
     editAnsibleJob: undefined,
     editAnsibleJobList: { jobs: [], setJobs: () => {} },
+    filterForJobTemplates: true,
     templateName: '',
+    ansibleTemplateUrl: '',
     ansibleTowerInventoryList: [],
     ansibleTowerJobTemplateList: [],
     ansibleTowerWorkflowTemplateList: [],
@@ -215,6 +224,27 @@ function reducer(state: State, action: Action): State {
         ...state,
         destroyPostJobs: action.destroyPostJobs,
       }
+    case 'setAnsibleJobInEdit':
+      return {
+        ...state,
+        ansibleJobInEdit: action.ansibleJobInEdit,
+      }
+    case 'setFilterForJobTemplates':
+      return {
+        ...state,
+        filterForJobTemplates: action.filterForJobTemplates,
+      }
+    case 'setAnsibleTemplateUrl':
+      return {
+        ...state,
+        ansibleTemplateUrl: action.ansibleTemplateUrl,
+      }
+    case 'setAnsibleJobAndJobList':
+      return {
+        ...state,
+        editAnsibleJobList: action.editAnsibleJobList,
+        editAnsibleJob: action.editAnsibleJob,
+      }
     case 'clearLists':
       return {
         ...state,
@@ -229,12 +259,6 @@ function reducer(state: State, action: Action): State {
         ansibleTowerJobTemplateList: [],
         ansibleTowerWorkflowTemplateList: [],
         ansibleTowerInventoryList: [],
-      }
-    case 'setAnsibleJobAndJobList':
-      return {
-        ...state,
-        editAnsibleJobList: action.editAnsibleJobList,
-        editAnsibleJob: action.editAnsibleJob,
       }
   }
   return state
@@ -1016,9 +1040,8 @@ function EditAnsibleJobModal(props: {
   setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
   const { t } = useTranslation()
-  const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-  const [filterForJobTemplates, setFilterForJobTemplates] = useState<boolean>(true)
-  const [ansibleTemplateUrl, setAnsibleTemplateUrl] = useState<string>('')
+  const [state, dispatch] = useReducer(reducer, getInitialState())
+  const { ansibleJobInEdit, filterForJobTemplates, ansibleTemplateUrl } = state
   const {
     ansibleTowerTemplateList = [],
     ansibleTowerWorkflowTemplateList = [],
@@ -1034,9 +1057,12 @@ function EditAnsibleJobModal(props: {
         const jobID = filterForJobTemplates
           ? ansibleTowerTemplateList.find((template) => template.name === jobName)?.id
           : ansibleTowerWorkflowTemplateList.find((template) => template.name === jobName)?.id
-        setAnsibleTemplateUrl(`${hostURL}/#/templates/${templateType}/${jobID}`)
+        dispatch({
+          type: 'setAnsibleTemplateUrl',
+          ansibleTemplateUrl: `${hostURL}/#/templates/${templateType}/${jobID}`,
+        })
       } else {
-        setAnsibleTemplateUrl('')
+        dispatch({ type: 'setAnsibleTemplateUrl', ansibleTemplateUrl: '' })
       }
     },
     [ansibleCredentials, ansibleTowerTemplateList, ansibleTowerWorkflowTemplateList, ansibleSelection]
@@ -1044,20 +1070,20 @@ function EditAnsibleJobModal(props: {
 
   const updateTemplateSelection = useCallback(
     (jobName: string | undefined) => {
-      if (ansibleJob) {
-        const copy = { ...ansibleJob }
+      if (ansibleJobInEdit) {
+        const copy = { ...ansibleJobInEdit }
         copy.name = jobName ?? ''
         copy.type = filterForJobTemplates ? 'Job' : 'Workflow'
-        setAnsibleJob(copy)
+        dispatch({ type: 'setAnsibleJobInEdit', ansibleJobInEdit: copy })
       }
       updateTemplateUrl(jobName, filterForJobTemplates)
     },
-    [ansibleJob, filterForJobTemplates, updateTemplateUrl]
+    [ansibleJobInEdit, filterForJobTemplates, updateTemplateUrl]
   )
 
   const updateFilterForJobTemplates = useCallback(
     (filterForJobTemplates: boolean) => {
-      setFilterForJobTemplates(filterForJobTemplates)
+      dispatch({ type: 'setFilterForJobTemplates', filterForJobTemplates })
       updateTemplateSelection('')
     },
     [updateTemplateSelection]
@@ -1065,8 +1091,8 @@ function EditAnsibleJobModal(props: {
 
   useEffect(() => {
     const filterForJobTemplates = props.ansibleJob?.type !== 'Workflow'
-    setAnsibleJob(props.ansibleJob)
-    setFilterForJobTemplates(filterForJobTemplates)
+    dispatch({ type: 'setAnsibleJobInEdit', ansibleJobInEdit: props.ansibleJob })
+    dispatch({ type: 'setFilterForJobTemplates', filterForJobTemplates })
     updateTemplateUrl(props.ansibleJob?.name, filterForJobTemplates)
   }, [props.ansibleJob, updateTemplateUrl])
 
@@ -1100,7 +1126,7 @@ function EditAnsibleJobModal(props: {
           menuAppendTo="parent"
           label={filterForJobTemplates ? t('template.modal.name.label') : t('template.workflow.modal.name.label')}
           id="job-name"
-          value={ansibleJob?.name}
+          value={ansibleJobInEdit?.name}
           onChange={(name) => updateTemplateSelection(name)}
           variant={SelectVariant.typeahead}
           placeholder={
@@ -1130,12 +1156,12 @@ function EditAnsibleJobModal(props: {
         <AcmKubernetesLabelsInput
           id="job-settings"
           label={t('template.modal.settings.label')}
-          value={ansibleJob?.extra_vars}
+          value={ansibleJobInEdit?.extra_vars}
           onChange={(labels) => {
-            if (ansibleJob) {
-              const copy = { ...ansibleJob }
+            if (ansibleJobInEdit) {
+              const copy = { ...ansibleJobInEdit }
               copy.extra_vars = labels
-              setAnsibleJob(copy)
+              dispatch({ type: 'setAnsibleJobInEdit', ansibleJobInEdit: copy })
             }
           }}
           placeholder={t('template.modal.settings.placeholder')}
@@ -1145,12 +1171,12 @@ function EditAnsibleJobModal(props: {
             <AcmAnsibleTagsInput
               id="job-jobtags"
               label={t('Job tags')}
-              value={ansibleJob?.job_tags}
+              value={ansibleJobInEdit?.job_tags}
               onChange={(labels) => {
-                if (ansibleJob) {
-                  const copy = { ...ansibleJob }
+                if (ansibleJobInEdit) {
+                  const copy = { ...ansibleJobInEdit }
                   copy.job_tags = labels
-                  setAnsibleJob(copy)
+                  dispatch({ type: 'setAnsibleJobInEdit', ansibleJobInEdit: copy })
                 }
               }}
               placeholder={t('Enter job tag with "," or "enter"')}
@@ -1158,12 +1184,12 @@ function EditAnsibleJobModal(props: {
             <AcmAnsibleTagsInput
               id="job-skiptags"
               label={t('Skip tags')}
-              value={ansibleJob?.skip_tags}
+              value={ansibleJobInEdit?.skip_tags}
               onChange={(labels) => {
-                if (ansibleJob) {
-                  const copy = { ...ansibleJob }
+                if (ansibleJobInEdit) {
+                  const copy = { ...ansibleJobInEdit }
                   copy.skip_tags = labels
-                  setAnsibleJob(copy)
+                  dispatch({ type: 'setAnsibleJobInEdit', ansibleJobInEdit: copy })
                 }
               }}
               placeholder={t('Enter skip tag with "," or "enter"')}
@@ -1173,12 +1199,11 @@ function EditAnsibleJobModal(props: {
         {!filterForJobTemplates && (
           <AutomationProviderHint component="alert" operatorNotRequired workflowSupportRequired />
         )}
-
         <ActionGroup>
           <AcmSubmit
             variant="primary"
             onClick={() => {
-              if (ansibleJob) props.setAnsibleJob({ ...ansibleJob }, props.ansibleJob)
+              if (ansibleJobInEdit) props.setAnsibleJob({ ...ansibleJobInEdit }, props.ansibleJob)
               props.setAnsibleJob()
             }}
           >
