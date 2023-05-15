@@ -31,6 +31,7 @@ export interface ArgoApplication extends IResource {
       targetRevision?: string
       chart?: string
     }
+    sources?: any[]
     syncPolicy: any
   }
   status?: any

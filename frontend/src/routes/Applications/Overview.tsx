@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { PageSection, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
+import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import {
   AcmDropdown,
@@ -189,6 +189,9 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
   } else if (resource.apiVersion === ArgoApplicationApiVersion) {
     if (resource.kind === ArgoApplicationKind) {
       castType = resource as ArgoApplication
+      if (!castType.spec.source) {
+        return []
+      }
       return [
         {
           type: castType.spec.source.path ? 'git' : 'helmrepo',
@@ -200,6 +203,9 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       ]
     } else if (resource.kind === ApplicationSetKind) {
       castType = resource as ApplicationSet
+      if (!castType.spec.template?.spec?.source) {
+        return []
+      }
       return [
         {
           type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
@@ -508,6 +514,22 @@ export default function ApplicationsOverview() {
             (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
             (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
           ) {
+            const argoAppType = application as ArgoApplication
+            if (argoAppType?.spec?.sources) {
+              return (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {application.metadata?.name}
+                  <span> </span>
+                  <Tooltip
+                    isContentLeftAligned={true}
+                    content={t('ArgoCD application with multiple sources is not supported.')}
+                    position="right"
+                  >
+                    <OutlinedQuestionCircleIcon />
+                  </Tooltip>
+                </span>
+              )
+            }
             const cluster = application?.status?.cluster
             clusterQuery = cluster ? `&cluster=${cluster}` : ''
           }
@@ -525,6 +547,24 @@ export default function ApplicationsOverview() {
               apiVersion = 'flux'
             } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
               apiVersion = 'ocp'
+            }
+          }
+          if (application.kind === ApplicationSetKind) {
+            const appSetType = application as ApplicationSet
+            if (appSetType.spec.template?.spec?.sources) {
+              return (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {application.metadata?.name}
+                  <span> </span>
+                  <Tooltip
+                    isContentLeftAligned={true}
+                    content={t('ApplicationSet application with multiple sources is not supported.')}
+                    position="right"
+                  >
+                    <OutlinedQuestionCircleIcon />
+                  </Tooltip>
+                </span>
+              )
             }
           }
           return (
@@ -765,42 +805,48 @@ export default function ApplicationsOverview() {
       }
 
       if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-        actions.push({
-          id: 'viewApplication',
-          title: t('View application'),
-          click: () => {
-            history.push(
-              `${NavigationPath.applicationOverview
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
-            )
-          },
-        })
-        actions.push({
-          id: 'editApplication',
-          title: t('Edit application'),
-          click: () => {
-            history.push(
-              NavigationPath.editApplicationArgo
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
-            )
-          },
-        })
+        const appSetType = resource as ApplicationSet
+        if (!appSetType.spec.template?.spec?.sources) {
+          actions.push({
+            id: 'viewApplication',
+            title: t('View application'),
+            click: () => {
+              history.push(
+                `${NavigationPath.applicationOverview
+                  .replace(':namespace', resource.metadata?.namespace as string)
+                  .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
+              )
+            },
+          })
+          actions.push({
+            id: 'editApplication',
+            title: t('Edit application'),
+            click: () => {
+              history.push(
+                NavigationPath.editApplicationArgo
+                  .replace(':namespace', resource.metadata?.namespace as string)
+                  .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
+              )
+            },
+          })
+        }
       }
 
       if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
-        actions.push({
-          id: 'viewApplication',
-          title: t('View application'),
-          click: () => {
-            history.push(
-              `${NavigationPath.applicationOverview
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string)}?apiVersion=application.argoproj.io`
-            )
-          },
-        })
+        const argoAppType = resource as ArgoApplication
+        if (!argoAppType.spec?.sources) {
+          actions.push({
+            id: 'viewApplication',
+            title: t('View application'),
+            click: () => {
+              history.push(
+                `${NavigationPath.applicationOverview
+                  .replace(':namespace', resource.metadata?.namespace as string)
+                  .replace(':name', resource.metadata?.name as string)}?apiVersion=application.argoproj.io`
+              )
+            },
+          })
+        }
       }
 
       actions.push({

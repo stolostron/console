@@ -161,7 +161,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
     const gitArgoAppSetRepoURLs: string[] = []
     if (props.applicationSets) {
       props.applicationSets.forEach((appset) => {
-        if (!appset.spec.template?.spec?.source.chart) {
+        if (appset.spec.template?.spec?.source && !appset.spec.template?.spec?.source.chart) {
           gitArgoAppSetRepoURLs.push(appset.spec.template?.spec?.source.repoURL as string)
         }
       })
@@ -182,7 +182,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
     const helmArgoAppSetRepoURLs: string[] = []
     if (props.applicationSets) {
       props.applicationSets.forEach((appset) => {
-        if (appset.spec.template?.spec?.source.chart) {
+        if (appset.spec.template?.spec?.source && appset.spec.template?.spec?.source.chart) {
           helmArgoAppSetRepoURLs.push(appset.spec.template?.spec?.source.repoURL)
         }
       })
