@@ -532,7 +532,11 @@ export default function ApplicationsOverview() {
                 <span style={{ whiteSpace: 'nowrap' }}>
                   {application.metadata?.name}
                   <span> </span>
-                  <Tooltip content={t('ArgoCD application with multiple sources are not supported.')} position="right">
+                  <Tooltip
+                    isContentLeftAligned={true}
+                    content={t('ArgoCD application with multiple sources is not supported.')}
+                    position="right"
+                  >
                     <OutlinedQuestionCircleIcon />
                   </Tooltip>
                 </span>
@@ -565,7 +569,8 @@ export default function ApplicationsOverview() {
                   {application.metadata?.name}
                   <span> </span>
                   <Tooltip
-                    content={t('ApplicationSet application with multiple sources are not supported.')}
+                    isContentLeftAligned={true}
+                    content={t('ApplicationSet application with multiple sources is not supported.')}
                     position="right"
                   >
                     <OutlinedQuestionCircleIcon />
