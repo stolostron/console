@@ -137,15 +137,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
   const isAppSet = applicationData?.application?.isAppSet
   const isOCPApp = applicationData?.application?.isOCPApp
   const isFluxApp = applicationData?.application?.isFluxApp
-  let clusters = useAllClusters()
-  clusters = clusters.filter((cluster) => {
-    // don't show clusters in cluster pools in table
-    if (cluster.hive.clusterPool) {
-      return cluster.hive.clusterClaimName !== undefined
-    } else {
-      return true
-    }
-  })
+  const clusters = useAllClusters(true)
 
   let modalWarnings: string
 

@@ -536,7 +536,8 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
     isHibernatable,
     clusterPool: clusterDeployment?.spec?.clusterPoolRef?.poolName,
     clusterPoolNamespace: clusterDeployment?.spec?.clusterPoolRef?.namespace,
-    clusterClaimName: clusterDeployment?.spec?.clusterPoolRef?.claimName,
+    // only include clusterClaimName if the claim is visible to user; used to filter from tables
+    clusterClaimName: clusterClaim ? clusterDeployment?.spec?.clusterPoolRef?.claimName : undefined,
     secrets: {
       kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name,
       kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name,
