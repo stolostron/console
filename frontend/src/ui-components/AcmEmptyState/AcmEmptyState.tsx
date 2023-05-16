@@ -1,12 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { EmptyState, EmptyStateBody, EmptyStatePrimary, EmptyStateVariant, Title } from '@patternfly/react-core'
+import {
+  EmptyState,
+  EmptyStateBody,
+  EmptyStatePrimary,
+  EmptyStateVariant,
+  EmptyStateIcon,
+  Title,
+} from '@patternfly/react-core'
 import { ReactNode } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
-import emptyTablePng from '../assets/EmptyTableIcon.png'
-import emptyPageDarkThemeSVG from '../assets/AcmPlanetsDark.svg'
-import emptyPageLightThemeSVG from '../assets/AcmPlanetsLight.svg'
 import Folder from '../assets/Folder.png'
+
+import { CubesIcon } from '@patternfly/react-icons'
 
 export enum AcmEmptyStateImage {
   folder = Folder,
@@ -20,19 +25,9 @@ export function AcmEmptyState(props: {
   image?: AcmEmptyStateImage
   isEmptyTableState?: boolean
 }) {
-  const theme =
-    process.env.NODE_ENV === 'development' ? localStorage.getItem('theme') : localStorage.getItem('bridge/theme')
-  const AcmPlanetsIcon = theme === 'light' ? emptyPageLightThemeSVG : emptyPageDarkThemeSVG
-  const { t } = useTranslation()
   return (
     <EmptyState variant={EmptyStateVariant.large}>
-      {props.isEmptyTableState ? (
-        props.showIcon !== false && (
-          <img src={props.image && emptyTablePng} style={{ width: '65%' }} alt={t('Empty state')} />
-        )
-      ) : (
-        <AcmPlanetsIcon />
-      )}
+      <EmptyStateIcon icon={CubesIcon}></EmptyStateIcon>
       <Title headingLevel="h4" size="lg">
         {props.title}
       </Title>
