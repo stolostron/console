@@ -1,6 +1,6 @@
 {
     "name": "acm",
-    "version": "2.8.0",
+    "version": "2.9.0",
     "displayName": "Red Hat Advanced Cluster Management for Kubernetes",
     "description": "Integrates Advanced Cluster Management functionality into the OpenShift Container Platform web console",
     "exposedModules": {
@@ -12,6 +12,6 @@
     },
     "dependencies": {
         "@console/pluginAPI": "*",
-        "mce": ">=2.3"
+        "mce": ">=2.4"
     }
 }
