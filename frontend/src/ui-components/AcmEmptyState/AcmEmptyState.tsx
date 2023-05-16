@@ -9,12 +9,21 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ReactNode } from 'react'
-import { CubesIcon } from '@patternfly/react-icons'
+import { CubesIcon, SearchIcon } from '@patternfly/react-icons'
 
-export function AcmEmptyState(props: { title: string; message?: string | ReactNode; action?: ReactNode }) {
+export function AcmEmptyState(props: {
+  title: string
+  message?: string | ReactNode
+  action?: ReactNode
+  showSearchIcon?: boolean
+}) {
   return (
     <EmptyState variant={EmptyStateVariant.large}>
-      <EmptyStateIcon icon={CubesIcon}></EmptyStateIcon>
+      {props.showSearchIcon ? (
+        <EmptyStateIcon icon={SearchIcon}></EmptyStateIcon>
+      ) : (
+        <EmptyStateIcon icon={CubesIcon}></EmptyStateIcon>
+      )}
       <Title headingLevel="h4" size="lg">
         {props.title}
       </Title>

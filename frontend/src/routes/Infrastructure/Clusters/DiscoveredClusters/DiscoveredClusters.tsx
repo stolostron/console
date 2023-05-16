@@ -40,6 +40,7 @@ function EmptyStateNoCRHCredentials() {
       title={t('emptystate.defaultState.title')}
       message={<Trans i18nKey="emptystate.defaultState.msg" components={{ italic: <em />, bold: <strong /> }} />}
       key="dcEmptyState"
+      showSearchIcon={true}
       action={
         <div>
           <AcmButton component={Link} to={NavigationPath.addCredentials}>
@@ -99,6 +100,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
         />
       }
       key="dcEmptyState"
+      showSearchIcon={true}
     />
   )
 }
@@ -110,6 +112,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
       title={t('emptystate.discoveryEnabled.title')}
       message={t('emptystate.discoveryEnabled.msg')}
       key="dcEmptyState"
+      showSearchIcon={true}
       action={
         <div>
           <Bullseye>
