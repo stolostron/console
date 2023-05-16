@@ -4,7 +4,7 @@ import { EmptyState, EmptyStateBody, EmptyStateSecondaryActions, Title } from '@
 import { makeStyles } from '@mui/styles'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLoadingPage } from '../AcmLoadingPage/AcmLoadingPage'
-import DestroyedImage from '../assets/resource-destroyed.png'
+import { TrashIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../lib/acm-i18next'
 
 const useStyles = makeStyles({
@@ -59,7 +59,7 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
       <AcmPageCard>
         <EmptyState>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <img src={DestroyedImage} role="presentation" className={classes.image} />
+          <TrashIcon size="xl" />
           <div className={classes.body}>
             <Title size="lg" headingLevel="h4">
               {props.successTitle ?? t('Success')}
