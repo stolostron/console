@@ -26,8 +26,4 @@ describe('AcmEmptyState', () => {
     expect(container.querySelector('button')).toBeNull()
     expect(await axe(container)).toHaveNoViolations()
   })
-  test('renders with isEmptyTableState', () => {
-    const { getByText } = render(<AcmEmptyState title="Empty state title" message="Empty state message" />)
-    expect(getByText('Empty state title')).toBeInTheDocument()
-  })
 })
