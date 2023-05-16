@@ -262,7 +262,7 @@ export default function PolicySetsPage() {
           </ToolbarContent>
         </Toolbar>
         {filteredPolicySets.length === 0 ? (
-          <AcmEmptyState title={t('No resources match the current filter')} showIcon={true} />
+          <AcmEmptyState title={t('No resources match the current filter')} />
         ) : (
           <PageSection isFilled>
             <AcmMasonry minSize={400}>

@@ -2,7 +2,7 @@
 
 import { Button } from '@patternfly/react-core'
 
-import { AcmEmptyState, AcmEmptyStateImage } from './AcmEmptyState'
+import { AcmEmptyState } from './AcmEmptyState'
 
 export default {
   title: 'EmptyState',
@@ -13,18 +13,6 @@ export default {
     },
     message: {
       control: { type: 'text', default: 'You do not have any items.' },
-    },
-    image: {
-      control: {
-        type: 'select',
-        options: Object.values(AcmEmptyStateImage),
-      },
-    },
-    showIcon: {
-      control: { type: 'boolean', default: true },
-    },
-    showAction: {
-      control: { type: 'boolean', default: true },
     },
     action: {
       table: {
@@ -39,8 +27,6 @@ export const EmptyState = (args: any) => (
     title={args.title}
     message={args.message}
     action={args.showAction && <Button variant="primary">Create Item</Button>}
-    showIcon={args.showIcon}
-    image={args.image}
   />
 )
 

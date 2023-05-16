@@ -4,7 +4,6 @@ import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
-  AcmEmptyStateImage,
   AcmInlineProvider,
   AcmPageContent,
   AcmTable,
@@ -41,7 +40,6 @@ function EmptyStateNoCRHCredentials() {
       title={t('emptystate.defaultState.title')}
       message={<Trans i18nKey="emptystate.defaultState.msg" components={{ italic: <em />, bold: <strong /> }} />}
       key="dcEmptyState"
-      showIcon={true}
       action={
         <div>
           <AcmButton component={Link} to={NavigationPath.addCredentials}>
@@ -101,8 +99,6 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
         />
       }
       key="dcEmptyState"
-      showIcon={true}
-      image={AcmEmptyStateImage.folder}
     />
   )
 }
@@ -114,8 +110,6 @@ function EmptyStateAwaitingDiscoveredClusters() {
       title={t('emptystate.discoveryEnabled.title')}
       message={t('emptystate.discoveryEnabled.msg')}
       key="dcEmptyState"
-      showIcon={true}
-      image={AcmEmptyStateImage.folder}
       action={
         <div>
           <Bullseye>
