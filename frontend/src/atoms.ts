@@ -12,7 +12,7 @@ import {
     NMStateK8sResource,
     NodePoolK8sResource,
     StorageClassK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { atom, useRecoilValue } from 'recoil'

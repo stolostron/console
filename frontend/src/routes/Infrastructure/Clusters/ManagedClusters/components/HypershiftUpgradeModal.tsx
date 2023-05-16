@@ -7,7 +7,7 @@ import {
     AgentMachineK8sResource,
     HostedClusterK8sResource,
     NodePoolK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { generatePath } from 'react-router'
 import { isEqual } from 'lodash'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
@@ -24,7 +24,7 @@ import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
-import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { AgentK8sResource, BareMetalHostK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 

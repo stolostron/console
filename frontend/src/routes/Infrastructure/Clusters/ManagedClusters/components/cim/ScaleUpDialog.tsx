@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 
 import { patchResource } from '../../../../../../resources/utils/resource-request'
 import { useClusterDeployment, onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'

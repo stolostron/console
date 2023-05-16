@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AlertVariant, List, ListComponent, ListItem, OrderType, Stack, StackItem } from '@patternfly/react-core'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import * as React from 'react'
 import { useContext } from 'react'
 import { getErrorInfo } from '../../../../../components/ErrorPage'

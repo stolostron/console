@@ -31,7 +31,7 @@ import {
     getOCPVersions,
     HostedClusterK8sResource,
     OpenshiftVersionOptionType,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import {
     createResource,
     HypershiftCloudPlatformType,
@@ -44,7 +44,7 @@ import {
     resultsSettled,
 } from '../../../../../resources'
 import { Fragment, useEffect, useState } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 
 const { getVersionFromReleaseImage } = CIM
 

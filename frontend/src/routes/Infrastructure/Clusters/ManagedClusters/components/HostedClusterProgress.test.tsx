@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render } from '@testing-library/react'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'

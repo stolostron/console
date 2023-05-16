@@ -13,7 +13,7 @@ import {
 } from './get-cluster'
 import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../cluster-claim'
 import { HostedClusterApiVersion, HostedClusterKind } from '..'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { saveAs } from 'file-saver'
-import { HostedClusterK8sResource, SecretK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource, SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 

@@ -5,7 +5,7 @@ import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress
 import { AcmExpandableCard } from '../../../../../ui-components'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 
 const HypershiftClusterDetails: React.FC = () => {
     const { t } = useTranslation()

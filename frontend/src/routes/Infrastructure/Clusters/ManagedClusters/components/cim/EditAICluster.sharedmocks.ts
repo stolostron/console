@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { CIM } from '@openshift-assisted/ui-lib'
+import { AgentK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../../resources'
 
