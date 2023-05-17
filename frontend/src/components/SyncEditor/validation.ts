@@ -314,7 +314,12 @@ export const validateTemplateSyntax = (object: any, errors: any[]) => {
     } else if (!!object && typeof object === 'object') {
       Object.values(object).forEach((o) => {
         const obj = o as unknown as MappingType
-        if (obj && !Array.isArray(obj) && (obj.$v === undefined || Object.keys(obj.$v)[0] === 'undefined')) {
+        if (
+          obj &&
+          Array.isArray(obj.$p) &&
+          ['metadata.name', 'metadata.namespacer'].includes(obj.$p.slice(-2).join('.')) &&
+          typeof obj.$v !== 'string'
+        ) {
           const errorMsg: ErrorMessageType = {
             linePos: {
               end: { line: obj.$r, col: obj.$gv ? obj.$gv.end.col : 1 },
