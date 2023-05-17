@@ -3788,28 +3788,6 @@ describe('addDiagramDetails', () => {
                         },
                     },
                     subscriptionModel: {
-                        'feng-bz-subscription-1-local-cluster-feng-bz': [
-                            {
-                                _gitbranch: 'master',
-                                _gitpath: 'resources17',
-                                _hubClusterResource: 'true',
-                                _rbac: 'feng-bz_apps.open-cluster-management.io_subscriptions',
-                                _uid: 'local-cluster/6a7262ca-46ff-428a-9abb-e987b4acdc3b',
-                                apigroup: 'apps.open-cluster-management.io',
-                                apiversion: 'v1',
-                                channel: 'ggithubcom-simondelord-acm-templates-ns/ggithubcom-simondelord-acm-templates',
-                                cluster: 'local-cluster',
-                                created: '2022-09-22T19:57:34Z',
-                                kind: 'subscription',
-                                kind_plural: 'subscriptions',
-                                label: 'app.kubernetes.io/part-of=feng-bz; app=feng-bz; apps.open-cluster-management.io/reconcile-rate=medium',
-                                localPlacement: 'false',
-                                name: 'feng-bz-subscription-1',
-                                namespace: 'feng-bz',
-                                status: 'Propagated',
-                                timeWindow: 'none',
-                            },
-                        ],
                         'feng-bz-subscription-1-local-local-cluster-feng-bz': [
                             {
                                 _gitbranch: 'master',

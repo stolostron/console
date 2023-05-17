@@ -234,9 +234,11 @@ export const mapSingleApplication = (application) => {
         //if that kind section was found add this object to it, otherwise create a new kind object for it
         const matchUID = _.filter(result.related, (filtertype) => _.get(filtertype, 'items', [])[0]?._uid === item._uid)
         const kindSection = queryKind && queryKind.length > 0 ? queryKind : { kind, items: [item] }
-        if (!queryKind || queryKind.length === 0 || matchUID) {
+        if (!queryKind || queryKind.length === 0) {
             //link this kind section directly to the results array
             result.related.push(kindSection)
+        } else if (matchUID) {
+            // do nothing
         } else {
             kindSection[0].items.push(item)
         }
