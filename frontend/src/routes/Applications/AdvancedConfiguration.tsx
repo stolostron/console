@@ -684,7 +684,7 @@ export default function AdvancedConfiguration() {
             )}
           />
           <TerminologyCard
-            title={t('Placement rules')}
+            title={t('Placement rules (Deprecated)')}
             description={t(
               'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
             )}
