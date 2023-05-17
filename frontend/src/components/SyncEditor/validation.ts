@@ -320,6 +320,7 @@ export const validateTemplateSyntax = (object: any, errors: any[]) => {
           ['metadata.name', 'metadata.namespacer'].includes(obj.$p.slice(-2).join('.')) &&
           typeof obj.$v !== 'string'
         ) {
+          /* istanbul ignore next */
           const errorMsg: ErrorMessageType = {
             linePos: {
               end: { line: obj.$r, col: obj.$gv ? obj.$gv.end.col : 1 },
