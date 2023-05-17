@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { AcmEmptyState, AcmEmptyStateImage } from './AcmEmptyState'
+import { AcmEmptyState } from './AcmEmptyState'
 
 describe('AcmEmptyState', () => {
   test('renders with action', () => {
@@ -21,22 +21,9 @@ describe('AcmEmptyState', () => {
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders with imageOverride', async () => {
-    const { container, getByText } = render(
-      <AcmEmptyState
-        title="Empty state title"
-        message="Empty state message"
-        showIcon={true}
-        image={AcmEmptyStateImage.folder}
-      />
-    )
+    const { container, getByText } = render(<AcmEmptyState title="Empty state title" message="Empty state message" />)
     expect(getByText('Empty state title')).toBeInTheDocument()
     expect(container.querySelector('button')).toBeNull()
     expect(await axe(container)).toHaveNoViolations()
-  })
-  test('renders with isEmptyTableState', () => {
-    const { getByText } = render(
-      <AcmEmptyState title="Empty state title" message="Empty state message" isEmptyTableState />
-    )
-    expect(getByText('Empty state title')).toBeInTheDocument()
   })
 })

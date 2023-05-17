@@ -103,7 +103,7 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
         }
       >
         <PageSection variant="light" isFilled>
-          <AcmEmptyState title={t('Unauthorized')} message={t('rbac.unauthorized.namespace')} showIcon={false} />
+          <AcmEmptyState title={t('Unauthorized')} message={t('rbac.unauthorized.namespace')} showSearchIcon={true} />
         </PageSection>
       </AcmPage>
     )
