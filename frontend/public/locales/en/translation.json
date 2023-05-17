@@ -1224,7 +1224,6 @@
   "editor.bar.undo": "Undo",
   "editor.show.secrets": "Show secrets",
   "editor.toolbar": "Editor toolbar",
-  "Empty state": "Empty state",
   "empty-state.submariner.title": "No submariner add-ons found",
   "emptystate.addCredential": "Add credential",
   "emptystate.credentials.msg": "No discovered clusters found.  You have {{discoveryConfigTotal}} credentials. Click <bold>Configure Discovery</bold> to set up a filter for discovered clusters from your connections.",
