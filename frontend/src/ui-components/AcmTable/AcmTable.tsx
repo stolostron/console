@@ -1040,7 +1040,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               <AcmEmptyState
                 title={t('No results found')}
                 message={t('No results match the filter criteria. Clear filters to show results.')}
-                showIcon={false}
+                showSearchIcon={true}
                 action={
                   <AcmButton variant="link" onClick={clearSearchAndFilters}>
                     {t('Clear all filters')}
