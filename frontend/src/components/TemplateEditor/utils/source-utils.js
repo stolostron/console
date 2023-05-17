@@ -32,12 +32,12 @@ export const initializeControls = (initialControlData, editor, onControlInitiali
 }
 
 // from an edit resource, discover # of groups, card selections
-export function discoverControls(controlData, templateObject, editor, i18n) {
+export function discoverControls(controlData, templateObject, onControlInitialize, editor, i18n) {
   templateObject = cloneDeep(templateObject)
   const discoverControl = (control) => {
     const { discover } = control
     if (discover) {
-      discover(control, controlData, templateObject, editor, i18n)
+      discover(control, controlData, templateObject, onControlInitialize, editor, i18n)
     }
   }
   controlData.forEach((control) => {

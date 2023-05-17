@@ -53,11 +53,11 @@ export const updateEditStack = (editStack = {}, templateResources, parsedResourc
 }
 
 const intializeControls = (editStack, controlData) => {
-  const { customResources, editor, i18n } = editStack
+  const { customResources, editor, onControlInitialize, i18n } = editStack
   const { templateObject } = generateSourceFromResources(customResources)
 
   // determine the controls for this resource
-  discoverControls(controlData, templateObject, editor, i18n)
+  discoverControls(controlData, templateObject, onControlInitialize, editor, i18n)
 
   // refresh the values from the template for these controls
   reverseTemplate(controlData, templateObject)

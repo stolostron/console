@@ -171,6 +171,7 @@ export default class TemplateEditor extends React.Component {
       const customResources = get(fetchControl, 'resources')
       if (customResources) {
         editStack = { customResources: cloneDeep(customResources), editor, i18n }
+        editStack.onControlInitialize = onControlInitialize
       }
 
       // generate source from template or stack of resources

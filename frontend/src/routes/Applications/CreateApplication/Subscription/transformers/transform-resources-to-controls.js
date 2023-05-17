@@ -19,7 +19,7 @@ import { PlacementRuleKind } from '../../../../../resources'
 
 //only called when editing an existing application
 //examines resources to create the correct resource types that are being deployed
-export const discoverGroupsFromSource = (control, cd, templateObject, editor, i18n) => {
+export const discoverGroupsFromSource = (control, cd, templateObject, onControlInitialize, editor, i18n) => {
   const applicationResource = _.get(templateObject, 'Application[0].$raw')
   // get application selflink
   const selfLinkControl = cd.find(({ id }) => id === 'selfLink')
@@ -40,7 +40,7 @@ export const discoverGroupsFromSource = (control, cd, templateObject, editor, i1
     _.times(times, () => {
       // add a group for every subscription
       uniqueGroupID = uniqueGroupID + 1
-      const newGroup = initializeControls(groupData, editor, null, i18n, uniqueGroupID, true)
+      const newGroup = initializeControls(groupData, editor, onControlInitialize, i18n, uniqueGroupID, true)
       active.push(newGroup)
       const nameControl = _.keyBy(newGroup, 'id')[nameId]
       nameControl.active = `${baseName}-${active.length - 1}`
@@ -52,6 +52,7 @@ export const discoverGroupsFromSource = (control, cd, templateObject, editor, i1
         newGroup,
         cd,
         templateObject,
+        onControlInitialize,
         editor,
         times > 1,
         i18n
@@ -75,6 +76,7 @@ const discoverChannelFromSource = (
   groupControlData,
   globalControl,
   templateObject,
+  onControlInitialize,
   editor,
   multiple,
   i18n
@@ -132,7 +134,7 @@ const discoverChannelFromSource = (
     groupControlData.forEach((cd) => {
       cd.groupControlData = groupControlData
     })
-    initializeControls(groupControlData, editor, null, i18n)
+    initializeControls(groupControlData, editor, onControlInitialize, i18n)
 
     // initialize channel namespace
     const path = 'Subscription[0].spec.channel'
