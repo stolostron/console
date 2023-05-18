@@ -1935,6 +1935,7 @@
   "Placement rule deprecation": "Placement rule deprecation",
   "Placement rule name": "Placement rule name",
   "Placement rules": "Placement rules",
+  "Placement rules (Deprecated)": "Placement rules (Deprecated)",
   "Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).": "Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).",
   "Placement rules determine which clusters a resources will be applied.": "Placement rules determine which clusters a resources will be applied.",
   "PlacementRule": "PlacementRule",
