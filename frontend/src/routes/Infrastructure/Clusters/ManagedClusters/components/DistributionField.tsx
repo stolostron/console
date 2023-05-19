@@ -272,20 +272,24 @@ export function DistributionField(props: {
         <AcmInlineStatus
           type={StatusType.progress}
           status={
-            versionNum
-              ? t('upgrade.upgrading.version', {
-                  version: versionNum,
-                })
-              : t('upgrade.upgrading')
+            t('upgrade.upgrading.version', {
+              version: versionNum,
+            }) + (props.cluster.hypershift?.upgradePercentage ? ' ' + props.cluster.hypershift?.upgradePercentage : '')
           }
           popover={
             props.cluster?.consoleURL
               ? {
                   headerContent: t('upgrade.upgrading'),
-                  bodyContent: t('upgrade.upgrading.message', {
-                    clusterName: props.cluster?.name,
-                    version: versionNum,
-                  }),
+                  bodyContent: props.cluster.hypershift?.upgradePercentage
+                    ? t('upgrade.upgrading.message.percentage', {
+                        clusterName: props.cluster?.name,
+                        version: versionNum,
+                        percentage: props.cluster.hypershift?.upgradePercentage,
+                      })
+                    : t('upgrade.upgrading.message', {
+                        clusterName: props.cluster?.name,
+                        version: versionNum,
+                      }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
                       {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
