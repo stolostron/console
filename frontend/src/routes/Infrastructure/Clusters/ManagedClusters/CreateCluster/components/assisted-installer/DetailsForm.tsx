@@ -53,6 +53,7 @@ const fields: any = {
   name: { path: 'ClusterDeployment[0].metadata.name' },
   baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
   openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
+  cpuArchitecture: { path: 'ClusterDeployment[0].metadata.annotations["agentBareMetal-cpuArchitecture"]' },
   pullSecret: {},
 }
 
