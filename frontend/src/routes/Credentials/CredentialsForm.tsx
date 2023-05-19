@@ -474,7 +474,11 @@ export function CredentialsForm(
     if (stringData?.['ssh-privatekey'] && !stringData['ssh-privatekey'].endsWith('\n')) {
       stringData['ssh-privatekey'] += '\n'
     }
-    if (stringData?.['ssh-publickey'] && !stringData['ssh-publickey'].endsWith('\n')) {
+    if (
+      stringData?.['ssh-publickey'] &&
+      !stringData['ssh-publickey'].endsWith('\n') &&
+      credentialsType !== Provider.hostinventory
+    ) {
       stringData['ssh-publickey'] += '\n'
     }
     return secret
