@@ -1410,12 +1410,11 @@ export function getHCUpgradePercent(hostedCluster?: HostedClusterK8sResource) {
   // Check if hostedCluster, status, and conditions are not null
   if (hostedCluster?.status?.conditions) {
     const iterator = hostedCluster.status.conditions.entries()
+    let matches = null;
     for (const [_, condition] of iterator) {
-      console.log(`HELLO`)
-      if (condition.type == 'ClusterVersionProgressing') {
-        console.log(condition.message)
-        var regExp = /\(([^)]+)\)/
-        var matches = regExp.exec(condition.message)
+      if (!matches && (condition.type == 'ClusterVersionSucceeding' || condition.type == 'ClusterVersionProgressing')) {
+        let regExp = /\(([^)]+)\)/
+        matches = regExp.exec(condition.message)
         if (matches) {
           return matches[0]
         }
