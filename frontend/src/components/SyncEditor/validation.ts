@@ -314,11 +314,17 @@ export const validateTemplateSyntax = (object: any, errors: any[]) => {
     } else if (!!object && typeof object === 'object') {
       Object.values(object).forEach((o) => {
         const obj = o as unknown as MappingType
-        if (obj && obj.$v !== undefined && Object.keys(obj.$v)[0] === 'undefined') {
+        if (
+          obj &&
+          Array.isArray(obj.$p) &&
+          ['metadata.name', 'metadata.namespacer'].includes(obj.$p.slice(-2).join('.')) &&
+          typeof obj.$v !== 'string'
+        ) {
+          /* istanbul ignore next */
           const errorMsg: ErrorMessageType = {
             linePos: {
-              end: { line: obj.$r, col: obj.$gv.end.col },
-              start: { line: obj.$r, col: obj.$gv.start.col },
+              end: { line: obj.$r, col: obj.$gv ? obj.$gv.end.col : 1 },
+              start: { line: obj.$r, col: obj.$gv ? obj.$gv.start.col : 1 },
             },
             errorType: ErrorType.error,
             message: 'If this is a template name, it must be in the form "{{ name }}"',
