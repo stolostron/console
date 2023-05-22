@@ -142,12 +142,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
   )
 
   return agents ? (
-    <HostedClusterNetworkStep
-      formRef={formRef}
-      onValuesChanged={onValuesChanged}
-      initialValues={initialValues}
-      count={0}
-    />
+    <HostedClusterNetworkStep formRef={formRef} onValuesChanged={onValuesChanged} initialValues={initialValues} />
   ) : (
     <LoadingState />
   )
