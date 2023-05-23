@@ -57,7 +57,7 @@ import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
 import { IResource } from '../../../resources/resource'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
-import { ResourceError, createResource, getResource, listResources, patchResource } from '../../../resources'
+import { createResource, getResource, listResources, patchResource } from '../../../resources'
 
 // Will change perspective, still in the OCP Console app
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
@@ -101,15 +101,7 @@ const deleteInfraEnv = (
   infraEnvs: InfraEnvK8sResource[],
   agents: AgentK8sResource[]
 ) => {
-  const capiProviderRole: IResource = {
-    kind: 'Role',
-    apiVersion: 'rbac.authorization.k8s.io/v1',
-    metadata: {
-      name: 'capi-provider-role',
-      namespace: infraEnv.metadata?.namespace,
-    },
-  }
-  const resources = [infraEnv, capiProviderRole]
+  const resources = [infraEnv]
 
   // Check all infraenv with same pull secret. If we don't found more infraenv we delete pull secret.
   if (isPullSecretReused(infraEnvs, infraEnv, agents)) {
@@ -136,13 +128,7 @@ const deleteInfraEnv = (
           }
         }
         if (promisesSettledResult[1]?.status === 'rejected') {
-          if ((promisesSettledResult[1].reason as ResourceError).code !== 404) {
-            reject(promisesSettledResult[1].reason)
-            return
-          }
-        }
-        if (promisesSettledResult[2]?.status === 'rejected') {
-          reject(promisesSettledResult[2].reason)
+          reject(promisesSettledResult[1].reason)
           return
         }
         resolve(promisesSettledResult)
