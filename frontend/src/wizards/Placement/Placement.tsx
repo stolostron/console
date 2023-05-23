@@ -85,6 +85,8 @@ export function Placement(props: {
 }) {
   const editMode = useEditMode()
   const placement = useItem() as IPlacement
+  const isClusterSet = placement.spec?.clusterSets?.length
+
   const { t } = useTranslation()
 
   return (
@@ -124,7 +126,7 @@ export function Placement(props: {
         options={props.namespaceClusterSetNames}
       />
 
-      {!props.namespaceClusterSetNames.length && props.alertTitle ? (
+      {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
         <Alert variant="warning" title={props.alertTitle} />
       ) : null}
 
@@ -226,7 +228,7 @@ export function PredicateSummary() {
   }
 
   if (labelSelectors.length === 0 && labelSelectorExpressions.length === 0 && claimSelectorExpressions.length === 0) {
-    return <div>{t('Expand to enter details')}</div>
+    return <div>{t('Expand to enter expression')}</div>
   }
 
   return (
