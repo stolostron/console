@@ -90,7 +90,7 @@ describe('getApplicationData', () => {
     const result = {
       cluster: 'local-cluster',
       isArgoApp: true,
-      relatedKinds: ['replicaset'],
+      relatedKinds: ['application', 'replicaset'],
       source: {},
       subscription: null,
     }
@@ -180,7 +180,7 @@ describe('getApplicationData', () => {
     const result = {
       cluster: 'local-cluster',
       isArgoApp: true,
-      relatedKinds: ['replicaset'],
+      relatedKinds: ['application', 'replicaset'],
       source: {},
       subscription: null,
     }
