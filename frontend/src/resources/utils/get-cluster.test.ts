@@ -9,6 +9,7 @@ import {
   getClusterStatus,
   getDistributionInfo,
   getHCUpgradeStatus,
+  getHCUpgradePercent,
   getIsHostedCluster,
 } from './get-cluster'
 import { HostedClusterApiVersion, HostedClusterKind } from '..'
@@ -1171,5 +1172,179 @@ describe('getHCUpgradeStatus', () => {
     }
 
     expect(getHCUpgradeStatus(hc)).toEqual(false)
+  })
+})
+
+describe('getHCUpgradePercent', () => {
+  //Test getting upgrade % from ClusterVersionSucceeding and ClusterVersionProgressing
+  //Test not upgrading
+  it('getHCUpgradePercent not upgrading', () => {
+    const hc: HostedClusterK8sResource = {
+      apiVersion: HostedClusterApiVersion,
+      kind: HostedClusterKind,
+      spec: {
+        dns: {
+          baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+          image: 'randomimage',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2022-12-17T22:14:15Z',
+            message: 'The hosted control plane is available',
+            observedGeneration: 4,
+            reason: 'HostedClusterAsExpected',
+            status: 'True',
+            type: 'Available',
+          },
+          {
+            lastTransitionTime: '2023-05-19T17:44:06Z',
+            message: '',
+            observedGeneration: 4,
+            reason: 'FromClusterVersion',
+            status: 'True',
+            type: 'ClusterVersionSucceeding',
+          },
+        ],
+        version: {
+          desired: {
+            image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+          },
+          history: [
+            {
+              completionTime: '',
+              image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+              startedTime: '2022-10-24T20:34:08Z',
+              state: 'Partial',
+              verified: false,
+              version: '',
+            },
+          ],
+          observedGeneration: 2,
+        },
+      },
+    }
+
+    expect(getHCUpgradePercent(hc)).toEqual('')
+  })
+
+  it('getHCUpgradePercent upgrading with message in ClusterVersionSucceeding', () => {
+    const hc: HostedClusterK8sResource = {
+      apiVersion: HostedClusterApiVersion,
+      kind: HostedClusterKind,
+      spec: {
+        dns: {
+          baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+          image: 'randomimage',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2022-12-17T22:14:15Z',
+            message: 'The hosted control plane is available',
+            observedGeneration: 4,
+            reason: 'HostedClusterAsExpected',
+            status: 'True',
+            type: 'Available',
+          },
+          {
+            lastTransitionTime: '2023-05-19T17:44:06Z',
+            message: 'Working towards 4.12.12: 484 of 573 done (84% complete)',
+            observedGeneration: 4,
+            reason: 'FromClusterVersion',
+            status: 'True',
+            type: 'ClusterVersionSucceeding',
+          },
+        ],
+        version: {
+          desired: {
+            image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+          },
+          history: [
+            {
+              completionTime: '',
+              image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+              startedTime: '2022-10-24T20:34:08Z',
+              state: 'Partial',
+              verified: false,
+              version: '',
+            },
+          ],
+          observedGeneration: 2,
+        },
+      },
+    }
+
+    expect(getHCUpgradePercent(hc)).toEqual('(84% complete)')
+  })
+  it('getHCUpgradePercent upgrading with message in ClusterVersionSucceeding', () => {
+    const hc: HostedClusterK8sResource = {
+      apiVersion: HostedClusterApiVersion,
+      kind: HostedClusterKind,
+      spec: {
+        dns: {
+          baseDomain: 'dev06.red-chesterfield.com',
+        },
+        release: {
+          image: 'randomimage',
+        },
+        services: [],
+        platform: {},
+        pullSecret: { name: 'psecret' },
+        sshKey: { name: 'thekey' },
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2022-12-17T22:14:15Z',
+            message: 'The hosted control plane is available',
+            observedGeneration: 4,
+            reason: 'HostedClusterAsExpected',
+            status: 'True',
+            type: 'Available',
+          },
+          {
+            lastTransitionTime: '2023-05-19T17:44:06Z',
+            message: 'Working towards 4.12.12: 484 of 573 done (84% complete)',
+            observedGeneration: 4,
+            reason: 'FromClusterVersion',
+            status: 'True',
+            type: 'ClusterVersionProgressing',
+          },
+        ],
+        version: {
+          desired: {
+            image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+          },
+          history: [
+            {
+              completionTime: '',
+              image: 'quay.io/openshift-release-dev/ocp-release:4.11.22-x86_64',
+              startedTime: '2022-10-24T20:34:08Z',
+              state: 'Partial',
+              verified: false,
+              version: '',
+            },
+          ],
+          observedGeneration: 2,
+        },
+      },
+    }
+
+    expect(getHCUpgradePercent(hc)).toEqual('(84% complete)')
   })
 })

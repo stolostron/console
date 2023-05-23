@@ -272,9 +272,12 @@ export function DistributionField(props: {
         <AcmInlineStatus
           type={StatusType.progress}
           status={
-            t('upgrade.upgrading.version', {
-              version: versionNum,
-            }) + (props.cluster.hypershift?.upgradePercentage ? ' ' + props.cluster.hypershift?.upgradePercentage : '')
+            versionNum
+              ? t('upgrade.upgrading.version', {
+                  version: versionNum,
+                }) +
+                (props.cluster.hypershift?.upgradePercentage ? ' ' + props.cluster.hypershift?.upgradePercentage : '')
+              : t('upgrade.upgrading')
           }
           popover={
             props.cluster?.consoleURL
