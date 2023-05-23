@@ -271,6 +271,7 @@ export type Cluster = {
     secretNames: string[]
     hostingNamespace: string
     isUpgrading?: boolean
+    upgradePercentage?: string
   }
 }
 
@@ -504,6 +505,7 @@ export function getCluster(
           ),
           hostingNamespace: hostedCluster.metadata?.namespace || '',
           isUpgrading: getHCUpgradeStatus(hostedCluster),
+          upgradePercentage: getHCUpgradePercent(hostedCluster),
         }
       : undefined,
   }
@@ -1401,4 +1403,26 @@ export function getHCUpgradeStatus(hostedCluster?: HostedClusterK8sResource) {
   } else {
     return
   }
+}
+
+//Return the progress of an HC upgrade as a percentage
+export function getHCUpgradePercent(hostedCluster?: HostedClusterK8sResource) {
+  // Check if hostedCluster, status, and conditions are not null
+  if (hostedCluster?.status?.conditions) {
+    const iterator = hostedCluster.status.conditions.entries()
+    let matches = null
+    for (const condition of iterator) {
+      if (
+        !matches &&
+        (condition[1].type == 'ClusterVersionSucceeding' || condition[1].type == 'ClusterVersionProgressing')
+      ) {
+        const regExp = /\(([^)]+)\)/
+        matches = regExp.exec(condition[1].message)
+        if (matches) {
+          return matches[0]
+        }
+      }
+    }
+  }
+  return ''
 }
