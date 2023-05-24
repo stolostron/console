@@ -15,7 +15,7 @@ export const DOC_CREATE_kUBEVIRT_CLUSTER =
   'https://hypershift-docs.netlify.app/how-to/kubevirt/create-kubevirt-cluster/'
 
 export const DOC_LINKS = {
-  CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-overview`,
+  CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CREATE_CONNECTION: `${DOC_BASE_PATH}/clusters/index#credentials`,
   CREATE_CONNECTION_AWS: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-amazon-web-services`,
   CREATE_CONNECTION_AZURE: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-microsoft-azure`,
@@ -25,7 +25,7 @@ export const DOC_LINKS = {
   CREATE_CONNECTION_VIRTUALIZATION: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-virtualization`,
   CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-ansible`,
   CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-openshift-cluster-manager`,
-  CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/clusters/index#cluster-overview`,
+  CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CREATE_CONNECTION_PROXY_VMWARE: `${DOC_BASE_PATH}/clusters/index#proxy-vm`,
   CREATE_CONNECTION_PROXY_AWS: `${DOC_BASE_PATH}/clusters/index#proxy-aws`,
   CREATE_CONNECTION_PROXY_AZURE: `${DOC_BASE_PATH}/clusters/index#proxy-azure`,
@@ -40,8 +40,8 @@ export const DOC_LINKS = {
   GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/clusters/index#managedclustersets_global`,
   CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/index#managing-cluster-pools`,
   CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/index#claiming-clusters-from-cluster-pools`,
-  SUBMARINER: `${DOC_BASE_PATH}/add-ons/index#submariner`,
-  CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/clusters/index#cluster-overview`,
+  SUBMARINER: `${DOC_BASE_PATH}/networking/index#submariner`,
+  CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CIM_CONFIG_DISONNECTED: `${DOC_BASE_PATH}/clusters/index#enable-cim`,
   CIM_CONFIG: `${DOC_BASE_PATH}/clusters/index#enable-cim`,
   CIM_CONFIG_AWS: `${DOC_BASE_PATH}/clusters/index#enable-cim-aws`,
@@ -54,7 +54,7 @@ export const DOC_LINKS = {
   POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
-  HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosting-service-cluster-configure-aws`,
+  HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-aws`,
   HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
   HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-enable-feature-aws`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
