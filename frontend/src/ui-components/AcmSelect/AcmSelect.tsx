@@ -79,6 +79,11 @@ export function AcmSelect(props: AcmSelectProps) {
       helperTextInvalid={error}
       validated={validated}
       helperText={helperText}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+        }
+      }}
       labelIcon={
         /* istanbul ignore next */
         props.labelHelp ? (
