@@ -4,7 +4,7 @@ import { TFunction } from 'i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
 
-export const DOC_VERSION = '2.8'
+export const DOC_VERSION = '2.9'
 
 export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`

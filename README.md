@@ -26,7 +26,7 @@ The same codebase is used to build images for **Red Hat Advanced Cluster Managem
 
 ```
 main → release-2.9 → backplane-2.4
-     ↳ release-2.8 → backplane-2.3
+release-2.8 → backplane-2.3
 release-2.7 → backplane-2.2
 release-2.6 → backplane-2.1
 release-2.5
@@ -40,7 +40,8 @@ A number of the core NPM package dependencies are published from other repositor
 
 | console branch                         | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
 | -------------------------------------- | --------------------------------- | -------------------------- | ------------------------ | -------------------- |
-| main<br/>release-2.8<br/>backplane-2.3 | main                              | main                       | N/A                      | N/A                  |
+| main<br/>release-2.9<br/>backplane-2.4 | main                              | main                       | N/A                      | N/A                  |
+| release-2.8<br/>backplane-2.3          | v1.23.z                           | v1.10.z                    | N/A                      | N/A                  |
 | release-2.7<br/>backplane-2.2          | v1.13.z                           | v1.4.z                     | N/A                      | N/A                  |
 | release-2.6<br/>backplane-2.1          | v1.8.z                            | v1.0.z                     | N/A                      | N/A                  |
 | release-2.5<br/>backplane-2.0          | v1.7.z                            | N/A                        | v1.69.z                  | 2.5                  |
