@@ -231,9 +231,10 @@ export function nockCreate(
   statusCode = 201,
   params?: any
 ) {
+  const apiPath = getResourceApiPathTestHelper(resource)
   const scope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-    .post(`${getResourceApiPathTestHelper(resource)}${getNockParams(params)}`, (body) => {
-      set(scope, 'diff', diff(body, resource))
+    .post(`${apiPath}${getNockParams(params)}`, (body) => {
+      set(scope, 'bodyDiff', { diff: diff(body, resource), apiPath })
       return isEqual(body, resource)
     })
     .reply(statusCode, response ?? resource, {

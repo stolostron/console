@@ -61,6 +61,8 @@ spec:
   {{#each ssh-publickey}}
       {{{.}}}
   {{/each}}
+{{else}}
+  sshPublicKey: ''
 {{/if}}
 
 ---
