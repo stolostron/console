@@ -291,7 +291,24 @@ export function ClusterPoolsTable(props: {
             header: t('table.cluster.statuses'),
             cell: (clusterPool: ClusterPool) => {
               if (isClusterPoolDeleting(clusterPool)) {
-                return <AcmInlineStatus type={StatusType.progress} status={t('destroying')} />
+                const deletionPossible = clusterPool?.status?.conditions.find(
+                  (status) => status.type === 'DeletionPossible'
+                )
+                if (deletionPossible?.status === 'False') {
+                  return (
+                    <AcmInlineStatus
+                      type={StatusType.warning}
+                      status={deletionPossible.message}
+                      popover={{
+                        bodyContent: t(
+                          'The cluster pool deletion will be blocked until all claimed cluster(s) get deleted.'
+                        ),
+                      }}
+                    />
+                  )
+                } else {
+                  return <AcmInlineStatus type={StatusType.progress} status={t('Destroying')} />
+                }
               } else {
                 return <ClusterStatuses clusterPool={clusterPool} />
               }
