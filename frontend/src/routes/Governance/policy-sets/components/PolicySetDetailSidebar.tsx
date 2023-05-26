@@ -175,7 +175,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           /* istanbul ignore next */
           compareStrings(a, b),
         cell: (cluster: string) => (
-          <a href={`/multicloud/infrastructure/clusters/details/${cluster}/overview`}>{cluster}</a>
+          <a href={`/multicloud/infrastructure/clusters/details/${cluster}/${cluster}/overview`}>{cluster}</a>
         ),
       },
       clusterPolicyViolationsColumn,
