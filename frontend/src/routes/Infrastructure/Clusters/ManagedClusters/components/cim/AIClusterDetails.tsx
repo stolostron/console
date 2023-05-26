@@ -171,7 +171,7 @@ const AIClusterDetails: React.FC = () => {
                       ButtonComponent={Button}
                       fallbackEventsURL={fallbackEventsURL}
                     >
-                      View Cluster Events
+                      {t('View cluster events')}
                     </EventsModalButton>
                   )}
                   <LogsDownloadButton
