@@ -49,6 +49,7 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
       encodeValues: ['pullSecret'],
       additionalProps: {
         promptSshPublicKey: true,
+        aiFlow: true,
       },
     },
     ...automationControlData(t),

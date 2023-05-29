@@ -27,6 +27,7 @@ import {
   getVersionFromReleaseImage,
   labelsToArray,
 } from '@openshift-assisted/ui-lib/cim'
+import React from 'react'
 
 type FormControl = {
   active: ClusterDetailsValues & {
@@ -48,13 +49,6 @@ type DetailsFormProps = {
   control: FormControl
   handleChange: (control: FormControl) => void
   controlProps: Secret
-}
-const fields: any = {
-  name: { path: 'ClusterDeployment[0].metadata.name' },
-  baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
-  openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
-  cpuArchitecture: { path: 'ClusterDeployment[0].metadata.annotations["agentBareMetal-cpuArchitecture"]' },
-  pullSecret: {},
 }
 
 export const getExtensionAfter = ({
@@ -135,6 +129,21 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const mustJoinClusterSet = useMustJoinClusterSet()
   const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
   const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
+
+  const fields: any = React.useMemo(
+    () => ({
+      name: { path: 'ClusterDeployment[0].metadata.name' },
+      baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
+      openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
+      cpuArchitecture: {
+        path: control.additionalProps?.aiFlow
+          ? 'InfraEnv[0].spec.cpuArchitecture'
+          : 'ClusterDeployment[0].metadata.annotations["agentBareMetal-cpuArchitecture"]',
+      },
+      pullSecret: {},
+    }),
+    [control.additionalProps?.aiFlow]
+  )
 
   const getVersion = (versionName = '') => {
     const clusterImage = clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
