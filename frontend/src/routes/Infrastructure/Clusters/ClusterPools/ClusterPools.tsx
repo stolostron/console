@@ -390,6 +390,7 @@ export function ClusterPoolsTable(props: {
                     text: t('clusterPool.destroy'),
                     isAriaDisabled: true,
                     click: (clusterPool: ClusterPool) => {
+                      const hasClaims = clusterPool.spec?.size! > 0
                       setModalProps({
                         open: true,
                         title: t('bulk.title.destroyClusterPool'),
@@ -397,7 +398,9 @@ export function ClusterPoolsTable(props: {
                         processing: t('destroying'),
                         items: [clusterPool],
                         emptyState: undefined, // there is always 1 item supplied
-                        description: t('bulk.message.destroyClusterPool'),
+                        description: hasClaims
+                          ? t('The cluster pool deletion will be blocked until all claimed cluster(s) get deleted.')
+                          : t('bulk.message.destroyClusterPool'),
                         columns: modalColumns,
                         keyFn: mckeyFn,
                         actionFn: deleteResource,
@@ -405,6 +408,7 @@ export function ClusterPoolsTable(props: {
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
+                        disableSubmitButton: hasClaims,
                       })
                     },
                     rbac: [rbacDelete(clusterPool)],
@@ -443,6 +447,7 @@ export function ClusterPoolsTable(props: {
             id: 'destroyClusterPools',
             title: t('bulk.destroy.clusterPools'),
             click: (clusterPools: ClusterPool[]) => {
+              const hasClaims = clusterPools.some((clusterPool) => clusterPool.spec?.size! > 0)
               setModalProps({
                 open: true,
                 title: t('bulk.destroy.clusterPools'),
@@ -450,7 +455,9 @@ export function ClusterPoolsTable(props: {
                 processing: t('destroying'),
                 items: clusterPools,
                 emptyState: undefined, // table action is only enabled when items are selected
-                description: t('bulk.message.destroyClusterPool'),
+                description: hasClaims
+                  ? t('The cluster pool deletion will be blocked until all claimed cluster(s) get deleted.')
+                  : t('bulk.message.destroyClusterPool'),
                 columns: modalColumns,
                 keyFn: mckeyFn,
                 actionFn: deleteResource,
@@ -459,6 +466,7 @@ export function ClusterPoolsTable(props: {
                 icon: 'warning',
                 confirmText: t('confirm'),
                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                disableSubmitButton: hasClaims,
               })
             },
             variant: 'bulk-action',
