@@ -399,7 +399,7 @@ export function ClusterPoolsTable(props: {
                         items: [clusterPool],
                         emptyState: undefined, // there is always 1 item supplied
                         description: hasClaims
-                          ? t('The cluster pool deletion will be blocked until all claimed cluster(s) get deleted.')
+                          ? t('The cluster pool deletion will be blocked until all claimed cluster(s) are deleted.')
                           : t('bulk.message.destroyClusterPool'),
                         columns: modalColumns,
                         keyFn: mckeyFn,
@@ -456,7 +456,7 @@ export function ClusterPoolsTable(props: {
                 items: clusterPools,
                 emptyState: undefined, // table action is only enabled when items are selected
                 description: hasClaims
-                  ? t('The cluster pool deletion will be blocked until all claimed cluster(s) get deleted.')
+                  ? t('The cluster pool deletion will be blocked until all claimed cluster(s) are deleted.')
                   : t('bulk.message.destroyClusterPool'),
                 columns: modalColumns,
                 keyFn: mckeyFn,
