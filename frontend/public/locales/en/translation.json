@@ -2956,6 +2956,7 @@
   "View all placement rules in {{0}} namespace": "View all placement rules in {{0}} namespace",
   "View all subscriptions in {{0}} namespace": "View all subscriptions in {{0}} namespace",
   "View application": "View application",
+  "View cluster events": "View cluster events",
   "View clusters with search add-on disabled.": "View clusters with search add-on disabled.",
   "View details": "View details",
   "View documentation": "View documentation",
