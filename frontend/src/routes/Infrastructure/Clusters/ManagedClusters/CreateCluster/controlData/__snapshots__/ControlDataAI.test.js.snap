@@ -40,6 +40,7 @@ Array [
   },
   Object {
     "additionalProps": Object {
+      "aiFlow": true,
       "promptSshPublicKey": true,
     },
     "component": <DetailsForm />,
@@ -208,6 +209,7 @@ Array [
   },
   Object {
     "additionalProps": Object {
+      "aiFlow": true,
       "promptSshPublicKey": true,
     },
     "component": <DetailsForm />,
