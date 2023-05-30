@@ -13,13 +13,18 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { getGroupFromApiVersion, IResource } from '../../../../resources'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmLoadingPage, AcmTable } from '../../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'
 import { SearchRelatedResult, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
+import { ISearchResult } from '../SearchResults/utils'
 
-export default function RelatedResourceDetailsTab(props: { cluster: string; resource: IResource }) {
-  const { cluster, resource } = props
+export default function RelatedResourceDetailsTab(props: {
+  cluster: string
+  resource: IResource
+  resourceLoading: boolean
+}) {
+  const { cluster, resource, resourceLoading } = props
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -96,29 +101,42 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
     [searchDefinitions]
   )
 
-  const {
-    kindSearchResultItems,
-    kinds,
-  }: { kindSearchResultItems: Record<string, SearchRelatedResult[]>; kinds: string[] } = useMemo(() => {
-    const kindSearchResultItems: Record<string, SearchRelatedResult[]> = {}
-    if (relatedResultItems) {
-      for (const relatedResultItem of relatedResultItems) {
-        if (relatedResultItem) {
-          const existing = kindSearchResultItems[relatedResultItem.kind]
-          if (!existing) {
-            kindSearchResultItems[relatedResultItem?.kind] = [relatedResultItem]
-          } else {
-            kindSearchResultItems[relatedResultItem?.kind].push(relatedResultItem)
+  const { kindSearchResultItems, kinds }: { kindSearchResultItems: Record<string, ISearchResult[]>; kinds: string[] } =
+    useMemo(() => {
+      const kindSearchResultItems: Record<string, ISearchResult[]> = {}
+      if (relatedResultItems) {
+        for (const relatedResultItem of relatedResultItems) {
+          console.log(relatedResultItem)
+          for (const item of relatedResultItem?.items) {
+            const apiGroup = item?.apigroup ? `${item?.apigroup}/${item?.apiversion}` : ''
+            const groupAndKind = `${apiGroup}.${item.kind}`
+            const existing = kindSearchResultItems[groupAndKind]
+            if (!existing) {
+              kindSearchResultItems[groupAndKind] = [item]
+            } else {
+              kindSearchResultItems[groupAndKind].push(item)
+            }
           }
         }
       }
-    }
-    const kinds = Object.keys(kindSearchResultItems)
+      // Keys are formatted as apigroup.kind - but we sort alphabetically by kind - if kinds are equal sort on apigroup
+      const kinds = Object.keys(kindSearchResultItems).sort((a, b) => {
+        const strCompareRes = compareStrings(kindSearchResultItems[a][0].kind, kindSearchResultItems[b][0].kind)
+        return strCompareRes !== 0
+          ? strCompareRes
+          : compareStrings(
+              kindSearchResultItems[a][0]?.apigroup
+                ? `${kindSearchResultItems[a][0]?.apigroup}/${kindSearchResultItems[a][0]?.apiversion}`
+                : '',
+              kindSearchResultItems[b][0]?.apigroup
+                ? `${kindSearchResultItems[b][0]?.apigroup}/${kindSearchResultItems[b][0]?.apiversion}`
+                : ''
+            )
+      })
+      return { kindSearchResultItems, kinds }
+    }, [relatedResultItems])
 
-    return { kindSearchResultItems, kinds }
-  }, [relatedResultItems])
-
-  if (loading) {
+  if (resourceLoading || loading) {
     return (
       <PageSection>
         <AcmLoadingPage />
@@ -135,7 +153,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
     )
   }
 
-  if (relatedResultItems.length === 0) {
+  if (data?.searchResult && relatedResultItems.length === 0) {
     return (
       <PageSection>
         <Alert variant={'info'} isInline={true} title={t('There are no resources related to your search results.')}>
@@ -157,11 +175,12 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
         ) : null}
         <PageSection isFilled={false} variant={'light'}>
           <Accordion isBordered asDefinitionList={true}>
-            {kinds.sort().map((kind: string, idx: number) => {
+            {kinds.map((kind: string, idx: number) => {
               const accordionItemKey = `${kind}-${idx}`
-              const items = kindSearchResultItems[kind][0].items
-              const kindString = kind.split('.')[0]
-              const apiVersionString = kind.split('.')[1]
+              const items = kindSearchResultItems[kind]
+              const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
+
+              const kindString = kind.split('.').pop() ?? ''
               return (
                 <AccordionItem key={`${kind}-accordion-item`}>
                   <AccordionToggle
@@ -179,6 +198,18 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
                     <span style={{ flexDirection: 'row' }}>
                       <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                         {kindString}
+                        {/* Cluster is not a real Kube resource and therefore does not have apigroup/apiversion */}
+                        {kindString.toLowerCase() !== 'cluster' && (
+                          <span
+                            style={{
+                              marginLeft: '10px',
+                              fontSize: 'var(--pf-global--FontSize--sm)',
+                              color: 'var(--pf-global--Color--200)',
+                            }}
+                          >
+                            {apiGroup}
+                          </span>
+                        )}
                         <div
                           style={{
                             marginLeft: '10px',
@@ -186,7 +217,7 @@ export default function RelatedResourceDetailsTab(props: { cluster: string; reso
                             color: 'var(--pf-global--Color--200)',
                           }}
                         >
-                          {apiVersionString} {`(${items.length})`}
+                          {`(${items.length})`}
                         </div>
                       </span>
                     </span>
