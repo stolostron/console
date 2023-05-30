@@ -272,6 +272,12 @@ export const getNetworkingPatches = (
       }
       appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
     } else {
+      if (agentClusterInstall.spec?.platformType) {
+        agentClusterInstallPatches.push({
+          op: 'remove',
+          path: '/spec/platformType',
+        })
+      }
       appendPatch(agentClusterInstallPatches, '/spec/apiVIP', values.apiVip, agentClusterInstall.spec?.apiVIP)
       appendPatch(
         agentClusterInstallPatches,
