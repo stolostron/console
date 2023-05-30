@@ -102,7 +102,7 @@ const AIClusterDetails: React.FC = () => {
   }, [clusterDeployment, agentClusterInstall, agents])
 
   const onFetchEvents = useMemo(
-    () => getOnFetchEventsHandler(fetchEvents, aiNamespace, agentClusterInstall),
+    () => getOnFetchEventsHandler(fetchEvents, aiNamespace, clusterAgents, agentClusterInstall),
     [aiNamespace, agentClusterInstall]
   )
 
@@ -170,6 +170,7 @@ const AIClusterDetails: React.FC = () => {
                       onFetchEvents={onFetchEvents}
                       ButtonComponent={Button}
                       fallbackEventsURL={fallbackEventsURL}
+                      disablePagination
                     >
                       {t('View cluster events')}
                     </EventsModalButton>
