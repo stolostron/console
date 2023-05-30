@@ -107,7 +107,7 @@ export default function RelatedResourceDetailsTab(props: {
       if (relatedResultItems) {
         for (const relatedResultItem of relatedResultItems) {
           console.log(relatedResultItem)
-          for (const item of relatedResultItem?.items) {
+          for (const item of relatedResultItem?.items ?? []) {
             const apiGroup = item?.apigroup ? `${item?.apigroup}/${item?.apiversion}` : ''
             const groupAndKind = `${apiGroup}.${item.kind}`
             const existing = kindSearchResultItems[groupAndKind]
@@ -170,7 +170,9 @@ export default function RelatedResourceDetailsTab(props: {
           <Alert
             variant={'warning'}
             isInline={true}
-            title={t('Search result limit reached. Your query results are truncated.')}
+            title={t(
+              'Search result limit has been reached. Your query results have been truncated. View the RHACM documentation to learn how to increase the search results limit.'
+            )}
           />
         ) : null}
         <PageSection isFilled={false} variant={'light'}>

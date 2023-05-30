@@ -258,7 +258,7 @@ export default function SearchResults(props: {
               variant={'warning'}
               isInline={true}
               title={t(
-                `Search result limit (${searchResultLimit}) has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.`
+                'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
               )}
             />
           ) : null}

@@ -84,7 +84,7 @@ describe('RelatedResourceDetailsTab', () => {
       <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab cluster={'test-cluster'} resource={testResourceNs} />
+            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNs} />
           </MockedProvider>
         </Router>
       </RecoilRoot>
@@ -159,7 +159,7 @@ describe('RelatedResourceDetailsTab', () => {
       <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab cluster={'test-cluster'} resource={testResourceNonNs} />
+            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNonNs} />
           </MockedProvider>
         </Router>
       </RecoilRoot>
