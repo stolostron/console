@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Cluster,
   ClusterClaim,
   ClusterClaimApiVersion,
   ClusterClaimKind,
@@ -10,13 +11,30 @@ import {
   ClusterPool,
   ClusterPoolApiVersion,
   ClusterPoolKind,
+  ClusterStatus,
 } from '../../../../resources'
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
+import {
+  agentClusterInstallsState,
+  agentsState,
+  certificateSigningRequestsState,
+  clusterClaimsState,
+  clusterCuratorsState,
+  clusterDeploymentsState,
+  clusterImageSetsState,
+  clusterManagementAddonsState,
+  clusterPoolsState,
+  hostedClustersState,
+  infraEnvironmentsState,
+  managedClusterAddonsState,
+  managedClusterInfosState,
+  managedClustersState,
+  nodePoolsState,
+} from '../../../../atoms'
 import {
   nockCreate,
   nockDelete,
@@ -37,6 +55,8 @@ import {
   waitForText,
 } from '../../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
+import { ClusterContext } from '../ManagedClusters/ClusterDetails/ClusterDetails'
+import { Provider } from '../../../../ui-components'
 
 const mockClusterImageSet: ClusterImageSet = {
   apiVersion: ClusterImageSetApiVersion,
@@ -201,6 +221,139 @@ const mockClusterPoolPending: ClusterPool = {
     ],
     standby: 1,
     size: 1,
+  },
+}
+
+const clusterName = 'test-cluster'
+
+const mockCluster: Cluster = {
+  name: clusterName,
+  displayName: clusterName,
+  namespace: clusterName,
+  uid: clusterName,
+  status: ClusterStatus.ready,
+  distribution: {
+    k8sVersion: '1.19',
+    ocp: undefined,
+    displayVersion: '1.19',
+    isManagedOpenShift: false,
+  },
+  labels: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hive: {
+    isHibernatable: true,
+    clusterPool: mockClusterPool.metadata.name,
+    secrets: {
+      installConfig: '',
+    },
+  },
+  isHive: true,
+  isManaged: true,
+  isCurator: false,
+  hasAutomationTemplate: false,
+  isHostedCluster: false,
+  isSNOCluster: false,
+  isRegionalHubCluster: false,
+  owner: {},
+  kubeconfig: '',
+  kubeadmin: '',
+  isHypershift: false,
+  provider: Provider.aws,
+  nodes: {
+    ready: 0,
+    unhealthy: 0,
+    unknown: 0,
+    nodeList: [
+      {
+        name: 'ip-10-0-134-240.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-134-241.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-134-242.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-130-30.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-east-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
+          'node-role.kubernetes.io/master': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        capacity: {
+          cpu: '4',
+          memory: '15944104Ki',
+        },
+        conditions: [
+          {
+            status: 'Unknown',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-151-254.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-south-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
+          'node-role.kubernetes.io/master': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        capacity: {
+          cpu: '4',
+          memory: '8194000Pi',
+        },
+        conditions: [
+          {
+            status: 'False',
+            type: 'Ready',
+          },
+        ],
+      },
+    ],
   },
 }
 
@@ -405,5 +558,61 @@ describe('ClusterPools page', () => {
     const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
     await clickByText('Delete')
     await waitForNocks(deleteNocks)
+  })
+})
+
+describe('Destroy ClusterPool with claimed clusters', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(clusterPoolsState, [mockClusterPool])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+            <ClusterPoolsPage />
+          </ClusterContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  })
+
+  test('should not be able to destroy a cluster pool using a row action due to related claim size', async () => {
+    await waitForText(mockClusterPool.metadata.name!)
+    await clickRowAction(1, 'Destroy cluster pool')
+    await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    expect(
+      screen.getByRole('button', {
+        name: /destroy/i,
+      })
+    ).toBeDisabled()
+  })
+
+  test('should not be able to destroy cluster pools using bulk actions due to related claim size', async () => {
+    await selectTableRow(1)
+    await clickBulkAction('Destroy cluster pools')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
+    expect(
+      screen.getByRole('button', {
+        name: /destroy/i,
+      })
+    ).toBeDisabled()
   })
 })
