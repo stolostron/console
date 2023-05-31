@@ -136,16 +136,11 @@ function SearchResultAccordion(props: {
     // Keys are formatted as apigroup.kind - but we sort alphabetically by kind - if kinds are equal sort on apigroup
     const kinds = Object.keys(kindSearchResultItems).sort((a, b) => {
       const strCompareRes = compareStrings(kindSearchResultItems[a][0].kind, kindSearchResultItems[b][0].kind)
-      return strCompareRes !== 0
-        ? strCompareRes
-        : compareStrings(
-            kindSearchResultItems[a][0]?.apigroup
-              ? `${kindSearchResultItems[a][0]?.apigroup}/${kindSearchResultItems[a][0]?.apiversion}`
-              : '',
-            kindSearchResultItems[b][0]?.apigroup
-              ? `${kindSearchResultItems[b][0]?.apigroup}/${kindSearchResultItems[b][0]?.apiversion}`
-              : ''
-          )
+      const getApiGroup = (type: string) =>
+        kindSearchResultItems[type][0]?.apigroup
+          ? `${kindSearchResultItems[type][0]?.apigroup}/${kindSearchResultItems[type][0]?.apiversion}`
+          : ''
+      return strCompareRes !== 0 ? strCompareRes : compareStrings(getApiGroup(a), getApiGroup(b))
     })
     return { kindSearchResultItems, kinds }
   }, [data])
