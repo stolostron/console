@@ -12,7 +12,7 @@ import {
   ClusterPoolKind,
 } from '../../../../resources'
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -101,58 +101,6 @@ const mockClusterPool: ClusterPool = {
     ready: 1,
     standby: 1,
     size: 2,
-  },
-}
-
-const mockDestroyClusterPool: ClusterPool = {
-  apiVersion: ClusterPoolApiVersion,
-  kind: ClusterPoolKind,
-  metadata: {
-    name: 'test-pool-destroy',
-    namespace: 'test-pool-namespace',
-    uid: 'abc',
-    finalizers: ['hive.openshift.io/clusters'],
-  },
-  spec: {
-    baseDomain: 'dev.test-pool.com',
-    imageSetRef: {
-      name: 'img4.7.4-x86-64',
-    },
-    installConfigSecretTemplateRef: {
-      name: 'test-pool-install-config',
-    },
-    platform: {
-      aws: {
-        credentialsSecretRef: {
-          name: 'test-pool-aws-creds',
-        },
-        region: 'us-east-1',
-      },
-    },
-    pullSecretRef: {
-      name: 'test-pool-pull-secret',
-    },
-    size: 0,
-    runningCount: 0,
-  },
-  status: {
-    conditions: [
-      {
-        message: 'There is capacity to add more clusters to the pool.',
-        reason: 'Available',
-        status: 'True',
-        type: 'CapacityAvailable',
-      },
-      {
-        message: 'Dependencies verified',
-        reason: 'Verified',
-        status: 'False',
-        type: 'MissingDependencies',
-      },
-    ],
-    ready: 0,
-    standby: 0,
-    size: 0,
   },
 }
 
@@ -342,25 +290,21 @@ describe('ClusterPools page', () => {
     await waitForText('0 out of 2')
     await waitForText('0 out of 1')
   })
-  test('should not be able to destroy a cluster pool using a row action due to related claim size', async () => {
+  test('should be able to destroy a cluster pool using a row action', async () => {
     await waitForText(mockClusterPool.metadata.name!)
     await clickRowAction(1, 'Destroy cluster pool')
     await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
-    expect(
-      screen.getByRole('button', {
-        name: /destroy/i,
-      })
-    ).toBeDisabled()
+    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+    await clickByText('Destroy')
+    await waitForNocks(deleteNocks)
   })
-  test('should not be able to destroy cluster pools using bulk actions due to related claim size', async () => {
+  test('should be able to destroy cluster pools using bulk actions', async () => {
     await selectTableRow(1)
     await clickBulkAction('Destroy cluster pools')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    expect(
-      screen.getByRole('button', {
-        name: /destroy/i,
-      })
-    ).toBeDisabled()
+    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+    await clickByText('Destroy')
+    await waitForNocks(deleteNocks)
   })
 
   test('should be able to scale a cluster pool size', async () => {
@@ -460,45 +404,6 @@ describe('ClusterPools page', () => {
     await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
     const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
     await clickByText('Delete')
-    await waitForNocks(deleteNocks)
-  })
-})
-
-describe('Destroy ClusterPools', () => {
-  beforeEach(async () => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-    render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterPoolsState, [mockDestroyClusterPool])
-        }}
-      >
-        <MemoryRouter>
-          <ClusterPoolsPage />
-        </MemoryRouter>
-      </RecoilRoot>
-    )
-  })
-
-  test('should not be able to destroy a cluster pool using a row action due to related claim size', async () => {
-    await waitForText(mockDestroyClusterPool.metadata.name!)
-    await clickRowAction(1, 'Destroy cluster pool')
-    await typeByText(
-      `Confirm by typing "${mockDestroyClusterPool.metadata.name!}" below:`,
-      mockDestroyClusterPool.metadata.name!
-    )
-    const deleteNocks: Scope[] = [nockDelete(mockDestroyClusterPool)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
-  })
-
-  test('should not be able to destroy cluster pools using bulk actions due to related claim size', async () => {
-    await selectTableRow(1)
-    await clickBulkAction('Destroy cluster pools')
-    await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockDestroyClusterPool)]
-    await clickByText('Destroy')
     await waitForNocks(deleteNocks)
   })
 })
