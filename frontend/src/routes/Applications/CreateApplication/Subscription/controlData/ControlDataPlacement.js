@@ -22,6 +22,7 @@ import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import { filterDeep } from '../transformers/transform-data-to-resources'
+import { PlacementPredicate } from '../../../../../wizards/Placement/Placement'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
