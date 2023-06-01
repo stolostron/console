@@ -156,6 +156,10 @@ describe('SearchResults Page', () => {
                     property: 'kind',
                     values: ['Pod'],
                   },
+                  {
+                    property: 'kind',
+                    values: ['Daemonset'],
+                  },
                 ],
                 limit: 1000,
               },
@@ -200,6 +204,10 @@ describe('SearchResults Page', () => {
                   {
                     property: 'kind',
                     values: ['Pod'],
+                  },
+                  {
+                    property: 'kind',
+                    values: ['Daemonset'],
                   },
                 ],
                 limit: 1000,
@@ -246,6 +254,10 @@ describe('SearchResults Page', () => {
                     property: 'kind',
                     values: ['Pod'],
                   },
+                  {
+                    property: 'kind',
+                    values: ['Daemonset'],
+                  },
                 ],
                 limit: 1000,
               },
@@ -272,6 +284,34 @@ describe('SearchResults Page', () => {
                     status: 'Completed',
                     _uid: 'testing-search-results-pod',
                   },
+                  {
+                    apigroup: 'apps',
+                    apiversion: 'v1',
+                    available: '3',
+                    cluster: 'local-cluster',
+                    current: '3',
+                    desired: '3',
+                    kind: 'DaemonSet',
+                    kind_plural: 'daemonsets',
+                    name: 'testset',
+                    namespace: 'openshift-image-registry',
+                    ready: '3',
+                    updated: '3',
+                  },
+                  {
+                    apigroup: 'apps',
+                    apiversion: 'v1',
+                    available: '3',
+                    cluster: 'local-cluster',
+                    current: '3',
+                    desired: '3',
+                    kind: 'DaemonSet',
+                    kind_plural: 'daemonsets',
+                    name: 'testset2',
+                    namespace: 'openshift-image-registry',
+                    ready: '3',
+                    updated: '3',
+                  },
                 ],
                 __typename: 'SearchResult',
               },
@@ -289,7 +329,7 @@ describe('SearchResults Page', () => {
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchResults
-              currentQuery={'kind:Pod'}
+              currentQuery={'kind:Pod,Daemonset'}
               preSelectedRelatedResources={[]}
               error={undefined}
               loading={false}
@@ -312,6 +352,34 @@ describe('SearchResults Page', () => {
                         status: 'Completed',
                         _uid: 'testing-search-results-pod',
                       },
+                      {
+                        apigroup: 'apps',
+                        apiversion: 'v1',
+                        available: '3',
+                        cluster: 'local-cluster',
+                        current: '3',
+                        desired: '3',
+                        kind: 'DaemonSet',
+                        kind_plural: 'daemonsets',
+                        name: 'testset',
+                        namespace: 'openshift-image-registry',
+                        ready: '3',
+                        updated: '3',
+                      },
+                      {
+                        apigroup: 'apps',
+                        apiversion: 'v1',
+                        available: '3',
+                        cluster: 'local-cluster',
+                        current: '3',
+                        desired: '3',
+                        kind: 'DaemonSet',
+                        kind_plural: 'daemonsets',
+                        name: 'testset2',
+                        namespace: 'openshift-image-registry',
+                        ready: '3',
+                        updated: '3',
+                      },
                     ],
                   },
                 ],
@@ -326,7 +394,8 @@ describe('SearchResults Page', () => {
     // Test that the component has rendered search result table correctly
     await waitFor(() => expect(screen.queryByText('Pod')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('testPod')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('DaemonSet')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(2)')).toBeTruthy())
 
     // Test the related resources section is hidden behind expandable section and click
     screen.queryByText('Show related resources')?.click()

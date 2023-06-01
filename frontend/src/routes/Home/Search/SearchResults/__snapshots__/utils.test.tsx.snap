@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Correctly return empty row Actions for restricted resource 1`] = `Array []`;
+
+exports[`Correctly return row Actions 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "id": "edit",
+    "title": "Edit pod",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-related",
+    "title": "View related resources",
+  },
+  Object {
+    "click": [Function],
+    "id": "delete",
+    "title": "Delete pod",
+  },
+]
+`;

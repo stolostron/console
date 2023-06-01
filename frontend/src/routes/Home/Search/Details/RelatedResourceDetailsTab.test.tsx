@@ -72,6 +72,40 @@ describe('RelatedResourceDetailsTab', () => {
                     ],
                     __typename: 'SearchRelatedResult',
                   },
+                  {
+                    kind: 'Daemonset',
+                    items: [
+                      {
+                        apigroup: 'apps',
+                        apiversion: 'v1',
+                        available: '3',
+                        cluster: 'local-cluster',
+                        current: '3',
+                        desired: '3',
+                        kind: 'DaemonSet',
+                        kind_plural: 'daemonsets',
+                        name: 'testset',
+                        namespace: 'openshift-image-registry',
+                        ready: '3',
+                        updated: '3',
+                      },
+                      {
+                        apigroup: 'appz', // different than other group for filter testing
+                        apiversion: 'v1',
+                        available: '3',
+                        cluster: 'local-cluster',
+                        current: '3',
+                        desired: '3',
+                        kind: 'DaemonSet',
+                        kind_plural: 'daemonsets',
+                        name: 'testset2',
+                        namespace: 'openshift-image-registry',
+                        ready: '3',
+                        updated: '3',
+                      },
+                    ],
+                    __typename: 'SearchRelatedResult',
+                  },
                 ],
                 __typename: 'SearchResult',
               },
@@ -84,7 +118,7 @@ describe('RelatedResourceDetailsTab', () => {
       <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab cluster={'test-cluster'} resource={testResourceNs} />
+            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNs} />
           </MockedProvider>
         </Router>
       </RecoilRoot>
@@ -159,7 +193,7 @@ describe('RelatedResourceDetailsTab', () => {
       <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab cluster={'test-cluster'} resource={testResourceNonNs} />
+            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNonNs} />
           </MockedProvider>
         </Router>
       </RecoilRoot>

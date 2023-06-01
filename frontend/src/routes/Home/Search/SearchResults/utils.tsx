@@ -46,7 +46,11 @@ export function GetRowActions(
   t: TFunction
 ) {
   const history = useHistory()
-  return kind !== 'cluster' && kind !== 'release' && kind !== 'policyreport'
+  return kind !== 'cluster' &&
+    kind !== 'release' &&
+    kind !== 'policyreport' &&
+    kind !== 'application' &&
+    kind !== 'policy'
     ? [
         {
           id: 'edit',

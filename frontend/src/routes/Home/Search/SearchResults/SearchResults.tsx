@@ -84,7 +84,7 @@ function RenderAccordionItem(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={GetRowActions(kind, currentQuery, false, setDeleteResource, t)}
+          rowActions={GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)}
         />
       )
     },
@@ -124,7 +124,8 @@ function SearchResultAccordion(props: {
   const { kindSearchResultItems, kinds } = useMemo(() => {
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
     for (const searchResultItem of data) {
-      const groupAndKind = `${searchResultItem?.apigroup ?? ''}.${searchResultItem.kind}`
+      const apiGroup = searchResultItem?.apigroup ? `${searchResultItem?.apigroup}/${searchResultItem?.apiversion}` : ''
+      const groupAndKind = `${apiGroup}.${searchResultItem.kind}`
       const existing = kindSearchResultItems[groupAndKind]
       if (!existing) {
         kindSearchResultItems[groupAndKind] = [searchResultItem]
@@ -135,9 +136,11 @@ function SearchResultAccordion(props: {
     // Keys are formatted as apigroup.kind - but we sort alphabetically by kind - if kinds are equal sort on apigroup
     const kinds = Object.keys(kindSearchResultItems).sort((a, b) => {
       const strCompareRes = compareStrings(kindSearchResultItems[a][0].kind, kindSearchResultItems[b][0].kind)
-      return strCompareRes !== 0
-        ? strCompareRes
-        : compareStrings(kindSearchResultItems[a][0].apigroup, kindSearchResultItems[b][0].apigroup)
+      const getApiGroup = (type: string) =>
+        kindSearchResultItems[type][0]?.apigroup
+          ? `${kindSearchResultItems[type][0]?.apigroup}/${kindSearchResultItems[type][0]?.apiversion}`
+          : ''
+      return strCompareRes !== 0 ? strCompareRes : compareStrings(getApiGroup(a), getApiGroup(b))
     })
     return { kindSearchResultItems, kinds }
   }, [data])
@@ -250,7 +253,7 @@ export default function SearchResults(props: {
               variant={'warning'}
               isInline={true}
               title={t(
-                'Search result limit reached. Your query results are truncated, add more filter conditions to your query.'
+                'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
               )}
             />
           ) : null}

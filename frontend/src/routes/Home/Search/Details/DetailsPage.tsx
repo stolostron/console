@@ -183,7 +183,11 @@ export default function DetailsPage() {
           />
         </Route>
         <Route exact path={NavigationPath.resourceRelated}>
-          <RelatedResourceDetailsTab cluster={cluster} resource={resource} />
+          <RelatedResourceDetailsTab
+            cluster={cluster}
+            resource={resource}
+            resourceLoading={!resource && resourceError === ''}
+          />
         </Route>
         {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
           <Route path={NavigationPath.resourceLogs}>

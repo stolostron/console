@@ -65,7 +65,7 @@ export function RenderItemContent(props: {
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={GetRowActions(relatedKind, currentQuery, true, setDeleteResource, t)}
+      rowActions={GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t)}
     />
   )
 }
