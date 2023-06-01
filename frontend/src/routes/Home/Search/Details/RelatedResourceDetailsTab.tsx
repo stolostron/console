@@ -106,7 +106,6 @@ export default function RelatedResourceDetailsTab(props: {
       const kindSearchResultItems: Record<string, ISearchResult[]> = {}
       if (relatedResultItems) {
         for (const relatedResultItem of relatedResultItems) {
-          console.log(relatedResultItem)
           for (const item of relatedResultItem?.items ?? []) {
             const apiGroup = item?.apigroup ? `${item?.apigroup}/${item?.apiversion}` : ''
             const groupAndKind = `${apiGroup}.${item.kind}`
