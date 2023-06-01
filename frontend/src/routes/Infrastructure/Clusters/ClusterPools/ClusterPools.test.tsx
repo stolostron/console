@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Cluster,
   ClusterClaim,
   ClusterClaimApiVersion,
   ClusterClaimKind,
@@ -10,6 +11,7 @@ import {
   ClusterPool,
   ClusterPoolApiVersion,
   ClusterPoolKind,
+  ClusterStatus,
 } from '../../../../resources'
 
 import { render, screen } from '@testing-library/react'
@@ -36,7 +38,8 @@ import {
   waitForNocks,
   waitForText,
 } from '../../../../lib/test-util'
-import ClusterPoolsPage from './ClusterPools'
+import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
+import { Provider } from '../../../../ui-components'
 
 const mockClusterImageSet: ClusterImageSet = {
   apiVersion: ClusterImageSetApiVersion,
@@ -101,58 +104,6 @@ const mockClusterPool: ClusterPool = {
     ready: 1,
     standby: 1,
     size: 2,
-  },
-}
-
-const mockDestroyClusterPool: ClusterPool = {
-  apiVersion: ClusterPoolApiVersion,
-  kind: ClusterPoolKind,
-  metadata: {
-    name: 'test-pool-destroy',
-    namespace: 'test-pool-namespace',
-    uid: 'abc',
-    finalizers: ['hive.openshift.io/clusters'],
-  },
-  spec: {
-    baseDomain: 'dev.test-pool.com',
-    imageSetRef: {
-      name: 'img4.7.4-x86-64',
-    },
-    installConfigSecretTemplateRef: {
-      name: 'test-pool-install-config',
-    },
-    platform: {
-      aws: {
-        credentialsSecretRef: {
-          name: 'test-pool-aws-creds',
-        },
-        region: 'us-east-1',
-      },
-    },
-    pullSecretRef: {
-      name: 'test-pool-pull-secret',
-    },
-    size: 0,
-    runningCount: 0,
-  },
-  status: {
-    conditions: [
-      {
-        message: 'There is capacity to add more clusters to the pool.',
-        reason: 'Available',
-        status: 'True',
-        type: 'CapacityAvailable',
-      },
-      {
-        message: 'Dependencies verified',
-        reason: 'Verified',
-        status: 'False',
-        type: 'MissingDependencies',
-      },
-    ],
-    ready: 0,
-    standby: 0,
-    size: 0,
   },
 }
 
@@ -256,6 +207,139 @@ const mockClusterPoolPending: ClusterPool = {
   },
 }
 
+const clusterName = 'test-cluster'
+
+const mockCluster: Cluster = {
+  name: clusterName,
+  displayName: clusterName,
+  namespace: clusterName,
+  uid: clusterName,
+  status: ClusterStatus.ready,
+  distribution: {
+    k8sVersion: '1.19',
+    ocp: undefined,
+    displayVersion: '1.19',
+    isManagedOpenShift: false,
+  },
+  labels: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hive: {
+    isHibernatable: true,
+    clusterPool: mockClusterPool.metadata.name,
+    secrets: {
+      installConfig: '',
+    },
+  },
+  isHive: true,
+  isManaged: true,
+  isCurator: false,
+  hasAutomationTemplate: false,
+  isHostedCluster: false,
+  isSNOCluster: false,
+  isRegionalHubCluster: false,
+  owner: {},
+  kubeconfig: '',
+  kubeadmin: '',
+  isHypershift: false,
+  provider: Provider.aws,
+  nodes: {
+    ready: 0,
+    unhealthy: 0,
+    unknown: 0,
+    nodeList: [
+      {
+        name: 'ip-10-0-134-240.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-134-241.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-134-242.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'node-role.kubernetes.io/worker': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        conditions: [
+          {
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-130-30.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-east-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1a',
+          'node-role.kubernetes.io/master': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        capacity: {
+          cpu: '4',
+          memory: '15944104Ki',
+        },
+        conditions: [
+          {
+            status: 'Unknown',
+            type: 'Ready',
+          },
+        ],
+      },
+      {
+        name: 'ip-10-0-151-254.ec2.internal',
+        labels: {
+          'beta.kubernetes.io/instance-type': 'm5.xlarge',
+          'failure-domain.beta.kubernetes.io/region': 'us-south-1',
+          'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
+          'node-role.kubernetes.io/master': '',
+          'node.kubernetes.io/instance-type': 'm5.xlarge',
+        },
+        capacity: {
+          cpu: '4',
+          memory: '8194000Pi',
+        },
+        conditions: [
+          {
+            status: 'False',
+            type: 'Ready',
+          },
+        ],
+      },
+    ],
+  },
+}
+
 const mockClusterClaim: ClusterClaim = {
   apiVersion: ClusterClaimApiVersion,
   kind: ClusterClaimKind,
@@ -342,25 +426,21 @@ describe('ClusterPools page', () => {
     await waitForText('0 out of 2')
     await waitForText('0 out of 1')
   })
-  test('should not be able to destroy a cluster pool using a row action due to related claim size', async () => {
+  test('should be able to destroy a cluster pool using a row action', async () => {
     await waitForText(mockClusterPool.metadata.name!)
     await clickRowAction(1, 'Destroy cluster pool')
     await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
-    expect(
-      screen.getByRole('button', {
-        name: /destroy/i,
-      })
-    ).toBeDisabled()
+    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+    await clickByText('Destroy')
+    await waitForNocks(deleteNocks)
   })
-  test('should not be able to destroy cluster pools using bulk actions due to related claim size', async () => {
+  test('should be able to destroy cluster pools using bulk actions', async () => {
     await selectTableRow(1)
     await clickBulkAction('Destroy cluster pools')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    expect(
-      screen.getByRole('button', {
-        name: /destroy/i,
-      })
-    ).toBeDisabled()
+    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+    await clickByText('Destroy')
+    await waitForNocks(deleteNocks)
   })
 
   test('should be able to scale a cluster pool size', async () => {
@@ -464,41 +544,38 @@ describe('ClusterPools page', () => {
   })
 })
 
-describe('Destroy ClusterPools', () => {
+describe('Destroy ClusterPool with claimed clusters', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterPoolsState, [mockDestroyClusterPool])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter>
-          <ClusterPoolsPage />
+          <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
         </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   test('should not be able to destroy a cluster pool using a row action due to related claim size', async () => {
-    await waitForText(mockDestroyClusterPool.metadata.name!)
+    await waitForText(mockClusterPool.metadata.name!)
     await clickRowAction(1, 'Destroy cluster pool')
-    await typeByText(
-      `Confirm by typing "${mockDestroyClusterPool.metadata.name!}" below:`,
-      mockDestroyClusterPool.metadata.name!
-    )
-    const deleteNocks: Scope[] = [nockDelete(mockDestroyClusterPool)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
+    await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
+    expect(
+      screen.getByRole('button', {
+        name: /destroy/i,
+      })
+    ).toBeDisabled()
   })
 
   test('should not be able to destroy cluster pools using bulk actions due to related claim size', async () => {
     await selectTableRow(1)
     await clickBulkAction('Destroy cluster pools')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockDestroyClusterPool)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
+    expect(
+      screen.getByRole('button', {
+        name: /destroy/i,
+      })
+    ).toBeDisabled()
   })
 })

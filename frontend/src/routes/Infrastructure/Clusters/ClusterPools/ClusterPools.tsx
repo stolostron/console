@@ -63,6 +63,7 @@ export default function ClusterPoolsPage() {
   const { waitForAll } = useSharedRecoil()
   const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
   const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
+  const clusters = useAllClusters()
 
   /* t('preview.clusterPools') */
   return (
@@ -123,6 +124,7 @@ export default function ClusterPoolsPage() {
                   variant: ButtonVariant.primary,
                 },
               ]}
+              clusters={clusters}
               emptyState={
                 <AcmEmptyState
                   key="mcEmptyState"
@@ -164,9 +166,11 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 
 export function ClusterPoolsTable(props: {
   clusterPools: ClusterPool[]
+  clusters: Cluster[]
   emptyState: React.ReactNode
   tableActionButtons?: IAcmTableButtonAction[]
 }) {
+  const { clusters } = props
   const { waitForAll } = useSharedRecoil()
   const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
   const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
@@ -182,8 +186,6 @@ export function ClusterPoolsTable(props: {
   const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] = useState<
     UpdateReleaseImageModalProps | undefined
   >()
-
-  const clusters = useAllClusters()
 
   const modalColumns = useMemo(
     () => [
@@ -390,7 +392,11 @@ export function ClusterPoolsTable(props: {
                     text: t('clusterPool.destroy'),
                     isAriaDisabled: true,
                     click: (clusterPool: ClusterPool) => {
-                      const hasClaims = clusterPool.spec?.size! > 0
+                      const claimClusters = clusters.filter(
+                        (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                      )
+
+                      const hasClaims = claimClusters.length > 0
                       setModalProps({
                         open: true,
                         title: t('bulk.title.destroyClusterPool'),
@@ -447,7 +453,15 @@ export function ClusterPoolsTable(props: {
             id: 'destroyClusterPools',
             title: t('bulk.destroy.clusterPools'),
             click: (clusterPools: ClusterPool[]) => {
-              const hasClaims = clusterPools.some((clusterPool) => clusterPool.spec?.size! > 0)
+              let hasClaims = false
+              clusterPools.forEach((clusterPool) => {
+                const claimClusters = clusters.filter(
+                  (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                )
+                if (claimClusters.length > 0) {
+                  hasClaims = true
+                }
+              })
               setModalProps({
                 open: true,
                 title: t('bulk.destroy.clusterPools'),
