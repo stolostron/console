@@ -63,6 +63,7 @@ export default function ClusterPoolsPage() {
   const { waitForAll } = useSharedRecoil()
   const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
   const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
+  const clusters = useAllClusters()
 
   /* t('preview.clusterPools') */
   return (
@@ -123,6 +124,7 @@ export default function ClusterPoolsPage() {
                   variant: ButtonVariant.primary,
                 },
               ]}
+              clusters={clusters}
               emptyState={
                 <AcmEmptyState
                   key="mcEmptyState"
@@ -164,9 +166,11 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 
 export function ClusterPoolsTable(props: {
   clusterPools: ClusterPool[]
+  clusters: Cluster[]
   emptyState: React.ReactNode
   tableActionButtons?: IAcmTableButtonAction[]
 }) {
+  const { clusters } = props
   const { waitForAll } = useSharedRecoil()
   const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
   const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
@@ -182,8 +186,6 @@ export function ClusterPoolsTable(props: {
   const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] = useState<
     UpdateReleaseImageModalProps | undefined
   >()
-
-  const clusters = useAllClusters()
 
   const modalColumns = useMemo(
     () => [
