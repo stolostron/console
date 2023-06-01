@@ -18,23 +18,7 @@ import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-  agentClusterInstallsState,
-  agentsState,
-  certificateSigningRequestsState,
-  clusterClaimsState,
-  clusterCuratorsState,
-  clusterDeploymentsState,
-  clusterImageSetsState,
-  clusterManagementAddonsState,
-  clusterPoolsState,
-  hostedClustersState,
-  infraEnvironmentsState,
-  managedClusterAddonsState,
-  managedClusterInfosState,
-  managedClustersState,
-  nodePoolsState,
-} from '../../../../atoms'
+import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import {
   nockCreate,
   nockDelete,
@@ -54,8 +38,7 @@ import {
   waitForNocks,
   waitForText,
 } from '../../../../lib/test-util'
-import ClusterPoolsPage from './ClusterPools'
-import { ClusterContext } from '../ManagedClusters/ClusterDetails/ClusterDetails'
+import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
 
 const mockClusterImageSet: ClusterImageSet = {
@@ -566,28 +549,9 @@ describe('Destroy ClusterPool with claimed clusters', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterPoolsState, [mockClusterPool])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <ClusterPoolsPage />
-          </ClusterContext.Provider>
+          <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -597,7 +561,6 @@ describe('Destroy ClusterPool with claimed clusters', () => {
     await waitForText(mockClusterPool.metadata.name!)
     await clickRowAction(1, 'Destroy cluster pool')
     await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
     expect(
       screen.getByRole('button', {
         name: /destroy/i,
