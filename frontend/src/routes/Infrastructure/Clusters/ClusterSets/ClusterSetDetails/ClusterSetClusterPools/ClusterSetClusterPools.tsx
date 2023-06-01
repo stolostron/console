@@ -14,12 +14,13 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetClusterPoolsPageContent() {
   const { t } = useTranslation()
-  const { clusterSet, clusterPools } = useContext(ClusterSetContext)
+  const { clusters, clusterSet, clusterPools } = useContext(ClusterSetContext)
   return (
     <AcmPageContent id="cluster-pools">
       <PageSection>
         <ClusterPoolsTable
           clusterPools={clusterPools!}
+          clusters={clusters!}
           emptyState={
             <AcmEmptyState
               key="mcEmptyState"
