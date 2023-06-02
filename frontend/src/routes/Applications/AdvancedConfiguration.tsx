@@ -16,7 +16,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
@@ -68,7 +68,8 @@ export default function AdvancedConfiguration() {
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
-  const history = useHistory()
+
+  const navigate = useNavigate()
   const [canDeleteSubscription, setCanDeleteSubscription] = useState<boolean>(false)
   const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
   const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
@@ -291,7 +292,7 @@ export default function AdvancedConfiguration() {
           },
         }
         const editLink = getEditLink(searchParams)
-        history.push(editLink)
+        navigate(editLink)
       },
     })
 
@@ -310,7 +311,7 @@ export default function AdvancedConfiguration() {
             apiversion,
           },
         })
-        history.push(searchLink)
+        navigate(searchLink)
       },
       isDisabled: false, // implement when we use search for remote Argo apps
     })
