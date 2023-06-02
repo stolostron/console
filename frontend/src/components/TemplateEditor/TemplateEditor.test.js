@@ -6,6 +6,7 @@ import TemplateEditor from './TemplateEditor'
 import { render, fireEvent, act, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter as Router } from 'react-router-dom'
+import { CompatRouter } from 'react-router-dom-v5-compat'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
 
@@ -35,10 +36,12 @@ describe('TemplateEditor component', () => {
   const Component = (props) => {
     return (
       <Router>
-        <div id={Portals.editBtn} />
-        <div id={Portals.cancelBtn} />
-        <div id={Portals.createBtn} />
-        <TemplateEditor {...props} />{' '}
+        <CompatRouter>
+          <div id={Portals.editBtn} />
+          <div id={Portals.cancelBtn} />
+          <div id={Portals.createBtn} />
+          <TemplateEditor {...props} />{' '}
+        </CompatRouter>
       </Router>
     )
   }
