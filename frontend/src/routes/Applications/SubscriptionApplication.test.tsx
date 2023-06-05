@@ -510,6 +510,12 @@ describe('Create Subscription Application page', () => {
         name: /name/i,
       })
     )
+    userEvent.click(screen.getByText(/equals any of/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /equals any of/i,
+      })
+    )
     userEvent.click(screen.getByText(/select the values/i))
     userEvent.click(
       screen.getByRole('checkbox', {

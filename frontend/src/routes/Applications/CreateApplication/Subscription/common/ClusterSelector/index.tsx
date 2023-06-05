@@ -51,7 +51,7 @@ const ClusterSelector = (props: {
   const isReadOnly = isExistingRule || !modeSelected
   const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
   const [selectedClusterSets, setSelectedClusterSets] = useState<string[] | undefined>(undefined)
-  const [hideValue, setHideValue] = useState<Boolean>(false)
+  const [hideValue, setHideValue] = useState<boolean>(false)
 
   const labelValuesMap = useLabelValuesMap(managedClusters)
 
