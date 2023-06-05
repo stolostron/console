@@ -519,7 +519,7 @@ describe('Create Subscription Application page', () => {
     userEvent.click(screen.getByText(/select the values/i))
     userEvent.click(
       screen.getByRole('checkbox', {
-        name: /local\-cluster/i,
+        name: /local-cluster/i,
       })
     )
 
