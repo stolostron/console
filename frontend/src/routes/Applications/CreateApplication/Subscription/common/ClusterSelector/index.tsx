@@ -21,14 +21,12 @@ import _ from 'lodash'
 import './style.css'
 import { TFunction } from 'i18next'
 import Tooltip from '../../../../../../components/TemplateEditor/components/Tooltip'
-import { ManagedClusterSet, ManagedClusterSetBindingKind, PlacementKind } from '../../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../../resources'
 import { getTemplateValue } from '../../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
 import YAML from 'yaml'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { MatchExpression, MatchExpressionCollapsed } from '../../../../../../wizards/Placement/MatchExpression'
 import { useLabelValuesMap } from '../../../../../../wizards/common/useLabelValuesMap'
-import { ItemContext, WizArrayInput, WizItemSelector } from '@patternfly-labs/react-form-wizard'
 
 const activeModeStr = 'active.mode'
 
@@ -53,6 +51,7 @@ const ClusterSelector = (props: {
   const isReadOnly = isExistingRule || !modeSelected
   const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
   const [selectedClusterSets, setSelectedClusterSets] = useState<string[] | undefined>(undefined)
+  const [hideValue, setHideValue] = useState<Boolean>(false)
 
   const labelValuesMap = useLabelValuesMap(managedClusters)
 
@@ -271,7 +270,12 @@ const ClusterSelector = (props: {
                     isRequired
                     onChange={(operator) => {
                       handleChange(operator!, 'operatorValue', id)
-                      debugger
+                      switch (operator) {
+                        case 'Exists':
+                        case 'DoesNotExist':
+                          setHideValue(true)
+                          break
+                      }
                     }}
                   >
                     {operatorOptions.map((option) => (
@@ -281,41 +285,23 @@ const ClusterSelector = (props: {
                     ))}
                   </AcmSelect>
 
-                  <AcmMultiSelect
-                    id={`labelValue-${id}-${controlId}`}
-                    label={matchLabel}
-                    value={matchLabelValue}
-                    placeholder={i18n('Select the values')}
-                    onChange={(value) => handleChange(value!, 'labelValue', id)}
-                    isRequired
-                  >
-                    {labelValuesMap[labelName]?.map((value: any) => (
-                      <SelectOption key={value} value={value}>
-                        {value}
-                      </SelectOption>
-                    ))}
-                  </AcmMultiSelect>
-                  {/* <AcmTextInput
-                    id={`labelName-${id}-${controlId}`}
-                    className="text-input"
-                    label={label}
-                    value={value}
-                    placeholder={i18n('clusterSelector.label.placeholder.field')}
-                    isDisabled={isReadOnly}
-                    onChange={(value) => handleChange(value, 'labelName', id)}
-                  /> */}
+                  {!hideValue && (
+                    <AcmMultiSelect
+                      id={`labelValue-${id}-${controlId}`}
+                      label={matchLabel}
+                      value={matchLabelValue}
+                      placeholder={i18n('Select the values')}
+                      onChange={(value) => handleChange(value!, 'labelValue', id)}
+                      isRequired
+                    >
+                      {labelValuesMap[labelName]?.map((value: any) => (
+                        <SelectOption key={value} value={value}>
+                          {value}
+                        </SelectOption>
+                      ))}
+                    </AcmMultiSelect>
+                  )}
                 </div>
-                {/* <div className="matching-labels-input">
-                  <AcmTextInput
-                    id={`labelValue-${id}-${controlId}`}
-                    className="text-input"
-                    label={matchLabel}
-                    value={matchLabelValue}
-                    placeholder={i18n('clusterSelector.value.placeholder.field')}
-                    isDisabled={isReadOnly}
-                    onChange={(value) => handleChange(value, 'labelValue', id)}
-                  />
-                </div> */}
 
                 {id !== 0 ? ( // Option to remove added labels
                   <Button

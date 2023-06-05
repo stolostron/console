@@ -63,10 +63,12 @@ spec:
             {{#if validValue}}
             - key: '{{{labelName}}}'
               operator: '{{{operatorValue}}}'
+              {{#if labelValue}}
               values: 
                 {{#each labelValue}}
                 - {{{ this }}}
                 {{/each}}
+              {{/if}}
             {{/if}}
             {{/each}} 
   clusterSets:
