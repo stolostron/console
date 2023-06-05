@@ -120,7 +120,7 @@ expect.extend({
       window.pendingNocks.forEach((nock) => {
         if (nock.scope.isDone()) {
           completedNocks.push(nock)
-        } else if (get(nock.scope, 'diff')) {
+        } else if (get(nock.scope, 'bodyDiff')) {
           mismatchedNocks.push(nock)
         } else {
           pendingNocks.push(nock)
@@ -132,13 +132,15 @@ expect.extend({
         msgs.push('!!!!!!!!!!!!!!!! MISMATCHED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
         mismatchedNocks.forEach(({ scope, nock, source }) => {
           msgs.push(`'${nock}' ${source.trim()}`)
-          const diff = get(scope, 'diff')
-          if (diff) {
-            msgs.push('\n this nock almost matched a request but the bodies were different here:')
-            diff.forEach((d: { lhs: any; rhs: any }) => {
-              msgs.push(' the request expected this:')
+          const bodyDiff = get(scope, 'bodyDiff')
+          if (bodyDiff) {
+            const { diff, apiPath } = bodyDiff
+            msgs.push('\n this nock almost matched a request but the bodies were different here:\n' + apiPath)
+            diff.forEach((d: { lhs: any; path: string[]; rhs: any }) => {
+              msgs.push(` for this path into body ${d.path.join('.')} `)
+              msgs.push(' the api expected this:')
               msgs.push(`  ${d?.lhs}`)
-              msgs.push(' the nock provided this:')
+              msgs.push(' but your nock body definition request was this:')
               msgs.push(`  ${d?.rhs}`)
             })
           }

@@ -56,7 +56,14 @@ spec:
       hostPrefix: 23
     serviceNetwork:
     - 172.30.0.0/16
-  sshPublicKey: '{{{ai.sshPublicKey}}}'
+{{#if ssh-publickey}}
+  sshPublicKey: |-
+  {{#each ssh-publickey}}
+      {{{.}}}
+  {{/each}}
+{{else}}
+  sshPublicKey: ''
+{{/if}}
 
 ---
 apiVersion: v1
