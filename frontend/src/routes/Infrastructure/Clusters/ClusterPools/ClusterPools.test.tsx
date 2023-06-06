@@ -227,6 +227,7 @@ const mockCluster: Cluster = {
   hive: {
     isHibernatable: true,
     clusterPool: mockClusterPool.metadata.name,
+    clusterClaimName: 'test',
     secrets: {
       installConfig: '',
     },
