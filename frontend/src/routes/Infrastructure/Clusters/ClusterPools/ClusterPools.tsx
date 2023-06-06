@@ -393,10 +393,12 @@ export function ClusterPoolsTable(props: {
                     isAriaDisabled: true,
                     click: (clusterPool: ClusterPool) => {
                       const claimClusters = clusters.filter(
-                        (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                        (cluster) =>
+                          cluster.hive.clusterPool === clusterPool.metadata.name && cluster.hive.clusterClaimName
                       )
 
                       const hasClaims = claimClusters.length > 0
+
                       setModalProps({
                         open: true,
                         title: t('bulk.title.destroyClusterPool'),
@@ -456,7 +458,7 @@ export function ClusterPoolsTable(props: {
               let hasClaims = false
               clusterPools.forEach((clusterPool) => {
                 const claimClusters = clusters.filter(
-                  (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name
+                  (cluster) => cluster.hive.clusterPool === clusterPool.metadata.name && cluster.hive.clusterClaimName
                 )
                 if (claimClusters.length > 0) {
                   hasClaims = true
