@@ -11,6 +11,7 @@ import {
   Channel,
   ChannelApiVersion,
   ChannelKind,
+  ManagedCluster,
   ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
@@ -37,7 +38,14 @@ import {
   SubscriptionKind,
 } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import { applicationsState, channelsState, managedClusterSetsState, namespacesState, secretsState } from '../../atoms'
+import {
+  applicationsState,
+  channelsState,
+  managedClusterSetsState,
+  managedClustersState,
+  namespacesState,
+  secretsState,
+} from '../../atoms'
 import {
   clickBySelector,
   clickByTestId,
@@ -377,6 +385,35 @@ const mockPlacementRule: PlacementRule = {
   },
 }
 
+const mockManagedClusters: ManagedCluster[] = [
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      labels: {
+        cloud: 'Amazon',
+        'cluster.open-cluster-management.io/clusterset': 'default',
+        clusterID: '96ed9cd3-a3b3-412f-9bf1-4d9addeafc5f',
+        'feature.open-cluster-management.io/addon-application-manager': 'available',
+        'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+        'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+        'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+        'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+        'feature.open-cluster-management.io/addon-work-manager': 'available',
+        'local-cluster': 'true',
+        name: 'local-cluster',
+        openshiftVersion: '4.11.24',
+        'openshiftVersion-major': '4',
+        'openshiftVersion-major-minor': '4.11',
+        'velero.io/exclude-from-backup': 'true',
+        vendor: 'OpenShift',
+      },
+      name: 'local-cluster',
+    },
+  },
+]
+
 const mockNamespace0: Namespace = {
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
@@ -410,6 +447,7 @@ describe('Create Subscription Application page', () => {
         initializeState={(snapshot) => {
           snapshot.set(secretsState, mockSecrets)
           snapshot.set(namespacesState, mockNamespaces)
+          snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(managedClusterSetsState, [mockGlobalClusterSet])
         }}
       >
@@ -464,8 +502,26 @@ describe('Create Subscription Application page', () => {
         name: /global/i,
       })
     )
-    userEvent.type(screen.getByRole('textbox', { name: /label/i }), 'name')
-    userEvent.type(screen.getByRole('textbox', { name: /value/i }), 'local-cluster')
+
+    // enter labels
+    userEvent.click(screen.getByText(/select the label/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /name/i,
+      })
+    )
+    userEvent.click(screen.getByText(/equals any of/i))
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /equals any of/i,
+      })
+    )
+    userEvent.click(screen.getByText(/select the values/i))
+    userEvent.click(
+      screen.getByRole('checkbox', {
+        name: /local-cluster/i,
+      })
+    )
 
     await clickByTestId('create-button-portal-id-btn')
     await waitForNocks([

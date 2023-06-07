@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useCallback, useState } from 'react'
-import { AcmMultiSelect, AcmTextInput } from '../../../../../../ui-components'
+import { AcmMultiSelect, AcmSelect } from '../../../../../../ui-components'
 import {
   Radio,
   FormGroup,
@@ -26,6 +26,7 @@ import { getTemplateValue } from '../../../../../Infrastructure/Clusters/Managed
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
 import YAML from 'yaml'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { useLabelValuesMap } from '../../../../../../wizards/common/useLabelValuesMap'
 
 const activeModeStr = 'active.mode'
 
@@ -38,8 +39,9 @@ const ClusterSelector = (props: {
   templateYAML: string
 }) => {
   const { t } = useTranslation()
-  const { managedClusterSetsState, managedClusterSetBindingsState } = useSharedAtoms()
+  const { managedClustersState, managedClusterSetsState, managedClusterSetBindingsState } = useSharedAtoms()
   const [clusterSets] = useRecoilState(managedClusterSetsState)
+  const [managedClusters] = useRecoilState(managedClustersState)
   const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
 
   const { controlId, locale, control, i18n } = props
@@ -49,24 +51,29 @@ const ClusterSelector = (props: {
   const isReadOnly = isExistingRule || !modeSelected
   const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
   const [selectedClusterSets, setSelectedClusterSets] = useState<string[] | undefined>(undefined)
+  const [hideValue, setHideValue] = useState<boolean>(false)
+
+  const labelValuesMap = useLabelValuesMap(managedClusters)
 
   control.validation = (exceptions: { row: number; text: string; type: string; controlId: string }[]) => {
     const { control, i18n } = props
     if (_.get(control, activeModeStr, false)) {
       const labelNameSet = new Set()
-      control.active.clusterLabelsList.map((item: { id: number; labelName: string; validValue: boolean }) => {
-        const { id, labelName } = item
+      control.active.clusterLabelsList.map(
+        (item: { id: number; labelName: string; validValue: boolean; operatorValue: string }) => {
+          const { id, labelName } = item
 
-        if (labelNameSet.has(labelName)) {
-          exceptions.push({
-            row: 1,
-            text: i18n('creation.duplicate.clusterSelector.label', [labelName]),
-            type: 'error',
-            controlId: `labelName-${id}`,
-          })
+          if (labelNameSet.has(labelName)) {
+            exceptions.push({
+              row: 1,
+              text: i18n('creation.duplicate.clusterSelector.label', [labelName]),
+              type: 'error',
+              controlId: `labelName-${id}`,
+            })
+          }
+          labelNameSet.add(labelName)
         }
-        labelNameSet.add(labelName)
-      })
+      )
     }
   }
 
@@ -74,7 +81,7 @@ const ClusterSelector = (props: {
     if (!control.showData || control.showData.length === 0) {
       control.active = {
         mode: false,
-        clusterLabelsList: [{ id: 0, labelName: '', labelValue: '', validValue: false }],
+        clusterLabelsList: [{ id: 0, labelName: '', labelValue: [], operatorValue: 'In', validValue: false }],
         clusterLabelsListID: 1,
         clusterSetsList: [],
       }
@@ -99,7 +106,7 @@ const ClusterSelector = (props: {
   }
 
   const handleChange = useCallback(
-    (value: string | object, targetName?: string, targetID?: string | number) => {
+    (value: string | object | string[], targetName?: string, targetID?: string | number) => {
       const { control, handleChange } = props
 
       if (targetName) {
@@ -110,6 +117,8 @@ const ClusterSelector = (props: {
             clusterLabelsList[targetID!].labelName = value
           } else if (targetName === 'labelValue') {
             clusterLabelsList[targetID!].labelValue = value
+          } else if (targetName === 'operatorValue') {
+            clusterLabelsList[targetID!].operatorValue = value
           }
           clusterLabelsList[targetID!].validValue = true
         }
@@ -179,7 +188,8 @@ const ClusterSelector = (props: {
         control.active.clusterLabelsList.push({
           id: control.active.clusterLabelsListID,
           labelName: '',
-          labelValue: '',
+          labelValue: [],
+          operatorValue: 'In',
           validValue: true,
         })
         control.active.clusterLabelsListID++
@@ -205,6 +215,13 @@ const ClusterSelector = (props: {
     [forceUpdate, handleChange]
   )
 
+  const operatorOptions = [
+    { label: i18n('equals any of'), value: 'In' },
+    { label: i18n('does not equal any of'), value: 'NotIn' },
+    { label: i18n('exists'), value: 'Exists' },
+    { label: i18n('does not exist'), value: 'DoesNotExist' },
+  ]
+
   const renderClusterLabels = (
     control: { active: { clusterLabelsList: any[] } },
     isReadOnly: boolean | undefined,
@@ -217,9 +234,10 @@ const ClusterSelector = (props: {
     return (
       control.active &&
       control.active.clusterLabelsList.map((item) => {
-        const { id, labelName, labelValue, validValue } = item
+        const { id, labelName, labelValue, validValue, operatorValue } = item
         const label = id === 0 ? i18n('clusterSelector.label.field.ui') : ''
         const value = labelName === '' ? '' : labelName
+        const operator = operatorValue === '' ? '' : operatorValue
         const matchLabel = id === 0 ? i18n('clusterSelector.value.field.ui') : ''
         const matchLabelValue = labelValue === '' ? '' : labelValue
 
@@ -228,26 +246,61 @@ const ClusterSelector = (props: {
             <Fragment key={id}>
               <div className="matching-labels-container" style={{ display: 'flex', marginBottom: '20px' }}>
                 <div className="matching-labels-input" style={{ maxWidth: '45%', marginRight: '10px' }}>
-                  <AcmTextInput
+                  <AcmSelect
                     id={`labelName-${id}-${controlId}`}
-                    className="text-input"
                     label={label}
                     value={value}
-                    placeholder={i18n('clusterSelector.label.placeholder.field')}
-                    isDisabled={isReadOnly}
-                    onChange={(value) => handleChange(value, 'labelName', id)}
-                  />
-                </div>
-                <div className="matching-labels-input">
-                  <AcmTextInput
-                    id={`labelValue-${id}-${controlId}`}
-                    className="text-input"
-                    label={matchLabel}
-                    value={matchLabelValue}
-                    placeholder={i18n('clusterSelector.value.placeholder.field')}
-                    isDisabled={isReadOnly}
-                    onChange={(value) => handleChange(value, 'labelValue', id)}
-                  />
+                    isRequired
+                    placeholder={i18n('Select the label')}
+                    onChange={(label) => {
+                      handleChange(label!, 'labelName', id)
+                    }}
+                  >
+                    {Object.keys(labelValuesMap)?.map((option) => (
+                      <SelectOption key={option} value={option}>
+                        {option}
+                      </SelectOption>
+                    ))}
+                  </AcmSelect>
+
+                  <AcmSelect
+                    id={`operator-${id}-${controlId}`}
+                    label={i18n('Operator')}
+                    value={operator}
+                    isRequired
+                    onChange={(operator) => {
+                      handleChange(operator!, 'operatorValue', id)
+                      switch (operator) {
+                        case 'Exists':
+                        case 'DoesNotExist':
+                          setHideValue(true)
+                          break
+                      }
+                    }}
+                  >
+                    {operatorOptions.map((option) => (
+                      <SelectOption key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectOption>
+                    ))}
+                  </AcmSelect>
+
+                  {!hideValue && (
+                    <AcmMultiSelect
+                      id={`labelValue-${id}-${controlId}`}
+                      label={matchLabel}
+                      value={matchLabelValue}
+                      placeholder={i18n('Select the values')}
+                      onChange={(value) => handleChange(value!, 'labelValue', id)}
+                      isRequired
+                    >
+                      {labelValuesMap[labelName]?.map((value: any) => (
+                        <SelectOption key={value} value={value}>
+                          {value}
+                        </SelectOption>
+                      ))}
+                    </AcmMultiSelect>
+                  )}
                 </div>
 
                 {id !== 0 ? ( // Option to remove added labels
@@ -370,7 +423,7 @@ export default ClusterSelector
 export const summarize = (control: any, summary: string[]) => {
   const { clusterLabelsList } = control.active || {}
   if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
-    clusterLabelsList.forEach((item: { labelValue: string; labelName: string }) => {
+    clusterLabelsList.forEach((item: { labelValue: string[]; labelName: string }) => {
       if (item.labelName && item.labelValue) {
         summary.push(`${item.labelName}=${item.labelValue}`)
       }
@@ -382,7 +435,7 @@ export const summary = (control: any) => {
   const { clusterLabelsList } = control.active || {}
   if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
     const labels: string[] = []
-    clusterLabelsList.forEach((item: { labelValue: string; labelName: string }) => {
+    clusterLabelsList.forEach((item: { labelValue: string[]; labelName: string }) => {
       if (item.labelName && item.labelValue) {
         labels.push(`${item.labelName}=${item.labelValue}`)
       }
