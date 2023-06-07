@@ -7,7 +7,6 @@ import {
   EditMode,
   useEditMode,
   useItem,
-  WizHidden,
   WizKeyValue,
   WizNumberInput,
   WizArrayInput,
@@ -83,7 +82,6 @@ export function Placement(props: {
   createClusterSetCallback?: () => void
   alertTitle?: string
 }) {
-  const editMode = useEditMode()
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
 
@@ -130,35 +128,7 @@ export function Placement(props: {
         <Alert variant="warning" title={props.alertTitle} />
       ) : null}
 
-      <WizHidden
-        hidden={(placement) => {
-          if (editMode === EditMode.Edit) return true
-          if (!placement.spec?.predicates) return false
-          if (placement.spec.predicates.length <= 1) return false
-          return true
-        }}
-      >
-        <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
-      </WizHidden>
-
-      <WizArrayInput
-        label={t('Cluster selectors')}
-        path="spec.predicates"
-        placeholder={t('Add cluster selector')}
-        collapsedContent={<PredicateSummary />}
-        helperText={t(
-          'A cluster selector further selects clusters from the clusters in the cluster sets which have bindings to the namespace. Clusters matching any cluster selector will be selected.'
-        )}
-        defaultCollapsed
-        hidden={(placement) => {
-          if (editMode === EditMode.Edit) return false
-          if (!placement.spec?.predicates) return true
-          if (placement.spec.predicates.length <= 1) return true
-          return false
-        }}
-      >
-        <PlacementPredicate clusters={props.clusters} />
-      </WizArrayInput>
+      <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
       <WizNumberInput
         label={t('Limit the number of clusters selected')}
         path="spec.numberOfClusters"
