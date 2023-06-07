@@ -7,7 +7,6 @@ import {
   EditMode,
   useEditMode,
   useItem,
-  WizHidden,
   WizKeyValue,
   WizNumberInput,
   WizArrayInput,
@@ -83,7 +82,6 @@ export function Placement(props: {
   createClusterSetCallback?: () => void
   alertTitle?: string
 }) {
-  const editMode = useEditMode()
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
 
