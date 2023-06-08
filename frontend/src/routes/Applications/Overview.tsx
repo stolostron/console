@@ -514,22 +514,6 @@ export default function ApplicationsOverview() {
             (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
             (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
           ) {
-            const argoAppType = application as ArgoApplication
-            if (argoAppType?.spec?.sources) {
-              return (
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {application.metadata?.name}
-                  <span> </span>
-                  <Tooltip
-                    isContentLeftAligned={true}
-                    content={t('ArgoCD application with multiple sources is not supported.')}
-                    position="right"
-                  >
-                    <OutlinedQuestionCircleIcon />
-                  </Tooltip>
-                </span>
-              )
-            }
             const cluster = application?.status?.cluster
             clusterQuery = cluster ? `&cluster=${cluster}` : ''
           }
@@ -551,21 +535,6 @@ export default function ApplicationsOverview() {
           }
           if (application.kind === ApplicationSetKind) {
             const appSetType = application as ApplicationSet
-            if (appSetType.spec.template?.spec?.sources) {
-              return (
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {application.metadata?.name}
-                  <span> </span>
-                  <Tooltip
-                    isContentLeftAligned={true}
-                    content={t('ApplicationSet application with multiple sources is not supported.')}
-                    position="right"
-                  >
-                    <OutlinedQuestionCircleIcon />
-                  </Tooltip>
-                </span>
-              )
-            }
           }
           return (
             <span style={{ whiteSpace: 'nowrap' }}>
@@ -806,30 +775,28 @@ export default function ApplicationsOverview() {
 
       if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
         const appSetType = resource as ApplicationSet
-        if (!appSetType.spec.template?.spec?.sources) {
-          actions.push({
-            id: 'viewApplication',
-            title: t('View application'),
-            click: () => {
-              history.push(
-                `${NavigationPath.applicationOverview
-                  .replace(':namespace', resource.metadata?.namespace as string)
-                  .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
-              )
-            },
-          })
-          actions.push({
-            id: 'editApplication',
-            title: t('Edit application'),
-            click: () => {
-              history.push(
-                NavigationPath.editApplicationArgo
-                  .replace(':namespace', resource.metadata?.namespace as string)
-                  .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
-              )
-            },
-          })
-        }
+        actions.push({
+          id: 'viewApplication',
+          title: t('View application'),
+          click: () => {
+            history.push(
+              `${NavigationPath.applicationOverview
+                .replace(':namespace', resource.metadata?.namespace as string)
+                .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
+            )
+          },
+        })
+        actions.push({
+          id: 'editApplication',
+          title: t('Edit application'),
+          click: () => {
+            history.push(
+              NavigationPath.editApplicationArgo
+                .replace(':namespace', resource.metadata?.namespace as string)
+                .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
+            )
+          },
+        })
       }
 
       if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {

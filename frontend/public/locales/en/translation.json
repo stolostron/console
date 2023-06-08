@@ -488,7 +488,6 @@
   "Application updated": "Application updated",
   "application.create.yaml": "Application YAML",
   "Applications": "Applications",
-  "ApplicationSet application with multiple sources is not supported.": "ApplicationSet application with multiple sources is not supported.",
   "Architecture": "Architecture",
   "Are you sure that you want to continue?": "Are you sure that you want to continue?",
   "Are you sure that you want to delete {{resourceName}}?": "Are you sure that you want to delete {{resourceName}}?",

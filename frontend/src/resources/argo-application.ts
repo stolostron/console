@@ -25,7 +25,7 @@ export interface ArgoApplication extends IResource {
       server?: string
     }
     project: string
-    source: {
+    source?: {
       path?: string
       repoURL: string
       targetRevision?: string
