@@ -31,6 +31,7 @@ export const getNodepoolStatus = (nodepool: NodePool | NodePoolK8sResource) => {
       return condition.status === 'True' ? 'Ready' : 'Pending'
     }
   }
+  return 'Pending'
 }
 
 const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
@@ -76,7 +77,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         )
       }
     },
-    [getNodepoolStatus, t]
+    [t]
   )
 
   const renderHealthCheck = useCallback(
@@ -237,7 +238,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
       return { ...nodepool, ...transformedObject }
     },
-    [getNodepoolStatus, getAutoscaling]
+    [getAutoscaling]
   )
 
   const addNodePoolStatusMessage = useMemo(() => {

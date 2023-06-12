@@ -138,6 +138,7 @@ export function DistributionField(props: {
     return false
     //return updateAvailable
   }, [
+    props.nodepool,
     props.cluster?.distribution?.ocp?.version,
     props.cluster?.hypershift?.nodePools,
     hypershiftAvailableUpdates,

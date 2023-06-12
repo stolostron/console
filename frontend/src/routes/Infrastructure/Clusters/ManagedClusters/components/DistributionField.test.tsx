@@ -426,6 +426,15 @@ const mockNodepools: NodePoolK8sResource[] = [
       replicas: 1,
     },
     status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-06-12T19:11:02Z',
+          message: '',
+          reason: 'AsExpected',
+          status: 'True',
+          type: 'Ready',
+        },
+      ],
       version: '4.10.18',
     },
   },
@@ -460,6 +469,15 @@ const mockNodepools: NodePoolK8sResource[] = [
       replicas: 1,
     },
     status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-06-12T19:11:02Z',
+          message: '',
+          reason: 'AsExpected',
+          status: 'True',
+          type: 'Ready',
+        },
+      ],
       version: '4.10.17',
     },
   },
@@ -494,6 +512,15 @@ const mockNodepools: NodePoolK8sResource[] = [
       replicas: 1,
     },
     status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-06-12T19:11:02Z',
+          message: '',
+          reason: 'AsExpected',
+          status: 'True',
+          type: 'Ready',
+        },
+      ],
       version: '4.10.16',
     },
   },
@@ -528,6 +555,15 @@ const mockNodepools: NodePoolK8sResource[] = [
       replicas: 1,
     },
     status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-06-12T19:11:02Z',
+          message: '',
+          reason: 'AsExpected',
+          status: 'True',
+          type: 'Ready',
+        },
+      ],
       version: '4.10.15',
     },
   },
