@@ -2,7 +2,7 @@
 import { ButtonVariant, Stack, StackItem, Text } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
 import { HypershiftCloudPlatformType, NodePool, NodePoolDefinition } from '../../../../../resources'
@@ -21,6 +21,16 @@ import { NodePoolTableWidthContext } from './HypershiftClusterInstallProgress'
 type NodePoolsTableProps = {
   nodePools: NodePool[]
   clusterImages: ClusterImageSetK8sResource[]
+}
+
+export const getNodepoolStatus = (nodepool: NodePool | NodePoolK8sResource) => {
+  const conditions = nodepool.status?.conditions || []
+
+  for (const condition of conditions) {
+    if (condition.type === 'Ready') {
+      return condition.status === 'True' ? 'Ready' : 'Pending'
+    }
+  }
 }
 
 const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
@@ -46,16 +56,6 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
   const [canPatchNodepool, setCanPatchNodepool] = useState<boolean>(false)
   const { namespacesState } = useSharedAtoms()
   const [namespaces] = useRecoilState(namespacesState)
-
-  const getNodepoolStatus = useCallback((nodepool: NodePool) => {
-    const conditions = nodepool.status?.conditions || []
-
-    for (const condition of conditions) {
-      if (condition.type === 'Ready') {
-        return condition.status === 'True' ? 'Ready' : 'Pending'
-      }
-    }
-  }, [])
 
   const renderNodepoolStatus = useCallback(
     (nodepool: NodePool) => {

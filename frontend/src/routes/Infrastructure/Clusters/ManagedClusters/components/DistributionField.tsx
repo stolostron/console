@@ -25,6 +25,7 @@ import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift
 import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
+import { getNodepoolStatus } from './NodePoolsTable'
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -97,8 +98,11 @@ export function DistributionField(props: {
 
   const isUpdateAvailable: boolean = useMemo(() => {
     //if nodepool table
-    if (props.resource != null && props.resource === 'nodepool') {
-      if ((props.nodepool?.status?.version || '') < (props.cluster?.distribution?.ocp?.version || '')) {
+    if (props.resource != null && props.resource === 'nodepool' && props.nodepool) {
+      if (
+        getNodepoolStatus(props.nodepool) == 'Ready' &&
+        (props.nodepool?.status?.version || '') < (props.cluster?.distribution?.ocp?.version || '')
+      ) {
         return true
       }
       return false
@@ -110,8 +114,9 @@ export function DistributionField(props: {
       if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
         for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
           if (
+            getNodepoolStatus(props.cluster?.hypershift?.nodePools[i]) == 'Ready' &&
             (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
-            (props.cluster.distribution?.ocp?.version || '')
+              (props.cluster.distribution?.ocp?.version || '')
           ) {
             updateAvailable = true
             break
@@ -400,6 +405,7 @@ export function DistributionField(props: {
     )
   } else if ((props.cluster?.isHostedCluster || props.cluster?.isHypershift) && isUpdateAvailable) {
     // UPGRADE AVAILABLE HYPERSHIFT
+
     return (
       <>
         {props.nodepool ? (
@@ -422,6 +428,7 @@ export function DistributionField(props: {
           >
             {t('upgrade.available')}
           </RbacButton>
+
           <HypershiftUpgradeModal
             controlPlane={props.cluster}
             nodepools={props.cluster.hypershift?.nodePools as NodePool[]}
