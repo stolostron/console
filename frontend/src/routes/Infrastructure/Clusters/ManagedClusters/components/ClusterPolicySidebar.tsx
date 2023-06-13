@@ -18,14 +18,14 @@ import {
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
 const useStyles = makeStyles({
   body: {
@@ -165,10 +165,7 @@ function DetailsView(props: {
           <FlexItem>
             <TextContent>
               <Text component={TextVariants.p}>
-                {t('The impact of the problem would be {{totalRisk}} if it occurred').replace(
-                  '{{totalRisk}}',
-                  totalRisk
-                )}
+                {t('The impact of the problem would be {{totalRisk}} if it occurred', { totalRisk })}
               </Text>
             </TextContent>
           </FlexItem>
