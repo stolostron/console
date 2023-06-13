@@ -117,7 +117,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                   isDisabled={!!runningCountError}
                   onClick={() => {
                     alertContext.clearAlerts()
-                    return patchResource(props.clusterPool!, [
+                    patchResource(props.clusterPool!, [
                       {
                         op: 'replace',
                         path: '/spec/size',

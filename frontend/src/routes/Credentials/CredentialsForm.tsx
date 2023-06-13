@@ -1500,7 +1500,7 @@ export function CredentialsForm(
           history.push(NavigationPath.credentials)
         })
       } else {
-        return createResource(credentialData as IResource).promise.then((resource) => {
+        createResource(credentialData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Credentials created'),
             message: t('credentialsForm.created.message', { name }),

@@ -718,12 +718,12 @@ export function AnsibleAutomationsForm(props: {
     ],
     submit: () => {
       if (isEditing) {
-        return replaceResource(stateToData() as IResource).promise.then(async () => {
+        replaceResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           history.push(NavigationPath.ansibleAutomations)
         })
       } else {
-        return createResource(stateToData() as IResource).promise.then(async () => {
+        createResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           history.push(NavigationPath.ansibleAutomations)
         })

@@ -174,7 +174,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                       value: awsInstanceType ?? submarinerConfigDefault.awsInstanceType,
                     })
                   }
-                  return patchResource(props.submarinerConfig!, patch)
+                  patchResource(props.submarinerConfig!, patch)
                     .promise.then(() => reset())
                     .catch((err) => {
                       alertContext.addAlert(getErrorInfo(err, t))

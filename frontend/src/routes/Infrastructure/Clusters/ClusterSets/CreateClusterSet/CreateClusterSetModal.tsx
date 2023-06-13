@@ -83,7 +83,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                     processingLabel={t('creating')}
                     onClick={() => {
                       alertContext.clearAlerts()
-                      return createResource<ManagedClusterSet>(managedClusterSet)
+                      createResource<ManagedClusterSet>(managedClusterSet)
                         .promise.then(() => setCreated(true))
                         .catch((err) => {
                           alertContext.addAlert({

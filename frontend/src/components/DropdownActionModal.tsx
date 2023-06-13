@@ -93,7 +93,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                     id="submit-button"
                     isDisabled={!selection}
                     variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
-                    onClick={async () => {
+                    onClick={() => {
                       const error: ItemError<T>[] = []
 
                       if (props.actionFn) {

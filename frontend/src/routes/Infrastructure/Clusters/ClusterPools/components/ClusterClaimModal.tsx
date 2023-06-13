@@ -152,9 +152,9 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     variant="primary"
                     label={t('claim')}
                     processingLabel={t('claiming')}
-                    onClick={async () => {
+                    onClick={() => {
                       alertContext.clearAlerts()
-                      return createResource(clusterClaim!)
+                      createResource(clusterClaim!)
                         .promise.then(async (result) => {
                           setClaimCreated(true)
                           if (props.clusterPool?.status?.ready !== undefined && props.clusterPool.status.ready > 0) {

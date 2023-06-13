@@ -418,7 +418,7 @@ function AddUsersModal(props: {
                         name: role!,
                       },
                     }
-                    return createResource(resource)
+                    createResource(resource)
                       .promise.then(() => reset())
                       .catch((err) => {
                         alertContext.addAlert(getErrorInfo(err, t))
