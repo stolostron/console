@@ -193,7 +193,15 @@ function RenderSearchBar(props: {
           searchDataLoading,
           t
         )
-  }, [currentSearch, searchSchemaData, searchCompleteData, searchAutocompleteLimit, t])
+  }, [
+    currentSearch,
+    searchSchemaData,
+    searchCompleteData,
+    searchDataLoading,
+    searchSchemaLoading,
+    searchAutocompleteLimit,
+    t,
+  ])
 
   const saveSearchTooltip = useMemo(() => {
     if (savedSearchQueries.length >= savedSearchLimit) {
