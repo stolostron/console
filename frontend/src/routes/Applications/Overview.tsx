@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import {
   AcmDropdown,
@@ -203,18 +203,29 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       ]
     } else if (resource.kind === ApplicationSetKind) {
       castType = resource as ApplicationSet
-      if (!castType.spec.template?.spec?.source) {
-        return []
+      const appRepos: any[] = []
+      if (!castType.spec.template?.spec?.sources && castType.spec.template?.spec?.source) {
+        return [
+          {
+            type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
+            pathName: castType.spec.template?.spec?.source.repoURL,
+            gitPath: castType.spec.template?.spec?.source.path,
+            chart: castType.spec.template?.spec?.source.chart,
+            targetRevision: castType.spec.template?.spec?.source.targetRevision,
+          },
+        ]
+      } else if (castType.spec.template?.spec?.sources) {
+        castType.spec.template?.spec?.sources.forEach((source) => {
+          appRepos.push({
+            type: source.path ? 'git' : 'helmrepo',
+            pathName: source.repoURL,
+            gitPath: source.path,
+            chart: source.chart,
+            targetRevision: source.targetRevision,
+          })
+        })
       }
-      return [
-        {
-          type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
-          pathName: castType.spec.template?.spec?.source.repoURL,
-          gitPath: castType.spec.template?.spec?.source.path,
-          chart: castType.spec.template?.spec?.source.chart,
-          targetRevision: castType.spec.template?.spec?.source.targetRevision,
-        },
-      ]
+      return appRepos
     }
   }
 }
@@ -533,9 +544,6 @@ export default function ApplicationsOverview() {
               apiVersion = 'ocp'
             }
           }
-          if (application.kind === ApplicationSetKind) {
-            const appSetType = application as ApplicationSet
-          }
           return (
             <span style={{ whiteSpace: 'nowrap' }}>
               <Link
@@ -774,7 +782,6 @@ export default function ApplicationsOverview() {
       }
 
       if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-        const appSetType = resource as ApplicationSet
         actions.push({
           id: 'viewApplication',
           title: t('View application'),

@@ -139,7 +139,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     isSubscription = !isArgoApp && !isAppSet && !isOCPApp && !isFluxApp
     const { name, namespace } = applicationData.application.metadata
     const applicationResource = applicationData.application.app
-    const appRepos = getApplicationRepos(applicationData.application.app, subscriptions, channels)
 
     const clusterList = getClusterList(
       applicationResource,
@@ -245,17 +244,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             </Tooltip>
           ),
         },
-        {
-          key: t('Repository resource'),
-          value: (
-            <ResourceLabels
-              appRepos={appRepos as any[]}
-              translation={t}
-              isArgoApp={isAppSet || isArgoApp}
-              showSubscriptionAttributes={true}
-            />
-          ),
-        },
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
@@ -346,7 +334,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           openTabIcon,
         })}
 
-        {/* Hide for argo */}
         {isSubscription && (
           <div className="overview-cards-subs-section">
             {showSubCards && !disableBtn
@@ -363,6 +350,29 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                   subsList,
                   (showSubCards ? t('Hide subscription details') : t('Show subscription details')) +
                     ` (${subsList?.length})`,
+                  '70%'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {isAppSet && (
+          <div className="overview-cards-sources-section">
+            {showSubCards && !disableBtn
+              ? createSourceCards(applicationData?.application.app, t, subscriptions, channels)
+              : ''}
+            <div className="toggle-subs-btn">
+              <Button
+                variant="secondary"
+                isDisabled={disableBtn}
+                data-test-subscription-details={!disableBtn}
+                onClick={() => setShowSubCards(!showSubCards)}
+              >
+                {renderData(
+                  getApplicationRepos(applicationData?.application.app, subscriptions, channels),
+                  (showSubCards ? t('Hide source details') : t('Show source details')) +
+                    ` (${getApplicationRepos(applicationData?.application.app, subscriptions, channels)?.length})`,
                   '70%'
                 )}
               </Button>
@@ -528,6 +538,49 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
   return null
 }
 
+function createSourceCards(
+  applicationSet: ApplicationSet,
+  t: TFunction,
+  subscriptions: Subscription[],
+  channels: Channel[]
+) {
+  const appRepos = getApplicationRepos(applicationSet, subscriptions, channels)
+  return appRepos?.map((appRepo) => {
+    if (appRepo) {
+      return (
+        <Card
+          key={applicationSet.metadata.name}
+          style={{
+            marginTop: '16px',
+          }}
+        >
+          <CardBody className="sub-card-container">
+            <div className="sub-card-column add-right-border">
+              <GripHorizontalIcon />
+              <div className="sub-card-content">
+                <div className="sub-card-title">{t('ApplicationSet')}</div>
+                <span>{applicationSet.metadata.name}</span>
+              </div>
+            </div>
+            <div className="sub-card-column add-right-border">
+              <FolderIcon />
+              <div className="sub-card-content">
+                <div className="sub-card-title">{t('Repository resource')}</div>
+                <ResourceLabels
+                  appRepos={[appRepo] as any[]}
+                  translation={t}
+                  isArgoApp={true}
+                  showSubscriptionAttributes={true}
+                />
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      )
+    }
+  })
+}
+
 function createSubsCards(
   subsList: (Subscription | undefined)[],
   t: TFunction,
@@ -614,20 +667,53 @@ function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) 
 
 function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolean, isAppSet: boolean) {
   let sourcePath = ''
+  const sourcesPath = 'spec.template.spec.sources'
+  let path = ''
+  let repoURL = ''
+  let chart = ''
+  const repoURLList: any[] = []
+  const chartList: any[] = []
+  const pathList: any[] = []
+
   if (isArgoApp) {
     sourcePath = 'spec.source'
   } else if (isAppSet) {
     sourcePath = 'spec.template.spec.source'
   }
-  const { path, repoURL, chart } = _.get(resource, sourcePath)
+
+  const source = _.get(resource, sourcePath)
+  const sources = _.get(resource, sourcesPath)
+
+  if (sources) {
+    sources.forEach((source: { repoURL: string; chart: string; path: string }) => {
+      const { repoURL, chart, path } = source
+      if (repoURL) {
+        repoURLList.push(repoURL)
+      }
+
+      if (chart) {
+        chartList.push(chart)
+      }
+
+      if (path) {
+        pathList.push(path)
+      }
+    })
+  } else if (!sources && source) {
+    const sourceObj = _.get(resource, sourcePath)
+    path = sourceObj.path
+    repoURL = sourceObj.repoURL
+    chart = sourceObj.chart
+  }
+
   const [apigroup, apiversion] = resource.apiVersion.split('/')
   if (resource) {
     return getSearchLink({
       properties: {
         kind: ApplicationKind.toLowerCase(),
-        path,
-        chart,
-        repoURL,
+        path: path || pathList,
+        chart: chart || chartList,
+        repoURL: repoURL || repoURLList,
         apigroup,
         apiversion,
       },
