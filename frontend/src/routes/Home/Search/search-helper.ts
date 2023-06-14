@@ -103,7 +103,7 @@ export function formatSearchbarSuggestions(
   isLoading &&
     suggestions.push({
       id: 'id-loading',
-      name: suggestionKind === 'filter' ? 'Loading...' : 'Loading more...',
+      name: suggestionKind === 'filter' ? t('Loading...') : t('Loading more...'),
       kind: 'label',
       disabled: true,
     })
