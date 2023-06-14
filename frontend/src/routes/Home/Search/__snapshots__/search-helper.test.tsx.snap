@@ -30,19 +30,16 @@ Array [
     "name": "Filters",
   },
   Object {
-    "disabled": false,
     "id": "id-kind",
     "kind": "filter",
     "name": "kind",
   },
   Object {
-    "disabled": false,
     "id": "id-cluster",
     "kind": "filter",
     "name": "cluster",
   },
   Object {
-    "disabled": false,
     "id": "id-deployment",
     "kind": "filter",
     "name": "deployment",
@@ -59,19 +56,16 @@ Array [
     "name": "name values",
   },
   Object {
-    "disabled": false,
     "id": "id-name1",
     "kind": "value",
     "name": "name1",
   },
   Object {
-    "disabled": false,
     "id": "id-name2",
     "kind": "value",
     "name": "name2",
   },
   Object {
-    "disabled": false,
     "id": "id-name3",
     "kind": "value",
     "name": "name3",
@@ -88,19 +82,16 @@ Array [
     "name": "namespace values",
   },
   Object {
-    "disabled": false,
     "id": "id-namespace1",
     "kind": "value",
     "name": "namespace1",
   },
   Object {
-    "disabled": false,
     "id": "id-namespace2",
     "kind": "value",
     "name": "namespace2",
   },
   Object {
-    "disabled": false,
     "id": "id-namespace3",
     "kind": "value",
     "name": "namespace3",
@@ -186,6 +177,23 @@ Array [
     "id": "id-date-year",
     "kind": "value",
     "name": "year",
+  },
+]
+`;
+
+exports[`Correctly returns formatSearchbarSuggestions with loading item 1`] = `
+Array [
+  Object {
+    "disabled": true,
+    "id": "id-suggestions-label",
+    "kind": "value",
+    "name": "name values",
+  },
+  Object {
+    "disabled": true,
+    "id": "id-loading",
+    "kind": "label",
+    "name": "Loading more...",
   },
 ]
 `;

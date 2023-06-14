@@ -13,6 +13,7 @@ export function formatSearchbarSuggestions(
   suggestionKind: 'label' | 'filter' | 'value',
   searchQuery: string,
   limit: number,
+  isLoading: boolean,
   t: TFunction
 ) {
   let valuesToRemoveFromSuggestions: string[] = []
@@ -96,10 +97,16 @@ export function formatSearchbarSuggestions(
         id: `id-${field}`,
         name: field,
         kind: suggestionKind,
-        disabled: field.includes(t('Loading')),
       }
     })
   suggestions.unshift(labelTag)
+  isLoading &&
+    suggestions.push({
+      id: 'id-loading',
+      name: suggestionKind === 'filter' ? 'Loading...' : 'Loading more...',
+      kind: 'label',
+      disabled: true,
+    })
   return suggestions
 }
 

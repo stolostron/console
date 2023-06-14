@@ -159,31 +159,30 @@ function RenderSearchBar(props: {
   }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors])
 
   const suggestions = useMemo(() => {
-    return currentSearch === '' ||
+    if (
+      currentSearch === '' ||
       (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
-      ? formatSearchbarSuggestions(
-          _.get(searchSchemaData, 'searchSchema.allProperties', [
-            'name',
-            'namespace',
-            'label',
-            'kind',
-            'cluster',
-            'apigroup',
-            'created',
-            t('Loading more...'),
-          ]),
-          'filter',
-          '', // Dont need to de-dupe filters
-          searchAutocompleteLimit,
-          t
-        )
-      : formatSearchbarSuggestions(
-          _.get(searchCompleteData || [], 'searchComplete', [t('Loading...')]) ?? [],
-          'value',
-          currentSearch, // pass current search query in order to de-dupe already selected values
-          searchAutocompleteLimit,
-          t
-        )
+    ) {
+      const suggestions: string[] | undefined = _.get(searchSchemaData, 'searchSchema.allProperties')
+      return formatSearchbarSuggestions(
+        suggestions ?? ['name', 'namespace', 'label', 'kind', 'cluster', 'apigroup', 'created'],
+        'filter',
+        '', // Dont need to de-dupe filters
+        searchAutocompleteLimit,
+        !suggestions, // is loading
+        t
+      )
+    } else {
+      const suggestions: string[] | undefined = _.get(searchCompleteData || [], 'searchComplete')
+      return formatSearchbarSuggestions(
+        suggestions ?? [],
+        'value',
+        currentSearch, // pass current search query in order to de-dupe already selected values
+        searchAutocompleteLimit,
+        !suggestions, // is loading
+        t
+      )
+    }
   }, [currentSearch, searchSchemaData, searchCompleteData, searchAutocompleteLimit, t])
 
   const saveSearchTooltip = useMemo(() => {
