@@ -72,9 +72,10 @@
                         "namespace": { "type": "string" },
                         "server": { "type": "string" }
                       }
-                    }
+                    },
+                    "sources": { "type": "array" }
                   },
-                  "required": ["project", "source", "destination"]
+                  "required": ["project", "destination"]
                 }
               },
               "required": ["metadata", "spec"]

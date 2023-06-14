@@ -40,7 +40,12 @@ export interface ApplicationSet extends IResource {
           targetRevision?: string
           chart?: string
         }
-        sources?: any[]
+        sources?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+        }[]
         syncPolicy?: any
       }
     }

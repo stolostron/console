@@ -52,6 +52,7 @@ import { CreateArgoResources } from './CreateArgoResources'
 import { ApplicationSetKind, GitOpsCluster } from '../../resources'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
+import { get } from 'lodash'
 
 interface Channel {
   metadata?: {
@@ -169,8 +170,18 @@ export function ArgoWizard(props: ArgoWizardProps) {
     const gitArgoAppSetRepoURLs: string[] = []
     if (props.applicationSets) {
       props.applicationSets.forEach((appset) => {
-        if (appset.spec.template?.spec?.source && !appset.spec.template?.spec?.source.chart) {
-          gitArgoAppSetRepoURLs.push(appset.spec.template?.spec?.source.repoURL as string)
+        const source = get(appset, 'spec.template.spec.source')
+        const sources = get(appset, 'spec.template.spec.sources')
+        if (sources) {
+          sources.forEach((source: { chart: any; repoURL: string }) => {
+            if (!source.chart) {
+              gitArgoAppSetRepoURLs.push(source.repoURL as string)
+            }
+          })
+        } else if (!sources && source) {
+          if (!source.chart) {
+            gitArgoAppSetRepoURLs.push(source.repoURL as string)
+          }
         }
       })
     }
@@ -190,8 +201,19 @@ export function ArgoWizard(props: ArgoWizardProps) {
     const helmArgoAppSetRepoURLs: string[] = []
     if (props.applicationSets) {
       props.applicationSets.forEach((appset) => {
-        if (appset.spec.template?.spec?.source && appset.spec.template?.spec?.source.chart) {
-          helmArgoAppSetRepoURLs.push(appset.spec.template?.spec?.source.repoURL)
+        const source = get(appset, 'spec.template.spec.source')
+        const sources = get(appset, 'spec.template.spec.sources')
+
+        if (sources) {
+          sources.forEach((source: { chart: string; repoURL: string }) => {
+            if (source.chart) {
+              helmArgoAppSetRepoURLs.push(source.repoURL)
+            }
+          })
+        } else if (!sources && source) {
+          if (source.chart) {
+            helmArgoAppSetRepoURLs.push(source.repoURL)
+          }
         }
       })
     }
@@ -213,7 +235,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
     setIsModalOpen(!isModalOpen)
   }
 
-  const { targetRevision, repoURL } = applicationSet.spec.template.spec.source.targetRevision
+  const targetRevision = get(applicationSet, 'spec.template.spec.source.targetRevision')
+  const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
     if (sources) {
@@ -423,11 +446,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
   }
 
   function SourcesSelector() {
+    const editMode = useEditMode()
     return (
       <WizArrayInput
         path="spec.template.spec.sources"
         placeholder="Add repository"
-        pathValueToInputValue={sourceToRepositoryType}
         collapsedContent={
           <Fragment>
             <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
@@ -445,7 +468,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description="Use a Helm repository" />
         </WizTiles>
 
-        <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
+        <WizHidden
+          hidden={
+            editMode === EditMode.Create ? (data) => data.repositoryType !== 'git' : (data) => data.path === undefined
+          }
+        >
           {/* git repository */}
           <Select
             path="repoURL"
@@ -531,7 +558,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </WizHidden>
 
         {/* helm repository */}
-        <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>
+        <WizHidden
+          hidden={
+            editMode === EditMode.Create ? (data) => data.repositoryType !== 'helm' : (data) => data.chart === undefined
+          }
+        >
           <Select
             path="repoURL"
             label={t('URL')}
