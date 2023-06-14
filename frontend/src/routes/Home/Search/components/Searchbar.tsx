@@ -199,7 +199,7 @@ export function Searchbar(props: SearchbarProps) {
       )
       .map((currentValue) => (
         <MenuItem
-          isDisabled={currentValue.name.includes('Loading') || currentValue.disabled}
+          isDisabled={currentValue.disabled}
           role={'menuitem'}
           itemId={`${currentValue.kind}-${currentValue.id}`}
           key={`${currentValue.kind}-${currentValue.id}`}

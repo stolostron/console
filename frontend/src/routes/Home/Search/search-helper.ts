@@ -96,6 +96,7 @@ export function formatSearchbarSuggestions(
         id: `id-${field}`,
         name: field,
         kind: suggestionKind,
+        disabled: field.includes(t('Loading')),
       }
     })
   suggestions.unshift(labelTag)

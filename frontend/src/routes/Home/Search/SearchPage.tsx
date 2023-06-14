@@ -178,7 +178,7 @@ function RenderSearchBar(props: {
           t
         )
       : formatSearchbarSuggestions(
-          _.get(searchCompleteData || [], 'searchComplete', ['Loading...']),
+          _.get(searchCompleteData || [], 'searchComplete', [t('Loading...')]) ?? [],
           'value',
           currentSearch, // pass current search query in order to de-dupe already selected values
           searchAutocompleteLimit,
