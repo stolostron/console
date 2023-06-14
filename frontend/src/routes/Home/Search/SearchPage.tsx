@@ -126,7 +126,11 @@ function RenderSearchBar(props: {
     setCurrentSearch(presetSearchQuery)
   }, [presetSearchQuery])
 
-  const { data: searchSchemaData, error: searchSchemaError } = useSearchSchemaQuery({
+  const {
+    data: searchSchemaData,
+    loading: searchSchemaLoading,
+    error: searchSchemaError,
+  } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
@@ -140,7 +144,11 @@ function RenderSearchBar(props: {
     return { searchCompleteValue: value, searchCompleteQuery: query }
   }, [currentSearch, searchAutocompleteLimit])
 
-  const { data: searchCompleteData, error: searchCompleteError } = useSearchCompleteQuery({
+  const {
+    data: searchCompleteData,
+    loading: searchDataLoading,
+    error: searchCompleteError,
+  } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
@@ -159,30 +167,32 @@ function RenderSearchBar(props: {
   }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors])
 
   const suggestions = useMemo(() => {
-    if (
-      currentSearch === '' ||
+    return currentSearch === '' ||
       (!currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)))
-    ) {
-      const suggestions: string[] | undefined = _.get(searchSchemaData, 'searchSchema.allProperties')
-      return formatSearchbarSuggestions(
-        suggestions ?? ['name', 'namespace', 'label', 'kind', 'cluster', 'apigroup', 'created'],
-        'filter',
-        '', // Dont need to de-dupe filters
-        searchAutocompleteLimit,
-        !suggestions, // is loading
-        t
-      )
-    } else {
-      const suggestions: string[] | undefined = _.get(searchCompleteData || [], 'searchComplete')
-      return formatSearchbarSuggestions(
-        suggestions ?? [],
-        'value',
-        currentSearch, // pass current search query in order to de-dupe already selected values
-        searchAutocompleteLimit,
-        !suggestions, // is loading
-        t
-      )
-    }
+      ? formatSearchbarSuggestions(
+          _.get(searchSchemaData, 'searchSchema.allProperties', [
+            'name',
+            'namespace',
+            'label',
+            'kind',
+            'cluster',
+            'apigroup',
+            'created',
+          ]),
+          'filter',
+          '', // Dont need to de-dupe filters
+          searchAutocompleteLimit,
+          searchSchemaLoading,
+          t
+        )
+      : formatSearchbarSuggestions(
+          _.get(searchCompleteData || [], 'searchComplete') ?? [],
+          'value',
+          currentSearch, // pass current search query in order to de-dupe already selected values
+          searchAutocompleteLimit,
+          searchDataLoading,
+          t
+        )
   }, [currentSearch, searchSchemaData, searchCompleteData, searchAutocompleteLimit, t])
 
   const saveSearchTooltip = useMemo(() => {
