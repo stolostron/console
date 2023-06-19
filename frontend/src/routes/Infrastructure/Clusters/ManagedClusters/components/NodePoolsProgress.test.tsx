@@ -3,7 +3,7 @@
 import { Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { RecoilRoot } from 'recoil'
 import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './NodePoolsProgress'

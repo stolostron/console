@@ -23,7 +23,7 @@ import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '
 import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -44,7 +44,7 @@ import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
-import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { ClusterDeploymentK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const { getClusterProperties } = CIM
 

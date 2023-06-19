@@ -7,7 +7,7 @@ import {
     AgentMachineK8sResource,
     HostedClusterK8sResource,
     NodePoolK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { Cluster, ClusterStatus, NodePool } from '../../../../../resources'

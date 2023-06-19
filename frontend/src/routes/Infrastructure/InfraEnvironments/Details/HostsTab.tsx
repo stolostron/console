@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '../../../../ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
@@ -19,6 +19,7 @@ import {
     useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts, InfoAndTroubleshootingNotification } = CIM
 
@@ -39,6 +40,8 @@ const HostsTab: React.FC<HostsTabProps> = ({
     infraNMStates = [],
     infrastructure,
 }) => {
+    const { agentMachinesState } = useSharedAtoms()
+    const agentMachines = useRecoilValue(agentMachinesState)
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const [bulkModalProps, setBulkModalProps] = useState<
@@ -66,6 +69,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
                         <CardBody>
                             <InfraEnvAgentTable
                                 agents={infraAgents}
+                                agentMachines={agentMachines}
                                 agentClusterInstalls={agentClusterInstalls}
                                 bareMetalHosts={bareMetalHosts}
                                 infraEnv={infraEnv}

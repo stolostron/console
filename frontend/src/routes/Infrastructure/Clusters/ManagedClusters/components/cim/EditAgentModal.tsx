@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
 
 const { EditAgentModal: AIEditAgentModal } = CIM

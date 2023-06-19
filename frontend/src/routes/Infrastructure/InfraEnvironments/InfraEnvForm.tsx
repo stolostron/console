@@ -11,7 +11,7 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { FormikProps } from 'formik'
 

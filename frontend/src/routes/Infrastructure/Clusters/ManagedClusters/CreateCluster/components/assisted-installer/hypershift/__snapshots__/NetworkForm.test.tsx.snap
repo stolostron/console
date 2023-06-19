@@ -327,44 +327,6 @@ exports[`NetworkForm it renders 1`] = `
       class="pf-c-form__group"
     >
       <div
-        class="pf-c-form__group-label"
-      >
-        <label
-          class="pf-c-form__label"
-          for="form-input-machineCIDR-field"
-        >
-          <span
-            class="pf-c-form__label-text"
-          >
-            ai:Machine CIDR
-          </span>
-        </label>
-         
-      </div>
-      <div
-        class="pf-c-form__group-control"
-      >
-        <select
-          aria-describedby="form-input-machineCIDR-field-helper"
-          aria-invalid="false"
-          class="pf-c-form-control"
-          data-ouia-component-id="OUIA-Generated-FormSelect-default-1"
-          data-ouia-component-type="PF4/FormSelect"
-          data-ouia-safe="true"
-          id="form-input-machineCIDR-field"
-          name="machineCIDR"
-        />
-        <div
-          aria-live="polite"
-          class="pf-c-form__helper-text"
-          id="form-input-machineCIDR-field-helper"
-        />
-      </div>
-    </div>
-    <div
-      class="pf-c-form__group"
-    >
-      <div
         class="pf-c-form__group-control"
       >
         <div
@@ -881,7 +843,6 @@ Object {
   "httpProxy": "",
   "httpsProxy": "https://user:pwd@6.7.8.9:456",
   "isAdvanced": false,
-  "machineCIDR": "2.4.6.8/12",
   "noProxy": "'noprxy.com,3.4.5.6'",
   "nodePortAddress": "4.5.6.7",
   "nodePortPort": 12,

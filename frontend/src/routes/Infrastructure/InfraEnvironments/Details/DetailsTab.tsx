@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmPageContent } from '../../../../ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
     fetchSecret,

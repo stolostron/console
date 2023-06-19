@@ -83,7 +83,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 return new MergeJsonWebpackPlugin({
                     files: [
                         `./public/locales/${locale}/translation.json`,
-                        `./node_modules/openshift-assisted-ui-lib/dist/locales/${locale}/translation.json`,
+                        `./node_modules/@openshift-assisted/ui-lib/dist/locales/${locale}/translation.json`,
                     ],
                     output: {
                         fileName: `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`,

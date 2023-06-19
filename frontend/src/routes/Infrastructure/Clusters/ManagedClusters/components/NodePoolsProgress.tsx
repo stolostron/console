@@ -12,7 +12,7 @@ import {
 } from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
-import { NodePoolK8sResource, ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { NodePoolK8sResource, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 import NodePoolsTable from './NodePoolsTable'

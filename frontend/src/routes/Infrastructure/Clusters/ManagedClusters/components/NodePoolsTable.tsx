@@ -2,7 +2,7 @@
 import { ButtonVariant, Stack, StackItem, Text } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ClusterImageSetK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
 import { HypershiftCloudPlatformType, NodePool, NodePoolDefinition } from '../../../../../resources'

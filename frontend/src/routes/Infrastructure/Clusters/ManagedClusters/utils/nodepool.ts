@@ -5,7 +5,7 @@ import {
     AgentMachineK8sResource,
     HostedClusterK8sResource,
     NodePoolK8sResource,
-} from 'openshift-assisted-ui-lib/cim'
+} from '@openshift-assisted/ui-lib/cim'
 
 const CLUSTER_NAME_LABEL = 'cluster.x-k8s.io/cluster-name'
 const NODEPOOL_NAME_ANNOTATION = 'cluster.x-k8s.io/cloned-from-name'

@@ -2,7 +2,7 @@
 import { Page } from '@patternfly/react-core'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { isMatch } from 'lodash'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { CIM } from '@openshift-assisted/ui-lib'
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'

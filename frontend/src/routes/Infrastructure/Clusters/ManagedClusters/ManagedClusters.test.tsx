@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { HostedClusterK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
