@@ -181,6 +181,23 @@ Array [
 ]
 `;
 
+exports[`Correctly returns formatSearchbarSuggestions with loading item 1`] = `
+Array [
+  Object {
+    "disabled": true,
+    "id": "id-suggestions-label",
+    "kind": "value",
+    "name": "name values",
+  },
+  Object {
+    "disabled": true,
+    "id": "id-loading",
+    "kind": "label",
+    "name": "Loading more...",
+  },
+]
+`;
+
 exports[`Correctly returns formatSearchbarSuggestions with operator already chosen (single number option) 1`] = `
 Array [
   Object {

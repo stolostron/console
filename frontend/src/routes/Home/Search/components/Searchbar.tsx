@@ -21,6 +21,7 @@ import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmChip, AcmChipGroup } from '../../../../ui-components'
 import { operators } from '../search-helper'
+import { transformBrowserUrlToSearchString } from '../urlQuery'
 
 type SearchbarTag = {
   id: string
@@ -198,7 +199,7 @@ export function Searchbar(props: SearchbarProps) {
       )
       .map((currentValue) => (
         <MenuItem
-          isDisabled={currentValue.name.includes('Loading')}
+          isDisabled={currentValue.disabled}
           role={'menuitem'}
           itemId={`${currentValue.kind}-${currentValue.id}`}
           key={`${currentValue.kind}-${currentValue.id}`}
@@ -426,11 +427,13 @@ export function Searchbar(props: SearchbarProps) {
           id="inputDropdownButton1"
           variant="plain"
           onClick={() => {
-            if (currentQuery !== '' && !currentQuery.endsWith(':')) {
-              refetchSearch()
+            // If run search is pressed but the query hasn't changed - we are refetching
+            if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
+              refetchSearch() // if refetching we dont need to update browser url
+            } else if (currentQuery !== '' && !currentQuery.endsWith(':')) {
               updateBrowserUrl(history, currentQuery)
-              setMenuIsOpen(false)
             }
+            setMenuIsOpen(false)
           }}
           isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
         >
