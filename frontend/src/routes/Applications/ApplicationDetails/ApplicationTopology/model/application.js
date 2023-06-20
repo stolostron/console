@@ -34,8 +34,9 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
-      placement = recoilStates.placements.find((placement) => {
-        return get(placement, 'metadata.namespace') === namespace && get(placement, 'metadata.name') === placementName
+      placement = recoilStates.placementDecisions.find((placementDecision) => {
+        const labels = get(placementDecision, 'metadata.labels', {})
+        return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
     }
   }
