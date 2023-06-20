@@ -65,6 +65,7 @@ import {
   WizTextArea,
   WizTextInput,
   useSetHasValue,
+  useValidate,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -610,6 +611,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const secretName = 'auto-import-secret'
   const resources = useItem() as any[]
   const { update } = useData()
+  const validate = useValidate()
   const mode = useDisplayMode()
 
   const autoImportSecret = useMemo(
@@ -668,8 +670,9 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
       }
       dispatch({ type: 'setImportMode', importMode: m })
       update()
+      validate()
     },
-    [autoImportSecret, dispatch, kubeconfig, resources, server, token, update]
+    [autoImportSecret, dispatch, kubeconfig, resources, server, token, update, validate]
   )
 
   const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
