@@ -1378,6 +1378,7 @@ function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
   const { validated, autoClose: closeOnSelect } = props
   const [open, setOpen] = useState(false)
   const { autoClose, ...selectProps } = props
+  const { t } = useTranslation()
   return (
     <Select
       {...selectProps}
@@ -1388,6 +1389,7 @@ function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
         if (closeOnSelect) setOpen(false)
       }}
       aria-invalid={validated === ValidatedOptions.error}
+      noResultsFoundText={t('No results found')}
     >
       {props.children}
     </Select>

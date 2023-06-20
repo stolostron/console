@@ -108,6 +108,7 @@ export default function CardViewToolbarFilter(props: {
           {t('Filter')}
         </div>
       }
+      noResultsFoundText={t('No results found')}
     >
       {selectOptions}
     </Select>

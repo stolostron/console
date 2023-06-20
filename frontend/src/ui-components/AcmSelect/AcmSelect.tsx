@@ -136,6 +136,7 @@ export function AcmSelect(props: AcmSelectProps) {
             ? t('Clear all')
             : t('Clear selected item')
         }
+        noResultsFoundText={t('No results found')}
       />
       {validated === 'error' ? (
         <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>

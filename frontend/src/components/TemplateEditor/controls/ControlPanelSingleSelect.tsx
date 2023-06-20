@@ -110,6 +110,7 @@ const ControlPanelSingleSelect = (props: {
                 isDisabled={disabled}
                 data-testid={`select-${controlId}`}
                 footer={footer}
+                noResultsFoundText={i18n('No results found')}
               >
                 {available.map((item: any, inx: React.Key) => {
                   /* eslint-disable-next-line react/no-array-index-key */

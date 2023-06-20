@@ -138,6 +138,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   footer={
                     <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
                   }
+                  noResultsFoundText={t('No results found')}
                 >
                   {providerConnections.map((p) => (
                     <SelectOption key={p.metadata.uid} value={p.metadata.uid}>

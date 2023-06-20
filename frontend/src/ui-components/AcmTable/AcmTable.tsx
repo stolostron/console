@@ -1242,6 +1242,7 @@ function TableColumnFilters<T>(props: {
               {t('Filter')}
             </div>
           }
+          noResultsFoundText={t('No results found')}
         >
           {FilterSelectGroups}
         </Select>
