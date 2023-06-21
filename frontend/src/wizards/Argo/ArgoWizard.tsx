@@ -389,7 +389,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
                     if (placement?.spec?.clusterSets) {
                       if (placement?.spec?.clusterSets.length > 0) {
-                        return placement?.spec?.clusterSets!.includes(clusterSet.metadata?.name!)
+                        return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
                       } else {
                         return clusterSet
                       }
