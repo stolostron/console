@@ -774,7 +774,7 @@ export default function PoliciesPage() {
                                     history.push(path + '?context=policies')
                                   }}
                                 >
-                                  Add
+                                  {t('Add')}
                                 </Button>
                               )}
                             </DescriptionListDescription>

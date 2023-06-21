@@ -165,6 +165,7 @@ export function PlacementPredicate(props: { rootPath?: string; clusters: IResour
         collapsedContent={<MatchExpressionCollapsed />}
         newValue={{ key: '', operator: 'In', values: [] }}
         defaultCollapsed={editMode !== EditMode.Create}
+        collapsedPlaceholder={t('Expand to edit')}
       >
         <MatchExpression labelValuesMap={labelValuesMap} />
       </WizArrayInput>
@@ -179,6 +180,7 @@ export function PlacementPredicate(props: { rootPath?: string; clusters: IResour
         newValue={{ key: '', operator: 'In', values: [] }}
         defaultCollapsed={editMode !== EditMode.Create}
         hidden={(item) => get(item, `${rootPath}requiredClusterSelector.claimSelector.matchExpressions`) === undefined}
+        collapsedPlaceholder={t('Expand to edit')}
       >
         <MatchExpression labelValuesMap={labelValuesMap} />
       </WizArrayInput>

@@ -343,6 +343,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         })}
         collapsedContent="objectDefinition.metadata.name"
         defaultCollapsed={editMode !== EditMode.Create}
+        collapsedPlaceholder={t('Expand to edit')}
       >
         {/* CertificatePolicy */}
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'CertificatePolicy'}>
@@ -433,6 +434,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             label={t('Configuration objects')}
             // placeholder="Add configuration object"
             collapsedContent="objectDefinition.metadata.name"
+            collapsedPlaceholder={t('Expand to edit')}
           >
             <ObjectTemplate />
           </WizArrayInput>
@@ -464,13 +466,14 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             collapsedContent={<MatchExpressionCollapsed />}
             newValue={{ key: '', operator: 'In', values: [] }}
             defaultCollapsed={editMode !== EditMode.Create}
+            collapsedPlaceholder={t('Expand to edit')}
           >
             <MatchExpression />
           </WizArrayInput>
         </WizHidden>
 
         <WizHidden hidden={(template: any) => template?.objectDefinition?.apiVersion?.includes('gatekeeper.sh/')}>
-          <WizRadioGroup path="objectDefinition.spec.remediationAction" label="Remediation">
+          <WizRadioGroup path="objectDefinition.spec.remediationAction" label={t('Remediation')}>
             <Radio
               id="inform"
               label={t('Inform')}
@@ -599,6 +602,7 @@ function ObjectTemplate() {
           label={t('Limits')}
           placeholder={t('Add limit')}
           collapsedContent={'default.memory'}
+          collapsedPlaceholder={t('Expand to edit')}
         >
           <WizTextInput
             path="default.memory"
@@ -635,6 +639,7 @@ function ObjectTemplate() {
           label={t('Profiles')}
           path="objectDefinition.profiles"
           collapsedContent={t('name')}
+          collapsedPlaceholder={t('Expand to edit')}
         >
           <WizTextInput path="kind" label={t('Kind')} required />
           <WizTextInput path="name" label={t('Name')} required />
@@ -649,6 +654,7 @@ function ObjectTemplate() {
           path="objectDefinition.rules"
           collapsedContent={t('name')}
           placeholder={t('Add rule')}
+          collapsedPlaceholder={t('Expand to edit')}
         >
           <WizStringsInput label={t('API Groups')} path="apiGroups" />
           <WizStringsInput label={t('Resources')} path="resources" />
