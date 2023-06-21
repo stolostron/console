@@ -281,19 +281,11 @@ function addK8Details(node, details, activeFilters, t) {
     getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], t('Cluster Replicas'))
   )
 
-  if (type === 'placements') {
+  if (type === 'placements' || type === 'placement') {
     const specNbOfClustersTarget = R.pathOr([], ['specs', 'raw', 'status', 'decisions'])(node)
     mainDetails.push({
       labelValue: t('Matched Clusters'),
       value: specNbOfClustersTarget.length,
-    })
-  }
-
-  //placement
-  if (type === 'placement') {
-    mainDetails.push({
-      labelValue: t('Matched Clusters'),
-      value: _.get(node, 'specs.raw.status.numberOfSelectedClusters', 0),
     })
   }
 
