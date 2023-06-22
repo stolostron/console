@@ -511,6 +511,7 @@ class ArgoAppDetailsContainer extends Component {
           onToggle={this.handleSelectToggle}
           isOpen={argoAppSearchToggle}
           onClear={this.handleSelectionClear}
+          noResultsFoundText={t('No results found')}
         >
           {this.props.argoAppList.map((app) => (
             <SelectOption key={app.name} value={app.name} />

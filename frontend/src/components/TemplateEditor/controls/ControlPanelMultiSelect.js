@@ -119,6 +119,7 @@ class ControlPanelMultiSelect extends React.Component {
                 onFilter={onFilter}
                 hasInlineFilter
                 data-testid={`multi-${controlId}`}
+                noResultsFoundText={i18n('No results found')}
               >
                 {this.options}
               </Select>

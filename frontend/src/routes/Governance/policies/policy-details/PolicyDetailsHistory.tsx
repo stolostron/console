@@ -53,7 +53,7 @@ export function PolicyDetailsHistory(props: {
   const columns = useMemo(
     () => [
       {
-        header: 'Violations',
+        header: t('Violations'),
         sort: (itemA: any, itemB: any) => {
           const messageA = itemA.message ?? '-'
           const compliantA = messageA && typeof messageA === 'string' ? messageA.split(';')[0] : '-'
@@ -94,7 +94,7 @@ export function PolicyDetailsHistory(props: {
         },
       },
       {
-        header: 'Message',
+        header: t('Message'),
         cell: (item: any) => {
           const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
           return prunedMessage ? prunedMessage : '-'
@@ -102,7 +102,7 @@ export function PolicyDetailsHistory(props: {
         search: (item: any) => item.message,
       },
       {
-        header: 'Last report',
+        header: t('Last report'),
         sort: 'index',
         cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
       },
