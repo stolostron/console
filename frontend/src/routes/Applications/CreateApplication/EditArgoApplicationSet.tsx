@@ -112,7 +112,9 @@ export function EditArgoApplicationSet() {
       }
     )
 
-    set(copyOfAppSet, 'spec.template.spec.sources', sources)
+    if (sources) {
+      set(copyOfAppSet, 'spec.template.spec.sources', sources)
+    }
 
     if (applicationSet === undefined) {
       history.push(NavigationPath.applications)
