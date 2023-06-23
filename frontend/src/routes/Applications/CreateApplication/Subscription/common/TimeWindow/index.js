@@ -340,7 +340,8 @@ export class TimeWindow extends Component {
                                         id={startTimeID}
                                         time={existingStart ? existingStart : ''}
                                         isDisabled={!modeSelected}
-                                        onChange={(time) => {
+                                        onChange={(eventOrTime, timeOrHour) => {
+                                            const time = typeof eventOrTime === 'string' ? eventOrTime : timeOrHour
                                             this.handleTimeRange.bind(this)(time, startTimeID)
                                         }}
                                         width={'140px'}
@@ -351,7 +352,8 @@ export class TimeWindow extends Component {
                                         id={endTimeID}
                                         time={existingEnd ? existingEnd : ''}
                                         isDisabled={!modeSelected}
-                                        onChange={(time) => {
+                                        onChange={(eventOrTime, timeOrHour) => {
+                                            const time = typeof eventOrTime === 'string' ? eventOrTime : timeOrHour
                                             this.handleTimeRange.bind(this)(time, endTimeID)
                                         }}
                                         width={'140px'}
