@@ -451,6 +451,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       <WizArrayInput
         path="spec.template.spec.sources"
         placeholder="Add repository"
+        disallowEmpty={editMode === EditMode.Create}
         collapsedContent={
           <Fragment>
             <WizHidden hidden={(data) => data.repositoryType !== 'git'}>

@@ -43,7 +43,7 @@
     "@octokit/types": "6.40.0",
     "@openshift-assisted/locales": "2.9.0-cim",
     "@openshift-assisted/ui-lib": "2.9.0-cim",
-    "@patternfly-labs/react-form-wizard": "^1.23.0",
+    "@patternfly-labs/react-form-wizard": "^1.25.0",
     "@patternfly/patternfly": "4.196.7",
     "@patternfly/react-charts": "^6.74.3",
     "@patternfly/react-code-editor": "4.65.1",
