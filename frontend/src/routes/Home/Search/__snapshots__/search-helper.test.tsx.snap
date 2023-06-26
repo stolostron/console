@@ -56,11 +56,6 @@ Array [
     "name": "name values",
   },
   Object {
-    "id": "id-name1",
-    "kind": "value",
-    "name": "name1",
-  },
-  Object {
     "id": "id-name2",
     "kind": "value",
     "name": "name2",
