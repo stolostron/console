@@ -98,7 +98,17 @@ class EditorBar extends React.Component {
         this.props.handleEditorCommand(command)
     }
 
-    handleSearch = (searchName) => {
+    // at some point patternfly switches these two
+    //const onChangeHandler = (value: string, event: React.FormEvent<HTMLInputElement>) => {
+    //onChange?: (event: React.FormEvent<HTMLInputElement>, value: string) => void;
+    handleSearch = (value1, value2) => {
+        let searchName = ''
+        if (typeof value1 === 'string') {
+            searchName = value1
+        }
+        if (typeof value2 === 'string') {
+            searchName = value2
+        }
         this.props.handleSearchChange(searchName)
         this.setState({ searchName })
     }
