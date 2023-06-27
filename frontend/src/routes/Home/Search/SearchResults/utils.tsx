@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardHeader, ExpandableSection } from '@patternfly/react-core'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ReactNode, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'

@@ -126,7 +126,7 @@ describe('AcmLaunchLink', () => {
             },
             label: true,
             noIcon: false,
-            icon: RedHatIcon,
+            icon: <RedHatIcon />,
           },
         ]}
       />

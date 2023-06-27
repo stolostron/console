@@ -13,7 +13,7 @@ import {
   RunningIcon,
   FileAltIcon,
 } from '@patternfly/react-icons'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 

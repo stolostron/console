@@ -5,7 +5,7 @@ import _ from 'lodash'
 
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
 import LabelWithPopover from './LabelWithPopover'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import '../css/ResourceLabels.css'
 import { Fragment } from 'react'
 import { AcmInlineCopy } from '../../../ui-components'

@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '../../../ui-components'
 import { TextContent, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
 import { ApplicationDefinition, IResource, Namespace } from '../../../resources'

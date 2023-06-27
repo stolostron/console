@@ -51,7 +51,7 @@ import {
 } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'

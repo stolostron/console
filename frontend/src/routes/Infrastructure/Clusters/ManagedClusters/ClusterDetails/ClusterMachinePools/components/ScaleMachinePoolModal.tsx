@@ -13,7 +13,7 @@ import {
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 
 export type ScaleMachinePoolModalProps = {
   machinePool?: MachinePool

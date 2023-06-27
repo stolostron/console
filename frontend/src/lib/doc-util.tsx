@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
 

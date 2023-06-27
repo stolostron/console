@@ -17,7 +17,7 @@ import { AcmInlineStatus, StatusType } from '../AcmInlineStatus/AcmInlineStatus'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../AcmPage/AcmPage'
 import { Provider } from '../AcmProvider'
 import { AcmInlineProvider } from '../AcmProvider/AcmInlineProvider/AcmInlineProvider'
-import { AcmTable, IAcmTableColumn, IAcmTableAction, IAcmTableButtonAction } from '../AcmTable/AcmTable'
+import { AcmTable, IAcmTableColumn, IAcmTableAction, IAcmTableButtonAction, IAcmRowAction } from '../AcmTable/AcmTable'
 
 interface IExampleData {
   uid: number
@@ -353,30 +353,28 @@ function commonProperties(
       : undefined,
     rowActionResolver: args['Include rowActionResolver']
       ? (item: IExampleData) => {
+          const actions: IAcmRowAction<IExampleData>[] = []
           if (item.last_name.indexOf('a') > -1) {
-            return [
-              {
-                id: 'topAction',
-                title: 'Top action!',
-                isDisabled: true,
-                tooltip: 'Tooltip for row action item',
-                tooltipProps: { position: 'left' },
-                click: () => {
-                  alert('Not implemented')
-                },
+            actions.push({
+              id: 'topAction',
+              title: 'Top action!',
+              isDisabled: true,
+              tooltip: 'Tooltip for row action item',
+              tooltipProps: { position: 'left' },
+              click: () => {
+                alert('Not implemented')
               },
-              {
-                id: 'testAction',
-                title: `${item.firstName} ${item.last_name} is the coolest!`,
-                addSeparator: true,
-                click: () => {
-                  alert('Not implemented')
-                },
+            })
+            actions.push({
+              id: 'testAction',
+              title: `${item.firstName} ${item.last_name} is the coolest!`,
+              addSeparator: true,
+              click: () => {
+                alert('Not implemented')
               },
-            ]
-          } else {
-            return []
+            })
           }
+          return actions
         }
       : undefined,
     extraToolbarControls: args['Include extraToolbarControls'] ? (

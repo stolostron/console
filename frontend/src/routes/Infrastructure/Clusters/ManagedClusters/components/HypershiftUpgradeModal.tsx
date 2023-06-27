@@ -67,39 +67,23 @@ export function HypershiftUpgradeModal(props: {
     return Object.keys(props.availableUpdates).sort().reverse()
   }, [props.availableUpdates])
 
-  const useControlPlaneNameTdRefCallback = () => {
-    const setRef = useCallback((node) => {
-      if (node) {
-        setNodepoolsNameTdWidth(node.offsetWidth)
-      }
-    }, [])
+  const controlPlaneNameTdRef = useCallback((node: HTMLTableCellElement | null) => {
+    if (node) {
+      setNodepoolsNameTdWidth(node.offsetWidth)
+    }
+  }, [])
 
-    return [setRef]
-  }
+  const controlPlaneVersionTdRef = useCallback((node: HTMLTableCellElement | null) => {
+    if (node) {
+      setNodepoolsVersionTdWidth(node.offsetWidth)
+    }
+  }, [])
 
-  const useControlPlaneVersionTdRefCallback = () => {
-    const setRef = useCallback((node) => {
-      if (node) {
-        setNodepoolsVersionTdWidth(node.offsetWidth)
-      }
-    }, [])
-
-    return [setRef]
-  }
-
-  const useControlPlaneCheckboxSpanRefCallback = () => {
-    const setRef = useCallback((node) => {
-      if (node) {
-        setControlPlaneCheckboxSpanWidth(node.offsetWidth)
-      }
-    }, [])
-
-    return [setRef]
-  }
-
-  const [controlPlaneNameTdRef] = useControlPlaneNameTdRefCallback()
-  const [controlPlaneVersionTdRef] = useControlPlaneVersionTdRefCallback()
-  const [controlPlaneCheckboxSpanRef] = useControlPlaneCheckboxSpanRefCallback()
+  const controlPlaneCheckboxSpanRef = useCallback((node: HTMLSpanElement | null) => {
+    if (node) {
+      setControlPlaneCheckboxSpanWidth(node.offsetWidth)
+    }
+  }, [])
 
   const checkNodepoolErrors = useCallback(
     (version?: string) => {

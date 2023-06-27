@@ -23,7 +23,7 @@ import { getLatest } from './utils'
 import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ClusterManagementAddOn, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
 import {
   checkCuratorLatestOperation,

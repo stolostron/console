@@ -4,7 +4,7 @@
 import React, { RefCallback, useCallback } from 'react'
 import { TextInput } from '@patternfly/react-core'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 
 const ControlPanelTextInput = (props: {
@@ -26,7 +26,7 @@ const ControlPanelTextInput = (props: {
   )
 
   const onChange = useCallback(
-    (value) => {
+    (value: string) => {
       control.active = value || ''
       handleChange(value)
     },

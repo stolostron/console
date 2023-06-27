@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TooltipProps } from '@patternfly/react-core'
+
 export type ApplicationActionProps = {
   /** Action identifier */
   id: string
   /** Display a tooltip for this action */
-  tooltip?: string | ((resource: any) => void)
+  tooltip?: string
   /** Additional tooltip props forwarded to tooltip component */
-  tooltipProps?: React.ReactNode
+  tooltipProps?: Partial<TooltipProps>
   /** Inject a separator horizontal rule immediately before an action */
   addSeparator?: boolean
   /** Display an action as being ariaDisabled */

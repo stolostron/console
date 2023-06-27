@@ -2,7 +2,7 @@
 
 import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import {
   createContext,
   ElementType,

@@ -2,7 +2,7 @@
 
 import { Button, ModalVariant } from '@patternfly/react-core'
 import { AcmModal, AcmToastContext } from '../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
