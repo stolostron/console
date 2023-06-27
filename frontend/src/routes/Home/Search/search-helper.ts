@@ -16,7 +16,7 @@ export function formatSearchbarSuggestions(
   isLoading: boolean,
   t: TFunction
 ) {
-  let valuesToRemoveFromSuggestions: string[] = []
+  const valuesToRemoveFromSuggestions: string[] = []
   let suggestions: DropdownSuggestionsProps[] = []
   const labelTag = {
     id: 'id-suggestions-label',
@@ -34,9 +34,7 @@ export function formatSearchbarSuggestions(
     labelTag.name = t('{{0}} values', [searchCompleteFilter])
     const query = convertStringToQuery(searchQuery, limit)
     query.filters.forEach((filter) => {
-      if (filter.property === searchCompleteFilter) {
-        valuesToRemoveFromSuggestions = filter.values.filter((value) => data.indexOf(value) > 0)
-      }
+      valuesToRemoveFromSuggestions.push(...(filter.property === searchCompleteFilter ? filter.values : []))
     })
     if (data[0] === 'isNumber') {
       if (operators.some((operator: string) => searchQuery.endsWith(operator))) {
