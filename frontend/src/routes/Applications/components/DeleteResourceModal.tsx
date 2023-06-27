@@ -47,6 +47,8 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
   }
 
   const handleSubmit = () => {
+    setRemoveAppResources(false)
+    setRemoveAppSetResource(false)
     props.close()
     if (props.redirect) {
       history.push(props.redirect)
@@ -276,7 +278,15 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         <Button key="confirm" variant="danger" isDisabled={!props.canRemove} onClick={() => handleSubmit()}>
           {props.t('Delete')}
         </Button>,
-        <Button key="cancel" variant="link" onClick={props.close}>
+        <Button
+          key="cancel"
+          variant="link"
+          onClick={() => {
+            setRemoveAppResources(false)
+            setRemoveAppSetResource(false)
+            props.close()
+          }}
+        >
           {props.t('Cancel')}
         </Button>,
       ]}
