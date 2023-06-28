@@ -18,7 +18,7 @@ import {
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

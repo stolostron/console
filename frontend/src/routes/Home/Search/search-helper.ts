@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'

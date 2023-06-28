@@ -78,7 +78,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
       }
     >
       <TextArea
-        {...(textAreaProps as unknown)}
+        {...textAreaProps}
         validated={validated}
         resizeOrientation={/* istanbul ignore next */ props.resizeOrientation ? props.resizeOrientation : 'vertical'}
         disabled={ValidationContext.isReadOnly}

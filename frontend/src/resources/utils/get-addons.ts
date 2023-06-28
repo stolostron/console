@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ClusterManagementAddOn, ClusterManagementAddOnDefinition } from '../cluster-management-add-on'
 import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 

@@ -3,7 +3,7 @@
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { Fragment, ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
