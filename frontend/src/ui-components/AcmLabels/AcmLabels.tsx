@@ -2,15 +2,14 @@
 
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { Fragment, useMemo } from 'react'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { useTranslation } from '../../lib/acm-i18next'
 
-const useStyles = makeStyles({
-  acmLabel: {
-    display: 'inline-grid',
-    '--pf-c-label__text--MaxWidth': 'unset',
-  },
+const acmLabel = css({
+  display: 'inline-grid',
+  '--pf-c-label__text--MaxWidth': 'unset',
 })
+
 export function AcmLabels(props: {
   labels?: string[] | Record<string, string>
   collapse?: string[]
@@ -18,7 +17,6 @@ export function AcmLabels(props: {
   expandedText?: string
   allCollapsedText?: string
 }) {
-  const classes = useStyles()
   const { t } = useTranslation()
   const labelsRecord: Record<string, string> = useMemo(() => {
     if (props.labels === undefined) return {}
@@ -65,12 +63,12 @@ export function AcmLabels(props: {
   return (
     <LabelGroup numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
       {labels.map((label) => (
-        <Label key={label} className={classes.acmLabel} isTruncated>
+        <Label key={label} className={acmLabel} isTruncated>
           {label}
         </Label>
       ))}
       {hidden.map((label) => (
-        <Label key={label} className={classes.acmLabel} isTruncated>
+        <Label key={label} className={acmLabel} isTruncated>
           {label}
         </Label>
       ))}

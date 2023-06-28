@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Card,
   CardBody,
@@ -16,11 +16,8 @@ import {
 } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
 
-const useStyles = makeStyles({
-  rightSplit: { alignSelf: 'center', paddingRight: '12px' },
-  cardBody: { borderTop: '1px solid rgba(0,0,0,0.1)' },
-  divider: { marginBottom: '6px' },
-})
+const cardBody = css({ borderTop: '1px solid rgba(0,0,0,0.1)' })
+const divider = css({ marginBottom: '6px' })
 
 type AcmSummaryListProps = {
   title: string
@@ -29,7 +26,6 @@ type AcmSummaryListProps = {
 }
 
 export const SkeletonWrapper = (title: string) => {
-  const classes = useStyles()
   return (
     <Card>
       <Flex>
@@ -44,7 +40,7 @@ export const SkeletonWrapper = (title: string) => {
           <FlexItem key={i}>
             <Card>
               <CardBody>
-                <Skeleton width="50px" fontSize="3xl" className={classes.divider} />
+                <Skeleton width="50px" fontSize="3xl" className={divider} />
                 <Skeleton width="100px" fontSize="sm" />
               </CardBody>
             </Card>
@@ -56,8 +52,6 @@ export const SkeletonWrapper = (title: string) => {
 }
 
 export function AcmSummaryList(props: AcmSummaryListProps) {
-  const classes = useStyles()
-
   if (props.loading) return SkeletonWrapper(props.title)
   return (
     <Card>
@@ -70,7 +64,7 @@ export function AcmSummaryList(props: AcmSummaryListProps) {
           </Flex>
         </SplitItem>
       </Split>
-      <div className={classes.cardBody}>
+      <div className={cardBody}>
         <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
           {props.list.map((item) => (
             <FlexItem key={item.description} span={3}>
@@ -83,32 +77,29 @@ export function AcmSummaryList(props: AcmSummaryListProps) {
   )
 }
 
-const useSectionStyles = makeStyles({
-  card: {
+const sectionStyles = {
+  card: css({
     border: 'none !important',
     height: '100%',
     maxWidth: '185px',
     minWidth: '130px',
-  },
-  cardBody: {
+  }),
+  cardBody: css({
     paddingLeft: '34px',
-  },
-  cardFooter: {
-    height: '100%',
-  },
-  count: {
+  }),
+  count: css({
     fontSize: '28px',
     '& a': {
       textDecoration: 'none !important',
       fontColor: 'var(--pf-global--Color--100) !important',
     },
-  },
-  description: {
+  }),
+  description: css({
     fontSize: '14px',
     fontWeight: 600,
-  },
-  divider: { marginBottom: '6px' },
-})
+  }),
+  divider: css({ marginBottom: '6px' }),
+}
 
 type SummarySectionProps = {
   count: number
@@ -118,25 +109,24 @@ type SummarySectionProps = {
 }
 
 const SummarySection = (props: SummarySectionProps) => {
-  const classes = useSectionStyles(props)
   return (
     <Card
       component="div"
-      className={classes.card}
+      className={sectionStyles.card}
       isFlat
       id={`${props.description.toLowerCase().replace(/\s+/g, '-')}-summary`}
     >
       {props.isLoading ? (
-        <CardBody className={classes.cardBody}>
-          <Skeleton id={`loading-${props.description}`} width="50px" fontSize="3xl" className={classes.divider} />
+        <CardBody className={sectionStyles.cardBody}>
+          <Skeleton id={`loading-${props.description}`} width="50px" fontSize="3xl" className={sectionStyles.divider} />
           <Skeleton width="100px" fontSize="sm" />
         </CardBody>
       ) : (
-        <CardBody className={classes.cardBody}>
-          <Text component={TextVariants.p} className={classes.count}>
+        <CardBody className={sectionStyles.cardBody}>
+          <Text component={TextVariants.p} className={sectionStyles.count}>
             {props.href ? <Link to={props.href}>{props.count}</Link> : props.count}
           </Text>
-          <Text component={TextVariants.p} className={classes.description}>
+          <Text component={TextVariants.p} className={sectionStyles.description}>
             {props.description}
           </Text>
         </CardBody>

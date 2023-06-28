@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
 import { Badge, Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
@@ -8,19 +7,7 @@ import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
 import { useTranslation } from '../../../../lib/acm-i18next'
-
-const useStyles = makeStyles({
-  filterLabelMargin: {
-    marginRight: '.5rem',
-  },
-  filterOption: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  filterOptionBadge: {
-    marginLeft: '.5rem',
-  },
-})
+import { filterLabelMargin, filterOption, filterOptionBadge } from '../../../../ui-components/AcmTable/filterStyles'
 
 export default function CardViewToolbarFilter(props: {
   preSelectedFilters: string[]
@@ -31,7 +18,6 @@ export default function CardViewToolbarFilter(props: {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
   const [policySets] = useRecoilState(policySetsState)
-  const classes = useStyles()
   const { t } = useTranslation()
 
   const onFilterSelect = useCallback(
@@ -76,9 +62,9 @@ export default function CardViewToolbarFilter(props: {
           },
         ].map(({ key, label, complianceValue }) => (
           <SelectOption key={key} inputId={key} value={key}>
-            <div className={classes.filterOption}>
+            <div className={filterOption}>
               {label}
-              <Badge className={classes.filterOptionBadge} key={`${key}-count`} isRead>
+              <Badge className={filterOptionBadge} key={`${key}-count`} isRead>
                 {policySets.filter((policySet: PolicySet) => policySet?.status?.compliant === complianceValue).length}
               </Badge>
             </div>
@@ -86,7 +72,7 @@ export default function CardViewToolbarFilter(props: {
         ))}
       </SelectGroup>,
     ],
-    [classes.filterOption, classes.filterOptionBadge, policySets, t]
+    [policySets, t]
   )
 
   return (
@@ -104,7 +90,7 @@ export default function CardViewToolbarFilter(props: {
       isOpen={isFilterOpen}
       placeholderText={
         <div>
-          <FilterIcon className={classes.filterLabelMargin} />
+          <FilterIcon className={filterLabelMargin} />
           {t('Filter')}
         </div>
       }

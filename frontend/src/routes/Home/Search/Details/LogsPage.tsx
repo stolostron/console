@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Button,
   Checkbox,
@@ -22,54 +22,52 @@ import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../../ui-components'
 
-const useStyles = makeStyles({
-  toolbarContainer: {
-    alignItems: 'stretch',
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: '5px',
-  },
-  toolbarContainerFullscreen: {
-    alignItems: 'stretch',
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: '5px',
-    backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-    padding: '0 10px',
-  },
-  toolbarGroup: {
-    alignItems: 'center',
-    display: 'flex',
-    padding: '5px 0',
-  },
-  toolbarGroupItem: {
-    paddingRight: '15px',
-  },
-  toolbarItemIcon: {
-    marginRight: '0.25rem',
-  },
-  toolbarItemSpacer: {
-    margin: '0 10px',
-  },
-  logWindowHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    color: '#f5f5f5',
-    backgroundColor: 'var(--pf-global--BackgroundColor--dark-300)',
-    fontSize: '14px',
-  },
-  logWindowHeaderItem: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '36px',
-    padding: '8px 10px 5px 10px',
-    borderRight: '1px solid #4f5255',
-  },
-  logWindowHeaderItemLabel: {
-    paddingRight: '.5rem',
-  },
+const toolbarContainer = css({
+  alignItems: 'stretch',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  marginBottom: '5px',
+})
+const toolbarContainerFullscreen = css({
+  alignItems: 'stretch',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  marginBottom: '5px',
+  backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+  padding: '0 10px',
+})
+const toolbarGroup = css({
+  alignItems: 'center',
+  display: 'flex',
+  padding: '5px 0',
+})
+const toolbarGroupItem = css({
+  paddingRight: '15px',
+})
+const toolbarItemIcon = css({
+  marginRight: '0.25rem',
+})
+const toolbarItemSpacer = css({
+  margin: '0 10px',
+})
+const logWindowHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  color: '#f5f5f5',
+  backgroundColor: 'var(--pf-global--BackgroundColor--dark-300)',
+  fontSize: '14px',
+})
+const logWindowHeaderItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  height: '36px',
+  padding: '8px 10px 5px 10px',
+  borderRight: '1px solid #4f5255',
+})
+const logWindowHeaderItemLabel = css({
+  paddingRight: '.5rem',
 })
 
 export function LogsToolbar(props: {
@@ -103,7 +101,6 @@ export function LogsToolbar(props: {
     setPreviousLogs,
   } = props
   const { t } = useTranslation()
-  const classes = useStyles()
   const [isContainerSelectOpen, setIsContainerSelectOpen] = useState(false)
   const [isPreviousSelectOpen, setIsPreviousSelectOpen] = useState(false)
 
@@ -151,9 +148,9 @@ export function LogsToolbar(props: {
   }, [containerHasPreviousLogs, isPreviousSelectOpen, previousLogs, setPreviousLogs, t])
 
   return (
-    <div className={isFullscreen ? classes.toolbarContainerFullscreen : classes.toolbarContainer}>
-      <div className={classes.toolbarGroup}>
-        <div className={classes.toolbarGroupItem}>
+    <div className={isFullscreen ? toolbarContainerFullscreen : toolbarContainer}>
+      <div className={toolbarGroup}>
+        <div className={toolbarGroupItem}>
           <Select
             id={'container-select'}
             aria-label={'container-select'}
@@ -185,7 +182,7 @@ export function LogsToolbar(props: {
           </Select>
         </div>
         {/* If previious logs are disabled then show a tooltip with - "Only the current log is available for this container." */}
-        <div className={classes.toolbarGroupItem}>
+        <div className={toolbarGroupItem}>
           {containerHasPreviousLogs ? (
             previousLogsDropdown
           ) : (
@@ -194,11 +191,11 @@ export function LogsToolbar(props: {
             </Tooltip>
           )}
         </div>
-        <div className={classes.toolbarGroupItem}>
+        <div className={toolbarGroupItem}>
           <LogViewerSearch minSearchChars={1} placeholder="Search" />
         </div>
       </div>
-      <div className={classes.toolbarGroup}>
+      <div className={toolbarGroup}>
         <Checkbox
           label={t('Wrap lines')}
           id="wrapLogLines"
@@ -208,34 +205,34 @@ export function LogsToolbar(props: {
             toggleWrapLines(checked)
           }}
         />
-        <span aria-hidden="true" className={classes.toolbarItemSpacer}>
+        <span aria-hidden="true" className={toolbarItemSpacer}>
           |
         </span>
         <Button variant="link" isInline onClick={() => openRawTab()}>
-          <OutlinedWindowRestoreIcon className={classes.toolbarItemIcon} />
+          <OutlinedWindowRestoreIcon className={toolbarItemIcon} />
           {t('Raw')}
         </Button>
-        <span aria-hidden="true" className={classes.toolbarItemSpacer}>
+        <span aria-hidden="true" className={toolbarItemSpacer}>
           |
         </span>
         <a href={downloadUrl} download={downloadFilename}>
-          <DownloadIcon className={classes.toolbarItemIcon} />
+          <DownloadIcon className={toolbarItemIcon} />
           {t('Download')}
         </a>
         {screenfull.isEnabled && (
           <>
-            <span aria-hidden="true" className={classes.toolbarItemSpacer}>
+            <span aria-hidden="true" className={toolbarItemSpacer}>
               |
             </span>
             <Button variant="link" isInline onClick={toggleFullscreen}>
               {isFullscreen ? (
                 <>
-                  <CompressIcon className={classes.toolbarItemIcon} />
+                  <CompressIcon className={toolbarItemIcon} />
                   {t('Collapse')}
                 </>
               ) : (
                 <>
-                  <ExpandIcon className={classes.toolbarItemIcon} />
+                  <ExpandIcon className={toolbarItemIcon} />
                   {t('Expand')}
                 </>
               )}
@@ -249,19 +246,18 @@ export function LogsToolbar(props: {
 
 export function LogsHeader(props: { cluster: string; namespace: string; linesLength: number }) {
   const { cluster, namespace, linesLength } = props
-  const classes = useStyles()
   return (
-    <div className={classes.logWindowHeader}>
-      <div className={classes.logWindowHeaderItem}>
-        <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
+    <div className={logWindowHeader}>
+      <div className={logWindowHeaderItem}>
+        <p className={logWindowHeaderItemLabel}>{'Cluster:'}</p>
         {cluster}
       </div>
-      <div className={classes.logWindowHeaderItem}>
-        <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
+      <div className={logWindowHeaderItem}>
+        <p className={logWindowHeaderItemLabel}>{'Namespace:'}</p>
         {namespace}
       </div>
-      <div className={classes.logWindowHeaderItem}>
-        <p className={classes.logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
+      <div className={logWindowHeaderItem}>
+        <p className={logWindowHeaderItemLabel}>{`${linesLength} lines`}</p>
       </div>
     </div>
   )

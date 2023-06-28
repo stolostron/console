@@ -11,12 +11,10 @@ import {
   Bullseye,
   Page,
 } from '@patternfly/react-core'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 
-const useStyles = makeStyles({
-  max: {
-    maxWidth: '335px',
-  },
+const max = css({
+  maxWidth: '335px',
 })
 
 export function LoadingPage(props: {
@@ -25,14 +23,13 @@ export function LoadingPage(props: {
   primaryAction?: React.ReactNode
   secondaryActions?: React.ReactNode
 }) {
-  const classes = useStyles()
   return (
     <Page>
       <PageSection isFilled>
         <Bullseye>
           <EmptyState>
             <EmptyStateIcon variant="container" component={Spinner} />
-            <div className={classes.max}>
+            <div className={max}>
               <Title size="lg" headingLevel="h4">
                 {props.title ?? 'Loading'}
               </Title>

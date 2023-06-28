@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
 import { saveAs } from 'file-saver'
@@ -14,37 +14,23 @@ import { fireManagedClusterAction, fireManagedClusterView } from '../../../../re
 import { getResource } from '../../../../resources/utils/resource-request'
 import { AcmLoadingPage } from '../../../../ui-components'
 
-const useStyles = makeStyles({
-  headerContainer: {
-    display: 'flex',
-    backgroundColor: 'var(--pf-global--palette--black-850)',
-    fontSize: '14px',
-  },
-  spacer: {
-    borderRight: '1px solid var(--pf-global--palette--black-700)',
-    paddingLeft: '1rem',
-  },
-  textTitle: {
-    color: 'var(--pf-global--palette--black-300)',
-    padding: '1rem',
-  },
-  textContent: {
-    color: 'var(--pf-global--palette--white)',
-    padding: '1rem 0',
-    fontWeight: 700,
-  },
-  editButtonContainer: {
-    display: 'flex',
-    color: 'var(--pf-global--palette--white)',
-    alignItems: 'center',
-    margin: '0 10px 0 auto',
-  },
-  editButtonLabel: {
-    paddingRight: '.5rem',
-  },
-  saveButton: {
-    marginLeft: '.5rem',
-  },
+const headerContainer = css({
+  display: 'flex',
+  backgroundColor: 'var(--pf-global--palette--black-850)',
+  fontSize: '14px',
+})
+const spacer = css({
+  borderRight: '1px solid var(--pf-global--palette--black-700)',
+  paddingLeft: '1rem',
+})
+const textTitle = css({
+  color: 'var(--pf-global--palette--black-300)',
+  padding: '1rem',
+})
+const textContent = css({
+  color: 'var(--pf-global--palette--white)',
+  padding: '1rem 0',
+  fontWeight: 700,
 })
 
 /* istanbul ignore next */
@@ -133,17 +119,16 @@ function downloadYaml(name: string, resource: string) {
 export function EditorHeaderBar(props: { cluster: string; namespace: string }) {
   const { cluster, namespace } = props
   const { t } = useTranslation()
-  const classes = useStyles()
 
   return (
-    <div id={'yaml-editor-header-wrapper'} className={classes.headerContainer}>
+    <div id={'yaml-editor-header-wrapper'} className={headerContainer}>
       {/* No translation - this is a kube resource field */}
-      <p className={classes.textTitle}>{'Cluster:'}</p>
-      <p className={classes.textContent}>{cluster}</p>
-      <div className={classes.spacer} />
+      <p className={textTitle}>{'Cluster:'}</p>
+      <p className={textContent}>{cluster}</p>
+      <div className={spacer} />
       {/* No translation - this is a kube resource field */}
-      <p className={classes.textTitle}>{'Namespace:'}</p>
-      <p className={classes.textContent}>{namespace !== '' ? namespace : t('Resource is not namespaced')}</p>
+      <p className={textTitle}>{'Namespace:'}</p>
+      <p className={textContent}>{namespace !== '' ? namespace : t('Resource is not namespaced')}</p>
     </div>
   )
 }

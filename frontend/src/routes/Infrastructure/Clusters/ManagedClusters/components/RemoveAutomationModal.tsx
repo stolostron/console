@@ -11,7 +11,7 @@ import {
   deleteResource,
   isAutomationTemplate,
 } from '../../../../../resources'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
 import { Button, ButtonVariant, ModalVariant, Stack, StackItem } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
@@ -19,20 +19,9 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
-const useStyles = makeStyles({
-  body: {},
-  select: {
-    '& > div': {
-      alignItems: 'end',
-      '& > div:last-child': {
-        paddingBottom: '6px',
-      },
-    },
-  },
-  table: {
-    '& .pf-c-toolbar': {
-      display: 'none',
-    },
+const table = css({
+  '& .pf-c-toolbar': {
+    display: 'none',
   },
 })
 
@@ -42,7 +31,6 @@ export function RemoveAutomationModal(props: {
   clusters: Cluster[] | undefined
 }): JSX.Element {
   const { t } = useTranslation()
-  const classes = useStyles()
   const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
   const clusterCurators = useRecoilValue(clusterCuratorsState)
@@ -187,7 +175,7 @@ export function RemoveAutomationModal(props: {
               'This action removes the automation template from the following list of clusters. Only clusters that have an automation template are listed.'
             )}
           </StackItem>
-          <StackItem className={classes.table}>
+          <StackItem className={table}>
             <AcmTable<Cluster>
               columns={addAutomationTemplateColumns}
               items={removableClusters}

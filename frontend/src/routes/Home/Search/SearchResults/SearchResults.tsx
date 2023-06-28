@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Accordion,
   AccordionContent,
@@ -32,25 +32,23 @@ import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { GetRowActions, ISearchResult } from './utils'
 
-const useStyles = makeStyles({
-  resultsWrapper: { paddingTop: '0' },
-  relatedExpandableWrapper: {
-    display: 'flex',
-    alignItems: 'baseline',
-  },
-  accordionItemHeader: {
-    flexDirection: 'row',
-  },
-  accordionItemKind: {
-    display: 'flex',
-    alignItems: 'center',
-    flex: 1,
-  },
-  accordionItemGroup: {
-    marginLeft: '10px',
-    fontSize: 'var(--pf-global--FontSize--sm)',
-    color: 'var(--pf-global--Color--200)',
-  },
+const resultsWrapper = css({ paddingTop: '0' })
+const relatedExpandableWrapper = css({
+  display: 'flex',
+  alignItems: 'baseline',
+})
+const accordionItemHeader = css({
+  flexDirection: 'row',
+})
+const accordionItemKind = css({
+  display: 'flex',
+  alignItems: 'center',
+  flex: 1,
+})
+const accordionItemGroup = css({
+  marginLeft: '10px',
+  fontSize: 'var(--pf-global--FontSize--sm)',
+  color: 'var(--pf-global--Color--200)',
 })
 
 function RenderAccordionItem(props: {
@@ -63,7 +61,6 @@ function RenderAccordionItem(props: {
 }) {
   const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
-  const classes = useStyles()
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -100,12 +97,12 @@ function RenderAccordionItem(props: {
         isExpanded={isExpanded}
         id={accordionItemKey}
       >
-        <span className={classes.accordionItemHeader}>
-          <span className={classes.accordionItemKind}>
+        <span className={accordionItemHeader}>
+          <span className={accordionItemKind}>
             {kindString}
             {/* Cluster is not a real Kube resource and therefore does not have apigroup/apiversion */}
-            {kindString.toLowerCase() !== 'cluster' && <span className={classes.accordionItemGroup}>{apiGroup}</span>}
-            <div className={classes.accordionItemGroup}>{`(${items.length})`}</div>
+            {kindString.toLowerCase() !== 'cluster' && <span className={accordionItemGroup}>{apiGroup}</span>}
+            <div className={accordionItemGroup}>{`(${items.length})`}</div>
           </span>
         </span>
       </AccordionToggle>
@@ -176,7 +173,6 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
-  const classes = useStyles()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
@@ -245,7 +241,7 @@ export default function SearchResults(props: {
         currentQuery={deleteResource.currentQuery}
         relatedResource={deleteResource.relatedResource}
       />
-      <PageSection className={classes.resultsWrapper}>
+      <PageSection className={resultsWrapper}>
         <Stack hasGutter>
           {searchResultItems.length >= searchResultLimit ? (
             <AcmAlert
@@ -259,7 +255,7 @@ export default function SearchResults(props: {
           ) : null}
 
           <PageSection isFilled={false} variant={'light'}>
-            <div className={classes.relatedExpandableWrapper}>
+            <div className={relatedExpandableWrapper}>
               <ExpandableSection
                 onToggle={() => setShowRelatedResources(!showRelatedResources)}
                 isExpanded={showRelatedResources}

@@ -1,71 +1,63 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { AcmChip, AcmChipGroup, AcmModal } from '../../../../../ui-components'
 
-const useStyles = makeStyles({
-  root: {
-    '& h1, h2': {
-      fontFamily: 'RedHatDisplay',
-    },
-    '& hr': {
-      width: 'calc(100% + 50px)',
-      margin: '1.2rem -25px',
-    },
-    '& div > p:first-child': {
-      marginBottom: '1rem',
-    },
-    '& ul': {
-      marginInlineStart: '2rem',
-      listStyle: 'unset',
-      '& li': {
-        marginBottom: '0.5rem',
-      },
-    },
+const root = css({
+  '& h1, h2': {
+    fontFamily: 'RedHatDisplay',
   },
-  exampleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    '& p': {
-      paddingLeft: '1rem',
-      fontSize: 'var(	--pf-global--FontSize--sm)',
-    },
-    '& > span': {
-      margin: '0.4rem 0 !important',
-      fontSize: 'var(--pf-global--FontSize--xs)',
-      backgroundColor: 'var(--pf-global--palette--blue-50)',
-      color: 'var(--pf-global--info-color--200)',
+  '& hr': {
+    width: 'calc(100% + 50px)',
+    margin: '1.2rem -25px',
+  },
+  '& div > p:first-child': {
+    marginBottom: '1rem',
+  },
+  '& ul': {
+    marginInlineStart: '2rem',
+    listStyle: 'unset',
+    '& li': {
+      marginBottom: '0.5rem',
     },
   },
 })
+const exampleRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  '& p': {
+    paddingLeft: '1rem',
+    fontSize: 'var(	--pf-global--FontSize--sm)',
+  },
+  '& > span': {
+    margin: '0.4rem 0 !important',
+    fontSize: 'var(--pf-global--FontSize--xs)',
+    backgroundColor: 'var(--pf-global--palette--blue-50)',
+    color: 'var(--pf-global--info-color--200)',
+  },
+})
+
 export const SearchInfoModal = (props: any) => {
   const { t } = useTranslation()
-  const classes = useStyles()
   return (
     <Fragment>
-      <AcmModal
-        className={classes.root}
-        title={t('Search guide')}
-        width={'50%'}
-        onClose={props.onClose}
-        isOpen={props.isOpen}
-      >
+      <AcmModal className={root} title={t('Search guide')} width={'50%'} onClose={props.onClose} isOpen={props.isOpen}>
         <div>
           <h2>{t('Use keywords or property filters to search for resources.')}</h2>
         </div>
         <hr />
         <div>
           <p>{t('To search for a keyword, type the word in the search box.')}</p>
-          <div className={classes.exampleRow}>
+          <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
               <AcmChip isReadOnly>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>OpenShift</p>
           </div>
-          <div className={classes.exampleRow}>
+          <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
               <AcmChip isReadOnly>{t('Show')}</AcmChip>
             </AcmChipGroup>
@@ -79,13 +71,13 @@ export const SearchInfoModal = (props: any) => {
               'To search for resources with a given property value, type or select the property name from the autocomplete list. Then type or select the value for the selected property filter.'
             )}
           </p>
-          <div className={classes.exampleRow}>
+          <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
               <AcmChip isReadOnly>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>status:failed,pending</p>
           </div>
-          <div className={classes.exampleRow}>
+          <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
               <AcmChip isReadOnly>{t('Show')}</AcmChip>
             </AcmChipGroup>
