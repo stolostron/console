@@ -3,6 +3,7 @@
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, lazy, Suspense } from 'react'
 import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
+import { CompatRoute } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { GetDiscoveredOCPApps } from '../../components/GetDiscoveredOCPApps'
@@ -48,9 +49,7 @@ export default function ApplicationsPage() {
         <Switch>
           <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
           <Route exact path={NavigationPath.advancedConfiguration} component={AdvancedConfigurationPage} />
-          <Route path="*">
-            <Redirect to={NavigationPath.applications} />
-          </Route>
+          <CompatRoute path="*" render={() => <Redirect to={NavigationPath.applications} />} />
         </Switch>
       </Suspense>
     </AcmPage>

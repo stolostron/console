@@ -4,7 +4,7 @@ import _ from 'lodash'
 import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '../../../ui-components'
 import { TextContent, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import queryString from 'query-string'
 import { ApplicationDefinition, IResource, Namespace } from '../../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
@@ -99,7 +99,7 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
     defaultOption,
     queryParam,
   })
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const isSelected = (id: string) => id === selectedId
   const handleChange = (_: any, event: any) => {
@@ -109,7 +109,10 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
     }
     const newQueryString = queryString.stringify(query)
     const optionalNewQueryString = newQueryString && `?${newQueryString}`
-    history.replace(`${location.pathname}${optionalNewQueryString}${location.hash}`, { noScrollToTop: true })
+    navigate(`${location.pathname}${optionalNewQueryString}${location.hash}`, {
+      replace: true,
+      state: { noScrollToTop: true },
+    })
   }
 
   return (
