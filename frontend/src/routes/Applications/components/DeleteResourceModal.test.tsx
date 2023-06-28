@@ -11,6 +11,7 @@ import {
 } from '../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
+import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -45,6 +46,9 @@ describe('DeleteResourceModal', () => {
     )
 
     expect(getByText('Permanently delete Application acmapp?')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeTruthy()
+    nockIgnoreApiPaths()
+    userEvent.click(screen.getByRole('button', { name: /delete/i }))
   })
 
   it('should render delete ACM app with some related resources', () => {
@@ -101,6 +105,9 @@ describe('DeleteResourceModal', () => {
     expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
     expect(getByText('feng-mortgagers-subscription [Subscription]')).toBeTruthy()
     expect(getByText('mortgagers-placement [PlacementRule]')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy()
+    nockIgnoreApiPaths()
+    userEvent.click(screen.getByRole('button', { name: /cancel/i }))
   })
 
   it('should render delete ACM app with shared resources', () => {
