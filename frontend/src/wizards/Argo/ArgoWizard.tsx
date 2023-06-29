@@ -11,6 +11,8 @@ import {
   TextVariants,
   ModalVariant,
   Modal,
+  Label,
+  Title,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GitAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
@@ -240,6 +242,16 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   useEffect(() => {
     if (sources) {
+      sources.forEach((source: { repoURL: string }) => {
+        // two will override one, need to fix it
+        setGitRevisionsAsyncCallback(
+          () => () =>
+            getGitBranchList(
+              { metadata: { name: '', namespace: '' }, spec: { pathname: source.repoURL, type: 'git' } },
+              props.getGitRevisions
+            )
+        )
+      })
     } else if (source && !sources) {
       const channel = gitChannels.find((channel: any) => channel === repoURL)
       if (channel) {
@@ -261,7 +273,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 spec: { pathname: channel, type: 'git' },
               },
               targetRevision,
-              props.getGitPaths
+              props.getGitPaths,
+              source.repoURL
             )
         )
       }
@@ -379,7 +392,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         },
                       },
                       value as string,
-                      props.getGitPaths
+                      props.getGitPaths,
+                      item.spec.template.spec.source.repoURL
                     )
                 )
               }}
@@ -454,21 +468,31 @@ export function ArgoWizard(props: ArgoWizardProps) {
         disallowEmpty={editMode === EditMode.Create}
         collapsedContent={
           <Fragment>
+            <WizHidden hidden={(data) => !data.repositoryType}>
+              <Title headingLevel="h6">{t('Repository type')}</Title>
+            </WizHidden>
+
             <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
-              <GitAltIcon />
+              <Label style={{ marginRight: 10 }} color="grey">
+                {t('Git')}
+              </Label>
             </WizHidden>
             <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>
-              <HelmIcon />
+              <Label style={{ marginRight: 10 }} color="grey">
+                {t('Helm')}
+              </Label>
             </WizHidden>
             <WizTextDetail path="repoURL" placeholder="Expand to enter the repository details" />
           </Fragment>
         }
       >
-        <WizTiles path="repositoryType" label="Repository type">
+        <WizHidden hidden={(data) => data.repositoryType}>
+          <Title headingLevel="h6">{t('Repository type')}</Title>
+        </WizHidden>
+        <WizTiles path="repositoryType">
           <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description="Use a Git repository" />
           <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description="Use a Helm repository" />
         </WizTiles>
-
         <WizHidden
           hidden={
             editMode === EditMode.Create ? (data) => data.repositoryType !== 'git' : (data) => data.path === undefined
@@ -543,7 +567,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                       },
                     },
                     value as string,
-                    props.getGitPaths
+                    props.getGitPaths,
+                    item.repoURL
                   )
               )
             }}
@@ -911,9 +936,10 @@ async function getGitPathList(
     channelPath: string,
     branch: string,
     secretArgs?: { secretRef?: string; namespace?: string }
-  ) => Promise<unknown>
+  ) => Promise<unknown>,
+  url?: string
 ): Promise<string[]> {
-  return getGitPaths(channel?.spec?.pathname, branch, {
+  return getGitPaths(channel?.spec?.pathname || (url as string), branch, {
     secretRef: channel?.spec?.secretRef?.name,
     namespace: channel.metadata?.namespace,
   }) as Promise<string[]>
