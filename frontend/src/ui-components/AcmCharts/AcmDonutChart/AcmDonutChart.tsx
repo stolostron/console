@@ -138,7 +138,7 @@ export function AcmDonutChart(props: {
   )
 }
 
-const criticalColorClass = 'var(--pf-chart-color-red-100)'
+const criticalColorClass = 'var(--pf-global--palette--red-100)'
 const importantColorClass = 'var(--pf-chart-color-orange-300)'
 const moderateColorClass = 'var(--pf-chart-color-gold-300)'
 const lowColorClass = 'var(--pf-chart-color-blue-200)'
