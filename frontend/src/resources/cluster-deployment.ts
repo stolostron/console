@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { Selector } from './selector'
