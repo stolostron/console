@@ -201,11 +201,9 @@ export const updateNewRuleControls = (control) => {
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
   const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
   const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
-  if (kind) {
-    if (kind === PlacementRuleKind || kind == PlacementKind) {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
-      deprecatedRule && _.set(deprecatedRule, 'active', '')
-    }
+  if (kind && (kind === PlacementRuleKind || kind === PlacementKind)) {
+    isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
+    deprecatedRule && _.set(deprecatedRule, 'active', '')
   }
 
   selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
