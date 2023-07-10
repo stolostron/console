@@ -18,7 +18,7 @@ import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRu
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
+import { listPlacementRules, listPlacements, PlacementKind, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
@@ -202,12 +202,10 @@ export const updateNewRuleControls = (control) => {
   const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
   const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
   if (kind) {
-    if (kind === PlacementRuleKind) {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
-    } else {
+    if (kind === PlacementRuleKind || kind == PlacementKind) {
       isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
+      deprecatedRule && _.set(deprecatedRule, 'active', '')
     }
-    deprecatedRule && _.set(deprecatedRule, 'active', '')
   }
 
   selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
