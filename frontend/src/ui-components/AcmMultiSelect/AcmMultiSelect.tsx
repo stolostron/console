@@ -179,6 +179,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
             /* istanbul ignore next */ props.variant === SelectVariant.typeaheadMulti ? placeholder : placeholderText
           }
           isDisabled={props.isDisabled || ValidationContext.isReadOnly}
+          noResultsFoundText={t('No results found')}
         />
       )}
       {validated === 'error' ? (

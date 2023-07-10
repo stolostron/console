@@ -5,7 +5,7 @@ import React, { ReactNode } from 'react'
 import { FormGroup, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 
 const ControlPanelFormGroup = (props: {
   children: ReactNode

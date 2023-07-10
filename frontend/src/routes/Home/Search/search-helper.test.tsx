@@ -6,43 +6,48 @@ import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteStri
 
 test('Correctly returns formatSearchbarSuggestions', () => {
   const testData = ['kind', 'cluster', 'deployment']
-  const result = formatSearchbarSuggestions(testData, 'filter', '', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'filter', '', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions of name values', () => {
   const testData = ['name1', 'name2', 'name3']
-  const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 name:', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 name:', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions of namespace values', () => {
   const testData = ['namespace1', 'namespace2', 'namespace3']
-  const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 namespace:', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'name:name1 namespace:', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions of operators', () => {
   const testData = ['isNumber']
-  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions with operator already chosen', () => {
   const testData = ['isNumber', '1', '10']
-  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions with operator already chosen (single number option)', () => {
   const testData = ['isNumber', '1']
-  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'cpu:=', 1000, false, t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns formatSearchbarSuggestions with date', () => {
   const testData = ['isDate']
-  const result = formatSearchbarSuggestions(testData, 'value', 'created:', 1000, t)
+  const result = formatSearchbarSuggestions(testData, 'value', 'created:', 1000, false, t)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns formatSearchbarSuggestions with loading item', () => {
+  const result = formatSearchbarSuggestions([], 'value', 'name:', 1000, true, t)
   expect(result).toMatchSnapshot()
 })
 

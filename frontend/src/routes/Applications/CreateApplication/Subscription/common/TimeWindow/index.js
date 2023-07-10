@@ -247,6 +247,7 @@ export class TimeWindow extends Component {
                         onClear={() => {
                           this.handleTimeZone.bind(this)(undefined)
                         }}
+                        noResultsFoundText={i18n('No results found')}
                       >
                         {this.timezoneList}
                       </Select>

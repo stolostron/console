@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React, { useCallback, useState } from 'react'
-import { Select, SelectOption, SelectVariant, Spinner } from '@patternfly/react-core'
+import React, { SyntheticEvent, useCallback, useState } from 'react'
+import { Select, SelectOption, SelectOptionObject, SelectVariant, Spinner } from '@patternfly/react-core'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 
 const ControlPanelSingleSelect = (props: {
@@ -20,14 +20,14 @@ const ControlPanelSingleSelect = (props: {
   const [open, setOpen] = useState(false)
 
   const setControlRef = useCallback(
-    (ref) => {
+    (ref: HTMLDivElement | null) => {
       control.ref = ref
     },
     [control]
   )
 
   const clickRefresh = useCallback(
-    (e) => {
+    (e: SyntheticEvent<HTMLDivElement>) => {
       e.preventDefault()
       e.stopPropagation()
       const { fetchAvailable } = control
@@ -42,7 +42,7 @@ const ControlPanelSingleSelect = (props: {
   )
 
   const onChange = useCallback(
-    (value) => {
+    (value?: SelectOptionObject) => {
       if (control.active !== value) {
         control.active = value
         handleChange()
@@ -110,6 +110,7 @@ const ControlPanelSingleSelect = (props: {
                 isDisabled={disabled}
                 data-testid={`select-${controlId}`}
                 footer={footer}
+                noResultsFoundText={i18n('No results found')}
               >
                 {available.map((item: any, inx: React.Key) => {
                   /* eslint-disable-next-line react/no-array-index-key */

@@ -2,7 +2,7 @@
 
 import YAML from 'yaml'
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
 import set from 'lodash/set'

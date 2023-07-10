@@ -62,8 +62,13 @@ spec:
             {{#each clusterSelector.clusterLabelsList}}
             {{#if validValue}}
             - key: '{{{labelName}}}'
-              operator: In
-              values: ['{{{labelValue}}}']
+              operator: '{{{operatorValue}}}'
+              {{#if labelValue}}
+              values: 
+                {{#each labelValue}}
+                - {{{ this }}}
+                {{/each}}
+              {{/if}}
             {{/if}}
             {{/each}} 
   clusterSets:

@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
 export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']
@@ -13,9 +13,10 @@ export function formatSearchbarSuggestions(
   suggestionKind: 'label' | 'filter' | 'value',
   searchQuery: string,
   limit: number,
+  isLoading: boolean,
   t: TFunction
 ) {
-  let valuesToRemoveFromSuggestions: string[] = []
+  const valuesToRemoveFromSuggestions: string[] = []
   let suggestions: DropdownSuggestionsProps[] = []
   const labelTag = {
     id: 'id-suggestions-label',
@@ -33,9 +34,7 @@ export function formatSearchbarSuggestions(
     labelTag.name = t('{{0}} values', [searchCompleteFilter])
     const query = convertStringToQuery(searchQuery, limit)
     query.filters.forEach((filter) => {
-      if (filter.property === searchCompleteFilter) {
-        valuesToRemoveFromSuggestions = filter.values.filter((value) => data.indexOf(value) > 0)
-      }
+      valuesToRemoveFromSuggestions.push(...(filter.property === searchCompleteFilter ? filter.values : []))
     })
     if (data[0] === 'isNumber') {
       if (operators.some((operator: string) => searchQuery.endsWith(operator))) {
@@ -99,6 +98,13 @@ export function formatSearchbarSuggestions(
       }
     })
   suggestions.unshift(labelTag)
+  isLoading &&
+    suggestions.push({
+      id: 'id-loading',
+      name: suggestionKind === 'filter' ? t('Loading...') : t('Loading more...'),
+      kind: 'label',
+      disabled: true,
+    })
   return suggestions
 }
 

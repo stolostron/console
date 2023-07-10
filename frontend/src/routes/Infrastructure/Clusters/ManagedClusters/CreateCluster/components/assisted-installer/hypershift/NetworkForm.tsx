@@ -77,7 +77,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
 
   const formRef = React.useRef<FormikProps<any>>(null)
 
-  const onValuesChanged = React.useCallback((values) => {
+  const onValuesChanged = React.useCallback((values: NetworkFormValues) => {
     if (!isEqual(values, control.active)) {
       control.active = { ...control.active, ...values }
       setIsAdvancedNetworking(values.isAdvanced)

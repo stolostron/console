@@ -141,7 +141,7 @@ export default function RelatedResourceDetailsTab(props: {
     return (
       <PageSection>
         <Alert variant={'danger'} isInline={true} title={t('An unexpected error occurred.')}>
-          {error}
+          {error.toString()}
         </Alert>
       </PageSection>
     )

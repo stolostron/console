@@ -215,7 +215,7 @@
     "tsconfig-paths": "4.0.0",
     "tsconfig-paths-webpack-plugin": "^3.5.2",
     "type-fest": "2.16.0",
-    "typescript": "4.6.4",
+    "typescript": "^4.9.5",
     "v8-compile-cache": "2.3.0",
     "webpack": "5.73.0",
     "webpack-bundle-analyzer": "4.5.0",
@@ -273,7 +273,11 @@
           "paths": [
             {
               "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next",
-              "name": "react-i18next"
+              "name": "react-i18next",
+              "importNames": [
+                "Trans",
+                "useTranslation"
+              ]
             },
             {
               "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot",

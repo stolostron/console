@@ -35,7 +35,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
 
   const initReleaseImage = getClusterImageSet(clusterImageSets, releaseImage)?.spec?.releaseImage
 
-  const onValuesChanged = React.useCallback((values) => {
+  const onValuesChanged = React.useCallback((values: any) => {
     if (Object.keys(values).some((key) => values[key] !== control.active?.[key])) {
       control.active = values
       control.step.title.isComplete = false

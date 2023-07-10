@@ -3,7 +3,7 @@
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { Fragment, ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
@@ -47,6 +47,8 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
   }
 
   const handleSubmit = () => {
+    setRemoveAppResources(false)
+    setRemoveAppSetResource(false)
     props.close()
     if (props.redirect) {
       history.push(props.redirect)
@@ -276,7 +278,15 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         <Button key="confirm" variant="danger" isDisabled={!props.canRemove} onClick={() => handleSubmit()}>
           {props.t('Delete')}
         </Button>,
-        <Button key="cancel" variant="link" onClick={props.close}>
+        <Button
+          key="cancel"
+          variant="link"
+          onClick={() => {
+            setRemoveAppResources(false)
+            setRemoveAppSetResource(false)
+            props.close()
+          }}
+        >
           {props.t('Cancel')}
         </Button>,
       ]}

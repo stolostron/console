@@ -138,6 +138,7 @@ export function LogsToolbar(props: {
         selections={previousLogs ? 'previous-log' : 'current-log'}
         isOpen={isPreviousSelectOpen}
         isDisabled={!containerHasPreviousLogs}
+        noResultsFoundText={t('No results found')}
       >
         <SelectOption key={'current-log'} value={'current-log'}>
           {t('Current log')}
@@ -172,6 +173,7 @@ export function LogsToolbar(props: {
             }}
             selections={container}
             isOpen={isContainerSelectOpen}
+            noResultsFoundText={t('No results found')}
           >
             {containers.map((container) => {
               return (

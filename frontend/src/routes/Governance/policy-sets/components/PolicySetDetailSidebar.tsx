@@ -20,7 +20,7 @@ import {
   compareNumbers,
   compareStrings,
 } from '../../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'

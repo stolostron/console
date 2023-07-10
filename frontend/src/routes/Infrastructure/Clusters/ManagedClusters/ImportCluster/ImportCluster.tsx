@@ -65,6 +65,7 @@ import {
   WizTextArea,
   WizTextInput,
   useSetHasValue,
+  useValidate,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -82,6 +83,10 @@ enum ImportMode {
   kubeconfig = 'kubeconfig',
 }
 
+const isImportMode = (importMode?: string): importMode is ImportMode => {
+  return !!importMode && (Object.values(ImportMode) as string[]).includes(importMode)
+}
+
 function escapePath(key: string) {
   return key.replace(/\./g, '\\.')
 }
@@ -97,7 +102,7 @@ type State = {
   kacDefaultLabels: Labels
   kacManagedClusterSet: string
   kacAdditionalLabels: Labels
-  templateName: string
+  templateName?: string
   token: string
   server: string
   kubeconfig: string
@@ -610,6 +615,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const secretName = 'auto-import-secret'
   const resources = useItem() as any[]
   const { update } = useData()
+  const validate = useValidate()
   const mode = useDisplayMode()
 
   const autoImportSecret = useMemo(
@@ -641,35 +647,38 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   }
 
   const onChangeImportMode = useCallback(
-    (m) => {
-      const secretIndex = resources.findIndex((item) => item.kind === 'Secret' && item?.metadata?.name === secretName)
-      const deleteCount = secretIndex >= 0 ? 1 : 0
-      switch (m) {
-        case ImportMode.manual:
-          // Delete auto-import secret
-          if (deleteCount) {
-            resources.splice(secretIndex, 1)
+    (importMode?: string) => {
+      if (isImportMode(importMode)) {
+        const secretIndex = resources.findIndex((item) => item.kind === 'Secret' && item?.metadata?.name === secretName)
+        const deleteCount = secretIndex >= 0 ? 1 : 0
+        switch (importMode) {
+          case ImportMode.manual:
+            // Delete auto-import secret
+            if (deleteCount) {
+              resources.splice(secretIndex, 1)
+            }
+            break
+          case ImportMode.kubeconfig: {
+            // Insert/Replace auto-import secret
+            const kubeconfigSecret = cloneDeep(autoImportSecret)
+            kubeconfigSecret.stringData = { ...kubeconfigSecret.stringData, kubeconfig }
+            resources.splice(deleteCount ? secretIndex : 1, deleteCount, kubeconfigSecret)
+            break
           }
-          break
-        case ImportMode.kubeconfig: {
-          // Insert/Replace auto-import secret
-          const kubeconfigSecret = cloneDeep(autoImportSecret)
-          kubeconfigSecret.stringData = { ...kubeconfigSecret.stringData, kubeconfig }
-          resources.splice(deleteCount ? secretIndex : 1, deleteCount, kubeconfigSecret)
-          break
+          case ImportMode.token: {
+            // Insert/Replace auto-import secret
+            const tokenSecret = cloneDeep(autoImportSecret)
+            tokenSecret.stringData = { ...tokenSecret.stringData, token, server }
+            resources.splice(deleteCount ? secretIndex : 1, deleteCount, tokenSecret)
+            break
+          }
         }
-        case ImportMode.token: {
-          // Insert/Replace auto-import secret
-          const tokenSecret = cloneDeep(autoImportSecret)
-          tokenSecret.stringData = { ...tokenSecret.stringData, token, server }
-          resources.splice(deleteCount ? secretIndex : 1, deleteCount, tokenSecret)
-          break
-        }
+        dispatch({ type: 'setImportMode', importMode: importMode })
+        update()
+        validate()
       }
-      dispatch({ type: 'setImportMode', importMode: m })
-      update()
     },
-    [autoImportSecret, dispatch, kubeconfig, resources, server, token, update]
+    [autoImportSecret, dispatch, kubeconfig, resources, server, token, update, validate]
   )
 
   const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
@@ -770,7 +779,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   }, [setHasValue, templateName])
 
   const onChangeAutomationTemplate = useCallback(
-    (template) => {
+    (template?: string) => {
       // Delete any previously generated YAML
       const curatorIndex = resources.findIndex(
         (item) => item.kind === ClusterCuratorKind && item?.metadata?.name === clusterName

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardHeader, ExpandableSection } from '@patternfly/react-core'
-import { TFunction } from 'i18next'
 import { ReactNode, useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
@@ -57,7 +57,14 @@ export function GetRowActions(
           title: t('Edit {{resourceKind}}', { resourceKind: kind }),
           click: (item: any) => {
             const searchParams = GetUrlSearchParam(item)
-            return history.push(`${NavigationPath.resourceYAML}${searchParams}`)
+            return history.push({
+              pathname: NavigationPath.resourceYAML,
+              search: searchParams,
+              state: {
+                from: NavigationPath.search,
+                fromSearch: window.location.search,
+              },
+            })
           },
         },
         {
@@ -65,7 +72,14 @@ export function GetRowActions(
           title: t('View related resources'),
           click: (item: any) => {
             const searchParams = GetUrlSearchParam(item)
-            return history.push(`${NavigationPath.resourceRelated}${searchParams}`)
+            return history.push({
+              pathname: NavigationPath.resourceRelated,
+              search: searchParams,
+              state: {
+                from: NavigationPath.search,
+                fromSearch: window.location.search,
+              },
+            })
           },
         },
         {

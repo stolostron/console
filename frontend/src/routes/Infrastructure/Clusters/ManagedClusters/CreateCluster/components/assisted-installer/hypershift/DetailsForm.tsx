@@ -143,7 +143,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     setAdditionaLabels,
   })
 
-  const onValuesChanged = useCallback((formikValues, initRender) => {
+  const onValuesChanged = useCallback((formikValues: any, initRender: any) => {
     setClusterName(formikValues.name)
     setReleaseImage(formikValues.openshiftVersion)
     const values = {

@@ -11,7 +11,7 @@ import {
   IAcmRowAction,
   IAcmTableColumn,
 } from '../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
@@ -566,7 +566,7 @@ export default function ApplicationsOverview() {
         header: t('Type'),
         cell: (resource) => <span>{getApplicationType(resource, t)}</span>,
         sort: 'kind',
-        tooltip: () => (
+        tooltip: (
           <span>
             {t('Displays the type of the application. ')}
             <TextContent>

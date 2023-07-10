@@ -126,7 +126,11 @@ function RenderSearchBar(props: {
     setCurrentSearch(presetSearchQuery)
   }, [presetSearchQuery])
 
-  const { data: searchSchemaData, error: searchSchemaError } = useSearchSchemaQuery({
+  const {
+    data: searchSchemaData,
+    loading: searchSchemaLoading,
+    error: searchSchemaError,
+  } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
@@ -140,7 +144,11 @@ function RenderSearchBar(props: {
     return { searchCompleteValue: value, searchCompleteQuery: query }
   }, [currentSearch, searchAutocompleteLimit])
 
-  const { data: searchCompleteData, error: searchCompleteError } = useSearchCompleteQuery({
+  const {
+    data: searchCompleteData,
+    loading: searchDataLoading,
+    error: searchCompleteError,
+  } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
@@ -170,21 +178,30 @@ function RenderSearchBar(props: {
             'cluster',
             'apigroup',
             'created',
-            t('Loading more...'),
           ]),
           'filter',
           '', // Dont need to de-dupe filters
           searchAutocompleteLimit,
+          searchSchemaLoading,
           t
         )
       : formatSearchbarSuggestions(
-          _.get(searchCompleteData || [], 'searchComplete', ['Loading...']),
+          _.get(searchCompleteData || [], 'searchComplete') ?? [],
           'value',
           currentSearch, // pass current search query in order to de-dupe already selected values
           searchAutocompleteLimit,
+          searchDataLoading,
           t
         )
-  }, [currentSearch, searchSchemaData, searchCompleteData, searchAutocompleteLimit, t])
+  }, [
+    currentSearch,
+    searchSchemaData,
+    searchCompleteData,
+    searchDataLoading,
+    searchSchemaLoading,
+    searchAutocompleteLimit,
+    t,
+  ])
 
   const saveSearchTooltip = useMemo(() => {
     if (savedSearchQueries.length >= savedSearchLimit) {

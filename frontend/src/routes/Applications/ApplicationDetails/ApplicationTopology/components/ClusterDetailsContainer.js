@@ -535,6 +535,7 @@ class ClusterDetailsContainer extends Component {
           onToggle={this.handleSelectToggle}
           isOpen={clusterSearchToggle}
           onClear={this.handleSelectionClear}
+          noResultsFoundText={t('No results found')}
         >
           {this.props.clusterList.map((cluster) => (
             <SelectOption key={cluster.name || cluster.metadata.name} value={cluster.name || cluster.metadata.name} />

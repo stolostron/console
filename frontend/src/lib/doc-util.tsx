@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
 
@@ -10,9 +10,8 @@ export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_a
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
-export const DOC_CREATE_HOSTED_CLUSTER = 'https://hypershift-docs.netlify.app/getting-started/#create-a-hostedcluster'
-export const DOC_CREATE_kUBEVIRT_CLUSTER =
-  'https://hypershift-docs.netlify.app/how-to/kubevirt/create-kubevirt-cluster/'
+export const DOC_CREATE_HOSTED_CLUSTER = `${DOC_BASE_PATH}/clusters/index#create-hosted-aws`
+export const DOC_CREATE_kUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
 
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,

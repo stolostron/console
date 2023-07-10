@@ -2,9 +2,9 @@
 
 import { PageSection, SelectOption } from '@patternfly/react-core'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
@@ -12,7 +12,7 @@ import './LogsContainer.css'
 export interface ILogsContainerProps {
   node: any[]
   t: TFunction
-  renderResourceURLLink: (data: any, t: TFunction, isPod: boolean) => void
+  renderResourceURLLink: (data: any, t: TFunction, isPod: boolean) => ReactNode
 }
 
 export function LogsContainer(props: ILogsContainerProps) {

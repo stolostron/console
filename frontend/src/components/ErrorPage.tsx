@@ -13,7 +13,7 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ReactNode } from 'react'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useTranslation } from '../lib/acm-i18next'
 
 export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {

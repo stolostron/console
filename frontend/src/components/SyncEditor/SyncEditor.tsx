@@ -14,6 +14,7 @@ import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 import { useTranslation } from '../../lib/acm-i18next'
+import { ChangeHandler } from 'react-monaco-editor'
 
 export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   variant?: string
@@ -501,7 +502,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }
   }, [])
 
-  const editorChange = useCallback(
+  const editorChange = useCallback<ChangeHandler>(
     (value, e) => {
       debouncedEditorChange(value, e)
     },

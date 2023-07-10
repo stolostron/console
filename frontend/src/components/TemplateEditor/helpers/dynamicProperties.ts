@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ReactNode } from 'react'
 
 export function useDynamicPropertyValues<
@@ -18,7 +18,7 @@ export function useDynamicPropertyValues<
     if (typeof property === 'function') {
       values[key] = property(control, controlData, t)
     } else {
-      values[key] = property
+      values[key] = property as ReactNode
     }
   })
   return values

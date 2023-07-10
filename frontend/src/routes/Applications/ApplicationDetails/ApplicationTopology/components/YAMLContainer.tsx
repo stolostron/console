@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
@@ -25,7 +25,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
   }
   const namespace = _.get(props.node, 'namespace', '')
   const type = _.get(props.node, 'type', '')
-  const kind = type === 'placements' ? 'placementdecision' : type
+  const kind = type === 'placements' || type === 'placement' ? 'placementdecision' : type
   let apiVersion = _.get(props.node, 'specs.raw.apiVersion', '') // only works for app definition, for resource we need data from search
   const isDesign = _.get(props.node, 'specs.isDesign', false)
   const editorTitle = `${kind[0].toUpperCase() + kind.substring(1)} YAML`

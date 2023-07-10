@@ -29,6 +29,7 @@ import {
   ToolbarFilter,
   ToolbarGroup,
   ToolbarItem,
+  TooltipProps,
 } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
@@ -103,9 +104,9 @@ export interface IAcmRowAction<T> {
   /** Action identifier */
   id: string
   /** Display a tooltip for this action */
-  tooltip?: string | ((item: T) => void)
+  tooltip?: string
   /** Additional tooltip props forwarded to tooltip component */
-  tooltipProps?: React.ReactNode
+  tooltipProps?: Partial<TooltipProps>
   /** Inject a separator horizontal rule immediately before an action */
   addSeparator?: boolean
   /** Display an action as being ariaDisabled */
@@ -400,8 +401,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [exactBreakpoint, setExactBreakpoint] = useState<number | undefined>()
   const [outerDiv, setOuterDiv] = useState<HTMLDivElement | null>(null)
   const [tableDiv, setTableDiv] = useState<HTMLDivElement | null>(null)
-  const outerDivRef = useCallback((elem) => setOuterDiv(elem), [])
-  const tableDivRef = useCallback((elem) => setTableDiv(elem), [])
+  const outerDivRef = useCallback((elem: HTMLDivElement | null) => setOuterDiv(elem), [])
+  const tableDivRef = useCallback((elem: HTMLDivElement | null) => setTableDiv(elem), [])
 
   useEffect(() => {
     setLocalStorage(cachedPrefixId, cache)
@@ -1242,6 +1243,7 @@ function TableColumnFilters<T>(props: {
               {t('Filter')}
             </div>
           }
+          noResultsFoundText={t('No results found')}
         >
           {FilterSelectGroups}
         </Select>

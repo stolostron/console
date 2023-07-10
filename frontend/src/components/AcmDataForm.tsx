@@ -78,7 +78,7 @@ import {
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
 import { AcmButton, AcmPageHeader } from '../ui-components'
@@ -1378,6 +1378,7 @@ function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
   const { validated, autoClose: closeOnSelect } = props
   const [open, setOpen] = useState(false)
   const { autoClose, ...selectProps } = props
+  const { t } = useTranslation()
   return (
     <Select
       {...selectProps}
@@ -1388,6 +1389,7 @@ function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
         if (closeOnSelect) setOpen(false)
       }}
       aria-invalid={validated === ValidatedOptions.error}
+      noResultsFoundText={t('No results found')}
     >
       {props.children}
     </Select>
