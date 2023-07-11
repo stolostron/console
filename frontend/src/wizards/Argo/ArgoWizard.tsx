@@ -224,6 +224,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
+  const [multipleGitRevisionsAsyncCallback, setMultipleGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
 
@@ -242,16 +243,30 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   useEffect(() => {
     if (sources) {
-      sources.forEach((source: { repoURL: string }) => {
-        // two will override one, need to fix it
-        setGitRevisionsAsyncCallback(
-          () => () =>
+      let promises = []
+      sources.forEach((source) => {
+        if (source.repositoryType === 'git') {
+          promises.push(
             getGitBranchList(
               { metadata: { name: '', namespace: '' }, spec: { pathname: source.repoURL, type: 'git' } },
               props.getGitRevisions
             )
-        )
+          )
+        }
       })
+      if (promises.length) {
+        setMultipleGitRevisionsAsyncCallback(promises)
+      }
+
+      // sources.forEach((source: { repoURL: string }) => {
+      //   setGitRevisionsAsyncCallback(
+      //     () => () =>
+      //       getGitBranchList(
+      //         { metadata: { name: '', namespace: '' }, spec: { pathname: repoURL, type: 'git' } },
+      //         props.getGitRevisions
+      //       )
+      //   )
+      // })
     } else if (source && !sources) {
       const channel = gitChannels.find((channel: any) => channel === repoURL)
       if (channel) {
@@ -295,6 +310,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
     stepsAriaLabel: t('Argo application steps'),
     contentAriaLabel: t('Argo application content'),
   })
+
+  function combineArraysPromise(promise1: Promise<any[]>, promise2: Promise<any[]>): Promise<any[]> {
+    return Promise.all([promise1, promise2]).then(([result1, result2]) => [...result1, ...result2])
+  }
 
   function SourceSelector() {
     return (
@@ -459,7 +478,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
     )
   }
 
-  function SourcesSelector() {
+  function MultipleSourcesSelector() {
     const editMode = useEditMode()
     return (
       <WizArrayInput
@@ -548,7 +567,27 @@ export function ArgoWizard(props: ArgoWizardProps) {
             label={t('Revision')}
             labelHelp={t('Refer to a single commit')}
             placeholder={t('Enter or select a tracking revision')}
-            asyncCallback={gitRevisionsAsyncCallback}
+            asyncCallback={
+              editMode === EditMode.Create
+                ? gitRevisionsAsyncCallback
+                : () =>
+                    combineArraysPromise(
+                      getGitBranchList(
+                        {
+                          metadata: { name: '', namespace: '' },
+                          spec: { pathname: '', type: 'git' },
+                        },
+                        props.getGitRevisions
+                      ),
+                      getGitBranchList(
+                        {
+                          metadata: { name: '', namespace: '' },
+                          spec: { pathname: '', type: 'git' },
+                        },
+                        props.getGitRevisions
+                      )
+                    )
+            }
             isCreatable
             onValueChange={(value, item) => {
               const channel = props.channels?.find((channel) => channel?.spec?.pathname === item.repoURL)
@@ -815,7 +854,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="template" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section label={t('Source')}>{source && !sources ? <SourceSelector /> : <SourcesSelector />}</Section>
+            <Section label={t('Source')}>
+              {source && !sources ? <SourceSelector /> : <MultipleSourcesSelector />}
+            </Section>
             <Section label={t('Destination')}>
               <WizTextInput
                 id="destination"
