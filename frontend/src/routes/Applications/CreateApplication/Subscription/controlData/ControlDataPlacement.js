@@ -13,15 +13,13 @@
 
 // seems to be an issue with this rule and redux
 
-import YAML from 'yaml'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRuleDeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
+import { listPlacementRules, listPlacements, PlacementKind, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
-import { filterDeep } from '../transformers/transform-data-to-resources'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
@@ -203,14 +201,9 @@ export const updateNewRuleControls = (control) => {
   const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
   const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
   const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
-  if (kind) {
-    if (kind === PlacementRuleKind) {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
-      deprecatedRule && _.set(deprecatedRule, 'active', YAML.stringify(filterDeep(active)))
-    } else {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
-      deprecatedRule && _.set(deprecatedRule, 'active', '')
-    }
+  if (kind && (kind === PlacementRuleKind || kind === PlacementKind)) {
+    isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
+    deprecatedRule && _.set(deprecatedRule, 'active', '')
   }
 
   selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
