@@ -342,7 +342,6 @@ exports[`NetworkForm it renders 1`] = `
             </div>
           </div>
         </div>
-        
       </div>
     </div>
     <div
@@ -390,7 +389,6 @@ exports[`NetworkForm it renders 1`] = `
                 </div>
               </span>
             </div>
-            
           </div>
         </div>
       </div>
@@ -740,7 +738,6 @@ exports[`NetworkForm it renders 1`] = `
                 </div>
               </span>
             </div>
-            
           </div>
         </div>
       </div>

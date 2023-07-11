@@ -14,6 +14,7 @@ import 'regenerator-runtime/runtime'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { initReactI18next } from 'react-i18next'
 import './lib/test-shots'
+import { TextEncoder } from 'util'
 
 require('react')
 
@@ -60,6 +61,8 @@ global.EventSource = class EventSource {
   onopen = () => {}
   removeEventListener = () => {}
 }
+
+global.TextEncoder = TextEncoder
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout((process.env.LAUNCH ? 3000 : 30) * 1000)
