@@ -53,7 +53,9 @@ class DetailsTable extends Component {
     ]
 
     const { name, namespace, type, specs = {} } = node
-    const { resources = [{ name, namespace }], clustersNames = [], replicaCount = 1 } = specs
+    const { resources = [{ name, namespace }], clustersNames = [] } = specs
+    let { replicaCount = 1 } = specs
+    replicaCount = isNaN(Number(replicaCount)) ? 1 : Number(replicaCount)
     const statusMap = specs[`${node.type}Model`] || {}
     let available = []
     resources.forEach((resource) => {

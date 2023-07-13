@@ -397,7 +397,8 @@ const getPulseStatusForGenericNode = (node, t) => {
   }
 
   // check resources against the resourceMap
-  if (resourceCount && resourceCount !== Object.keys(resourceMap).length) {
+  // handle pod type as a special case
+  if (resourceCount && resourceCount !== Object.keys(resourceMap).length && nodeType !== 'pod') {
     return yellowPulse
   }
 
