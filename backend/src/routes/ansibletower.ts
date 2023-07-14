@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
-import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
@@ -48,9 +47,6 @@ export async function ansibleTower(req: Http2ServerRequest, res: Http2ServerResp
                     Authorization: `Bearer ${ansibleCredential.token}`,
                 },
                 rejectUnauthorized: false,
-            }
-            if (process.env.HTTPS_PROXY) {
-                options.agent = new ProxyAgent()
             }
 
             const towerReq = request(options, (response) => {
