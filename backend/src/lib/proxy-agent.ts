@@ -11,16 +11,16 @@ export function getProxyAgent(url: string) {
   const proxyUrl = getProxyForUrl(url)
   if (proxyUrl) {
     logger.info(`Using proxy URL ${proxyUrl} for ${url}`)
-
     const proxyUrlObject = new URL(proxyUrl)
     if (proxyUrlObject.protocol === 'https:') {
-      logger.info(`Using proxy URL ${proxyUrl} for ${url}`)
       if (httpsProxy?.url !== proxyUrl) {
+        logger.info(`Creating new HttpsProxyAgent for ${proxyUrl}`)
         httpsProxy = { url: proxyUrl, proxy: new HttpsProxyAgent(proxyUrl) }
       }
       return httpsProxy.proxy
     } else if (proxyUrlObject.protocol === 'http:') {
       if (httpProxy?.url !== proxyUrl) {
+        logger.info(`Creating new HttpProxyAgent for ${proxyUrl}`)
         httpProxy = { url: proxyUrl, proxy: new HttpProxyAgent(proxyUrl) }
       }
       return httpProxy.proxy
