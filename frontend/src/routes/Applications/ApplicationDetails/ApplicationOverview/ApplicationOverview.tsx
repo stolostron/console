@@ -9,17 +9,7 @@ import {
   ListItems,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-  Button,
-  ButtonVariant,
-  Card,
-  CardBody,
-  Label,
-  PageSection,
-  Skeleton,
-  Spinner,
-  Tooltip,
-} from '@patternfly/react-core'
+import { ButtonVariant, Card, CardBody, Label, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
 import {
   FolderIcon,
   GripHorizontalIcon,
@@ -88,7 +78,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
   const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
-  const [showSubCards, setShowSubCards] = useState(false)
+  const [showSubCards] = useState(true)
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
@@ -339,21 +329,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             {showSubCards && !disableBtn
               ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
               : ''}
-            <div className="toggle-subs-btn">
-              <Button
-                variant="secondary"
-                isDisabled={disableBtn}
-                data-test-subscription-details={!disableBtn}
-                onClick={() => setShowSubCards(!showSubCards)}
-              >
-                {renderData(
-                  subsList,
-                  (showSubCards ? t('Hide subscription details') : t('Show subscription details')) +
-                    ` (${subsList?.length})`,
-                  '70%'
-                )}
-              </Button>
-            </div>
+            <div className="toggle-subs-btn">{renderData(subsList, true, '70%')}</div>
           </div>
         )}
 
@@ -363,19 +339,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
               ? createSourceCards(applicationData?.application.app, t, subscriptions, channels)
               : ''}
             <div className="toggle-subs-btn">
-              <Button
-                variant="secondary"
-                isDisabled={disableBtn}
-                data-test-subscription-details={!disableBtn}
-                onClick={() => setShowSubCards(!showSubCards)}
-              >
-                {renderData(
-                  getApplicationRepos(applicationData?.application.app, subscriptions, channels),
-                  (showSubCards ? t('Hide source details') : t('Show source details')) +
-                    ` (${getApplicationRepos(applicationData?.application.app, subscriptions, channels)?.length})`,
-                  '70%'
-                )}
-              </Button>
+              {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
             </div>
           </div>
         )}

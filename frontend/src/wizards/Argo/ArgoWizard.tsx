@@ -224,7 +224,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
-  const [multipleGitRevisionsAsyncCallback, setMultipleGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
 
@@ -242,32 +241,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
-    if (sources) {
-      let promises = []
-      sources.forEach((source) => {
-        if (source.repositoryType === 'git') {
-          promises.push(
-            getGitBranchList(
-              { metadata: { name: '', namespace: '' }, spec: { pathname: source.repoURL, type: 'git' } },
-              props.getGitRevisions
-            )
-          )
-        }
-      })
-      if (promises.length) {
-        setMultipleGitRevisionsAsyncCallback(promises)
-      }
-
-      // sources.forEach((source: { repoURL: string }) => {
-      //   setGitRevisionsAsyncCallback(
-      //     () => () =>
-      //       getGitBranchList(
-      //         { metadata: { name: '', namespace: '' }, spec: { pathname: repoURL, type: 'git' } },
-      //         props.getGitRevisions
-      //       )
-      //   )
-      // })
-    } else if (source && !sources) {
+    if (source && !sources) {
       const channel = gitChannels.find((channel: any) => channel === repoURL)
       if (channel) {
         setGitRevisionsAsyncCallback(
@@ -590,6 +564,19 @@ export function ArgoWizard(props: ArgoWizardProps) {
             }
             isCreatable
             onValueChange={(value, item) => {
+              // set targetRevision on value change
+              setGitRevisionsAsyncCallback(
+                () => () =>
+                  getGitBranchList(
+                    {
+                      metadata: { name: '', namespace: '' },
+                      spec: { pathname: item.repoURL, type: 'git' },
+                    },
+                    props.getGitRevisions
+                  )
+              )
+
+              // set path
               const channel = props.channels?.find((channel) => channel?.spec?.pathname === item.repoURL)
               const path = createdChannels.find((channel) => channel === item.repoURL)
               setGitPathsAsyncCallback(
@@ -854,9 +841,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="template" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section label={t('Source')}>
-              {source && !sources ? <SourceSelector /> : <MultipleSourcesSelector />}
-            </Section>
+            <Section label={t('Source')}>{source && !sources ? SourceSelector() : MultipleSourcesSelector()}</Section>
             <Section label={t('Destination')}>
               <WizTextInput
                 id="destination"

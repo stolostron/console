@@ -175,11 +175,14 @@ const argoAppSetGit: ApplicationSet = {
       },
       spec: {
         project: 'default',
-        source: {
-          repoURL: channelGit.spec.pathname,
-          targetRevision: 'branch-01',
-          path: 'application-test',
-        },
+        sources: [
+          {
+            repositoryType: 'git',
+            repoURL: channelGit.spec.pathname,
+            targetRevision: 'branch-01',
+            path: 'application-test',
+          },
+        ],
         destination: {
           namespace: 'gitops-ns',
           server: '{{server}}',
@@ -224,11 +227,14 @@ const argoAppSetHelm: ApplicationSet = {
       },
       spec: {
         project: 'default',
-        source: {
-          repoURL: channelHelm.spec.pathname,
-          chart: chartName,
-          targetRevision: 'v1',
-        },
+        sources: [
+          {
+            repositoryType: 'helm',
+            repoURL: channelHelm.spec.pathname,
+            chart: chartName,
+            targetRevision: 'v1',
+          },
+        ],
         destination: {
           namespace: 'gitops-ns',
           server: '{{server}}',
