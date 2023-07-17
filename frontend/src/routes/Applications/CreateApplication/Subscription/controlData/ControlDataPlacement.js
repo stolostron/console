@@ -181,6 +181,16 @@ export const updatePlacementControls = (control) => {
 
   // opaque the existing rules combobox
   const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementrulecombo')
+  if (existingRuleControl.active) {
+    _.set(selectedRuleComboControl, 'validation', {
+      notification: 'You must select an existing placement or placement rule.',
+      required: true,
+    })
+  }
+
+  if (!existingRuleControl.active) {
+    _.set(selectedRuleComboControl, 'validation', {})
+  }
   _.set(selectedRuleComboControl, 'opaque', id !== existingRuleCheckbox) // && !existingRuleControl.disabled)
   if (id !== existingRuleCheckbox) {
     selectedRuleComboControl.active = ''
