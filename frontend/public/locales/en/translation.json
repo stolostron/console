@@ -3042,6 +3042,7 @@
   "You don't have any subscriptions": "You don't have any subscriptions",
   "You must fill out all required fields before you can proceed.": "You must fill out all required fields before you can proceed.",
   "You must fix the issues with fields before you can proceed.": "You must fix the issues with fields before you can proceed.",
+  "You must select an existing placement or placement rule.": "You must select an existing placement or placement rule.",
   "You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.": "You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.",
   "You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.": "You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.",
   "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'.": "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'.",
