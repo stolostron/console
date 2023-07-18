@@ -44,6 +44,7 @@ import {
   managedClusterSetsState,
   managedClustersState,
   namespacesState,
+  placementsState,
   secretsState,
 } from '../../atoms'
 import {
@@ -654,6 +655,7 @@ describe('Create Subscription Application page', () => {
           snapshot.set(namespacesState, mockNamespaces)
           snapshot.set(applicationsState, [mockApplication0])
           snapshot.set(channelsState, mockHubChannels)
+          snapshot.set(placementsState, [mockPlacement])
         }}
       >
         <MemoryRouter
@@ -684,9 +686,13 @@ describe('Create Subscription Application page', () => {
     userEvent.type(githubURL, gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
+
+    // pick existing Placement
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
+    await clickByText(mockPlacement.metadata.name!)
     const patchNocks: Scope[] = [
       nockPatch(mockSubscriptionPlacement, [
-        { op: 'replace', path: '/spec/placement/placementRef/name', value: null },
+        { op: 'replace', path: '/spec/placement/placementRef/name', value: mockPlacement.metadata.name },
         {
           op: 'replace',
           path: '/metadata/annotations/apps.open-cluster-management.io~1git-path',
