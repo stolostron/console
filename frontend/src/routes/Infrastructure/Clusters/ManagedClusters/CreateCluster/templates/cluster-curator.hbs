@@ -1,0 +1,34 @@
+{{#if clusterCuratorSpec}}
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: ClusterCurator
+metadata:
+  name: {{{name}}}
+  namespace: {{{name}}}
+{{{clusterCuratorSpec}}}
+{{/if}}
+
+{{#each supportedCurations}}
+{{#if (lookup .. (append "toweraccess-" .))}}
+{{#with (lookup .. (append "toweraccess-" .))}}
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{{append "toweraccess-" ..}}}
+  namespace: {{{@root.name}}}
+  labels:
+    cluster.open-cluster-management.io/type: ans
+    cluster.open-cluster-management.io/copiedFromSecretName: {{{metadata.name}}}
+    cluster.open-cluster-management.io/copiedFromNamespace: {{{metadata.namespace}}}
+stringData:
+  host: {{{stringData.host}}}
+{{#if @root.showSecrets}}
+  token: {{{stringData.token}}}
+{{else}}
+  token: # injected on create
+{{/if}}
+{{/with}}
+{{/if}}
+{{/each}}

@@ -90,55 +90,14 @@ metadata:
     {{{key}}}: '{{{value}}}'
     {{/each}}
   name: '{{{ai.name}}}'
+{{#if reconcilePause}}
+  annotations:
+    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
+{{/if}}
 spec:
   hubAcceptsClient: true
 
-{{! ========================================================== }}
-{{! ========================================================== }}
-{{! ==================ClusterCurator========================== }}
-{{! ========================================================== }}
-{{! ========================================================== }}
-
-{{#if clusterCuratorSpec}}
----
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: ClusterCurator
-metadata:
-  name: {{{name}}}
-  namespace: {{{name}}}
-{{{clusterCuratorSpec}}}
-{{/if}}
-
-{{! ========================================================== }}
-{{! ========================================================== }}
-{{! ==================Secrets================================= }}
-{{! ========================================================== }}
-{{! ========================================================== }}
-
-{{#each supportedCurations}}
-{{#if (lookup .. (append "toweraccess-" .))}}
-{{#with (lookup .. (append "toweraccess-" .))}}
----
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: {{{append "toweraccess-" ..}}}
-  namespace: {{{@root.name}}}
-  labels:
-    cluster.open-cluster-management.io/type: ans
-    cluster.open-cluster-management.io/copiedFromSecretName: {{{metadata.name}}}
-    cluster.open-cluster-management.io/copiedFromNamespace: {{{metadata.namespace}}}
-stringData:
-  host: {{{stringData.host}}}
-{{#if @root.showSecrets}}
-  token: {{{stringData.token}}}
-{{else}}
-  token: # injected on create
-{{/if}}
-{{/with}}
-{{/if}}
-{{/each}}
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---
