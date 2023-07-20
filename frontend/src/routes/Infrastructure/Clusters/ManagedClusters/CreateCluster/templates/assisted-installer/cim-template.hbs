@@ -90,8 +90,14 @@ metadata:
     {{{key}}}: '{{{value}}}'
     {{/each}}
   name: '{{{ai.name}}}'
+{{#if reconcilePause}}
+  annotations:
+    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
+{{/if}}
 spec:
   hubAcceptsClient: true
+
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---
