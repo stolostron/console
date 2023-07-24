@@ -2945,6 +2945,7 @@
   "Version": "Version",
   "Version availability": "Version availability",
   "Version compatibility": "Version compatibility",
+  "View {{0}} time window": "View {{0}} time window",
   "View {{templateName}}": "View {{templateName}}",
   "View all placement rules in {{0}} namespace": "View all placement rules in {{0}} namespace",
   "View all subscriptions in {{0}} namespace": "View all subscriptions in {{0}} namespace",

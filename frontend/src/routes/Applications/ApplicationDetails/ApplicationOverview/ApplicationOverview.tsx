@@ -9,7 +9,17 @@ import {
   ListItems,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { ButtonVariant, Card, CardBody, Label, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
+import {
+  ButtonVariant,
+  Card,
+  CardBody,
+  Label,
+  PageSection,
+  Skeleton,
+  Spinner,
+  Text,
+  Tooltip,
+} from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import {
@@ -506,7 +516,9 @@ function createSourceCards(
                 showSubscriptionAttributes={true}
               />
             </div>
-            <div className="sub-card-content">{appRepo.pathName}</div>
+            <div className="sub-card-content">
+              <Text>{appRepo.pathName}</Text>
+            </div>
           </CardBody>
         </Card>
       )
