@@ -546,7 +546,7 @@ function createSubsCards(
             <CardBody className="sub-card-container">
               <div className="sub-card-content">
                 <ResourceLabels
-                  appRepos={appRepos as any[]}
+                  appRepos={appRepos}
                   translation={t}
                   isArgoApp={false}
                   showSubscriptionAttributes={true}

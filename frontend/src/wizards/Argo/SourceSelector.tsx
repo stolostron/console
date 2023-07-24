@@ -2,12 +2,12 @@
 
 import { Select, Tile, WizAsyncSelect, WizHidden, WizTextInput, WizTiles } from '@patternfly-labs/react-form-wizard'
 import { Dispatch, Fragment, SetStateAction } from 'react'
-import { ApplicationSet, Channel } from '../../resources'
+import { ApplicationSet } from '../../resources'
 import { TFunction } from 'i18next'
 import { GitAltIcon } from '@patternfly/react-icons'
 import HelmIcon from './logos/HelmIcon.svg'
 import { validateWebURL } from '../../lib/validation'
-import { getGitPathList } from './ArgoWizard'
+import { Channel, getGitPathList } from './ArgoWizard'
 
 function repositoryTypeToSource(value: unknown) {
   if (value === 'Git') {
@@ -157,11 +157,11 @@ export function SourceSelector(props: SourceSelectorProps) {
                   getGitPathList(
                     {
                       metadata: {
-                        name: channel?.metadata?.name || '',
-                        namespace: channel?.metadata?.namespace || '',
+                        name: channel?.metadata?.name ?? '',
+                        namespace: channel?.metadata?.namespace ?? '',
                       },
                       spec: {
-                        pathname: channel?.spec.pathname || path || '',
+                        pathname: channel?.spec.pathname ?? path ?? '',
                         type: 'git',
                       },
                     },

@@ -57,7 +57,7 @@ import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 import { get } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 
-interface Channel {
+export interface Channel {
   metadata?: {
     name?: string
     namespace?: string
@@ -422,11 +422,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   getGitPathList(
                     {
                       metadata: {
-                        name: channel?.metadata?.name || '',
-                        namespace: channel?.metadata?.namespace || '',
+                        name: channel?.metadata?.name ?? '',
+                        namespace: channel?.metadata?.namespace ?? '',
                       },
                       spec: {
-                        pathname: channel?.spec.pathname || path || '',
+                        pathname: channel?.spec.pathname ?? path ?? '',
                         type: 'git',
                       },
                     },
