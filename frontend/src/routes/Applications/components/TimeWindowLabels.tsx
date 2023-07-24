@@ -43,7 +43,7 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
     <div className="label-with-popover-container timeWindow-labels">
       <LabelWithPopover
         key={subName + '-timeWindow'}
-        labelContent={<div className="timeWindow-status-icon">{type}</div>}
+        labelContent={<div className="timeWindow-status-icon">View {type} time window</div>}
         labelColor={type === 'active' ? 'green' : 'orange'}
       >
         <div className="timeWindow-labels-popover-content">

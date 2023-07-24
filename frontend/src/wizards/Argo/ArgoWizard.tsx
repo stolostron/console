@@ -457,12 +457,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return (
       <WizArrayInput
         path="spec.template.spec.sources"
-        placeholder="Add repository"
+        placeholder="Add another repository"
         disallowEmpty={editMode === EditMode.Create}
         collapsedContent={
           <Fragment>
             <WizHidden hidden={(data) => !data.repositoryType}>
-              <Title headingLevel="h6">{t('Repository type')}</Title>
+              <Title headingLevel="h6">{t('Type')}</Title>
             </WizHidden>
 
             <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
@@ -841,7 +841,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="template" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section label={t('Source')}>{source && !sources ? SourceSelector() : MultipleSourcesSelector()}</Section>
+            <Section label={t('Repository')}>
+              {source && !sources ? SourceSelector() : MultipleSourcesSelector()}
+            </Section>
             <Section label={t('Destination')}>
               <WizTextInput
                 id="destination"

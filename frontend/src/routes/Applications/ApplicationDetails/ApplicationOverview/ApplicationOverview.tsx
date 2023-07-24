@@ -10,13 +10,7 @@ import {
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { ButtonVariant, Card, CardBody, Label, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
-import {
-  FolderIcon,
-  GripHorizontalIcon,
-  OutlinedClockIcon,
-  OutlinedQuestionCircleIcon,
-  SyncAltIcon,
-} from '@patternfly/react-icons'
+import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import {
   getClusterCount,
@@ -59,7 +53,7 @@ const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltip = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
 let leftItems: ListItems[] = []
-let rightItems: ListItems[] = []
+let rightItems: ListItems[] | undefined = undefined
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
   const { applicationData } = props
@@ -78,7 +72,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
   const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
-  const [showSubCards] = useState(true)
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
@@ -90,7 +83,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   let isOCPApp = false
   let isFluxApp = false
   let isSubscription = false
-  let disableBtn
   let subsList = []
 
   useEffect(() => {
@@ -198,21 +190,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
         {
-          key: t('Created'),
-          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
-        },
-        {
-          key: t('Last reconciled'),
-          keyAction: (
-            <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-          value: getShortDateTime(lastSyncedTimeStamp),
-        },
-      ]
-      rightItems = [
-        {
           key: t('Clusters'),
           value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
           keyAction: (
@@ -226,6 +203,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
         {
+          key: t('Repository'),
+          value: createSourceCards(applicationData?.application.app, t, subscriptions, channels),
+        },
+        {
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
@@ -234,12 +215,24 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             </Tooltip>
           ),
         },
+        {
+          key: t('Created'),
+          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
+        },
+        {
+          key: t('Last reconciled'),
+          keyAction: (
+            <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
+              <OutlinedQuestionCircleIcon className="help-icon" />
+            </Tooltip>
+          ),
+          value: getShortDateTime(lastSyncedTimeStamp),
+        },
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
       const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
       subsList = allSubscriptions
-      disableBtn = subsList && subsList?.length > 0 ? false : true
 
       let lastSynced = ''
       allSubscriptions.forEach((subs: Subscription) => {
@@ -250,6 +243,23 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
       leftItems = [
         { key: t('Name'), value: name },
         { key: t('Namespace'), value: namespace },
+        {
+          key: t('Clusters'),
+          value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
+        },
+        {
+          key: t('Repository'),
+          value: createSubsCards(subsList, t, applicationData?.application?.app, channels),
+        },
+        {
+          key: clusterResourceStatusText(t),
+          value: createStatusIcons(applicationData, t),
+          keyAction: (
+            <Tooltip content={clusterResourceStatusTooltip(t)}>
+              <OutlinedQuestionCircleIcon className="help-icon" />
+            </Tooltip>
+          ),
+        },
         {
           key: t('Created'),
           value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
@@ -290,21 +300,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
       ]
-      rightItems = [
-        {
-          key: t('Clusters'),
-          value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
-        },
-        {
-          key: clusterResourceStatusText(t),
-          value: createStatusIcons(applicationData, t),
-          keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-        },
-      ]
     }
   }
   return (
@@ -324,20 +319,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           openTabIcon,
         })}
 
-        {isSubscription && (
-          <div className="overview-cards-subs-section">
-            {showSubCards && !disableBtn
-              ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
-              : ''}
-            <div className="toggle-subs-btn">{renderData(subsList, true, '70%')}</div>
-          </div>
-        )}
-
         {isAppSet && (
           <div className="overview-cards-sources-section">
-            {showSubCards && !disableBtn
-              ? createSourceCards(applicationData?.application.app, t, subscriptions, channels)
-              : ''}
             <div className="toggle-subs-btn">
               {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
             </div>
@@ -395,6 +378,7 @@ interface INodeStatuses {
   red: number
   orange: number
 }
+
 function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   const { application, appData, statuses, topology } = applicationData
   let elements: {
@@ -512,32 +496,17 @@ function createSourceCards(
   return appRepos?.map((appRepo) => {
     if (appRepo) {
       return (
-        <Card
-          key={applicationSet.metadata.name}
-          style={{
-            marginTop: '16px',
-          }}
-        >
+        <Card key={applicationSet.metadata.name}>
           <CardBody className="sub-card-container">
-            <div className="sub-card-column add-right-border">
-              <GripHorizontalIcon />
-              <div className="sub-card-content">
-                <div className="sub-card-title">{t('ApplicationSet')}</div>
-                <span>{applicationSet.metadata.name}</span>
-              </div>
+            <div className="sub-card-content">
+              <ResourceLabels
+                appRepos={[appRepo] as any[]}
+                translation={t}
+                isArgoApp={true}
+                showSubscriptionAttributes={true}
+              />
             </div>
-            <div className="sub-card-column add-right-border">
-              <FolderIcon />
-              <div className="sub-card-content">
-                <div className="sub-card-title">{t('Repository resource')}</div>
-                <ResourceLabels
-                  appRepos={[appRepo] as any[]}
-                  translation={t}
-                  isArgoApp={true}
-                  showSubscriptionAttributes={true}
-                />
-              </div>
-            </div>
+            <div className="sub-card-content">{appRepo.pathName}</div>
           </CardBody>
         </Card>
       )
@@ -551,9 +520,8 @@ function createSubsCards(
   appResource: Application,
   channels: Channel[]
 ) {
-  return (
-    subsList?.length &&
-    subsList.map((sub) => {
+  if (subsList.length) {
+    return subsList.map((sub) => {
       const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
       if (sub) {
         return (
@@ -564,57 +532,46 @@ function createSubsCards(
             }}
           >
             <CardBody className="sub-card-container">
-              <div className="sub-card-column add-right-border">
-                <GripHorizontalIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Subscription')}</div>
-                  <span>{sub.metadata.name}</span>
-                </div>
+              <div className="sub-card-content">
+                <ResourceLabels
+                  appRepos={appRepos as any[]}
+                  translation={t}
+                  isArgoApp={false}
+                  showSubscriptionAttributes={true}
+                />
               </div>
-              <div className="sub-card-column add-right-border">
-                <FolderIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Repository resource')}</div>
-                  <ResourceLabels
-                    appRepos={appRepos as any[]}
-                    translation={t}
-                    isArgoApp={false}
-                    showSubscriptionAttributes={true}
-                  />
-                </div>
+              <div className="sub-card-content">
+                <span>{appRepos && appRepos[0].pathName}</span>
               </div>
-              <div className="sub-card-column">
-                <OutlinedClockIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Time window')}</div>
-                  {!sub.spec.timewindow?.windowtype ? (
-                    <Link
-                      to={generatePath(NavigationPath.editApplicationSubscription, {
-                        name: appResource?.metadata?.name!,
-                        namespace: appResource?.metadata?.namespace!,
-                      })}
+
+              <div className="sub-card-content">
+                {!sub.spec.timewindow?.windowtype ? (
+                  <Link
+                    to={generatePath(NavigationPath.editApplicationSubscription, {
+                      name: appResource?.metadata?.name!,
+                      namespace: appResource?.metadata?.namespace!,
+                    })}
+                  >
+                    <AcmButton
+                      id="set-time-window-link"
+                      component="a"
+                      variant={ButtonVariant.link}
+                      rel="noreferrer"
+                      isSmall
                     >
-                      <AcmButton
-                        id="set-time-window-link"
-                        component="a"
-                        variant={ButtonVariant.link}
-                        rel="noreferrer"
-                        isSmall
-                      >
-                        {t('Set time window')}
-                      </AcmButton>
-                    </Link>
-                  ) : (
-                    <TimeWindowLabels
-                      subName={sub.metadata.name as string}
-                      type={sub.spec.timewindow?.windowtype}
-                      days={sub.spec.timewindow?.daysofweek}
-                      timezone={sub.spec.timewindow?.location}
-                      ranges={sub.spec.timewindow?.hours}
-                      missingData={sub.spec.timewindow?.missingData}
-                    />
-                  )}
-                </div>
+                      {t('Set time window')}
+                    </AcmButton>
+                  </Link>
+                ) : (
+                  <TimeWindowLabels
+                    subName={sub.metadata.name as string}
+                    type={sub.spec.timewindow?.windowtype}
+                    days={sub.spec.timewindow?.daysofweek}
+                    timezone={sub.spec.timewindow?.location}
+                    ranges={sub.spec.timewindow?.hours}
+                    missingData={sub.spec.timewindow?.missingData}
+                  />
+                )}
               </div>
             </CardBody>
           </Card>
@@ -622,7 +579,9 @@ function createSubsCards(
       }
       return ''
     })
-  )
+  } else {
+    return t('None')
+  }
 }
 
 function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) {

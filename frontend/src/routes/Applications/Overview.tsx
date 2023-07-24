@@ -624,7 +624,7 @@ export default function ApplicationsOverview() {
         search: 'transformed.clusterCount',
       },
       {
-        header: t('Resource'),
+        header: t('Repository'),
         cell: (resource) => {
           const appRepos = getApplicationRepos(resource, subscriptions, channels)
           return (
