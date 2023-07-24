@@ -8,7 +8,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
-import { nockCreate, nockIgnoreApiPaths, nockIgnoreOperatorCheck, nockList } from '../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
 import {
   GitOpsCluster,
   GitOpsClusterApiVersion,
@@ -197,7 +197,7 @@ describe('ArgoWizard tests', () => {
         name: /create "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
-    let dropdown = container.querySelector(
+    const dropdown = container.querySelector(
       '#spec-template-spec-source-targetrevision-form-group > div:nth-child(2) > div > div > div'
     )
     if (dropdown) {

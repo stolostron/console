@@ -517,7 +517,7 @@ function createSourceCards(
               />
             </div>
             <div className="sub-card-content">
-              <Text>{appRepo.pathName}</Text>
+              <Text>{appRepo?.pathName}</Text>
             </div>
           </CardBody>
         </Card>
@@ -553,7 +553,7 @@ function createSubsCards(
                 />
               </div>
               <div className="sub-card-content">
-                <span>{appRepos && appRepos[0].pathName}</span>
+                <span>{appRepos && appRepos[0]?.pathName}</span>
               </div>
 
               <div className="sub-card-content">

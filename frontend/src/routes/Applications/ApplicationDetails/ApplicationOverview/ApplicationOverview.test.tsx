@@ -11,7 +11,7 @@ import {
   subscriptionsState,
 } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { clickByRole, clickByText, waitForText } from '../../../../lib/test-util'
+import { clickByText, waitForText } from '../../../../lib/test-util'
 
 import {
   ApplicationApiVersion,
@@ -565,9 +565,6 @@ describe('Overview Tab', () => {
     // created
     await waitForText('Mar 1 2022, 9:30 pm')
 
-    // click show subscription details
-    await clickByRole('button', {}, 1)
-
     await waitForText('Set time window')
   })
 
@@ -595,9 +592,7 @@ describe('Overview Tab', () => {
     // created
     await waitForText('Mar 1 2022, 9:30 pm')
 
-    // click show subscription details
-    await clickByRole('button', {}, 1)
-    await clickByText('blocked')
+    await clickByText('View blocked time window')
     await waitForText('Edit time window')
   })
 
