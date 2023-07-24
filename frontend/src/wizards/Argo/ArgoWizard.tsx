@@ -55,6 +55,7 @@ import { ApplicationSetKind, GitOpsCluster } from '../../resources'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 import { get } from 'lodash'
+import { SourceSelector } from './SourceSelector'
 
 interface Channel {
   metadata?: {
@@ -177,12 +178,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
         if (sources) {
           sources.forEach((source: { chart: any; repoURL: string }) => {
             if (!source.chart) {
-              gitArgoAppSetRepoURLs.push(source.repoURL as string)
+              gitArgoAppSetRepoURLs.push(source.repoURL)
             }
           })
         } else if (!sources && source) {
           if (!source.chart) {
-            gitArgoAppSetRepoURLs.push(source.repoURL as string)
+            gitArgoAppSetRepoURLs.push(source.repoURL)
           }
         }
       })
@@ -287,169 +288,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   function combineArraysPromise(promise1: Promise<any[]>, promise2: Promise<any[]>): Promise<any[]> {
     return Promise.all([promise1, promise2]).then(([result1, result2]) => [...result1, ...result2])
-  }
-
-  function SourceSelector() {
-    return (
-      <Fragment>
-        <WizTiles
-          path="spec.template.spec.source"
-          label={t('Repository type')}
-          inputValueToPathValue={repositoryTypeToSource}
-          pathValueToInputValue={sourceToRepositoryType}
-          onValueChange={(_, item: ApplicationSet) => {
-            if (item.spec.template?.spec) {
-              item.spec.template.spec.syncPolicy = {
-                automated: {
-                  selfHeal: true,
-                  prune: true,
-                },
-                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-              }
-            }
-          }}
-        >
-          <Tile id="git" value="Git" label={t('Git')} icon={<GitAltIcon />} description={t('Use a Git repository')} />
-          <Tile id="helm" value="Helm" label={t('Helm')} icon={<HelmIcon />} description={t('Use a Helm repository')} />
-        </WizTiles>
-        {/* Git repo */}
-        <WizHidden hidden={(data) => data.spec.template.spec.source.path === undefined}>
-          <Select
-            path="spec.template.spec.source.repoURL"
-            label={t('URL')}
-            labelHelp={t('The URL path for the Git repository.')}
-            placeholder={t('Enter or select a Git URL')}
-            options={gitChannels}
-            onValueChange={(value) => {
-              const channel = props.channels?.find((channel) => channel.spec.pathname === value)
-              setGitRevisionsAsyncCallback(
-                () => () =>
-                  getGitBranchList(
-                    {
-                      metadata: {
-                        name: channel?.metadata?.name,
-                        namespace: channel?.metadata?.namespace,
-                      },
-                      spec: { pathname: value as string, type: 'git' },
-                    },
-                    props.getGitRevisions
-                  )
-              )
-            }}
-            validation={validateWebURL}
-            required
-            isCreatable
-            onCreate={(value: string) =>
-              setCreatedChannels((channels) => {
-                if (!channels.includes(value)) {
-                  channels.push(value)
-                }
-                setGitRevisionsAsyncCallback(
-                  () => () =>
-                    getGitBranchList(
-                      {
-                        metadata: { name: '', namespace: '' },
-                        spec: { pathname: value, type: 'git' },
-                      },
-                      props.getGitRevisions
-                    )
-                )
-                return [...channels]
-              })
-            }
-          />
-          <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
-            <WizAsyncSelect
-              path="spec.template.spec.source.targetRevision"
-              label={t('Revision')}
-              labelHelp={t('Refer to a single commit')}
-              placeholder={t('Enter or select a tracking revision')}
-              asyncCallback={gitRevisionsAsyncCallback}
-              isCreatable
-              onValueChange={(value, item) => {
-                const channel = props.channels?.find(
-                  (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL
-                )
-                const path = createdChannels.find((channel) => channel === item.spec.template.spec.source.repoURL)
-                setGitPathsAsyncCallback(
-                  () => () =>
-                    getGitPathList(
-                      {
-                        metadata: {
-                          name: channel?.metadata?.name || '',
-                          namespace: channel?.metadata?.namespace || '',
-                        },
-                        spec: {
-                          pathname: channel?.spec.pathname || path || '',
-                          type: 'git',
-                        },
-                      },
-                      value as string,
-                      props.getGitPaths,
-                      item.spec.template.spec.source.repoURL
-                    )
-                )
-              }}
-            />
-            <WizAsyncSelect
-              path="spec.template.spec.source.path"
-              label={t('Path')}
-              labelHelp={t('The location of the resources on the Git repository.')}
-              placeholder={t('Enter or select a repository path')}
-              isCreatable
-              asyncCallback={gitPathsAsyncCallback}
-            />
-          </WizHidden>
-        </WizHidden>
-        {/* Helm repo */}
-        <WizHidden hidden={(data) => data.spec.template.spec.source.chart === undefined}>
-          <Select
-            path="spec.template.spec.source.repoURL"
-            label={t('URL')}
-            labelHelp={t('The URL path for the Helm repository.')}
-            placeholder={t('Enter or select a Helm URL')}
-            options={helmChannels}
-            required
-            isCreatable
-            validation={validateWebURL}
-            onCreate={(value: string) =>
-              setCreatedChannels((channels) => {
-                if (!channels.includes(value)) {
-                  channels.push(value)
-                }
-                setGitRevisionsAsyncCallback(
-                  () => () =>
-                    getGitBranchList(
-                      {
-                        metadata: { name: '', namespace: '' },
-                        spec: { pathname: value, type: 'git' },
-                      },
-                      props.getGitRevisions
-                    )
-                )
-                return [...channels]
-              })
-            }
-          />
-          <WizTextInput
-            path="spec.template.spec.source.chart"
-            label={t('Chart name')}
-            placeholder={t('Enter the name of the Helm chart')}
-            labelHelp={t('The specific name for the target Helm chart.')}
-            required
-          />
-          <WizTextInput
-            path="spec.template.spec.source.targetRevision"
-            label={t('Package version')}
-            placeholder={t('Enter the version or versions')}
-            labelHelp={t(
-              'The version or versions for the deployable. You can use a range of versions in the form >1.0, or <3.0.'
-            )}
-            required
-          />
-        </WizHidden>
-      </Fragment>
-    )
   }
 
   function MultipleSourcesSelector() {
@@ -842,7 +680,25 @@ export function ArgoWizard(props: ArgoWizardProps) {
         <Step id="template" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <Section label={t('Repository')}>
-              {source && !sources ? SourceSelector() : MultipleSourcesSelector()}
+              {source && !sources ? (
+                <SourceSelector
+                  createdChannels={createdChannels}
+                  setCreatedChannels={setCreatedChannels}
+                  t={t}
+                  getGitPaths={props.getGitPaths}
+                  gitChannels={gitChannels}
+                  channels={props.channels}
+                  helmChannels={helmChannels}
+                  gitPathsAsyncCallback={gitPathsAsyncCallback}
+                  gitRevisionsAsyncCallback={gitRevisionsAsyncCallback}
+                  setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
+                  setGitPathsAsyncCallback={setGitPathsAsyncCallback}
+                  getGitBranchList={getGitBranchList}
+                  getGitRevisions={props.getGitRevisions}
+                />
+              ) : (
+                MultipleSourcesSelector()
+              )}
             </Section>
             <Section label={t('Destination')}>
               <WizTextInput
@@ -963,7 +819,7 @@ async function getGitBranchList(
   }) as Promise<string[]>
 }
 
-async function getGitPathList(
+export async function getGitPathList(
   channel: Channel,
   branch: string,
   getGitPaths: (
@@ -998,36 +854,6 @@ export function ExternalLinkButton(props: { id: string; href?: string; icon?: Re
       </FlexItem>
     </Flex>
   )
-}
-
-function repositoryTypeToSource(value: unknown) {
-  if (value === 'Git') {
-    return {
-      repoURL: '',
-      targetRevision: '',
-      path: '',
-    }
-  }
-  if (value === 'Helm') {
-    return {
-      repoURL: '',
-      chart: '',
-      targetRevision: '',
-    }
-  }
-  return value
-}
-
-function sourceToRepositoryType(source: unknown) {
-  if (typeof source === 'object' && source !== null) {
-    const isGit = 'repoURL' in source && 'path' in source && 'targetRevision' in source
-    if (isGit) return 'Git'
-
-    const isHelm = 'repoURL' in source && 'chart' in source && 'targetRevision' in source
-    if (isHelm) return 'Helm'
-  }
-
-  return undefined
 }
 
 function booleanToSyncOptions(key: string) {
