@@ -3,11 +3,11 @@
 import { Select, Tile, WizAsyncSelect, WizHidden, WizTextInput, WizTiles } from '@patternfly-labs/react-form-wizard'
 import { Dispatch, Fragment, SetStateAction } from 'react'
 import { ApplicationSet } from '../../resources'
-import { TFunction } from 'i18next'
 import { GitAltIcon } from '@patternfly/react-icons'
 import HelmIcon from './logos/HelmIcon.svg'
 import { validateWebURL } from '../../lib/validation'
-import { Channel, getGitPathList } from './ArgoWizard'
+import { Channel, getGitBranchList, getGitPathList } from './ArgoWizard'
+import { TFunction } from 'react-i18next'
 
 function repositoryTypeToSource(value: unknown) {
   if (value === 'Git') {
@@ -44,12 +44,20 @@ export interface SourceSelectorProps {
   gitChannels: string[]
   channels: Channel[] | undefined
   helmChannels: string[]
-  getGitPaths: any
+  getGitPaths: (
+    channelPath: string,
+    branch: string,
+    secretArgs?:
+      | {
+          secretRef?: string
+          namespace?: string
+        }
+      | undefined
+  ) => Promise<unknown>
   gitPathsAsyncCallback: any
   setGitPathsAsyncCallback: any
   gitRevisionsAsyncCallback: (() => Promise<string[]>) | undefined
   setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  getGitBranchList: any
   getGitRevisions: any
   createdChannels: string[]
   setCreatedChannels: Dispatch<SetStateAction<string[]>>
@@ -66,7 +74,6 @@ export function SourceSelector(props: SourceSelectorProps) {
     gitRevisionsAsyncCallback,
     setGitRevisionsAsyncCallback,
     setGitPathsAsyncCallback,
-    getGitBranchList,
     getGitRevisions,
     createdChannels,
     setCreatedChannels,
