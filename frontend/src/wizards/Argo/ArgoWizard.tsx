@@ -387,7 +387,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
                   // set filtered cluster set
                   const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-                    return placement?.spec?.clusterSets!.includes(clusterSet.metadata?.name!)
+                    if (placement?.spec?.clusterSets) {
+                      if (placement?.spec?.clusterSets.length > 0) {
+                        return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
+                      } else {
+                        return clusterSet
+                      }
+                    }
                   })
 
                   setFilteredClusterSets(clusterSets)
