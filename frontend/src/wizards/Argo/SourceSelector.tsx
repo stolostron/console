@@ -54,11 +54,19 @@ export interface SourceSelectorProps {
         }
       | undefined
   ) => Promise<unknown>
-  gitPathsAsyncCallback: any
-  setGitPathsAsyncCallback: any
+  gitPathsAsyncCallback: (() => Promise<string[]>) | undefined
+  setGitPathsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
   gitRevisionsAsyncCallback: (() => Promise<string[]>) | undefined
   setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  getGitRevisions: any
+  getGitRevisions: (
+    channelPath: string,
+    secretArgs?:
+      | {
+          secretRef?: string
+          namespace?: string
+        }
+      | undefined
+  ) => Promise<unknown>
   createdChannels: string[]
   setCreatedChannels: Dispatch<SetStateAction<string[]>>
 }

@@ -11,40 +11,31 @@ import {
   TextVariants,
   ModalVariant,
   Modal,
-  Label,
-  Title,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, GitAltIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import {
   useItem,
   useData,
   useEditMode,
-  WizAsyncSelect,
   WizDetailsHidden,
   EditMode,
-  WizHidden,
   WizItemSelector,
   Section,
   Select,
   Step,
-  Tile,
-  WizTiles,
   WizardCancel,
   WizardSubmit,
   WizCheckbox,
   WizTextInput,
   Sync,
-  WizArrayInput,
-  WizTextDetail,
 } from '@patternfly-labs/react-form-wizard'
 import { WizardPage } from '../WizardPage'
 import { IResource } from '../common/resources/IResource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
-import { validateAppSetName, validateWebURL } from '../../lib/validation'
+import { validateAppSetName } from '../../lib/validation'
 import { Placement } from '../Placement/Placement'
-import HelmIcon from './logos/HelmIcon.svg'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useWizardStrings } from '../../lib/wizardStrings'
@@ -172,23 +163,22 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const [createdChannels, setCreatedChannels] = useState<string[]>([])
   const gitChannels = useMemo(() => {
     const gitArgoAppSetRepoURLs: string[] = []
-    if (props.applicationSets) {
-      props.applicationSets.forEach((appset) => {
-        const source = get(appset, 'spec.template.spec.source')
-        const sources = get(appset, 'spec.template.spec.sources')
-        if (sources) {
-          sources.forEach((source: { chart: any; repoURL: string }) => {
-            if (!source.chart) {
-              gitArgoAppSetRepoURLs.push(source.repoURL)
-            }
-          })
-        } else if (!sources && source) {
+    props.applicationSets?.forEach((appset) => {
+      const source = get(appset, 'spec.template.spec.source')
+      const sources = get(appset, 'spec.template.spec.sources')
+      if (sources) {
+        sources.forEach((source: { chart: any; repoURL: string }) => {
           if (!source.chart) {
             gitArgoAppSetRepoURLs.push(source.repoURL)
           }
+        })
+      } else if (!sources && source) {
+        if (!source.chart) {
+          gitArgoAppSetRepoURLs.push(source.repoURL)
         }
-      })
-    }
+      }
+    })
+
     return [...(sourceGitChannels ?? []), ...createdChannels, ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceGitChannels])
 
@@ -286,10 +276,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
     stepsAriaLabel: t('Argo application steps'),
     contentAriaLabel: t('Argo application content'),
   })
-
-  function combineArraysPromise(promise1: Promise<any[]>, promise2: Promise<any[]>): Promise<any[]> {
-    return Promise.all([promise1, promise2]).then(([result1, result2]) => [...result1, ...result2])
-  }
 
   return (
     <Fragment>
@@ -486,9 +472,16 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 />
               ) : (
                 <MultipleSourcesSelector
-                  gitChannels={gitChannels}
                   channels={props.channels}
+                  createdChannels={createdChannels}
+                  getGitPaths={props.getGitPaths}
+                  getGitRevisions={props.getGitRevisions}
+                  gitChannels={gitChannels}
+                  gitRevisionsAsyncCallback={gitRevisionsAsyncCallback}
+                  gitPathsAsyncCallback={gitPathsAsyncCallback}
                   helmChannels={helmChannels}
+                  setCreatedChannels={setCreatedChannels}
+                  setGitPathsAsyncCallback={setGitPathsAsyncCallback}
                   setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
                   t={t}
                 />

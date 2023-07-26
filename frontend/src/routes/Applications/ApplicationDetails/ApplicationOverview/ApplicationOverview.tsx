@@ -534,7 +534,7 @@ function createSubsCards(
 ) {
   if (subsList.length) {
     return subsList.map((sub) => {
-      const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels) || []
+      const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels) ?? []
       if (sub) {
         return (
           <Card

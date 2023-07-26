@@ -22,14 +22,55 @@ import { Channel, getGitBranchList, getGitPathList } from './ArgoWizard'
 
 export interface MultipleSourcesSelectorProps {
   channels: Channel[] | undefined
+  createdChannels: string[]
+  getGitRevisions: (
+    channelPath: string,
+    secretArgs?:
+      | {
+          secretRef?: string
+          namespace?: string
+        }
+      | undefined
+  ) => Promise<unknown>
   gitChannels: string[]
+  getGitPaths: (
+    channelPath: string,
+    branch: string,
+    secretArgs?:
+      | {
+          secretRef?: string
+          namespace?: string
+        }
+      | undefined
+  ) => Promise<unknown>
+  gitRevisionsAsyncCallback: (() => Promise<string[]>) | undefined
   helmChannels: string[]
+  setCreatedChannels: Dispatch<SetStateAction<string[]>>
+  gitPathsAsyncCallback: (() => Promise<string[]>) | undefined
+  setGitPathsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
   setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
   t: TFunction
 }
 
+function combineArraysPromise(promise1: Promise<any[]>, promise2: Promise<any[]>): Promise<any[]> {
+  return Promise.all([promise1, promise2]).then(([result1, result2]) => [...result1, ...result2])
+}
+
 export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
-  const { t, gitChannels, helmChannels, channels, setGitRevisionsAsyncCallback } = props
+  const {
+    t,
+    createdChannels,
+    getGitRevisions,
+    gitChannels,
+    getGitPaths,
+    gitRevisionsAsyncCallback,
+    helmChannels,
+    channels,
+    setCreatedChannels,
+    gitPathsAsyncCallback,
+    setGitPathsAsyncCallback,
+    setGitRevisionsAsyncCallback,
+  } = props
   const editMode = useEditMode()
   return (
     <WizArrayInput
@@ -87,7 +128,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                     },
                     spec: { pathname: value as string, type: 'git' },
                   },
-                  props.getGitRevisions
+                  getGitRevisions
                 )
             )
           }}
@@ -106,7 +147,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                       metadata: { name: '', namespace: '' },
                       spec: { pathname: value, type: 'git' },
                     },
-                    props.getGitRevisions
+                    getGitRevisions
                   )
               )
               return [...channels]
@@ -128,14 +169,14 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                         metadata: { name: '', namespace: '' },
                         spec: { pathname: '', type: 'git' },
                       },
-                      props.getGitRevisions
+                      getGitRevisions
                     ),
                     getGitBranchList(
                       {
                         metadata: { name: '', namespace: '' },
                         spec: { pathname: '', type: 'git' },
                       },
-                      props.getGitRevisions
+                      getGitRevisions
                     )
                   )
           }
@@ -149,7 +190,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                     metadata: { name: '', namespace: '' },
                     spec: { pathname: item.repoURL, type: 'git' },
                   },
-                  props.getGitRevisions
+                  getGitRevisions
                 )
             )
 
@@ -170,7 +211,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                     },
                   },
                   value as string,
-                  props.getGitPaths,
+                  getGitPaths,
                   item.repoURL
                 )
             )
@@ -213,7 +254,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
                       metadata: { name: '', namespace: '' },
                       spec: { pathname: value, type: 'git' },
                     },
-                    props.getGitRevisions
+                    getGitRevisions
                   )
               )
               return [...channels]
