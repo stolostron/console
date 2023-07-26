@@ -1,19 +1,7 @@
-/* Toggle subscriptions btn */
-.toggle-subs-btn {
-  width: 208px;
-  height: 32px;
-  display: block;
-  padding: 6px 0;
-  margin: 20px auto 10px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
 /* Subscription cards */
 div.pf-c-card__body.sub-card-container {
   padding: 2px;
   display: flex;
-  font-size: 14px;
 }
 
 .sub-card-content {

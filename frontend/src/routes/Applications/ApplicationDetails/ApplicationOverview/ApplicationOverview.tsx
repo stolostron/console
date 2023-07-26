@@ -331,9 +331,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
         {isAppSet && (
           <div className="overview-cards-sources-section">
-            <div className="toggle-subs-btn">
-              {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
-            </div>
+            {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
           </div>
         )}
       </PageSection>
