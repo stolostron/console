@@ -968,7 +968,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
 ///////////////////////////////////////////////////////////
 
 export const setPlacementRuleDeployStatus = (node, details, t) => {
-  if (R.pathOr('', ['type'])(node) !== 'placements') {
+  if (R.pathOr('', ['type'])(node) !== 'placements' || node.isPlacement) {
     return details
   }
 
@@ -987,7 +987,7 @@ export const setPlacementRuleDeployStatus = (node, details, t) => {
 }
 
 export const setPlacementDeployStatus = (node, details, t) => {
-  if (node.type !== 'placement') {
+  if (node.type !== 'placements' || !node.isPlacement) {
     return
   }
 
@@ -1002,6 +1002,14 @@ export const setPlacementDeployStatus = (node, details, t) => {
         status: failureStatus,
       })
     }
+  } else {
+    details.push({
+      labelValue: t('Error'),
+      value: t(
+        'This Placement does not have any status. Make sure the ManagedClusterSetBinding is created for the target namespace.'
+      ),
+      status: failureStatus,
+    })
   }
 }
 
