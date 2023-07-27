@@ -2,7 +2,6 @@
 
 import {
   EditMode,
-  Select,
   Tile,
   WizArrayInput,
   WizAsyncSelect,
@@ -15,10 +14,10 @@ import {
 import { Label, Title } from '@patternfly/react-core'
 import { Dispatch, Fragment, SetStateAction } from 'react'
 import { TFunction } from 'react-i18next'
-import { validateWebURL } from '../../lib/validation'
 import { GitAltIcon } from '@patternfly/react-icons'
 import HelmIcon from './logos/HelmIcon.svg'
 import { Channel, getGitBranchList, getGitPathList } from './ArgoWizard'
+import { GitURLPath, HelmURLPath } from './common'
 
 export interface MultipleSourcesSelectorProps {
   channels: Channel[] | undefined
@@ -110,49 +109,14 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
         }
       >
         {/* git repository */}
-        <Select
-          path="repoURL"
-          label={t('URL')}
-          labelHelp={t('The URL path for the Git repository.')}
-          placeholder={t('Enter or select a Git URL')}
-          options={gitChannels}
-          onValueChange={(value) => {
-            const channel = channels?.find((channel) => channel.spec.pathname === value)
-            setGitRevisionsAsyncCallback(
-              () => () =>
-                getGitBranchList(
-                  {
-                    metadata: {
-                      name: channel?.metadata?.name,
-                      namespace: channel?.metadata?.namespace,
-                    },
-                    spec: { pathname: value as string, type: 'git' },
-                  },
-                  getGitRevisions
-                )
-            )
-          }}
-          validation={validateWebURL}
-          required
-          isCreatable
-          onCreate={(value: string) =>
-            setCreatedChannels((channels) => {
-              if (!channels.includes(value)) {
-                channels.push(value)
-              }
-              setGitRevisionsAsyncCallback(
-                () => () =>
-                  getGitBranchList(
-                    {
-                      metadata: { name: '', namespace: '' },
-                      spec: { pathname: value, type: 'git' },
-                    },
-                    getGitRevisions
-                  )
-              )
-              return [...channels]
-            })
-          }
+        <GitURLPath
+          t={t}
+          channels={channels}
+          getGitRevisions={getGitRevisions}
+          gitChannels={gitChannels}
+          path={'repoURL'}
+          setCreatedChannels={setCreatedChannels}
+          setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
         />
         <WizAsyncSelect
           path="targetRevision"
@@ -233,33 +197,13 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
           editMode === EditMode.Create ? (data) => data.repositoryType !== 'helm' : (data) => data.chart === undefined
         }
       >
-        <Select
-          path="repoURL"
-          label={t('URL')}
-          labelHelp={t('The URL path for the Helm repository.')}
-          placeholder={t('Enter or select a Helm URL')}
-          options={helmChannels}
-          required
-          isCreatable
-          validation={validateWebURL}
-          onCreate={(value: string) =>
-            setCreatedChannels((channels) => {
-              if (!channels.includes(value)) {
-                channels.push(value)
-              }
-              setGitRevisionsAsyncCallback(
-                () => () =>
-                  getGitBranchList(
-                    {
-                      metadata: { name: '', namespace: '' },
-                      spec: { pathname: value, type: 'git' },
-                    },
-                    getGitRevisions
-                  )
-              )
-              return [...channels]
-            })
-          }
+        <HelmURLPath
+          getGitRevisions={getGitRevisions}
+          helmChannels={helmChannels}
+          path={'repoURL'}
+          setCreatedChannels={setCreatedChannels}
+          setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
+          t={t}
         />
         <WizTextInput
           path="chart"
