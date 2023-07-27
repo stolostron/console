@@ -9,7 +9,7 @@ import { validateWebURL } from '../../lib/validation'
 import { Channel, getGitBranchList, getGitPathList } from './ArgoWizard'
 import { TFunction } from 'react-i18next'
 
-function repositoryTypeToSource(value: unknown) {
+export function repositoryTypeToSource(value: unknown) {
   if (value === 'Git') {
     return {
       repoURL: '',
