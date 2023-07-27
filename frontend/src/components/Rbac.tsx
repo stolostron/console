@@ -2,9 +2,11 @@
 
 import { makeStyles } from '@mui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown } from '../ui-components'
-import { useEffect, useState } from 'react'
+import { AcmButton, AcmDropdown, AcmDropdownItems } from '../ui-components'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
+import { Actions } from '../routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/hypershift/common/common'
+import { DropdownPosition } from '@patternfly/react-core'
 
 type RbacDropdownProps<T = unknown> = {
   actions: Actions<T>[]
@@ -14,15 +16,21 @@ type RbacDropdownProps<T = unknown> = {
   id: string
   isDisabled?: boolean
   tooltip?: string
+  dropdownPosition?: DropdownPosition
 }
 
-type Actions<T = unknown> = {
-  id: string
-  text: React.ReactNode
-  isAriaDisabled?: boolean
-  tooltip?: string
-  click: (item: T) => void
+type Actions<T = unknown> = AcmDropdownItems & {
+  flyoutMenu?: Actions<T>[]
+  click?: (item: T) => void
   rbac?: ResourceAttributes[] | Promise<ResourceAttributes>[]
+}
+
+function flattenAction<T>(action: Actions<T>): Actions<T> | Actions<T>[] {
+  return action.flyoutMenu ? flattenActions(action.flyoutMenu) : action
+}
+
+function flattenActions<T>(actions: Actions<T>[]): Actions<T>[] {
+  return actions.flatMap(flattenAction)
 }
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
@@ -36,10 +44,19 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }, [actions, props.actions])
 
-  const onSelect = (id: string) => {
-    const action = props.actions.find((a) => a.id === id)
-    return action?.click(props.item)
-  }
+  const actionsWithFlyoutActions = useMemo(() => {
+    return flattenActions<T>(actions)
+  }, [actions])
+
+  const onSelect = useCallback(
+    (id: string) => {
+      const action = actionsWithFlyoutActions.find((a) => a.id === id)
+      if (action?.click) {
+        action.click(props.item)
+      }
+    },
+    [actionsWithFlyoutActions, props.item]
+  )
 
   const onToggle = async (isOpen?: boolean) => {
     if (isOpen) {
@@ -75,6 +92,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
       id={props.id}
       onSelect={onSelect}
       dropdownItems={actions}
+      dropdownPosition={props.dropdownPosition}
       isKebab={props.isKebab}
       isPlain={true}
       text={props.text}

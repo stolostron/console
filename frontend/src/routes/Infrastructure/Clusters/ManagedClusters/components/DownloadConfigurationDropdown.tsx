@@ -5,6 +5,7 @@ import { AcmDropdown } from '../../../../../ui-components'
 import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { DropdownPosition } from '@patternfly/react-core'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
   const { cluster } = useContext(ClusterContext)
@@ -54,6 +55,7 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
       onSelect={(id: string) => downloadConfig(id)}
       text={t('configuration.download')}
       id="download-configuration"
+      dropdownPosition={DropdownPosition.right}
     />
   )
 }
