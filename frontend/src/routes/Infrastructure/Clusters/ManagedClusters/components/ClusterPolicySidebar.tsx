@@ -104,7 +104,7 @@ function DetailsView(props: {
   let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
   policyContentData = policyContentData && JSON.parse(policyContentData)
   const { t } = useTranslation()
-  const [tabState, setTabState] = useState<React.ReactText>(0)
+  const [tabState, setTabState] = useState<string | number>(0)
 
   function riskLevel() {
     const riskScore = _.get(selectedReport, 'properties.total_risk')

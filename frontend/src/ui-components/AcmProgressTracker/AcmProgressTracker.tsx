@@ -86,7 +86,7 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
 
       <Gallery className={isStacked ? popoverParentContainer : parentContainer}>
         {props.steps.map((step, index) => (
-          <GalleryItem key={index} className={stepContainer}>
+          <GalleryItem key={step.stepID} className={stepContainer}>
             <div>
               <AcmInlineStatus type={step.statusType} status={step.statusText} />
               <TextContent>

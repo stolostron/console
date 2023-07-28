@@ -26,7 +26,7 @@ import {
   IAcmTableColumn,
 } from '../../../../../ui-components'
 import { Button, ModalVariant, SelectOption, Stack, StackItem } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { cloneDeep } from 'lodash'

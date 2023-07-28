@@ -14,7 +14,7 @@ import {
 import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
 import { Button, ButtonVariant, ModalVariant, Stack, StackItem } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
