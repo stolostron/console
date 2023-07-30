@@ -134,8 +134,14 @@ export function InstallSubmarinerFormPage() {
 }
 
 // supported providers for creating a SubmarinerConfig resource
-const submarinerConfigProviders = [Provider.aws, Provider.gcp, Provider.vmware, Provider.azure, Provider.openstack]
-
+const submarinerConfigProviders = [
+  Provider.aws,
+  Provider.gcp,
+  Provider.vmware,
+  Provider.azure,
+  Provider.openstack,
+  Provider.ibm,
+]
 // used to try to auto-detect the provider secret in the cluster namespace
 const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | undefined> = {
   [Provider.aws]: (secrets: Secret[]) => secrets.find((s) => s.data?.['aws_access_key_id']),
@@ -592,6 +598,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 ?.filter((cluster: string) => {
                   const matchedCluster: Cluster = availableClusters.find((c) => c.displayName === cluster)!
                   if (matchedCluster.provider === Provider.vmware) {
+                    return false
+                  }
+                  if (matchedCluster.provider === Provider.ibm && matchedCluster.distribution?.isManagedOpenShift) {
                     return false
                   }
                   return !submarinerConfigProviders.includes(matchedCluster!.provider!)
