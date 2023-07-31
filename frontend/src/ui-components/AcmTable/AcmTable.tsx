@@ -438,12 +438,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   })
 
-  const setInternalSearchWithDebounce =
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setInternalSearchWithDebounce = useCallback(
     process.env.NODE_ENV !== 'test'
       ? debounce((search: string) => {
           setInternalSearch(search)
         }, SEARCH_DEBOUNCE_TIME)
-      : setInternalSearch
+      : setInternalSearch,
+    [setInternalSearch]
+  )
 
   useEffect(() => {
     setInternalSearchWithDebounce(search)
