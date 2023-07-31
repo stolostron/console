@@ -43,6 +43,7 @@ import {
   mockOCPApplication0,
   mockFluxApplication0,
   mockPlacementsDecisions,
+  mockApplicationSet1,
 } from './Application.sharedmocks'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 
@@ -88,7 +89,10 @@ describe('Applications Page', () => {
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
-    expect(screen.getByText('Application set')).toBeTruthy()
+    await waitForText('Application set', true)
+
+    expect(screen.getByText(mockApplicationSet1.metadata.name!)).toBeTruthy()
+    await waitForText('Application set', true)
 
     // argo app
     expect(screen.getByText(mockArgoApplication1.metadata.name!)).toBeTruthy()

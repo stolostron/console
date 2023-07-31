@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { repositoryTypeToSource } from './SourceSelector'
+import { repositoryTypeToSource, sourceToRepositoryType } from './SourceSelector'
 
 describe('Source Selector', () => {
   describe('repositoryTypeToSource', () => {
@@ -11,7 +11,6 @@ describe('Source Selector', () => {
         path: '',
       })
     })
-
     test('repositoryTypeToSource should render the expected output for helm', () => {
       expect(repositoryTypeToSource('Helm')).toEqual({
         repoURL: '',
@@ -22,6 +21,29 @@ describe('Source Selector', () => {
 
     test('repositoryTypeToSource should render the expected output for other values', () => {
       expect(repositoryTypeToSource('any')).toEqual('any')
+    })
+  })
+  describe('sourceToRepositoryType', () => {
+    test('sourceToRepositoryType should render the expected output for Git', () => {
+      expect(
+        sourceToRepositoryType({
+          repoURL: 'test.com',
+          path: 'abc',
+          targetRevision: 'efg',
+        })
+      ).toEqual('Git')
+    })
+    test('sourceToRepositoryType should render the expected output for Helm', () => {
+      expect(
+        sourceToRepositoryType({
+          repoURL: 'test.com',
+          chart: 'abc',
+          targetRevision: 'efg',
+        })
+      ).toEqual('Helm')
+    })
+    test('sourceToRepositoryType should render the expected output for other values', () => {
+      expect(sourceToRepositoryType('any')).toEqual(undefined)
     })
   })
 })

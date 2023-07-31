@@ -27,7 +27,7 @@ export function repositoryTypeToSource(value: unknown) {
   return value
 }
 
-function sourceToRepositoryType(source: unknown) {
+export function sourceToRepositoryType(source: unknown) {
   if (typeof source === 'object' && source !== null) {
     const isGit = 'repoURL' in source && 'path' in source && 'targetRevision' in source
     if (isGit) return 'Git'
