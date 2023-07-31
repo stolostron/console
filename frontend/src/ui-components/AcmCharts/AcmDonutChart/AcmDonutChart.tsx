@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Badge, Card, CardTitle, Skeleton } from '@patternfly/react-core'
 
@@ -24,24 +24,24 @@ type LegendData = {
 }
 
 /* istanbul ignore next */
-const useStyles = makeStyles({
-  card: {
+const getStyles = (props: StyleProps) => ({
+  card: css({
     maxHeight: '259px',
-    minWidth: (props: StyleProps) => (props.viewWidth > 376 ? '376px' : undefined),
-    maxWidth: (props: StyleProps) => (props.viewWidth < 376 ? '376px' : undefined),
+    minWidth: props.viewWidth > 376 ? '376px' : undefined,
+    maxWidth: props.viewWidth < 376 ? '376px' : undefined,
     '& .pf-c-chart > svg g path:last-of-type': {
-      fill: (props: StyleProps) => (props.danger ? '#E62325 !important' : undefined),
+      fill: props.danger ? '#E62325 !important' : undefined,
     },
-  },
-  cardTitle: {
+  }),
+  cardTitle: css({
     paddingBottom: 'unset !important',
-  },
-  chartContainer: {
+  }),
+  chartContainer: css({
     maxWidth: '376px',
-  },
-  skeleton: {
+  }),
+  skeleton: css({
     margin: '0 0 20px 35px',
-  },
+  }),
 })
 
 export const loadingDonutChart = (
@@ -100,7 +100,7 @@ export function AcmDonutChart(props: {
   }
 
   const { viewWidth } = useViewport()
-  const classes = useStyles({ ...props, danger: props.data.some((d) => d.isDanger), viewWidth } as StyleProps)
+  const classes = getStyles({ ...props, danger: props.data.some((d) => d.isDanger), viewWidth } as StyleProps)
 
   if (props.loading) return loadingDonutChart(props.title, classes)
   return (

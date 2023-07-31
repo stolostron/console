@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
@@ -15,13 +15,9 @@ export interface ITemplateSummaryModalProps {
   close: () => void
 }
 
-const useStyles = makeStyles({
-  expandableSection: {
-    paddingTop: '20px',
-  },
-  linkOut: { paddingBottom: '15px' },
-  externalLinkIcon: { marginLeft: '4px', verticalAlign: 'middle' },
-})
+const expandableSection = css({ paddingTop: '20px' })
+const linkOut = css({ paddingBottom: '15px' })
+const externalLinkIcon = css({ marginLeft: '4px', verticalAlign: 'middle' })
 
 export function TemplateSummaryControl(props: { control?: any }) {
   const { control } = props
@@ -38,7 +34,6 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
   const { t } = useTranslation()
   const [isInstallExpandableOpen, setInstallExpandable] = useState<boolean>(true)
   const [isUpgradeExpandableOpen, setUpgradeExpandable] = useState<boolean>(true)
-  const classes = useStyles()
 
   if (!clusterCurator) {
     return <></>
@@ -63,7 +58,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
         <ExpandableSection
           onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
           isExpanded={isUpgradeExpandableOpen}
-          className={classes.expandableSection}
+          className={expandableSection}
           toggleText={t('Upgrade')}
           isIndented
         >
@@ -95,7 +90,6 @@ export default function TemplateSummaryModal(props: ITemplateSummaryModalProps) 
 export function PrePostTemplatesList(props: { curation: Curation; curatorAction: CuratorAction }) {
   const { curation, curatorAction } = props
   const { t } = useTranslation()
-  const classes = useStyles()
 
   let preLabel, postLabel
   switch (curation) {
@@ -128,7 +122,7 @@ export function PrePostTemplatesList(props: { curation: Curation; curatorAction:
           type: job.type,
         }))}
       ></ComposableTable>
-      <div className={classes.expandableSection}>
+      <div className={expandableSection}>
         <ComposableTable
           stage={postLabel}
           curatorJobs={curatorAction.posthook?.map((job: ClusterCuratorAnsibleJob) => ({
@@ -169,13 +163,12 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
 
 export function TemplateLinkOutControl(props: { control?: any }) {
   const { control } = props
-  const classes = useStyles()
   const isActive = control?.step.controls?.find((cc: any) => cc.id === 'templateName')?.active
   const clusterCuratorTemplates = control?.step.controls?.find((cc: any) => cc.id === 'templateName').availableData
   const selectedTemplate = clusterCuratorTemplates.find((cc: any) => cc.metadata.name === isActive)
 
   return (
-    <div className={classes.linkOut}>
+    <div className={linkOut}>
       {' '}
       <TemplateLinkOut templateCurator={selectedTemplate} />{' '}
     </div>
@@ -185,7 +178,6 @@ export function TemplateLinkOutControl(props: { control?: any }) {
 export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
   const { templateCurator } = props
   const { t } = useTranslation()
-  const classes = useStyles()
   if (!templateCurator) {
     return <></>
   }
@@ -202,10 +194,7 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
         >
           {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
         </a>
-        <ExternalLinkAltIcon
-          style={{ marginLeft: '6px', verticalAlign: 'middle' }}
-          className={classes.externalLinkIcon}
-        />
+        <ExternalLinkAltIcon style={{ marginLeft: '6px', verticalAlign: 'middle' }} className={externalLinkIcon} />
       </Button>
     </div>
   )

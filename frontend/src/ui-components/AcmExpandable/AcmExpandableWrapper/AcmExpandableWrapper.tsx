@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Grid, GridItem, gridSpans, Title } from '@patternfly/react-core'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Children, useMemo, useRef, useState } from 'react'
@@ -16,25 +16,22 @@ type AcmExpandableWrapperProps = {
   maxItemsPerRow?: gridSpans
 }
 
-const useStyles = makeStyles({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  headerCount: {
-    fontWeight: 'lighter',
-  },
-  wrapperContainer: {
-    margin: '1rem 0',
-  },
-  showAllButton: {
-    margin: '1rem auto',
-  },
+const root = css({
+  display: 'flex',
+  flexDirection: 'column',
+})
+const headerCount = css({
+  fontWeight: 'lighter',
+})
+const wrapperContainer = css({
+  margin: '1rem 0',
+})
+const showAllButton = css({
+  margin: '1rem auto',
 })
 
 export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
   const { children, headerLabel, withCount, expandable, minWidth = 300, maxItemsPerRow = 6 } = props
-  const classes = useStyles(props)
   const ref = useRef(null)
   const [showAll, setShowAll] = useState<boolean>(false)
   const [columnCount, setColumnCount] = useState(1)
@@ -64,15 +61,15 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
   }, [children, expandable, showAll, columnCount])
 
   return (
-    <div className={classes.root}>
+    <div className={root}>
       {headerLabel && (
         <Title headingLevel="h4">
           {headerLabel}
-          {withCount && <span className={classes.headerCount}> {`( ${itemCount} total )`}</span>}
+          {withCount && <span className={headerCount}> {`( ${itemCount} total )`}</span>}
         </Title>
       )}
       <div ref={ref}>
-        <Grid hasGutter className={classes.wrapperContainer}>
+        <Grid hasGutter className={wrapperContainer}>
           {Children.map(visibleItems, (child, idx) => {
             return (
               <GridItem span={spanPerColumn}>
@@ -83,7 +80,7 @@ export const AcmExpandableWrapper = (props: AcmExpandableWrapperProps) => {
         </Grid>
       </div>
       {expandable && itemCount > columnCount && (
-        <AcmButton className={classes.showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
+        <AcmButton className={showAllButton} variant={'secondary'} onClick={() => setShowAll(!showAll)}>
           {showAll
             ? t('Show less')
             : t('Show all ({{count}})', {

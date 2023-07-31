@@ -12,7 +12,7 @@ import {
   DropdownProps,
   TooltipPosition,
 } from '@patternfly/react-core'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
 
 type Props = Omit<DropdownProps, 'toggle' | 'onSelect' | 'dropdownItems'>
@@ -49,63 +49,58 @@ export type AcmDropdownItems = {
   labelColor?: LabelProps['color']
 }
 
-const useStyles = makeStyles({
-  button: {
-    '& button': {
-      backgroundColor: (props: AcmDropdownProps) => {
-        if (!props.isKebab) {
-          if (props.isDisabled) {
-            return 'var(--pf-global--disabled-color--200)'
-          } else if (!props.isDisabled && props.isPrimary) {
-            return 'var(--pf-c-dropdown__toggle--BackgroundColor)'
-          } else {
-            return 'transparent'
-          }
-        }
-        return undefined
-      },
-      '& span': {
-        color: (props: AcmDropdownProps) => {
-          if (props.isDisabled) {
-            return 'var(--pf-global--Color--100)'
-          } else if (props.isPrimary) {
-            return 'var(--pf-global--Color--light-100)'
-          } else if (props.isKebab) {
-            return undefined
-          }
-          return 'var(--pf-global--primary-color--100)'
-        },
-      },
-      '&:hover, &:focus': {
+const getStyles = (props: AcmDropdownProps) => {
+  let backgroundColor: string | undefined = undefined
+  if (!props.isKebab) {
+    if (props.isDisabled) {
+      backgroundColor = 'var(--pf-global--disabled-color--200)'
+    } else if (!props.isDisabled && props.isPrimary) {
+      backgroundColor = 'var(--pf-c-dropdown__toggle--BackgroundColor)'
+    } else {
+      backgroundColor = 'transparent'
+    }
+  }
+  let color: string | undefined = 'var(--pf-global--primary-color--100)'
+  if (props.isDisabled) {
+    color = 'var(--pf-global--Color--100)'
+  } else if (props.isPrimary) {
+    color = 'var(--pf-global--Color--light-100)'
+  } else if (props.isKebab) {
+    color = undefined
+  }
+  return {
+    button: css({
+      '& button': {
+        backgroundColor,
         '& span': {
-          color: (props: AcmDropdownProps) => (props.isKebab ? undefined : 'var(--pf-global--primary-color--100)'),
+          color,
+        },
+        '&:hover, &:focus': {
+          '& span': {
+            color: props.isKebab ? undefined : 'var(--pf-global--primary-color--100)',
+          },
+          '& span.pf-c-dropdown__toggle-text': {
+            color: props.isPrimary ? 'var(--pf-global--Color--light-100)' : undefined,
+          },
+          '& span.pf-c-dropdown__toggle-icon': {
+            color: props.isPrimary ? 'var(--pf-global--Color--light-100)' : undefined,
+          },
         },
         '& span.pf-c-dropdown__toggle-text': {
-          color: (props: AcmDropdownProps) => props.isPrimary && 'var(--pf-global--Color--light-100)',
-        },
-        '& span.pf-c-dropdown__toggle-icon': {
-          color: (props: AcmDropdownProps) => props.isPrimary && 'var(--pf-global--Color--light-100)',
+          // centers dropdown text in plain dropdown button
+          paddingLeft: props.isPlain ? '8px' : undefined,
         },
       },
-      '& span.pf-c-dropdown__toggle-text': {
-        // centers dropdown text in plain dropdown button
-        paddingLeft: (props: AcmDropdownProps) => {
-          if (props.isPlain) {
-            return '8px'
-          }
-          return undefined
-        },
-      },
-    },
-  },
-  label: {
-    marginLeft: '8px',
-  },
-})
+    }),
+    label: css({
+      marginLeft: '8px',
+    }),
+  }
+}
 
 export function AcmDropdown(props: AcmDropdownProps) {
   const [isOpen, setOpen] = useState<boolean>(false)
-  const classes = useStyles(props)
+  const classes = getStyles(props)
 
   const onSelect = (id: string) => {
     props.onSelect(id)

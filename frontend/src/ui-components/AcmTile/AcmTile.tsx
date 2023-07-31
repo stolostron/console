@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Skeleton, Tile, TileProps } from '@patternfly/react-core'
 
 type AcmTileProps = TileProps & {
@@ -11,41 +11,38 @@ type AcmTileProps = TileProps & {
   }
 }
 
-const useStyles = makeStyles({
-  tileRoot: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 1.5rem',
-    height: '64px',
-    overflow: 'hidden',
-    '& >div:last-child': {
-      width: '100%',
-    },
+const tileRoot = css({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0 1.5rem',
+  height: '64px',
+  overflow: 'hidden',
+  '& >div:last-child': {
+    width: '100%',
   },
-  relatedResourceContainer: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  relatedResourceCount: {
-    fontSize: '28px',
-    color: 'var(--pf-global--palette--blue-400)',
-    marginRight: '.5rem',
-  },
-  relatedResourceKind: {
-    fontSize: '14px',
-    fontWeight: 'bold',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textAlign: 'left',
-    lineHeight: '18px',
-  },
+})
+const relatedResourceContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+})
+const relatedResourceCount = css({
+  fontSize: '28px',
+  color: 'var(--pf-global--palette--blue-400)',
+  marginRight: '.5rem',
+})
+const relatedResourceKind = css({
+  fontSize: '14px',
+  fontWeight: 'bold',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textAlign: 'left',
+  lineHeight: '18px',
 })
 
 export function AcmTile(props: AcmTileProps) {
-  const classes = useStyles(props)
   if (props.loading) {
     return (
-      <Tile className={classes.tileRoot} title={''} ref={null}>
+      <Tile className={tileRoot} title={''} ref={null}>
         <Skeleton />
       </Tile>
     )
@@ -59,15 +56,15 @@ export function AcmTile(props: AcmTileProps) {
     return (
       <Tile
         id={props.id}
-        className={classes.tileRoot}
+        className={tileRoot}
         title={props.title}
         onClick={props.onClick}
         isSelected={props.isSelected}
         ref={null}
       >
-        <div className={classes.relatedResourceContainer}>
-          <div className={classes.relatedResourceCount}>{count}</div>
-          <div className={classes.relatedResourceKind}>{props.relatedResourceData.kind}</div>
+        <div className={relatedResourceContainer}>
+          <div className={relatedResourceCount}>{count}</div>
+          <div className={relatedResourceKind}>{props.relatedResourceData.kind}</div>
         </div>
       </Tile>
     )

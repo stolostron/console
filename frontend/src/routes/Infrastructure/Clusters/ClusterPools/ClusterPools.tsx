@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   ButtonVariant,
   Flex,
@@ -496,19 +496,16 @@ export function ClusterPoolsTable(props: {
   )
 }
 
-const useStyles = makeStyles({
-  table: {
-    '& .pf-c-table tr > *:first-child': {
-      paddingLeft: '0 !important',
-    },
+const table = css({
+  '& .pf-c-table tr > *:first-child': {
+    paddingLeft: '0 !important',
   },
 })
 
 function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
   const { t } = useTranslation()
-  const classes = useStyles()
   return (
-    <div className={classes.table}>
+    <div className={table}>
       <AcmTable<Cluster>
         noBorders
         keyFn={(cluster: Cluster) => cluster.name!}
@@ -560,7 +557,6 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
 
 function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
   const { t } = useTranslation()
-  const classes = useStyles()
   const alertContext = useContext(AcmAlertContext)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterClaim> | { open: false }>({
     open: false,
@@ -604,7 +600,7 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
   }
 
   return (
-    <div className={classes.table}>
+    <div className={table}>
       <BulkActionModal<ClusterClaim> {...modalProps} />
       <AcmTable<ClusterClaim>
         noBorders

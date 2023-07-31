@@ -1,60 +1,58 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Grid, GridItem, gridItemSpanValueShape, Skeleton } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 
 import { AcmExpandableCard } from '../AcmExpandable'
 
-const useStyles = makeStyles({
-  section: {
-    '& > .pf-c-card__body': {
-      padding: '0 !important',
-    },
-    '& > .pf-c-card__expandable-content': {
-      padding: '0px',
-    },
+const section = css({
+  '& > .pf-c-card__body': {
+    padding: '0 !important',
   },
-  card: {
-    height: '159px',
-    padding: '32px 0 24px 24px',
-    borderLeft: '1px solid rgba(0,0,0,0.1)',
-    marginTop: '-1px',
+  '& > .pf-c-card__expandable-content': {
+    padding: '0px',
   },
-  cardFirst: {
-    borderLeft: '0',
+})
+const card = css({
+  height: '159px',
+  padding: '32px 0 24px 24px',
+  borderLeft: '1px solid rgba(0,0,0,0.1)',
+  marginTop: '-1px',
+})
+const cardFirst = css({
+  borderLeft: '0',
+})
+const countContainer = css({
+  fontSize: '36px',
+})
+const count = css({
+  textDecoration: 'none !important',
+  fontWeight: 100,
+})
+const countDanger = css({
+  color: 'var(--pf-global--danger-color--100)',
+  textDecoration: 'none !important',
+  fontWeight: 100,
+  '&:hover': {
+    color: 'var(--pf-global--palette--red-300)',
   },
-  countContainer: {
-    fontSize: '36px',
-  },
-  count: {
-    textDecoration: 'none !important',
-    fontWeight: 100,
-  },
-  countDanger: {
-    color: 'var(--pf-global--danger-color--100)',
-    textDecoration: 'none !important',
-    fontWeight: 100,
-    '&:hover': {
-      color: 'var(--pf-global--palette--red-300)',
-    },
-  },
-  title: {
-    fontSize: '14px !important',
-    fontWeight: 600,
-  },
-  titleIcon: {
-    marginRight: '8px',
-  },
-  description: {
-    opacity: 0.7,
-    marginTop: '8px',
-    fontSize: '14px',
-  },
-  link: {
-    marginTop: '8px',
-    fontSize: '14px',
-  },
+})
+const title = css({
+  fontSize: '14px !important',
+  fontWeight: 600,
+})
+const titleIcon = css({
+  marginRight: '8px',
+})
+const description = css({
+  opacity: 0.7,
+  marginTop: '8px',
+  fontSize: '14px',
+})
+const link = css({
+  marginTop: '8px',
+  fontSize: '14px',
 })
 
 export type AcmCountCardSection = {
@@ -77,14 +75,13 @@ export type AcmCountCardSectionCard = {
 }
 
 export const AcmCountCardSection = (props: AcmCountCardSection) => {
-  const classes = useStyles()
   const cardCount = props.cards.length
   // Grid uses a 12 column layout - here we find the number of coulumns to evenly use per item
   // If 12 / cardCount doesnt come out to a whole number we round up and the extra card will be displayed on a second row
   const gridNum = Math.ceil(12 / cardCount) as gridItemSpanValueShape
 
   return (
-    <AcmExpandableCard title={props.title} className={classes.section} id={props.id}>
+    <AcmExpandableCard title={props.title} className={section} id={props.id}>
       <Grid sm={gridNum}>
         {props.cards.map((card, i) => {
           return (
@@ -92,31 +89,28 @@ export const AcmCountCardSection = (props: AcmCountCardSection) => {
               {props.loading ? (
                 <LoadingCard {...card} loadingAriaLabel={props.loadingAriaLabel} />
               ) : (
-                <div id={card.id} className={`${classes.card} ${i === 0 ? classes.cardFirst : ''}`}>
-                  <div className={classes.countContainer}>
+                <div id={card.id} className={`${card} ${i === 0 ? cardFirst : ''}`}>
+                  <div className={countContainer}>
                     {card.countClick && card.count > 0 ? (
                       // eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-                      <a onClick={card.countClick} className={card.isDanger ? classes.countDanger : classes.count}>
+                      <a onClick={card.countClick} className={card.isDanger ? countDanger : count}>
                         {card.count}
                       </a>
                     ) : (
                       card.count
                     )}
                   </div>
-                  <div className={classes.title}>
+                  <div className={title}>
                     <span>
                       {card.isDanger && card.count > 0 && (
-                        <ExclamationCircleIcon
-                          color="var(--pf-global--danger-color--100)"
-                          className={classes.titleIcon}
-                        />
+                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" className={titleIcon} />
                       )}
                       {card.title}
                     </span>
                   </div>
-                  {card.description && <div className={classes.description}>{card.description}</div>}
+                  {card.description && <div className={description}>{card.description}</div>}
                   {card.linkText && (
-                    <div className={classes.link}>
+                    <div className={link}>
                       {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                       <a onClick={card.onLinkClick}>{card.linkText}</a>
                     </div>
@@ -132,24 +126,23 @@ export const AcmCountCardSection = (props: AcmCountCardSection) => {
 }
 
 const LoadingCard = (props: AcmCountCardSectionCard & { loadingAriaLabel?: string }) => {
-  const classes = useStyles()
   return (
-    <div id={props.id} className={classes.card} role="progressbar" aria-label={props.loadingAriaLabel}>
-      <div className={classes.countContainer}>
+    <div id={props.id} className={card} role="progressbar" aria-label={props.loadingAriaLabel}>
+      <div className={countContainer}>
         <Skeleton style={{ width: '44px', height: '48px', marginBottom: '12px' }} />
       </div>
-      <div className={classes.title} style={{ marginBottom: '12px' }}>
+      <div className={title} style={{ marginBottom: '12px' }}>
         <span>
           <Skeleton style={{ width: '130px', height: '21px', padding: '3px 0' }} />
         </span>
       </div>
       {props.description && (
-        <div className={classes.description}>
+        <div className={description}>
           <Skeleton style={{ width: '130px', height: '21px', padding: '3px 0' }} />
         </div>
       )}
       {props.linkText && (
-        <div className={classes.link}>
+        <div className={link}>
           <Skeleton style={{ width: '130px', height: '21px', padding: '3px 0' }} />
         </div>
       )}

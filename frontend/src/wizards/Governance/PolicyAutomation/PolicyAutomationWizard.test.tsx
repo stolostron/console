@@ -89,10 +89,7 @@ describe('PolicyAutomationWizard tests', () => {
       })
     )
 
-    const dropdown = container.querySelector('#pf-select-toggle-id-107')
-    if (dropdown) {
-      userEvent.click(dropdown)
-    }
+    userEvent.click(screen.getByText(/once/i))
 
     userEvent.click(
       screen.getByRole('option', {

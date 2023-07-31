@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {
@@ -39,18 +39,11 @@ export default function AnsibleAutomationsPage() {
 
   const { t } = useTranslation()
 
-  const useStyles = makeStyles({
-    hint: {
-      marginBottom: '16px',
-    },
-  })
-  const classes = useStyles()
-
   return (
     <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
       <AcmPageContent id="clusters">
         <PageSection>
-          <AutomationProviderHint component="hint" className={classes.hint} />
+          <AutomationProviderHint component="hint" className={css({ marginBottom: '16px' })} />
           <AnsibleJobTemplateTable />
         </PageSection>
       </AcmPageContent>

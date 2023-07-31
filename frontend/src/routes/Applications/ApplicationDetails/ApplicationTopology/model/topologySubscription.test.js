@@ -8811,6 +8811,7 @@ describe('getSubscriptionTopology', () => {
       },
       {
         id: 'member--rules--feng-cronjob--feng-cronjob-placement-1-decision-1--0',
+        isPlacement: true,
         name: 'feng-cronjob-placement-1-decision-1',
         namespace: 'feng-cronjob',
         specs: {

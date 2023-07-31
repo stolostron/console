@@ -116,6 +116,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
       <PageSection variant="light" isFilled className="infra-env-form__section">
         <Grid hasGutter className="infra-env-form">
           <GridItem span={8}>
+            {/*@ts-expect-error @openshift-assisted/ui-lib needs React 18 updates*/}
             <InfraEnvFormPage
               onValuesChanged={onValuesChanged}
               usedNames={infraEnvNames}

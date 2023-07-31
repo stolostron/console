@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { getSecret, unpackSecret } from '../../../../../resources'
 import {
   AcmButton,
@@ -24,15 +24,15 @@ export type LoginCredentialStyle = {
   disabled: boolean
 }
 
-const useStyles = makeStyles({
-  toggleButton: {
+const getStyles = (props: LoginCredentialStyle) => ({
+  toggleButton: css({
     paddingLeft: '0 !important',
     '& svg': {
       width: '24px',
-      fill: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : '#06C'),
+      fill: props.disabled ? 'var(--pf-c-button--disabled--Color)' : '#06C',
     },
     '& span': {
-      color: (props: LoginCredentialStyle) => (props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined),
+      color: props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined,
     },
     '& .credentials-toggle': {
       display: 'flex',
@@ -43,16 +43,15 @@ const useStyles = makeStyles({
     },
     '&:hover': {
       '& .credentials-toggle svg': {
-        fill: (props: LoginCredentialStyle) =>
-          props.disabled ? 'var(--pf-c-button--disabled--Color)' : 'var(--pf-c-button--m-link--hover--Color)',
+        fill: props.disabled ? 'var(--pf-c-button--disabled--Color)' : 'var(--pf-c-button--m-link--hover--Color)',
       },
     },
-  },
-  credentialsContainer: {
+  }),
+  credentialsContainer: css({
     '& button': {
       paddingRight: 0,
     },
-  },
+  }),
 })
 
 export function LoginCredentials(props: { canGetSecret?: boolean }) {
@@ -63,7 +62,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
   const [error, setError] = useState<boolean>(false)
   const [credentials, setCredentials] = useState<LoginCredential | undefined>(undefined)
   const disableButton = loading || error || !props.canGetSecret
-  const classes = useStyles({ disabled: disableButton } as LoginCredentialStyle)
+  const classes = getStyles({ disabled: disableButton } as LoginCredentialStyle)
 
   const onClick = async () => {
     /* istanbul ignore next */

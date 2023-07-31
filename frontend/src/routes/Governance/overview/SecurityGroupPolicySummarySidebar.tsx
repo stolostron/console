@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, compareStrings } from '../../../ui-components'
@@ -11,56 +10,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 import { SecurityGroupViolations } from './Overview'
 import { useSharedAtoms } from '../../../shared-recoil'
-
-const useStyles = makeStyles({
-  body: {
-    position: 'relative',
-    top: '-35px',
-    padding: '0 8px',
-    '& section': {
-      paddingTop: 'var(--pf-global--spacer--lg)',
-    },
-  },
-  titleText: {
-    paddingBottom: 'var(--pf-global--spacer--xl)',
-    '& h4': {
-      color: 'var(--pf-global--Color--200)',
-    },
-  },
-  sectionSeparator: {
-    borderBottom: '1px solid #D2D2D2',
-    margin: '0 -2rem 1rem -2rem',
-    paddingTop: '2rem',
-  },
-  toggleContainer: {
-    position: 'relative',
-    zIndex: 1,
-    top: '16px',
-    width: 'fit-content',
-    height: 0,
-    marginLeft: 'auto',
-  },
-  tableTitle: {
-    paddingBottom: 'var(--pf-global--spacer--md)',
-  },
-  backAction: {
-    paddingBottom: 'var(--pf-global--spacer--lg)',
-  },
-  subDetailComponents: {
-    paddingBottom: 'var(--pf-global--spacer--xl)',
-    '& small': {
-      color: 'inherit',
-      paddingBottom: 'var(--pf-global--spacer--sm)',
-    },
-  },
-  riskSubDetail: {
-    paddingLeft: 'var(--pf-global--spacer--lg)',
-    '& p': {
-      fontSize: 'var(--pf-global--FontSize--xs)',
-      color: '#5A6872',
-    },
-  },
-})
+import { body, sectionSeparator } from '../common/policySidebarStyles'
 
 export function SecurityGroupPolicySummarySidebar(props: {
   violation: SecurityGroupViolations
@@ -68,7 +18,6 @@ export function SecurityGroupPolicySummarySidebar(props: {
   compliance: string
 }) {
   const { compliance, secGroupName, violation } = props
-  const classes = useStyles()
   const { t } = useTranslation()
   const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
@@ -149,8 +98,8 @@ export function SecurityGroupPolicySummarySidebar(props: {
   )
 
   return (
-    <div className={classes.body}>
-      <div className={classes.sectionSeparator} />
+    <div className={body}>
+      <div className={sectionSeparator} />
       <AcmTable<Policy>
         items={secGroupPolicies}
         emptyState={undefined} // only shown when secGroupPolicies count > 0

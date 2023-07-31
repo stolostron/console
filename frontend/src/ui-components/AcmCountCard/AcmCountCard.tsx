@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Card,
   CardActions,
@@ -64,11 +64,8 @@ type SkeletonCard = CardProps & {
   id?: string
 }
 
-const useStyles = makeStyles({
-  card: {
-    height: (props: AcmCountCardProps) => (props.cardFooter ? 'auto' : '250px'),
-  },
-  cardHeader: {
+const styles = {
+  cardHeader: css({
     '& > div:first-child': {
       padding: '0',
       marginBottom: '8px',
@@ -83,8 +80,8 @@ const useStyles = makeStyles({
       width: '32px',
       height: '32px',
     },
-  },
-  headerDescription: {
+  }),
+  headerDescription: css({
     fontSize: 'var(--pf-global--FontSize--sm)',
     lineHeight: '1.4',
     overflowWrap: 'anywhere',
@@ -92,35 +89,35 @@ const useStyles = makeStyles({
     '-webkit-line-clamp': '4',
     '-webkit-box-orient': 'vertical',
     overflow: 'hidden',
-  },
-  tooltip: {},
-  actions: {
+  }),
+  actions: css({
     width: '1rem',
     padding: '0',
     '&& ul': {
       right: '-1rem',
     },
-  },
-  body: {
-    position: (props: AcmCountCardProps) => (props.cardHeader ? 'absolute' : 'relative'),
-    bottom: '0',
-  },
-  countTitle: {
+  }),
+  countTitle: css({
     fontSize: 'var(--pf-global--FontSize--sm)',
     fontWeight: 700,
-  },
-  footer: {
+  }),
+  footer: css({
     linkStyle: 'none',
-  },
+  }),
+}
+
+const getStyles = (props: AcmCountCardProps) => ({
+  card: css({
+    height: props.cardFooter ? 'auto' : '250px',
+  }),
+  body: css({
+    position: props.cardHeader ? 'absolute' : 'relative',
+    bottom: '0',
+  }),
+  ...styles,
 })
 
 export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
-  const useStyles = makeStyles({
-    dropdown: {
-      width: '10rem',
-    },
-  })
-  const classes = useStyles()
   const [isOpen, setOpen] = useState<boolean>(false)
 
   return (
@@ -134,7 +131,7 @@ export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
       isOpen={isOpen}
       isPlain
       dropdownItems={props.dropdownItems.map((item) => (
-        <DropdownItem className={classes.dropdown} key={item.text} onClick={item.handleAction}>
+        <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
           {item.text}
         </DropdownItem>
       ))}
@@ -144,14 +141,8 @@ export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
 }
 
 export const LoadingCard = (props: SkeletonCard) => {
-  const useStyles = makeStyles({
-    cardSkeleton: {
-      height: '250px',
-    },
-  })
-  const classes = useStyles(props)
   return (
-    <Card id={props.id} className={classes.cardSkeleton}>
+    <Card id={props.id} className={css({ height: '250px' })}>
       <CardHeader>
         <Skeleton width="25%" />
       </CardHeader>
@@ -168,7 +159,7 @@ export const LoadingCard = (props: SkeletonCard) => {
 }
 
 export const AcmCountCard = (props: AcmCountCardProps) => {
-  const classes = useStyles(props)
+  const classes = getStyles(props)
   const { id, loading, countTitle, cardFooter, cardHeader } = props
   let count = `${props.count}`
   if (parseInt(count) >= 1000) {

@@ -1,27 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EmptyState, EmptyStateBody, EmptyStateIcon, EmptyStateSecondaryActions, Title } from '@patternfly/react-core'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLoadingPage } from '../AcmLoadingPage/AcmLoadingPage'
 import { TrashIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../lib/acm-i18next'
 
-const useStyles = makeStyles({
-  container: {
-    '& .pf-c-card': {
-      height: '100vh',
-    },
+const container = css({
+  '& .pf-c-card': {
+    height: '100vh',
   },
-  body: {
-    maxWidth: '335px',
-    margin: '0 auto',
-  },
-  image: {
-    width: '323px',
-    height: '223px',
-    marginBottom: '32px',
-  },
+})
+const body = css({
+  maxWidth: '335px',
+  margin: '0 auto',
 })
 
 export type AcmPageProccessProps = {
@@ -38,12 +31,11 @@ export type AcmPageProccessProps = {
 }
 
 export function AcmPageProcess(props: AcmPageProccessProps) {
-  const classes = useStyles()
   const { t } = useTranslation()
 
   if (props.isLoading) {
     return (
-      <div className={classes.container}>
+      <div className={container}>
         <AcmLoadingPage
           title={props.loadingTitle}
           message={props.loadingMessage}
@@ -55,12 +47,12 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
   }
 
   return (
-    <div className={classes.container}>
+    <div className={container}>
       <AcmPageCard>
         <EmptyState>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <EmptyStateIcon icon={TrashIcon} />
-          <div className={classes.body}>
+          <div className={body}>
             <Title size="lg" headingLevel="h4">
               {props.successTitle ?? t('Success')}
             </Title>

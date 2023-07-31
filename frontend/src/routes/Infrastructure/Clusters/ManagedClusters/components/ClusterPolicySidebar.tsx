@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
   Button,
@@ -26,48 +25,15 @@ import { PolicyReport, PolicyReportResults } from '../../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
-
-const useStyles = makeStyles({
-  body: {
-    position: 'relative',
-    top: '-35px',
-    padding: '0 8px',
-    '& section': {
-      paddingTop: 'var(--pf-global--spacer--lg)',
-    },
-  },
-  titleText: {
-    paddingBottom: 'var(--pf-global--spacer--xl)',
-    '& h4': {
-      color: 'var(--pf-global--Color--200)',
-    },
-  },
-  donutContainer: {
-    maxWidth: '450px',
-    paddingBottom: 'var(--pf-global--spacer--md)',
-    marginLeft: '-4rem',
-  },
-  tableTitle: {
-    paddingBottom: 'var(--pf-global--spacer--md)',
-  },
-  backAction: {
-    paddingBottom: 'var(--pf-global--spacer--lg)',
-  },
-  subDetailComponents: {
-    paddingBottom: 'var(--pf-global--spacer--xl)',
-    '& small': {
-      color: 'inherit',
-      paddingBottom: 'var(--pf-global--spacer--sm)',
-    },
-  },
-  riskSubDetail: {
-    paddingLeft: 'var(--pf-global--spacer--lg)',
-    '& p': {
-      fontSize: 'var(--pf-global--FontSize--xs)',
-      color: '#5A6872',
-    },
-  },
-})
+import {
+  backAction,
+  body,
+  donutContainer,
+  riskSubDetail,
+  subDetailComponents,
+  tableTitle,
+  titleText,
+} from '../../../../Governance/common/policySidebarStyles'
 
 function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
   const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
@@ -138,8 +104,7 @@ function DetailsView(props: {
   let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
   policyContentData = policyContentData && JSON.parse(policyContentData)
   const { t } = useTranslation()
-  const [tabState, setTabState] = useState<React.ReactText>(0)
-  const classes = useStyles()
+  const [tabState, setTabState] = useState<string | number>(0)
 
   function riskLevel() {
     const riskScore = _.get(selectedReport, 'properties.total_risk')
@@ -147,11 +112,7 @@ function DetailsView(props: {
 
     const riskComponent = (totalRisk: string, riskIcon: any) => {
       return (
-        <Flex
-          className={classes.riskSubDetail}
-          direction={{ default: 'column' }}
-          spaceItems={{ default: 'spaceItemsNone' }}
-        >
+        <Flex className={riskSubDetail} direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
           <FlexItem>
             <Flex>
               <FlexItem>{riskIcon}</FlexItem>
@@ -223,8 +184,8 @@ function DetailsView(props: {
   }
 
   return (
-    <div className={classes.body}>
-      <Flex className={classes.backAction}>
+    <div className={body}>
+      <Flex className={backAction}>
         <FlexItem spacer={{ default: 'spacerSm' }}>
           <AngleLeftIcon color={'var(--pf-global--palette--black-500)'} />
         </FlexItem>
@@ -234,10 +195,10 @@ function DetailsView(props: {
           </Button>
         </FlexItem>
       </Flex>
-      <TextContent className={classes.titleText}>
+      <TextContent className={titleText}>
         <Text component={TextVariants.h2}>{_.get(selectedReport, 'message', '')}</Text>
       </TextContent>
-      <Grid className={classes.subDetailComponents} hasGutter>
+      <Grid className={subDetailComponents} hasGutter>
         <GridItem span={5}>
           <Flex>
             <FlexItem>
@@ -295,7 +256,6 @@ function DetailsView(props: {
 }
 
 export function ClusterPolicySidebar(props: { data: PolicyReport }) {
-  const classes = useStyles()
   const { t } = useTranslation()
   const [detailsView, setDetailsView] = useState<boolean>(false)
   const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
@@ -303,8 +263,8 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
   return detailsView ? (
     <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
   ) : (
-    <div className={classes.body}>
-      <TextContent className={classes.titleText}>
+    <div className={body}>
+      <TextContent className={titleText}>
         <Text component={TextVariants.h2}>
           {t('policy.identified.issues', { count: policyReportViolations.length })}
         </Text>
@@ -314,8 +274,8 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
           )}
         </Text>
       </TextContent>
-      <div className={classes.donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
-      <TextContent className={classes.tableTitle}>
+      <div className={donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
+      <TextContent className={tableTitle}>
         <Text component={TextVariants.h4}>{t('Recommendations with remediation')}</Text>
       </TextContent>
       <AcmTable<PolicyReportResults>

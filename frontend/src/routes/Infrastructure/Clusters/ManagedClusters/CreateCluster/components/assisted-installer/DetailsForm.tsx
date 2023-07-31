@@ -272,6 +272,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
 
   return clusterImages ? (
+    // @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates
     <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
       <ACMFeatureSupportLevelProvider clusterImages={clusterImages as ClusterImageSetK8sResource[]}>
         <ACMClusterDeploymentDetailsStep

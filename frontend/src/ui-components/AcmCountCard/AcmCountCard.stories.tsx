@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Meta } from '@storybook/react'
 import { KeyboardEvent } from 'react'
 
@@ -27,18 +27,15 @@ const savedSearchCardActions = [
   { text: 'Delete', handleAction: () => alert('delete action') },
 ]
 
-const useStyles = makeStyles({
-  root: {
-    '& article': {
-      margin: '1rem',
-    },
+const root = css({
+  '& article': {
+    margin: '1rem',
   },
 })
 
 export const SuggestedSearchCard = () => {
-  const classes = useStyles()
   return (
-    <div className={classes.root}>
+    <div className={root}>
       <AcmCountCard
         cardHeader={{
           hasIcon: true,
@@ -76,9 +73,8 @@ export const SuggestedSearchCard = () => {
 }
 
 export const SavedSearchCard = () => {
-  const classes = useStyles()
   return (
-    <div className={classes.root}>
+    <div className={root}>
       <AcmCountCard
         cardHeader={{
           hasIcon: false,
@@ -117,9 +113,8 @@ export const SavedSearchCard = () => {
 }
 
 export const CardSkeleton = () => {
-  const classes = useStyles()
   return (
-    <div className={classes.root}>
+    <div className={root}>
       <AcmCountCard loading />
       <AcmCountCard loading />
       <AcmCountCard loading />

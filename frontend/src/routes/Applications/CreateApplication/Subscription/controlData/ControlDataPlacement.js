@@ -13,7 +13,6 @@
 
 // seems to be an issue with this rule and redux
 
-import YAML from 'yaml'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRuleDeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
@@ -21,7 +20,6 @@ import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './u
 import { getSourcePath } from '../../../../../components/TemplateEditor'
 import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
 import { getControlByID } from '../../../../../lib/temptifly-utils'
-import { filterDeep } from '../transformers/transform-data-to-resources'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
@@ -183,6 +181,14 @@ export const updatePlacementControls = (control) => {
 
   // opaque the existing rules combobox
   const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementrulecombo')
+
+  if (existingRuleControl.active) {
+    _.set(selectedRuleComboControl, 'validation.required', true)
+  }
+
+  if (!existingRuleControl.active) {
+    _.set(selectedRuleComboControl, 'validation.required', false)
+  }
   _.set(selectedRuleComboControl, 'opaque', id !== existingRuleCheckbox) // && !existingRuleControl.disabled)
   if (id !== existingRuleCheckbox) {
     selectedRuleComboControl.active = ''
@@ -206,7 +212,7 @@ export const updateNewRuleControls = (control) => {
   if (kind) {
     if (kind === PlacementRuleKind) {
       isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
-      deprecatedRule && _.set(deprecatedRule, 'active', YAML.stringify(filterDeep(active)))
+      deprecatedRule && _.set(deprecatedRule, 'active', '')
     } else {
       isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
       deprecatedRule && _.set(deprecatedRule, 'active', '')
@@ -306,7 +312,10 @@ const placementData = (isLocalCluster, t) => {
       reverse: reverseExistingRule,
       fetchAvailable: loadExistingPlacementRules(t),
       onSelect: updateNewRuleControls,
-      validation: {},
+      validation: {
+        notification: t('You must select an existing placement or placement rule.'),
+        required: true,
+      },
       summarize: () => {},
     },
     {
