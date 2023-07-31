@@ -617,22 +617,22 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
   const source = _.get(resource, sourcePath)
   const sources = _.get(resource, sourcesPath)
 
-  if (sources) {
-    sources.forEach((source: { repoURL: string; chart: string; path: string }) => {
-      const { repoURL, chart, path } = source
-      if (repoURL) {
-        repoURLList.push(repoURL)
-      }
+  sources?.forEach((source: { repoURL: string; chart: string; path: string }) => {
+    const { repoURL, chart, path } = source
+    if (repoURL) {
+      repoURLList.push(repoURL)
+    }
 
-      if (chart) {
-        chartList.push(chart)
-      }
+    if (chart) {
+      chartList.push(chart)
+    }
 
-      if (path) {
-        pathList.push(path)
-      }
-    })
-  } else if (!sources && source) {
+    if (path) {
+      pathList.push(path)
+    }
+  })
+
+  if (!sources && source) {
     const sourceObj = _.get(resource, sourcePath)
     path = sourceObj.path
     repoURL = sourceObj.repoURL
@@ -640,17 +640,14 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
   }
 
   const [apigroup, apiversion] = resource.apiVersion.split('/')
-  if (resource) {
-    return getSearchLink({
-      properties: {
-        kind: ApplicationKind.toLowerCase(),
-        path: path || pathList,
-        chart: chart || chartList,
-        repoURL: repoURL || repoURLList,
-        apigroup,
-        apiversion,
-      },
-    })
-  }
-  return ''
+  return getSearchLink({
+    properties: {
+      kind: ApplicationKind.toLowerCase(),
+      path: path || pathList,
+      chart: chart || chartList,
+      repoURL: repoURL || repoURLList,
+      apigroup,
+      apiversion,
+    },
+  })
 }

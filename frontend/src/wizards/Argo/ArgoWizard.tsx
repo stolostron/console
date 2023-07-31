@@ -188,30 +188,29 @@ export function ArgoWizard(props: ArgoWizardProps) {
         .filter((channel) => channel?.spec?.type === 'HelmRepo')
         ?.filter((channel) => !channel?.spec?.secretRef) // filter out private ones
         .map((channel) => channel.spec.pathname)
-    return undefined
+    return []
   }, [props.channels])
 
   const helmChannels = useMemo(() => {
     const helmArgoAppSetRepoURLs: string[] = []
-    if (props.applicationSets) {
-      props.applicationSets.forEach((appset) => {
-        const source = get(appset, 'spec.template.spec.source')
-        const sources = get(appset, 'spec.template.spec.sources')
+    props.applicationSets?.forEach((appset) => {
+      const source = get(appset, 'spec.template.spec.source')
+      const sources = get(appset, 'spec.template.spec.sources')
 
-        if (sources) {
-          sources.forEach((source: { chart: string; repoURL: string }) => {
-            if (source.chart) {
-              helmArgoAppSetRepoURLs.push(source.repoURL)
-            }
-          })
-        } else if (!sources && source) {
+      if (sources) {
+        sources.forEach((source: { chart: string; repoURL: string }) => {
           if (source.chart) {
             helmArgoAppSetRepoURLs.push(source.repoURL)
           }
+        })
+      } else if (!sources && source) {
+        if (source.chart) {
+          helmArgoAppSetRepoURLs.push(source.repoURL)
         }
-      })
-    }
-    return [...(sourceHelmChannels ?? []), ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
+      }
+    })
+
+    return [...sourceHelmChannels, ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
