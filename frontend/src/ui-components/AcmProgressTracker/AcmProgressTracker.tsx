@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles, ClassNameMap } from '@mui/styles'
+import { css } from '@emotion/css'
 import { Gallery, GalleryItem, PopoverProps, Text, TextContent } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useViewport } from '../AcmCharts/AcmChartGroup'
@@ -33,48 +33,32 @@ export type ProgressTrackerStepLink = {
   linkCallback?: () => void
 }
 
-const useStyles = makeStyles({
-  /* istanbul ignore next */
-  parentContainer: {
-    display: 'flex',
-    paddingTop: '10px',
-  },
-  popoverParentContainer: {
-    display: 'inline-grid',
-  },
-  popoverBody: {
-    display: 'flex',
-  },
-  stepContainer: {
-    display: 'inline-flex',
-    padding: '10px 0px 10px 0px',
-  },
-  text: { width: 'max-content' },
-  divider: {
-    padding: '0px 40px 0px 40px',
-    maxWidth: '180px',
-    maxHeight: '20px',
-  },
-  stepStatus: {
-    paddingLeft: '25px',
-  },
-  container: {
-    display: 'flex',
-  },
-  icon: {
-    width: '18px', // Progress size md is 18px
-  },
-  iconMargin: {
-    margin: '3px 2px 1px 2px',
-  },
-  button: {
-    paddingLeft: '25px',
-  },
+const parentContainer = css({
+  display: 'flex',
+  paddingTop: '10px',
+})
+const popoverParentContainer = css({
+  display: 'inline-grid',
+})
+const stepContainer = css({
+  display: 'inline-flex',
+  padding: '10px 0px 10px 0px',
+})
+const dividerClass = css({
+  padding: '0px 40px 0px 40px',
+  maxWidth: '180px',
+  maxHeight: '20px',
+})
+const stepStatus = css({
+  paddingLeft: '25px',
+})
+const button = css({
+  paddingLeft: '25px',
 })
 
-const divider = (classes: ClassNameMap) => {
+const Divider = () => {
   return (
-    <svg className={classes.divider}>
+    <svg className={dividerClass}>
       <line
         x1="0"
         x2="100"
@@ -90,7 +74,6 @@ const divider = (classes: ClassNameMap) => {
 }
 
 export function AcmProgressTracker(props: AcmProgressTrackerProps) {
-  const classes = useStyles()
   const { viewWidth } = useViewport()
   const isStacked = props.isStacked || viewWidth < 700
 
@@ -101,20 +84,20 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
         <Text component="small">{props.Subtitle}</Text>
       </TextContent>
 
-      <Gallery className={isStacked ? classes.popoverParentContainer : classes.parentContainer}>
+      <Gallery className={isStacked ? popoverParentContainer : parentContainer}>
         {props.steps.map((step, index) => (
-          <GalleryItem key={index} className={classes.stepContainer}>
+          <GalleryItem key={step.stepID} className={stepContainer}>
             <div>
               <AcmInlineStatus type={step.statusType} status={step.statusText} />
               <TextContent>
-                <Text className={classes.stepStatus} component="small">
+                <Text className={stepStatus} component="small">
                   {step.statusSubtitle}
                 </Text>
               </TextContent>
               {step.link && (
                 <AcmButton
                   id={step.stepID && `${step.stepID}-link`}
-                  className={classes.button}
+                  className={button}
                   variant="link"
                   isSmall
                   icon={<ExternalLinkAltIcon />}
@@ -131,7 +114,7 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
                 </AcmButton>
               )}
             </div>
-            {!isStacked && index < props.steps.length - 1 && divider(classes)}
+            {!isStacked && index < props.steps.length - 1 && <Divider />}
           </GalleryItem>
         ))}
       </Gallery>

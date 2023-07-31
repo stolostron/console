@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
@@ -73,6 +73,7 @@ import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
+import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -218,31 +219,19 @@ const createFilterSelectOptionObject = (filterId: string, value: FilterOptionVal
     selectOption.filterId === filterId && selectOption.value === value,
 })
 
-const useStyles = makeStyles({
-  tableDiv: {
-    display: 'table',
-    width: '100%',
-  },
-  outerDiv: {
-    display: 'block',
-  },
-  table: {
-    '& tbody.pf-m-expanded > tr': {
-      borderBottom: 0,
-      '&:last-of-type': {
-        borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
-      },
+const tableDivClass = css({
+  display: 'table',
+  width: '100%',
+})
+const outerDivClass = css({
+  display: 'block',
+})
+const tableClass = css({
+  '& tbody.pf-m-expanded > tr': {
+    borderBottom: 0,
+    '&:last-of-type': {
+      borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
     },
-  },
-  filterLabelMargin: {
-    marginRight: '.5rem',
-  },
-  filterOption: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  filterOptionBadge: {
-    marginLeft: '.5rem',
   },
 })
 
@@ -448,8 +437,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       updateBreakpoint(width, tableWidth)
     }
   })
-
-  const classes = useStyles()
 
   const setInternalSearchWithDebounce =
     process.env.NODE_ENV !== 'test'
@@ -989,10 +976,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         )
       ) : (
         <Fragment>
-          <div ref={outerDivRef} className={classes.outerDiv}>
-            <div ref={tableDivRef} className={classes.tableDiv}>
+          <div ref={outerDivRef} className={outerDivClass}>
+            <div ref={tableDivRef} className={tableDivClass}>
               <Table
-                className={classes.table}
+                className={tableClass}
                 cells={columns.map((column) => {
                   return {
                     title: column.header,
@@ -1081,7 +1068,6 @@ function TableColumnFilters<T>(props: {
   setLocalStorage?: any
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const classes = useStyles()
   const { filters, toolbarFilterIds, setToolbarFilterIds, items, cachedPrefixId, setLocalStorage } = props
   const { t } = useTranslation()
 
@@ -1180,9 +1166,9 @@ function TableColumnFilters<T>(props: {
               inputId={key}
               value={createFilterSelectOptionObject(filter.filter.id, option.option.value)}
             >
-              <div className={classes.filterOption}>
+              <div className={filterOption}>
                 {option.option.label}
-                <Badge className={classes.filterOptionBadge} key={key} isRead>
+                <Badge className={filterOptionBadge} key={key} isRead>
                   {option.count}
                 </Badge>
               </div>
@@ -1191,7 +1177,7 @@ function TableColumnFilters<T>(props: {
         })}
       </SelectGroup>
     ))
-  }, [classes.filterOption, classes.filterOptionBadge, filters, items])
+  }, [filters, items])
 
   const selections = useMemo(() => {
     return Object.keys(toolbarFilterIds).reduce(
@@ -1239,7 +1225,7 @@ function TableColumnFilters<T>(props: {
           isGrouped
           placeholderText={
             <div>
-              <FilterIcon className={classes.filterLabelMargin} />
+              <FilterIcon className={filterLabelMargin} />
               {t('Filter')}
             </div>
           }

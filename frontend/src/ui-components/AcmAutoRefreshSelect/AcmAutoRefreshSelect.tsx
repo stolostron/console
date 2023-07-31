@@ -3,7 +3,7 @@
 import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 
 const DEFAULTS = {
   initPollInterval: 60,
@@ -19,39 +19,37 @@ export type AcmAutoRefreshSelectProps = {
   initPollInterval?: number
 }
 
-const useStyles = makeStyles({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    maxWidth: '225px',
-  },
-  reloadButton: {
-    cursor: 'pointer',
-    marginRight: '0.6rem',
-  },
-  buttonTitle: {
-    maxWidth: '200px',
-    '& button': {
-      paddingLeft: '0',
-      paddingRight: '0',
+const container = css({
+  display: 'flex',
+  alignItems: 'center',
+  maxWidth: '225px',
+})
+const reloadButton = css({
+  cursor: 'pointer',
+  marginRight: '0.6rem',
+})
+const buttonTitle = css({
+  maxWidth: '200px',
+  '& button': {
+    paddingLeft: '0',
+    paddingRight: '0',
+    '& span': {
+      fontSize: 'var(--pf-global--FontSize--sm)',
+      color: 'var(--pf-global--primary-color--100)',
+    },
+    '& span:last-of-type': {
+      marginRight: '0',
+    },
+    '&:hover, &:focus': {
       '& span': {
-        fontSize: 'var(--pf-global--FontSize--sm)',
-        color: 'var(--pf-global--primary-color--100)',
-      },
-      '& span:last-of-type': {
-        marginRight: '0',
-      },
-      '&:hover, &:focus': {
-        '& span': {
-          color: 'var(--pf-global--primary-color--200)',
-        },
+        color: 'var(--pf-global--primary-color--200)',
       },
     },
   },
-  icon: {
-    maxWidth: '25px',
-    color: 'var(--pf-global--primary-color--100)',
-  },
+})
+const icon = css({
+  maxWidth: '25px',
+  color: 'var(--pf-global--primary-color--100)',
 })
 
 export const savePollInterval = (refreshIntervalCookie: string, pollInterval: number | string | null) => {
@@ -91,7 +89,6 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
     savePollInterval(props.refreshIntervalCookie ?? DEFAULTS.refreshIntervalCookie, value)
   }
 
-  const classes = useStyles()
   const { refetch } = props
 
   useEffect(() => {
@@ -149,9 +146,9 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
   }
 
   return (
-    <div className={classes.container}>
+    <div className={container}>
       <div
-        className={classes.reloadButton}
+        className={reloadButton}
         tabIndex={0}
         id={'refresh-icon'}
         aria-label={'refresh-icon'}
@@ -159,10 +156,10 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
         onClick={() => refetch()}
         onKeyPress={handleKeyPress}
       >
-        <SyncAltIcon className={classes.icon} />
+        <SyncAltIcon className={icon} />
       </div>
       <Dropdown
-        className={classes.buttonTitle}
+        className={buttonTitle}
         aria-label={'refetch-intervals'}
         id="refresh-dropdown"
         onSelect={() => setOpen(!isOpen)}

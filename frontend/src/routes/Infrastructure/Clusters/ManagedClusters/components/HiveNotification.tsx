@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Cluster,
   ClusterDeploymentKind,
@@ -20,21 +20,18 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 
-const useStyles = makeStyles({
-  logsButton: {
-    padding: 0,
-    fontSize: '14px',
-    marginLeft: '4px',
-    '& svg': {
-      width: '12px',
-    },
+const logsButton = css({
+  padding: 0,
+  fontSize: '14px',
+  marginLeft: '4px',
+  '& svg': {
+    width: '12px',
   },
 })
 
 export function HiveNotification() {
   const { cluster } = useContext(ClusterContext)
   const { t } = useTranslation()
-  const classes = useStyles()
   const { clusterProvisionsState, configMapsState } = useSharedAtoms()
   const [clusterProvisions] = useRecoilState(clusterProvisionsState)
   const [configMaps] = useRecoilState(configMapsState)
@@ -89,7 +86,7 @@ export function HiveNotification() {
               variant={ButtonVariant.link}
               role="link"
               id="view-logs"
-              className={classes.logsButton}
+              className={logsButton}
             >
               {t('view.logs')}
               <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />

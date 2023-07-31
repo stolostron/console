@@ -1512,7 +1512,7 @@ describe('ClusterDetails with not found', () => {
     expect(window.location.pathname).toEqual('/')
   })
   test('page renders error state, should have option to import', async () => {
-    nockGet(mockSecret)
+    nockGet(mockSecret, undefined, 404)
     render(
       <RecoilRoot
         initializeState={(snapshot) => {

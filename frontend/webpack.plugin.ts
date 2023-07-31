@@ -11,7 +11,7 @@ import webpack from 'webpack'
 import { supportedLanguages } from './src/lib/supportedLanguages'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
-  const isProduction = argv.mode === 'production' || argv.mode === undefined
+  const isProduction = argv.mode === 'production'
   const isDevelopment = !isProduction
   const locales = supportedLanguages
   const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
@@ -71,7 +71,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     plugins: [
       new ConsoleRemotePlugin(),
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(argv.mode),
+        'process.env.NODE_ENV': JSON.stringify('production'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
         'process.env.MODE': JSON.stringify('plugin'),
         'process.env.PLUGIN_PROXY_PATH': JSON.stringify(`/api/proxy/plugin/${env.plugin}/console`),

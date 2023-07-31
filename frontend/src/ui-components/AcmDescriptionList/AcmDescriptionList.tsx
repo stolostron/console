@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   DescriptionList,
   DescriptionListDescription,
@@ -12,14 +12,12 @@ import {
 
 import { AcmExpandableCard } from '../AcmExpandable'
 
-const useStyles = makeStyles({
-  leftCol: {
-    'margin-bottom': '0px',
-    ['@media (max-width:768px)']: {
-      'margin-bottom': 'var(--pf-global--gutter--md)',
-    },
-    'margin-right': 'var(--pf-global--gutter--md)',
+const leftCol = css({
+  'margin-bottom': '0px',
+  ['@media (max-width:768px)']: {
+    'margin-bottom': 'var(--pf-global--gutter--md)',
   },
+  'margin-right': 'var(--pf-global--gutter--md)',
 })
 
 export type ListItems = {
@@ -34,11 +32,10 @@ export function AcmDescriptionList(props: {
   leftItems: ListItems[]
   rightItems?: ListItems[] | undefined
 }) {
-  const classes = useStyles()
   return (
     <AcmExpandableCard id={props.id} title={props.title}>
       <Grid sm={12} md={props.rightItems ? 6 : 12}>
-        <GridItem className={classes.leftCol}>
+        <GridItem className={leftCol}>
           <List items={props.leftItems} />
         </GridItem>
         {props.rightItems && (

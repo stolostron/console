@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Chip } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { useMemo, useState } from 'react'

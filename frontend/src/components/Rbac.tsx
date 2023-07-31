@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
 import { AcmButton, AcmDropdown } from '../ui-components'
 import { useEffect, useState } from 'react'
@@ -89,20 +89,10 @@ type RbacButtonProps = Parameters<typeof AcmButton>[0] & {
   rbac: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
 
-const useStyles = makeStyles({
-  button: {
-    '& svg': {
-      fill: (isDisabled: boolean) =>
-        isDisabled ? 'var(--pf-global--disabled-color--200)' : 'var(--pf-global--primary-color--100)',
-    },
-  },
-})
-
 export function RbacButton(props: RbacButtonProps) {
   const { t } = useTranslation()
   const [isDisabled, setIsDisabled] = useState<boolean>(true)
   const [rbac] = useState<ResourceAttributes[] | Promise<ResourceAttributes>[]>(props.rbac)
-  const classes = useStyles(isDisabled)
 
   useEffect(() => {
     Promise.all(
@@ -120,7 +110,11 @@ export function RbacButton(props: RbacButtonProps) {
       {...props}
       isDisabled={isDisabled}
       tooltip={isDisabled ? t('rbac.unauthorized') : ''}
-      className={classes.button}
+      className={css({
+        '& svg': {
+          fill: isDisabled ? 'var(--pf-global--disabled-color--200)' : 'var(--pf-global--primary-color--100)',
+        },
+      })}
     />
   )
 }

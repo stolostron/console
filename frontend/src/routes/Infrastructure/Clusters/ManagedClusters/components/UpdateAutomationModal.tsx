@@ -14,7 +14,7 @@ import {
   SecretDefinition,
   ClusterCuratorKind,
 } from '../../../../../resources'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   AcmAlert,
   AcmEmptyState,
@@ -26,7 +26,7 @@ import {
   IAcmTableColumn,
 } from '../../../../../ui-components'
 import { Button, ModalVariant, SelectOption, Stack, StackItem } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { cloneDeep } from 'lodash'
@@ -34,20 +34,17 @@ import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-const useStyles = makeStyles({
-  body: {},
-  select: {
-    '& > div': {
-      alignItems: 'end',
-      '& > div:last-child': {
-        paddingBottom: '6px',
-      },
+const select = css({
+  '& > div': {
+    alignItems: 'end',
+    '& > div:last-child': {
+      paddingBottom: '6px',
     },
   },
-  table: {
-    '& .pf-c-toolbar': {
-      display: 'none',
-    },
+})
+const table = css({
+  '& .pf-c-toolbar': {
+    display: 'none',
   },
 })
 
@@ -57,7 +54,6 @@ export function UpdateAutomationModal(props: {
   clusters: Cluster[] | undefined
 }): JSX.Element {
   const { t } = useTranslation()
-  const classes = useStyles()
   const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
   const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
     useSharedSelectors()
@@ -265,7 +261,7 @@ export function UpdateAutomationModal(props: {
             </StackItem>
           )}
           <StackItem>{t('Update the automation template for the selected clusters.')}</StackItem>
-          <StackItem className={classes.select}>
+          <StackItem className={select}>
             <AcmSelect
               id="curator-templates"
               label={t('New template')}
@@ -293,7 +289,7 @@ export function UpdateAutomationModal(props: {
               ))}
             </AcmSelect>
           </StackItem>
-          <StackItem className={classes.table}>
+          <StackItem className={table}>
             <AcmTable<Cluster>
               columns={addAutomationTemplateColumns}
               items={updatableClusters}

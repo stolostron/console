@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   ButtonVariant,
   EmptyState,
@@ -38,18 +38,16 @@ import {
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
-const useStyles = makeStyles({
-  actionGroup: {
-    backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-    paddingRight: 'var(--pf-c-page__main-section--PaddingRight)',
-    paddingLeft: 'var(--pf-c-page__main-section--PaddingLeft)',
-    paddingBottom: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
-    paddingTop: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingTop)',
-  },
-  dropdown: {
-    '& ul': {
-      right: 'unset !important',
-    },
+const actionGroup = css({
+  backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+  paddingRight: 'var(--pf-c-page__main-section--PaddingRight)',
+  paddingLeft: 'var(--pf-c-page__main-section--PaddingLeft)',
+  paddingBottom: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
+  paddingTop: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingTop)',
+})
+const dropdown = css({
+  '& ul': {
+    right: 'unset !important',
   },
 })
 
@@ -259,7 +257,6 @@ function RenderDropDownAndNewTab(props: {
   savedSearchQueries: SavedSearch[]
 }) {
   const { selectedSearch, setSelectedSearch, savedSearchQueries } = props
-  const classes = useStyles()
   const { t } = useTranslation()
   const history = useHistory()
 
@@ -287,7 +284,7 @@ function RenderDropDownAndNewTab(props: {
     }, [props.savedSearchQueries])
 
     return (
-      <div className={classes.dropdown}>
+      <div className={dropdown}>
         <AcmDropdown
           isDisabled={false}
           id="dropdown"
@@ -303,7 +300,7 @@ function RenderDropDownAndNewTab(props: {
   }
 
   return (
-    <div className={classes.actionGroup}>
+    <div className={actionGroup}>
       <AcmActionGroup>
         <SavedSearchDropdown selectedSearch={selectedSearch} savedSearchQueries={savedSearchQueries} />
         <AcmButton

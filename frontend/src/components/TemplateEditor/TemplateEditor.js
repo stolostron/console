@@ -789,7 +789,8 @@ export default class TemplateEditor extends React.Component {
       <React.Fragment>
         <YamlEditor
           editor={monacoEditor}
-          key={'main'}
+          key="main"
+          id="main"
           hide={activeYAMLEditor !== 0}
           width={'100%'}
           height={'100%'}
@@ -831,11 +832,15 @@ export default class TemplateEditor extends React.Component {
     this.layoutEditors()
   }
 
-  addEditor = (editor) => {
+  addEditor = (id, editor) => {
+    editor.id = id
     const { otherYAMLTabs } = this.state
-    this.editors.push(editor)
-    if (this.editors.length > 1) {
-      otherYAMLTabs[this.editors.length - 2].editor = editor
+    let editorIndex = this.editors.findIndex((e) => e.id === editor.id)
+    if (editorIndex < 0) {
+      editorIndex = this.editors.push(editor) - 1
+    }
+    if (editorIndex > 1) {
+      otherYAMLTabs[editorIndex - 1].editor = editor
     } else {
       highlightDecorations(this.editors, this.state.decorationRows, this.state.i18n)
     }

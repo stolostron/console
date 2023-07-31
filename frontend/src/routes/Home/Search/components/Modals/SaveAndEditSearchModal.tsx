@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -29,10 +29,8 @@ const initState = {
   searchDesc: '',
 }
 
-const useStyles = makeStyles({
-  prompt: {
-    paddingBottom: '1.5rem',
-  },
+const prompt = css({
+  paddingBottom: '1.5rem',
 })
 
 export const SaveAndEditSearchModal = (props: {
@@ -49,7 +47,6 @@ export const SaveAndEditSearchModal = (props: {
   const { searchName, searchDesc } = state
   const [updateError, setUpdateError] = useState<string | undefined>()
   const [isNameConflict, setIsNameConflict] = useState<boolean>(false)
-  const classes = useStyles()
 
   useEffect(() => {
     dispatch({ field: 'searchName', value: savedSearch?.name ?? '' })
@@ -169,7 +166,7 @@ export const SaveAndEditSearchModal = (props: {
         ]}
       >
         {
-          <p className={classes.prompt}>
+          <p className={prompt}>
             {t('Name your search and provide a description so that you can access it in the future.')}
           </p>
         }

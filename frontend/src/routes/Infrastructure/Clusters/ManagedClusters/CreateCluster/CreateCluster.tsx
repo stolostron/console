@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 import Handlebars from 'handlebars'
@@ -69,11 +69,9 @@ const Portals = Object.freeze({
   cancelBtn: 'cancel-button-portal-id',
 })
 
-const useStyles = makeStyles({
-  wizardBody: {
-    '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
-      height: '100%',
-    },
+const wizardBody = css({
+  '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
+    height: '100%',
   },
 })
 
@@ -145,7 +143,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   // Is there a way how to get this without fetching all InfraEnvs?
   const isInfraEnvAvailable = !!infraEnvs?.length
 
-  const classes = useStyles()
   // create portals for buttons in header
   const switches = (
     <div className="switch-controls">
@@ -490,7 +487,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   />
                 </Modal>
                 <TemplateEditor
-                  wizardClassName={classes.wizardBody}
+                  wizardClassName={wizardBody}
                   type={'cluster'}
                   title={t('Cluster YAML')}
                   monacoEditor={<MonacoEditor />}

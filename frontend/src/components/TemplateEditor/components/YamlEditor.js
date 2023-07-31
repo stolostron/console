@@ -11,6 +11,7 @@ class YamlEditor extends React.Component {
     addEditor: PropTypes.func,
     editor: PropTypes.element,
     hide: PropTypes.bool,
+    id: PropTypes.string,
     decorationRows: PropTypes.array,
     onYamlChange: PropTypes.func,
     readOnly: PropTypes.bool,
@@ -22,7 +23,7 @@ class YamlEditor extends React.Component {
   constructor(props) {
     super(props)
 
-    const { editor, onYamlChange } = this.props
+    const { id, editor, onYamlChange } = this.props
     this.state = {
       editor:
         editor &&
@@ -43,7 +44,7 @@ class YamlEditor extends React.Component {
               horizontalScrollbarSize: 17,
             },
           },
-          editorDidMount: this.editorDidMount.bind(this),
+          editorDidMount: this.editorDidMount.bind(this, id),
           editorWillMount: this.editorWillMount.bind(this),
           onChange: onYamlChange,
         }),
@@ -92,14 +93,14 @@ class YamlEditor extends React.Component {
     }
   }
 
-  editorDidMount(editor, monaco) {
+  editorDidMount(id, editor, monaco) {
     const { addEditor } = this.props
     editor.layout()
     editor.focus()
     editor.monaco = monaco
     editor.decorations = []
     if (addEditor) {
-      addEditor(editor)
+      addEditor(id, editor)
     }
     this.editor = editor
 

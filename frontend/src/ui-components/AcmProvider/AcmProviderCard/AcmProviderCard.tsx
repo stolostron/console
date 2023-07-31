@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@mui/styles'
+import { css } from '@emotion/css'
 import {
   Card,
   CardFooter,
@@ -21,31 +21,29 @@ import { AddCluster } from '../../../routes/Infrastructure/Clusters/ManagedClust
 import { AcmEmptyState } from '../../AcmEmptyState'
 import { AcmIcon } from '../../AcmIcons/AcmIcons'
 
-const useStyles = makeStyles({
-  icon: {
-    '& svg, & img': {
-      width: '56px',
-      height: '56px',
-    },
+const icon = css({
+  '& svg, & img': {
+    width: '56px',
+    height: '56px',
   },
-  providerTitle: {
-    marginTop: '4px',
-    fontSize: 'var(--pf-c-title--m-3xl--FontSize)',
-    lineHeight: 'var(--pf-c-title--m-3xl--LineHeight)',
-  },
-  dangerIcon: {
-    width: '16px',
-    height: '16px',
-    marginLeft: '8px',
-    verticalAlign: 'unset !important',
-  },
-  clusterCount: {
-    fontSize: '28px',
-  },
-  clusterText: {
-    fontSize: '14px',
-    fontWeight: 600,
-  },
+})
+const providerTitle = css({
+  marginTop: '4px',
+  fontSize: 'var(--pf-c-title--m-3xl--FontSize)',
+  lineHeight: 'var(--pf-c-title--m-3xl--LineHeight)',
+})
+const dangerIcon = css({
+  width: '16px',
+  height: '16px',
+  marginLeft: '8px',
+  verticalAlign: 'unset !important',
+})
+const clusterCount = css({
+  fontSize: '28px',
+})
+const clusterText = css({
+  fontSize: '14px',
+  fontWeight: 600,
 })
 
 type ProviderCardProps = {
@@ -79,7 +77,6 @@ export function AcmOverviewProviders(props: { providers: ProviderCardProps[] }) 
 }
 
 export function AcmProviderCard(props: ProviderCardProps) {
-  const classes = useStyles()
   const { t } = useTranslation()
   return (
     <Card
@@ -93,15 +90,15 @@ export function AcmProviderCard(props: ProviderCardProps) {
         <StackItem>
           <CardHeader>
             <CardHeaderMain>
-              <div className={classes.icon}>
+              <div className={icon}>
                 <AcmIcon icon={ProviderIconMap[props.provider]} />
               </div>
-              <Title headingLevel="h2" size="3xl" className={classes.providerTitle} style={{ fontWeight: 300 }}>
+              <Title headingLevel="h2" size="3xl" className={providerTitle} style={{ fontWeight: 300 }}>
                 {ProviderShortTextMap[props.provider]}
                 {props.danger && (
                   <ExclamationCircleIcon
                     color="var(--pf-global--palette--red-100)"
-                    className={`${classes.dangerIcon} danger-icon`}
+                    className={`${dangerIcon} danger-icon`}
                   />
                 )}
               </Title>
@@ -111,10 +108,10 @@ export function AcmProviderCard(props: ProviderCardProps) {
         <StackItem isFilled></StackItem>
         <StackItem>
           <CardFooter>
-            <Text component={TextVariants.p} className={classes.clusterCount}>
+            <Text component={TextVariants.p} className={clusterCount}>
               {props.clusterCount}
             </Text>
-            <Text component={TextVariants.p} className={classes.clusterText}>
+            <Text component={TextVariants.p} className={clusterText}>
               {props.clusterCount === 1 ? t('Cluster') : t('Clusters')}
             </Text>
           </CardFooter>

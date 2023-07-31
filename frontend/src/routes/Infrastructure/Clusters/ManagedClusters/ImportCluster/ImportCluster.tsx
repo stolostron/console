@@ -69,11 +69,11 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@mui/styles'
 import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
 import { validateYAML } from '../../../../../lib/validation'
 import { useWizardStrings } from '../../../../../lib/wizardStrings'
+import { css } from '@emotion/css'
 
 const acmSchema = [...schema, ...kac]
 
@@ -205,6 +205,8 @@ function reducer(state: State, action: Action): State {
   return state
 }
 
+const description = css({ margin: '16px 0 16px 0' })
+
 export default function ImportClusterPage() {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
@@ -219,13 +221,6 @@ export default function ImportClusterPage() {
   const [submitButtonText, setSubmitButtonText] = useState<string>()
   const [submittingButtonText, setSubmittingButtonText] = useState<string>()
   const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
-
-  const useStyles = makeStyles({
-    description: {
-      margin: '16px 0 16px 0',
-    },
-  })
-  const classes = useStyles()
 
   useEffect(() => {
     if (state.importMode !== 'manual') {
@@ -505,7 +500,7 @@ export default function ImportClusterPage() {
             label={t('Automation')}
             description={
               <>
-                <div className={classes.description}>{t('template.clusterImport.info')}</div>
+                <div className={description}>{t('template.clusterImport.info')}</div>
                 <AutomationProviderHint component="hint" />
               </>
             }
