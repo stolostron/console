@@ -74,6 +74,15 @@ const ClusterSelector = (props: {
           labelNameSet.add(labelName)
         }
       )
+      if (!control.active.clusterSetsList.length) {
+        // throw error if no cluster set is selected
+        exceptions.push({
+          row: 1,
+          text: i18n('Select at least one cluster set to deploy application resources.'),
+          type: 'error',
+          controlId: control.active.clusterLabelsListID,
+        })
+      }
     }
   }
 
