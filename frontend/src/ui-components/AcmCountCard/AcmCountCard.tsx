@@ -13,10 +13,16 @@ import {
   CardTitle,
   Dropdown,
   DropdownItem,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
   KebabToggle,
   Skeleton,
+  Title,
 } from '@patternfly/react-core'
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 
 type CardHeaderActions = {
@@ -58,6 +64,8 @@ export type AcmCountCardProps = CardProps & {
   countTitle?: string
   isFlat?: boolean
   onKeyPress?: (e: React.KeyboardEvent) => void
+  error?: boolean
+  errorMessage?: string
 }
 
 type SkeletonCard = CardProps & {
@@ -159,6 +167,7 @@ export const LoadingCard = (props: SkeletonCard) => {
 }
 
 export const AcmCountCard = (props: AcmCountCardProps) => {
+  const { t } = useTranslation()
   const classes = getStyles(props)
   const { id, loading, countTitle, cardFooter, cardHeader } = props
   let count = `${props.count}`
@@ -189,16 +198,32 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
           </CardHeaderMain>
         </CardHeader>
       )}
-      <CardBody className={classes.body}>
-        {props.count !== 0 ? (
-          <div style={{ color: 'var(--pf-global--link--Color)', fontSize: 'var(--pf-global--FontSize--3xl)' }}>
-            {count}
-          </div>
-        ) : (
-          <div style={{ fontSize: 'var(--pf-global--FontSize--3xl)' }}>{count}</div>
-        )}
-        <div className={classes.countTitle}>{countTitle}</div>
-      </CardBody>
+      {!props.error ? (
+        <CardBody className={classes.body}>
+          {props.count !== 0 ? (
+            <div style={{ color: 'var(--pf-global--link--Color)', fontSize: 'var(--pf-global--FontSize--3xl)' }}>
+              {count}
+            </div>
+          ) : (
+            <div style={{ fontSize: 'var(--pf-global--FontSize--3xl)' }}>{count}</div>
+          )}
+          <div className={classes.countTitle}>{countTitle}</div>
+        </CardBody>
+      ) : (
+        <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
+          <EmptyStateIcon
+            style={{ fontSize: '36px', marginBottom: '1rem' }}
+            icon={ExclamationCircleIcon}
+            color={'var(--pf-global--danger-color--100)'}
+          />
+          <Title size="md" headingLevel="h4">
+            {t('Error occurred while getting the result count.', {
+              searchName: cardHeader?.title,
+            })}
+          </Title>
+          <EmptyStateBody>{props.errorMessage}</EmptyStateBody>
+        </EmptyState>
+      )}
       {cardFooter && (
         <CardFooter className={classes.footer}>
           {cardFooter.countDescription || null}
