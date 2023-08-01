@@ -1,15 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
-import { render, waitFor, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
-import { waitForText } from '../../lib/test-util'
-import { argoCDsState, managedClusterSetsState, subscriptionOperatorsState } from '../../atoms'
+import { waitForNocks, waitForText } from '../../lib/test-util'
+import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
-import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
-import { GitOpsClusterApiVersion, GitOpsClusterKind } from '../../resources'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
+import {
+  GitOpsCluster,
+  GitOpsClusterApiVersion,
+  GitOpsClusterKind,
+  ManagedClusterSetBinding,
+  ManagedClusterSetBindingApiVersion,
+  ManagedClusterSetBindingKind,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
+  Placement,
+  PlacementApiVersionBeta,
+  PlacementKind,
+} from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
 const mockGetgitchannelbranches = jest.fn().mockImplementation(() => {
@@ -22,6 +35,55 @@ const mockGetwizardsynceditor = jest.fn()
 const mockOncancel = jest.fn()
 const mockOnsubmit = jest.fn()
 
+const gitOpsCluster: GitOpsCluster = {
+  apiVersion: GitOpsClusterApiVersion,
+  kind: GitOpsClusterKind,
+  metadata: {
+    name: 'test-gitops',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    argoServer: {
+      argoNamespace: 'openshift-gitops',
+    },
+    placementRef: {
+      kind: PlacementKind,
+      apiVersion: PlacementApiVersionBeta,
+      name: 'test-gitops-placement',
+    },
+  },
+}
+
+const managedClusterSetBinding: ManagedClusterSetBinding = {
+  apiVersion: ManagedClusterSetBindingApiVersion,
+  kind: ManagedClusterSetBindingKind,
+  metadata: {
+    name: 'default',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    clusterSet: 'default',
+  },
+}
+
+const placement: Placement = {
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'Placement',
+  metadata: {
+    name: 'test-gitops-placement',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    clusterSets: ['default'],
+  },
+}
+
+const mockNamespaces: Namespace[] = ['openshift-gitops'].map((name) => ({
+  apiVersion: NamespaceApiVersion,
+  kind: NamespaceKind,
+  metadata: { name },
+}))
+
 function TestArgoWizard() {
   return (
     <RecoilRoot
@@ -29,6 +91,7 @@ function TestArgoWizard() {
         snapshot.set(subscriptionOperatorsState, gitOpsOperators)
         snapshot.set(managedClusterSetsState, mockClusterSets)
         snapshot.set(argoCDsState, [mockArgoCD])
+        snapshot.set(namespacesState, mockNamespaces)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -93,6 +156,7 @@ describe('ArgoWizard tests', () => {
   //                      GIT
   //=====================================================================
   test('create git', async () => {
+    nockIgnoreApiPaths()
     const { container } = render(<TestArgoWizard />)
 
     //=====================================================================
@@ -133,42 +197,22 @@ describe('ArgoWizard tests', () => {
         name: /create "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
-    let dropdown = container.querySelector(
+    const dropdown = container.querySelector(
       '#spec-template-spec-source-targetrevision-form-group > div:nth-child(2) > div > div > div'
     )
     if (dropdown) {
       userEvent.click(dropdown)
     }
-    await waitFor(() =>
-      expect(
-        screen.getByRole('option', {
-          name: /main/i,
-        })
-      ).toBeInTheDocument()
-    )
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /main/i,
-      })
-    )
-    dropdown = container.querySelector(
-      '#spec-template-spec-source-path-form-group > div:nth-child(2) > div > div > div'
-    )
-    if (dropdown) {
-      userEvent.click(dropdown)
-    }
-    await waitFor(() =>
-      expect(
-        screen.getByRole('option', {
-          name: /ansible/i,
-        })
-      ).toBeInTheDocument()
-    )
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /ansible/i,
-      })
-    )
+
+    const initialNocks = [
+      nockCreate(gitOpsCluster, undefined, 201, { dryRun: 'All' }),
+      nockCreate(gitOpsCluster, gitOpsCluster, 400),
+      nockCreate(managedClusterSetBinding, undefined, 201, { dryRun: 'All' }),
+      nockCreate(placement, undefined, 201, { dryRun: 'All' }),
+    ]
+
+    await waitForNocks(initialNocks)
+
     userEvent.type(screen.getByRole('textbox'), 'default')
     userEvent.click(
       screen.getByRole('button', {
@@ -492,11 +536,12 @@ const submittedGit = [
             server: '{{server}}',
           },
           project: 'default',
-          source: {
-            path: 'ansible',
-            repoURL: 'https://github.com/fxiang1/app-samples',
-            targetRevision: 'main',
-          },
+          sources: [
+            {
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              repositoryType: 'git',
+            },
+          ],
           syncPolicy: {
             automated: {
               allowEmpty: true,
@@ -578,11 +623,14 @@ const submittedHelm = [
             server: '{{server}}',
           },
           project: 'default',
-          source: {
-            chart: 'chart',
-            repoURL: 'https://github.com/fxiang1/app-samples',
-            targetRevision: '1.0.0',
-          },
+          sources: [
+            {
+              chart: 'chart',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              targetRevision: '1.0.0',
+              repositoryType: 'helm',
+            },
+          ],
           syncPolicy: {
             automated: {
               prune: true,

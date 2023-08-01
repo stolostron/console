@@ -283,6 +283,51 @@ export const mockApplicationSet0: ApplicationSet = {
     },
   },
 }
+
+export const mockApplicationSet1: ApplicationSet = {
+  apiVersion: ApplicationSetApiVersion,
+  kind: ApplicationSetKind,
+  metadata: {
+    name: 'applicationset-1',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    generators: [
+      {
+        clusterDecisionResource: {
+          configMapRef: 'acm-placement',
+          labelSelector: {
+            matchLabels: {
+              'cluster.open-cluster-management.io/placement': 'fengappset2-placement',
+            },
+          },
+          requeueAfterSeconds: 180,
+        },
+      },
+    ],
+    template: {
+      metadata: {
+        name: 'applicationset-1-{{name}}',
+      },
+      spec: {
+        destination: {
+          namespace: 'applicationset-0-ns',
+          server: '{{server}}',
+        },
+        project: 'default',
+        sources: [
+          {
+            path: 'testapp',
+            repoURL: 'https://test.com/test.git',
+            targetRevision: 'main',
+          },
+        ],
+        syncPolicy: {},
+      },
+    },
+  },
+}
+
 const mockArgoApplication0: ArgoApplication = {
   apiVersion: ArgoApplicationApiVersion,
   kind: ArgoApplicationKind,
@@ -382,7 +427,7 @@ export const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespa
   kind: NamespaceKind,
   metadata: { name },
 }))
-export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
+export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0, mockApplicationSet1]
 export const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
 export const mockOCPApplications: OCPAppResource[] = [mockOCPApplication0, mockFluxApplication0]
 const mockSearchDisabledCluster = {

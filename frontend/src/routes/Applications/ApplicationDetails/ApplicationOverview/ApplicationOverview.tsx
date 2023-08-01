@@ -10,7 +10,6 @@ import {
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
-  Button,
   ButtonVariant,
   Card,
   CardBody,
@@ -18,15 +17,10 @@ import {
   PageSection,
   Skeleton,
   Spinner,
+  Text,
   Tooltip,
 } from '@patternfly/react-core'
-import {
-  FolderIcon,
-  GripHorizontalIcon,
-  OutlinedClockIcon,
-  OutlinedQuestionCircleIcon,
-  SyncAltIcon,
-} from '@patternfly/react-icons'
+import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import {
   getClusterCount,
@@ -69,7 +63,7 @@ const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltip = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
 let leftItems: ListItems[] = []
-let rightItems: ListItems[] = []
+let rightItems: ListItems[] | undefined = undefined
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
   const { applicationData } = props
@@ -88,7 +82,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
   const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
-  const [showSubCards, setShowSubCards] = useState(false)
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
@@ -100,7 +93,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   let isOCPApp = false
   let isFluxApp = false
   let isSubscription = false
-  let disableBtn
   let subsList = []
 
   useEffect(() => {
@@ -139,7 +131,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     isSubscription = !isArgoApp && !isAppSet && !isOCPApp && !isFluxApp
     const { name, namespace } = applicationData.application.metadata
     const applicationResource = applicationData.application.app
-    const appRepos = getApplicationRepos(applicationData.application.app, subscriptions, channels)
 
     const clusterList = getClusterList(
       applicationResource,
@@ -209,21 +200,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
         {
-          key: t('Created'),
-          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
-        },
-        {
-          key: t('Last reconciled'),
-          keyAction: (
-            <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-          value: getShortDateTime(lastSyncedTimeStamp),
-        },
-      ]
-      rightItems = [
-        {
           key: t('Clusters'),
           value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
           keyAction: (
@@ -237,6 +213,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
         {
+          key: t('Repository'),
+          value: createSourceCards(applicationData?.application.app, t, subscriptions, channels),
+        },
+        {
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
@@ -246,22 +226,23 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
         {
-          key: t('Repository resource'),
-          value: (
-            <ResourceLabels
-              appRepos={appRepos as any[]}
-              translation={t}
-              isArgoApp={isAppSet || isArgoApp}
-              showSubscriptionAttributes={true}
-            />
+          key: t('Created'),
+          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
+        },
+        {
+          key: t('Last reconciled'),
+          keyAction: (
+            <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
+              <OutlinedQuestionCircleIcon className="help-icon" />
+            </Tooltip>
           ),
+          value: getShortDateTime(lastSyncedTimeStamp),
         },
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
       const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
       subsList = allSubscriptions
-      disableBtn = subsList && subsList?.length > 0 ? false : true
 
       let lastSynced = ''
       allSubscriptions.forEach((subs: Subscription) => {
@@ -272,6 +253,23 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
       leftItems = [
         { key: t('Name'), value: name },
         { key: t('Namespace'), value: namespace },
+        {
+          key: t('Clusters'),
+          value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
+        },
+        {
+          key: t('Repository'),
+          value: createSubsCards(subsList, t, applicationData?.application?.app, channels),
+        },
+        {
+          key: clusterResourceStatusText(t),
+          value: createStatusIcons(applicationData, t),
+          keyAction: (
+            <Tooltip content={clusterResourceStatusTooltip(t)}>
+              <OutlinedQuestionCircleIcon className="help-icon" />
+            </Tooltip>
+          ),
+        },
         {
           key: t('Created'),
           value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
@@ -312,21 +310,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           ),
         },
       ]
-      rightItems = [
-        {
-          key: t('Clusters'),
-          value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
-        },
-        {
-          key: clusterResourceStatusText(t),
-          value: createStatusIcons(applicationData, t),
-          keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-        },
-      ]
     }
   }
   return (
@@ -346,27 +329,9 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           openTabIcon,
         })}
 
-        {/* Hide for argo */}
-        {isSubscription && (
-          <div className="overview-cards-subs-section">
-            {showSubCards && !disableBtn
-              ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
-              : ''}
-            <div className="toggle-subs-btn">
-              <Button
-                variant="secondary"
-                isDisabled={disableBtn}
-                data-test-subscription-details={!disableBtn}
-                onClick={() => setShowSubCards(!showSubCards)}
-              >
-                {renderData(
-                  subsList,
-                  (showSubCards ? t('Hide subscription details') : t('Show subscription details')) +
-                    ` (${subsList?.length})`,
-                  '70%'
-                )}
-              </Button>
-            </div>
+        {isAppSet && (
+          <div className="overview-cards-sources-section">
+            {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
           </div>
         )}
       </PageSection>
@@ -421,6 +386,7 @@ interface INodeStatuses {
   red: number
   orange: number
 }
+
 function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   const { application, appData, statuses, topology } = applicationData
   let elements: {
@@ -528,16 +494,45 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
   return null
 }
 
+function createSourceCards(
+  applicationSet: ApplicationSet,
+  t: TFunction,
+  subscriptions: Subscription[],
+  channels: Channel[]
+) {
+  const appRepos = getApplicationRepos(applicationSet, subscriptions, channels)
+  return appRepos?.map((appRepo) => {
+    if (appRepo) {
+      return (
+        <Card key={applicationSet.metadata.name}>
+          <CardBody className="sub-card-container">
+            <div className="sub-card-content">
+              <ResourceLabels
+                appRepos={[appRepo] as any[]}
+                translation={t}
+                isArgoApp={true}
+                showSubscriptionAttributes={true}
+              />
+            </div>
+            <div className="sub-card-content">
+              <Text>{appRepo?.pathName}</Text>
+            </div>
+          </CardBody>
+        </Card>
+      )
+    }
+  })
+}
+
 function createSubsCards(
   subsList: (Subscription | undefined)[],
   t: TFunction,
   appResource: Application,
   channels: Channel[]
 ) {
-  return (
-    subsList?.length &&
-    subsList.map((sub) => {
-      const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
+  if (subsList.length) {
+    return subsList.map((sub) => {
+      const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels) ?? []
       if (sub) {
         return (
           <Card
@@ -547,57 +542,46 @@ function createSubsCards(
             }}
           >
             <CardBody className="sub-card-container">
-              <div className="sub-card-column add-right-border">
-                <GripHorizontalIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Subscription')}</div>
-                  <span>{sub.metadata.name}</span>
-                </div>
+              <div className="sub-card-content">
+                <ResourceLabels
+                  appRepos={appRepos}
+                  translation={t}
+                  isArgoApp={false}
+                  showSubscriptionAttributes={true}
+                />
               </div>
-              <div className="sub-card-column add-right-border">
-                <FolderIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Repository resource')}</div>
-                  <ResourceLabels
-                    appRepos={appRepos as any[]}
-                    translation={t}
-                    isArgoApp={false}
-                    showSubscriptionAttributes={true}
-                  />
-                </div>
+              <div className="sub-card-content">
+                <span>{appRepos[0]?.pathName}</span>
               </div>
-              <div className="sub-card-column">
-                <OutlinedClockIcon />
-                <div className="sub-card-content">
-                  <div className="sub-card-title">{t('Time window')}</div>
-                  {!sub.spec.timewindow?.windowtype ? (
-                    <Link
-                      to={generatePath(NavigationPath.editApplicationSubscription, {
-                        name: appResource?.metadata?.name!,
-                        namespace: appResource?.metadata?.namespace!,
-                      })}
+
+              <div className="sub-card-content">
+                {!sub.spec.timewindow?.windowtype ? (
+                  <Link
+                    to={generatePath(NavigationPath.editApplicationSubscription, {
+                      name: appResource?.metadata?.name!,
+                      namespace: appResource?.metadata?.namespace!,
+                    })}
+                  >
+                    <AcmButton
+                      id="set-time-window-link"
+                      component="a"
+                      variant={ButtonVariant.link}
+                      rel="noreferrer"
+                      isSmall
                     >
-                      <AcmButton
-                        id="set-time-window-link"
-                        component="a"
-                        variant={ButtonVariant.link}
-                        rel="noreferrer"
-                        isSmall
-                      >
-                        {t('Set time window')}
-                      </AcmButton>
-                    </Link>
-                  ) : (
-                    <TimeWindowLabels
-                      subName={sub.metadata.name as string}
-                      type={sub.spec.timewindow?.windowtype}
-                      days={sub.spec.timewindow?.daysofweek}
-                      timezone={sub.spec.timewindow?.location}
-                      ranges={sub.spec.timewindow?.hours}
-                      missingData={sub.spec.timewindow?.missingData}
-                    />
-                  )}
-                </div>
+                      {t('Set time window')}
+                    </AcmButton>
+                  </Link>
+                ) : (
+                  <TimeWindowLabels
+                    subName={sub.metadata.name as string}
+                    type={sub.spec.timewindow?.windowtype}
+                    days={sub.spec.timewindow?.daysofweek}
+                    timezone={sub.spec.timewindow?.location}
+                    ranges={sub.spec.timewindow?.hours}
+                    missingData={sub.spec.timewindow?.missingData}
+                  />
+                )}
               </div>
             </CardBody>
           </Card>
@@ -605,7 +589,9 @@ function createSubsCards(
       }
       return ''
     })
-  )
+  } else {
+    return t('None')
+  }
 }
 
 function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) {
@@ -614,24 +600,54 @@ function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) 
 
 function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolean, isAppSet: boolean) {
   let sourcePath = ''
+  const sourcesPath = 'spec.template.spec.sources'
+  let path = ''
+  let repoURL = ''
+  let chart = ''
+  const repoURLList: any[] = []
+  const chartList: any[] = []
+  const pathList: any[] = []
+
   if (isArgoApp) {
     sourcePath = 'spec.source'
   } else if (isAppSet) {
     sourcePath = 'spec.template.spec.source'
   }
-  const { path, repoURL, chart } = _.get(resource, sourcePath)
-  const [apigroup, apiversion] = resource.apiVersion.split('/')
-  if (resource) {
-    return getSearchLink({
-      properties: {
-        kind: ApplicationKind.toLowerCase(),
-        path,
-        chart,
-        repoURL,
-        apigroup,
-        apiversion,
-      },
-    })
+
+  const source = _.get(resource, sourcePath)
+  const sources = _.get(resource, sourcesPath)
+
+  sources?.forEach((source: { repoURL: string; chart: string; path: string }) => {
+    const { repoURL, chart, path } = source
+    if (repoURL) {
+      repoURLList.push(repoURL)
+    }
+
+    if (chart) {
+      chartList.push(chart)
+    }
+
+    if (path) {
+      pathList.push(path)
+    }
+  })
+
+  if (!sources && source) {
+    const sourceObj = _.get(resource, sourcePath)
+    path = sourceObj.path
+    repoURL = sourceObj.repoURL
+    chart = sourceObj.chart
   }
-  return ''
+
+  const [apigroup, apiversion] = resource.apiVersion.split('/')
+  return getSearchLink({
+    properties: {
+      kind: ApplicationKind.toLowerCase(),
+      path: path || pathList,
+      chart: chart || chartList,
+      repoURL: repoURL || repoURLList,
+      apigroup,
+      apiversion,
+    },
+  })
 }

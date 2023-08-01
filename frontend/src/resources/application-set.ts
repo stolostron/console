@@ -34,13 +34,19 @@ export interface ApplicationSet extends IResource {
           server: string
         }
         project: string
-        source: {
+        source?: {
           path?: string
           repoURL: string
           targetRevision?: string
           chart?: string
         }
-        sources?: any[]
+        sources?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+          repositoryType?: string
+        }[]
         syncPolicy?: any
       }
     }

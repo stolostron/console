@@ -8,7 +8,6 @@ import {
   mockApplication0,
   mockApplications,
   mockApplicationSet0,
-  mockApplicationSets,
   mockChannels,
   mockSubscriptions,
 } from '../Application.sharedmocks'
@@ -279,7 +278,7 @@ describe('getAppChildResources', () => {
 
 describe('getAppSetRelatedResources', () => {
   it('should get the related placement info', () => {
-    expect(getAppSetRelatedResources(mockApplicationSet0, mockApplicationSets)).toEqual(['fengappset2-placement', []])
+    expect(getAppSetRelatedResources(mockApplicationSet0, [mockApplicationSet0])).toEqual(['fengappset2-placement', []])
   })
 })
 

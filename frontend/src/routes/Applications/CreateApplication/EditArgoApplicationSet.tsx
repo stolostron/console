@@ -26,6 +26,7 @@ import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { GetGitOpsClusters } from './CreateApplicationArgo'
+import { get, set } from 'lodash'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -92,6 +93,29 @@ export function EditArgoApplicationSet() {
     const applicationSet = applicationSets.find(
       (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
     )
+
+    const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
+    const sources = get(applicationSet, 'spec.template.spec.sources')?.map(
+      (source: { path: string; chart: string }) => {
+        if (source.path) {
+          return {
+            ...source,
+            repositoryType: 'git',
+          }
+        }
+
+        if (source.chart) {
+          return { ...source, repositoryType: 'helm' }
+        }
+
+        return source
+      }
+    )
+
+    if (sources) {
+      set(copyOfAppSet, 'spec.template.spec.sources', sources)
+    }
+
     if (applicationSet === undefined) {
       history.push(NavigationPath.applications)
       return
@@ -99,7 +123,7 @@ export function EditArgoApplicationSet() {
     const applicationSetPlacements = placements.filter((placement) =>
       isPlacementUsedByApplicationSet(applicationSet, placement)
     )
-    setExistingResources([applicationSet, ...applicationSetPlacements])
+    setExistingResources([copyOfAppSet, ...applicationSetPlacements])
   }, [applicationSets, history, params.name, params.namespace, placements])
 
   if (existingResources === undefined) {

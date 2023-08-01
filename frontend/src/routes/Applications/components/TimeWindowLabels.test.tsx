@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { TimeWindowLabels } from './TimeWindowLabels'
 
@@ -61,6 +61,6 @@ describe('TimeWindowLabels', () => {
         missingData={sub.spec.timewindow?.missingData}
       />
     )
-    expect(getByText('blocked')).toBeTruthy()
+    await waitFor(() => expect(getByText('View blocked time window')).toBeTruthy())
   })
 })

@@ -45,14 +45,6 @@
                   "type": "object",
                   "properties": {
                     "project": { "type": "string" },
-                    "source": {
-                      "type": "object",
-                      "properties": {
-                        "repoURL": { "type": "string" },
-                        "targetRevision": { "type": "string" },
-                        "path": { "type": "string" }
-                      }
-                    },
                     "destination": {
                       "type": "object",
                       "properties": {
@@ -61,7 +53,7 @@
                       }
                     }
                   },
-                  "required": ["project", "source", "destination"]
+                  "required": ["project", "destination"]
                 }
               },
               "required": ["metadata", "spec"]
