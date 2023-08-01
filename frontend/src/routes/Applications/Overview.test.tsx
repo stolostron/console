@@ -159,10 +159,11 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByRole('button', { name: /close application set/i }))
 
     // OCP
-    // Open filter
+    // Openshift filter possibly 2 (Openshift, Default Openshift)
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getByRole('checkbox', { name: /openshift/i })).toBeTruthy()
-    userEvent.click(screen.getByRole('checkbox', { name: /openshift/i }))
+    await waitForText('OpenShift', true)
+    expect(screen.getAllByText(/openshift/i)).toBeTruthy()
+    userEvent.click(screen.queryAllByRole('checkbox', { name: /openshift/i })[0])
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))

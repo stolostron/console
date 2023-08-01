@@ -150,12 +150,18 @@ export default function PoliciesPage() {
         },
         sort: 'policy.metadata.name',
         search: 'policy.metadata.name',
+        id: 'name',
+        order: 1,
+        isDefault: true,
       },
       {
         header: t('Namespace'),
         cell: 'policy.metadata.namespace',
         sort: 'policy.metadata.namespace',
         search: 'policy.metadata.namespace',
+        id: 'namespace',
+        order: 2,
+        isDefault: true,
       },
       {
         header: t('Status'),
@@ -167,6 +173,9 @@ export default function PoliciesPage() {
         cell: (item: PolicyTableItem) => (
           <span>{item.policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
         ),
+        id: 'status',
+        order: 3,
+        isDefault: false,
       },
       {
         header: t('Remediation'),
@@ -178,6 +187,9 @@ export default function PoliciesPage() {
           const itemBRemediation = getPolicyRemediation(itemB.policy)
           return compareStrings(itemARemediation, itemBRemediation)
         },
+        id: 'remediation',
+        order: 4,
+        isDefault: false,
       },
       {
         header: t('Policy set'),
@@ -205,8 +217,11 @@ export default function PoliciesPage() {
           }
           return '-'
         },
+        id: 'policyset',
+        order: 5,
+        isDefault: false,
       },
-      policyClusterViolationsColumn,
+      { ...policyClusterViolationsColumn, id: 'cv', isDefault: true, order: 6 },
       {
         header: t('Source'),
         sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
@@ -225,6 +240,9 @@ export default function PoliciesPage() {
         cell: (item: PolicyTableItem) => {
           return item.source ? item.source : '-'
         },
+        id: 'source',
+        order: 7,
+        isDefault: false,
       },
       {
         header: t('Automation'),
@@ -296,6 +314,9 @@ export default function PoliciesPage() {
             )
           }
         },
+        id: 'automation',
+        order: 8,
+        isDefault: false,
       },
       {
         header: t('Created'),
@@ -306,6 +327,9 @@ export default function PoliciesPage() {
           return '-'
         },
         sort: 'policy.metadata.creationTimestamp',
+        id: 'created',
+        order: 9,
+        isDefault: false,
       },
       {
         header: '',
@@ -313,6 +337,10 @@ export default function PoliciesPage() {
           return <PolicyActionDropdown setModal={setModal} item={item} isKebab={true} />
         },
         cellTransforms: [fitContent],
+        id: 'btn',
+        order: 10,
+        isDefault: true,
+        isActionCol: true,
       },
     ],
     [
@@ -744,6 +772,7 @@ export default function PoliciesPage() {
             click: () => history.push(NavigationPath.createPolicy),
           },
         ]}
+        showColumManagement
         addSubRows={(item: PolicyTableItem) => {
           const standards = item.policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
           const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, waitFor, screen } from '@testing-library/react'
+import { render, waitFor, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -52,10 +52,8 @@ describe('Policies Page', () => {
     await waitForText(mockPolicy[0].metadata.name!)
 
     // Sorting
-    screen.getByRole('button', { name: 'Status' }).click()
-    screen.getByRole('button', { name: 'Remediation' }).click()
-    screen.getByRole('button', { name: 'Source' }).click()
-    screen.getByRole('button', { name: 'Automation' }).click()
+    screen.getByRole('button', { name: 'Cluster violations' }).click()
+    screen.getByRole('button', { name: 'Namespace' }).click()
     screen.getByRole('button', { name: 'Name' }).click()
 
     // Verify annotation dropdown
@@ -94,6 +92,13 @@ describe('Policies Page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+
+    // Add policyset column
+    screen.getByRole('button', { name: /columns-management/i }).click()
+    await waitForText('Manage columns')
+    const checkbox = screen.getByTestId('checkbox-policyset')
+    fireEvent.click(checkbox)
+    screen.getByRole('button', { name: /save/i }).click()
 
     // Wait for page load
     await waitForText(mockPolicy[0].metadata.name!)

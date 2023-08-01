@@ -811,6 +811,7 @@ describe('NodePoolsTable', () => {
     })
     userEvent.click(screen.getByTestId('addNodepool'))
     expect(screen.queryAllByText('Node pool name').length).toBe(1)
+    await waitForText('Cancel')
     userEvent.click(screen.getByTestId('cancel-nodepool-form'))
     expect(screen.queryAllByTestId(/pf-dropdown-toggle-id-[0-9]*/)[0]).toBeTruthy()
     userEvent.click(screen.queryAllByTestId(/pf-dropdown-toggle-id-[0-9]*/)[0])
