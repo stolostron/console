@@ -31,7 +31,8 @@ type NetworkFormProps = {
 export const getDefaultNetworkFormValues = (
   templateYAML: string,
   isBM: boolean,
-  isAdvancedNetworking: boolean
+  isAdvancedNetworking: boolean,
+  initialSshPublicKey: string
 ): NetworkFormValues => {
   // To preserve form values on Back button
   // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
@@ -40,7 +41,7 @@ export const getDefaultNetworkFormValues = (
   const clusterNetworkHostPrefix = parseInt(
     getTemplateValue(templateYAML, 'clusterNetworkHostPrefix', defaultHostPrefix)
   )
-  const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '')
+  const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '') || initialSshPublicKey
 
   const httpProxy = getTemplateValue(templateYAML, 'httpProxy', '')
   const httpsProxy = getTemplateValue(templateYAML, 'httpsProxy', '')
@@ -68,7 +69,8 @@ export const getDefaultNetworkFormValues = (
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
-  const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage } = React.useContext(HypershiftAgentContext)
+  const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage, sshPublicKey } =
+    React.useContext(HypershiftAgentContext)
   const { waitForAll } = useSharedRecoil()
   const { agentsState, infrastructuresState, clusterImageSetsState } = useSharedAtoms()
   const [agents, infrastructures, clusterImageSets] = useRecoilValue(
@@ -137,8 +139,9 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
   }
 
   const initialValues: NetworkFormValues = React.useMemo(
-    () => getDefaultNetworkFormValues(templateYAML, isBMPlatform(infrastructures[0]), isAdvancedNetworking),
-    [templateYAML, infrastructures, isAdvancedNetworking]
+    () =>
+      getDefaultNetworkFormValues(templateYAML, isBMPlatform(infrastructures[0]), isAdvancedNetworking, sshPublicKey),
+    [templateYAML, infrastructures, isAdvancedNetworking, sshPublicKey]
   )
 
   return agents ? (
