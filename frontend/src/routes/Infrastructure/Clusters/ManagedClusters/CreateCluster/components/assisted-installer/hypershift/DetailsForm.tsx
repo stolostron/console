@@ -32,6 +32,7 @@ type FormControl = {
       [x: string]: string
     }[]
     releaseImage?: string
+    sshPublicKey?: string
   }
   disabled?: VoidFunction
   reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
@@ -54,7 +55,7 @@ const fields: any = {
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
-  const { setClusterName, setReleaseImage } = useContext(HypershiftAgentContext)
+  const { setClusterName, setReleaseImage, setSshPublicKey } = useContext(HypershiftAgentContext)
   const { waitForAll } = useSharedRecoil()
   const { clusterDeploymentsState, clusterImageSetsState, configMapsState } = useSharedAtoms()
   const [clusterDeployments, clusterImageSets, configMaps] = useRecoilValue(
@@ -146,6 +147,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const onValuesChanged = useCallback((formikValues, initRender) => {
     setClusterName(formikValues.name)
     setReleaseImage(formikValues.openshiftVersion)
+    setSshPublicKey(control.active.sshPublicKey ?? '')
+
     const values = {
       ...formikValues,
       managedClusterSet: control.active.managedClusterSet,
@@ -178,6 +181,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       ...control.active,
       pullSecret: getDefault([controlProps?.stringData?.pullSecret, control.active.pullSecret, '']),
       baseDnsDomain: getDefault([controlProps?.stringData?.baseDomain, control.active.baseDnsDomain, '']),
+      sshPublicKey: getDefault([controlProps?.stringData?.['ssh-publickey'], control.active.sshPublicKey, '']),
     }
     handleChange(control)
   }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])

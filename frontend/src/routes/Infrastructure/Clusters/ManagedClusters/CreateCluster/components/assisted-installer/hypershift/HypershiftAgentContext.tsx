@@ -21,6 +21,8 @@ export type HypershiftAgentContextType = {
   setReleaseImage: (img: string) => void
   infraEnvNamespace: string
   setInfraEnvNamespace: (ns: string) => void
+  sshPublicKey: string
+  setSshPublicKey: (key: string) => void
 }
 
 export const HypershiftAgentContext = React.createContext<HypershiftAgentContextType>({
@@ -34,6 +36,8 @@ export const HypershiftAgentContext = React.createContext<HypershiftAgentContext
   setReleaseImage: noop,
   infraEnvNamespace: '',
   setInfraEnvNamespace: noop,
+  sshPublicKey: '',
+  setSshPublicKey: noop,
 })
 
 export const useHypershiftContextValues = (): HypershiftAgentContextType => {
@@ -42,6 +46,7 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
   const [clusterName, setClusterName] = React.useState('')
   const [releaseImage, setReleaseImage] = React.useState('')
   const [infraEnvNamespace, setInfraEnvNamespace] = React.useState('')
+  const [sshPublicKey, setSshPublicKey] = React.useState('')
 
   return {
     nodePools,
@@ -54,5 +59,7 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
     setReleaseImage,
     infraEnvNamespace,
     setInfraEnvNamespace,
+    sshPublicKey,
+    setSshPublicKey,
   }
 }
