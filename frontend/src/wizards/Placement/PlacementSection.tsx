@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { Button, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
@@ -28,6 +28,7 @@ import { PlacementBindings } from './PlacementBinding'
 import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
 import { PlacementRuleApiVersion } from '../../resources'
+import { NavigationPath } from '../../NavigationPath'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -241,6 +242,11 @@ export function PlacementSection(props: {
               alertTitle={t(
                 'ClusterSets failed to load. Check the ManagedClusterSetBinding for your selected namespace.'
               )}
+              alertContent={
+                <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
+                  {t('Add cluster set')}
+                </Button>
+              }
             />
           </WizItemSelector>
         </Fragment>
