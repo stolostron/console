@@ -2,7 +2,7 @@
 import { Alert, Button } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, useMemo } from 'react'
+import { Fragment, ReactNode, useMemo } from 'react'
 import {
   EditMode,
   useEditMode,
@@ -81,6 +81,7 @@ export function Placement(props: {
   hideName?: boolean
   createClusterSetCallback?: () => void
   alertTitle?: string
+  alertContent?: ReactNode
 }) {
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
@@ -125,7 +126,9 @@ export function Placement(props: {
       />
 
       {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
-        <Alert variant="warning" title={props.alertTitle} />
+        <Alert variant="warning" title={props.alertTitle}>
+          {props.alertContent}
+        </Alert>
       ) : null}
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
