@@ -78,13 +78,11 @@ describe('SearchPage', () => {
     // Wait for username resource requests to finish
     await waitForNocks([getUserPreferenceNock])
 
-    // Test the loading state while apollo query finishes - testing that saved searches card label is not present
-    expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText('Saved searches')[1]).toBeTruthy())
 
     // Validate that message about disabled cluster doesn't appear.
     await waitFor(() => expect(screen.queryByText('More on disabled clusters')).toBeFalsy())
@@ -210,13 +208,11 @@ describe('SearchPage', () => {
     // Wait for username resource requests to finish
     await waitForNocks([getUserPreferenceNock])
 
-    // Test the loading state while apollo query finishes - testing that saved searches card label is not present
-    expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText('Saved searches')[1]).toBeTruthy())
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()

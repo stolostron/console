@@ -1,16 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import {
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
-  PageSection,
-  Stack,
-  StackItem,
-  Title,
-} from '@patternfly/react-core'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { PageSection } from '@patternfly/react-core'
 import { Fragment, useCallback, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -74,23 +65,6 @@ export default function SavedSearchQueries(props: {
         </AcmExpandableWrapper>
       </PageSection>
     )
-  } else if (error) {
-    return (
-      <PageSection>
-        <EmptyState>
-          <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
-          <Title size="lg" headingLevel="h4">
-            {t('Query error related to saved search results.')}
-          </Title>
-          <EmptyStateBody>
-            <Stack>
-              <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
-              <StackItem>{error ? error.message : ''}</StackItem>
-            </Stack>
-          </EmptyStateBody>
-        </EmptyState>
-      </PageSection>
-    )
   } else if (!loading && !error && (!data || !data.searchResult)) {
     return <Fragment />
   } else {
@@ -118,6 +92,7 @@ export default function SavedSearchQueries(props: {
         {savedSearches.length > 0 && (
           <AcmExpandableWrapper headerLabel={t('Saved searches')} withCount={false} expandable={true} minWidth={300}>
             {savedSearches.map((savedSearch, index) => {
+              const isErrorIndex = (error && error?.graphQLErrors.findIndex((error) => error.path?.[1] === index)) ?? -1
               return (
                 <AcmCountCard
                   key={parseInt(savedSearch.id)}
@@ -147,6 +122,8 @@ export default function SavedSearchQueries(props: {
                   count={data?.searchResult?.[index]?.count ?? 0}
                   countTitle={t('Results')}
                   onKeyPress={(KeyboardEvent: React.KeyboardEvent) => handleKeyPress(KeyboardEvent, savedSearch)}
+                  error={isErrorIndex > -1}
+                  errorMessage={error && error?.graphQLErrors[isErrorIndex]?.message}
                 />
               )
             })}

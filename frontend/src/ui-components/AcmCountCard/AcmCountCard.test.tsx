@@ -194,4 +194,30 @@ describe('AcmCountCard', () => {
     const { getByTestId } = render(<ClustersOverviewVariantWithOutDescription />)
     expect(getByTestId('ACM Clusters Overview Card Variant')).toBeInTheDocument()
   })
+
+  const SavedSearchErrorCard = () => (
+    <AcmCountCard
+      id="ACM Saved Search Card"
+      cardHeader={{
+        title: 'Kind:pod',
+        description: 'A pre-defined search to help you review your workloads',
+        actions: [
+          { text: 'Edit', handleAction: editAction },
+          { text: 'Share', handleAction: shareAction },
+          { text: 'Delete', handleAction: deleteAction },
+        ],
+        hasIcon: true,
+      }}
+      onClick={cardAction()}
+      count={0}
+      countTitle="Results"
+      isSelectable={true}
+      error={true}
+      errorMessage={'Unexpected error occurred'}
+    />
+  )
+  test('validates Card in error state', () => {
+    const { getByText } = render(<SavedSearchErrorCard />)
+    expect(getByText('Unexpected error occurred')).toBeInTheDocument()
+  })
 })

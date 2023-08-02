@@ -354,8 +354,17 @@ export default function SearchPage() {
   useEffect(() => {
     if (presetSearchQuery === '') {
       setSelectedSearch(t('Saved searches'))
+    } else if (
+      presetSearchQuery !== '' &&
+      userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)
+    ) {
+      // If you run a query already saved as a SavedSearch set the SavedSearch dropdown
+      setSelectedSearch(
+        userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)?.name ??
+          t('Saved searches')
+      )
     }
-  }, [presetSearchQuery, t])
+  }, [presetSearchQuery, userSavedSearches, t])
 
   const query = convertStringToQuery(presetSearchQuery, searchResultLimit)
   const msgQuery = useGetMessagesQuery({
