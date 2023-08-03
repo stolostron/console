@@ -162,6 +162,49 @@ const mockManagedClusterInfoAro: ManagedClusterInfo = {
   },
 }
 
+const mockManagedClusterRoks: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'managed-cluster-roks-clusterset',
+    labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [
+      { name: 'platform.open-cluster-management.io', value: 'IBM' },
+      { name: 'product.open-cluster-management.io', value: 'ROKS' },
+    ],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
+const mockManagedClusterInfoRoks: ManagedClusterInfo = {
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
+  metadata: {
+    name: mockManagedClusterRoks.metadata.name!,
+    namespace: mockManagedClusterRoks.metadata.name!,
+  },
+  status: {
+    conditions: [],
+    version: '1.17',
+    distributionInfo: {
+      type: 'ocp',
+      ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5'],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+        versionAvailableUpdates: [],
+      },
+    },
+  },
+}
+
 const mockManagedClusterExtra: ManagedCluster = {
   apiVersion: ManagedClusterApiVersion,
   kind: ManagedClusterKind,
@@ -647,6 +690,24 @@ const mockManagedClusterAroSubmarinerConfig: SubmarinerConfig = {
   },
 }
 
+const mockManagedClusterRoksSubmarinerConfig: SubmarinerConfig = {
+  apiVersion: SubmarinerConfigApiVersion,
+  kind: SubmarinerConfigKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterRoks.metadata.name,
+  },
+  spec: {
+    gatewayConfig: {},
+    IPSecNATTPort: submarinerConfigDefault.nattPort,
+    airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
+    NATTEnable: submarinerConfigDefault.nattEnable,
+    cableDriver: submarinerConfigDefault.cableDriver,
+    loadBalancerEnable: true,
+    globalCIDR: '',
+  },
+}
+
 const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
   kind: SubmarinerConfigKind,
@@ -766,6 +827,18 @@ const mockSubmarinerAddonAro: ManagedClusterAddOn = {
   metadata: {
     name: 'submariner',
     namespace: mockManagedClusterAro.metadata.name,
+  },
+  spec: {
+    installNamespace: 'submariner-operator',
+  },
+}
+
+const mockSubmarinerAddonRoks: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterRoks.metadata.name,
   },
   spec: {
     installNamespace: 'submariner-operator',
@@ -893,6 +966,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterInfoAzure,
         mockManagedClusterInfoRosa,
         mockManagedClusterInfoAro,
+        mockManagedClusterInfoRoks,
         mockManagedClusterInfoNoCredentials,
         mockManagedClusterInfoNoCredentialsAzure,
         mockManagedClusterInfoOpenstack,
@@ -904,6 +978,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterAzure,
         mockManagedClusterRosa,
         mockManagedClusterAro,
+        mockManagedClusterRoks,
         mockManagedClusterNoCredentials,
         mockManagedClusterNoCredentialsAzure,
         mockManagedClusterOpenstack,
@@ -1051,6 +1126,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText(mockManagedClusterNoCredentialsOpenstack!.metadata.name!)
     await clickByText(mockManagedClusterRosa!.metadata.name!)
     await clickByText(mockManagedClusterAro!.metadata.name!)
+    await clickByText(mockManagedClusterRoks!.metadata.name!)
     await clickByLabel('Enable Globalnet')
     await typeByTestId('broker-globalnet-cidr', '243.0.0.333/16')
     await clickByText('Next')
@@ -1153,6 +1229,11 @@ describe('ClusterSetDetails page', () => {
     const nockSCAro = nockCreate(mockManagedClusterAroSubmarinerConfig)
     await clickByText('Next')
 
+    // mockManagedClusterRoks
+    const nockMCARoks = nockCreate(mockSubmarinerAddonRoks)
+    const nockSCRoks = nockCreate(mockManagedClusterRoksSubmarinerConfig)
+    await clickByText('Next')
+
     // mockBroker
     const nockBroker = nockCreate(mockBroker)
 
@@ -1177,6 +1258,8 @@ describe('ClusterSetDetails page', () => {
       nockSCRosa,
       nockMCAAro,
       nockSCAro,
+      nockMCARoks,
+      nockSCRoks,
       nockBroker,
     ])
   })

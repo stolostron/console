@@ -757,6 +757,7 @@ export function getDistributionInfo(
     case 'OpenShiftDedicated':
     case 'ROSA':
     case 'ARO':
+    case 'ROKS':
       isManagedOpenShift = true
       break
   }
