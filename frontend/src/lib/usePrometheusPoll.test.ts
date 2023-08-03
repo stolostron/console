@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { renderHook } from '@testing-library/react-hooks'
-import { mockAlertMetrics } from '../routes/Home/Overview/sharedMocks'
+import { mockAlertMetrics } from '../routes/Home/Overview/sharedmocks'
 import { nockRequest } from './nock-util'
 import { PrometheusEndpoint, usePrometheusPoll } from './usePrometheusPoll'
 
