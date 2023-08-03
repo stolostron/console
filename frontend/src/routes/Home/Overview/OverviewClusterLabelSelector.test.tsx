@@ -16,7 +16,7 @@ import {
   managedClusters,
   mockClusterManagementAddons,
   mockManagedClusterAddons,
-} from './sharedTestMockData'
+} from './sharedmocks'
 
 describe('OverviewClusterLabelSelector', () => {
   const RenderOverviewClusterLabelSelector = () => {

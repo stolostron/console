@@ -185,7 +185,7 @@ export function getClustersSummary(
       title: t('Clusters'),
       icon: undefined,
       count: filteredClusterNames.length,
-      link: NavigationPath.managedClusters,
+      link: NavigationPath.managedClusters, // *Clusters table does not have ability to filter by labels - could nav to search with the label filter
     },
     {
       id: 'apps-count',

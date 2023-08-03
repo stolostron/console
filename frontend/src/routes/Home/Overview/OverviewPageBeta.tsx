@@ -105,7 +105,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const clusterLabelsSearchFilter = useMemo(() => {
     const labelStringArray: string[] = []
-    Object.keys(selectedClusterLabels).map((labelKey) => {
+    Object.keys(selectedClusterLabels).forEach((labelKey) => {
       selectedClusterLabels[labelKey].forEach((label) => labelStringArray.push(`${labelKey}=${label}`))
     })
     if (labelStringArray.length > 0) {
@@ -219,8 +219,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                         )}
                         {summaryItem.count ? (
                           <CardBody isFilled={false}>
-                            {/* ***Clusters table does not have ability to filter by labels */}
-                            {/* ***We could nav to search with the label filter */}
                             {summaryItem.link ? (
                               <Link style={{ fontSize: 24 }} to={summaryItem.link}>
                                 {summaryItem.count}

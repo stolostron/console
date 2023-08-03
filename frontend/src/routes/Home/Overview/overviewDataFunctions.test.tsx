@@ -26,7 +26,7 @@ import {
   placementDecisions,
   policies,
   policyReports,
-} from './sharedTestMockData'
+} from './sharedmocks'
 
 const filteredClusterNames: string[] = ['managed', 'local-cluster']
 const clusterData: Cluster[] = [

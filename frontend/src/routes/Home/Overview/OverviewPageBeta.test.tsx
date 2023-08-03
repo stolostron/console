@@ -43,7 +43,7 @@ import {
   placementDecisions,
   policies,
   policyReports,
-} from './sharedTestMockData'
+} from './sharedmocks'
 
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
