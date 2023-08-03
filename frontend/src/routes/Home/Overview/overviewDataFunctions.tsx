@@ -182,7 +182,7 @@ export function getClustersSummary(
   return [
     {
       id: 'total-clusters',
-      title: t('Total clusters'),
+      title: t('Clusters'),
       icon: undefined,
       count: filteredClusterNames.length,
       link: NavigationPath.managedClusters,
@@ -196,14 +196,14 @@ export function getClustersSummary(
     },
     {
       id: 'kube-types',
-      title: t('Kubernetes types'),
+      title: t('Kubernetes type'),
       icon: <DatabaseIcon />,
       count: kubernetesTypes.size,
       link: undefined, // No where to route for kube types
     },
     {
       id: 'cluster-regions',
-      title: t('Regions'),
+      title: t('Region'),
       icon: <MapPinIcon />,
       count: regions.size,
       link: undefined, // No where to route for regions
