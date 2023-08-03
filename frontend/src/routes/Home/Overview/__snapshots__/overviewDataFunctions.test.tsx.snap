@@ -1,0 +1,266 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Correctly returns getAddonHealth 1`] = `
+Array [
+  Object {
+    "key": "Degraded",
+    "link": "/multicloud/infrastructure/clusters/managed?addons=Degraded",
+    "value": 1,
+  },
+  Object {
+    "key": "Progressing",
+    "link": "/multicloud/infrastructure/clusters/managed?addons=Progressing",
+    "value": 1,
+  },
+  Object {
+    "key": "Unknown",
+    "link": "/multicloud/infrastructure/clusters/managed?addons=Unknown",
+    "value": 3,
+  },
+  Object {
+    "isPrimary": true,
+    "key": "Available",
+    "link": "/multicloud/infrastructure/clusters/managed?addons=Available",
+    "value": 3,
+  },
+]
+`;
+
+exports[`Correctly returns getAppSets 1`] = `
+Array [
+  Object {
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "ApplicationSet",
+    "metadata": Object {
+      "name": "testing",
+      "namespace": "openshift-gitops",
+    },
+    "spec": Object {
+      "generators": Array [
+        Object {
+          "clusterDecisionResource": Object {
+            "configMapRef": "acm-placement",
+            "labelSelector": Object {
+              "matchLabels": Object {
+                "cluster.open-cluster-management.io/placement": "testing-placement",
+              },
+            },
+            "requeueAfterSeconds": 180,
+          },
+        },
+      ],
+      "template": Object {
+        "metadata": Object {
+          "labels": Object {
+            "velero.io/exclude-from-backup": "true",
+          },
+          "name": "testing-{{name}}",
+        },
+        "spec": Object {
+          "destination": Object {
+            "namespace": "default",
+            "server": "{{server}}",
+          },
+          "project": "default",
+          "source": Object {
+            "path": "",
+            "repoURL": "http://test.com",
+            "targetRevision": "",
+          },
+          "syncPolicy": Object {
+            "automated": Object {
+              "prune": true,
+              "selfHeal": true,
+            },
+            "syncOptions": Array [
+              "CreateNamespace=true",
+              "PruneLast=true",
+            ],
+          },
+        },
+      },
+    },
+    "status": Object {
+      "conditions": Array [],
+    },
+  },
+]
+`;
+
+exports[`Correctly returns getApplicationCount 1`] = `4`;
+
+exports[`Correctly returns getApplicationList 1`] = `Array []`;
+
+exports[`Correctly returns getClusterStatus 1`] = `
+Array [
+  Object {
+    "key": "Offline",
+    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True%20label%3Acloud%3DAmazon\\"}",
+    "value": 1,
+  },
+  Object {
+    "isPrimary": true,
+    "key": "Ready",
+    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue%20label%3Acloud%3DAmazon\\"}",
+    "value": 1,
+  },
+]
+`;
+
+exports[`Correctly returns getClustersSummary 1`] = `
+Array [
+  Object {
+    "count": 2,
+    "icon": undefined,
+    "id": "total-clusters",
+    "link": "/multicloud/infrastructure/clusters/managed",
+    "title": "Total clusters",
+  },
+  Object {
+    "count": 4,
+    "icon": undefined,
+    "id": "apps-count",
+    "link": "/multicloud/applications",
+    "title": "Aplications",
+  },
+  Object {
+    "count": 1,
+    "icon": <DatabaseIcon
+      color="currentColor"
+      noVerticalAlign={false}
+      size="sm"
+    />,
+    "id": "kube-types",
+    "link": undefined,
+    "title": "Kubernetes types",
+  },
+  Object {
+    "count": 1,
+    "icon": <MapPinIcon
+      color="currentColor"
+      noVerticalAlign={false}
+      size="sm"
+    />,
+    "id": "cluster-regions",
+    "link": undefined,
+    "title": "Regions",
+  },
+  Object {
+    "count": 1,
+    "icon": <CubesIcon
+      color="currentColor"
+      noVerticalAlign={false}
+      size="sm"
+    />,
+    "id": "nodes-count",
+    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ANode\\"}",
+    "title": "Nodes",
+  },
+]
+`;
+
+exports[`Correctly returns getComplianceData 1`] = `
+Array [
+  Object {
+    "key": "With violations",
+    "link": "/multicloud/governance/policies?violations=with-violations",
+    "value": 1,
+  },
+  Object {
+    "isPrimary": true,
+    "key": "Without violations",
+    "link": "/multicloud/governance/policies?violations=without-violations&violations=no-status",
+    "value": 1,
+  },
+]
+`;
+
+exports[`Correctly returns getFilteredClusters 1`] = `
+Array [
+  Object {
+    "clusterSet": "default",
+    "displayName": "managed-1",
+    "hasAutomationTemplate": false,
+    "hive": Object {
+      "isHibernatable": false,
+      "secrets": Object {},
+    },
+    "isCurator": false,
+    "isHive": false,
+    "isHostedCluster": false,
+    "isHypershift": false,
+    "isManaged": true,
+    "isRegionalHubCluster": false,
+    "isSNOCluster": false,
+    "labels": Object {
+      "cloud": "Amazon",
+      "cluster.open-cluster-management.io/clusterset": "default",
+      "env": "dev",
+      "name": "managed-1",
+      "openshiftVersion": "4.13.4",
+      "openshiftVersion-major": "4",
+      "openshiftVersion-major-minor": "4.13",
+      "vendor": "OpenShift",
+    },
+    "name": "managed-1",
+    "namespace": "managed-1",
+    "nodes": Object {
+      "nodeList": Array [],
+      "ready": 0,
+      "unhealthy": 0,
+      "unknown": 0,
+    },
+    "owner": Object {},
+    "provider": "aws",
+    "status": "unknown",
+    "statusMessage": "Registration agent stopped updating its lease.",
+    "uid": "d75e89bc-29d7-45ca-b057-bb84dc095200",
+  },
+]
+`;
+
+exports[`Correctly returns getNodeCount 1`] = `1`;
+
+exports[`Correctly returns getPolicyReport 1`] = `
+Object {
+  "clustersWithIssuesCount": 1,
+  "policyReportCriticalCount": 1,
+  "policyReportImportantCount": 1,
+  "policyReportLowCount": 1,
+  "policyReportModerateCount": 1,
+}
+`;
+
+exports[`Correctly returns parseAlertsMetric 1`] = `
+Object {
+  "critical": Object {
+    "count": 1,
+    "icon": <CriticalRiskIcon />,
+    "label": "Critical",
+  },
+  "info": Object {
+    "count": 1,
+    "icon": undefined,
+    "label": "Info",
+  },
+  "other": Object {
+    "count": 1,
+    "icon": undefined,
+    "label": "Other",
+  },
+  "warning": Object {
+    "count": 2,
+    "icon": <ImportantRiskIcon />,
+    "label": "Warning",
+  },
+}
+`;
+
+exports[`Correctly returns parseOperatorMetric 1`] = `
+Object {
+  "availableCount": 1,
+  "degradedCount": 1,
+  "notAvailableCount": 1,
+  "otherCount": 3,
+}
+`;

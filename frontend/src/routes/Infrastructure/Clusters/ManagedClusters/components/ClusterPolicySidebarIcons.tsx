@@ -82,7 +82,7 @@ export const LowRiskIcon = () => {
         <g
           id="Clusters-Insights-2---disable"
           transform="translate(-1050.000000, -348.000000)"
-          fill="var(--pf-global--warning-color--100)"
+          fill="var(--pf-global--info-color--100)"
         >
           <g id="Group" transform="translate(1049.000000, 261.000000)">
             <g
