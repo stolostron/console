@@ -114,7 +114,7 @@ Array [
     "icon": undefined,
     "id": "total-clusters",
     "link": "/multicloud/infrastructure/clusters/managed",
-    "title": "Total clusters",
+    "title": "Clusters",
   },
   Object {
     "count": 4,
@@ -132,7 +132,7 @@ Array [
     />,
     "id": "kube-types",
     "link": undefined,
-    "title": "Kubernetes types",
+    "title": "Kubernetes type",
   },
   Object {
     "count": 1,
@@ -143,7 +143,7 @@ Array [
     />,
     "id": "cluster-regions",
     "link": undefined,
-    "title": "Regions",
+    "title": "Region",
   },
   Object {
     "count": 1,
