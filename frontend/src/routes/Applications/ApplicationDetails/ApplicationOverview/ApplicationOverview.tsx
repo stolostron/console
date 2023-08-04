@@ -535,12 +535,7 @@ function createSubsCards(
       const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels) ?? []
       if (sub) {
         return (
-          <Card
-            key={sub.metadata.name}
-            style={{
-              marginTop: '16px',
-            }}
-          >
+          <Card key={sub.metadata.name}>
             <CardBody className="sub-card-container">
               <div className="sub-card-content">
                 <ResourceLabels
