@@ -83,7 +83,7 @@ describe('NetworkForm', () => {
   }
 
   test('it sets default form values', () => {
-    const initialValues = getDefaultNetworkFormValues(templateYAML, true, false)
+    const initialValues = getDefaultNetworkFormValues(templateYAML, true, false, 'ssh-rsa AAAAB3NzaC1ycFOOBAR')
     expect(initialValues).toMatchSnapshot()
   })
 
