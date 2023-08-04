@@ -686,7 +686,7 @@ export default function OverviewPage() {
                 data={policyReportData}
                 donutLabel={{
                   title: `${clustersWithIssuesCount}`,
-                  subTitle: clustersWithIssuesCount === 1 ? t('Cluster with issues') : t('Clusters with issues'),
+                  subTitle: t('{{count}} clusters with issues', { count: clustersWithIssuesCount }),
                 }}
                 colorScale={colorThemes.criticalImportantModerateLow}
               />

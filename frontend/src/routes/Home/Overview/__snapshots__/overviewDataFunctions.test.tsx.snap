@@ -121,7 +121,7 @@ Array [
     "icon": undefined,
     "id": "apps-count",
     "link": "/multicloud/applications",
-    "title": "Aplications",
+    "title": "Applications",
   },
   Object {
     "count": 1,

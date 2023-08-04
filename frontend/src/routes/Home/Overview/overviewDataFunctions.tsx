@@ -189,7 +189,7 @@ export function getClustersSummary(
     },
     {
       id: 'apps-count',
-      title: t('Aplications'),
+      title: t('Applications'),
       icon: undefined,
       count: appsCount,
       link: NavigationPath.applications,

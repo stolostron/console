@@ -81,7 +81,6 @@ const usePoll = (callback: () => void, delay?: number) => {
       const id = setInterval(tick, pollDelay)
       return () => clearInterval(id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pollDelay])
 }
 
