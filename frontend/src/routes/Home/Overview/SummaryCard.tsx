@@ -37,7 +37,7 @@ export default function SummaryCard(props: {
       type: 'link' | 'button'
       path: string
     }
-    icon?: JSX.Element
+    icon?: React.JSX.Element
   }[]
   insights?: boolean
 }) {
@@ -64,10 +64,10 @@ export default function SummaryCard(props: {
       </CardTitle>
       <CardBody isFilled={false}>
         <div>
-          {summaryTotalHeader ? summaryTotalHeader : <br />}
+          {summaryTotalHeader ?? <br />}
           <div style={{ display: 'flex', marginTop: '1rem' }}>
-            {summaryData.map((summary, idx) => (
-              <div key={`sevRating-${idx}`} style={{ width: 'auto', marginRight: '1.5rem' }}>
+            {summaryData.map((summary) => (
+              <div style={{ width: 'auto', marginRight: '1.5rem' }}>
                 <div style={{ display: 'flex' }}>
                   {summary.icon && <div style={{ marginRight: '.5rem' }}>{summary.icon}</div>}
                   {!loading ? (

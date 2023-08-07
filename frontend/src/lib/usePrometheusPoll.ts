@@ -62,7 +62,7 @@ const getPrometheusURL = (props: PrometheusURLProps): string => {
 }
 
 const usePoll = (callback: () => void, delay?: number) => {
-  const pollDelay = delay ? delay : 60000 // delay is 1 min
+  const pollDelay = delay ?? 60000 // delay is 1 min
   const savedCallback = useRef<{ (): void } | null>(null)
 
   // Remember the latest callback.
@@ -72,7 +72,7 @@ const usePoll = (callback: () => void, delay?: number) => {
 
   // Set up the interval.
   useEffect(() => {
-    const tick = () => savedCallback.current && savedCallback.current()
+    const tick = () => savedCallback?.current?.()
 
     tick() // Run first tick immediately.
 

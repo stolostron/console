@@ -191,9 +191,10 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     endpoint: PrometheusEndpoint.QUERY,
     query: 'ALERTS',
   })
-  const alertSeverity: Record<string, { label: string; count: number; icon: JSX.Element | undefined }> = useMemo(() => {
-    return parseAlertsMetric(alertsResult, t)
-  }, [alertsResult, t])
+  const alertSeverity: Record<string, { label: string; count: number; icon: React.JSX.Element | undefined }> =
+    useMemo(() => {
+      return parseAlertsMetric(alertsResult, t)
+    }, [alertsResult, t])
 
   return (
     <AcmScrollable>

@@ -115,7 +115,7 @@ export default function OverviewHeader(props: {
           onSelect={(_, selection) => {
             const tempLabels = { ...selectedClusterLabels }
             const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
-            if (tempValues && tempValues.includes(selection as string)) {
+            if (tempValues?.includes(selection as string)) {
               tempLabels[selectedClusterLabel ?? ''] = tempValues.filter((label) => label !== (selection as string))
             } else {
               tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
