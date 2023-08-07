@@ -67,7 +67,7 @@ export default function SummaryCard(props: {
           {summaryTotalHeader ?? <br />}
           <div style={{ display: 'flex', marginTop: '1rem' }}>
             {summaryData.map((summary) => (
-              <div style={{ width: 'auto', marginRight: '1.5rem' }}>
+              <div key={`sevrating-${title}-${summary.label}`} style={{ width: 'auto', marginRight: '1.5rem' }}>
                 <div style={{ display: 'flex' }}>
                   {summary.icon && <div style={{ marginRight: '.5rem' }}>{summary.icon}</div>}
                   {!loading ? (
