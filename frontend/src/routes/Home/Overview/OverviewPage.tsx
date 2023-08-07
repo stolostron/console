@@ -31,8 +31,6 @@ import {
   AcmDonutChart,
   AcmLoadingPage,
   AcmOverviewProviders,
-  AcmPage,
-  AcmPageHeader,
   AcmScrollable,
   AcmSummaryList,
   colorThemes,
@@ -631,80 +629,78 @@ export default function OverviewPage() {
   }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
 
   return (
-    <AcmPage header={<AcmPageHeader title={t('Overview')} />}>
-      <AcmScrollable>
-        {searchError && (
-          <PageSection>
-            <AcmAlert
-              noClose
-              isInline
-              variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'warning'}
-              title={
-                searchError?.graphQLErrors[0]?.message.includes('not enabled')
-                  ? t('Configuration alert')
-                  : t('An unexpected error occurred.')
-              }
-              subtitle={
-                searchError?.graphQLErrors[0]?.message ||
-                t('The search service is unavailable or degraded. Some data might be missing from this view.')
-              }
-            />
-          </PageSection>
-        )}
+    <AcmScrollable>
+      {searchError && (
         <PageSection>
-          <Stack hasGutter>
-            {!clusters ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
-
-            <AcmSummaryList title={t('Summary')} list={summary} />
-
-            <Stack hasGutter>
-              <AcmMasonry minSize={400} maxColumns={searchError ? 3 : 4}>
-                <AcmDonutChart
-                  title={t('Cluster violations')}
-                  description={t('Overview of policy violation status')}
-                  loading={!complianceData}
-                  data={complianceData}
-                  colorScale={colorThemes.criticalSuccess}
-                />
-                {!searchError ? (
-                  <AcmDonutChart
-                    title={t('Pods')}
-                    description={t('Overview of pod count and status')}
-                    loading={searchLoading}
-                    data={podData}
-                    colorScale={colorThemes.criticalLowSuccess}
-                  />
-                ) : undefined}
-                <AcmDonutChart
-                  title={t('Cluster status')}
-                  description={t('Overview of cluster status')}
-                  loading={!clusterData}
-                  data={clusterData}
-                  colorScale={colorThemes.criticalSuccess}
-                />
-                <AcmDonutChart
-                  title={t('Cluster issues')}
-                  description={t('Overview of cluster issues')}
-                  loading={!policyReportData}
-                  data={policyReportData}
-                  donutLabel={{
-                    title: `${clustersWithIssuesCount}`,
-                    subTitle: clustersWithIssuesCount === 1 ? t('Cluster with issues') : t('Clusters with issues'),
-                  }}
-                  colorScale={colorThemes.criticalImportantModerateLow}
-                />
-                <AcmDonutChart
-                  title={t('Cluster add-ons')}
-                  description={t('Overview of cluster add-ons')}
-                  loading={!clusterAddonData}
-                  data={clusterAddonData}
-                  colorScale={colorThemes.criticalLowUnknownSuccess}
-                />
-              </AcmMasonry>
-            </Stack>
-          </Stack>
+          <AcmAlert
+            noClose
+            isInline
+            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'warning'}
+            title={
+              searchError?.graphQLErrors[0]?.message.includes('not enabled')
+                ? t('Configuration alert')
+                : t('An unexpected error occurred.')
+            }
+            subtitle={
+              searchError?.graphQLErrors[0]?.message ||
+              t('The search service is unavailable or degraded. Some data might be missing from this view.')
+            }
+          />
         </PageSection>
-      </AcmScrollable>
-    </AcmPage>
+      )}
+      <PageSection>
+        <Stack hasGutter>
+          {!clusters ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
+
+          <AcmSummaryList title={t('Summary')} list={summary} />
+
+          <Stack hasGutter>
+            <AcmMasonry minSize={400} maxColumns={searchError ? 3 : 4}>
+              <AcmDonutChart
+                title={t('Cluster violations')}
+                description={t('Overview of policy violation status')}
+                loading={!complianceData}
+                data={complianceData}
+                colorScale={colorThemes.criticalSuccess}
+              />
+              {!searchError ? (
+                <AcmDonutChart
+                  title={t('Pods')}
+                  description={t('Overview of pod count and status')}
+                  loading={searchLoading}
+                  data={podData}
+                  colorScale={colorThemes.criticalLowSuccess}
+                />
+              ) : undefined}
+              <AcmDonutChart
+                title={t('Cluster status')}
+                description={t('Overview of cluster status')}
+                loading={!clusterData}
+                data={clusterData}
+                colorScale={colorThemes.criticalSuccess}
+              />
+              <AcmDonutChart
+                title={t('Cluster issues')}
+                description={t('Overview of cluster issues')}
+                loading={!policyReportData}
+                data={policyReportData}
+                donutLabel={{
+                  title: `${clustersWithIssuesCount}`,
+                  subTitle: t('{{count}} clusters with issues', { count: clustersWithIssuesCount }),
+                }}
+                colorScale={colorThemes.criticalImportantModerateLow}
+              />
+              <AcmDonutChart
+                title={t('Cluster add-ons')}
+                description={t('Overview of cluster add-ons')}
+                loading={!clusterAddonData}
+                data={clusterAddonData}
+                colorScale={colorThemes.criticalLowUnknownSuccess}
+              />
+            </AcmMasonry>
+          </Stack>
+        </Stack>
+      </PageSection>
+    </AcmScrollable>
   )
 }

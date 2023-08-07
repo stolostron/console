@@ -22,19 +22,6 @@ const mockPolicyReports: PolicyReport = {
       source: 'insights',
       properties: {
         created_at: '2021-03-02T21:26:04Z',
-        total_risk: '0',
-        component: 'rule.id.0',
-      },
-      message: 'policyreport testing risk 0',
-      policy: 'policyreport testing risk 0 policy',
-      result: 'policyreport testing risk 0 result',
-    },
-    {
-      category: 'category,category1,category2',
-      scored: false,
-      source: 'insights',
-      properties: {
-        created_at: '2021-03-02T21:26:04Z',
         total_risk: '1',
         component: 'rule.id.1',
       },
@@ -71,6 +58,19 @@ const mockPolicyReports: PolicyReport = {
     {
       category: 'category,category1,category2',
       scored: false,
+      source: 'insights',
+      properties: {
+        created_at: '2021-03-02T21:26:04Z',
+        total_risk: '4',
+        component: 'rule.id.4',
+      },
+      message: 'policyreport testing risk 4',
+      policy: 'policyreport testing risk 4 policy',
+      result: 'policyreport testing risk 4 result',
+    },
+    {
+      category: 'category,category1,category2',
+      scored: false,
       source: 'grc',
       properties: {
         created_at: '2021-03-02T21:26:04Z',
@@ -94,6 +94,9 @@ const mockConfigmap: ConfigMap[] = [
     },
     data: {
       'policyreport testing risk 1 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
+      'policyreport testing risk 2 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
+      'policyreport testing risk 3 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
+      'policyreport testing risk 4 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
     },
   },
 ]
@@ -131,6 +134,30 @@ describe('ClusterPolicySidebar', () => {
       await waitForText(
         'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
       )
+
+      // wait for policy reports to be displayed and click the moderate recomendation
+      await waitForText('policyreport testing risk 2 policy: policyreport testing risk 2')
+      await clickByText('policyreport testing risk 2 policy: policyreport testing risk 2')
+      // wait for drilldown risk subdetail component
+      await waitForText('Moderate')
+      // Click back button and wait for static text
+      await clickByText('Back')
+
+      // wait for policy reports to be displayed and click the important recomendation
+      await waitForText('policyreport testing risk 3 policy: policyreport testing risk 3')
+      await clickByText('policyreport testing risk 3 policy: policyreport testing risk 3')
+      // wait for drilldown risk subdetail component
+      await waitForText('Important')
+      // Click back button and wait for static text
+      await clickByText('Back')
+
+      // wait for policy reports to be displayed and click the critical recomendation
+      await waitForText('policyreport testing risk 4 policy: policyreport testing risk 4')
+      await clickByText('policyreport testing risk 4 policy: policyreport testing risk 4')
+      // wait for drilldown risk subdetail component
+      await waitForText('Critical')
+      // Click back button and wait for static text
+      await clickByText('Back')
     })
   })
 })

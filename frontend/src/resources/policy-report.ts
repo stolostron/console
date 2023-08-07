@@ -17,12 +17,19 @@ export interface PolicyReport {
     name: string
     namespace: string
   }
+  summary?: {
+    error?: number
+    fail?: number
+    pass?: number
+    skip?: number
+    warn?: number
+  }
 }
 
 export interface PolicyReportResults {
   policy: string
   message: string
-  scored: boolean
+  scored?: boolean
   source: string
   category: string
   result: string
@@ -30,5 +37,6 @@ export interface PolicyReportResults {
     created_at: string
     total_risk: string
     component: string
+    extra_data?: string
   }
 }
