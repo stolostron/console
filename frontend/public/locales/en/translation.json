@@ -2638,7 +2638,7 @@
   "The cluster name is already used by another cluster.": "The cluster name is already used by another cluster.",
   "The cluster pool deletion will be blocked until all claimed cluster(s) are deleted.": "The cluster pool deletion will be blocked until all claimed cluster(s) are deleted.",
   "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.": "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.",
-  "The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters": "The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters",
+  "The combined length of the policy namespace and name must not exceed 62 characters": "The combined length of the policy namespace and name must not exceed 62 characters",
   "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.": "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.",
   "The existing namespace where the credential secret will be stored.": "The existing namespace where the credential secret will be stored.",
   "The following Argo application(s) deployed by the application set will also be deleted:": "The following Argo application(s) deployed by the application set will also be deleted:",
