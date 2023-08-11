@@ -16,6 +16,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
   const isOCPApp = apiVersion === 'ocp'
   const isFluxApp = apiVersion === 'flux'
   const { applications, applicationSets, argoApplications } = recoilStates
+  let isAppSetPullModel = false
 
   if (apiVersion === 'application.app.k8s.io') {
     app = applications.find((app) => {
@@ -38,6 +39,10 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         const labels = get(placementDecision, 'metadata.labels', {})
         return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
+
+      if (get(app, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
+        isAppSetPullModel = true
+      }
     }
   }
 
@@ -94,6 +99,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
       isAppSet: isAppSet,
       isOCPApp,
       isFluxApp,
+      isAppSetPullModel,
     }
 
     // a short sweet ride for argo
@@ -102,6 +108,9 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
     }
 
     if (isAppSet) {
+      if (isAppSetPullModel) {
+        return getAppSetApplicationPullModel(model, app, recoilStates, clusters)
+      }
       return getAppSetApplication(model, app, recoilStates, clusters)
     }
 
@@ -163,6 +172,71 @@ export const getAppSetApplication = (model, app, recoilStates, clusters) => {
           })
         }
       }
+    }
+  })
+
+  model.appSetApps = appSetApps
+  model.appSetClusters = appSetClusters
+
+  return model
+}
+
+export const getAppSetApplicationPullModel = (model, app, recoilStates, clusters) => {
+  const { multiclusterApplicationSetReports } = recoilStates
+  const multiclusterApplicationSetReport = multiclusterApplicationSetReports.find(
+    (report) => report.metadata.name === app.metadata.name && report.metadata.namespace === app.metadata.namespace
+  )
+  const argoApps = get(multiclusterApplicationSetReport, 'statuses.clusterConditions', [])
+  const resources = get(multiclusterApplicationSetReport, 'statuses.resources', [])
+  const appSetApps = []
+  const appSetClusters = []
+
+  argoApps.forEach((argoApp) => {
+    const appStr = get(argoApp, 'app')
+    const appData = appStr ? appStr.split('/') : []
+    const conditions = get(argoApp, 'conditions', [])
+    appSetApps.push({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        name: appData[1],
+        namespace: appData[0],
+      },
+      spec: {
+        destination: {
+          name: argoApp.cluster,
+        },
+      },
+      status: {
+        health: {
+          status: argoApp.healthStatus,
+        },
+        conditions,
+        sync: {
+          status: argoApp.syncStatus,
+        },
+        resources,
+      },
+    })
+
+    const cluster = findCluster(clusters, argoApp.cluster, false)
+    if (cluster) {
+      const url = cluster.kubeApiServer
+      let status
+      if (cluster.status === 'ready') {
+        status = 'ok'
+      } else if (cluster.status === 'unknown') {
+        status = 'offline'
+      } else {
+        status = cluster.status
+      }
+      appSetClusters.push({
+        name: cluster.name,
+        namespace: cluster.namespace,
+        url,
+        status,
+        created: cluster.creationTimestamp,
+      })
     }
   })
 

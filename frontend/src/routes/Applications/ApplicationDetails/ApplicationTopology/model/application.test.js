@@ -177,6 +177,7 @@ describe('getApplication Argo', () => {
     isArgoApp: true,
     isFluxApp: false,
     isOCPApp: false,
+    isAppSetPullModel: false,
     metadata: {
       annotations: [
         {
@@ -22472,6 +22473,7 @@ describe('getApplication AppSet', () => {
     isAppSet: true,
     isArgoApp: false,
     isFluxApp: false,
+    isAppSetPullModel: false,
     isOCPApp: false,
     metadata: {
       creationTimestamp: '2023-06-14T17:45:14Z',

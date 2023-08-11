@@ -205,6 +205,7 @@ export const getShapeTypeForSubscription = (node) => {
 
 export const getPulseStatusForArgoApp = (node, isAppSet) => {
   const relatedApps = isAppSet ? _.get(node, 'specs.appSetApps', []) : []
+  const isArgoCDPullModelTargetLocalCluster = _.get(node, 'isArgoCDPullModelTargetLocalCluster')
 
   if (!isAppSet) {
     // add this node
@@ -218,6 +219,10 @@ export const getPulseStatusForArgoApp = (node, isAppSet) => {
     missingUnknownProgressingSuspendedCount = 0,
     degradedCount = 0
   let appWithConditions = 0
+
+  if (relatedApps.length > 0 && isArgoCDPullModelTargetLocalCluster) {
+    appWithConditions++
+  }
 
   relatedApps.forEach((app) => {
     const relatedAppHealth = isAppSet
@@ -643,7 +648,19 @@ export const setAppSetDeployStatus = (node, details, t) => {
   }
 
   const appSetApps = _.get(node, 'specs.appSetApps', [])
+  const isArgoCDPullModelTargetLocalCluster = _.get(node, 'isArgoCDPullModelTargetLocalCluster')
   if (appSetApps.length === 0) {
+    if (isArgoCDPullModelTargetLocalCluster) {
+      details.push({
+        labelValue: t('Error'),
+        value: t(
+          'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.'
+        ),
+        status: failureStatus,
+      })
+      return
+    }
+
     details.push({
       labelValue: t('Error'),
       value: t(
@@ -652,6 +669,19 @@ export const setAppSetDeployStatus = (node, details, t) => {
       status: failureStatus,
     })
     return
+  } else {
+    if (isArgoCDPullModelTargetLocalCluster) {
+      details.push({
+        labelValue: t('Warning'),
+        value: t(
+          'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.'
+        ),
+        status: warningStatus,
+      })
+      details.push({
+        type: 'spacer',
+      })
+    }
   }
 
   details.push({

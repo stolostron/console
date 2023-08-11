@@ -100,6 +100,37 @@ const getArgoClusterList = (
   return Array.from(clusterSet)
 }
 
+const isArgoPullModel = (resource: ApplicationSet) => {
+  if (_.get(resource, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
+    return true
+  }
+  return false
+}
+
+const getArgoPullModelClusterList = (resource: ApplicationSet, placementDecisions: PlacementDecision[]) => {
+  const clusterSet = new Set<string>()
+  const placementName = _.get(
+    resource,
+    'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+    ''
+  )
+  const placementNamespace = _.get(resource, 'metadata.namespace', '')
+  const placementDecision = placementDecisions.find(
+    (pd) =>
+      pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
+      pd.metadata.namespace === placementNamespace
+  )
+  const clusterDecisions = _.get(placementDecision, 'status.decisions', [])
+
+  clusterDecisions.forEach((cd: any) => {
+    if (cd.clusterName !== 'local-cluster') {
+      clusterSet.add(cd.clusterName)
+    }
+  })
+
+  return Array.from(clusterSet)
+}
+
 const getSubscriptionsClusterList = (
   resource: Application,
   placementDecisions: PlacementDecision[],
@@ -158,6 +189,8 @@ export const getClusterList = (
 
   if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
     return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
+  } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as ApplicationSet)) {
+    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions)
   } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
     return getArgoClusterList(
       argoApplications.filter(

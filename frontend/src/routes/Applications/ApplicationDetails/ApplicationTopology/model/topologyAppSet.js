@@ -44,6 +44,7 @@ export function getAppSetTopology(application) {
 
   // create placement node
   let isPlacementFound = false
+  let isArgoCDPullModelTargetLocalCluster = false
   const placement = get(application, 'placement', '')
   const placementId = `member--placements--${namespace}--${name}`
   if (placement) {
@@ -51,7 +52,11 @@ export function getAppSetTopology(application) {
     const {
       metadata: { name, namespace },
     } = placement
+    const clusterDecisions = get(placement, 'status.decisions', [])
 
+    if (clusterDecisions.find((cluster) => cluster.clusterName === 'local-cluster') && application.isAppSetPullModel) {
+      isArgoCDPullModelTargetLocalCluster = true
+    }
     nodes.push({
       name,
       namespace,
@@ -76,6 +81,7 @@ export function getAppSetTopology(application) {
   }
 
   set(nodes[0], 'isPlacementFound', isPlacementFound)
+  set(nodes[0], 'isArgoCDPullModelTargetLocalCluster', isArgoCDPullModelTargetLocalCluster)
 
   const clusterParentId = placement ? placementId : appId
   const source =

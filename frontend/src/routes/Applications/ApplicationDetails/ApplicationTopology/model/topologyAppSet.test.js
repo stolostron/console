@@ -410,6 +410,7 @@ it('getAppSetTopology success scenario', () => {
     nodes: [
       {
         id: 'application--feng-appset-hello',
+        isArgoCDPullModelTargetLocalCluster: false,
         isPlacementFound: true,
         name: 'feng-appset-hello',
         namespace: 'openshift-gitops',

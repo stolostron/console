@@ -68,6 +68,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
+  { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
   {
     kind: 'CertificateSigningRequest',
