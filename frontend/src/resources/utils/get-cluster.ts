@@ -343,7 +343,7 @@ export type UpgradeInfo = {
 }
 
 export function mapClusters(
-  clusterDeployments: ClusterDeployment[] = [],
+  allClusterDeployments: ClusterDeployment[] = [],
   managedClusterInfos: ManagedClusterInfo[] = [],
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
@@ -356,6 +356,10 @@ export function mapClusters(
   nodePools: NodePoolK8sResource[] = []
 ) {
   const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
+  const clusterDeployments = allClusterDeployments.filter(
+    // CDs with AgentCluster as owner are just meta objects for AI. We can ignore them.
+    (cd) => (cd.metadata.ownerReferences ? !cd.metadata.ownerReferences.some((o) => o.kind === 'AgentCluster') : true)
+  )
   const uniqueClusterNames = Array.from(
     new Set([
       ...clusterDeployments.map((cd) => cd.metadata.name),
