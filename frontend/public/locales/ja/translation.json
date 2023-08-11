@@ -2628,7 +2628,7 @@
   "The cluster has no nodes.": "クラスターにはノードがありません。",
   "The cluster name is already used by another cluster.": "クラスター名は、別のクラスターによって既に使用されています。",
   "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.": "カウントが 3 に等しくない場合、クラスタープールはマシンプールを生成しません。ノードのスケーリングは利用できなくなります。",
-  "The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters": "namespace とポリシー名 (namespaceName.policyName) の組み合わせには、64 文字以上指定できません",
+  "The combined length of the policy namespace and name must not exceed 62 characters": "namespace とポリシー名 <namespaceName>.<policyName> の組み合わせには、62 文字以上指定できません",
   "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.": "ミラーレジストリーに使用した証明書ファイルの内容。これは、既存の信頼できる認証局、またはミラーレジストリー用に生成した自己署名証明書とすることができます。",
   "The existing namespace where the credential secret will be stored.": "認証情報のシークレットが保存される既存の namespace。",
   "The following Argo application(s) deployed by the application set will also be deleted:": "アプリケーションセットによってデプロイされた以下の Argo アプリケーションも削除されます:",

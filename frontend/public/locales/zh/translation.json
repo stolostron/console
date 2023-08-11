@@ -2628,7 +2628,7 @@
   "The cluster has no nodes.": "集群没有节点。",
   "The cluster name is already used by another cluster.": "集群名称已被另一个集群使用。",
   "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.": "如果计数不等于 3，集群池将不会生成机器池。节点扩展将不可用。",
-  "The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters": "命名空间和策略名称 (namespaceName.policyName) 的组合长度不应超过 63 个字符",
+  "The combined length of the policy namespace and name must not exceed 62 characters": "命名空间和策略名称 <namespaceName>.<policyName> 的组合长度不应超过 62 个字符",
   "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.": "用于镜像注册中心的证书文件的内容，可以是现有的可信的证书颁发机构，或您为镜像注册中心生成的自签名证书。",
   "The existing namespace where the credential secret will be stored.": "存储凭证 secret 的现有命名空间。",
   "The following Argo application(s) deployed by the application set will also be deleted:": "以下由应用程序集部署的 Argo 应用程序也将被删除：",

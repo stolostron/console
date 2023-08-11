@@ -2628,7 +2628,7 @@
   "The cluster has no nodes.": "클러스터에 노드가 없습니다.",
   "The cluster name is already used by another cluster.": "클러스터 이름이 이미 다른 클러스터에서 사용되고 있습니다.",
   "The cluster pool will not generate machine pools if the count is not equal to 3. Node scaling will be unavailable.": "클러스터 풀은 개수가 3개가 아닌 경우 머신 풀을 생성하지 않습니다. 노드 확장을 사용할 수 없게 됩니다.",
-  "The combined length of namespace and policy name (namespaceName.policyName) must not exceed 63 characters": "네임스페이스 및 정책 이름(namespaceName.policyName)의 결합된 길이는 63자를 초과해서는 안 됩니다",
+  "The combined length of the policy namespace and name must not exceed 62 characters": "네임스페이스 및 정책 이름이 결합된 길이는 62자를 초과해서는 안 됩니다",
   "The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.": "기존의 신뢰할 수 있는 인증 기관 또는 미러 레지스트리에 대해 생성한 자체 서명된 인증서일 수 있는 미러 레지스트리에 사용한 인증서 파일의 내용입니다.",
   "The existing namespace where the credential secret will be stored.": "인증 정보 시크릿이 저장되는 기존 네임스페이스입니다.",
   "The following Argo application(s) deployed by the application set will also be deleted:": "애플리케이션 세트에서 배포한 다음 Argo 애플리케이션도 삭제됩니다.",
