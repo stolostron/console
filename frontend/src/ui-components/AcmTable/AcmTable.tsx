@@ -74,6 +74,7 @@ import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
+import { AcmManageColumn } from './AcmManageColumn'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -98,6 +99,15 @@ export interface IAcmTableColumn<T> {
   transforms?: ITransform[]
 
   cellTransforms?: ITransform[]
+
+  // Below this for column management
+  id?: string
+
+  order?: number
+
+  isDefault?: boolean
+  // If it is true, This column always the last one and isn't managed by column management filter
+  isActionCol?: boolean
 }
 
 /* istanbul ignore next */
@@ -307,6 +317,7 @@ export type AcmTableProps<T> = {
   initialFilters?: { [key: string]: string[] }
   filters?: ITableFilter<T>[]
   id?: string
+  showColumManagement?: boolean
 }
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
@@ -324,6 +335,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     gridBreakPoint,
     initialSelectedItems,
     onSelect: propsOnSelect,
+    showColumManagement,
   } = props
 
   const defaultSort = {
@@ -392,6 +404,54 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [tableDiv, setTableDiv] = useState<HTMLDivElement | null>(null)
   const outerDivRef = useCallback((elem: HTMLDivElement | null) => setOuterDiv(elem), [])
   const tableDivRef = useCallback((elem: HTMLDivElement | null) => setTableDiv(elem), [])
+
+  //Column management
+  const defaultColIds = useMemo(
+    () => columns.filter((col) => col.isDefault && col.id && !col.isActionCol).map((col) => col.id as string),
+    [columns]
+  )
+  const defaultOrderIds = useMemo(
+    () =>
+      columns
+        .filter((col) => !col.isActionCol)
+        .sort((a, b) => {
+          return a.order != null && b.order != null ? a.order - b.order : -1
+        })
+        .map((col) => col.id as string),
+    [columns]
+  )
+  const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols')!)
+  const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder')!)
+  const [colOrderIds, setColOrderIds] = useState<string[]>(localSavedColOrder || defaultOrderIds)
+  const [selectedColIds, setSelectedColIds] = useState<string[]>(localSavedCols || defaultColIds)
+  const selectedSortedCols = useMemo(() => {
+    const sortedColumns: IAcmTableColumn<T>[] = []
+
+    if (!showColumManagement) {
+      return columns
+    }
+
+    // sort column by column management order
+    colOrderIds.forEach((id) => {
+      const find = columns.find((col) => col.id === id)
+      find && sortedColumns.push(find!)
+    })
+    // Btn column is always the last
+    const btn = columns.find((col) => col.isActionCol)
+    btn && sortedColumns.push(btn!)
+
+    return sortedColumns.filter((column) => {
+      return selectedColIds.includes(column.id as string)
+    })
+  }, [columns, selectedColIds, colOrderIds, showColumManagement])
+
+  useEffect(() => {
+    localStorage.setItem(id + 'SavedCols', JSON.stringify(selectedColIds))
+  }, [selectedColIds, id])
+
+  useEffect(() => {
+    localStorage.setItem(id + 'SavedColOrder', JSON.stringify(colOrderIds))
+  }, [colOrderIds, id])
 
   useEffect(() => {
     setLocalStorage(cachedPrefixId, cache)
@@ -527,8 +587,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       subRows?.map((row, idx) => (row.props = { key: `${key}-subrow-${idx}` }))
 
       const tableItem: ITableItem<T> = { item, subRows, key }
-      for (let i = 0; i < columns.length; i++) {
-        const column = columns[i]
+      for (let i = 0; i < selectedSortedCols.length; i++) {
+        const column = selectedSortedCols[i]
         if (column.search) {
           if (typeof column.search === 'string') {
             tableItem[`column-${i}`] = get(item as unknown as Record<string, unknown>, column.search)
@@ -540,7 +600,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return tableItem
     })
     return { tableItems, totalCount: tableItems.length }
-  }, [items, columns, addSubRows, keyFn, filters, toolbarFilterIds])
+  }, [items, selectedSortedCols, addSubRows, keyFn, filters, toolbarFilterIds])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -572,8 +632,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }>(() => {
     const sorted: ITableItem<T>[] = [...filtered]
     if (sort && sort.index !== undefined) {
-      const compare = columns[sort.index].sort
-
+      const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
         if (typeof compare === 'string') {
@@ -587,7 +646,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     }
     return { sorted, itemCount: sorted.length }
-  }, [filtered, sort, columns])
+  }, [filtered, sort, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
     const start = (page - 1) * perPage
@@ -612,7 +671,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
     const newRows: IRow[] = []
     const itemToCells = (item: T, key: string) =>
-      columns.map((column) => {
+      selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
           ? get(item as Record<string, unknown>, column.cell)
           : { title: <Fragment key={key}>{column.cell(item)}</Fragment> }
@@ -635,7 +694,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     })
     return { rows: newRows, addedSubRowCount }
-  }, [paged, columns, expanded, selected, disabled])
+  }, [paged, selectedSortedCols, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {
@@ -943,6 +1002,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
+            {showColumManagement && (
+              <AcmManageColumn<T>
+                {...{ selectedColIds, setSelectedColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                allCols={columns.filter((col) => !col.isActionCol)}
+              />
+            )}
             {customTableAction}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
@@ -983,7 +1048,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             <div ref={tableDivRef} className={tableDivClass}>
               <Table
                 className={tableClass}
-                cells={columns.map((column) => {
+                cells={selectedSortedCols.map((column) => {
                   return {
                     title: column.header,
                     header: column.tooltip
