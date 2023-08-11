@@ -103,11 +103,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
         <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description={t('Use a Git repository')} />
         <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>
-      <WizHidden
-        hidden={
-          editMode === EditMode.Create ? (data) => data.repositoryType !== 'git' : (data) => data.path === undefined
-        }
-      >
+      <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
         {/* git repository */}
         <GitURLPath
           t={t}
@@ -192,11 +188,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       </WizHidden>
 
       {/* helm repository */}
-      <WizHidden
-        hidden={
-          editMode === EditMode.Create ? (data) => data.repositoryType !== 'helm' : (data) => data.chart === undefined
-        }
-      >
+      <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>
         <HelmURLPath
           getGitRevisions={getGitRevisions}
           helmChannels={helmChannels}
