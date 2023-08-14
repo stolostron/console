@@ -100,14 +100,14 @@ const getArgoClusterList = (
   return Array.from(clusterSet)
 }
 
-const isArgoPullModel = (resource: ApplicationSet) => {
+export const isArgoPullModel = (resource: ApplicationSet) => {
   if (_.get(resource, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
     return true
   }
   return false
 }
 
-const getArgoPullModelClusterList = (resource: ApplicationSet, placementDecisions: PlacementDecision[]) => {
+export const getArgoPullModelClusterList = (resource: ApplicationSet, placementDecisions: PlacementDecision[]) => {
   const clusterSet = new Set<string>()
   const placementName = _.get(
     resource,

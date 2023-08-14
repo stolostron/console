@@ -22533,3 +22533,9651 @@ describe('getApplication AppSet', () => {
     expect(model).toEqual(result)
   })
 })
+
+describe('getApplication AppSet pull model', () => {
+  const appData = {
+    namespace: "openshift-gitops",
+    name: "feng-pm",
+    selectedChannel: undefined,
+    recoilStates: {
+      "applications": [
+          {
+              "apiVersion": "app.k8s.io/v1beta1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/deployables": "",
+                      "apps.open-cluster-management.io/subscriptions": "",
+                      "open-cluster-management.io/user-group": "c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM="
+                  },
+                  "creationTimestamp": "2023-08-10T16:50:35Z",
+                  "generation": 1,
+                  "name": "test",
+                  "namespace": "default",
+                  "resourceVersion": "76432099",
+                  "uid": "2a392790-9f8e-49be-97c1-f317252f662b"
+              },
+              "spec": {
+                  "componentKinds": [
+                      {
+                          "group": "apps.open-cluster-management.io",
+                          "kind": "Subscription"
+                      }
+                  ],
+                  "descriptor": {},
+                  "selector": {
+                      "matchExpressions": [
+                          {
+                              "key": "app",
+                              "operator": "In",
+                              "values": [
+                                  "test"
+                              ]
+                          }
+                      ]
+                  }
+              }
+          },
+          {
+              "apiVersion": "app.k8s.io/v1beta1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/deployables": "",
+                      "apps.open-cluster-management.io/subscriptions": "",
+                      "open-cluster-management.io/user-group": "c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM="
+                  },
+                  "creationTimestamp": "2023-08-02T17:32:45Z",
+                  "generation": 1,
+                  "name": "magchen-test-sub",
+                  "namespace": "magchen-ns",
+                  "resourceVersion": "76432092",
+                  "uid": "aeb0fff6-dbd9-48eb-a0ed-7ecbdfa1df2e"
+              },
+              "spec": {
+                  "componentKinds": [
+                      {
+                          "group": "apps.open-cluster-management.io",
+                          "kind": "Subscription"
+                      }
+                  ],
+                  "descriptor": {},
+                  "selector": {
+                      "matchExpressions": [
+                          {
+                              "key": "app",
+                              "operator": "In",
+                              "values": [
+                                  "magchen-test-sub"
+                              ]
+                          }
+                      ]
+                  }
+              }
+          },
+          {
+              "apiVersion": "app.k8s.io/v1beta1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "open-cluster-management.io/user-group": "c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LWFnZW50LWFkZG9uLHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LWFnZW50LWFkZG9uOmFwcGxpY2F0aW9uLW1hbmFnZXI="
+                  },
+                  "creationTimestamp": "2023-08-09T22:58:03Z",
+                  "generation": 1,
+                  "labels": {
+                      "app.kubernetes.io/instance": "magchen-appset-local-cluster"
+                  },
+                  "name": "nested-helloworld-app",
+                  "namespace": "nested-helloworld-app",
+                  "resourceVersion": "76099276",
+                  "uid": "9ed5dfe0-20aa-447e-9ded-d8093dbc88f6"
+              },
+              "spec": {
+                  "componentKinds": [
+                      {
+                          "group": "apps.open-cluster-management.io",
+                          "kind": "Subscription"
+                      }
+                  ],
+                  "selector": {
+                      "matchExpressions": [
+                          {
+                              "key": "app",
+                              "operator": "In",
+                              "values": [
+                                  "nested-helloworld-app"
+                              ]
+                          }
+                      ]
+                  }
+              }
+          }
+      ],
+      "applicationSets": [
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T18:01:14Z",
+                  "generation": 2,
+                  "name": "feng-pm",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76441171",
+                  "uid": "92436748-e765-4057-9621-2c3a74b3a487"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "feng-pm-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "annotations": {
+                              "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
+                              "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                              "argocd.argoproj.io/skip-reconcile": "true"
+                          },
+                          "labels": {
+                              "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
+                              "test1": "test1"
+                          },
+                          "name": "feng-pm-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "feng-pm",
+                              "server": "https://kubernetes.default.svc"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "helloworld",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          },
+                          "syncPolicy": {
+                              "automated": {},
+                              "syncOptions": [
+                                  "CreateNamespace=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-10T17:11:28Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T17:11:28Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T17:11:28Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T18:27:16Z",
+                  "generation": 1,
+                  "name": "feng-pm-local",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76757066",
+                  "uid": "feda10af-6293-470e-8559-475a911376f1"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "feng-pm-placement-local"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "annotations": {
+                              "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
+                              "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                              "argocd.argoproj.io/skip-reconcile": "true"
+                          },
+                          "labels": {
+                              "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                          },
+                          "name": "feng-pm-local-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "feng-pm-local",
+                              "server": "https://kubernetes.default.svc"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "helloworld",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          },
+                          "syncPolicy": {
+                              "automated": {},
+                              "syncOptions": [
+                                  "CreateNamespace=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:17Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:17Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:17Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-06-05T14:25:20Z",
+                  "generation": 1,
+                  "name": "magchen-appset",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76720414",
+                  "uid": "8cb5826f-2388-445f-b263-cc75222a821f"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "magchen-appset-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "labels": {
+                              "velero.io/exclude-from-backup": "true"
+                          },
+                          "name": "magchen-appset-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          },
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-10T20:25:09Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:25:09Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:25:09Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-06-12T13:53:06Z",
+                  "generation": 3,
+                  "name": "magchen-appset-2",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76757086",
+                  "uid": "0b4b9910-b7bc-4b7c-9781-a649795fe4e6"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "magchen-appset-2-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "labels": {
+                              "velero.io/exclude-from-backup": "true"
+                          },
+                          "name": "magchen-appset-2-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "magchen-multiple",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ],
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:18Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:18Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T20:49:18Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-06-08T18:09:47Z",
+                  "generation": 1,
+                  "name": "magchen-appset-multiple",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "75676484",
+                  "uid": "cebad62a-bb3a-45fa-87e6-7132b8aba8ca"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "magchen-appset-multiple-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "labels": {
+                              "velero.io/exclude-from-backup": "true"
+                          },
+                          "name": "magchen-appset-multiple-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "sources": [
+                              {
+                                  "path": "crd",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              }
+                          ],
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-09T18:14:11Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-02T16:45:22Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T18:14:11Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-06-14T17:45:14Z",
+                  "generation": 1,
+                  "name": "magchen-old-appset",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "72384499",
+                  "uid": "225ca82c-80c2-4850-9c0a-080aa1649bdd"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "magchen-old-appset-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "labels": {
+                              "velero.io/exclude-from-backup": "true"
+                          },
+                          "name": "magchen-old-appset-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "philip-app",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          },
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-02T16:45:23Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-02T16:45:23Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-02T16:45:23Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T15:05:35Z",
+                  "generation": 1,
+                  "name": "mysql-test",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "75848186",
+                  "uid": "6aa6f9cd-afea-4d1d-8723-e40b3a5287f7"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "feng-pm-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "annotations": {
+                              "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
+                              "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                              "argocd.argoproj.io/skip-reconcile": "true"
+                          },
+                          "labels": {
+                              "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                          },
+                          "name": "mysql-test-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "gitops-httpd-application",
+                              "server": "https://kubernetes.default.svc"
+                          },
+                          "project": "default",
+                          "source": {
+                              "chart": "mysql",
+                              "repoURL": "https://charts.helm.sh/stable",
+                              "targetRevision": "1.6.9"
+                          },
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-09T20:11:36Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T20:11:36Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T20:11:36Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-06-26T18:22:01Z",
+                  "generation": 1,
+                  "name": "phil-appset",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "75780697",
+                  "uid": "611186d3-72f3-4203-a542-f31df08c9857"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "phil-appset-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "labels": {
+                              "velero.io/exclude-from-backup": "true"
+                          },
+                          "name": "phil-appset-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "phil-ns",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          },
+                          "syncPolicy": {
+                              "automated": {
+                                  "prune": true,
+                                  "selfHeal": true
+                              },
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-09T19:25:39Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T19:25:39Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T19:25:39Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "ApplicationSet",
+              "metadata": {
+                  "creationTimestamp": "2023-08-03T21:17:47Z",
+                  "generation": 1,
+                  "name": "xj-applicationset-1",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "73636234",
+                  "uid": "7d8b385e-ccbd-4097-9ef0-18401297d349"
+              },
+              "spec": {
+                  "generators": [
+                      {
+                          "clusterDecisionResource": {
+                              "configMapRef": "acm-placement",
+                              "labelSelector": {
+                                  "matchLabels": {
+                                      "cluster.open-cluster-management.io/placement": "feng-pm-placement"
+                                  }
+                              },
+                              "requeueAfterSeconds": 180
+                          }
+                      }
+                  ],
+                  "template": {
+                      "metadata": {
+                          "name": "xj-applicationset-1-{{name}}"
+                      },
+                      "spec": {
+                          "destination": {
+                              "namespace": "playback-ns",
+                              "server": "{{server}}"
+                          },
+                          "project": "default",
+                          "source": {
+                              "path": "guestbook",
+                              "repoURL": "https://github.com/xiangjingli/testrepo.git",
+                              "targetRevision": "master"
+                          },
+                          "syncPolicy": {
+                              "syncOptions": [
+                                  "CreateNamespace=true"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-03T21:17:47Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "False",
+                          "type": "ErrorOccurred"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-03T21:17:47Z",
+                          "message": "Successfully generated parameters for all Applications",
+                          "reason": "ParametersGenerated",
+                          "status": "True",
+                          "type": "ParametersGenerated"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-03T21:17:47Z",
+                          "message": "ApplicationSet up to date",
+                          "reason": "ApplicationSetUpToDate",
+                          "status": "True",
+                          "type": "ResourcesUpToDate"
+                      }
+                  ]
+              }
+          }
+      ],
+      "argoApplications": [
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "feng-managed1",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-08T18:19:44Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 10,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
+                      "test1": "test1"
+                  },
+                  "name": "feng-pm-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "feng-pm",
+                          "uid": "92436748-e765-4057-9621-2c3a74b3a487"
+                      }
+                  ],
+                  "resourceVersion": "77559639",
+                  "uid": "d304bf9b-8196-48db-95e8-c95d5e088182"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "feng-pm",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "helloworld",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {},
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-10T22:38:56Z",
+                          "message": "kubectl get multiclusterapplicationsetreports -n openshift-gitops feng-pm\nAdditional details available in ManagedCluster feng-managed1\nkubectl get applications -n openshift-gitops feng-pm-feng-managed1",
+                          "type": "AdditionalStatusReport"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T22:38:56Z",
+                          "message": "Application referencing project default which does not exist",
+                          "type": "InvalidSpecError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "feng-managed2",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/refresh": "normal",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-11T13:04:45Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 12,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
+                      "test1": "test1"
+                  },
+                  "name": "feng-pm-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "feng-pm",
+                          "uid": "92436748-e765-4057-9621-2c3a74b3a487"
+                      }
+                  ],
+                  "resourceVersion": "77825792",
+                  "uid": "4346dc82-2e60-45ae-a73a-90b382a3092e"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "feng-pm",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "helloworld",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {},
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "message": "kubectl get multiclusterapplicationsetreports -n openshift-gitops feng-pm\nAdditional details available in ManagedCluster feng-managed2\nkubectl get applications -n openshift-gitops feng-pm-feng-managed2",
+                          "type": "AdditionalStatusReport"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "feng-managed1",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/refresh": "normal",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-09T20:24:13Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 11,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                  },
+                  "name": "feng-pm-local-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "feng-pm-local",
+                          "uid": "feda10af-6293-470e-8559-475a911376f1"
+                      }
+                  ],
+                  "resourceVersion": "77682488",
+                  "uid": "35ba1e39-3d42-40fb-8f07-09b78fa5a3eb"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "feng-pm-local",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "helloworld",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {},
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "message": "kubectl get multiclusterapplicationsetreports -n openshift-gitops feng-pm-local\nAdditional details available in ManagedCluster feng-managed1\nkubectl get applications -n openshift-gitops feng-pm-local-feng-managed1",
+                          "type": "AdditionalStatusReport"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "local-cluster",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/refresh": "normal",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-09T18:27:16Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-10T20:27:48Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 2,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                  },
+                  "name": "feng-pm-local-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "feng-pm-local",
+                          "uid": "feda10af-6293-470e-8559-475a911376f1"
+                      }
+                  ],
+                  "resourceVersion": "77006291",
+                  "uid": "a9b191fe-5225-4a3b-839b-526cb128b81b"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "feng-pm-local",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "helloworld",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {},
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "health": {},
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": ""
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:46Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 7355,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-2-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-2",
+                          "uid": "0b4b9910-b7bc-4b7c-9781-a649795fe4e6"
+                      }
+                  ],
+                  "resourceVersion": "77555256",
+                  "uid": "801fd658-c974-4c88-8b38-234cfd753fd9"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-multiple",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "mychart",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      },
+                      {
+                          "path": "app1",
+                          "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                          "targetRevision": "master"
+                      },
+                      {
+                          "chart": "nginx-ingress",
+                          "repoURL": "https://charts.helm.sh/stable/",
+                          "targetRevision": "1.41.3"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "health": {
+                      "status": "Degraded"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T13:59:47Z",
+                          "deployedAt": "2023-08-09T13:59:49Z",
+                          "id": 0,
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-11T13:01:46Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  },
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  }
+                              ],
+                              "revisions": [
+                                  "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                                  "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                                  "1.41.3"
+                              ],
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-11T13:01:45Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/sandbox configured",
+                                  "name": "sandbox",
+                                  "namespace": "magchen-multiple",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Running",
+                                  "kind": "Deployment",
+                                  "message": "deployment.apps/example configured",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "",
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:45Z",
+                  "resources": [
+                      {
+                          "kind": "Namespace",
+                          "name": "sandbox",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-feng-managed1-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress-controller",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress-default-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-feng-managed1-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-feng-managed1-mychart\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-feng-managed1-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-feng-managed1-nginx-ingress-controller\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress-controller",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-feng-managed1-nginx-ingress-default-backend\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress-default-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"example\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "example",
+                          "namespace": "sandbox",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "ClusterRole",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "ClusterRoleBinding",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "Role",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "RoleBinding",
+                          "name": "magchen-appset-2-feng-managed1-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      }
+                  ],
+                  "sourceTypes": [
+                      "Helm",
+                      "Kustomize",
+                      "Helm"
+                  ],
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd",
+                          "nginx:1.16.0"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-multiple",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      },
+                      "revisions": [
+                          "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "1.41.3"
+                      ],
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:35:56Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:44Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 4230,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-2-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-2",
+                          "uid": "0b4b9910-b7bc-4b7c-9781-a649795fe4e6"
+                      }
+                  ],
+                  "resourceVersion": "77550275",
+                  "uid": "4ca2d288-6102-475a-99a5-8c17a5e574ca"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-multiple",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "mychart",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      },
+                      {
+                          "path": "app1",
+                          "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                          "targetRevision": "master"
+                      },
+                      {
+                          "chart": "nginx-ingress",
+                          "repoURL": "https://charts.helm.sh/stable/",
+                          "targetRevision": "1.41.3"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "DeletionError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-10T13:35:57Z",
+                          "deployedAt": "2023-08-10T13:35:59Z",
+                          "id": 0,
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-10T22:56:52Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  },
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revisions": [
+                                  "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                                  "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                                  "1.41.3"
+                              ],
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-10T22:56:47Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/sandbox configured",
+                                  "name": "sandbox",
+                                  "namespace": "magchen-multiple",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Running",
+                                  "kind": "Deployment",
+                                  "message": "deployment.apps/example configured",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "",
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:09Z",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd",
+                          "nginx:1.16.0"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-multiple",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T17:58:45Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 3378,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-2-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-2",
+                          "uid": "0b4b9910-b7bc-4b7c-9781-a649795fe4e6"
+                      }
+                  ],
+                  "resourceVersion": "77555423",
+                  "uid": "6a4308c3-a7cd-40c4-a744-e1e7a0a62a9e"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-multiple",
+                      "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "mychart",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      },
+                      {
+                          "path": "app1",
+                          "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                          "targetRevision": "master"
+                      },
+                      {
+                          "chart": "nginx-ingress",
+                          "repoURL": "https://charts.helm.sh/stable/",
+                          "targetRevision": "1.41.3"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:54:46Z",
+                          "message": "Deployment/example is part of applications openshift-gitops/magchen-appset-2-local-cluster and phil-appset-local-cluster",
+                          "type": "SharedResourceWarning"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:54:52Z",
+                          "message": "Namespace/sandbox is part of applications openshift-gitops/magchen-appset-2-local-cluster and phil-appset-local-cluster",
+                          "type": "SharedResourceWarning"
+                      }
+                  ],
+                  "health": {
+                      "status": "Degraded"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T13:57:17Z",
+                          "deployedAt": "2023-08-09T13:57:21Z",
+                          "id": 0,
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      },
+                      {
+                          "deployStartedAt": "2023-08-10T20:52:15Z",
+                          "deployedAt": "2023-08-10T20:52:18Z",
+                          "id": 1,
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-14T14:54:52Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revisions": [
+                                  "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                                  "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                                  "1.41.3"
+                              ],
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-14T14:54:51Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Running",
+                                  "kind": "Deployment",
+                                  "message": "deployment.apps/example configured",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "",
+                          "revisions": [
+                              "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "1.41.3"
+                          ],
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:51Z",
+                  "resources": [
+                      {
+                          "kind": "Namespace",
+                          "name": "sandbox",
+                          "status": "OutOfSync",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-local-cluster-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress-controller",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "health": {
+                              "status": "Healthy"
+                          },
+                          "kind": "Service",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress-default-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-local-cluster-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-local-cluster-mychart\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-local-cluster-mychart",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-local-cluster-nginx-ingress-controller\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress-controller",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"magchen-appset-2-local-cluster-nginx-ingress-default-backend\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress-default-backend",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"example\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "example",
+                          "namespace": "sandbox",
+                          "status": "OutOfSync",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "ClusterRole",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "ClusterRoleBinding",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "Role",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "rbac.authorization.k8s.io",
+                          "kind": "RoleBinding",
+                          "name": "magchen-appset-2-local-cluster-nginx-ingress",
+                          "namespace": "magchen-multiple",
+                          "status": "Synced",
+                          "version": "v1"
+                      }
+                  ],
+                  "sourceTypes": [
+                      "Helm",
+                      "Kustomize",
+                      "Helm"
+                  ],
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd",
+                          "nginx:1.16.0"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-multiple",
+                              "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "mychart",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              },
+                              {
+                                  "path": "app1",
+                                  "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                                  "targetRevision": "master"
+                              },
+                              {
+                                  "chart": "nginx-ingress",
+                                  "repoURL": "https://charts.helm.sh/stable/",
+                                  "targetRevision": "1.41.3"
+                              }
+                          ]
+                      },
+                      "revisions": [
+                          "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "1.41.3"
+                      ],
+                      "status": "OutOfSync"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:45Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 245,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset",
+                          "uid": "8cb5826f-2388-445f-b263-cc75222a821f"
+                      }
+                  ],
+                  "resourceVersion": "77555232",
+                  "uid": "4ef55b95-fb2d-454a-a070-f32b572295a0"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "acmnestedapp",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:54:44Z",
+                          "message": "Failed sync attempt to db1b12ee473c8df262f5d896df5e76aafc6dc672: one or more synchronization tasks are not valid (retried 5 times).",
+                          "type": "SyncError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "operationState": {
+                      "finishedAt": "2023-08-09T14:08:06Z",
+                      "message": "one or more synchronization tasks are not valid (retried 5 times).",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Failed",
+                      "retryCount": 5,
+                      "startedAt": "2023-08-09T14:02:40Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "app.k8s.io",
+                                  "kind": "Application",
+                                  "message": "The Kubernetes API could not find version \"v1beta1\" of app.k8s.io/Application for requested resource nested-helloworld-app/nested-helloworld-app. Version \"v1alpha1\" of argoproj.io/Application is installed on the destination cluster.",
+                                  "name": "nested-helloworld-app",
+                                  "namespace": "nested-helloworld-app",
+                                  "status": "SyncFailed",
+                                  "syncPhase": "Sync",
+                                  "version": "v1beta1"
+                              }
+                          ],
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:39Z",
+                  "resources": [
+                      {
+                          "group": "app.k8s.io",
+                          "health": {
+                              "status": "Missing"
+                          },
+                          "kind": "Application",
+                          "name": "nested-helloworld-app",
+                          "namespace": "nested-helloworld-app",
+                          "status": "OutOfSync",
+                          "version": "v1beta1"
+                      }
+                  ],
+                  "sourceType": "Directory",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      },
+                      "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                      "status": "OutOfSync"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:37:08Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:44Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 133,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset",
+                          "uid": "8cb5826f-2388-445f-b263-cc75222a821f"
+                      }
+                  ],
+                  "resourceVersion": "77550264",
+                  "uid": "d2650ba6-c8a7-4931-889e-45b5de8fc3e9"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "acmnestedapp",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "DeletionError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "operationState": {
+                      "finishedAt": "2023-08-10T13:43:02Z",
+                      "message": "one or more synchronization tasks are not valid (retried 5 times).",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Failed",
+                      "retryCount": 5,
+                      "startedAt": "2023-08-10T13:37:08Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "app.k8s.io",
+                                  "kind": "Application",
+                                  "message": "The Kubernetes API could not find version \"v1beta1\" of app.k8s.io/Application for requested resource nested-helloworld-app/nested-helloworld-app. Version \"v1alpha1\" of argoproj.io/Application is installed on the destination cluster.",
+                                  "name": "nested-helloworld-app",
+                                  "namespace": "nested-helloworld-app",
+                                  "status": "SyncFailed",
+                                  "syncPhase": "Sync",
+                                  "version": "v1beta1"
+                              }
+                          ],
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:51:39Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T22:52:58Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 85,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset",
+                          "uid": "8cb5826f-2388-445f-b263-cc75222a821f"
+                      }
+                  ],
+                  "resourceVersion": "77555117",
+                  "uid": "0e5cfe99-5a6b-48a2-92a0-e1865e74c1af"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "acmnestedapp",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "main"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T22:52:58Z",
+                          "deployedAt": "2023-08-09T22:58:04Z",
+                          "id": 0,
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-09T22:58:04Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-09T22:52:58Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "app.k8s.io",
+                                  "hookPhase": "Running",
+                                  "kind": "Application",
+                                  "message": "application.app.k8s.io/nested-helloworld-app created",
+                                  "name": "nested-helloworld-app",
+                                  "namespace": "nested-helloworld-app",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1beta1"
+                              }
+                          ],
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:39Z",
+                  "resources": [
+                      {
+                          "group": "app.k8s.io",
+                          "kind": "Application",
+                          "name": "nested-helloworld-app",
+                          "namespace": "nested-helloworld-app",
+                          "status": "Synced",
+                          "version": "v1beta1"
+                      }
+                  ],
+                  "sourceType": "Directory",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "acmnestedapp",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "main"
+                          }
+                      },
+                      "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:49Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 226,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-multiple-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-multiple",
+                          "uid": "cebad62a-bb3a-45fa-87e6-7132b8aba8ca"
+                      }
+                  ],
+                  "resourceVersion": "77550082",
+                  "uid": "abf96829-2152-40a7-a3fd-eebbd48aa81f"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "crd",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:06Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "reconciledAt": "2023-08-14T14:52:06Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "crd",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              }
+                          ]
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:37:08Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:45Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 119,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-multiple-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-multiple",
+                          "uid": "cebad62a-bb3a-45fa-87e6-7132b8aba8ca"
+                      }
+                  ],
+                  "resourceVersion": "77550256",
+                  "uid": "354bcc83-f00d-4c3a-8510-4f0f100e8b3f"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "crd",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "DeletionError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "reconciledAt": "2023-08-14T14:52:09Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "crd",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              }
+                          ]
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T17:58:49Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 134,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-appset-multiple-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-appset-multiple",
+                          "uid": "cebad62a-bb3a-45fa-87e6-7132b8aba8ca"
+                      }
+                  ],
+                  "resourceVersion": "77555116",
+                  "uid": "41d94d4c-fde3-4105-8e12-e476dd582ce3"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "magchen-ns",
+                      "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "sources": [
+                      {
+                          "path": "crd",
+                          "repoURL": "https://github.com/fxiang1/app-samples",
+                          "targetRevision": "main"
+                      }
+                  ],
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "reconciledAt": "2023-08-14T14:54:39Z",
+                  "resources": [
+                      {
+                          "group": "apiextensions.k8s.io",
+                          "kind": "CustomResourceDefinition",
+                          "name": "cars.feng.example.com",
+                          "status": "Synced",
+                          "version": "v1"
+                      }
+                  ],
+                  "sourceTypes": [
+                      "Directory"
+                  ],
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "magchen-ns",
+                              "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "repoURL": ""
+                          },
+                          "sources": [
+                              {
+                                  "path": "crd",
+                                  "repoURL": "https://github.com/fxiang1/app-samples",
+                                  "targetRevision": "main"
+                              }
+                          ]
+                      },
+                      "revisions": [
+                          "db1b12ee473c8df262f5d896df5e76aafc6dc672"
+                      ],
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-04-14T13:34:48Z",
+                  "generation": 11708,
+                  "name": "magchen-discovered",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77550445",
+                  "uid": "483f42b2-a5d2-49e3-9354-3bff011abcfb"
+              },
+              "spec": {
+                  "destination": {
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "sample-mortgagepo",
+                      "repoURL": "https://github.com/fxiang1/app-samples",
+                      "targetRevision": "HEAD"
+                  },
+                  "syncPolicy": {
+                      "automated": {}
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "rpc error: code = Unknown desc = sample-mortgagepo: app path does not exist",
+                          "type": "ComparisonError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-05-18T19:43:14Z",
+                          "deployedAt": "2023-05-18T19:43:15Z",
+                          "id": 0,
+                          "revision": "727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c",
+                          "source": {
+                              "path": "sample-mortgagepod",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      },
+                      {
+                          "deployStartedAt": "2023-05-18T19:47:13Z",
+                          "deployedAt": "2023-05-18T19:47:14Z",
+                          "id": 1,
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "sample-mortgagepod",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      },
+                      {
+                          "deployStartedAt": "2023-05-18T19:47:38Z",
+                          "deployedAt": "2023-05-18T19:47:39Z",
+                          "id": 2,
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "sample-mortgagepod",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      },
+                      {
+                          "deployStartedAt": "2023-05-19T21:57:51Z",
+                          "deployedAt": "2023-05-19T21:57:53Z",
+                          "id": 3,
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "sample-mortgagepod",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-05-19T21:57:53Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "username": "kube:admin"
+                          },
+                          "retry": {},
+                          "sync": {
+                              "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                              "syncStrategy": {
+                                  "hook": {}
+                              }
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-05-19T21:57:51Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/mortgagepod-ch created",
+                                  "name": "mortgagepod-ch",
+                                  "namespace": "",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "app.k8s.io",
+                                  "hookPhase": "Running",
+                                  "kind": "Application",
+                                  "message": "application.app.k8s.io/mortgagepod created",
+                                  "name": "mortgagepod",
+                                  "namespace": "default",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1beta1"
+                              },
+                              {
+                                  "group": "apps.open-cluster-management.io",
+                                  "hookPhase": "Running",
+                                  "kind": "Channel",
+                                  "message": "channel.apps.open-cluster-management.io/mortgagepod-channel created",
+                                  "name": "mortgagepod-channel",
+                                  "namespace": "mortgagepod-ch",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps.open-cluster-management.io",
+                                  "hookPhase": "Running",
+                                  "kind": "PlacementRule",
+                                  "message": "placementrule.apps.open-cluster-management.io/mortgagepod-placement created",
+                                  "name": "mortgagepod-placement",
+                                  "namespace": "default",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps.open-cluster-management.io",
+                                  "hookPhase": "Running",
+                                  "kind": "Subscription",
+                                  "message": "subscription.apps.open-cluster-management.io/mortgagepod-subscription created",
+                                  "name": "mortgagepod-subscription",
+                                  "namespace": "default",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "db1b12ee473c8df262f5d896df5e76aafc6dc672",
+                          "source": {
+                              "path": "sample-mortgagepod",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:15Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "server": "https://kubernetes.default.svc"
+                          },
+                          "source": {
+                              "path": "sample-mortgagepo",
+                              "repoURL": "https://github.com/fxiang1/app-samples",
+                              "targetRevision": "HEAD"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:49Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 7624,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-old-appset-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-old-appset",
+                          "uid": "225ca82c-80c2-4850-9c0a-080aa1649bdd"
+                      }
+                  ],
+                  "resourceVersion": "77550099",
+                  "uid": "fcb25aa3-d63f-476a-9fdf-e4124dd50f57"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "philip-app",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:06Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T13:59:49Z",
+                          "deployedAt": "2023-08-09T13:59:50Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-11T13:01:44Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  },
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-11T13:01:43Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/sandbox configured",
+                                  "name": "sandbox",
+                                  "namespace": "philip-app",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Running",
+                                  "kind": "Deployment",
+                                  "message": "deployment.apps/example configured",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:06Z",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "philip-app",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:38:22Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:44Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 4439,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-old-appset-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-old-appset",
+                          "uid": "225ca82c-80c2-4850-9c0a-080aa1649bdd"
+                      }
+                  ],
+                  "resourceVersion": "77555334",
+                  "uid": "2ef98b2e-5f15-4778-b877-b9bed7ef168e"
+              },
+              "operation": {
+                  "initiatedBy": {
+                      "automated": true
+                  },
+                  "retry": {
+                      "limit": 5
+                  },
+                  "sync": {
+                      "prune": true,
+                      "resources": [
+                          {
+                              "kind": "Namespace",
+                              "name": "sandbox"
+                          },
+                          {
+                              "group": "apps",
+                              "kind": "Deployment",
+                              "name": "example"
+                          }
+                      ],
+                      "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "philip-app",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-10T13:38:23Z",
+                          "deployedAt": "2023-08-10T13:38:25Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "message": "ComparisonError: error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout;ComparisonError: error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout;InvalidSpecError: cluster 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443' has not been configured. Retrying attempt #5 at 2:53PM.",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  },
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Running",
+                      "retryCount": 5,
+                      "startedAt": "2023-08-10T22:56:52Z",
+                      "syncResult": {
+                          "revision": "",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:09Z",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "philip-app",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T17:58:49Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 834,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "magchen-old-appset-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "magchen-old-appset",
+                          "uid": "225ca82c-80c2-4850-9c0a-080aa1649bdd"
+                      }
+                  ],
+                  "resourceVersion": "77555118",
+                  "uid": "8507a602-00a5-4bbf-b8dd-3665c8e9ff6c"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "philip-app",
+                      "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:54:39Z",
+                          "message": "Deployment/example is part of applications openshift-gitops/magchen-old-appset-local-cluster and phil-appset-local-cluster",
+                          "type": "SharedResourceWarning"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:54:39Z",
+                          "message": "Namespace/sandbox is part of applications openshift-gitops/magchen-old-appset-local-cluster and magchen-appset-2-local-cluster",
+                          "type": "SharedResourceWarning"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T22:39:29Z",
+                          "message": "Failed sync attempt to f56b7e6ce4501a8cb8cd446043a694fcba733dce: one or more synchronization tasks completed unsuccessfully, reason: rpc error: code = Unavailable desc = keepalive ping failed to receive ACK within timeout (retried 5 times).",
+                          "type": "SyncError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Degraded"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T13:57:09Z",
+                          "deployedAt": "2023-08-09T13:57:12Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-09T18:44:04Z",
+                      "message": "one or more synchronization tasks completed unsuccessfully, reason: rpc error: code = Unavailable desc = keepalive ping failed to receive ACK within timeout (retried 5 times).",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Failed",
+                      "retryCount": 5,
+                      "startedAt": "2023-08-09T14:12:39Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Failed",
+                                  "kind": "Deployment",
+                                  "message": "rpc error: code = Unavailable desc = keepalive ping failed to receive ACK within timeout",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "SyncFailed",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:39Z",
+                  "resources": [
+                      {
+                          "kind": "Namespace",
+                          "name": "sandbox",
+                          "status": "OutOfSync",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"example\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "example",
+                          "namespace": "sandbox",
+                          "status": "OutOfSync",
+                          "version": "v1"
+                      }
+                  ],
+                  "sourceType": "Kustomize",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "philip-app",
+                              "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                      "status": "OutOfSync"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "feng-managed1",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-09T15:05:35Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 6,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                  },
+                  "name": "mysql-test-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "mysql-test",
+                          "uid": "6aa6f9cd-afea-4d1d-8723-e40b3a5287f7"
+                      }
+                  ],
+                  "resourceVersion": "76113859",
+                  "uid": "19b7dbfe-0342-4b58-af00-9b99e2460403"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "gitops-httpd-application",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "chart": "mysql",
+                      "repoURL": "https://charts.helm.sh/stable",
+                      "targetRevision": "1.6.9"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "message": "kubectl get multiclusterapplicationsetreports -n openshift-gitops mysql-test\nAdditional details available in ManagedCluster feng-managed1\nkubectl get applications -n openshift-gitops mysql-test-feng-managed1",
+                          "type": "AdditionalStatusReport"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/ocm-managed-cluster": "feng-managed2",
+                      "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                      "argocd.argoproj.io/skip-reconcile": "true"
+                  },
+                  "creationTimestamp": "2023-08-11T13:04:43Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 6,
+                  "labels": {
+                      "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true"
+                  },
+                  "name": "mysql-test-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "mysql-test",
+                          "uid": "6aa6f9cd-afea-4d1d-8723-e40b3a5287f7"
+                      }
+                  ],
+                  "resourceVersion": "77559641",
+                  "uid": "2649c3e4-b602-402a-96bc-c5de3d669e9f"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "gitops-httpd-application",
+                      "server": "https://kubernetes.default.svc"
+                  },
+                  "project": "default",
+                  "source": {
+                      "chart": "mysql",
+                      "repoURL": "https://charts.helm.sh/stable",
+                      "targetRevision": "1.6.9"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "message": "kubectl get multiclusterapplicationsetreports -n openshift-gitops mysql-test\nAdditional details available in ManagedCluster feng-managed2\nkubectl get applications -n openshift-gitops mysql-test-feng-managed2",
+                          "type": "AdditionalStatusReport"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {},
+                          "source": {
+                              "repoURL": ""
+                          }
+                      },
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:50Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 7399,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "phil-appset-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "phil-appset",
+                          "uid": "611186d3-72f3-4203-a542-f31df08c9857"
+                      }
+                  ],
+                  "resourceVersion": "77550100",
+                  "uid": "746debfa-a464-4006-b85f-43011a8a0da2"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "phil-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:06Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T14:02:40Z",
+                          "deployedAt": "2023-08-09T14:02:41Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-11T13:01:44Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  },
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-11T13:01:43Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/sandbox configured",
+                                  "name": "sandbox",
+                                  "namespace": "phil-ns",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              },
+                              {
+                                  "group": "apps",
+                                  "hookPhase": "Running",
+                                  "kind": "Deployment",
+                                  "message": "deployment.apps/example configured",
+                                  "name": "example",
+                                  "namespace": "sandbox",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:06Z",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "phil-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:37:07Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:43Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 4630,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "phil-appset-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "phil-appset",
+                          "uid": "611186d3-72f3-4203-a542-f31df08c9857"
+                      }
+                  ],
+                  "resourceVersion": "77555333",
+                  "uid": "e0a5f162-8826-4aa4-bc36-67670a3b7b8f"
+              },
+              "operation": {
+                  "initiatedBy": {
+                      "automated": true
+                  },
+                  "retry": {
+                      "limit": 5
+                  },
+                  "sync": {
+                      "prune": true,
+                      "resources": [
+                          {
+                              "kind": "Namespace",
+                              "name": "sandbox"
+                          },
+                          {
+                              "group": "apps",
+                              "kind": "Deployment",
+                              "name": "example"
+                          }
+                      ],
+                      "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "phil-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T13:34:07Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 44.215.27.107:6443: connect: connection refused",
+                          "type": "DeletionError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-10T13:37:08Z",
+                          "deployedAt": "2023-08-10T13:37:09Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "message": "ComparisonError: error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout;ComparisonError: error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout;InvalidSpecError: cluster 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443' has not been configured. Retrying attempt #5 at 2:53PM.",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  },
+                                  {
+                                      "group": "apps",
+                                      "kind": "Deployment",
+                                      "name": "example"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Running",
+                      "retryCount": 5,
+                      "startedAt": "2023-08-10T22:56:52Z",
+                      "syncResult": {
+                          "revision": "",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:52:09Z",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "phil-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T17:58:49Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 3636,
+                  "labels": {
+                      "velero.io/exclude-from-backup": "true"
+                  },
+                  "name": "phil-appset-local-cluster",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "phil-appset",
+                          "uid": "611186d3-72f3-4203-a542-f31df08c9857"
+                      }
+                  ],
+                  "resourceVersion": "77555411",
+                  "uid": "9e49b4bc-5b5e-4f77-bb08-6ba14c569803"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "phil-ns",
+                      "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "app1",
+                      "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "automated": {
+                          "prune": true,
+                          "selfHeal": true
+                      },
+                      "syncOptions": [
+                          "CreateNamespace=true",
+                          "PruneLast=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "health": {
+                      "status": "Degraded"
+                  },
+                  "history": [
+                      {
+                          "deployStartedAt": "2023-08-09T13:57:09Z",
+                          "deployedAt": "2023-08-09T13:57:22Z",
+                          "id": 0,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      {
+                          "deployStartedAt": "2023-08-10T20:52:15Z",
+                          "deployedAt": "2023-08-10T20:52:18Z",
+                          "id": 1,
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  ],
+                  "operationState": {
+                      "finishedAt": "2023-08-14T14:54:52Z",
+                      "message": "successfully synced (all tasks run)",
+                      "operation": {
+                          "initiatedBy": {
+                              "automated": true
+                          },
+                          "retry": {
+                              "limit": 5
+                          },
+                          "sync": {
+                              "prune": true,
+                              "resources": [
+                                  {
+                                      "kind": "Namespace",
+                                      "name": "sandbox"
+                                  }
+                              ],
+                              "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                              "syncOptions": [
+                                  "CreateNamespace=true",
+                                  "PruneLast=true"
+                              ]
+                          }
+                      },
+                      "phase": "Succeeded",
+                      "startedAt": "2023-08-14T14:54:51Z",
+                      "syncResult": {
+                          "resources": [
+                              {
+                                  "group": "",
+                                  "hookPhase": "Running",
+                                  "kind": "Namespace",
+                                  "message": "namespace/sandbox configured",
+                                  "name": "sandbox",
+                                  "namespace": "phil-ns",
+                                  "status": "Synced",
+                                  "syncPhase": "Sync",
+                                  "version": "v1"
+                              }
+                          ],
+                          "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      }
+                  },
+                  "reconciledAt": "2023-08-14T14:54:52Z",
+                  "resources": [
+                      {
+                          "kind": "Namespace",
+                          "name": "sandbox",
+                          "status": "Synced",
+                          "version": "v1"
+                      },
+                      {
+                          "group": "apps",
+                          "health": {
+                              "message": "Deployment \"example\" exceeded its progress deadline",
+                              "status": "Degraded"
+                          },
+                          "kind": "Deployment",
+                          "name": "example",
+                          "namespace": "sandbox",
+                          "status": "Synced",
+                          "version": "v1"
+                      }
+                  ],
+                  "sourceType": "Kustomize",
+                  "summary": {
+                      "images": [
+                          "alpinelinux/darkhttpd"
+                      ]
+                  },
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "phil-ns",
+                              "server": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "app1",
+                              "repoURL": "https://github.com/philipwu08/example-k8s-app",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "revision": "f56b7e6ce4501a8cb8cd446043a694fcba733dce",
+                      "status": "Synced"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T18:19:50Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 229,
+                  "name": "xj-applicationset-1-feng-managed1",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "xj-applicationset-1",
+                          "uid": "7d8b385e-ccbd-4097-9ef0-18401297d349"
+                      }
+                  ],
+                  "resourceVersion": "77550075",
+                  "uid": "14adef0a-9f1b-48ba-b847-3dde8109cea8"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "playback-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "guestbook",
+                      "repoURL": "https://github.com/xiangjingli/testrepo.git",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:51:39Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:06Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 23.21.211.82:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "reconciledAt": "2023-08-14T14:52:06Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "playback-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "guestbook",
+                              "repoURL": "https://github.com/xiangjingli/testrepo.git",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          },
+          {
+              "apiVersion": "argoproj.io/v1alpha1",
+              "kind": "Application",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T13:37:07Z",
+                  "deletionGracePeriodSeconds": 0,
+                  "deletionTimestamp": "2023-08-11T13:01:45Z",
+                  "finalizers": [
+                      "resources-finalizer.argocd.argoproj.io"
+                  ],
+                  "generation": 119,
+                  "name": "xj-applicationset-1-feng-managed2",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "argoproj.io/v1alpha1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "ApplicationSet",
+                          "name": "xj-applicationset-1",
+                          "uid": "7d8b385e-ccbd-4097-9ef0-18401297d349"
+                      }
+                  ],
+                  "resourceVersion": "77550263",
+                  "uid": "6200ac08-ba69-4484-8160-2ce4c580a7e1"
+              },
+              "spec": {
+                  "destination": {
+                      "namespace": "playback-ns",
+                      "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "project": "default",
+                  "source": {
+                      "path": "guestbook",
+                      "repoURL": "https://github.com/xiangjingli/testrepo.git",
+                      "targetRevision": "master"
+                  },
+                  "syncPolicy": {
+                      "syncOptions": [
+                          "CreateNamespace=true"
+                      ]
+                  }
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "ComparisonError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "DeletionError"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-14T14:52:09Z",
+                          "message": "error synchronizing cache state : Get \"https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443/version?timeout=32s\": dial tcp 52.70.153.39:6443: i/o timeout",
+                          "type": "UnknownError"
+                      }
+                  ],
+                  "health": {
+                      "status": "Healthy"
+                  },
+                  "reconciledAt": "2023-08-14T14:52:09Z",
+                  "summary": {},
+                  "sync": {
+                      "comparedTo": {
+                          "destination": {
+                              "namespace": "playback-ns",
+                              "server": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                          },
+                          "source": {
+                              "path": "guestbook",
+                              "repoURL": "https://github.com/xiangjingli/testrepo.git",
+                              "targetRevision": "master"
+                          }
+                      },
+                      "status": "Unknown"
+                  }
+              }
+          }
+      ],
+      "ansibleJob": [],
+      "channels": [
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1",
+              "kind": "Channel",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/reconcile-rate": "high",
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps.open-cluster-management.io/v1\",\"kind\":\"Channel\",\"metadata\":{\"annotations\":{\"apps.open-cluster-management.io/reconcile-rate\":\"high\"},\"name\":\"mychannel\",\"namespace\":\"channel-ns\"},\"spec\":{\"configMapRef\":{\"name\":\"git-ca\"},\"pathname\":\"https://gogs-svc-git-server.apps.collective.aws.red-chesterfield.com/testadmin/testrepo.git\",\"secretRef\":{\"name\":\"client-cert\"},\"type\":\"Git\"}}\n",
+                      "open-cluster-management.io/user-group": "c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "a3ViZTphZG1pbg=="
+                  },
+                  "creationTimestamp": "2023-08-10T16:50:35Z",
+                  "generation": 1,
+                  "name": "mychannel",
+                  "namespace": "channel-ns",
+                  "resourceVersion": "76412372",
+                  "uid": "b13b4111-551d-489e-bc59-08fe6455e995"
+              },
+              "spec": {
+                  "configMapRef": {
+                      "name": "git-ca"
+                  },
+                  "pathname": "https://gogs-svc-git-server.apps.collective.aws.red-chesterfield.com/testadmin/testrepo.git",
+                  "secretRef": {
+                      "name": "client-cert"
+                  },
+                  "type": "Git"
+              }
+          },
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1",
+              "kind": "Channel",
+              "metadata": {
+                  "annotations": {
+                      "apps.open-cluster-management.io/reconcile-rate": "medium",
+                      "open-cluster-management.io/user-group": "c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "a3ViZTphZG1pbg=="
+                  },
+                  "creationTimestamp": "2023-08-02T17:32:45Z",
+                  "generation": 1,
+                  "name": "ggithubcom-fxiang1-app-samples",
+                  "namespace": "ggithubcom-fxiang1-app-samples-ns",
+                  "resourceVersion": "72464228",
+                  "uid": "e598df86-cab2-4465-97d9-3c525061d782"
+              },
+              "spec": {
+                  "pathname": "https://github.com/fxiang1/app-samples",
+                  "type": "Git"
+              }
+          }
+      ],
+      "placements": [
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"cluster.open-cluster-management.io/v1beta1\",\"kind\":\"Placement\",\"metadata\":{\"annotations\":{},\"name\":\"acm-app-backup-placement\",\"namespace\":\"app-backup-policy-new\"},\"spec\":{\"clusterSets\":[\"default\"],\"predicates\":[{\"requiredClusterSelector\":{\"labelSelector\":{\"matchExpressions\":[{\"key\":\"acm-pv-dr\",\"operator\":\"In\",\"values\":[\"backup\"]}]}}}],\"tolerations\":[{\"key\":\"cluster.open-cluster-management.io/unreachable\",\"operator\":\"Exists\"},{\"key\":\"cluster.open-cluster-management.io/unavailable\",\"operator\":\"Exists\"}]}}\n"
+                  },
+                  "creationTimestamp": "2023-05-25T18:23:31Z",
+                  "generation": 1,
+                  "name": "acm-app-backup-placement",
+                  "namespace": "app-backup-policy-new",
+                  "resourceVersion": "74984290",
+                  "uid": "77d68393-52bd-4af5-aebe-fbb876c3c6a0"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "acm-pv-dr",
+                                          "operator": "In",
+                                          "values": [
+                                              "backup"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ],
+                  "tolerations": [
+                      {
+                          "key": "cluster.open-cluster-management.io/unreachable",
+                          "operator": "Exists"
+                      },
+                      {
+                          "key": "cluster.open-cluster-management.io/unavailable",
+                          "operator": "Exists"
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-05-25T18:23:31Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-02T13:39:50Z",
+                          "message": "No ManagedCluster matches any of the cluster predicate",
+                          "reason": "NoManagedClusterMatched",
+                          "status": "False",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 0
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"cluster.open-cluster-management.io/v1beta1\",\"kind\":\"Placement\",\"metadata\":{\"annotations\":{},\"name\":\"acm-app-restore-placement\",\"namespace\":\"app-backup-policy-new\"},\"spec\":{\"clusterSets\":[\"default\"],\"predicates\":[{\"requiredClusterSelector\":{\"labelSelector\":{\"matchExpressions\":[{\"key\":\"acm-app-restore\",\"operator\":\"Exists\"}]}}}],\"tolerations\":[{\"key\":\"cluster.open-cluster-management.io/unreachable\",\"operator\":\"Exists\"},{\"key\":\"cluster.open-cluster-management.io/unavailable\",\"operator\":\"Exists\"}]}}\n"
+                  },
+                  "creationTimestamp": "2023-05-25T18:23:31Z",
+                  "generation": 1,
+                  "name": "acm-app-restore-placement",
+                  "namespace": "app-backup-policy-new",
+                  "resourceVersion": "74984283",
+                  "uid": "84e50376-30eb-44d2-9dcf-c5a61c49d758"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "acm-app-restore",
+                                          "operator": "Exists"
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ],
+                  "tolerations": [
+                      {
+                          "key": "cluster.open-cluster-management.io/unreachable",
+                          "operator": "Exists"
+                      },
+                      {
+                          "key": "cluster.open-cluster-management.io/unavailable",
+                          "operator": "Exists"
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-05-25T18:23:31Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-05-29T17:17:48Z",
+                          "message": "No ManagedCluster matches any of the cluster predicate",
+                          "reason": "NoManagedClusterMatched",
+                          "status": "False",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 0
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"cluster.open-cluster-management.io/v1beta1\",\"kind\":\"Placement\",\"metadata\":{\"annotations\":{},\"name\":\"placement-test\",\"namespace\":\"feng-hello\"},\"spec\":{\"clusterSets\":[\"default\"],\"predicates\":[{\"requiredClusterSelector\":{\"labelSelector\":{}}}]}}\n"
+                  },
+                  "creationTimestamp": "2023-07-07T14:17:14Z",
+                  "generation": 1,
+                  "name": "placement-test",
+                  "namespace": "feng-hello",
+                  "resourceVersion": "59486889",
+                  "uid": "e90d6924-4de3-4552-90d3-70c3a8c41aa6"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {}
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-07-07T14:17:14Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-07-18T14:29:29Z",
+                          "message": "No valid ManagedClusterSetBindings found in placement namespace",
+                          "reason": "NoManagedClusterSetBindings",
+                          "status": "False",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 0
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T20:26:58Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "feng-hello"
+                  },
+                  "name": "feng-hello-placement-1",
+                  "namespace": "feng-hello123",
+                  "resourceVersion": "77555633",
+                  "uid": "6bf94cdb-2733-4eec-a39e-ed5b7b5303ce"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {}
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-08T20:26:58Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T20:26:59Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T20:08:32Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "feng-sub"
+                  },
+                  "name": "feng-sub-placement-1",
+                  "namespace": "feng-sub",
+                  "resourceVersion": "76915841",
+                  "uid": "db40f0d8-e737-4b4e-849b-a58b39cd6d38"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "env",
+                                          "operator": "In",
+                                          "values": [
+                                              "dev"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-08T20:08:32Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T20:08:32Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 2
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-08T14:05:19Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "magchen-multiple"
+                  },
+                  "name": "magchen-multiple-placement-1",
+                  "namespace": "magchen-multiple-ns",
+                  "resourceVersion": "77555638",
+                  "uid": "7e59531b-0059-4b85-a41e-961c25fe99bb"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {}
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-08T14:05:19Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-08T14:05:19Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "magchen-multiple"
+                  },
+                  "name": "magchen-multiple-placement-2",
+                  "namespace": "magchen-multiple-ns",
+                  "resourceVersion": "77555635",
+                  "uid": "bd6c39e8-efd9-42c7-9e04-6be5b463db91"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "global"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {}
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-08T14:05:19Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T17:32:45Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "magchen-test-sub"
+                  },
+                  "name": "magchen-test-sub-placement-1",
+                  "namespace": "magchen-ns",
+                  "resourceVersion": "77555631",
+                  "uid": "6b54728d-cf74-4247-ad66-fd8bd1e1fc0c"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "cloud",
+                                          "operator": "In",
+                                          "values": [
+                                              "Amazon"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-02T17:32:45Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:44Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"cluster.open-cluster-management.io/v1beta1\",\"kind\":\"Placement\",\"metadata\":{\"annotations\":{},\"name\":\"feng-pm-placement\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"clusterSets\":[\"default\"],\"predicates\":[{\"requiredClusterSelector\":{\"labelSelector\":{\"matchExpressions\":[]}}}]}}\n"
+                  },
+                  "creationTimestamp": "2023-08-02T17:59:14Z",
+                  "generation": 6,
+                  "name": "feng-pm-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555641",
+                  "uid": "554337d6-9137-4ed9-a03c-55d51485cb0d"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "name",
+                                          "operator": "NotIn",
+                                          "values": [
+                                              "local-cluster"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-02T17:59:14Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T13:33:07Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 2
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T18:24:31Z",
+                  "generation": 2,
+                  "name": "feng-pm-placement-local",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76915847",
+                  "uid": "733ea8df-9486-46d9-87e8-6bec6fab0b97"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "env",
+                                          "operator": "In",
+                                          "values": [
+                                              "dev"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-08-09T18:24:31Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-09T18:24:31Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 2
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"cluster.open-cluster-management.io/v1beta1\",\"kind\":\"Placement\",\"metadata\":{\"annotations\":{},\"name\":\"gitops-placement\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"clusterSets\":[\"default\"],\"numberOfClusters\":2}}\n"
+                  },
+                  "creationTimestamp": "2023-05-24T19:13:33Z",
+                  "generation": 1,
+                  "name": "gitops-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "76112374",
+                  "uid": "e282dc22-8f73-49b3-8365-4b1a6b52dc86"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "numberOfClusters": 2
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-05-24T19:13:33Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-10T13:33:07Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 2
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-12T13:53:06Z",
+                  "generation": 1,
+                  "name": "magchen-appset-2-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555655",
+                  "uid": "0e7406a8-b8d1-4a32-997b-eeb59c4f8077"
+              },
+              "spec": {},
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-12T13:53:06Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-08T18:09:47Z",
+                  "generation": 1,
+                  "name": "magchen-appset-multiple-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555657",
+                  "uid": "34f8ad69-4ba2-4de3-907f-fb47ee1644f2"
+              },
+              "spec": {},
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-08T18:09:47Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-05T14:25:20Z",
+                  "generation": 2,
+                  "name": "magchen-appset-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77624950",
+                  "uid": "4ae7ae63-614f-4119-8318-7d5435de343e"
+              },
+              "spec": {
+                  "clusterSets": [
+                      "default"
+                  ],
+                  "predicates": [
+                      {
+                          "requiredClusterSelector": {
+                              "labelSelector": {
+                                  "matchExpressions": [
+                                      {
+                                          "key": "cloud",
+                                          "operator": "In",
+                                          "values": [
+                                              "Amazon"
+                                          ]
+                                      },
+                                      {
+                                          "key": "cluster.open-cluster-management.io/clusterset",
+                                          "operator": "In",
+                                          "values": [
+                                              "default"
+                                          ]
+                                      }
+                                  ]
+                              }
+                          }
+                      }
+                  ]
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-05T14:25:20Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:44Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-21T13:50:45Z",
+                  "generation": 1,
+                  "name": "magchen-no-clusterset-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555650",
+                  "uid": "03d19f00-217d-4e56-a864-677a7a30a461"
+              },
+              "spec": {
+                  "clusterSets": []
+              },
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-21T13:50:45Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-14T17:45:14Z",
+                  "generation": 1,
+                  "name": "magchen-old-appset-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555653",
+                  "uid": "62cce892-d68f-483c-a0a0-bbe15ba976ef"
+              },
+              "spec": {},
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-14T17:45:14Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "Placement",
+              "metadata": {
+                  "creationTimestamp": "2023-06-26T18:22:01Z",
+                  "generation": 1,
+                  "name": "phil-appset-placement",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77555646",
+                  "uid": "6ed33d89-7ed9-4a1f-9086-11efb493bfd0"
+              },
+              "spec": {},
+              "status": {
+                  "conditions": [
+                      {
+                          "lastTransitionTime": "2023-06-26T18:22:02Z",
+                          "message": "Placement configurations check pass",
+                          "reason": "Succeedconfigured",
+                          "status": "False",
+                          "type": "PlacementMisconfigured"
+                      },
+                      {
+                          "lastTransitionTime": "2023-08-08T17:55:01Z",
+                          "message": "All cluster decisions scheduled",
+                          "reason": "AllDecisionsScheduled",
+                          "status": "True",
+                          "type": "PlacementSatisfied"
+                      }
+                  ],
+                  "numberOfSelectedClusters": 3
+              }
+          }
+      ],
+      "placementRules": [
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1",
+              "kind": "PlacementRule",
+              "metadata": {
+                  "annotations": {
+                      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps.open-cluster-management.io/v1\",\"kind\":\"PlacementRule\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"test\"},\"name\":\"test-placement-1\",\"namespace\":\"default\"},\"spec\":{\"clusterSelector\":{\"matchLabels\":{\"local-cluster\":\"true\"}}}}\n",
+                      "open-cluster-management.io/user-group": "c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk",
+                      "open-cluster-management.io/user-identity": "a3ViZTphZG1pbg=="
+                  },
+                  "creationTimestamp": "2023-08-10T16:50:35Z",
+                  "generation": 1,
+                  "labels": {
+                      "app": "test"
+                  },
+                  "name": "test-placement-1",
+                  "namespace": "default",
+                  "resourceVersion": "76425269",
+                  "uid": "ce7113c0-3276-410f-8871-aafe2730e7b5"
+              },
+              "spec": {
+                  "clusterSelector": {
+                      "matchLabels": {
+                          "local-cluster": "true"
+                      }
+                  }
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "local-cluster",
+                          "clusterNamespace": "local-cluster"
+                      }
+                  ]
+              }
+          }
+      ],
+      "subscriptions": [],
+      "subscriptionReports": [
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "SubscriptionReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T19:46:21Z",
+                  "generation": 11,
+                  "labels": {
+                      "apps.open-cluster-management.io/cluster": "true"
+                  },
+                  "name": "feng-managed1",
+                  "namespace": "feng-managed1",
+                  "resourceVersion": "75136430",
+                  "uid": "c4072a90-ae1a-43e8-b0d0-ca9e091ce9bc"
+              },
+              "reportType": "Cluster",
+              "summary": {
+                  "clusters": "n/a",
+                  "deployed": "n/a",
+                  "failed": "n/a",
+                  "inProgress": "n/a",
+                  "propagationFailed": "n/a"
+              }
+          },
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "SubscriptionReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T20:27:00Z",
+                  "generation": 3,
+                  "labels": {
+                      "apps.open-cluster-management.io/cluster": "true"
+                  },
+                  "name": "feng-managed2",
+                  "namespace": "feng-managed2",
+                  "resourceVersion": "75136427",
+                  "uid": "8e470fd1-cae2-452f-964a-1b0542c057c9"
+              },
+              "reportType": "Cluster",
+              "summary": {
+                  "clusters": "n/a",
+                  "deployed": "n/a",
+                  "failed": "n/a",
+                  "inProgress": "n/a",
+                  "propagationFailed": "n/a"
+              }
+          },
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "SubscriptionReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T17:58:34Z",
+                  "generation": 17,
+                  "labels": {
+                      "apps.open-cluster-management.io/cluster": "true"
+                  },
+                  "name": "local-cluster",
+                  "namespace": "local-cluster",
+                  "resourceVersion": "76432101",
+                  "uid": "5698b87a-883d-41ce-8708-cb79eea9ba13"
+              },
+              "reportType": "Cluster",
+              "summary": {
+                  "clusters": "n/a",
+                  "deployed": "n/a",
+                  "failed": "n/a",
+                  "inProgress": "n/a",
+                  "propagationFailed": "n/a"
+              }
+          }
+      ],
+      "placementDecisions": [
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:50Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "acm-app-backup-placement"
+                  },
+                  "name": "acm-app-backup-placement-decision-0",
+                  "namespace": "app-backup-policy-new",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "acm-app-backup-placement",
+                          "uid": "77d68393-52bd-4af5-aebe-fbb876c3c6a0"
+                      }
+                  ],
+                  "resourceVersion": "72121409",
+                  "uid": "672ba28e-0911-4408-9ae2-a47fcbddc69a"
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "acm-app-restore-placement"
+                  },
+                  "name": "acm-app-restore-placement-decision-0",
+                  "namespace": "app-backup-policy-new",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "acm-app-restore-placement",
+                          "uid": "84e50376-30eb-44d2-9dcf-c5a61c49d758"
+                      }
+                  ],
+                  "resourceVersion": "72121490",
+                  "uid": "6bfaf0ea-9642-4dc6-84c9-b1cfeca730d0"
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-10T16:59:09Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/placementrule": "test-placement-1"
+                  },
+                  "name": "test-placement-1-decision-1",
+                  "namespace": "default",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "apps.open-cluster-management.io/v1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "PlacementRule",
+                          "name": "test-placement-1",
+                          "uid": "ce7113c0-3276-410f-8871-aafe2730e7b5"
+                      }
+                  ],
+                  "resourceVersion": "76425280",
+                  "uid": "be1b30f5-e767-4a16-82c8-ff3cde84a9a2"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:50Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "placement-test"
+                  },
+                  "name": "placement-test-decision-0",
+                  "namespace": "feng-hello",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "placement-test",
+                          "uid": "e90d6924-4de3-4552-90d3-70c3a8c41aa6"
+                      }
+                  ],
+                  "resourceVersion": "72121427",
+                  "uid": "621f1068-d924-487d-9ed1-f2994f37cfb8"
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T20:26:58Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "feng-hello-placement-1"
+                  },
+                  "name": "feng-hello-placement-1-decision-0",
+                  "namespace": "feng-hello123",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "feng-hello-placement-1",
+                          "uid": "6bf94cdb-2733-4eec-a39e-ed5b7b5303ce"
+                      }
+                  ],
+                  "resourceVersion": "77555632",
+                  "uid": "5caa366d-0e25-4090-ba81-13bb5c696f9e"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-08T20:08:32Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "feng-sub-placement-1"
+                  },
+                  "name": "feng-sub-placement-1-decision-0",
+                  "namespace": "feng-sub",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "feng-sub-placement-1",
+                          "uid": "db40f0d8-e737-4b4e-849b-a58b39cd6d38"
+                      }
+                  ],
+                  "resourceVersion": "76915839",
+                  "uid": "4f7187dd-88f7-4d55-9bf9-fb6c3e106d4c"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-multiple-placement-1"
+                  },
+                  "name": "magchen-multiple-placement-1-decision-0",
+                  "namespace": "magchen-multiple-ns",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-multiple-placement-1",
+                          "uid": "7e59531b-0059-4b85-a41e-961c25fe99bb"
+                      }
+                  ],
+                  "resourceVersion": "77555637",
+                  "uid": "4fe02215-619b-470a-a88b-cd5b5fa8e2c8"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-multiple-placement-2"
+                  },
+                  "name": "magchen-multiple-placement-2-decision-0",
+                  "namespace": "magchen-multiple-ns",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-multiple-placement-2",
+                          "uid": "bd6c39e8-efd9-42c7-9e04-6be5b463db91"
+                      }
+                  ],
+                  "resourceVersion": "77555634",
+                  "uid": "6b4a2b71-27de-44f0-9c91-6d5cd317d320"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T17:32:45Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-test-sub-placement-1"
+                  },
+                  "name": "magchen-test-sub-placement-1-decision-0",
+                  "namespace": "magchen-ns",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-test-sub-placement-1",
+                          "uid": "6b54728d-cf74-4247-ad66-fd8bd1e1fc0c"
+                      }
+                  ],
+                  "resourceVersion": "77555629",
+                  "uid": "f624e210-3ca8-49da-b7a8-b3918b2f247e"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T17:59:14Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "feng-pm-placement"
+                  },
+                  "name": "feng-pm-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "feng-pm-placement",
+                          "uid": "554337d6-9137-4ed9-a03c-55d51485cb0d"
+                      }
+                  ],
+                  "resourceVersion": "77555639",
+                  "uid": "2f0ffd00-f5e9-4af2-9b67-01ec50251edf"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T18:24:31Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "feng-pm-placement-local"
+                  },
+                  "name": "feng-pm-placement-local-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "feng-pm-placement-local",
+                          "uid": "733ea8df-9486-46d9-87e8-6bec6fab0b97"
+                      }
+                  ],
+                  "resourceVersion": "76915845",
+                  "uid": "c4328ca8-af46-4ef2-b6ec-2d15dbf400f0"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "gitops-placement"
+                  },
+                  "name": "gitops-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "gitops-placement",
+                          "uid": "e282dc22-8f73-49b3-8365-4b1a6b52dc86"
+                      }
+                  ],
+                  "resourceVersion": "77555642",
+                  "uid": "4d4497c1-3317-483b-9165-d9554a76e140"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-appset-2-placement"
+                  },
+                  "name": "magchen-appset-2-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-appset-2-placement",
+                          "uid": "0e7406a8-b8d1-4a32-997b-eeb59c4f8077"
+                      }
+                  ],
+                  "resourceVersion": "77555654",
+                  "uid": "48836afa-43ce-43b9-a29a-4a4f0eecb278"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:52Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-appset-multiple-placement"
+                  },
+                  "name": "magchen-appset-multiple-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-appset-multiple-placement",
+                          "uid": "34f8ad69-4ba2-4de3-907f-fb47ee1644f2"
+                      }
+                  ],
+                  "resourceVersion": "77555656",
+                  "uid": "b2a0b058-6198-43b8-9b18-e54a2bd11f32"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:52Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-appset-placement"
+                  },
+                  "name": "magchen-appset-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-appset-placement",
+                          "uid": "4ae7ae63-614f-4119-8318-7d5435de343e"
+                      }
+                  ],
+                  "resourceVersion": "77624937",
+                  "uid": "e3e143f1-9c3e-4d13-ae41-df03cece5664"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-no-clusterset-placement"
+                  },
+                  "name": "magchen-no-clusterset-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-no-clusterset-placement",
+                          "uid": "03d19f00-217d-4e56-a864-677a7a30a461"
+                      }
+                  ],
+                  "resourceVersion": "77555648",
+                  "uid": "9910ca75-3526-4be3-829e-87249a61e226"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:51Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "magchen-old-appset-placement"
+                  },
+                  "name": "magchen-old-appset-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "magchen-old-appset-placement",
+                          "uid": "62cce892-d68f-483c-a0a0-bbe15ba976ef"
+                      }
+                  ],
+                  "resourceVersion": "77555652",
+                  "uid": "39cf338e-a7a7-4091-a6a7-439243bf140a"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          },
+          {
+              "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+              "kind": "PlacementDecision",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T14:36:52Z",
+                  "generation": 1,
+                  "labels": {
+                      "cluster.open-cluster-management.io/decision-group-index": "0",
+                      "cluster.open-cluster-management.io/decision-group-name": "",
+                      "cluster.open-cluster-management.io/placement": "phil-appset-placement"
+                  },
+                  "name": "phil-appset-placement-decision-0",
+                  "namespace": "openshift-gitops",
+                  "ownerReferences": [
+                      {
+                          "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+                          "blockOwnerDeletion": true,
+                          "controller": true,
+                          "kind": "Placement",
+                          "name": "phil-appset-placement",
+                          "uid": "6ed33d89-7ed9-4a1f-9086-11efb493bfd0"
+                      }
+                  ],
+                  "resourceVersion": "77555645",
+                  "uid": "5313f3cf-1e53-4ba9-85e5-d1dde4a7a8f1"
+              },
+              "status": {
+                  "decisions": [
+                      {
+                          "clusterName": "feng-managed1",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "feng-managed2",
+                          "reason": ""
+                      },
+                      {
+                          "clusterName": "local-cluster",
+                          "reason": ""
+                      }
+                  ]
+              }
+          }
+      ],
+      "multiclusterApplicationSetReports": [
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "MulticlusterApplicationSetReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-02T18:01:15Z",
+                  "generation": 157,
+                  "labels": {
+                      "apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.feng-pm"
+                  },
+                  "name": "feng-pm",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77825791",
+                  "uid": "3b72afe6-d371-4507-a93b-61b185271773"
+              },
+              "statuses": {
+                  "clusterConditions": [
+                      {
+                          "app": "openshift-gitops/feng-pm-feng-managed1/feng-managed1/feng-pm-feng-managed1-d304b",
+                          "cluster": "feng-managed1",
+                          "healthStatus": "Healthy",
+                          "syncStatus": "Synced"
+                      },
+                      {
+                          "app": "openshift-gitops/feng-pm-feng-managed2/feng-managed2/feng-pm-feng-managed2-4346d",
+                          "cluster": "feng-managed2",
+                          "healthStatus": "Healthy",
+                          "syncStatus": "Synced"
+                      }
+                  ],
+                  "resources": [
+                      {
+                          "apiVersion": "apps/v1",
+                          "kind": "Deployment",
+                          "name": "helloworld-app-deploy",
+                          "namespace": "feng-pm"
+                      },
+                      {
+                          "apiVersion": "route.openshift.io/v1",
+                          "kind": "Route",
+                          "name": "helloworld-app-route",
+                          "namespace": "feng-pm"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "Service",
+                          "name": "helloworld-app-svc",
+                          "namespace": "feng-pm"
+                      }
+                  ],
+                  "summary": {
+                      "clusters": "2",
+                      "healthy": "2",
+                      "inProgress": "0",
+                      "notHealthy": "0",
+                      "notSynced": "0",
+                      "synced": "2"
+                  }
+              }
+          },
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "MulticlusterApplicationSetReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T20:24:14Z",
+                  "generation": 26,
+                  "labels": {
+                      "apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.feng-pm-local"
+                  },
+                  "name": "feng-pm-local",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77847772",
+                  "uid": "753238ea-e75d-476e-ba6f-2533021646ba"
+              },
+              "statuses": {
+                  "clusterConditions": [
+                      {
+                          "app": "openshift-gitops/feng-pm-local-feng-managed1/feng-managed1/feng-pm-local-feng-managed1-35ba1",
+                          "cluster": "feng-managed1",
+                          "healthStatus": "Healthy",
+                          "syncStatus": "Synced"
+                      }
+                  ],
+                  "resources": [
+                      {
+                          "apiVersion": "route.openshift.io/v1",
+                          "kind": "Route",
+                          "name": "helloworld-app-route",
+                          "namespace": "feng-pm-local"
+                      },
+                      {
+                          "apiVersion": "apps/v1",
+                          "kind": "Deployment",
+                          "name": "helloworld-app-deploy",
+                          "namespace": "feng-pm-local"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "Service",
+                          "name": "helloworld-app-svc",
+                          "namespace": "feng-pm-local"
+                      }
+                  ],
+                  "summary": {
+                      "clusters": "1",
+                      "healthy": "1",
+                      "inProgress": "0",
+                      "notHealthy": "0",
+                      "notSynced": "0",
+                      "synced": "1"
+                  }
+              }
+          },
+          {
+              "apiVersion": "apps.open-cluster-management.io/v1alpha1",
+              "kind": "MulticlusterApplicationSetReport",
+              "metadata": {
+                  "creationTimestamp": "2023-08-09T15:05:44Z",
+                  "generation": 2296,
+                  "labels": {
+                      "apps.open-cluster-management.io/hosting-applicationset": "openshift-gitops.mysql-test"
+                  },
+                  "name": "mysql-test",
+                  "namespace": "openshift-gitops",
+                  "resourceVersion": "77854026",
+                  "uid": "aca19c0a-650f-467e-8113-60133e0b22da"
+              },
+              "statuses": {
+                  "clusterConditions": [
+                      {
+                          "app": "openshift-gitops/mysql-test-feng-managed1/feng-managed1/mysql-test-feng-managed1-19b7d",
+                          "cluster": "feng-managed1",
+                          "healthStatus": "Healthy",
+                          "syncStatus": "Synced"
+                      },
+                      {
+                          "app": "openshift-gitops/mysql-test-feng-managed2/feng-managed2/mysql-test-feng-managed2-2649c",
+                          "cluster": "feng-managed2",
+                          "healthStatus": "Healthy",
+                          "syncStatus": "Synced"
+                      }
+                  ],
+                  "resources": [
+                      {
+                          "apiVersion": "apps/v1",
+                          "kind": "Deployment",
+                          "name": "mysql-test-feng-managed1",
+                          "namespace": "gitops-httpd-application"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "PersistentVolumeClaim",
+                          "name": "mysql-test-feng-managed1",
+                          "namespace": "gitops-httpd-application"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "Secret",
+                          "name": "mysql-test-feng-managed1",
+                          "namespace": "gitops-httpd-application"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "Service",
+                          "name": "mysql-test-feng-managed1",
+                          "namespace": "gitops-httpd-application"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "ConfigMap",
+                          "name": "mysql-test-feng-managed1-test",
+                          "namespace": "gitops-httpd-application"
+                      },
+                      {
+                          "apiVersion": "/v1",
+                          "kind": "PersistentVolume",
+                          "name": "pvc-b8373fce-8225-4cd4-91c1-c11340aad868"
+                      }
+                  ],
+                  "summary": {
+                      "clusters": "2",
+                      "healthy": "2",
+                      "inProgress": "0",
+                      "notHealthy": "0",
+                      "notSynced": "0",
+                      "synced": "2"
+                  }
+              }
+          }
+      ]
+    },
+    cluster: undefined,
+    apiversion: 'applicationset.argoproj.io',
+    clusters: [
+      {
+          "name": "feng-managed1",
+          "displayName": "feng-managed1",
+          "namespace": "feng-managed1",
+          "uid": "5a284784-28ce-4699-b884-8efdce830ff1",
+          "status": "ready",
+          "provider": "aws",
+          "distribution": {
+              "k8sVersion": "v1.25.8+27e744f",
+              "ocp": {
+                  "availableUpdates": [
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "channel": "stable-4.12",
+                  "desired": {
+                      "channels": [
+                          "candidate-4.12",
+                          "candidate-4.13",
+                          "eus-4.12",
+                          "fast-4.12",
+                          "fast-4.13",
+                          "stable-4.12"
+                      ],
+                      "image": "quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a",
+                      "url": "https://access.redhat.com/errata/RHBA-2023:1858",
+                      "version": "4.12.14"
+                  },
+                  "desiredVersion": "4.12.14",
+                  "lastAppliedAPIServerURL": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
+                  "managedClusterClientConfig": {
+                      "caBundle": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJT0ZNUThxMHRuUGN3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd056STJNVFF3TURBeFdoY05Nek13TnpJek1UUXdNREF4V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTUxUdnFuRnNoeUpWRzFMZXgrUXV1L0JIY3ljbjBIbgpSUW5lN1NaY1VHeVhnN1pPSG1XZmwwdC8rMlhDbStKWUJGNmE5a2lrUzMreUZaaUd2aTJpRk1qMWpXY05SdGR4CnJmcTUyU3duUzJ3ZHl6VnBUZWtOQTY5YndVYlkxUlNXOEloL0RWQkpsdXpRelY3cVdHOUhtNlNCNWc4ajdvN0YKVnBKQ2dyNDN3UW9qR3JzRVVqdTFrZDVaNnlsSUpUMWpQM3U1cC9xOUdiYjZVMVR5VjFETzF3ekhFek1LaDN0bwozdCtUZ2ZLdWlmWDQrbEVsQ2JlbmVEekJ1L2I5VTF2djNBY215OUNCTmlFWU0reFJhZlU5YW9wZFhWY1VCN2dMCnVYMG9UbnNpZzUxcXY5RExZQjdRSGFtYjMwMVpDeDU4cEdaZ2FvaERYdGhSK25CV1luaGxTdGNDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRk9adQpEeEN6OUFTMWZWNVl2dUg2N1M4cFpVNWdNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFsbHhETjExT3lRbUxKCjgxZkloYzJJQ2N2OWlITmg4TnpqMzFuQUF4NEtDZW5UQkFrRHp2QmNnRDJXV2trQkVNc2FnamZteE9PdDRGelYKQVRVSjY1eWxaZVVTLzJ5NmpEVksvZWYxL0dIRkg0QlZTWGZ3VHc0TTJmVlhURmNVdktxdnk1cjhiNGE0LzVPcwpmRkJvb2ZDdXN4OERnTVp2VUdESGdyeWJFNWI5b2NRUkNlVXhONzZLbEpvT0FyaCt3L0pFU3pVRkJiWHkzZXhMCkJ1WWZBdXZXdGlqa2dNRlhFbjU0bHhQUDBzbi9HUjZqakdvRk01Q3M0ZWZ2eXBIV1ZvVGNPLzlWUTRBVFc3S3MKRGV3L3AvZUxUaENIT3gwVGd0aFVzdW95Rm9FMEx2NGZaQ3IzK0FVbk5vZUM2UzZ0bWl5WFNTT2htRU15TmhVMwpiZFg5Q3IxWgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSVpKSnI3b3N6dHFVd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EY3lOakUwTURBd01Wb1hEVE16TURjeU16RTBNREF3TVZvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUE5TjBKcGYzR1JYaHQKdDBmbFQya3ZnVW9xdzY3MEZSOTdnaWxLV2huK0REaHJ6YytrNm0rR2JBWi91YnVvbWRUVDhsQmJtQTJwckFTVgowOHVMYzJ6RWNBUCtWQ0FyVDZRNDc1Sy93Slp0M2Z4c041SnRlM0Qzbm0xMW95Rk9NeUZnOXJpTUQ3aGNLQWlYCmVRMW5nOFFPL245T1VKaUtEMXhaTm1RdFVGdWdzTTFHRFpuQk9wb1RtZGxGWTVkZmtxc2RTTUJzOEJ2aUpOUEkKL282YzlYcFNrSUVkTHNZeDF5YytsK01kR0c0dTQzMGhNdmxoOXUybU1zR0x3NERjbTZFUFA5dk1HY2RuQnh3eQpzOUtjanJKZC80NE1YTG1IMHJlY1FQTGlybzFiSEg2TVowQUZ2VktySnp0bGt2NjRlZzVIT2VaUHpJc20rbzRDCnYvQ25QbDh4T3dJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVVVWTklGWlBKR3lHOXJqeG5weGlOejcxTm1tMHdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUVpSFExN0Z4cVBEbFlFd2ZwNWljclQyTU4yQklSeFIvbHVWWVFtK3ltSVU4aVErb29pT1pTdWdjaEtmCmxtbUJRemw1NEhNMkpXL1hZN093dTFPRUMrdTdLeVpSWUJkb0hES0hmWjc0UGJGbW5SMnA3Ly9rQUg0NWhlQ1kKV1NjS0hxR2tVUTB4OEljT1ExM3ZVT0JMdDdJM21WWHlaaWNVdCtJeG1DRSthcDFaYUJFY0hUcVBRRlpNSE54RwpndDAxOTRQQnpLSTV5U04rTnY3eENDaVFyVHhBTzAvZGlmZ3B2TE9IbjVNNUFJWlF5T0JXVG1RdmV5UFY1TVMwCk9LMEtZNUtoWmlLWEtLYmkybFVTMTh5QVNzbURuNmFnOTJHbXRCcTFWeDdxbXFCZ3FNSGNuTjFUM3NlUERSa2gKcS9UNTBJbjYyV1BjUmJPSzFTMlhQYVA5S3pZPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSVlPc2F0OWc3cHR3d0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURjeU5qRTBNREF3TVZvWERUTXpNRGN5TXpFME1EQXdNVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQXRucEdjcllqek94MzBtcWlhRDBIc21qanVKVTFBeWhLVWsvZUlQMGlYTzFOamExWlh6bm54VHZSd1c0SApzWFBqV3E2ZEdMSDltY3lxeDBYUHBHQkEzMjZ4ZFFuNEp5WXd5YVF2SnVPdm1SWkhiV2ZEM1VYRTFyWm9DREVXCmJRL3FnVzBGMkZrTHRlQXY3aEQrRDN6OU5JYld1NmZLS1k3dlM5dEl5YklRNDdITkN4U2NZazVNNmVWWThXL3cKNExGR21jVmluKzlkMTIralk5S3NYbVZFa24yejF1WndreE1UQUNXOGpMaVN3bUU1SzhudUNFWDVpVjNHYUkweQpxNFY1UStxdXU5N202VXFyd3RBa3UrVzZ0SVZvb2ROZUZUcWZJR3lwdDAvUW1NVlNVOXlVSXFhZkMrNDRodVVBCjZYZW4ySStua0UwMXQ1NTlNZC84bWxqbEZRSURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVUwbm9QK3dDYjhSOUc3bjg4dUlwYW1JNjYzNlF3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGdjdwRFllQUNzMkxRWFBONlc0ejVnSTVDT3EzNm1HSkdISGlVOXVJcnBkCkkwQkRxcjZ1SDdoUS9CTjdjbHZ6NHUxdUVybFZ4eXBYU0Z5NGRmV1ZBSytuZWJxbE5RbEFZV2ZJQUxMYTNLZDcKbmswZzArTXFSWXpVcWxDQjJmelhXYzRjQWovM2VJaXVCVzZqb2hVRUhHTGNJY0Nna3I2K3BVd1ora2tPMDl1Qwo2Z2E1WGJUS3ZOS1AxNEZheGtMV1Y4L3VpaWNVbjk4SzQ2QlRlSmNqLzFmNWtsMGl5N3RSa3lTT2hMSkVONTFOClB2WTEvYVJBMU1oVjBxVTBaRkZEdi9IZmd1UjJ6Z3NWSFVVanhDWTVucnF5T0JVQ0xvVCsrM2xiNHl5cFJyMVUKN0dRVXJLMnJVK1hJUGQ3OGNBTlFMSDZaZGZTaWFkdzdVV1JiZlh2K0Ftdz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlEajRvOTYzUkw4NHdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmprd016Z3dOamt4TUI0WERUSXpNRGN5TmpFME1URXoKTUZvWERUTXpNRGN5TXpFME1URXpNVm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamt3TXpnd05qa3hNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXRTRU4Kd2ZOUUM2MmtrQ2pZVGZMQWt3RHl2ZEtpdUM5aHlabWpIakJiV1IvaGdocE0wUkU2Q1Jyc3VISFN0M0JWNWRWRApNTGFCM0s1QTdudDcxOExUYVhhV1BxdVZ0a3NLSXVKNnhkdFRudndhREhIbkFlN0NuNWY3QWM3THRQWDFyRndECmc2Z2JVaysvY2VCWE8yNnBpR21kQjIrZDQwUnpENllGUVZMbkxBcjR0cHQ1dmVPc1FQU2VUN0lDQ25jQ2pXZWUKUVgzM3E5WnZzeUwvRlNNcm1sL3RCUHRKZlBWTmZXdHJoVWVRbGM2UVptKzUyM2c1R1V6emd6N1RlejF3bFU1dgpEVXpPMmZ5dVUxRE9oNnBlczVocVFUUWhFQUYwcjhHYm1jZlpsVTZYdlFZaXVsWCs4NndBcXJWYTNBVEdKMjFOCnYvMHNKTkYzUHJ6eTNQU09yd0lEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVRndOb0tKRWJrMG90SXZsZXJ2cUVtZFZuRFJnd0h3WURWUjBqQkJndwpGb0FVRndOb0tKRWJrMG90SXZsZXJ2cUVtZFZuRFJnd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGUDZ3dnpaClZXdEV0Z05NbndSNHBoZjYvMWtYOTJFL2pNakxrbzlldDhscFFlKzZEK2VjUUFDS2V2OUk2Z2NNbVV0dzYxQm0KZFJrVkJIdEo4a1NxVmo5SmYyelJZdjk0Q1JSYnRpR2dwL3BSKzJVakVmNWVkbFVVVU1aeVVpamJZV29UTXZTdwpCVGx6Y2d2M1p5c3Y0Z2tYckd4ckgxRUwvT2hwUk1jaW5JY2k3S1I1bUY3eDRWVlRFVHloRnhva2JuZUdNZ1pPCnJQNFgvZjNNR2tCSzZFNlBhT0ZZcFlEekFCcE9IQ3p0SFk2R2NkcDdiamVuZnRJa0FKZERXWUpSQTFHRjZka1MKWDF5T0lHWExoSlBCakk1WmNCck5WOExvZktKYmNBaW91cnY5aTVLTE43SUJ6T0x5Q2xodktlWWlzaGQwVzJ6WgozYmpTYXZqeHNjNEdLN3c9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR1VENDQXFHZ0F3SUJBZ0lJSzgrd1J4R3FaZ293RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qa3dNemd3TnpNek1CNFhEVEl6TURjeU5qRTBNVEl4TTFvWApEVEkxTURjeU5URTBNVEl4TkZvd1RERktNRWdHQTFVRUF3eEJLaTVoY0hCekxtRndjQzFoZDNNdFpXRnpkREV0Ck5ERXlMWE51YnkweWVHd3RibkZyTkhNdVpHVjJNVEV1Y21Wa0xXTm9aWE4wWlhKbWFXVnNaQzVqYjIwd2dnRWkKTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDNWRMbXRNSXBvOFhjOUNITmlHMVllanRGRgpWOE9Ydm9xWXZYbGN2dnVwNS9DZFZoODJjSHI5S01JTTlqODF4N1k1S2E2eWtWTmpxUWgyanVBMGFsd2l6R09tCmFIVFpQUXE3SVc0c2lTRUQvcFdsbTZzSXVnd25oR1RNVzZ6S2xNK2g0bExZNWpEMEtxd2dYbDFxTHhUbGhqa2EKRkN6WDJ6dk00OWRheVZpTUYxYTFJZjlUY3ZXQXlhaTA1aGN5TkluZk1QYWlyclJNc0YzMkxQWjh0OVNBZ2MrOQp6YmRXakhvWi9Fb21iVUo5YnRlTFNzektQNnJKTnZEdFVNQkpOdkFNNzVWZnA0ai9heDNwMXdwZEl5OUxDdnlSCjM1QVVpTjlYSjlUd2kyMGpRTk1Xekk3eVlyZ0tNK25DNXM1Y1c2MlI4Z2s2Q3lveVloeFN2ZVUyRjdtbkFnTUIKQUFHamdjUXdnY0V3RGdZRFZSMFBBUUgvQkFRREFnV2dNQk1HQTFVZEpRUU1NQW9HQ0NzR0FRVUZCd01CTUF3RwpBMVVkRXdFQi93UUNNQUF3SFFZRFZSME9CQllFRk1scEphQjZHcDF1OEVOODJXalR3WmZVaVc4cU1COEdBMVVkCkl3UVlNQmFBRkdEdkFhVUdiRzZRLzF4c2g0RkxZaEoweUpGdE1Fd0dBMVVkRVFSRk1FT0NRU291WVhCd2N5NWgKY0hBdFlYZHpMV1ZoYzNReExUUXhNaTF6Ym04dE1uaHNMVzV4YXpSekxtUmxkakV4TG5KbFpDMWphR1Z6ZEdWeQpabWxsYkdRdVkyOXRNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUI5M084a3N6SjRNL2wxVmhDZmQ1TWlJT0Q3Ck00dCsweXREbVAyWkFMT0NsNVdnS3hKVDZtelp2cDBiYklMKzVITnlZUmN0WUtORGorRjNhWkhUcHVEbVMwUkoKS3dXZ3ZFSkxCMVZCSG94dmxWMC9sSGhFQTZKMEVrN1RMRXcrV09jSjNxQnlTL25BRFd2d1FpUVpFeCt5aFVGaApTQnBhRktrV2ZRM0UrQmZzS2dGZDVwdGd4Zm5iOG14cEZuNk5ic0ZNZ3BrbnJUMTRYTGdPRWEwQmdvQXhldEJhClRLM0w0M3dUcndtSG5VdjlnVks3czBMOXVhdzZMd0VTcEkyRXRVTzY0MFVDVHcxb1BSQ1dOcXFVRksvQmdERGwKaWRRbURWL2Jud3JOb3B1K09FT2hxOTRRSXJQRXY4b0RjUVBKTkdINlpLN3hrQlNwVG5DMzFLNVpkcXJWCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFtTVNRd0lnWURWUVFEREJ0cGJtZHkKWlhOekxXOXdaWEpoZEc5eVFERTJPVEF6T0RBM016TXdIaGNOTWpNd056STJNVFF4TWpFeVdoY05NalV3TnpJMQpNVFF4TWpFeldqQW1NU1F3SWdZRFZRUUREQnRwYm1keVpYTnpMVzl3WlhKaGRHOXlRREUyT1RBek9EQTNNek13CmdnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUURBNVFMSVEyVEwya2wvTm11anJjR3gKcEo5Mnd5MndTV0E5aUcySTd6bitFLzhlZ0drVTYzTWNyY1EzVG9yaWdSVnhHQWQ5RkY1TU42VVQ2ek95Zi9scgpMTU9oVzZMOE1CT2FLTHdvMEMrYi9mdFQza2d1R0xHMWw0dU40azBtV001dk83a1ArZlNmc3Jvczc2dkgzZkVFCjh5RzlkczBTM3VJWU5VSXRUaTJ0MCtBUzNLaWZMVE9ZV1M4OUdRZXQzbDVvRXFvLzBwRXJKYUNYQUJZRURrVEsKeDM1cWxqbVNmZjVmWkdUK0loelBZSEErUEk2TFBXdHFrbjF0M3krWmFzSm9naVdoRVdLbnpiZlJBb2NGMEhYQQo3TkpDSHpoSlU3RFBjQzdOa3VWUkZoeG9MTWJPR0VYTEZHckp0N3lIbWpkNUNGUjhiekpnVEJnQnNFelJVQkpWCkFnTUJBQUdqUlRCRE1BNEdBMVVkRHdFQi93UUVBd0lDcERBU0JnTlZIUk1CQWY4RUNEQUdBUUgvQWdFQU1CMEcKQTFVZERnUVdCQlJnN3dHbEJteHVrUDljYkllQlMySVNkTWlSYlRBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpWR1ViaTAvVFRtU1JvVXFuL3pYcHB2c3ZVZVkyeEF0TTBTZ3l6eEhvSTIxVURmeWNlWjJIVitiUFJkNURpRllRClFoQit5bFBReUJGczV2MEFsbXl5NjhMMTRDKzI3Z0U0WXM1cHhBcFM4MmJrWThRbVYycGozLzFDcVgwaEFMdXQKRG94M0czclVxZFMrZ3JSL3hLQTF2N0RIVEpuSktoTWFDbkxDTUk0c0pKTWIxYlZGTFF5clJuanMvbUVHazh3NwpyQ0xYOVl0dTNYenBXdWJ2UndyOHhWMUlKOWJCUVltQWROeUlNcFdTa2wxOExxL0xJUmxmbTNPdkZPNHlFUi9tCnp4UisxMkhJdEkvYytZQ0xxWjNBeEh5U1VPM1J2QVFWRGl4UXBWRm5STGxYemhaeVhZbzlyYkxZWm9abW5oWVkKQ2UzQXJJYjFXdUg1NWhRZEJ1bWVoQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                      "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443"
+                  },
+                  "version": "4.12.14",
+                  "versionAvailableUpdates": [
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:0e0e42534fd5c999daf0377dec44e739e212dbad876937c6b816c2f3d1552208",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2037",
+                          "version": "4.12.15"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:5339b3c4686010dc42990e0addce5aa4fddd071d6d9504dffe08a4b5059f6f38",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:2110",
+                          "version": "4.12.16"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:7ca5f8aa44bbc537c5a985a523d87365eab3f6e72abc50b7be4caae741e093f4",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2699",
+                          "version": "4.12.17"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:71e158c6173ad6aa6e356c119a87459196bbe70e89c0db1e35c1f63a87d90676",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3546",
+                          "version": "4.12.21"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:ba7956f5c2aae61c8ff3ab1ab2ee7e625db9b1c8964a65339764db79c148e4e6",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3615",
+                          "version": "4.12.22"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:2309578b68c5666dad62aed696f1f9d778ae1a089ee461060ba7b9514b7ca417",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3925",
+                          "version": "4.12.23"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:b0b11eedf91175459b5d7aefcf3936d0cabf00f01ced756677483f5f26227328",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3977",
+                          "version": "4.12.24"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:5a4fb052cda1d14d1e306ce87e6b0ded84edddaa76f1cf401bcded99cef2ad84",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4048",
+                          "version": "4.12.25"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:8d72f29227418d2ae12ee52e25cce9edef7cd645bdaea02410a89fe8a0ec6a47",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4221",
+                          "version": "4.12.26"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:e15e52f22247b833d1db59b1507fa67d920e39b75297bc3a74f3f15e560d6d02",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4319",
+                          "version": "4.12.27"
+                      }
+                  ],
+                  "versionHistory": [
+                      {
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a",
+                          "state": "Completed",
+                          "verified": false,
+                          "version": "4.12.14"
+                      }
+                  ]
+              },
+              "displayVersion": "OpenShift 4.12.14",
+              "isManagedOpenShift": false,
+              "upgradeInfo": {
+                  "isUpgrading": false,
+                  "isReadyUpdates": true,
+                  "upgradePercentage": "",
+                  "upgradeFailed": false,
+                  "hooksInProgress": false,
+                  "hookFailed": false,
+                  "latestJob": {
+                      "conditionMessage": "",
+                      "step": "prehook-ansiblejob"
+                  },
+                  "currentVersion": "4.12.14",
+                  "desiredVersion": "4.12.14",
+                  "isReadySelectChannels": true,
+                  "isSelectingChannel": false,
+                  "isUpgradeCuration": false,
+                  "currentChannel": "stable-4.12",
+                  "desiredChannel": "stable-4.12",
+                  "availableUpdates": [
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "availableChannels": [
+                      "candidate-4.12",
+                      "candidate-4.13",
+                      "eus-4.12",
+                      "fast-4.12",
+                      "fast-4.13",
+                      "stable-4.12"
+                  ],
+                  "prehooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthookDidNotRun": false
+              }
+          },
+          "acmDistribution": {},
+          "addons": {
+              "addonList": [
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "application-manager",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "application-manager",
+                                  "uid": "61924279-5256-4885-b3d1-301348cba6b4"
+                              }
+                          ],
+                          "resourceVersion": "76114184",
+                          "uid": "4f8fe831-f4c8-4294-a9c2-3414bda4d458"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:48Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:27Z",
+                                  "message": "the supported config resources are required in ClusterManagementAddon",
+                                  "reason": "ConfigurationUnsupported",
+                                  "status": "True",
+                                  "type": "UnsupportedConfiguration"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:27Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "application-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:application-manager",
+                                          "system:open-cluster-management:addon:application-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:application-manager:agent:application-manager"
+                                  }
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "generation": 1,
+                          "name": "cert-policy-controller",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cert-policy-controller",
+                                  "uid": "28ae2661-4d9c-4883-abf4-8bd91b425b0e"
+                              }
+                          ],
+                          "resourceVersion": "76955501",
+                          "uid": "f72a3dab-08c5-4b85-92e4-25a67a3f98ee"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:25Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:28Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "cert-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:cert-policy-controller",
+                                          "system:open-cluster-management:addon:cert-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:cert-policy-controller:agent:cert-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cert-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:26Z",
+                          "generation": 1,
+                          "name": "cluster-proxy",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cluster-proxy",
+                                  "uid": "91e1228b-f91f-42b8-8b51-fba32c2c8cb8"
+                              }
+                          ],
+                          "resourceVersion": "76114190",
+                          "uid": "be653afe-a418-4002-9443-113ab6805c16"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:27Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:59Z",
+                                  "message": "The status of cluster-proxy add-on is unknown.",
+                                  "reason": "ManagedClusterAddOnLeaseNotFound",
+                                  "status": "Unknown",
+                                  "type": "Available"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:16:09Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:16:09 +0000 UTC to 2024-02-04 18:16:09 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "proxy.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "cluster-proxy",
+                                  "resource": "managedproxyconfigurations"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:addon-agent"
+                                  }
+                              },
+                              {
+                                  "signerName": "open-cluster-management.io/proxy-agent-signer",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:proxy-agent"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cluster-proxy",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "config-policy-controller",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "config-policy-controller",
+                                  "uid": "207e6fa1-3f4f-4305-b6b5-6fa2b70e6c2a"
+                              }
+                          ],
+                          "resourceVersion": "76955526",
+                          "uid": "69e8bb88-1f65-456a-91d0-7a72c8ccb703"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:26Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:29Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "config-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:config-policy-controller",
+                                          "system:open-cluster-management:addon:config-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:config-policy-controller:agent:config-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "config-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "governance-policy-framework",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "governance-policy-framework",
+                                  "uid": "f18682dd-b69d-4dc3-8b27-d1c0122ef0c8"
+                              }
+                          ],
+                          "resourceVersion": "76955547",
+                          "uid": "5e9c4a3c-a779-4713-a1f7-e96a9c2198a3"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:26Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:29Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "governance-policy-framework add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:governance-policy-framework",
+                                          "system:open-cluster-management:addon:governance-policy-framework",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:governance-policy-framework:agent:governance-policy-framework"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "governance-policy-framework",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "generation": 1,
+                          "name": "iam-policy-controller",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "iam-policy-controller",
+                                  "uid": "7c844a9a-2bbb-44ed-ad2b-4ffbac2fead9"
+                              }
+                          ],
+                          "resourceVersion": "76955556",
+                          "uid": "87bf97da-d35a-48d5-9a46-fc812a53b7a9"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:26Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:29Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "iam-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:iam-policy-controller",
+                                          "system:open-cluster-management:addon:iam-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:iam-policy-controller:agent:iam-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "iam-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:27Z",
+                          "generation": 1,
+                          "name": "search-collector",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "search-collector",
+                                  "uid": "5e33703b-3c77-44cf-83b7-f8c3d6aef826"
+                              }
+                          ],
+                          "resourceVersion": "76441565",
+                          "uid": "2e5f7d94-d6bc-4375-a2b8-32076797c9b0"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:27Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T17:11:35Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "search-collector add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "search-collector",
+                                  "namespace": "open-cluster-management",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:search-collector",
+                                          "system:open-cluster-management:addon:search-collector",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:search-collector:agent:search-collector"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "search-collector",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:13:26Z",
+                          "generation": 1,
+                          "name": "work-manager",
+                          "namespace": "feng-managed1",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "work-manager",
+                                  "uid": "4025ef68-8012-4202-9d98-0e5e23a49398"
+                              }
+                          ],
+                          "resourceVersion": "76114198",
+                          "uid": "50b48367-f58d-4195-90ca-23d3231bcd6b"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:13:27Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "SetPermissionApplied",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:19Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:10:19 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:15:48Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T13:34:03Z",
+                                  "message": "work-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "namespace": "open-cluster-management-agent-addon",
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed1:addon:work-manager",
+                                          "system:open-cluster-management:addon:work-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed1:addon:work-manager:agent:work-manager"
+                                  }
+                              }
+                          ],
+                          "supportedConfigs": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ]
+                      }
+                  }
+              ],
+              "available": 7,
+              "progressing": 0,
+              "degraded": 0,
+              "unknown": 1
+          },
+          "labels": {
+              "cloud": "Amazon",
+              "cluster.open-cluster-management.io/clusterset": "default",
+              "clusterID": "3291865e-b2ff-41bf-b859-a8827ace8309",
+              "env": "dev",
+              "feature.open-cluster-management.io/addon-application-manager": "available",
+              "feature.open-cluster-management.io/addon-cert-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-cluster-proxy": "unreachable",
+              "feature.open-cluster-management.io/addon-config-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-governance-policy-framework": "available",
+              "feature.open-cluster-management.io/addon-iam-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-search-collector": "available",
+              "feature.open-cluster-management.io/addon-work-manager": "available",
+              "name": "feng-managed1",
+              "openshiftVersion": "4.12.14",
+              "openshiftVersion-major": "4",
+              "openshiftVersion-major-minor": "4.12",
+              "vendor": "OpenShift"
+          },
+          "nodes": {
+              "nodeList": [
+                  {
+                      "capacity": {
+                          "cpu": "8",
+                          "memory": "32442884Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.2xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "us-east-1",
+                          "failure-domain.beta.kubernetes.io/zone": "us-east-1a",
+                          "node-role.kubernetes.io/control-plane": "",
+                          "node-role.kubernetes.io/master": "",
+                          "node-role.kubernetes.io/worker": "",
+                          "node.kubernetes.io/instance-type": "m5.2xlarge"
+                      },
+                      "name": "ip-10-0-130-151.ec2.internal"
+                  }
+              ],
+              "ready": 1,
+              "unhealthy": 0,
+              "unknown": 0
+          },
+          "kubeApiServer": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
+          "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com",
+          "isHive": false,
+          "isHypershift": false,
+          "isManaged": true,
+          "isCurator": false,
+          "hasAutomationTemplate": false,
+          "isHostedCluster": false,
+          "isSNOCluster": false,
+          "isRegionalHubCluster": false,
+          "hive": {
+              "isHibernatable": false,
+              "secrets": {}
+          },
+          "clusterSet": "default",
+          "owner": {},
+          "creationTimestamp": "2023-08-08T18:13:26Z"
+      },
+      {
+          "name": "feng-managed2",
+          "displayName": "feng-managed2",
+          "namespace": "feng-managed2",
+          "uid": "34c3dad8-3e27-4ab1-a162-7dbe9b4c1cd2",
+          "status": "ready",
+          "provider": "aws",
+          "distribution": {
+              "k8sVersion": "v1.25.8+27e744f",
+              "ocp": {
+                  "availableUpdates": [
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "channel": "stable-4.12",
+                  "desired": {
+                      "channels": [
+                          "candidate-4.12",
+                          "candidate-4.13",
+                          "eus-4.12",
+                          "fast-4.12",
+                          "fast-4.13",
+                          "stable-4.12"
+                      ],
+                      "image": "quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a",
+                      "url": "https://access.redhat.com/errata/RHBA-2023:1858",
+                      "version": "4.12.14"
+                  },
+                  "desiredVersion": "4.12.14",
+                  "lastAppliedAPIServerURL": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
+                  "managedClusterClientConfig": {
+                      "caBundle": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJTWVuNVlyRnFpMDh3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd09EQXlNVFExT1RNNVdoY05Nek13TnpNd01UUTFPVE01V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS2tKR2ZvdTRmRTV0dHRHQ1ZFMVJoSkMyMDY3QTVWagpCTi9QeERQeEhOQmUxeGJOS0Jyc3FjN0xDakZsVzFGc0lFd2Y3Y2VqOHkycVFDSDVHWU9XK21FbmVYamYzY1JSCnNLY2V6UmozYzhFTXVIYm1VR05aMVJ0MU0yZGZtMnFSTFFRQU5sU3lTL2hiUEk2dURCZkpmWjhlVVROUnEwMEYKMDJ3ZnBVckphTkIzY0J5YXhKQktHV3RpRjBrRmZ1dWdXUWZKSkhTWC9MSEVaR1hnQURUeXN2cHJVdmYrVnRwQwpjdlhxUXVCM0RmWFUxRGtRdWRmNnV2QnFPc0M2akRjMjBINzF1cjQ4c0tNK2JvcEQram81ZS8waCtWdms3OFRlCnJteTBkbEgvZFVCdEo2MTJJa1hQOSt0c2hxWXdRK0IzbXNhbWxFWk1NNWkvOGttL2dyM1I1ODhDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRlBoOAp6MGdEb01tYlZQd2ErcE9MTFdWT3BIYmJNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJlMHc1Y0pvNTFWTFYwCm9XWkR6VHBxUXJ6SFBlQ2s4M2xkdlA3Y2ZIU2xkcng0c1Q4QTRkbWRtdzJjanBjcFU2ZVdaRVN4WWh4YjM4dkwKcm5tZ09SOXczRzhRMU9SeG1ZNFMwaWZZeW40bFVybDc1QysyMWRrdHVLeVpQSDArNytEQVR4ZGJRMjM5WGRCSgo1MjdzbVg3MVZ3L3VNQldKZDFxM0xUc0kyL1Q5dFFWeitjTXJuZDZBWXJVVEVHS2kvL285eHJPb0hxL1RZYUZpCjVxK0JYOUZFQkdpakpCblFEOXdnVXFXUGpxSTNtNUtTcWJRRW9GZWQrM2xIamJ1eTRGa1JmcnFhWmlMMDZqbnEKc2ttV0VNWEEyUVNQM0dabjJoRFRKOGZWUmJEdzAwK2IyNGV6UzRRM0lJczJwWjZ5dG0reTBwL2x0QUpGT1ByLwpGQkNlSmM1RQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSUswTlkvZkt5d1Awd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EZ3dNakUwTlRrek9Wb1hEVE16TURjek1ERTBOVGt6T1Zvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEwK2VaL1VhU3BEM08KcDVqaU5yd1YyVUtxaUJCblNUQk9UMS9vem5XSHZWMC9OeVpkN0ZPYWhWWVRobWMzTS9DYlFFOGJDY2lTbWEyYQozYjREZVYzOU53OXVBekUzOUJXRm9UdEw0NmkvUndadWVlVkFBZ0VjT0VoZ0o3SG1la3F6eE9hZDRlcGlLbG91ClpkdW0xL0RvWDM1MW1yMXJ4bmpBS1RKWjVWNllTb0k1MXRkUVc3LzlVVk54bUQzWm1VbDZVQmJPRlZrZVZuYVkKb1ZwS3liV1d1S3hUdEEyU0sreFo0cWJrS3g2RnNNdEQwWWJRaEtZeGlZV3paRUZrbTVWeGRwVi9jVFdWdTJPcgpJdU00Mk13M0lqZExmWW52UTJ5UU1DZm5yUm5EUGhvb1RqbXVxVVk5UXhRZmg4UWdlZnpIMWprcW1vU01KQnBECjIvYlJ4a1pXNndJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVWxlMnhiOHM3Q2oxT2NrVWR1VkdrU1NnRHZla3dEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUlYWkZ1RHg2aTFHeE51dldsdFNzcFo2UU1LazBoUHpNVE5UUlRHSGxJSHFGblhyYU94WXczbmpuWjJXCnh6aE5QSi9zMnpTaTB4Q3B0K0JLZVJ1N2F2Y3UyZnhsY1JHSit4RThhdHRZZjdlVUo5Wjkrblo4TndJRDlLdXQKcmppd21oNWdtcXh5OVo4MEsrNlNrVmdJY05UekVZcFZwMUcrejJLSllrNG0wWlIvYTBjT1Jtc3Q5K1I4ZzJaagpndmRud0s5MGJDU1pkQ3VwUElQWkxZaVVycU4zWS9IQ0dLK0UrR3doMnowaW9EQlV3aWx3TEQ3L0MyZTFnSDJRCldVRWxCRkl6QXlaRWdZZGUxNzRNcStJWXBaenlJZnUzWGdIa2xvK25ISWloQTVGa1ZwZ3dxWkhrVFBqWlJFTjMKN1EzY0VxUE80aGszMHZSR1BEWmdiTWRsb0hNPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSWNvSERYS2JKa29Bd0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURnd01qRTBOVGt6T1ZvWERUTXpNRGN6TURFME5Ua3pPVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTNBeEJZM2N6dmk2OEhSWUtYK2RoMDJJbDJmUWg5aVNYV2tndm9UU0R4TGZVdnFGNVNRaUdReERZbEZFSgpLcGlFN2FINHlkSmNQKzdLb3BmeVIyVFAzVnBjLzdQWVZsMVJVRTd3SXU2ei8rMEhQc1pCUTlRYy9QNE9UbFNNCmtzcmozMTZFQ0JKVmZER3BuR05NdkxUM0E4Skdzb1h6THFjd1NiZlZzMzYzYWUyMTM2bmc0TVNOQ3c1T1ExR2IKc0lpQ2FXMGhCa1NBY2ZrcHI5ZUVpUFVOMXRGemw3MVdCVkVMWXBTeGVnU25UT1hMSmJzNFBGM0psUGpnVUdVOApnNzltVGRqZlppUk9uMHRhNjNyM1JlZ1Z6UGsxaWFJWEE0aFIyQXh4MjBnYSsvWWVqd3JFNFdmbkMvVlpsMmttCmJ6c3NJdWZVeW1SMEtjcElMYzRpcVkvVE1RSURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVUNXFvMXd0OTU4dk5PL1VoWGJlV0Vac0Rua1V3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFFR2xEenI1dlpKRU1KYS82WGlTYXpFNldDVmd4UGl2TnhaTzNOblBZUkFkCllFd1AvY1FpWGVVemJiK3hwYkNVVFFiUWozM0JXNHpYNWlmU2lON0JnT3JnWUtyM0p5eTlpZ1FVODVJQVdQOHcKWDJwaGVoQmU0RWRDYjlWOHF3ZVFBK2VVb0ovYmowZzB4VTIrZFZINUxuTVFreDNweUI0d3VEdU5VVW5MVHoyaQpqYmo1akxzMjI4VVdRUTdjdHJZT0NhRmRlSWRWZ3RUeGkzVXZJWElwRVFKb05OWWxjV2UvS3VyekdIQ1FSR2MxCldDK3k3SmpyYkhBY2VsOXdWVkRQRndoN3FNQU40dnJKaGV2WGpSRDlCdG4rNHFXZmFpeVdpM1lycmpvcDFTazgKZEZpZkppdmJDdFE2dERjRHpxbldQSC9jbHp4dDAwT0s5NEszWmp1dHZ1cz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlScnRmMmFTVXBONHdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmprd09UZzVNRFV3TUI0WERUSXpNRGd3TWpFMU1UQTAKT1ZvWERUTXpNRGN6TURFMU1UQTFNRm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamt3T1RnNU1EVXdNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXNDVUgKZ2VxQ0lCd05wdHh4Y1h3T3ozTktGUHJqWmZBUGJtWGRKeENYMWo1RUNvcUVmU3V6djdNdndWZjdnaWY2ZzlVKwpQZmhHWVBZcmpUZG50b2c1ZGJ2dmg2b0hkRGhMWm4rS3p6THp5dVVRYkhvam9QWWw2RWczNWpJaU5BekhWNENnCnhqTE12RHpYMnFUQzBlVFQ5YWFQaGx0ZTc0YVJweGRnNHdGeCtJSWpuWURZTm9PbngzaFpqRkRWN0FkcE13VTQKNnJvV0tNaHpTZFBNU1dGMzZTTEhYWXZ1QzRmQWtrWXMrYnR3RnhpWUVXTkt2aFZBMmc1OTJmTXJqdTBuRGpEQQpPRXo1VDJIMWpRVFpmYlg0a3l4cGhRSGxCNlRFQktocklYdFNwTWpncEFkVTJwblN1ZmJ0cVdBdDdQUUVJUU9WCkxmNUdQR2dKaWhKOEw1d28zd0lEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVZEhkaGpkTThPS0RxK1Z1L3F6UjJIMlBQamo4d0h3WURWUjBqQkJndwpGb0FVZEhkaGpkTThPS0RxK1Z1L3F6UjJIMlBQamo4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBWjNYZG9DCkZMNHVTOXcrS2pPY3Rhc1RYU2Y0d1VvRGdDaFh2MUh0bzFXTWVFYkZ2M0VqY3hJc1V2aDRxQVJsak5Ybk1lRm4KS0VqZ3V1UzA1eEQ3TlBsWTNNWmpJTm1EdThkOTB6cDdnVE5IWjQ4M0FNTGp3ZnBlNHF6RDlNejBxc1lTOGlaNQpUcGVNK0xPT0t2bVdjR0FjMTdRZWxEOWdQWUh4b1o2Yk9YYlhGdzdkUDg0ZngzZElmdmY3bG9kbzR3NnlvM1lTClJBY3JkYWJ2Y2xaV1FUTHNrbkZYSlp2cG54N0U4d0tmZHdTaitLb05sc0p5Y29INkppTU9sMnRvRUtCaDczVGEKMWVUcnFrQ096UGViMk1QVG9xeHF2b3R3L1lFS1k0QmJleEhTSk00NDUybUFsVW5iZkUzRHdiSWxSeVlveENDdwpncE5RcVRPWCtQNnJ6emc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR1VENDQXFHZ0F3SUJBZ0lJWmFBQjNSRHVTS2t3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qa3dPVGc1TURrMk1CNFhEVEl6TURnd01qRTFNVEV6TjFvWApEVEkxTURnd01URTFNVEV6T0Zvd1RERktNRWdHQTFVRUF3eEJLaTVoY0hCekxtRndjQzFoZDNNdFpXRnpkREV0Ck5ERXlMWE51YnkweWVHd3RaSGN5ZG1zdVpHVjJNVEV1Y21Wa0xXTm9aWE4wWlhKbWFXVnNaQzVqYjIwd2dnRWkKTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDakhDb0JwQXZEU3FTeXgrdDVlV3ZjMjdjRwowY3dlQVBWbVhtRzN3cWpqK3p2Tm5UeW9ld01KdVBncjl5WTFJTzA3VkwrTmpXdEdiS3VsY1NaSldTUm1WekNCClNaRkZ3Z3Vva0JrZ2FjRGtIaTF4RjVoeTJoV2tzZ0hya3F0YjhpZmJLL0RDRHRSZ05sd1lVUzBIaHk1dFl1RFkKZW44WUFWK3AxQk13RVl6U0R3WFNrcENHYVRBZHJva0VIaUhDY2M0YS83RENGaUk1YUwvbys4TEJNa2F2VDAvSgo3YWZlV0dmTjNaeisyWG9JVzgzUXdtZE5CZUVoYWU2MjQ5TkhsUHR4c1p0OXNuYzRiQ3hvTnhiVkg1bnBYb05ZCmhvdmw1cGNuUVpzVEhUZitIaXdXTWVWUXpIc0NuY2pkOGpnUXlLMmxmMThrT0VEZVQvQ2NqZDEyc3REMUFnTUIKQUFHamdjUXdnY0V3RGdZRFZSMFBBUUgvQkFRREFnV2dNQk1HQTFVZEpRUU1NQW9HQ0NzR0FRVUZCd01CTUF3RwpBMVVkRXdFQi93UUNNQUF3SFFZRFZSME9CQllFRkdrWWY5UXQwRTFzZ0RXbzlzSm13N2hWZlE4Y01COEdBMVVkCkl3UVlNQmFBRkN0UTFyM0wvMXpLTnlnUVhOaVc1d1Zzc3IvNE1Fd0dBMVVkRVFSRk1FT0NRU291WVhCd2N5NWgKY0hBdFlYZHpMV1ZoYzNReExUUXhNaTF6Ym04dE1uaHNMV1IzTW5ackxtUmxkakV4TG5KbFpDMWphR1Z6ZEdWeQpabWxsYkdRdVkyOXRNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJLTmxjaGFwcmhuNkxWbm01cEpDb3M5UjVlCjNqMWJoRGNZNDJiZGZGT1p6Um9TT3FDMURyVlBicVNIWlBnMWxYRkxzZ3lLWXR4ZFJUSVpZUmpkbHJwdy9BN1cKL0VPYUhoWVdWdXlhNC9CSFJrRnFpdG1BdGo1SFVDSnhJekZKa1QvNkthdCtFRWxPcGdJUFFrR29Gd1RDVGhtbApjSi9ya3lPQVdiTTR1SzRFRkp2VmlwVGp0WGhWQXIvcC9tMG5QYWFGNGJCNkt4YmEyWGgwUnNTazVFSUVCZkVCCkJNWElxM1l4RzZHWHUzNlJ4S0N1ejFjcDIvdFFYTEUxajVXSEVwdDVzY0xacm92bFFidlV3M29wV0V2Y3VKc2QKZzB0MFdhanRzM0pQZEFIcEpRMGJBdU45c08yaWJ4VXc0cTZtUitDQWFqWkRtM3VLN0R2dTFYeU1HZi9PCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFtTVNRd0lnWURWUVFEREJ0cGJtZHkKWlhOekxXOXdaWEpoZEc5eVFERTJPVEE1T0Rrd09UWXdIaGNOTWpNd09EQXlNVFV4TVRNMVdoY05NalV3T0RBeApNVFV4TVRNMldqQW1NU1F3SWdZRFZRUUREQnRwYm1keVpYTnpMVzl3WlhKaGRHOXlRREUyT1RBNU9Ea3dPVFl3CmdnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUNlUXY5eVAzekhYNjhXSkVWczNSUFEKWTlKS3RGbzRnK3o4QXJCZ2JqVEE5UXV6YzdGVmVvekRnZW1vMis3V2pKR2lGZFhjdVJTMDkrQmdLWHlLYVlmSwp0TDVLOWtHRlNQZG9PeDMrb3lKczBFRWcyaHZsQnpmOU1uZmxrVW0wanZEY1Nvb1dzK002YWhZS24zMHpQVEI5ClJ4RSttTEVoZCsyWmIxTmdoT1lFdVdOVUlFbGE1SWc4SlU0UGYwNk0xWVlhSHQvR29TQ3hYbnRqVytFS2tUTGgKRFNtMXIzMDdteXlySlZ0RHZra1E3UkpxWFFFSVhVMzI3OXlLc2ZGR0xEZVdBVW16T0wrcWNnM2tFUHp5a1ZFYwpaeDNybTFrVWh3eHljZkV5a3lYZHpWZGpPRUlUemRtbDk2M24ySGxSYko5SnJ0SDNYSnQrQVM2enNqUm1XMUZsCkFnTUJBQUdqUlRCRE1BNEdBMVVkRHdFQi93UUVBd0lDcERBU0JnTlZIUk1CQWY4RUNEQUdBUUgvQWdFQU1CMEcKQTFVZERnUVdCQlFyVU5hOXkvOWN5amNvRUZ6WWx1Y0ZiTEsvK0RBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpEYVlweXQ4N0Z2VDZ4R0hqUzFOZEtqWGxmYlVkczJwR3BJcVhqbjN6Z0ZRTzFPbVBhVUxQN3d1L093Z1FtTDI2ClFINys3RjBMQWJwNUQ5bzR5NnQ1UFVHZHBORmdLZm9oSkhwbGxrbVFLZ1FodGFJNlJRVVB4WDllVGJIcndtRWcKYVVKdkVjeTlnQmovOUV2THd0dko3Yk1kSWV3MmgrZ1RXWTRIVGFFUDVXRUtkMWJWc3VkYXRIZGRWTjJPK29pKwpZSG8xMjFRNThGT0NpMXhGK01qOGZ0bkV4UmE0YWpZb1BLNk5STnIwUXNPdUhhMERkRmt5UUV1d3lld0VsN3g3CjlhbG43Vk82c3RMaFNVY2dUOTErT2RSZWpYT1d6MURIWmliajFlVGRNMk1zSExSNkpSVDRZMFVqcWpvbi9KSW8KQnZxVUxaWmVkS2dZOWRCZDljLzlrQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                      "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443"
+                  },
+                  "version": "4.12.14",
+                  "versionAvailableUpdates": [
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:0e0e42534fd5c999daf0377dec44e739e212dbad876937c6b816c2f3d1552208",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2037",
+                          "version": "4.12.15"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:5339b3c4686010dc42990e0addce5aa4fddd071d6d9504dffe08a4b5059f6f38",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:2110",
+                          "version": "4.12.16"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:7ca5f8aa44bbc537c5a985a523d87365eab3f6e72abc50b7be4caae741e093f4",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2699",
+                          "version": "4.12.17"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:71e158c6173ad6aa6e356c119a87459196bbe70e89c0db1e35c1f63a87d90676",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3546",
+                          "version": "4.12.21"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:ba7956f5c2aae61c8ff3ab1ab2ee7e625db9b1c8964a65339764db79c148e4e6",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3615",
+                          "version": "4.12.22"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:2309578b68c5666dad62aed696f1f9d778ae1a089ee461060ba7b9514b7ca417",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3925",
+                          "version": "4.12.23"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:b0b11eedf91175459b5d7aefcf3936d0cabf00f01ced756677483f5f26227328",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3977",
+                          "version": "4.12.24"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:5a4fb052cda1d14d1e306ce87e6b0ded84edddaa76f1cf401bcded99cef2ad84",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4048",
+                          "version": "4.12.25"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:8d72f29227418d2ae12ee52e25cce9edef7cd645bdaea02410a89fe8a0ec6a47",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4221",
+                          "version": "4.12.26"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:e15e52f22247b833d1db59b1507fa67d920e39b75297bc3a74f3f15e560d6d02",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4319",
+                          "version": "4.12.27"
+                      }
+                  ],
+                  "versionHistory": [
+                      {
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a",
+                          "state": "Completed",
+                          "verified": false,
+                          "version": "4.12.14"
+                      }
+                  ]
+              },
+              "displayVersion": "OpenShift 4.12.14",
+              "isManagedOpenShift": false,
+              "upgradeInfo": {
+                  "isUpgrading": false,
+                  "isReadyUpdates": true,
+                  "upgradePercentage": "",
+                  "upgradeFailed": false,
+                  "hooksInProgress": false,
+                  "hookFailed": false,
+                  "latestJob": {
+                      "conditionMessage": "",
+                      "step": "prehook-ansiblejob"
+                  },
+                  "currentVersion": "4.12.14",
+                  "desiredVersion": "4.12.14",
+                  "isReadySelectChannels": true,
+                  "isSelectingChannel": false,
+                  "isUpgradeCuration": false,
+                  "currentChannel": "stable-4.12",
+                  "desiredChannel": "stable-4.12",
+                  "availableUpdates": [
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "availableChannels": [
+                      "candidate-4.12",
+                      "candidate-4.13",
+                      "eus-4.12",
+                      "fast-4.12",
+                      "fast-4.13",
+                      "stable-4.12"
+                  ],
+                  "prehooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthookDidNotRun": false
+              }
+          },
+          "acmDistribution": {},
+          "addons": {
+              "addonList": [
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "application-manager",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "application-manager",
+                                  "uid": "61924279-5256-4885-b3d1-301348cba6b4"
+                              }
+                          ],
+                          "resourceVersion": "77556841",
+                          "uid": "42794705-f914-4832-afde-e443a1ed68c2"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-09T20:09:15Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:06Z",
+                                  "message": "the supported config resources are required in ClusterManagementAddon",
+                                  "reason": "ConfigurationUnsupported",
+                                  "status": "True",
+                                  "type": "UnsupportedConfiguration"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:06Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "application-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:application-manager",
+                                          "system:open-cluster-management:addon:application-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:application-manager:agent:application-manager"
+                                  }
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "generation": 1,
+                          "name": "cert-policy-controller",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cert-policy-controller",
+                                  "uid": "28ae2661-4d9c-4883-abf4-8bd91b425b0e"
+                              }
+                          ],
+                          "resourceVersion": "77556843",
+                          "uid": "3494b394-26e4-4aa7-8b26-629b5d1ea68a"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:26Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:07Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "cert-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:cert-policy-controller",
+                                          "system:open-cluster-management:addon:cert-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:cert-policy-controller:agent:cert-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cert-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:28:15Z",
+                          "generation": 1,
+                          "name": "cluster-proxy",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cluster-proxy",
+                                  "uid": "91e1228b-f91f-42b8-8b51-fba32c2c8cb8"
+                              }
+                          ],
+                          "resourceVersion": "77556839",
+                          "uid": "a27dfda9-37b8-4a97-9e3b-8afa490e3cce"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:21Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:28:48 +0000 UTC to 2024-02-04 18:28:48 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:29:27Z",
+                                  "message": "The status of cluster-proxy add-on is unknown.",
+                                  "reason": "ManagedClusterAddOnLeaseNotFound",
+                                  "status": "Unknown",
+                                  "type": "Available"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "proxy.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "cluster-proxy",
+                                  "resource": "managedproxyconfigurations"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:addon-agent"
+                                  }
+                              },
+                              {
+                                  "signerName": "open-cluster-management.io/proxy-agent-signer",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:proxy-agent"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cluster-proxy",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "config-policy-controller",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "config-policy-controller",
+                                  "uid": "207e6fa1-3f4f-4305-b6b5-6fa2b70e6c2a"
+                              }
+                          ],
+                          "resourceVersion": "77556850",
+                          "uid": "18d0b9cb-bfcb-4b49-ae73-6a3508f64507"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:26Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:08Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "config-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:config-policy-controller",
+                                          "system:open-cluster-management:addon:config-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:config-policy-controller:agent:config-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "config-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "governance-policy-framework",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "governance-policy-framework",
+                                  "uid": "f18682dd-b69d-4dc3-8b27-d1c0122ef0c8"
+                              }
+                          ],
+                          "resourceVersion": "77556853",
+                          "uid": "cc4f01f3-06ea-45db-8bc6-b25846a5cadd"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:27Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:08Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "governance-policy-framework add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:governance-policy-framework",
+                                          "system:open-cluster-management:addon:governance-policy-framework",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:governance-policy-framework:agent:governance-policy-framework"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "governance-policy-framework",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "generation": 1,
+                          "name": "iam-policy-controller",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "iam-policy-controller",
+                                  "uid": "7c844a9a-2bbb-44ed-ad2b-4ffbac2fead9"
+                              }
+                          ],
+                          "resourceVersion": "77556846",
+                          "uid": "7300499e-3da1-458f-9e04-30960addb968"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:27Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:07Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "iam-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:iam-policy-controller",
+                                          "system:open-cluster-management:addon:iam-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:iam-policy-controller:agent:iam-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "iam-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "generation": 1,
+                          "name": "search-collector",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "search-collector",
+                                  "uid": "5e33703b-3c77-44cf-83b7-f8c3d6aef826"
+                              }
+                          ],
+                          "resourceVersion": "77556855",
+                          "uid": "bbab2d55-7066-4182-95a8-f8a2a2bb4a98"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:06Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:29:16Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "search-collector add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "search-collector",
+                                  "namespace": "open-cluster-management",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:search-collector",
+                                          "system:open-cluster-management:addon:search-collector",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:search-collector:agent:search-collector"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "search-collector",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T18:27:06Z",
+                          "generation": 1,
+                          "name": "work-manager",
+                          "namespace": "feng-managed2",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "work-manager",
+                                  "uid": "4025ef68-8012-4202-9d98-0e5e23a49398"
+                              }
+                          ],
+                          "resourceVersion": "77556857",
+                          "uid": "a170bc69-d157-4490-b38c-b95d632580cc"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:27:06Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "SetPermissionApplied",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:28:48Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 18:23:48 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T18:29:14Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-14T14:56:00Z",
+                                  "message": "work-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "namespace": "open-cluster-management-agent-addon",
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:feng-managed2:addon:work-manager",
+                                          "system:open-cluster-management:addon:work-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:feng-managed2:addon:work-manager:agent:work-manager"
+                                  }
+                              }
+                          ],
+                          "supportedConfigs": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ]
+                      }
+                  }
+              ],
+              "available": 7,
+              "progressing": 0,
+              "degraded": 0,
+              "unknown": 1
+          },
+          "labels": {
+              "cloud": "Amazon",
+              "cluster.open-cluster-management.io/clusterset": "default",
+              "clusterID": "8a935b8f-0388-4635-a5c1-574ec70a37f6",
+              "feature.open-cluster-management.io/addon-application-manager": "available",
+              "feature.open-cluster-management.io/addon-cert-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-cluster-proxy": "unreachable",
+              "feature.open-cluster-management.io/addon-config-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-governance-policy-framework": "available",
+              "feature.open-cluster-management.io/addon-iam-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-search-collector": "available",
+              "feature.open-cluster-management.io/addon-work-manager": "available",
+              "name": "feng-managed2",
+              "openshiftVersion": "4.12.14",
+              "openshiftVersion-major": "4",
+              "openshiftVersion-major-minor": "4.12",
+              "vendor": "OpenShift"
+          },
+          "nodes": {
+              "nodeList": [
+                  {
+                      "capacity": {
+                          "cpu": "8",
+                          "memory": "32098820Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.2xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "us-east-1",
+                          "failure-domain.beta.kubernetes.io/zone": "us-east-1a",
+                          "node-role.kubernetes.io/control-plane": "",
+                          "node-role.kubernetes.io/master": "",
+                          "node-role.kubernetes.io/worker": "",
+                          "node.kubernetes.io/instance-type": "m5.2xlarge"
+                      },
+                      "name": "ip-10-0-133-232.ec2.internal"
+                  }
+              ],
+              "ready": 1,
+              "unhealthy": 0,
+              "unknown": 0
+          },
+          "kubeApiServer": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
+          "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com",
+          "isHive": false,
+          "isHypershift": false,
+          "isManaged": true,
+          "isCurator": false,
+          "hasAutomationTemplate": false,
+          "isHostedCluster": false,
+          "isSNOCluster": false,
+          "isRegionalHubCluster": false,
+          "hive": {
+              "isHibernatable": false,
+              "secrets": {}
+          },
+          "clusterSet": "default",
+          "owner": {},
+          "creationTimestamp": "2023-08-08T18:27:06Z"
+      },
+      {
+          "name": "local-cluster",
+          "displayName": "local-cluster",
+          "namespace": "local-cluster",
+          "uid": "0f100525-4ddd-40c8-9fb7-78f36dbb577c",
+          "status": "ready",
+          "provider": "aws",
+          "distribution": {
+              "k8sVersion": "v1.25.7+eab9cc9",
+              "ocp": {
+                  "availableUpdates": [
+                      "4.12.11",
+                      "4.12.13",
+                      "4.12.14",
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "channel": "stable-4.12",
+                  "desired": {
+                      "image": "quay.io/openshift-release-dev/ocp-release@sha256:87a270ba5dcbfc17a1f1789878bd82fe30b814a43be7e0982ad2df2967253724",
+                      "url": "https://access.redhat.com/errata/RHBA-2023:1508",
+                      "version": "4.12.10"
+                  },
+                  "desiredVersion": "4.12.10",
+                  "lastAppliedAPIServerURL": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443",
+                  "managedClusterClientConfig": {
+                      "caBundle": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJUU9halVYNnhDM2t3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05EQTJNVGt4T0RFeFdoY05Nek13TkRBek1Ua3hPREV4V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTDhPS0h0N2dvNUNXcU1yT0xvWlVGV1gwRlVZelRkbApoS2pPdGorcmh5Snh5WjJDSVdGU2xidWxYaWVFcnBpVGRuWmVYc1Aza1pVWHJvbzVodm5sYlZnRzhNZWtrcnNWClBsam5yWXhqOHJNZ29sYTJYcUlIVGRKWGVQNk41TUNoR3JEQzJVVUVqOFExUTFwKzhvSFUzOXRPVmEwalozSmsKU0QwdVZ0ZDl5eGtOTzhSdEVnUDEzaWU0aXdzRlJwNE16YVhPVHJEazB5YW1SaklJY3hDZ1lmK3BnU3NlL3cvWAowdHkwNkx6dDc5U0lFVlFpaHB3bXRySWI4U095d2kwNFpkb1hXeitpUjRyYkZqd3JjbWxCbnZ5T2RzNEUwNHBiCkdWWUN4QUxMWVRTOVlVVVBRMG4wM3p2RE5vZXIvS2xoS3E4V3llOExXVzFTdVJYYzVJTis4MGNDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRktQNQoxanZ5M3Nha0lFQWZBNUVNa2MzY211T3VNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFNU2xFeHlwdkdIQkVGCkhSNDhvc2ZBSmZncTVSNHA4bElZR2oxZytrQ1B4UW1LTDloSGUreURucnRCNnZMYkNhUkxjRWhIYjRBY1FMMXQKV2RjMkhkcGIwVHhKdXdFZ0ZEU0s2Y3B4bGVtUmZXNXdMMnl3amlhNVpLR01UcGhTLy92cVJrV1dyditXWmkregpvZlRZejd4U2NMd2tMYmhMVWtNYTJ1WkJpb3JnYk9oMEtPZ3JEQnlVdjFQSEFucGUrMS9mZ2p2RG5hK3FJWU5aCk91Z3QzOHN5WnhqeVpsakNua01GelJQTnlidXpUTTJWMDZESGliNGhueTR2UGNva1Yrb28zL1NEZm5OSGpxOHEKT2E5Z3lwVXBVWkdjcmsyN0g4eTE1SU5mZWxycWprSS93MHhSeWdOZzZCNkF6U2tNbFJlRld0UEFiaXNiWTA4WgpzaE9ITmxZKwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSVBINjd0YTU0dmVzd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EUXdOakU1TVRneE1Wb1hEVE16TURRd016RTVNVGd4TVZvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2WHp3R1MyWVpqeWQKTTRiODVDYlRLRzJjVFF4N0FzTklSNllBc255Y1EzUmwyZFJXNXdqRzJXNWpOSGQzMW5DaFplV21EWmhOd2FGNQp0bit2eVp0TjJVNm9rYVV2TXBYd1lEYk1rdkwweXBRVDdsR2dhZUZxNnU5VGdpYXA2S1MxMHNTZmxJbWdPaGVIClZVUmNOOGp5OWUycnVzcDkyVnZHS09JZzJRKzhqVUM2UzJpRUF3QTBaL1RHTHZJcXREVDUvTm9hL01lYS9mL1cKU29jQnVlM1NIb0hGRU1GVGlLUHFhdzA4YkZUaVRRSFpTUlZ2MEh5WDF4bEtoc3N4TVJzQ1Zkb0p1dklLNUVibwpQMFZtRStzVUhOL2hCTFlCb1YvVERSeWQ5SXZaVGJXWC9nN2wxQUQxb0VYSU9MbEZiTVJML1RwbFg5RUVScjZUCmJXK0hmNGg3U1FJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVUhmZ2FibXZpZ3A2WG1mWXJGRHlZMGNQVlh6a3dEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUEwaDUxNHQ3ejd1UlZJUjcvMi9xM3ZVaWtkaDB2MFozeTYzL3JxdDBJbXJMdUVLN09KZWNkbHNid2RLCk1Kb3RUMDExMmtNUEFRZlNwZ2lHWGhVTzBpbHFHZnBWeWRlSHY5b2VRNXhjVXU4RHozMlBlVURjVXZ5THJUSEkKTGN6MnVPOFE5dHU4MmE2UzBxQ3pmUU1UdytnTW52NUxTVXNGdVBRRE1MQThnNy92ZDJ3WVF0SVZxT0srZExrNApxWTIrTUh3d1p4L0R4dWZTOEw0ZGd5UTI3NHVpclErajhmbnNXQ3VPR0o1UkdEMEx3NTUxZUtmeGhHTEVoUHVQCnJqQjFheW80aXJXVkYwQ0I2QTNYd3Urc3ZZa3hwYVMrdjlXSFZnNHFZbkdveDRMSkx4ekx6STU5TGhIb0FGbTAKTDBiY2FxN0ZCa3JkaEtlTmF2bi80SEpMcWRBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSVRESEpTOUNNb3dBd0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURRd05qRTVNVGd4TVZvWERUTXpNRFF3TXpFNU1UZ3hNVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTBpNFJPK1k0Zmhpc3gzWDJQQlRpQmVpRFhXRVNNNlg2Y1BCVklDRU9aWEYxOTl3TmpCT1kxaU1TT3ZWbAo2b0V0aUV2N210RW41TUthZkluR0Y2aG9LdW5sWWZ1ZFZKdnp3YnpDckZZSkhsT3BHc0xsR0J5aEQ2NkJ4TUdnCkgvZGc5VkVzWFB5NlFndTFPZFl4TzhXbnlId0I0dWR3TUJXUnk2Vk5GRnRNMGowVEwrNGlxbUp2UXNlOUhpd2UKbWdEV01HL005TTJNaVJ5bzdFNGRhL3pSV1VrcGpSNG5DQlZYQWtGcXVpWStybnZ0dnUvdmx6UDU2UGhUMFk2RAptalpRK1hSdEtXMlZjZFJVVVlpbEZIWDVGeUtQQ0UxUitjem1qZU40SWJ1T3Y2cVl2NVBUNWN1cGJDek9wSUl1ClR0UEFVandKZW5TWldoM0xCS01nMTRtQ21RSURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVsTlhERy9CNkhKemhqWkx1WDZaTERPQUtkYlV3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFJc1RmSFhTRUhEV2dBdmhVU0xpZmVWc09DOVlhRThKUWh4VW4veDZVdEFhCnN4RFNYb080Q0pmOGVhUGNCcno2SXVqWnd1V3ZQMHBwdGFlMGsyRisrbmZOYkh6aFBhLytHZmtjU1ppTis1eW8KVkVMT09zVFlmOCtnenl5U3VEdTNQdUdBMFN0b0ZSazJUOWpjYXhMQzdvdDdSRTBxQkgxaFNzR1RndnNLN0p2TwpxK20ydEtxUDZCNFRadW94WklSNU1UT2U4aG85QU00aFJ4MXlqMVFIVXBSaHZPUHZqR3VMZXBSdGNlTTRubmpLClJmNS9Nc2lSMmhaT1M1ZmhjV1RtN2FVeU4yWVAzWTJFOGlybElTenJuWURJOFJxbHJzZlVSTFpOY2dtTUNUd2oKS0lnWWYzbVVENlI3eG4ydzdPRGZkVnFtSFdFaFZWRzdUTVlyaS9SUXZLdz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlYSFkzTUUzNkptMHdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmpnd09EQTVNemM1TUI0WERUSXpNRFF3TmpFNU1qa3oKT0ZvWERUTXpNRFF3TXpFNU1qa3pPVm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd3T0RBNU16YzVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTFkemwKWklmRHZNWWtLOGlVOVpSMTZRZFQyUmpzM1hHWW5qc0FlYVNWNEJpaWtOdEJBWjdUVVo3OEZZcU9ISWlhOWxWZgptYk1DZHdwakJMUUNyT2lKSm1xTHNRMEZ1L3RDTGpjRE5oUDR5a0lseHp5YWlNRW1Idjc5WDl3ZEFaRDBqMEZ5CjJjdDNEbXpnS0RvVzlaYXFXdTFRWHMzNkRIa0FrOXRyZTRRSTZWcmVPRnhmaVJQakRHR3kyUFltM1BFVHR3L1MKNUhCTnViNWlQeXMwNGNqWGhCWDV4cEZGWEZkZFZSa3pmQ1lTWUhLVkJvM0lLZVVYRkcwQWFrK0xPc0VKaFdjRgpIbEgzTThyOER3YzNRbTBzdzY0bHZrUzBLbG9CQm9jWUM5VSttLzMrZ1BSMEZQNEZMSU1KTnA2akp6L1VYZzJMClo0VnMxekVUaHoyR3I2SElhUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVN1VTK2JyY2pFd05QaHZuRld3enJOMTdIbFNzd0h3WURWUjBqQkJndwpGb0FVN1VTK2JyY2pFd05QaHZuRld3enJOMTdIbFNzd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFMMkc3OGg4CnZGcGlLZDljWXBxWHdjUHJaYjFQTG5HS21GelkwOHlmUitYWlVFY0JOWGROaUJsUXpibWJHWkw0b3JXZWgyMkEKbVVMWitZVG5XcGg4LzluREtPRkZTbDVhWGVKM2llaEFCcldUREZaMjRLdDVQQlhLdmZTSzJxaG51QjVLK3Y3TApnZDE1Q0ErZ1Exa09wTlEvbkNCVDNVSE5raWNDVVZRbVJDWE9SUlVGU0JnUzgvMmNOQXhxN1R1VVVYb2QrVktvCkRNcjlrZzA1eldwQlhveUpoYkE3dkFHSzQwa0xBZ3BwMjJjR29tOWJZTXVnYklNcGE2cytKcjFxd0pyb25qRHkKcVBrU0NlUVlKVlNaVjl5eitnTEZoUjk0VGpvWW12dTNjRUxOdFRkK0NQY0QxRks3QWFCcjZYL3g5NVRqMHZKVwprWXhvWGk5aUhydHJiZVk9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR0ekNDQXArZ0F3SUJBZ0lJTHdyUmdSYjNwaXd3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3dPREE1TkRVME1CNFhEVEl6TURRd05qRTVNekExTkZvWApEVEkxTURRd05URTVNekExTlZvd1N6RkpNRWNHQTFVRUF3eEFLaTVoY0hCekxtRndjQzFoZDNNdFkyVnVkSEpoCmJERXROREV5TFdoMVlpMXVObXQzWkM1a1pYWXhNUzV5WldRdFkyaGxjM1JsY21acFpXeGtMbU52YlRDQ0FTSXcKRFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU1xMXV3SEJrWERTSmt0ajNqakdmZHd6Z1IwcApuNFhxNWg4MHkzVTNYeHdFWnVCaHdYYVU4bnd2Ym91SWFPZXM3OWJ0NHNSVHZ4d29KT2pOdXZMRG5XNWUyZU1ZCkh6UFl2L2tnVUJVeDQzcHVkakVvWXNDVHlVMDFrRmF1QXNiUUpJTWltamhsdGxYZVVDUkY2Z0hSL1UwZGx3dkMKckN2MC92UytFUGtJVE5YYzEvNlN4V2h5WUg0NXhiMk1lbVFvWEk4VkpHS25Yc2hSN3dpRDZSUFF1Kzd4RmZjbApPZ2loM2xtRFB1OXBxa0pMOFNzdU5jSUl0RkVvRS9RS1dIVVdrMmhEQXJXT2lwS0J4OW1hSHVNb3VSYkkrMi9BCkF6QUYxNk9BVDFZUTVQS09hSVU4bHpsQzVYbFIrR2R2d044V0VvTU1YeWNQSlo2bFQzSEhjSklQQ29rQ0F3RUEKQWFPQnd6Q0J3REFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUhBd0V3REFZRApWUjBUQVFIL0JBSXdBREFkQmdOVkhRNEVGZ1FVcVVmRlJ6V2JFYjZkTUxaOHc1cS9uQjBlaVNrd0h3WURWUjBqCkJCZ3dGb0FVQ2IvQ1k5dUo5TE51ZDlXa1RrV0RxaXRnbXN3d1N3WURWUjBSQkVRd1FvSkFLaTVoY0hCekxtRncKY0MxaGQzTXRZMlZ1ZEhKaGJERXROREV5TFdoMVlpMXVObXQzWkM1a1pYWXhNUzV5WldRdFkyaGxjM1JsY21acApaV3hrTG1OdmJUQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFrMGlDNit0Y01pZ3ViU2RyTzVCQkNEeFhrRHA2CjQ1a0Zlc21wZG1vbjJJM2FFNWZQTVgzK1hSVkpjTXRSTGt0YTc0YTZ5RVBVb3hqUmY1OVdvUXlnV1J6RndlWVEKeGI3YWttcnoyMTJKdWxRTDRhWC94TlRROXRzcytVa0xmMWhZQjNnYnF1YzVyV0RMT1k5bjdRazFqQWhUd3dZRAptKzVxS0IyekpFSFVyeURmQzVMQnFGaTVhSWtNZ1pjNEZxS1doTmJnKytxcjRjQkJyb1hLZENPWFkrV2RtY1ZzCkdJRWwwMkx2VmM1dSs1bW5mOVRLL291bkx3WGVTSUh2QmNtZE5XVmZtRGJEKzNOQ2hsSlhQcVZFSVpNRGJJMUcKZ1gwditqZXNEUXlEWi8wcVBCaytXV2FKaUdTUTNKaCtqMVR3SUFFWThOV21TcG9MS0NFSWtpa1ROZz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFtTVNRd0lnWURWUVFEREJ0cGJtZHkKWlhOekxXOXdaWEpoZEc5eVFERTJPREE0TURrME5UUXdIaGNOTWpNd05EQTJNVGt6TURVeldoY05NalV3TkRBMQpNVGt6TURVMFdqQW1NU1F3SWdZRFZRUUREQnRwYm1keVpYTnpMVzl3WlhKaGRHOXlRREUyT0RBNE1EazBOVFF3CmdnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUURNRlNYbzFXUkpRRitPbVVxNXRFYkUKeHM1enVPbEIwSUZPTmE1b1IwcEtvWXBsWGNBbTlsRnV6MFFEeFJQUm04SThnTWh5MWNjcG9zMXJVMUptalM5OApJNGxIQjJ2NzVzOU9EWUROa0VIRVNFU3J1ODdyc3V1M3NCdTdNTTFWblRMTXNXQmVlN0tiOUlqOG4wb2dZRklTCnUwYnZKRjg4QWxqdVVkd1pMWE9WbFBNQWIvbHZPSEw1VUlYNEJyREdxVkc5cnNGdjFXa0xCWW11c0dRVUxRRDYKeTY1aXQ4YXNxNHVoZ2lhbm92OHRmTHNTZWMxQ1EweEFhMkIyMXZhdEdhUWlCdjRzdkYyTmxrUjlpS3FrVnpJVQovNUZGNC9FYjg3dFVYb3lUTFpYMUU2TWU1ak1hSnVjQ2ljOWtCcnhETDZwRWt3SUFqNjJzWTUwN2sxQyszbmR0CkFnTUJBQUdqUlRCRE1BNEdBMVVkRHdFQi93UUVBd0lDcERBU0JnTlZIUk1CQWY4RUNEQUdBUUgvQWdFQU1CMEcKQTFVZERnUVdCQlFKdjhKajI0bjBzMjUzMWFST1JZT3FLMkNhekRBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpHSzg3cmR1bE92NDFMaCtYSlNoRUNTbDlXNE5Zbm9yYkk3TFNmbnJ2cmtGOVdHSU5MeUxWWjc0ekdsZkhCTmFoCklsemJSdSszZUcyRmQ1TFFkMUkxTXUzNGY0QkZxUlRUZVk3Nk1EbWV1U3RhdFU5d2pCaWpjQzkvZFZrVnFUVEMKRVJBbk5iYVBMR00wVTZPeGVDMW5WMjFHVUNMSnVkdTFtVVpUaHoyWEN5RkFaaEUwbU1abitqMisybVZKcURncQp4MGNQeG1MNEMyTURWa04wcmk5UWJ3TDl4Z1J5aGNqZzdJeFZkdUgvdDlLeGErbjl6UkV1bEtJY3g1cXpvQXVvCkxwOXU0MHhYNEhaRjVmdFZ4QnQ2UWJ6aHBZM1RqVjJTUkVoY2J6TThuZk5aczluaUYxdUFuS2NXeU4ybWltN0IKZ3VHaDVkUWxtZStMa21CNGtDYmtmdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                      "url": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443"
+                  },
+                  "version": "4.12.10",
+                  "versionAvailableUpdates": [
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:3d8d8786a604ec28e10a887f7403c9ac4f7743bc4672a6052040ecada1111143",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:1645",
+                          "version": "4.12.11"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:5c8ef9fba0a75318e0dfeab9ac472ab34aab7334d0d3c56fb4e78e34913b3012",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:1750",
+                          "version": "4.12.13"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:3cbffaf162ab3328c6eb0c2479705eba6cb1b9df4d60bbe370019038b26dd66a",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:1858",
+                          "version": "4.12.14"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:4ac75301d3dd673fe8c9d8fa22683cb30bcfd5e29dea586680b930e849fe6af8",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2037",
+                          "version": "4.12.15"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:441b99eb94762f11f56b255ba3a358b17bdcc1728b249e3001e8f26e9ac2062a",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:2110",
+                          "version": "4.12.16"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:8580118b49b46a2dc9953c23eab3347276fce3fc2298547862d2c0ad0c7b7fa9",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:2699",
+                          "version": "4.12.17"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:59f9c4fa1dd7c523c46670862425aedfbf6de63a9dc6d1d6ed2b6c8c37d2fdd6",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3546",
+                          "version": "4.12.21"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:26a84da4032c27acb95a60274af03abd7c8679c7c2171ced00a96d15a599a6df",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3615",
+                          "version": "4.12.22"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:a07e6424362ba5c9f715a6d3ed2fdd89530628cffd07e021150fddec08fb2c83",
+                          "url": "https://access.redhat.com/errata/RHSA-2023:3925",
+                          "version": "4.12.23"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:4e8d891f3ff4feb7ccde684e6a9ccf8bd29bf4bc3790228c938b6597927f72fb",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:3977",
+                          "version": "4.12.24"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:1b203ff0c395cc189ee4e39c329156bb5d85a9b8e8dc524a399e93990851379f",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4048",
+                          "version": "4.12.25"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:fd2699bb36fa34e28e19a7faabd9b7c868b2c014cd6ef30bd28c24a21126663a",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4221",
+                          "version": "4.12.26"
+                      },
+                      {
+                          "channels": [
+                              "candidate-4.12",
+                              "candidate-4.13",
+                              "eus-4.12",
+                              "fast-4.12",
+                              "fast-4.13",
+                              "stable-4.12"
+                          ],
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:4e1e39a6ebd990fe947a0aaea48ebc8d352f757d2b6488012c0b9c42fd6c56e3",
+                          "url": "https://access.redhat.com/errata/RHBA-2023:4319",
+                          "version": "4.12.27"
+                      }
+                  ],
+                  "versionHistory": [
+                      {
+                          "image": "quay.io/openshift-release-dev/ocp-release@sha256:87a270ba5dcbfc17a1f1789878bd82fe30b814a43be7e0982ad2df2967253724",
+                          "state": "Completed",
+                          "verified": false,
+                          "version": "4.12.10"
+                      }
+                  ]
+              },
+              "displayVersion": "OpenShift 4.12.10",
+              "isManagedOpenShift": false,
+              "upgradeInfo": {
+                  "isUpgrading": false,
+                  "isReadyUpdates": true,
+                  "upgradePercentage": "",
+                  "upgradeFailed": false,
+                  "hooksInProgress": false,
+                  "hookFailed": false,
+                  "latestJob": {
+                      "conditionMessage": "",
+                      "step": "prehook-ansiblejob"
+                  },
+                  "currentVersion": "4.12.10",
+                  "desiredVersion": "4.12.10",
+                  "isReadySelectChannels": false,
+                  "isSelectingChannel": false,
+                  "isUpgradeCuration": false,
+                  "currentChannel": "stable-4.12",
+                  "desiredChannel": "stable-4.12",
+                  "availableUpdates": [
+                      "4.12.11",
+                      "4.12.13",
+                      "4.12.14",
+                      "4.12.15",
+                      "4.12.16",
+                      "4.12.17",
+                      "4.12.21",
+                      "4.12.22",
+                      "4.12.23",
+                      "4.12.24",
+                      "4.12.25",
+                      "4.12.26",
+                      "4.12.27"
+                  ],
+                  "availableChannels": [],
+                  "prehooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthooks": {
+                      "hasHooks": false,
+                      "inProgress": false,
+                      "success": false,
+                      "failed": false
+                  },
+                  "posthookDidNotRun": false
+              }
+          },
+          "acmDistribution": {},
+          "addons": {
+              "addonList": [
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "application-manager",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "application-manager",
+                                  "uid": "61924279-5256-4885-b3d1-301348cba6b4"
+                              }
+                          ],
+                          "resourceVersion": "76916746",
+                          "uid": "1548969e-315f-4e98-83f0-46408b4a5e9a"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:04Z",
+                                  "message": "the supported config resources are required in ClusterManagementAddon",
+                                  "reason": "ConfigurationUnsupported",
+                                  "status": "True",
+                                  "type": "UnsupportedConfiguration"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-09T20:19:47Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:04Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "application-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:application-manager",
+                                          "system:open-cluster-management:addon:application-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:application-manager:agent:application-manager"
+                                  }
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "cert-policy-controller",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cert-policy-controller",
+                                  "uid": "28ae2661-4d9c-4883-abf4-8bd91b425b0e"
+                              }
+                          ],
+                          "resourceVersion": "76955417",
+                          "uid": "f853349d-d594-4db2-9069-776b790b0c9c"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:25Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:07Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "cert-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:cert-policy-controller",
+                                          "system:open-cluster-management:addon:cert-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:cert-policy-controller:agent:cert-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cert-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "cluster-proxy",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "cluster-proxy",
+                                  "uid": "91e1228b-f91f-42b8-8b51-fba32c2c8cb8"
+                              }
+                          ],
+                          "resourceVersion": "76916739",
+                          "uid": "95715e40-fd1f-4791-bf62-b080db364117"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:04Z",
+                                  "message": "failed to get manifest from agent interface: unexpected managed proxy configurations: []",
+                                  "reason": "ManifestWorkApplyFailed",
+                                  "status": "False",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:05Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:55:01 +0000 UTC to 2024-02-04 17:55:01 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:41Z",
+                                  "message": "The status of cluster-proxy add-on is unknown.",
+                                  "reason": "ManagedClusterAddOnLeaseNotFound",
+                                  "status": "Unknown",
+                                  "type": "Available"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "proxy.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "cluster-proxy",
+                                  "resource": "managedproxyconfigurations"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:addon-agent"
+                                  }
+                              },
+                              {
+                                  "signerName": "open-cluster-management.io/proxy-agent-signer",
+                                  "subject": {
+                                      "groups": [
+                                          "open-cluster-management:cluster-proxy"
+                                      ],
+                                      "user": "open-cluster-management:cluster-proxy:proxy-agent"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "cluster-proxy",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "finalizers": [
+                              "cluster.open-cluster-management.io/addon-pre-delete"
+                          ],
+                          "generation": 1,
+                          "name": "config-policy-controller",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "config-policy-controller",
+                                  "uid": "207e6fa1-3f4f-4305-b6b5-6fa2b70e6c2a"
+                              }
+                          ],
+                          "resourceVersion": "76955426",
+                          "uid": "eaf55491-62ff-45e7-8780-30bf32306277"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:25Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:07Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "config-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:config-policy-controller",
+                                          "system:open-cluster-management:addon:config-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:config-policy-controller:agent:config-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "config-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "governance-policy-framework",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "governance-policy-framework",
+                                  "uid": "f18682dd-b69d-4dc3-8b27-d1c0122ef0c8"
+                              }
+                          ],
+                          "resourceVersion": "76955447",
+                          "uid": "b628f498-b1ee-4b78-b920-8889416f6d8a"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:25Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:07Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "governance-policy-framework add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:governance-policy-framework",
+                                          "system:open-cluster-management:addon:governance-policy-framework",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:governance-policy-framework:agent:governance-policy-framework"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "governance-policy-framework",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "iam-policy-controller",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "iam-policy-controller",
+                                  "uid": "7c844a9a-2bbb-44ed-ad2b-4ffbac2fead9"
+                              }
+                          ],
+                          "resourceVersion": "76955473",
+                          "uid": "66c45d14-7494-4af8-9acd-9f53c7429d0b"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:06Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-11T12:58:25Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "iam-policy-controller add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller",
+                                          "system:open-cluster-management:addon:iam-policy-controller",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller:agent:iam-policy-controller"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "iam-policy-controller",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "search-collector",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "search-collector",
+                                  "uid": "5e33703b-3c77-44cf-83b7-f8c3d6aef826"
+                              }
+                          ],
+                          "resourceVersion": "76916743",
+                          "uid": "9b9fdf62-af32-4046-9f19-5f546d270510"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "addOnConfiguration": {},
+                          "addOnMeta": {},
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:04Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "RegistrationConfigured",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T17:11:35Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "search-collector add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "configReferences": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "lastObservedGeneration": 1,
+                                  "name": "search-collector",
+                                  "namespace": "open-cluster-management",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ],
+                          "healthCheck": {
+                              "mode": "Lease"
+                          },
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:search-collector",
+                                          "system:open-cluster-management:addon:search-collector",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:search-collector:agent:search-collector"
+                                  }
+                              }
+                          ],
+                          "relatedObjects": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "name": "search-collector",
+                                  "resource": "clustermanagementaddons"
+                              }
+                          ]
+                      }
+                  },
+                  {
+                      "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                      "kind": "ManagedClusterAddOn",
+                      "metadata": {
+                          "creationTimestamp": "2023-08-08T17:54:04Z",
+                          "generation": 1,
+                          "name": "work-manager",
+                          "namespace": "local-cluster",
+                          "ownerReferences": [
+                              {
+                                  "apiVersion": "addon.open-cluster-management.io/v1alpha1",
+                                  "blockOwnerDeletion": true,
+                                  "controller": true,
+                                  "kind": "ClusterManagementAddOn",
+                                  "name": "work-manager",
+                                  "uid": "4025ef68-8012-4202-9d98-0e5e23a49398"
+                              }
+                          ],
+                          "resourceVersion": "76916736",
+                          "uid": "b06c8241-e81e-40b4-9fa7-4470ffb5661f"
+                      },
+                      "spec": {
+                          "installNamespace": "open-cluster-management-agent-addon"
+                      },
+                      "status": {
+                          "conditions": [
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:54:04Z",
+                                  "message": "Registration of the addon agent is configured",
+                                  "reason": "SetPermissionApplied",
+                                  "status": "True",
+                                  "type": "RegistrationApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:01Z",
+                                  "message": "client certificate rotated starting from 2023-08-08 17:50:01 +0000 UTC to 2023-08-30 13:25:43 +0000 UTC",
+                                  "reason": "ClientCertificateUpdated",
+                                  "status": "True",
+                                  "type": "ClusterCertificateRotated"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-08T17:55:39Z",
+                                  "message": "manifests of addon are applied successfully",
+                                  "reason": "AddonManifestApplied",
+                                  "status": "True",
+                                  "type": "ManifestApplied"
+                              },
+                              {
+                                  "lastTransitionTime": "2023-08-10T22:37:16Z",
+                                  "message": "work-manager add-on is available.",
+                                  "reason": "ManagedClusterAddOnLeaseUpdated",
+                                  "status": "True",
+                                  "type": "Available"
+                              }
+                          ],
+                          "namespace": "open-cluster-management-agent-addon",
+                          "registrations": [
+                              {
+                                  "signerName": "kubernetes.io/kube-apiserver-client",
+                                  "subject": {
+                                      "groups": [
+                                          "system:open-cluster-management:cluster:local-cluster:addon:work-manager",
+                                          "system:open-cluster-management:addon:work-manager",
+                                          "system:authenticated"
+                                      ],
+                                      "user": "system:open-cluster-management:cluster:local-cluster:addon:work-manager:agent:work-manager"
+                                  }
+                              }
+                          ],
+                          "supportedConfigs": [
+                              {
+                                  "group": "addon.open-cluster-management.io",
+                                  "resource": "addondeploymentconfigs"
+                              }
+                          ]
+                      }
+                  }
+              ],
+              "available": 7,
+              "progressing": 0,
+              "degraded": 0,
+              "unknown": 1
+          },
+          "labels": {
+              "cloud": "Amazon",
+              "cluster.open-cluster-management.io/clusterset": "default",
+              "clusterID": "ed841d92-934c-4a8e-8df7-3265bc16da1b",
+              "env": "dev",
+              "feature.open-cluster-management.io/addon-application-manager": "available",
+              "feature.open-cluster-management.io/addon-cert-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-cluster-proxy": "unreachable",
+              "feature.open-cluster-management.io/addon-config-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-governance-policy-framework": "available",
+              "feature.open-cluster-management.io/addon-iam-policy-controller": "available",
+              "feature.open-cluster-management.io/addon-search-collector": "available",
+              "feature.open-cluster-management.io/addon-work-manager": "available",
+              "local-cluster": "true",
+              "name": "local-cluster",
+              "openshiftVersion": "4.12.10",
+              "openshiftVersion-major": "4",
+              "openshiftVersion-major-minor": "4.12",
+              "vendor": "OpenShift"
+          },
+          "nodes": {
+              "nodeList": [
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "16100736Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1a",
+                          "node-role.kubernetes.io/control-plane": "",
+                          "node-role.kubernetes.io/master": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-139-143.ca-central-1.compute.internal"
+                  },
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "16100736Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1a",
+                          "node-role.kubernetes.io/worker": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-155-51.ca-central-1.compute.internal"
+                  },
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "16100728Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1b",
+                          "node-role.kubernetes.io/control-plane": "",
+                          "node-role.kubernetes.io/master": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-185-80.ca-central-1.compute.internal"
+                  },
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "15928704Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1b",
+                          "node-role.kubernetes.io/worker": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-189-5.ca-central-1.compute.internal"
+                  },
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "16100728Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1d",
+                          "node-role.kubernetes.io/control-plane": "",
+                          "node-role.kubernetes.io/master": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-193-249.ca-central-1.compute.internal"
+                  },
+                  {
+                      "capacity": {
+                          "cpu": "4",
+                          "memory": "16100736Ki",
+                          "socket": "1"
+                      },
+                      "conditions": [
+                          {
+                              "status": "True",
+                              "type": "Ready"
+                          }
+                      ],
+                      "labels": {
+                          "beta.kubernetes.io/instance-type": "m5.xlarge",
+                          "failure-domain.beta.kubernetes.io/region": "ca-central-1",
+                          "failure-domain.beta.kubernetes.io/zone": "ca-central-1d",
+                          "node-role.kubernetes.io/worker": "",
+                          "node.kubernetes.io/instance-type": "m5.xlarge"
+                      },
+                      "name": "ip-10-0-201-67.ca-central-1.compute.internal"
+                  }
+              ],
+              "ready": 6,
+              "unhealthy": 0,
+              "unknown": 0
+          },
+          "kubeApiServer": "https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443",
+          "consoleURL": "https://console-openshift-console.apps.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com",
+          "isHive": false,
+          "isHypershift": false,
+          "isManaged": true,
+          "isCurator": false,
+          "hasAutomationTemplate": false,
+          "isHostedCluster": false,
+          "isSNOCluster": false,
+          "isRegionalHubCluster": false,
+          "hive": {
+              "isHibernatable": false,
+              "secrets": {}
+          },
+          "clusterSet": "default",
+          "owner": {},
+          "creationTimestamp": "2023-08-08T17:54:04Z"
+      }
+    ]
+  }
+
+  const result = {
+       "app":  {
+         "apiVersion": "argoproj.io/v1alpha1",
+         "kind": "ApplicationSet",
+         "metadata":  {
+           "creationTimestamp": "2023-08-02T18:01:14Z",
+           "generation": 2,
+           "name": "feng-pm",
+           "namespace": "openshift-gitops",
+           "resourceVersion": "76441171",
+           "uid": "92436748-e765-4057-9621-2c3a74b3a487",
+         },
+         "spec":  {
+           "generators":  [
+              {
+               "clusterDecisionResource":  {
+                 "configMapRef": "acm-placement",
+                 "labelSelector":  {
+                   "matchLabels":  {
+                     "cluster.open-cluster-management.io/placement": "feng-pm-placement",
+                   },
+                 },
+                 "requeueAfterSeconds": 180,
+               },
+             },
+           ],
+           "template":  {
+             "metadata":  {
+               "annotations":  {
+                 "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
+                 "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
+                 "argocd.argoproj.io/skip-reconcile": "true",
+               },
+               "labels":  {
+                 "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
+                 "test1": "test1",
+               },
+               "name": "feng-pm-{{name}}",
+             },
+             "spec":  {
+               "destination":  {
+                 "namespace": "feng-pm",
+                 "server": "https://kubernetes.default.svc",
+               },
+               "project": "default",
+               "source":  {
+                 "path": "helloworld",
+                 "repoURL": "https://github.com/fxiang1/app-samples",
+                 "targetRevision": "main",
+               },
+               "syncPolicy":  {
+                 "automated":  {},
+                 "syncOptions":  [
+                   "CreateNamespace=true",
+                 ],
+               },
+             },
+           },
+         },
+         "status":  {
+           "conditions":  [
+              {
+               "lastTransitionTime": "2023-08-10T17:11:28Z",
+               "message": "Successfully generated parameters for all Applications",
+               "reason": "ApplicationSetUpToDate",
+               "status": "False",
+               "type": "ErrorOccurred",
+             },
+              {
+               "lastTransitionTime": "2023-08-10T17:11:28Z",
+               "message": "Successfully generated parameters for all Applications",
+               "reason": "ParametersGenerated",
+               "status": "True",
+               "type": "ParametersGenerated",
+             },
+              {
+               "lastTransitionTime": "2023-08-10T17:11:28Z",
+               "message": "ApplicationSet up to date",
+               "reason": "ApplicationSetUpToDate",
+               "status": "True",
+               "type": "ResourcesUpToDate",
+             },
+           ],
+         },
+       },
+       "appSetApps":  [
+          {
+           "apiVersion": "argoproj.io/v1alpha1",
+           "kind": "Application",
+           "metadata":  {
+             "name": "feng-pm-feng-managed1",
+             "namespace": "openshift-gitops",
+           },
+           "spec":  {
+             "destination":  {
+               "name": "feng-managed1",
+             },
+           },
+           "status":  {
+             "conditions":  [],
+             "health":  {
+               "status": "Healthy",
+             },
+             "resources":  [
+                {
+                 "apiVersion": "apps/v1",
+                 "kind": "Deployment",
+                 "name": "helloworld-app-deploy",
+                 "namespace": "feng-pm",
+               },
+                {
+                 "apiVersion": "route.openshift.io/v1",
+                 "kind": "Route",
+                 "name": "helloworld-app-route",
+                 "namespace": "feng-pm",
+               },
+                {
+                 "apiVersion": "/v1",
+                 "kind": "Service",
+                 "name": "helloworld-app-svc",
+                 "namespace": "feng-pm",
+               },
+             ],
+             "sync":  {
+               "status": "Synced",
+             },
+           },
+         },
+          {
+           "apiVersion": "argoproj.io/v1alpha1",
+           "kind": "Application",
+           "metadata":  {
+             "name": "feng-pm-feng-managed2",
+             "namespace": "openshift-gitops",
+           },
+           "spec":  {
+             "destination":  {
+               "name": "feng-managed2",
+             },
+           },
+           "status":  {
+             "conditions":  [],
+             "health":  {
+               "status": "Healthy",
+             },
+             "resources":  [
+                {
+                 "apiVersion": "apps/v1",
+                 "kind": "Deployment",
+                 "name": "helloworld-app-deploy",
+                 "namespace": "feng-pm",
+               },
+                {
+                 "apiVersion": "route.openshift.io/v1",
+                 "kind": "Route",
+                 "name": "helloworld-app-route",
+                 "namespace": "feng-pm",
+               },
+                {
+                 "apiVersion": "/v1",
+                 "kind": "Service",
+                 "name": "helloworld-app-svc",
+                 "namespace": "feng-pm",
+               },
+             ],
+             "sync":  {
+               "status": "Synced",
+             },
+           },
+         },
+       ],
+       "appSetClusters":  [
+          {
+           "created": "2023-08-08T18:13:26Z",
+           "name": "feng-managed1",
+           "namespace": "feng-managed1",
+           "status": "ok",
+           "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
+         },
+          {
+           "created": "2023-08-08T18:27:06Z",
+           "name": "feng-managed2",
+           "namespace": "feng-managed2",
+           "status": "ok",
+           "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
+         },
+       ],
+       "isAppSet": true,
+       "isAppSetPullModel": true,
+       "isArgoApp": false,
+       "isFluxApp": false,
+       "isOCPApp": false,
+       "metadata":  {
+         "creationTimestamp": "2023-08-02T18:01:14Z",
+         "generation": 2,
+         "name": "feng-pm",
+         "namespace": "openshift-gitops",
+         "resourceVersion": "76441171",
+         "uid": "92436748-e765-4057-9621-2c3a74b3a487",
+       },
+       "name": "feng-pm",
+       "namespace": "openshift-gitops",
+       "placement":  {
+         "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+         "kind": "PlacementDecision",
+         "metadata":  {
+           "creationTimestamp": "2023-08-02T17:59:14Z",
+           "generation": 1,
+           "labels":  {
+             "cluster.open-cluster-management.io/decision-group-index": "0",
+             "cluster.open-cluster-management.io/decision-group-name": "",
+             "cluster.open-cluster-management.io/placement": "feng-pm-placement",
+           },
+           "name": "feng-pm-placement-decision-0",
+           "namespace": "openshift-gitops",
+           "ownerReferences":  [
+              {
+               "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+               "blockOwnerDeletion": true,
+               "controller": true,
+               "kind": "Placement",
+               "name": "feng-pm-placement",
+               "uid": "554337d6-9137-4ed9-a03c-55d51485cb0d",
+             },
+           ],
+           "resourceVersion": "77555639",
+           "uid": "2f0ffd00-f5e9-4af2-9b67-01ec50251edf",
+         },
+         "status":  {
+           "decisions":  [
+              {
+               "clusterName": "feng-managed1",
+               "reason": "",
+             },
+              {
+               "clusterName": "feng-managed2",
+               "reason": "",
+             },
+           ],
+         },
+       },
+     }
+
+  it('returns AppSet pull model', async () => {
+    const model = await getApplication(
+      appData.namespace,
+      appData.name,
+      appData.selectedChannel,
+      appData.recoilStates,
+      appData.cluster,
+      appData.apiversion,
+      appData.clusters
+    )
+    expect(model).toEqual(result)
+  })
+})
