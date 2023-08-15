@@ -436,13 +436,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const find = columns.find((col) => col.id === id)
       find && sortedColumns.push(find!)
     })
-    // Btn column is always the last
-    const btn = columns.find((col) => col.isActionCol)
-    btn && sortedColumns.push(btn!)
 
-    return sortedColumns.filter((column) => {
+    const sortedSelected = sortedColumns.filter((column) => {
       return selectedColIds.includes(column.id as string)
     })
+
+    // Btn column is always the last
+    const btn = columns.find((col) => col.isActionCol)
+    btn && sortedSelected.push(btn)
+
+    return sortedSelected
   }, [columns, selectedColIds, colOrderIds, showColumManagement])
 
   useEffect(() => {
