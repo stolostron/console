@@ -2487,257 +2487,259 @@ describe('getPulseStatusForGenericNode resources has different length', () => {
 
 describe('getPulseStatusForArgoApp resources green', () => {
   const node = {
-    "name": "feng-pm",
-    "namespace": "openshift-gitops",
-    "type": "applicationset",
-    "id": "application--feng-pm",
-    "uid": "application--feng-pm",
-    "specs": {
-        "isDesign": true,
-        "raw": {
-            "apiVersion": "argoproj.io/v1alpha1",
-            "kind": "ApplicationSet",
-            "metadata": {
-                "annotations": {
-                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"ApplicationSet\",\"metadata\":{\"annotations\":{},\"name\":\"feng-pm\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"generators\":[{\"clusterDecisionResource\":{\"configMapRef\":\"acm-placement\",\"labelSelector\":{\"matchLabels\":{\"cluster.open-cluster-management.io/placement\":\"feng-pm-placement\"}},\"requeueAfterSeconds\":180}}],\"template\":{\"metadata\":{\"annotations\":{\"apps.open-cluster-management.io/ocm-managed-cluster\":\"{{name}}\",\"apps.open-cluster-management.io/ocm-managed-cluster-app-namespace\":\"openshift-gitops\",\"argocd.argoproj.io/skip-reconcile\":\"true\"},\"labels\":{\"apps.open-cluster-management.io/pull-to-ocm-managed-cluster\":\"true\"},\"name\":\"feng-pm-{{name}}\"},\"spec\":{\"destination\":{\"namespace\":\"feng-pm\",\"server\":\"https://kubernetes.default.svc\"},\"project\":\"default\",\"source\":{\"path\":\"helloworld\",\"repoURL\":\"https://github.com/fxiang1/app-samples\",\"targetRevision\":\"main\"},\"syncPolicy\":{\"automated\":{},\"syncOptions\":[\"CreateNamespace=true\"]}}}}}\n"
-                },
-                "creationTimestamp": "2023-08-02T18:01:14Z",
-                "generation": 2,
-                "name": "feng-pm",
-                "namespace": "openshift-gitops",
-                "resourceVersion": "76441171",
-                "uid": "92436748-e765-4057-9621-2c3a74b3a487"
-            },
-            "spec": {
-                "generators": [
-                    {
-                        "clusterDecisionResource": {
-                            "configMapRef": "acm-placement",
-                            "labelSelector": {
-                                "matchLabels": {
-                                    "cluster.open-cluster-management.io/placement": "feng-pm-placement"
-                                }
-                            },
-                            "requeueAfterSeconds": 180
-                        }
-                    }
-                ],
-                "template": {
-                    "metadata": {
-                        "annotations": {
-                            "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
-                            "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
-                            "argocd.argoproj.io/skip-reconcile": "true"
-                        },
-                        "labels": {
-                            "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
-                            "test1": "test1"
-                        },
-                        "name": "feng-pm-{{name}}"
-                    },
-                    "spec": {
-                        "destination": {
-                            "namespace": "feng-pm",
-                            "server": "https://kubernetes.default.svc"
-                        },
-                        "project": "default",
-                        "source": {
-                            "path": "helloworld",
-                            "repoURL": "https://github.com/fxiang1/app-samples",
-                            "targetRevision": "main"
-                        },
-                        "syncPolicy": {
-                            "automated": {},
-                            "syncOptions": [
-                                "CreateNamespace=true"
-                            ]
-                        }
-                    }
-                }
-            },
-            "status": {
-                "conditions": [
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "False",
-                        "type": "ErrorOccurred"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ParametersGenerated",
-                        "status": "True",
-                        "type": "ParametersGenerated"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "ApplicationSet up to date",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "True",
-                        "type": "ResourcesUpToDate"
-                    }
-                ]
-            }
+    name: 'feng-pm',
+    namespace: 'openshift-gitops',
+    type: 'applicationset',
+    id: 'application--feng-pm',
+    uid: 'application--feng-pm',
+    specs: {
+      isDesign: true,
+      raw: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          annotations: {
+            'kubectl.kubernetes.io/last-applied-configuration':
+              '{"apiVersion":"argoproj.io/v1alpha1","kind":"ApplicationSet","metadata":{"annotations":{},"name":"feng-pm","namespace":"openshift-gitops"},"spec":{"generators":[{"clusterDecisionResource":{"configMapRef":"acm-placement","labelSelector":{"matchLabels":{"cluster.open-cluster-management.io/placement":"feng-pm-placement"}},"requeueAfterSeconds":180}}],"template":{"metadata":{"annotations":{"apps.open-cluster-management.io/ocm-managed-cluster":"{{name}}","apps.open-cluster-management.io/ocm-managed-cluster-app-namespace":"openshift-gitops","argocd.argoproj.io/skip-reconcile":"true"},"labels":{"apps.open-cluster-management.io/pull-to-ocm-managed-cluster":"true"},"name":"feng-pm-{{name}}"},"spec":{"destination":{"namespace":"feng-pm","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"helloworld","repoURL":"https://github.com/fxiang1/app-samples","targetRevision":"main"},"syncPolicy":{"automated":{},"syncOptions":["CreateNamespace=true"]}}}}}\n',
+          },
+          creationTimestamp: '2023-08-02T18:01:14Z',
+          generation: 2,
+          name: 'feng-pm',
+          namespace: 'openshift-gitops',
+          resourceVersion: '76441171',
+          uid: '92436748-e765-4057-9621-2c3a74b3a487',
         },
-        "allClusters": {
-            "isLocal": false,
-            "remoteCount": 2
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+                  },
+                },
+                requeueAfterSeconds: 180,
+              },
+            },
+          ],
+          template: {
+            metadata: {
+              annotations: {
+                'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                'argocd.argoproj.io/skip-reconcile': 'true',
+              },
+              labels: {
+                'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+                test1: 'test1',
+              },
+              name: 'feng-pm-{{name}}',
+            },
+            spec: {
+              destination: {
+                namespace: 'feng-pm',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'main',
+              },
+              syncPolicy: {
+                automated: {},
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+          },
         },
-        "clusterNames": [
-            "feng-managed1",
-            "feng-managed2"
-        ],
-        "appSetApps": [
+        status: {
+          conditions: [
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed1",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed1"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ApplicationSetUpToDate',
+              status: 'False',
+              type: 'ErrorOccurred',
             },
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed2",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed2"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
-            }
-        ],
-        "appSetClusters": [
-            {
-                "name": "feng-managed1",
-                "namespace": "feng-managed1",
-                "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:13:26Z"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ParametersGenerated',
+              status: 'True',
+              type: 'ParametersGenerated',
             },
             {
-                "name": "feng-managed2",
-                "namespace": "feng-managed2",
-                "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:27:06Z"
-            }
-        ],
-        "searchClusters": [
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed1",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed1",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:13:26Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32442884Ki",
-                "name": "feng-managed1",
-                "nodes": "1"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'ApplicationSet up to date',
+              reason: 'ApplicationSetUpToDate',
+              status: 'True',
+              type: 'ResourcesUpToDate',
             },
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed2",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed2",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:27:06Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32098820Ki",
-                "name": "feng-managed2",
-                "nodes": "1"
-            }
-        ]
+          ],
+        },
+      },
+      allClusters: {
+        isLocal: false,
+        remoteCount: 2,
+      },
+      clusterNames: ['feng-managed1', 'feng-managed2'],
+      appSetApps: [
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed1',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed1',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed2',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed2',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+      ],
+      appSetClusters: [
+        {
+          name: 'feng-managed1',
+          namespace: 'feng-managed1',
+          url: 'https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:13:26Z',
+        },
+        {
+          name: 'feng-managed2',
+          namespace: 'feng-managed2',
+          url: 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:27:06Z',
+        },
+      ],
+      searchClusters: [
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed1',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed1',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:13:26Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32442884Ki',
+          name: 'feng-managed1',
+          nodes: '1',
+        },
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed2',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed2',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:27:06Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32098820Ki',
+          name: 'feng-managed2',
+          nodes: '1',
+        },
+      ],
     },
-    "isPlacementFound": true,
-    "isArgoCDPullModelTargetLocalCluster": false
+    isPlacementFound: true,
+    isArgoCDPullModelTargetLocalCluster: false,
   }
   it('should status for ArgoApp node', () => {
     expect(getPulseStatusForArgoApp(node, true)).toEqual('green')
@@ -2746,257 +2748,259 @@ describe('getPulseStatusForArgoApp resources green', () => {
 
 describe('getPulseStatusForArgoApp resources yellow', () => {
   const node = {
-    "name": "feng-pm",
-    "namespace": "openshift-gitops",
-    "type": "applicationset",
-    "id": "application--feng-pm",
-    "uid": "application--feng-pm",
-    "specs": {
-        "isDesign": true,
-        "raw": {
-            "apiVersion": "argoproj.io/v1alpha1",
-            "kind": "ApplicationSet",
-            "metadata": {
-                "annotations": {
-                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"ApplicationSet\",\"metadata\":{\"annotations\":{},\"name\":\"feng-pm\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"generators\":[{\"clusterDecisionResource\":{\"configMapRef\":\"acm-placement\",\"labelSelector\":{\"matchLabels\":{\"cluster.open-cluster-management.io/placement\":\"feng-pm-placement\"}},\"requeueAfterSeconds\":180}}],\"template\":{\"metadata\":{\"annotations\":{\"apps.open-cluster-management.io/ocm-managed-cluster\":\"{{name}}\",\"apps.open-cluster-management.io/ocm-managed-cluster-app-namespace\":\"openshift-gitops\",\"argocd.argoproj.io/skip-reconcile\":\"true\"},\"labels\":{\"apps.open-cluster-management.io/pull-to-ocm-managed-cluster\":\"true\"},\"name\":\"feng-pm-{{name}}\"},\"spec\":{\"destination\":{\"namespace\":\"feng-pm\",\"server\":\"https://kubernetes.default.svc\"},\"project\":\"default\",\"source\":{\"path\":\"helloworld\",\"repoURL\":\"https://github.com/fxiang1/app-samples\",\"targetRevision\":\"main\"},\"syncPolicy\":{\"automated\":{},\"syncOptions\":[\"CreateNamespace=true\"]}}}}}\n"
-                },
-                "creationTimestamp": "2023-08-02T18:01:14Z",
-                "generation": 2,
-                "name": "feng-pm",
-                "namespace": "openshift-gitops",
-                "resourceVersion": "76441171",
-                "uid": "92436748-e765-4057-9621-2c3a74b3a487"
-            },
-            "spec": {
-                "generators": [
-                    {
-                        "clusterDecisionResource": {
-                            "configMapRef": "acm-placement",
-                            "labelSelector": {
-                                "matchLabels": {
-                                    "cluster.open-cluster-management.io/placement": "feng-pm-placement"
-                                }
-                            },
-                            "requeueAfterSeconds": 180
-                        }
-                    }
-                ],
-                "template": {
-                    "metadata": {
-                        "annotations": {
-                            "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
-                            "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
-                            "argocd.argoproj.io/skip-reconcile": "true"
-                        },
-                        "labels": {
-                            "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
-                            "test1": "test1"
-                        },
-                        "name": "feng-pm-{{name}}"
-                    },
-                    "spec": {
-                        "destination": {
-                            "namespace": "feng-pm",
-                            "server": "https://kubernetes.default.svc"
-                        },
-                        "project": "default",
-                        "source": {
-                            "path": "helloworld",
-                            "repoURL": "https://github.com/fxiang1/app-samples",
-                            "targetRevision": "main"
-                        },
-                        "syncPolicy": {
-                            "automated": {},
-                            "syncOptions": [
-                                "CreateNamespace=true"
-                            ]
-                        }
-                    }
-                }
-            },
-            "status": {
-                "conditions": [
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "False",
-                        "type": "ErrorOccurred"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ParametersGenerated",
-                        "status": "True",
-                        "type": "ParametersGenerated"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "ApplicationSet up to date",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "True",
-                        "type": "ResourcesUpToDate"
-                    }
-                ]
-            }
+    name: 'feng-pm',
+    namespace: 'openshift-gitops',
+    type: 'applicationset',
+    id: 'application--feng-pm',
+    uid: 'application--feng-pm',
+    specs: {
+      isDesign: true,
+      raw: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          annotations: {
+            'kubectl.kubernetes.io/last-applied-configuration':
+              '{"apiVersion":"argoproj.io/v1alpha1","kind":"ApplicationSet","metadata":{"annotations":{},"name":"feng-pm","namespace":"openshift-gitops"},"spec":{"generators":[{"clusterDecisionResource":{"configMapRef":"acm-placement","labelSelector":{"matchLabels":{"cluster.open-cluster-management.io/placement":"feng-pm-placement"}},"requeueAfterSeconds":180}}],"template":{"metadata":{"annotations":{"apps.open-cluster-management.io/ocm-managed-cluster":"{{name}}","apps.open-cluster-management.io/ocm-managed-cluster-app-namespace":"openshift-gitops","argocd.argoproj.io/skip-reconcile":"true"},"labels":{"apps.open-cluster-management.io/pull-to-ocm-managed-cluster":"true"},"name":"feng-pm-{{name}}"},"spec":{"destination":{"namespace":"feng-pm","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"helloworld","repoURL":"https://github.com/fxiang1/app-samples","targetRevision":"main"},"syncPolicy":{"automated":{},"syncOptions":["CreateNamespace=true"]}}}}}\n',
+          },
+          creationTimestamp: '2023-08-02T18:01:14Z',
+          generation: 2,
+          name: 'feng-pm',
+          namespace: 'openshift-gitops',
+          resourceVersion: '76441171',
+          uid: '92436748-e765-4057-9621-2c3a74b3a487',
         },
-        "allClusters": {
-            "isLocal": false,
-            "remoteCount": 2
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+                  },
+                },
+                requeueAfterSeconds: 180,
+              },
+            },
+          ],
+          template: {
+            metadata: {
+              annotations: {
+                'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                'argocd.argoproj.io/skip-reconcile': 'true',
+              },
+              labels: {
+                'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+                test1: 'test1',
+              },
+              name: 'feng-pm-{{name}}',
+            },
+            spec: {
+              destination: {
+                namespace: 'feng-pm',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'main',
+              },
+              syncPolicy: {
+                automated: {},
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+          },
         },
-        "clusterNames": [
-            "feng-managed1",
-            "feng-managed2"
-        ],
-        "appSetApps": [
+        status: {
+          conditions: [
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed1",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed1"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ApplicationSetUpToDate',
+              status: 'False',
+              type: 'ErrorOccurred',
             },
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed2",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed2"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
-            }
-        ],
-        "appSetClusters": [
-            {
-                "name": "feng-managed1",
-                "namespace": "feng-managed1",
-                "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:13:26Z"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ParametersGenerated',
+              status: 'True',
+              type: 'ParametersGenerated',
             },
             {
-                "name": "feng-managed2",
-                "namespace": "feng-managed2",
-                "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:27:06Z"
-            }
-        ],
-        "searchClusters": [
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed1",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed1",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:13:26Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32442884Ki",
-                "name": "feng-managed1",
-                "nodes": "1"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'ApplicationSet up to date',
+              reason: 'ApplicationSetUpToDate',
+              status: 'True',
+              type: 'ResourcesUpToDate',
             },
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed2",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed2",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:27:06Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32098820Ki",
-                "name": "feng-managed2",
-                "nodes": "1"
-            }
-        ]
+          ],
+        },
+      },
+      allClusters: {
+        isLocal: false,
+        remoteCount: 2,
+      },
+      clusterNames: ['feng-managed1', 'feng-managed2'],
+      appSetApps: [
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed1',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed1',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed2',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed2',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+      ],
+      appSetClusters: [
+        {
+          name: 'feng-managed1',
+          namespace: 'feng-managed1',
+          url: 'https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:13:26Z',
+        },
+        {
+          name: 'feng-managed2',
+          namespace: 'feng-managed2',
+          url: 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:27:06Z',
+        },
+      ],
+      searchClusters: [
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed1',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed1',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:13:26Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32442884Ki',
+          name: 'feng-managed1',
+          nodes: '1',
+        },
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed2',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed2',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:27:06Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32098820Ki',
+          name: 'feng-managed2',
+          nodes: '1',
+        },
+      ],
     },
-    "isPlacementFound": true,
-    "isArgoCDPullModelTargetLocalCluster": true
+    isPlacementFound: true,
+    isArgoCDPullModelTargetLocalCluster: true,
   }
   it('should status for ArgoApp node', () => {
     expect(getPulseStatusForArgoApp(node, true)).toEqual('yellow')
@@ -3005,326 +3009,329 @@ describe('getPulseStatusForArgoApp resources yellow', () => {
 
 describe('setAppSetDeployStatus resources local-cluster pull model contains some apps', () => {
   const node = {
-    "name": "feng-pm",
-    "namespace": "openshift-gitops",
-    "type": "applicationset",
-    "id": "application--feng-pm",
-    "uid": "application--feng-pm",
-    "specs": {
-        "isDesign": true,
-        "raw": {
-            "apiVersion": "argoproj.io/v1alpha1",
-            "kind": "ApplicationSet",
-            "metadata": {
-                "annotations": {
-                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"ApplicationSet\",\"metadata\":{\"annotations\":{},\"name\":\"feng-pm\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"generators\":[{\"clusterDecisionResource\":{\"configMapRef\":\"acm-placement\",\"labelSelector\":{\"matchLabels\":{\"cluster.open-cluster-management.io/placement\":\"feng-pm-placement\"}},\"requeueAfterSeconds\":180}}],\"template\":{\"metadata\":{\"annotations\":{\"apps.open-cluster-management.io/ocm-managed-cluster\":\"{{name}}\",\"apps.open-cluster-management.io/ocm-managed-cluster-app-namespace\":\"openshift-gitops\",\"argocd.argoproj.io/skip-reconcile\":\"true\"},\"labels\":{\"apps.open-cluster-management.io/pull-to-ocm-managed-cluster\":\"true\"},\"name\":\"feng-pm-{{name}}\"},\"spec\":{\"destination\":{\"namespace\":\"feng-pm\",\"server\":\"https://kubernetes.default.svc\"},\"project\":\"default\",\"source\":{\"path\":\"helloworld\",\"repoURL\":\"https://github.com/fxiang1/app-samples\",\"targetRevision\":\"main\"},\"syncPolicy\":{\"automated\":{},\"syncOptions\":[\"CreateNamespace=true\"]}}}}}\n"
-                },
-                "creationTimestamp": "2023-08-02T18:01:14Z",
-                "generation": 2,
-                "name": "feng-pm",
-                "namespace": "openshift-gitops",
-                "resourceVersion": "76441171",
-                "uid": "92436748-e765-4057-9621-2c3a74b3a487"
-            },
-            "spec": {
-                "generators": [
-                    {
-                        "clusterDecisionResource": {
-                            "configMapRef": "acm-placement",
-                            "labelSelector": {
-                                "matchLabels": {
-                                    "cluster.open-cluster-management.io/placement": "feng-pm-placement"
-                                }
-                            },
-                            "requeueAfterSeconds": 180
-                        }
-                    }
-                ],
-                "template": {
-                    "metadata": {
-                        "annotations": {
-                            "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
-                            "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
-                            "argocd.argoproj.io/skip-reconcile": "true"
-                        },
-                        "labels": {
-                            "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
-                            "test1": "test1"
-                        },
-                        "name": "feng-pm-{{name}}"
-                    },
-                    "spec": {
-                        "destination": {
-                            "namespace": "feng-pm",
-                            "server": "https://kubernetes.default.svc"
-                        },
-                        "project": "default",
-                        "source": {
-                            "path": "helloworld",
-                            "repoURL": "https://github.com/fxiang1/app-samples",
-                            "targetRevision": "main"
-                        },
-                        "syncPolicy": {
-                            "automated": {},
-                            "syncOptions": [
-                                "CreateNamespace=true"
-                            ]
-                        }
-                    }
-                }
-            },
-            "status": {
-                "conditions": [
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "False",
-                        "type": "ErrorOccurred"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ParametersGenerated",
-                        "status": "True",
-                        "type": "ParametersGenerated"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "ApplicationSet up to date",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "True",
-                        "type": "ResourcesUpToDate"
-                    }
-                ]
-            }
+    name: 'feng-pm',
+    namespace: 'openshift-gitops',
+    type: 'applicationset',
+    id: 'application--feng-pm',
+    uid: 'application--feng-pm',
+    specs: {
+      isDesign: true,
+      raw: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          annotations: {
+            'kubectl.kubernetes.io/last-applied-configuration':
+              '{"apiVersion":"argoproj.io/v1alpha1","kind":"ApplicationSet","metadata":{"annotations":{},"name":"feng-pm","namespace":"openshift-gitops"},"spec":{"generators":[{"clusterDecisionResource":{"configMapRef":"acm-placement","labelSelector":{"matchLabels":{"cluster.open-cluster-management.io/placement":"feng-pm-placement"}},"requeueAfterSeconds":180}}],"template":{"metadata":{"annotations":{"apps.open-cluster-management.io/ocm-managed-cluster":"{{name}}","apps.open-cluster-management.io/ocm-managed-cluster-app-namespace":"openshift-gitops","argocd.argoproj.io/skip-reconcile":"true"},"labels":{"apps.open-cluster-management.io/pull-to-ocm-managed-cluster":"true"},"name":"feng-pm-{{name}}"},"spec":{"destination":{"namespace":"feng-pm","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"helloworld","repoURL":"https://github.com/fxiang1/app-samples","targetRevision":"main"},"syncPolicy":{"automated":{},"syncOptions":["CreateNamespace=true"]}}}}}\n',
+          },
+          creationTimestamp: '2023-08-02T18:01:14Z',
+          generation: 2,
+          name: 'feng-pm',
+          namespace: 'openshift-gitops',
+          resourceVersion: '76441171',
+          uid: '92436748-e765-4057-9621-2c3a74b3a487',
         },
-        "allClusters": {
-            "isLocal": false,
-            "remoteCount": 2
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+                  },
+                },
+                requeueAfterSeconds: 180,
+              },
+            },
+          ],
+          template: {
+            metadata: {
+              annotations: {
+                'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                'argocd.argoproj.io/skip-reconcile': 'true',
+              },
+              labels: {
+                'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+                test1: 'test1',
+              },
+              name: 'feng-pm-{{name}}',
+            },
+            spec: {
+              destination: {
+                namespace: 'feng-pm',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'main',
+              },
+              syncPolicy: {
+                automated: {},
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+          },
         },
-        "clusterNames": [
-            "feng-managed1",
-            "feng-managed2"
-        ],
-        "appSetApps": [
+        status: {
+          conditions: [
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed1",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed1"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ApplicationSetUpToDate',
+              status: 'False',
+              type: 'ErrorOccurred',
             },
             {
-                "apiVersion": "argoproj.io/v1alpha1",
-                "kind": "Application",
-                "metadata": {
-                    "name": "feng-pm-feng-managed2",
-                    "namespace": "openshift-gitops"
-                },
-                "spec": {
-                    "destination": {
-                        "name": "feng-managed2"
-                    }
-                },
-                "status": {
-                    "health": {
-                        "status": "Healthy"
-                    },
-                    "conditions": [],
-                    "sync": {
-                        "status": "Synced"
-                    },
-                    "resources": [
-                        {
-                            "apiVersion": "apps/v1",
-                            "kind": "Deployment",
-                            "name": "helloworld-app-deploy",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "route.openshift.io/v1",
-                            "kind": "Route",
-                            "name": "helloworld-app-route",
-                            "namespace": "feng-pm"
-                        },
-                        {
-                            "apiVersion": "/v1",
-                            "kind": "Service",
-                            "name": "helloworld-app-svc",
-                            "namespace": "feng-pm"
-                        }
-                    ]
-                }
-            }
-        ],
-        "appSetClusters": [
-            {
-                "name": "feng-managed1",
-                "namespace": "feng-managed1",
-                "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:13:26Z"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ParametersGenerated',
+              status: 'True',
+              type: 'ParametersGenerated',
             },
             {
-                "name": "feng-managed2",
-                "namespace": "feng-managed2",
-                "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:27:06Z"
-            }
-        ],
-        "searchClusters": [
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed1",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed1",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:13:26Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32442884Ki",
-                "name": "feng-managed1",
-                "nodes": "1"
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'ApplicationSet up to date',
+              reason: 'ApplicationSetUpToDate',
+              status: 'True',
+              type: 'ResourcesUpToDate',
             },
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed2",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed2",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:27:06Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32098820Ki",
-                "name": "feng-managed2",
-                "nodes": "1"
-            }
-        ],
-        "pulse": "green",
-        "shapeType": "applicationset"
+          ],
+        },
+      },
+      allClusters: {
+        isLocal: false,
+        remoteCount: 2,
+      },
+      clusterNames: ['feng-managed1', 'feng-managed2'],
+      appSetApps: [
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed1',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed1',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          metadata: {
+            name: 'feng-pm-feng-managed2',
+            namespace: 'openshift-gitops',
+          },
+          spec: {
+            destination: {
+              name: 'feng-managed2',
+            },
+          },
+          status: {
+            health: {
+              status: 'Healthy',
+            },
+            conditions: [],
+            sync: {
+              status: 'Synced',
+            },
+            resources: [
+              {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'helloworld-app-deploy',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'Route',
+                name: 'helloworld-app-route',
+                namespace: 'feng-pm',
+              },
+              {
+                apiVersion: '/v1',
+                kind: 'Service',
+                name: 'helloworld-app-svc',
+                namespace: 'feng-pm',
+              },
+            ],
+          },
+        },
+      ],
+      appSetClusters: [
+        {
+          name: 'feng-managed1',
+          namespace: 'feng-managed1',
+          url: 'https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:13:26Z',
+        },
+        {
+          name: 'feng-managed2',
+          namespace: 'feng-managed2',
+          url: 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:27:06Z',
+        },
+      ],
+      searchClusters: [
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed1',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed1',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:13:26Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32442884Ki',
+          name: 'feng-managed1',
+          nodes: '1',
+        },
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed2',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed2',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:27:06Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32098820Ki',
+          name: 'feng-managed2',
+          nodes: '1',
+        },
+      ],
+      pulse: 'green',
+      shapeType: 'applicationset',
     },
-    "isPlacementFound": true,
-    "isArgoCDPullModelTargetLocalCluster": true
+    isPlacementFound: true,
+    isArgoCDPullModelTargetLocalCluster: true,
   }
   let details = []
   const result = [
-        {
-         "labelValue": "Warning",
-         "status": "warning",
-         "value": "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.",
-       },
-        {
-         "type": "spacer",
-       },
-        {
-         "labelValue": "Application deploy status",
-         "type": "label",
-       },
-        {
-         "type": "spacer",
-       },
-        {
-         "labelValue": "feng-pm-feng-managed1",
-         "value": "Healthy",
-       },
-        {
-         "labelValue": "Sync status",
-         "value": "Synced",
-       },
-        {
-         "type": "link",
-         "value":  {
-           "data":  {
-             "action": "open_argo_editor",
-             "cluster": "local-cluster",
-             "name": "feng-pm-feng-managed1",
-             "namespace": "openshift-gitops",
-           },
-           "id": "argoapp-feng-pm-feng-managed1",
-           "label": "Launch Argo editor",
-         },
-       },
-        {
-         "type": "spacer",
-       },
-        {
-         "labelValue": "feng-pm-feng-managed2",
-         "value": "Healthy",
-       },
-        {
-         "labelValue": "Sync status",
-         "value": "Synced",
-       },
-        {
-         "type": "link",
-         "value":  {
-           "data":  {
-             "action": "open_argo_editor",
-             "cluster": "local-cluster",
-             "name": "feng-pm-feng-managed2",
-             "namespace": "openshift-gitops",
-           },
-           "id": "argoapp-feng-pm-feng-managed2",
-           "label": "Launch Argo editor",
-         },
-       },
-        {
-         "type": "spacer",
-       },
-     ]
+    {
+      labelValue: 'Warning',
+      status: 'warning',
+      value:
+        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+    },
+    {
+      type: 'spacer',
+    },
+    {
+      labelValue: 'Application deploy status',
+      type: 'label',
+    },
+    {
+      type: 'spacer',
+    },
+    {
+      labelValue: 'feng-pm-feng-managed1',
+      value: 'Healthy',
+    },
+    {
+      labelValue: 'Sync status',
+      value: 'Synced',
+    },
+    {
+      type: 'link',
+      value: {
+        data: {
+          action: 'open_argo_editor',
+          cluster: 'local-cluster',
+          name: 'feng-pm-feng-managed1',
+          namespace: 'openshift-gitops',
+        },
+        id: 'argoapp-feng-pm-feng-managed1',
+        label: 'Launch Argo editor',
+      },
+    },
+    {
+      type: 'spacer',
+    },
+    {
+      labelValue: 'feng-pm-feng-managed2',
+      value: 'Healthy',
+    },
+    {
+      labelValue: 'Sync status',
+      value: 'Synced',
+    },
+    {
+      type: 'link',
+      value: {
+        data: {
+          action: 'open_argo_editor',
+          cluster: 'local-cluster',
+          name: 'feng-pm-feng-managed2',
+          namespace: 'openshift-gitops',
+        },
+        id: 'argoapp-feng-pm-feng-managed2',
+        label: 'Launch Argo editor',
+      },
+    },
+    {
+      type: 'spacer',
+    },
+  ]
   it('should set AppSet deploy status', () => {
     setAppSetDeployStatus(node, details, t)
     expect(details).toEqual(result)
@@ -3333,182 +3340,185 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
 
 describe('setAppSetDeployStatus resources local-cluster pull model contains no apps', () => {
   const node = {
-    "name": "feng-pm",
-    "namespace": "openshift-gitops",
-    "type": "applicationset",
-    "id": "application--feng-pm",
-    "uid": "application--feng-pm",
-    "specs": {
-        "isDesign": true,
-        "raw": {
-            "apiVersion": "argoproj.io/v1alpha1",
-            "kind": "ApplicationSet",
-            "metadata": {
-                "annotations": {
-                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"argoproj.io/v1alpha1\",\"kind\":\"ApplicationSet\",\"metadata\":{\"annotations\":{},\"name\":\"feng-pm\",\"namespace\":\"openshift-gitops\"},\"spec\":{\"generators\":[{\"clusterDecisionResource\":{\"configMapRef\":\"acm-placement\",\"labelSelector\":{\"matchLabels\":{\"cluster.open-cluster-management.io/placement\":\"feng-pm-placement\"}},\"requeueAfterSeconds\":180}}],\"template\":{\"metadata\":{\"annotations\":{\"apps.open-cluster-management.io/ocm-managed-cluster\":\"{{name}}\",\"apps.open-cluster-management.io/ocm-managed-cluster-app-namespace\":\"openshift-gitops\",\"argocd.argoproj.io/skip-reconcile\":\"true\"},\"labels\":{\"apps.open-cluster-management.io/pull-to-ocm-managed-cluster\":\"true\"},\"name\":\"feng-pm-{{name}}\"},\"spec\":{\"destination\":{\"namespace\":\"feng-pm\",\"server\":\"https://kubernetes.default.svc\"},\"project\":\"default\",\"source\":{\"path\":\"helloworld\",\"repoURL\":\"https://github.com/fxiang1/app-samples\",\"targetRevision\":\"main\"},\"syncPolicy\":{\"automated\":{},\"syncOptions\":[\"CreateNamespace=true\"]}}}}}\n"
+    name: 'feng-pm',
+    namespace: 'openshift-gitops',
+    type: 'applicationset',
+    id: 'application--feng-pm',
+    uid: 'application--feng-pm',
+    specs: {
+      isDesign: true,
+      raw: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          annotations: {
+            'kubectl.kubernetes.io/last-applied-configuration':
+              '{"apiVersion":"argoproj.io/v1alpha1","kind":"ApplicationSet","metadata":{"annotations":{},"name":"feng-pm","namespace":"openshift-gitops"},"spec":{"generators":[{"clusterDecisionResource":{"configMapRef":"acm-placement","labelSelector":{"matchLabels":{"cluster.open-cluster-management.io/placement":"feng-pm-placement"}},"requeueAfterSeconds":180}}],"template":{"metadata":{"annotations":{"apps.open-cluster-management.io/ocm-managed-cluster":"{{name}}","apps.open-cluster-management.io/ocm-managed-cluster-app-namespace":"openshift-gitops","argocd.argoproj.io/skip-reconcile":"true"},"labels":{"apps.open-cluster-management.io/pull-to-ocm-managed-cluster":"true"},"name":"feng-pm-{{name}}"},"spec":{"destination":{"namespace":"feng-pm","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"helloworld","repoURL":"https://github.com/fxiang1/app-samples","targetRevision":"main"},"syncPolicy":{"automated":{},"syncOptions":["CreateNamespace=true"]}}}}}\n',
+          },
+          creationTimestamp: '2023-08-02T18:01:14Z',
+          generation: 2,
+          name: 'feng-pm',
+          namespace: 'openshift-gitops',
+          resourceVersion: '76441171',
+          uid: '92436748-e765-4057-9621-2c3a74b3a487',
+        },
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+                  },
                 },
-                "creationTimestamp": "2023-08-02T18:01:14Z",
-                "generation": 2,
-                "name": "feng-pm",
-                "namespace": "openshift-gitops",
-                "resourceVersion": "76441171",
-                "uid": "92436748-e765-4057-9621-2c3a74b3a487"
+                requeueAfterSeconds: 180,
+              },
             },
-            "spec": {
-                "generators": [
-                    {
-                        "clusterDecisionResource": {
-                            "configMapRef": "acm-placement",
-                            "labelSelector": {
-                                "matchLabels": {
-                                    "cluster.open-cluster-management.io/placement": "feng-pm-placement"
-                                }
-                            },
-                            "requeueAfterSeconds": 180
-                        }
-                    }
-                ],
-                "template": {
-                    "metadata": {
-                        "annotations": {
-                            "apps.open-cluster-management.io/ocm-managed-cluster": "{{name}}",
-                            "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": "openshift-gitops",
-                            "argocd.argoproj.io/skip-reconcile": "true"
-                        },
-                        "labels": {
-                            "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": "true",
-                            "test1": "test1"
-                        },
-                        "name": "feng-pm-{{name}}"
-                    },
-                    "spec": {
-                        "destination": {
-                            "namespace": "feng-pm",
-                            "server": "https://kubernetes.default.svc"
-                        },
-                        "project": "default",
-                        "source": {
-                            "path": "helloworld",
-                            "repoURL": "https://github.com/fxiang1/app-samples",
-                            "targetRevision": "main"
-                        },
-                        "syncPolicy": {
-                            "automated": {},
-                            "syncOptions": [
-                                "CreateNamespace=true"
-                            ]
-                        }
-                    }
-                }
+          ],
+          template: {
+            metadata: {
+              annotations: {
+                'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                'argocd.argoproj.io/skip-reconcile': 'true',
+              },
+              labels: {
+                'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+                test1: 'test1',
+              },
+              name: 'feng-pm-{{name}}',
             },
-            "status": {
-                "conditions": [
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "False",
-                        "type": "ErrorOccurred"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "Successfully generated parameters for all Applications",
-                        "reason": "ParametersGenerated",
-                        "status": "True",
-                        "type": "ParametersGenerated"
-                    },
-                    {
-                        "lastTransitionTime": "2023-08-10T17:11:28Z",
-                        "message": "ApplicationSet up to date",
-                        "reason": "ApplicationSetUpToDate",
-                        "status": "True",
-                        "type": "ResourcesUpToDate"
-                    }
-                ]
-            }
+            spec: {
+              destination: {
+                namespace: 'feng-pm',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'main',
+              },
+              syncPolicy: {
+                automated: {},
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+          },
         },
-        "allClusters": {
-            "isLocal": false,
-            "remoteCount": 2
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ApplicationSetUpToDate',
+              status: 'False',
+              type: 'ErrorOccurred',
+            },
+            {
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'Successfully generated parameters for all Applications',
+              reason: 'ParametersGenerated',
+              status: 'True',
+              type: 'ParametersGenerated',
+            },
+            {
+              lastTransitionTime: '2023-08-10T17:11:28Z',
+              message: 'ApplicationSet up to date',
+              reason: 'ApplicationSetUpToDate',
+              status: 'True',
+              type: 'ResourcesUpToDate',
+            },
+          ],
         },
-        "clusterNames": [
-            "feng-managed1",
-            "feng-managed2"
-        ],
-        "appSetApps": [],
-        "appSetClusters": [
-            {
-                "name": "feng-managed1",
-                "namespace": "feng-managed1",
-                "url": "https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:13:26Z"
-            },
-            {
-                "name": "feng-managed2",
-                "namespace": "feng-managed2",
-                "url": "https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443",
-                "status": "ok",
-                "created": "2023-08-08T18:27:06Z"
-            }
-        ],
-        "searchClusters": [
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed1",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed1",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:13:26Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32442884Ki",
-                "name": "feng-managed1",
-                "nodes": "1"
-            },
-            {
-                "HubAcceptedManagedCluster": "True",
-                "ManagedClusterConditionAvailable": "True",
-                "ManagedClusterImportSucceeded": "True",
-                "ManagedClusterJoined": "True",
-                "_hubClusterResource": "true",
-                "_uid": "cluster__feng-managed2",
-                "addon": "application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true",
-                "apigroup": "internal.open-cluster-management.io",
-                "cluster": "feng-managed2",
-                "consoleURL": "https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com",
-                "cpu": "8",
-                "created": "2023-08-08T18:27:06Z",
-                "kind": "Cluster",
-                "kind_plural": "managedclusterinfos",
-                "kubernetesVersion": "v1.25.8+27e744f",
-                "label": "cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift",
-                "memory": "32098820Ki",
-                "name": "feng-managed2",
-                "nodes": "1"
-            }
-        ],
-        "pulse": "green",
-        "shapeType": "applicationset"
+      },
+      allClusters: {
+        isLocal: false,
+        remoteCount: 2,
+      },
+      clusterNames: ['feng-managed1', 'feng-managed2'],
+      appSetApps: [],
+      appSetClusters: [
+        {
+          name: 'feng-managed1',
+          namespace: 'feng-managed1',
+          url: 'https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:13:26Z',
+        },
+        {
+          name: 'feng-managed2',
+          namespace: 'feng-managed2',
+          url: 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443',
+          status: 'ok',
+          created: '2023-08-08T18:27:06Z',
+        },
+      ],
+      searchClusters: [
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed1',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed1',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:13:26Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32442884Ki',
+          name: 'feng-managed1',
+          nodes: '1',
+        },
+        {
+          HubAcceptedManagedCluster: 'True',
+          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterImportSucceeded: 'True',
+          ManagedClusterJoined: 'True',
+          _hubClusterResource: 'true',
+          _uid: 'cluster__feng-managed2',
+          addon:
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+          apigroup: 'internal.open-cluster-management.io',
+          cluster: 'feng-managed2',
+          consoleURL:
+            'https://console-openshift-console.apps.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com',
+          cpu: '8',
+          created: '2023-08-08T18:27:06Z',
+          kind: 'Cluster',
+          kind_plural: 'managedclusterinfos',
+          kubernetesVersion: 'v1.25.8+27e744f',
+          label:
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+          memory: '32098820Ki',
+          name: 'feng-managed2',
+          nodes: '1',
+        },
+      ],
+      pulse: 'green',
+      shapeType: 'applicationset',
     },
-    "isPlacementFound": true,
-    "isArgoCDPullModelTargetLocalCluster": true
+    isPlacementFound: true,
+    isArgoCDPullModelTargetLocalCluster: true,
   }
   let details = []
   const result = [
     {
-         "labelValue": "Error",
-         "status": "failure",
-         "value": "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.",
-    }
+      labelValue: 'Error',
+      status: 'failure',
+      value:
+        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+    },
   ]
   it('should set AppSet deploy status', () => {
     setAppSetDeployStatus(node, details, t)
