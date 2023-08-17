@@ -16,9 +16,11 @@ export const useIsHypershiftEnabled = () => {
       try {
         const [multiClusterEngine] = await listMultiClusterEngines().promise
         const components = multiClusterEngine.spec?.overrides.components
-        const hypershiftPreview = components?.find((component) => component.name === 'hypershift-preview')
+        const hypershift = components?.find((component) => component.name === 'hypershift')
+        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
         setIsHypershiftEnabled(
-          !!hypershiftPreview?.enabled &&
+          !!hypershift?.enabled &&
+            !!hypershiftLocalHosting?.enabled &&
             hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')?.status ===
               'True'
         )
