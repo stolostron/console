@@ -12,7 +12,7 @@ import {
   ResourceAttributes,
 } from '../resources'
 
-async function isAnyNamespaceAuthorized(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
+export async function isAnyNamespaceAuthorized(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
   const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
   if (namespaceList.length === 0) {
