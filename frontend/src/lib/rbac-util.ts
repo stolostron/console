@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  createShortCircuitSubjectAccessReviews,
   createSubjectAccessReview,
   createSubjectAccessReviews,
   fallbackPlural,
@@ -10,6 +11,31 @@ import {
   Namespace,
   ResourceAttributes,
 } from '../resources'
+
+async function isAnyNamespaceAuthorized(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
+  const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
+
+  if (namespaceList.length === 0) {
+    return false
+  }
+  const adminAccessRequest = await checkAdminAccess()
+  const isAdmin = adminAccessRequest?.status?.allowed ?? false
+
+  if (isAdmin) {
+    return true
+  }
+  const resourceList: Array<ResourceAttributes> = []
+
+  namespaceList.forEach((namespace) => {
+    resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
+  })
+
+  try {
+    return await createShortCircuitSubjectAccessReviews(resourceList).promise
+  } catch {
+    return false
+  }
+}
 
 export async function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
   const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
@@ -120,20 +146,7 @@ export async function checkPermission(
   setStateFn: (state: boolean) => void,
   namespaces: Namespace[]
 ) {
-  if (namespaces.length) {
-    const fetchAuthorizedNamespaces = async () => {
-      return getAuthorizedNamespaces([await resourceAttributes], namespaces)
-    }
-    fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
-      if (authorizedNamespaces?.length > 0) {
-        setStateFn(true)
-      } else {
-        setStateFn(false)
-      }
-    })
-  } else {
-    setStateFn(false)
-  }
+  setStateFn(namespaces.length ? await isAnyNamespaceAuthorized([await resourceAttributes], namespaces) : false)
 }
 
 export function rbacResourceTestHelper(
