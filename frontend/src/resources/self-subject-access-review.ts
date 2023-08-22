@@ -64,11 +64,13 @@ export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAtt
 
 export function createShortCircuitSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {
   const results = resourceAttributes.map((resource) => createSubjectAccessReview(resource))
+  const abort = () => results.forEach((result) => result.abort())
   return {
     promise: Promise.any(
       results.map((result) =>
         result.promise.then((result) => {
           if (result.status?.allowed) {
+            abort()
             return true
           } else {
             throw new Error('access not allowed')
@@ -76,6 +78,6 @@ export function createShortCircuitSubjectAccessReviews(resourceAttributes: Array
         })
       )
     ),
-    abort: () => results.forEach((result) => result.abort()),
+    abort,
   }
 }
