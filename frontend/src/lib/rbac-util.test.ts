@@ -65,4 +65,27 @@ describe('isAnyNamespaceAuthorized', () => {
     ).toEqual(true)
     await waitForNocks(nocks)
   })
+  it('returns false for an empty namespace list', async () => {
+    expect(await isAnyNamespaceAuthorized([createDeployment], [])).toEqual(false)
+  })
+  it('returns true without checking namespaces for an admin user', async () => {
+    nockIgnoreApiPaths()
+    const nocks = [nockRBAC(adminAccess, true)]
+    expect(
+      await isAnyNamespaceAuthorized(
+        [createDeployment],
+        [
+          {
+            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+            metadata: { name: 'test-namespace-1' },
+          },
+          {
+            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+            metadata: { name: 'test-namespace-2' },
+          },
+        ]
+      )
+    ).toEqual(true)
+    await waitForNocks(nocks)
+  })
 })
