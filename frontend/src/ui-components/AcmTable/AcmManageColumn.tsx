@@ -199,7 +199,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
                           id={`table-column-management-${policy.id}`}
                           key={`table-column-management-${policy.id}`}
                         >
-                          <label htmlFor={`table-column-management-${policy.id}`}>{policy.header}</label>
+                          <label htmlFor={`checkbox-${policy.id}`}>{policy.header}</label>
                         </DataListCell>,
                       ]}
                     />
