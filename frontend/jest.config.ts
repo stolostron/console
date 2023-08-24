@@ -17,13 +17,14 @@ const config: Config.InitialOptions = {
     '@patternfly/react-topology': '<rootDir>/node_modules/@patternfly/react-topology',
     'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
-    '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cim',
+    '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cjs/cim',
     '@openshift-assisted/locales/([a-z]{2,3}/translation.json)':
       '<rootDir>/node_modules/@openshift-assisted/locales/lib/$1/translation.json',
   },
   watchAll: false,
   slowTestThreshold: 30,
-  watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
+  testPathIgnorePatterns: ['<rootDir>/.yalc'],
+  watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage', '<rootDir>/.yalc'],
   moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
   globals: {
     'ts-jest': {
