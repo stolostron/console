@@ -45,6 +45,10 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
     ),
     badgeList: [
       {
+        badge: t('Technology preview'),
+        badgeColor: CatalogColor.orange,
+      },
+      {
         badge: t('CLI-based'),
         badgeColor: CatalogColor.purple,
       },
