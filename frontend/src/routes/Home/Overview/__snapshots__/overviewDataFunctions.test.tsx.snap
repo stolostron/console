@@ -235,9 +235,7 @@ exports[`Correctly returns parseAlertsMetric 1`] = `
 Object {
   "alertSeverity": Object {
     "critical": Object {
-      "alerts": Array [
-        "UpdateAvailable",
-      ],
+      "alerts": Array [],
       "icon": <CriticalRiskIcon />,
       "key": "critical",
       "label": "Critical",
@@ -251,9 +249,7 @@ Object {
       "label": "Info",
     },
     "other": Object {
-      "alerts": Array [
-        "Watchdog",
-      ],
+      "alerts": Array [],
       "icon": undefined,
       "key": "other",
       "label": "Other",
@@ -267,7 +263,10 @@ Object {
       "label": "Warning",
     },
   },
-  "clustersAffectedAlerts": Array [],
+  "clustersAffectedAlerts": Array [
+    "local-cluster",
+    "managed-1",
+  ],
 }
 `;
 
