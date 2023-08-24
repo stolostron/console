@@ -48,6 +48,7 @@ import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 import { get } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
+import { NavigationPath } from '../../NavigationPath'
 
 export interface Channel {
   metadata?: {
@@ -798,7 +799,14 @@ function ArgoWizardPlacementSection(props: {
             clusters={props.clusters}
             hideName
             createClusterSetCallback={props.createClusterSetCallback}
-            alertTitle={t('ClusterSets failed to load. Check the GitOpsCluster and Placement YAML for status errors.')}
+            alertTitle={t(
+              'ClusterSets failed to load. Check the ManagedClusterSetBinding resource to verify your selected namespace. In addition, check GitOpsCluster and Placement resources for status errors.'
+            )}
+            alertContent={
+              <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
+                {t('Add cluster set')}
+              </Button>
+            }
           />
         </WizItemSelector>
       ) : (
