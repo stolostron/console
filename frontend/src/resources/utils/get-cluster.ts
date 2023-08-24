@@ -553,34 +553,45 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
   }
 }
 
+function getHostedClusterProvider(hostedCluster: HostedClusterK8sResource) {
+  if (hostedCluster.spec?.platform?.agent) {
+    return Provider.hostinventory
+  }
+  switch (hostedCluster.spec.platform.type) {
+    case HypershiftCloudPlatformType.AWS:
+      return Provider.aws
+    case HypershiftCloudPlatformType.Azure:
+      return Provider.azure
+    case HypershiftCloudPlatformType.PowerVS:
+      return Provider.ibmpower
+    case HypershiftCloudPlatformType.KubeVirt:
+      return Provider.kubevirt
+    default:
+      return Provider.hypershift
+  }
+}
+
 export function getProvider(
   managedClusterInfo?: ManagedClusterInfo,
   managedCluster?: ManagedCluster,
   clusterDeployment?: ClusterDeployment,
   hostedCluster?: HostedClusterK8sResource
 ) {
-  if (hostedCluster?.spec?.platform?.agent) {
-    return Provider.hostinventory
-  }
-
-  if (hostedCluster) {
-    switch (hostedCluster.spec.platform.type) {
-      case HypershiftCloudPlatformType.AWS:
-        return Provider.aws
-      case HypershiftCloudPlatformType.Azure:
-        return Provider.azure
-      case HypershiftCloudPlatformType.PowerVS:
-        return Provider.ibmpower
-      case HypershiftCloudPlatformType.KubeVirt:
-        return Provider.kubevirt
-      default:
-        return Provider.hypershift
-    }
-  }
+  if (hostedCluster) return getHostedClusterProvider(hostedCluster)
 
   const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
   if (clusterInstallRef?.kind === AgentClusterInstallKind) {
     return Provider.hostinventory
+  }
+
+  const vendorLabel = managedClusterInfo?.metadata?.labels?.['vendor']
+  const productClusterClaim = managedCluster?.status?.clusterClaims?.find(
+    (claim) => claim.name === 'product.open-cluster-management.io'
+  )
+  const productLabel = (vendorLabel ?? productClusterClaim?.value ?? '').toUpperCase()
+
+  if (productLabel === 'MICROSHIFT') {
+    return Provider.microshift
   }
 
   const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
@@ -593,11 +604,11 @@ export function getProvider(
     return undefined
   }
 
-  let providerLabel =
+  const providerLabel = (
     hivePlatformLabel && hivePlatformLabel !== 'unknown'
       ? hivePlatformLabel
       : cloudLabel ?? platformClusterClaim?.value ?? ''
-  providerLabel = providerLabel.toUpperCase()
+  ).toUpperCase()
 
   let provider: Provider | undefined
   switch (providerLabel) {
