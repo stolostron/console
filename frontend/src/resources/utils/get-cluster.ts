@@ -235,6 +235,7 @@ export type Cluster = {
   provider?: Provider
   distribution?: DistributionInfo
   acmDistribution?: ACMDistributionInfo
+  microshiftDistribution?: MicroshiftDistributionInfo
   addons?: Addons
   labels?: Record<string, string>
   nodes?: Nodes
@@ -286,6 +287,10 @@ export type DistributionInfo = {
 export type ACMDistributionInfo = {
   version?: string
   channel?: string
+}
+
+export type MicroshiftDistributionInfo = {
+  version?: string
 }
 
 export type HiveSecrets = {
@@ -430,7 +435,7 @@ export function getCluster(
       np.metadata?.namespace === hostedCluster?.metadata?.namespace
   )
 
-  const acmDistributionInfo = getACMDistributionInfo(managedCluster)
+  const acmDistribution = getACMDistributionInfo(managedCluster)
   const consoleURL = getConsoleUrl(
     clusterDeployment,
     managedClusterInfo,
@@ -469,8 +474,9 @@ export function getCluster(
     statusMessage,
     provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster),
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
-    acmDistribution: acmDistributionInfo,
-    acmConsoleURL: getACMConsoleURL(acmDistributionInfo.version, consoleURL),
+    acmDistribution,
+    microshiftDistribution: getMicroshiftDistributionInfo(managedCluster),
+    acmConsoleURL: getACMConsoleURL(acmDistribution.version, consoleURL),
     addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
     nodes: getNodes(managedClusterInfo),
@@ -934,6 +940,14 @@ export function getDistributionInfo(
   }
 
   return undefined
+}
+
+function getMicroshiftDistributionInfo(managedCluster?: ManagedCluster): ACMDistributionInfo {
+  return {
+    version:
+      managedCluster?.status?.clusterClaims?.find((claim) => claim.name === 'version.microshift.io')?.value ??
+      undefined,
+  }
 }
 
 export function getKubeApiServer(
