@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import {
-  Alert,
   Button,
   Card,
   CardBody,
@@ -11,9 +11,10 @@ import {
   GalleryItem,
   PageSection,
   Skeleton,
+  TextVariants,
 } from '@patternfly/react-core'
-import { AngleDownIcon, AngleUpIcon } from '@patternfly/react-icons'
-import { useMemo, useState } from 'react'
+import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useRouteMatch } from 'react-router-dom'
 import {
   GetArgoApplicationsHashSet,
@@ -21,11 +22,12 @@ import {
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { PrometheusEndpoint, usePrometheusPoll } from '../../../lib/usePrometheusPoll'
+import { DOC_LINKS } from '../../../lib/doc-util'
+import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { Application, ApplicationSet, Cluster } from '../../../resources'
+import { Application, ApplicationSet, Cluster, getResource } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
-import { AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
+import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
   CriticalRiskIcon,
@@ -46,7 +48,7 @@ import {
   parseAlertsMetric,
   parseOperatorMetric,
 } from './overviewDataFunctions'
-import SummaryCard from './SummaryCard'
+import SummaryCard, { LoadingCard } from './SummaryCard'
 
 function renderSummaryLoading() {
   return [
@@ -99,9 +101,57 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [policyReports] = useRecoilState(policyreportState)
   const [subscriptions] = useRecoilState(subscriptionsState)
-  const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(true)
+  const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
+  const [isObservabilityQueryLoading, setIsObservabilityQueryLoading] = useState<boolean>(true)
+  const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
+  const [grafanaRoute, setGrafanaRoute] = useState('')
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+
+  // Query to determine if Observability is installed
+  useEffect(() => {
+    getResource({
+      apiVersion: 'observability.open-cluster-management.io/v1beta2',
+      kind: 'MultiClusterObservability',
+      metadata: {
+        name: 'observability',
+      },
+    })
+      .promise.then((response: any) => {
+        if (response?.status?.conditions as V1CustomResourceDefinitionCondition[]) {
+          const isRunning = response.status.conditions.find(
+            (condition: { lastTransitionTime: Date; message: string; reason: string; status: string; type: string }) =>
+              condition.message === 'Observability components are deployed and running'
+          )
+          setIsObservabilityInstalled(isRunning !== undefined)
+          setIsObservabilityQueryLoading(false)
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting MultiClusterObservability resource: ', err)
+        setIsObservabilityQueryLoading(false)
+      })
+  }, [])
+
+  // Query for grafana Route
+  useEffect(() => {
+    getResource({
+      apiVersion: 'route.openshift.io/v1',
+      kind: 'Route',
+      metadata: {
+        name: 'grafana',
+        namespace: 'open-cluster-management-observability',
+      },
+    })
+      .promise.then((route: any) => {
+        if (route?.spec?.host) {
+          setGrafanaRoute(`${route?.spec?.tls?.termination ? 'https' : 'http'}://${route.spec.host}`)
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting Observability Route: ', err)
+      })
+  }, [])
 
   const clusterLabelsSearchFilter = useMemo(() => {
     const labelStringArray: string[] = []
@@ -120,11 +170,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     [allClusters, selectedClusterLabels]
   )
   const filteredClusterNames = useMemo(() => filteredClusters.map((cluster) => cluster.name), [filteredClusters])
-
-  const consoleURL = useMemo(
-    () => allClusters.filter((cluster) => cluster.name === 'local-cluster').map((cluster) => cluster.consoleURL)[0],
-    [allClusters]
-  )
 
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, filteredClusters)
   const filteredOCPApps: Record<string, any> = useMemo(
@@ -174,27 +219,43 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     return getAddonHealth(allAddons, filteredClusterNames, t)
   }, [allAddons, filteredClusterNames, t])
 
-  const [clusterOperators, operatorError, operatorLoading] = usePrometheusPoll({
-    endpoint: PrometheusEndpoint.QUERY,
+  const [clusterOperators, operatorError, operatorLoading] = useObservabilityPoll({
+    endpoint: ObservabilityEndpoint.QUERY,
     query: 'cluster_operator_conditions',
+    skip: !isObservabilityInstalled,
   })
   const {
-    availableCount,
-    degradedCount,
-    notAvailableCount,
-    otherCount,
-  }: { availableCount: number; degradedCount: number; notAvailableCount: number; otherCount: number } = useMemo(() => {
-    return parseOperatorMetric(clusterOperators)
-  }, [clusterOperators])
-
-  const [alertsResult, alertsError, alertsLoading] = usePrometheusPoll({
-    endpoint: PrometheusEndpoint.QUERY,
-    query: 'ALERTS',
-  })
-  const alertSeverity: Record<string, { label: string; count: number; icon: React.JSX.Element | undefined }> =
+    clustersAffectedOperator,
+    degraded,
+    notAvailable,
+    other,
+  }: { clustersAffectedOperator: string[]; degraded: string[]; notAvailable: string[]; other: string[] } =
     useMemo(() => {
-      return parseAlertsMetric(alertsResult, t)
-    }, [alertsResult, t])
+      return parseOperatorMetric(clusterOperators)
+    }, [clusterOperators])
+
+  const [alertsResult, alertsError, alertsLoading] = useObservabilityPoll({
+    endpoint: ObservabilityEndpoint.QUERY,
+    query: 'ALERTS',
+    skip: !isObservabilityInstalled,
+  })
+  const {
+    clustersAffectedAlerts,
+    alertSeverity,
+  }: {
+    clustersAffectedAlerts: string[]
+    alertSeverity: Record<
+      string,
+      {
+        key: string
+        label: string
+        alerts: string[]
+        icon?: JSX.Element
+      }
+    >
+  } = useMemo(() => {
+    return parseAlertsMetric(alertsResult, t)
+  }, [alertsResult, t])
 
   return (
     <AcmScrollable>
@@ -218,19 +279,15 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                         ) : (
                           <CardTitle>{summaryItem.title}</CardTitle>
                         )}
-                        {summaryItem.count ? (
-                          <CardBody isFilled={false}>
-                            {summaryItem.link ? (
-                              <Link style={{ fontSize: 24 }} to={summaryItem.link}>
-                                {summaryItem.count}
-                              </Link>
-                            ) : (
-                              <FlexItem style={{ fontSize: 24 }}>{summaryItem.count}</FlexItem>
-                            )}
-                          </CardBody>
-                        ) : (
-                          <Skeleton shape={'square'} width="40px" />
-                        )}
+                        <CardBody isFilled={false}>
+                          {summaryItem.link ? (
+                            <Link style={{ fontSize: 24 }} to={summaryItem.link}>
+                              {summaryItem.count}
+                            </Link>
+                          ) : (
+                            <FlexItem style={{ fontSize: 24 }}>{summaryItem.count}</FlexItem>
+                          )}
+                        </CardBody>
                       </Card>
                     </GalleryItem>
                   )
@@ -252,15 +309,12 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                   variant={'plain'}
                 />
               </div>
-              {(alertsError || operatorError) && (
-                <Alert title={t('An unexpected error occurred while getting metrics.')} isInline variant={'danger'} />
-              )}
             </>
           </CardTitle>
           {isInsightsSectionOpen && (
             <CardBody>
               <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '400px' }}>
+                <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Cluster recommendations')}
                     summaryTotalHeader={`${clustersWithIssuesCount} ${
@@ -287,45 +341,120 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     insights
                   />
                 </GalleryItem>
-                <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '400px' }}>
-                  <SummaryCard
-                    title={t('Alerts')}
-                    loading={alertsLoading}
-                    summaryData={Object.keys(alertSeverity).map((sev: string) => {
-                      return {
-                        label: alertSeverity[sev]?.label,
-                        count: alertSeverity[sev]?.count,
-                        link: {
-                          type: 'button',
-                          path: `${consoleURL}/monitoring/query-browser?query0=ALERTS{severity="${sev}"}`,
-                        },
-                        icon: alertSeverity[sev]?.icon,
-                      }
-                    })}
-                  />
-                </GalleryItem>
-                <GalleryItem key={'failing-operators-card'} style={{ flex: 1, minWidth: '400px' }}>
-                  <SummaryCard
-                    title={t('Failing operators')}
-                    loading={operatorLoading}
-                    summaryData={[
-                      { icon: <CriticalRiskIcon />, label: t('Degraded'), count: degradedCount },
-                      { icon: undefined, label: t('Not available'), count: notAvailableCount },
-                      { icon: undefined, label: t('Other'), count: otherCount },
-                      { icon: undefined, label: t('Available'), count: availableCount },
-                    ].map((sevRating) => {
-                      return {
-                        label: sevRating.label,
-                        count: sevRating.count,
-                        link: {
-                          type: 'link',
-                          path: `${NavigationPath.search}?filters={"textsearch":"kind%3AClusterOperator"}`,
-                        },
-                        icon: sevRating.icon,
-                      }
-                    })}
-                  />
-                </GalleryItem>
+
+                {isObservabilityQueryLoading ? (
+                  <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
+                    <LoadingCard />
+                  </GalleryItem>
+                ) : (
+                  isObservabilityInstalled && (
+                    <>
+                      <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
+                        <SummaryCard
+                          title={t('Alerts')}
+                          summaryTotalHeader={`${clustersAffectedAlerts.length} ${
+                            clustersAffectedAlerts.length > 1 ? 'clusters' : 'cluster'
+                          } affected`}
+                          loading={alertsLoading}
+                          error={alertsError as string}
+                          summaryData={Object.keys(alertSeverity).map((sev: string) => {
+                            const linkSev =
+                              alertSeverity[sev].key === 'other'
+                                ? `severity!~%5C"critical|warning|info%5C"`
+                                : `severity=%5C"${alertSeverity[sev].key}%5C"`
+                            return {
+                              label: alertSeverity[sev]?.label,
+                              count: alertSeverity[sev]?.alerts.length,
+                              link: {
+                                type: 'button',
+                                path: `${grafanaRoute}/explore?left=["now-1h","now","Observatorium",{"exemplar":true,"expr":"ALERTS{${linkSev},alertstate=%5C"firing%5C"} == 1"}]&orgId=1`,
+                              },
+                              icon: alertSeverity[sev]?.icon,
+                            }
+                          })}
+                        />
+                      </GalleryItem>
+                      <GalleryItem key={'failing-operators-card'} style={{ flex: 1, minWidth: '375px' }}>
+                        <SummaryCard
+                          title={t('Failing operators')}
+                          summaryTotalHeader={`${clustersAffectedOperator.length} ${
+                            clustersAffectedOperator.length > 1 ? 'clusters' : 'cluster'
+                          } affected`}
+                          loading={operatorLoading}
+                          error={operatorError as string}
+                          summaryData={[
+                            {
+                              key: 'degraded',
+                              icon: <CriticalRiskIcon />,
+                              label: t('Degraded'),
+                              count: degraded.length,
+                              operators: degraded,
+                            },
+                            {
+                              key: 'notavailable',
+                              icon: undefined,
+                              label: t('Not available'),
+                              count: notAvailable.length,
+                              operators: notAvailable,
+                            },
+                            {
+                              key: 'other',
+                              icon: undefined,
+                              label: t('Other'),
+                              count: other.length,
+                              operators: other,
+                            },
+                          ].map((sevRating) => {
+                            let linkCondition = ''
+                            switch (sevRating.key) {
+                              case 'degraded':
+                                // condition["type"] == "Degraded" and condition["status"] == "True" -> Degraded
+                                linkCondition = `cluster_operator_conditions{condition=%5C"Degraded%5C"} == 1`
+                                break
+                              case 'notavailable':
+                                // condition["type"] == "Available" and condition["status"] == "False" -> Not Available
+                                linkCondition = `cluster_operator_conditions{condition=%5C"Available%5C"} == 0`
+                                break
+                              case 'other':
+                                // condition["type"] == "Progressing" and condition["status"] == "True" -> Other
+                                // condition["type"] == "Upgradeable" and condition["status"] == "False" -> Other
+                                // condition["type"] == "Failing" and condition["status"] == "True" -> Other
+                                linkCondition = `cluster_operator_conditions{condition=%5C"Progressing%5C"} == 1 or cluster_operator_conditions{condition=%5C"Upgradeable%5C"} == 0 or cluster_operator_conditions{condition=%5C"Failing%5C"} == 1`
+                                break
+                            }
+                            return {
+                              label: sevRating.label,
+                              count: sevRating.count,
+                              link: {
+                                type: 'button',
+                                path: `${grafanaRoute}/explore?left=["now-1h","now","Observatorium",{"exemplar":true,"expr":"${linkCondition}"}]&orgId=1`,
+                              },
+                              icon: sevRating.icon,
+                            }
+                          })}
+                        />
+                      </GalleryItem>
+                    </>
+                  )
+                )}
+                {!isObservabilityQueryLoading && !isObservabilityInstalled && (
+                  <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
+                    <Card isRounded isFullHeight>
+                      <CardTitle>{'Enable Observability to see more metrics'}</CardTitle>
+                      <CardBody isFilled={false}>
+                        <AcmButton
+                          variant={'link'}
+                          component={TextVariants.a}
+                          href={DOC_LINKS.MANAGE_APPLICATIONS}
+                          target="_blank"
+                          style={{ padding: 0 }}
+                        >
+                          {t('View documentation')} <ExternalLinkAltIcon />
+                        </AcmButton>
+                      </CardBody>
+                    </Card>
+                  </GalleryItem>
+                )}
               </Gallery>
             </CardBody>
           )}

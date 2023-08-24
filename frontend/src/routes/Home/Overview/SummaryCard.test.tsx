@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { CriticalRiskIcon } from '@patternfly/react-icons'
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { BrowserRouter } from 'react-router-dom'
-import SummaryCard from './SummaryCard'
+import SummaryCard, { LoadingCard } from './SummaryCard'
 
 describe('SummaryCard', () => {
   const ValidSummaryCardWithLink = () => {
@@ -75,10 +75,16 @@ describe('SummaryCard', () => {
   })
 
   test('Renders correctly with button', async () => {
-    const { getByText } = render(<ValidSummaryCardWithButton />)
+    const { queryByText } = render(<ValidSummaryCardWithButton />)
 
-    await waitFor(() => expect(getByText('Cluster recommendations')).toBeTruthy())
-    await waitFor(() => expect(getByText('Insights data coming soon')).toBeTruthy())
-    await waitFor(() => expect(getByText('5')).toBeTruthy())
+    await waitFor(() => expect(queryByText('Cluster recommendations')).toBeTruthy())
+    await waitFor(() => expect(queryByText('Powered by Insights')).toBeFalsy())
+    await waitFor(() => expect(queryByText('5')).toBeTruthy())
+  })
+
+  test('Renders Loading Card correctly', async () => {
+    const { queryByTestId } = render(<LoadingCard />)
+    screen.logTestingPlaygroundURL()
+    await waitFor(() => expect(queryByTestId('sevrating-loading-0')).toBeTruthy())
   })
 })

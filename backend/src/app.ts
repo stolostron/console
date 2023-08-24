@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { authenticated } from './lib/authenticated'
 import { loadSettings, stopSettingsWatch } from './lib/config'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
@@ -11,11 +12,11 @@ import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
-import { authenticated } from './lib/authenticated'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
+import { observabilityProxy } from './routes/observabilityProxy'
 import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
@@ -34,6 +35,11 @@ export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
 router.get('/readinessProbe', readiness)
 router.get('/livenessProbe', liveness)
 router.get('/ping', respondOK)
+router.all('/api/v1/query', observabilityProxy)
+router.all('/api/v1/query_range', observabilityProxy)
+router.get('/api/v1/targets', observabilityProxy)
+router.get('/api/v1/rules', observabilityProxy)
+router.get('/api/v1/label', observabilityProxy)
 router.all('/api', proxy)
 router.all('/api/*', proxy)
 router.all('/apis', proxy)

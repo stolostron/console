@@ -1288,6 +1288,7 @@ export const mockAlertMetrics: any = {
       {
         metric: {
           __name__: 'ALERTS',
+          cluster: 'local-cluster',
           alertname: 'AlertmanagerReceiversNotConfigured',
           alertstate: 'firing',
           namespace: 'openshift-monitoring',
@@ -1299,6 +1300,7 @@ export const mockAlertMetrics: any = {
       {
         metric: {
           __name__: 'ALERTS',
+          cluster: 'local-cluster',
           alertname: 'InsightsRecommendationActive',
           alertstate: 'firing',
           container: 'insights-operator',
@@ -1318,35 +1320,32 @@ export const mockAlertMetrics: any = {
       {
         metric: {
           __name__: 'ALERTS',
+          cluster: 'managed-1',
+          alertname: 'InsightsRecommendationActive',
+          alertstate: 'firing',
+          container: 'insights-operator',
+          description: 'Prometheus metrics data will be lost when the Prometheus pod is restarted or recreated',
+          endpoint: 'https',
+          instance: '10.128.0.144:8443',
+          job: 'metrics',
+          namespace: 'openshift-insights',
+          pod: 'insights-operator-6c4799dc96-46nrg',
+          prometheus: 'openshift-monitoring/k8s',
+          service: 'metrics',
+          severity: 'info',
+          total_risk: 'Low',
+        },
+        value: [1690924359.704, '1'],
+      },
+      {
+        metric: {
+          __name__: 'ALERTS',
+          cluster: 'local-cluster',
           alertname: 'TelemeterClientFailures',
           alertstate: 'pending',
           namespace: 'openshift-monitoring',
           prometheus: 'openshift-monitoring/k8s',
           severity: 'warning',
-        },
-        value: [1690924359.704, '1'],
-      },
-      {
-        metric: {
-          __name__: 'ALERTS',
-          alertname: 'UpdateAvailable',
-          alertstate: 'firing',
-          channel: 'stable-4.13',
-          namespace: 'openshift-cluster-version',
-          prometheus: 'openshift-monitoring/k8s',
-          severity: 'critical',
-          upstream: '<default>',
-        },
-        value: [1690924359.704, '1'],
-      },
-      {
-        metric: {
-          __name__: 'ALERTS',
-          alertname: 'Watchdog',
-          alertstate: 'firing',
-          namespace: 'openshift-monitoring',
-          prometheus: 'openshift-monitoring/k8s',
-          severity: 'none',
         },
         value: [1690924359.704, '1'],
       },

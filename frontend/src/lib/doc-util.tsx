@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TFunction } from 'react-i18next'
 import { AcmButton } from '../ui-components'
 
 export const DOC_VERSION = '2.9'
@@ -59,6 +59,7 @@ export const DOC_LINKS = {
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
+  ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
 }
 
 export function viewDocumentation(doclink: string, t: TFunction) {

@@ -1,17 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import _ from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { fetchGet } from '../resources'
+import { fetchGet, getBackendUrl } from '../resources'
 
-export enum PrometheusEndpoint {
+export enum ObservabilityEndpoint {
   LABEL = 'api/v1/label',
   QUERY = 'api/v1/query',
   QUERY_RANGE = 'api/v1/query_range',
   RULES = 'api/v1/rules',
   TARGETS = 'api/v1/targets',
 }
-type PrometheusURLProps = {
-  endpoint: PrometheusEndpoint
+type ObservabilityURLProps = {
+  skip?: boolean
+  endpoint: ObservabilityEndpoint
   endTime?: number
   namespace?: string
   query?: string
@@ -19,7 +20,7 @@ type PrometheusURLProps = {
   timeout?: string
   timespan?: number
 }
-type PrometheusResponse = {
+type ObservabilityResponse = {
   status: string
   data: {
     resultType: 'matrix' | 'vector' | 'scalar' | 'string'
@@ -33,7 +34,7 @@ type PrometheusResponse = {
   error?: string
   warnings?: string[]
 }
-type UsePrometheusPoll = (props: PrometheusURLProps, delay?: number) => [PrometheusResponse, unknown, boolean]
+type UseObservabilityPoll = (props: ObservabilityURLProps, delay?: number) => [ObservabilityResponse, unknown, boolean]
 
 // Range vector queries require end, start, and step search params
 const getRangeVectorSearchParams = (
@@ -48,20 +49,21 @@ const getRangeVectorSearchParams = (
   return params
 }
 
-const getPrometheusURL = (props: PrometheusURLProps): string => {
-  const { endpoint, endTime, timespan, samples, ...params }: PrometheusURLProps = props
-  if (props.endpoint !== PrometheusEndpoint.RULES && !props.query) {
+const getObservabilityURL = (props: ObservabilityURLProps): string => {
+  const { skip, endpoint, endTime, timespan, samples, ...params }: ObservabilityURLProps = props
+  if (skip || (props.endpoint !== ObservabilityEndpoint.RULES && !props.query)) {
     return ''
   }
   const searchParams =
-    endpoint === PrometheusEndpoint.QUERY_RANGE
+    endpoint === ObservabilityEndpoint.QUERY_RANGE
       ? getRangeVectorSearchParams(endTime, samples, timespan)
       : new URLSearchParams()
   _.each(params, (value, key) => value && searchParams.append(key, value.toString()))
-  return `${window.SERVER_FLAGS.prometheusBaseURL}/${props.endpoint}?${searchParams.toString()}`
+
+  return `${getBackendUrl()}/${props.endpoint}?${searchParams.toString()}`
 }
 
-const usePoll = (callback: () => void, delay?: number) => {
+const usePoll = (callback: () => void, skip?: boolean, delay?: number) => {
   const pollDelay = delay ?? 60000 // delay is 1 min
   const savedCallback = useRef<{ (): void } | null>(null)
 
@@ -81,21 +83,22 @@ const usePoll = (callback: () => void, delay?: number) => {
       const id = setInterval(tick, pollDelay)
       return () => clearInterval(id)
     }
-  }, [pollDelay])
+  }, [pollDelay, skip])
 }
 
-export const usePrometheusPoll: UsePrometheusPoll = (
-  { endpoint, endTime, namespace, query, samples = 60, timeout, timespan = 60 * 60 * 1000 },
+export const useObservabilityPoll: UseObservabilityPoll = (
+  { skip, endpoint, endTime, namespace, query, samples = 60, timeout, timespan = 60 * 60 * 1000 },
   delay
 ) => {
-  const prometheusURLProps = { endpoint, endTime, namespace, query, samples, timeout, timespan }
+  const observabilityURLProps = { skip, endpoint, endTime, namespace, query, samples, timeout, timespan }
 
-  const url = getPrometheusURL(prometheusURLProps)
+  const url = getObservabilityURL(observabilityURLProps)
   const [error, setError] = useState<unknown>()
   const [response, setResponse] = useState<any>()
   const [loading, setLoading] = useState(true)
   const tick = useCallback(() => {
-    if (url) {
+    if (url && !skip) {
+      setLoading(true)
       const abortController = new AbortController()
       fetchGet(url, abortController.signal)
         .then((res) => {
@@ -114,9 +117,9 @@ export const usePrometheusPoll: UsePrometheusPoll = (
     } else {
       setLoading(false)
     }
-  }, [url])
+  }, [url, skip])
 
-  usePoll(tick, delay)
+  usePoll(tick, skip, delay)
 
   return [response, error, loading]
 }
