@@ -603,9 +603,13 @@ function EditAnsibleJobModal(props: {
 }) {
     const { t } = useTranslation()
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    const [filterForJobTemplates, setFilterForJobTemplates] = useState(true)
+    const [filterForJobTemplates, setFilterForJobTemplates] = useState<boolean>(true)
     const { ansibleTowerTemplateList = [], ansibleTowerWorkflowTemplateList = [] } = props
-    useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
+    useEffect(() => {
+        const filterForJobTemplates = props.ansibleJob?.type !== 'Workflow'
+        setAnsibleJob(props.ansibleJob)
+        setFilterForJobTemplates(filterForJobTemplates)
+    }, [props.ansibleJob])
 
     const newTemplateSelection = (jobName: string | undefined) => {
         if (ansibleJob) {
