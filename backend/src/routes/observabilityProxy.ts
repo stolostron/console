@@ -8,6 +8,7 @@ import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getCACertificate } from '../lib/serviceAccountToken'
 import { getToken } from '../lib/token'
+import { IResource } from '../resources/resource'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -23,6 +24,26 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_CONTENT_ENCODING,
   constants.HTTP2_HEADER_ETAG,
 ]
+
+interface Route extends IResource {
+  spec: {
+    host?: string
+    path?: string
+    to?: {
+      kind?: 'Service'
+      name?: string
+      weight?: number
+    }
+    port?: {
+      targetPort?: string
+    }
+    tls?: {
+      termination?: 'edge' | 'passthrough' | 'reencrypt'
+      insecureEdgeTerminationPolicy?: 'Allow' | 'Disable' | 'Redirect'
+    }
+    wildcardPolicy?: 'Subdomain' | 'None'
+  }
+}
 
 export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = getToken(req)
@@ -40,7 +61,7 @@ export async function observabilityProxy(req: Http2ServerRequest, res: Http2Serv
       `/apis/route.openshift.io/v1/namespaces/open-cluster-management-observability/routes/rbac-query-proxy`,
     token
   )
-    .then((response: any) => {
+    .then((response: Route) => {
       const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
       return response?.spec && response.spec?.host ? `${scheme}://${response.spec.host}` : ''
     })
