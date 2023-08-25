@@ -590,11 +590,10 @@ export function getProvider(
     return Provider.hostinventory
   }
 
-  const vendorLabel = managedClusterInfo?.metadata?.labels?.['vendor']
   const productClusterClaim = managedCluster?.status?.clusterClaims?.find(
     (claim) => claim.name === 'product.open-cluster-management.io'
   )
-  const productLabel = (vendorLabel ?? productClusterClaim?.value ?? '').toUpperCase()
+  const productLabel = (productClusterClaim?.value ?? '').toUpperCase()
 
   if (productLabel === 'MICROSHIFT') {
     return Provider.microshift
