@@ -400,7 +400,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                             operators: other,
                           },
                         ].map((sevRating) => {
-                          console.log()
                           let linkCondition = ''
                           switch (sevRating.key) {
                             case 'degraded':

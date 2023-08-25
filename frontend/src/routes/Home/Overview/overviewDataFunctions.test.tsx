@@ -181,11 +181,11 @@ test('Correctly returns getAddonHealth', () => {
 
 test('Correctly returns parseAlertsMetric', () => {
   const t = i18next.t.bind(i18next)
-  const result = parseAlertsMetric(mockAlertMetrics, t)
+  const result = parseAlertsMetric(mockAlertMetrics, [], t)
   expect(result).toMatchSnapshot()
 })
 
 test('Correctly returns parseOperatorMetric', () => {
-  const result = parseOperatorMetric(mockOperatorMetrics)
+  const result = parseOperatorMetric(mockOperatorMetrics, [])
   expect(result).toMatchSnapshot()
 })

@@ -725,6 +725,27 @@ export const mockClusterManagementAddons: ClusterManagementAddOn[] = [
       },
     },
   },
+  {
+    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+    kind: 'ClusterManagementAddOn',
+    metadata: {
+      annotations: {
+        'console.open-cluster-management.io/launch-link':
+          'https://grafana-open-cluster-management-observability.apps.testing.com/d/test',
+        'console.open-cluster-management.io/launch-link-text': 'Grafana',
+      },
+      creationTimestamp: '2023-02-08T14:58:15Z',
+      name: 'observability-controller',
+      resourceVersion: '1233043',
+      uid: '4b8fa75e-4fbb-4d41-ae8c-93e4f8ec9100',
+    },
+    spec: {
+      addOnMeta: {
+        description: 'Manages Observability components.',
+        displayName: 'Observability Controller',
+      },
+    },
+  },
 ]
 
 export const parsedAddons: {

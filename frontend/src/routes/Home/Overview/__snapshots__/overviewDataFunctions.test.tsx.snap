@@ -243,6 +243,7 @@ Object {
     "info": Object {
       "alerts": Array [
         "InsightsRecommendationActive",
+        "InsightsRecommendationActive",
       ],
       "icon": undefined,
       "key": "info",
@@ -281,6 +282,7 @@ Object {
   ],
   "other": Array [
     "cloud-controller-manager",
+    "cloud-credential",
     "cloud-credential",
   ],
 }
