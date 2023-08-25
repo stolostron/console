@@ -240,7 +240,7 @@ export function PlacementSection(props: {
               clusters={props.clusters}
               createClusterSetCallback={props.createClusterSetCallback}
               alertTitle={t(
-                'ClusterSets failed to load. Check the ManagedClusterSetBinding for your selected namespace.'
+                'ClusterSets failed to load. Check the ManagedClusterSetBinding resource to verify your selected namespace.'
               )}
               alertContent={
                 <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
