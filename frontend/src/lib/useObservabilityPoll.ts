@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchGet, getBackendUrl } from '../resources'
 
 export enum ObservabilityEndpoint {
-  LABEL = 'api/v1/label',
-  QUERY = 'api/v1/query',
-  QUERY_RANGE = 'api/v1/query_range',
-  RULES = 'api/v1/rules',
-  TARGETS = 'api/v1/targets',
+  LABEL = 'observability/label',
+  QUERY = 'observability/query',
+  QUERY_RANGE = 'observability/query_range',
+  RULES = 'observability/rules',
+  TARGETS = 'observability/targets',
 }
 type ObservabilityURLProps = {
   skip?: boolean

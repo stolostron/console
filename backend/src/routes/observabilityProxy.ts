@@ -49,7 +49,7 @@ export async function observabilityProxy(req: Http2ServerRequest, res: Http2Serv
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
 
-  const url = req.url
+  const url = req.url.replace('/observability', '/api/v1')
 
   const headers: OutgoingHttpHeaders = { authorization: `Bearer ${token}` }
   for (const header of proxyHeaders) {
