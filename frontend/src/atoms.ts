@@ -45,6 +45,7 @@ import {
   ManagedClusterSetBinding,
   MultiClusterEngine,
   MultiClusterHub,
+  MulticlusterApplicationSetReport,
   Namespace,
   OCPAppResource,
   Placement,
@@ -108,6 +109,7 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
+export const multiclusterApplicationSetReportState = AtomArray<MulticlusterApplicationSetReport>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()

@@ -115,6 +115,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     placementDecisionsState,
     subscriptionReportsState,
     subscriptionsState,
+    multiclusterApplicationSetReportState,
     THROTTLE_EVENTS_DELAY,
   } = useSharedAtoms()
 
@@ -159,6 +160,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       subscriptions: subscriptionsState,
       subscriptionReports: subscriptionReportsState,
       placementDecisions: placementDecisionsState,
+      multiclusterApplicationSetReports: multiclusterApplicationSetReportState,
     }),
     [
       applicationsState,
@@ -171,6 +173,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       placementRulesState,
       subscriptionsState,
       subscriptionReportsState,
+      multiclusterApplicationSetReportState,
     ]
   )
 

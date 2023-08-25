@@ -397,37 +397,46 @@ export default function ApplicationsOverview() {
   )
 
   const discoveredApplicationsTableItems = useMemo(() => {
-    return discoveredApplications.map((remoteArgoApp: any) => {
+    const resultingTableItems: any = []
+
+    discoveredApplications.forEach((remoteArgoApp: any) => {
       setArgoApplicationsHashSet(
         (prev) =>
           new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
       )
-      return generateTransformData({
-        apiVersion: ArgoApplicationApiVersion,
-        kind: ArgoApplicationKind,
-        metadata: {
-          name: remoteArgoApp.name,
-          namespace: remoteArgoApp.namespace,
-          creationTimestamp: remoteArgoApp.created,
-        },
-        spec: {
-          destination: {
-            namespace: remoteArgoApp.destinationNamespace,
-            name: remoteArgoApp.destinationName,
-            server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
-          },
-          source: {
-            path: remoteArgoApp.path,
-            repoURL: remoteArgoApp.repoURL,
-            targetRevision: remoteArgoApp.targetRevision,
-            chart: remoteArgoApp.chart,
-          },
-        },
-        status: {
-          cluster: remoteArgoApp.cluster,
-        },
-      } as ArgoApplication)
+      if (!remoteArgoApp._hostingResource) {
+        // Skip apps created by Argo pull model
+        resultingTableItems.push(
+          generateTransformData({
+            apiVersion: ArgoApplicationApiVersion,
+            kind: ArgoApplicationKind,
+            metadata: {
+              name: remoteArgoApp.name,
+              namespace: remoteArgoApp.namespace,
+              creationTimestamp: remoteArgoApp.created,
+            },
+            spec: {
+              destination: {
+                namespace: remoteArgoApp.destinationNamespace,
+                name: remoteArgoApp.destinationName,
+                server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
+              },
+              source: {
+                path: remoteArgoApp.path,
+                repoURL: remoteArgoApp.repoURL,
+                targetRevision: remoteArgoApp.targetRevision,
+                chart: remoteArgoApp.chart,
+              },
+            },
+            status: {
+              cluster: remoteArgoApp.cluster,
+            },
+          } as ArgoApplication)
+        )
+      }
     })
+
+    return resultingTableItems
   }, [discoveredApplications, generateTransformData])
 
   const ocpAppResourceTableItems = useMemo(() => {

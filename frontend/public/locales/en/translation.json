@@ -2635,6 +2635,7 @@
   "template.workflow.modal.name.placeholder": "Search or select a workflow job template name",
   "Templates": "Templates",
   "Tenant ID": "Tenant ID",
+  "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.": "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.",
   "The automation template cannot be updated for any of the selected clusters.": "The automation template cannot be updated for any of the selected clusters.",
   "The channel cannot be changed for any of the selected clusters.": "The channel cannot be changed for any of the selected clusters.",
   "The cluster has no add-ons.": "The cluster has no add-ons.",

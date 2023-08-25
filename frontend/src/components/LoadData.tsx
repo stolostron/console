@@ -77,6 +77,8 @@ import {
   MultiClusterEngineKind,
   MultiClusterHubApiVersion,
   MultiClusterHubKind,
+  MulticlusterApplicationSetReportApiVersion,
+  MulticlusterApplicationSetReportKind,
   NamespaceApiVersion,
   NamespaceKind,
   NMStateConfigApiVersion,
@@ -153,6 +155,7 @@ import {
   managedClustersState,
   multiClusterEnginesState,
   multiClusterHubState,
+  multiclusterApplicationSetReportState,
   namespacesState,
   nmStateConfigsState,
   policiesState,
@@ -218,6 +221,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setManagedClusters = useSetRecoilState(managedClustersState)
   const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
   const setMultiClusterHubs = useSetRecoilState(multiClusterHubState)
+  const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
   const setNamespaces = useSetRecoilState(namespacesState)
   const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
   const setPoliciesState = useSetRecoilState(policiesState)
@@ -288,6 +292,11 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
     addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
     addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
+    addSetter(
+      MulticlusterApplicationSetReportApiVersion,
+      MulticlusterApplicationSetReportKind,
+      setMulticlusterApplicationSetReportState
+    )
     addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
     addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
@@ -340,6 +349,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusters,
     setMultiClusterHubs,
     setMultiClusterEngines,
+    setMulticlusterApplicationSetReportState,
     setNamespaces,
     setNMStateConfigs,
     setPlacementBindingsState,

@@ -2,7 +2,12 @@
 
 import i18next from 'i18next'
 import moment from 'moment'
-import { ArgoApplicationDefinition } from '../../../resources'
+import {
+  ArgoApplicationDefinition,
+  ApplicationSetKindType,
+  ApplicationSetApiVersionType,
+  PlacementDecision,
+} from '../../../resources'
 import { mockPlacementRules } from '../../Governance/governance.sharedMocks'
 import {
   mockApplication0,
@@ -24,6 +29,8 @@ import {
   getShortDateTime,
   groupByRepoType,
   normalizeRepoType,
+  isArgoPullModel,
+  getArgoPullModelClusterList,
 } from './resource-helper'
 
 const t = i18next.t.bind(i18next)
@@ -317,5 +324,178 @@ describe('getClusterCountSearchLink', () => {
     expect(getClusterCountSearchLink(resource, clusterCount, clusterList)).toEqual(
       '/multicloud/infrastructure/clusters/details/local-cluster/local-cluster'
     )
+  })
+})
+
+describe('isArgoPullModel true', () => {
+  const res1 = {
+    apiVersion: 'argoproj.io/v1alpha1' as ApplicationSetApiVersionType,
+    kind: 'ApplicationSet' as ApplicationSetKindType,
+    metadata: {},
+    spec: {
+      template: {
+        metadata: {
+          annotations: {
+            'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+          },
+        },
+      },
+    },
+  }
+  it('should return true', () => {
+    expect(isArgoPullModel(res1)).toEqual(true)
+  })
+})
+
+describe('isArgoPullModel false', () => {
+  const res1 = {
+    apiVersion: 'argoproj.io/v1alpha1' as ApplicationSetApiVersionType,
+    kind: 'ApplicationSet' as ApplicationSetKindType,
+    metadata: {},
+    spec: {
+      template: {
+        metadata: {
+          annotations: {
+            foo: 'bar',
+          },
+        },
+      },
+    },
+  }
+  it('should return false', () => {
+    expect(isArgoPullModel(res1)).toEqual(false)
+  })
+})
+
+describe('getArgoPullModelClusterList', () => {
+  const resource = {
+    apiVersion: 'argoproj.io/v1alpha1' as ApplicationSetApiVersionType,
+    kind: 'ApplicationSet' as ApplicationSetKindType,
+    metadata: {
+      annotations: {
+        'kubectl.kubernetes.io/last-applied-configuration':
+          '{"apiVersion":"argoproj.io/v1alpha1","kind":"ApplicationSet","metadata":{"annotations":{},"name":"feng-pm","namespace":"openshift-gitops"},"spec":{"generators":[{"clusterDecisionResource":{"configMapRef":"acm-placement","labelSelector":{"matchLabels":{"cluster.open-cluster-management.io/placement":"feng-pm-placement"}},"requeueAfterSeconds":180}}],"template":{"metadata":{"annotations":{"apps.open-cluster-management.io/ocm-managed-cluster":"{{name}}","apps.open-cluster-management.io/ocm-managed-cluster-app-namespace":"openshift-gitops","argocd.argoproj.io/skip-reconcile":"true"},"labels":{"apps.open-cluster-management.io/pull-to-ocm-managed-cluster":"true"},"name":"feng-pm-{{name}}"},"spec":{"destination":{"namespace":"feng-pm","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"helloworld","repoURL":"https://github.com/fxiang1/app-samples","targetRevision":"main"},"syncPolicy":{"automated":{},"syncOptions":["CreateNamespace=true"]}}}}}\n',
+      },
+      creationTimestamp: '2023-08-02T18:01:14Z',
+      generation: 2,
+      name: 'feng-pm',
+      namespace: 'openshift-gitops',
+      resourceVersion: '76441171',
+      uid: '92436748-e765-4057-9621-2c3a74b3a487',
+    },
+    spec: {
+      generators: [
+        {
+          clusterDecisionResource: {
+            configMapRef: 'acm-placement',
+            labelSelector: {
+              matchLabels: {
+                'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+              },
+            },
+            requeueAfterSeconds: 180,
+          },
+        },
+      ],
+      template: {
+        metadata: {
+          annotations: {
+            'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+            'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+            'argocd.argoproj.io/skip-reconcile': 'true',
+          },
+          labels: {
+            'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+            test1: 'test1',
+          },
+          name: 'feng-pm-{{name}}',
+        },
+        spec: {
+          destination: {
+            namespace: 'feng-pm',
+            server: 'https://kubernetes.default.svc',
+          },
+          project: 'default',
+          source: {
+            path: 'helloworld',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'main',
+          },
+          syncPolicy: {
+            automated: {},
+            syncOptions: ['CreateNamespace=true'],
+          },
+        },
+      },
+    },
+    status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-08-10T17:11:28Z',
+          message: 'Successfully generated parameters for all Applications',
+          reason: 'ApplicationSetUpToDate',
+          status: 'False',
+          type: 'ErrorOccurred',
+        },
+        {
+          lastTransitionTime: '2023-08-10T17:11:28Z',
+          message: 'Successfully generated parameters for all Applications',
+          reason: 'ParametersGenerated',
+          status: 'True',
+          type: 'ParametersGenerated',
+        },
+        {
+          lastTransitionTime: '2023-08-10T17:11:28Z',
+          message: 'ApplicationSet up to date',
+          reason: 'ApplicationSetUpToDate',
+          status: 'True',
+          type: 'ResourcesUpToDate',
+        },
+      ],
+    },
+  }
+  const placementDecisions: PlacementDecision[] = [
+    {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      kind: 'PlacementDecision',
+      metadata: {
+        creationTimestamp: '2023-08-02T17:59:14Z',
+        labels: {
+          'cluster.open-cluster-management.io/decision-group-index': '0',
+          'cluster.open-cluster-management.io/decision-group-name': '',
+          'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
+        },
+        name: 'feng-pm-placement-decision-0',
+        namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            blockOwnerDeletion: true,
+            controller: true,
+            kind: 'Placement',
+            name: 'feng-pm-placement',
+            uid: '554337d6-9137-4ed9-a03c-55d51485cb0d',
+          },
+        ],
+        resourceVersion: '77555639',
+        uid: '2f0ffd00-f5e9-4af2-9b67-01ec50251edf',
+      },
+      status: {
+        decisions: [
+          {
+            clusterName: 'feng-managed1',
+            reason: '',
+          },
+          {
+            clusterName: 'feng-managed2',
+            reason: '',
+          },
+        ],
+      },
+    },
+  ]
+
+  it('should return pull mode cluster list', () => {
+    expect(getArgoPullModelClusterList(resource, placementDecisions)).toEqual(['feng-managed1', 'feng-managed2'])
   })
 })
