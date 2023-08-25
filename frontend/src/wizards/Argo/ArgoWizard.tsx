@@ -50,6 +50,7 @@ import { CreateArgoResources } from './CreateArgoResources'
 import { GitOpsCluster } from '../../resources'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
+import { NavigationPath } from '../../NavigationPath'
 
 interface Channel {
   metadata?: {
@@ -877,7 +878,6 @@ function ArgoWizardPlacementSection(props: {
   )
   const namespaceClusterSetNames =
     props.clusterSetBindings
-      ?.filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace)
       .filter((clusterSetBinding) =>
         props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet)
       )
@@ -926,7 +926,14 @@ function ArgoWizardPlacementSection(props: {
             clusters={props.clusters}
             hideName
             createClusterSetCallback={props.createClusterSetCallback}
-            alertTitle={t('ClusterSets failed to load. Check the GitOpsCluster and Placement YAML for status errors.')}
+            alertTitle={t(
+              'ClusterSets failed to load. Check the ManagedClusterSetBinding resource to verify your selected namespace. In addition, check GitOpsCluster and Placement resources for status errors.'
+            )}
+            alertContent={
+              <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
+                {t('Add cluster set')}
+              </Button>
+            }
           />
         </WizItemSelector>
       ) : (
