@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  AnsibleJob,
   Cluster,
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -11,7 +10,7 @@ import {
   getLatestAnsibleJob,
   NodePool,
 } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
+import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useMemo, useState } from 'react'
@@ -26,6 +25,29 @@ import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from 
 import { Link } from 'react-router-dom'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { getNodepoolStatus } from './NodePoolsTable'
+
+const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
+  const currentVersionParts = currentVersion.split('.')
+  const newVersionParts = newVersion.split('.')
+
+  if (newVersionParts[0] !== currentVersionParts[0]) {
+    return false
+  }
+
+  if (newVersionParts[0] === currentVersionParts[0] && Number(newVersionParts[1]) > Number(currentVersionParts[1])) {
+    return true
+  }
+
+  if (
+    newVersionParts[0] === currentVersionParts[0] &&
+    Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
+    Number(newVersionParts[2]) > Number(currentVersionParts[2])
+  ) {
+    return true
+  }
+
+  return false
+}
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -49,29 +71,7 @@ export function DistributionField(props: {
   })
 
   const openshiftText = 'OpenShift'
-
-  const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
-    const currentVersionParts = currentVersion.split('.')
-    const newVersionParts = newVersion.split('.')
-
-    if (newVersionParts[0] !== currentVersionParts[0]) {
-      return false
-    }
-
-    if (newVersionParts[0] === currentVersionParts[0] && Number(newVersionParts[1]) > Number(currentVersionParts[1])) {
-      return true
-    }
-
-    if (
-      newVersionParts[0] === currentVersionParts[0] &&
-      Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
-      Number(newVersionParts[2]) > Number(currentVersionParts[2])
-    ) {
-      return true
-    }
-
-    return false
-  }
+  const microshiftText = 'MicroShift'
 
   const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
     if (!(props.cluster?.isHypershift || props.cluster?.isHostedCluster)) {
@@ -145,10 +145,15 @@ export function DistributionField(props: {
     props.resource,
   ])
 
-  let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
-  if (props.cluster?.namespace && ansibleJobs)
-    latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
-  else latestAnsibleJob = { prehook: undefined, posthook: undefined }
+  if (props.cluster?.provider === Provider.microshift) {
+    const version = props.cluster?.microshiftDistribution?.version
+    return <>{version ? `${microshiftText} ${version}` : '-'}</>
+  }
+
+  const latestAnsibleJob =
+    props.cluster?.namespace && ansibleJobs
+      ? getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
+      : { prehook: undefined, posthook: undefined }
 
   if (!props.cluster?.distribution) {
     //we try to get version from clusterimage

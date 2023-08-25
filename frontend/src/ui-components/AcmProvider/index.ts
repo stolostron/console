@@ -26,6 +26,7 @@ export enum Provider {
   alibaba = 'alibaba',
   other = 'other',
   kubevirt = 'kubevirt',
+  microshift = 'microshift',
 }
 
 export const ProviderShortTextMap = {
@@ -48,6 +49,7 @@ export const ProviderShortTextMap = {
   [Provider.alibaba]: 'Alibaba',
   [Provider.other]: 'Other',
   [Provider.kubevirt]: 'OpenShift Virtualization',
+  [Provider.microshift]: 'Red Hat Device Edge',
 }
 
 export const ProviderLongTextMap = {
@@ -70,6 +72,7 @@ export const ProviderLongTextMap = {
   [Provider.alibaba]: 'Alibaba Cloud',
   [Provider.other]: 'Other',
   [Provider.kubevirt]: 'Red Hat OpenShift Virtualization',
+  [Provider.microshift]: 'Red Hat Device Edge',
 }
 
 export const ProviderIconMap = {
@@ -92,4 +95,5 @@ export const ProviderIconMap = {
   [Provider.other]: AcmIconVariant.cloud,
   [Provider.hypershift]: AcmIconVariant.cloud,
   [Provider.kubevirt]: AcmIconVariant.kubevirt,
+  [Provider.microshift]: AcmIconVariant.redhat,
 }
