@@ -504,7 +504,7 @@ function createSourceCards(
   return appRepos?.map((appRepo) => {
     if (appRepo) {
       return (
-        <Card>
+        <Card key={appRepo.pathName}>
           <CardBody className="sub-card-container">
             <div className="sub-card-content">
               <ResourceLabels
