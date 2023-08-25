@@ -52,6 +52,7 @@ import { HypershiftImportCommand } from '../../components/HypershiftImportComman
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { GetProjects } from '../../../../../../components/GetProjects'
+import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
@@ -348,7 +349,14 @@ export function ClusterOverviewPageContent(props: {
     clusterProperties.credentials,
     ...(hasAIClusterProperties
       ? getAIClusterProperties(clusterDeployment, agentClusterInstall)
-      : [...clusterClaimedBySetPool, ...(!cluster?.isHypershift ? [clusterProperties.automationTemplate] : [])]),
+      : [
+          ...clusterClaimedBySetPool,
+          ...(!cluster?.isHypershift &&
+          (cluster?.hasAutomationTemplate ||
+            (cluster && clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate)))
+            ? [clusterProperties.automationTemplate]
+            : []),
+        ]),
   ]
 
   const [isModalOpen, setIsModalOpen] = useState(false)
