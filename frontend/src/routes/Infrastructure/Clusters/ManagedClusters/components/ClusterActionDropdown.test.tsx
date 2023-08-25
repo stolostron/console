@@ -257,6 +257,9 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),
+      //delete automation template
+      nockRBAC(await rbacDeleteClusterCurator()),
+      nockRBAC(await rbacDeleteSecret()),
     ]
     await clickByLabel('Actions')
     await waitForNocks(rbacNocks)
