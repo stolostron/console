@@ -192,7 +192,7 @@ export function getClustersSummary(
       title: t('Applications'),
       icon: undefined,
       count: appsCount,
-      link: NavigationPath.applications,
+      link: NavigationPath.applications, // *Apps table has cluster name filter - select the matches.
     },
     {
       id: 'kube-types',
@@ -213,7 +213,7 @@ export function getClustersSummary(
       title: t('Nodes'),
       icon: <CubesIcon />,
       count: nodeCount,
-      link: `${NavigationPath.search}?filters={"textsearch":"kind%3ANode"}`,
+      link: `${NavigationPath.search}?filters={"textsearch":"kind%3ANode"}`, // add cluster label filter
     },
   ]
 }
@@ -339,7 +339,11 @@ export function getAddonHealth(
   ]
 }
 
-export function parseAlertsMetric(alertsResult: PrometheusResponse | undefined, t: TFunction<string, undefined>) {
+export function parseAlertsMetric(
+  alertsResult: PrometheusResponse | undefined,
+  filteredClusterNames: string[],
+  t: TFunction<string, undefined>
+) {
   const clustersAffectedAlerts: string[] = []
   const alertSeverity: Record<
     string,
@@ -356,31 +360,33 @@ export function parseAlertsMetric(alertsResult: PrometheusResponse | undefined, 
     other: { key: 'other', label: t('Other'), alerts: [], icon: undefined },
   }
   if (alertsResult?.data?.result) {
-    alertsResult?.data?.result.filter((res) => {
-      // if cluster labels are selected - filter the alerts by clsuter
-      if (res.metric?.cluster && !clustersAffectedAlerts.includes(res.metric.cluster)) {
-        clustersAffectedAlerts.push(res.metric.cluster)
+    const filteredAlerts =
+      filteredClusterNames.length === 0
+        ? alertsResult.data.result
+        : alertsResult.data.result.filter((alert) => filteredClusterNames.includes(alert.metric.cluster))
+    filteredAlerts.filter((alert) => {
+      if (alert.metric?.cluster && !clustersAffectedAlerts.includes(alert.metric.cluster)) {
+        clustersAffectedAlerts.push(alert.metric.cluster)
       }
-      switch (res.metric.severity.toLowerCase()) {
+      switch (alert.metric.severity.toLowerCase()) {
         case 'critical':
-          // We want to dedupe alerts if they appear on multiple clusters
-          if (!alertSeverity.critical.alerts.includes(res.metric.alertname) && res.metric.alertstate === 'firing') {
-            alertSeverity.critical.alerts.push(res.metric.alertname)
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.critical.alerts.push(alert.metric.alertname)
           }
           break
         case 'warning':
-          if (!alertSeverity.warning.alerts.includes(res.metric.alertname) && res.metric.alertstate === 'firing') {
-            alertSeverity.warning.alerts.push(res.metric.alertname)
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.warning.alerts.push(alert.metric.alertname)
           }
           break
         case 'info':
-          if (!alertSeverity.info.alerts.includes(res.metric.alertname) && res.metric.alertstate === 'firing') {
-            alertSeverity.info.alerts.push(res.metric.alertname)
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.info.alerts.push(alert.metric.alertname)
           }
           break
         default:
-          if (!alertSeverity.other.alerts.includes(res.metric.alertname) && res.metric.alertstate === 'firing') {
-            alertSeverity.other.alerts.push(res.metric.alertname)
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.other.alerts.push(alert.metric.alertname)
           }
       }
     })
@@ -388,47 +394,48 @@ export function parseAlertsMetric(alertsResult: PrometheusResponse | undefined, 
   return { clustersAffectedAlerts, alertSeverity }
 }
 
-export function parseOperatorMetric(operatorResult: PrometheusResponse | undefined) {
+export function parseOperatorMetric(operatorResult: PrometheusResponse | undefined, filteredClusterNames: string[]) {
   const clustersAffectedOperator: string[] = []
   const degraded: string[] = []
   const notAvailable: string[] = []
   const other: string[] = []
 
-  operatorResult?.data?.result.forEach((operator) => {
-    // Use condition mapping from CCX.
-    // condition["type"] == "Available" and condition["status"] == "False" -> Not Available
-    // condition["type"] == "Degraded" and condition["status"] == "True" -> Degraded
-    // condition["type"] == "Progressing" and condition["status"] == "True" -> Other
-    // condition["type"] == "Upgradeable" and condition["status"] == "False" -> Other
-    // condition["type"] == "Failing" and condition["status"] == "True" -> Other
-    if (operator.metric.condition === 'Degraded' && operator?.value?.[1] === '1') {
-      if (!degraded.includes(operator.metric.name)) {
+  if (operatorResult?.data?.result) {
+    const filteredOperators =
+      filteredClusterNames.length === 0
+        ? operatorResult.data.result
+        : operatorResult.data.result.filter((operator) => filteredClusterNames.includes(operator.metric.cluster))
+
+    filteredOperators.forEach((operator) => {
+      // Use condition mapping from CCX.
+      // condition["type"] == "Available" and condition["status"] == "False" -> Not Available
+      // condition["type"] == "Degraded" and condition["status"] == "True" -> Degraded
+      // condition["type"] == "Progressing" and condition["status"] == "True" -> Other
+      // condition["type"] == "Upgradeable" and condition["status"] == "False" -> Other
+      // condition["type"] == "Failing" and condition["status"] == "True" -> Other
+      if (operator.metric.condition === 'Degraded' && operator?.value?.[1] === '1') {
+        // Only add cluster to affected array if operator meets condition
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
         degraded.push(operator.metric.name)
-      }
-      // Only add clsuter to affected array if operator meets condition
-      if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
-        clustersAffectedOperator.push(operator.metric.cluster)
-      }
-    } else if (operator.metric.condition === 'Available' && operator?.value?.[1] === '0') {
-      if (!notAvailable.includes(operator.metric.name)) {
+      } else if (operator.metric.condition === 'Available' && operator?.value?.[1] === '0') {
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
         notAvailable.push(operator.metric.name)
-      }
-      if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
-        clustersAffectedOperator.push(operator.metric.cluster)
-      }
-    } else if (
-      (operator.metric.condition === 'Failing' && operator?.value?.[1] === '1') ||
-      (operator.metric.condition === 'Progressing' && operator?.value?.[1] === '1') ||
-      (operator.metric.condition === 'Upgradeable' && operator?.value?.[1] === '0')
-    ) {
-      if (!other.includes(operator.metric.name)) {
+      } else if (
+        (operator.metric.condition === 'Failing' && operator?.value?.[1] === '1') ||
+        (operator.metric.condition === 'Progressing' && operator?.value?.[1] === '1') ||
+        (operator.metric.condition === 'Upgradeable' && operator?.value?.[1] === '0')
+      ) {
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
         other.push(operator.metric.name)
       }
-      if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
-        clustersAffectedOperator.push(operator.metric.cluster)
-      }
-    }
-  })
+    })
+  }
 
   return {
     clustersAffectedOperator,
