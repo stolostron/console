@@ -115,7 +115,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
         cma.metadata.annotations?.['console.open-cluster-management.io/launch-link-text'] &&
         cma.metadata.annotations?.['console.open-cluster-management.io/launch-link-text'] === 'Grafana'
     )
-    const link = obsAddOn?.[0].metadata.annotations?.['console.open-cluster-management.io/launch-link']
+    const link = obsAddOn?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
     if (link) {
       setIsObservabilityInstalled(true)
       return new URL(link).origin
