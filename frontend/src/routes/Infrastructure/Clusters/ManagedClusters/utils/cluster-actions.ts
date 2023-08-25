@@ -86,7 +86,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
     case ClusterAction.UpdateAutomationTemplate:
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
-      return cluster.hasAutomationTemplate && clusterSupportsAutomationTemplateChange(cluster)
+      return cluster.hasAutomationTemplate && !cluster.distribution?.upgradeInfo?.isUpgrading // is not currently upgrading
     default:
       return false
   }
