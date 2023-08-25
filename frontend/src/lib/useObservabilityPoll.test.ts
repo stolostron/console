@@ -7,7 +7,7 @@ import { ObservabilityEndpoint, useObservabilityPoll } from './useObservabilityP
 
 describe('useObservabilityPoll', () => {
   test('should make a successful QUERY API call and return the response', async () => {
-    nockRequest('/api/v1/query?query=ALERTS', mockAlertMetrics)
+    nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
 
     const { result, waitForNextUpdate } = renderHook(() =>
       useObservabilityPoll({
@@ -28,7 +28,7 @@ describe('useObservabilityPoll', () => {
   })
 
   test('should handle API call error and set the error state', async () => {
-    nockRequest('/api/v1/query?query=ALERTS', mockAlertMetrics, 500)
+    nockRequest('/observability/query?query=ALERTS', mockAlertMetrics, 500)
 
     const { result, waitForNextUpdate } = renderHook(() =>
       useObservabilityPoll({
