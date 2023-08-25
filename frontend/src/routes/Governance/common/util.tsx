@@ -24,6 +24,7 @@ import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
 import { IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PolicyTableItem } from '../policies/Policies'
 
 export interface PolicyCompliance {
   policyName: string
@@ -467,23 +468,42 @@ export function getPolicyRemediation(policy: Policy | undefined) {
   if (!policy) {
     return ''
   }
-  if (policy.spec?.remediationAction) {
-    return policy.spec.remediationAction
-  }
   const templates = policy.spec['policy-templates']
-  let remediationAggregation = '-'
+  let remediationAggregation = ''
+
+  const remediationSet = new Set()
+
   templates?.forEach((template: PolicyTemplate) => {
     const templateRemediation = template.objectDefinition.spec.remediationAction
-    if (remediationAggregation === 'inform/enforce') {
-      return
-    } else if (remediationAggregation !== '-' && remediationAggregation !== templateRemediation) {
-      remediationAggregation = 'inform/enforce'
-      return
-    } else if (remediationAggregation !== templateRemediation && templateRemediation) {
-      remediationAggregation = templateRemediation
+    remediationSet.add(templateRemediation)
+    if (remediationSet.size === 3) {
       return
     }
   })
+
+  if (remediationSet.has('inform')) {
+    remediationAggregation += 'inform '
+  }
+  if (remediationSet.has('enforce')) {
+    remediationAggregation += 'enforce '
+  }
+  if (remediationSet.has('informOnly')) {
+    remediationAggregation += 'informOnly'
+  }
+
+  remediationAggregation = remediationAggregation.trim().replaceAll(' ', '/')
+  if (remediationAggregation === '') {
+    return '-'
+  }
+  if (policy.spec?.remediationAction) {
+    if (remediationAggregation.includes('informOnly')) {
+      if (remediationSet.size > 1) {
+        return policy.spec.remediationAction.concat('/informOnly')
+      }
+      return 'informOnly'
+    }
+    return policy.spec.remediationAction
+  }
   return remediationAggregation
 }
 
@@ -560,4 +580,18 @@ export function formatDescriptionForDropdown(desc: string) {
   }
 
   return formattedDescription
+}
+
+export function getInformOnlyPolicies(items: Array<PolicyTableItem>) {
+  const policyList = items.map(({ policy }) => policy)
+
+  const informOnlyPolicies = policyList.filter((policy) => {
+    return getPolicyRemediation(policy).includes('informOnly')
+  })
+
+  if (informOnlyPolicies.length == 0) {
+    return false
+  }
+
+  return true
 }
