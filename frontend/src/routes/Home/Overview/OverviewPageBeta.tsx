@@ -193,7 +193,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     if (Object.keys(selectedClusterLabels).length > 0) {
       const labels: string[] = []
       Object.keys(selectedClusterLabels).forEach((key: string) =>
-        labels.push(`${key.replaceAll('-', '_')}=~%5C"${selectedClusterLabels[key].join('|').replaceAll('-', '_')}%5C"`)
+        labels.push(
+          `${key.replaceAll(/[.\/-]+/g, '_')}=~%5C"${selectedClusterLabels[key]
+            .join('|')
+            .replaceAll(/[.\/-]+/g, '_')}%5C"`
+        )
       )
       return ` * on(cluster) group_left label_replace(acm_managed_cluster_labels{${labels.join(
         ','
