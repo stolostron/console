@@ -49,8 +49,11 @@ it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  const mockAlertMetricsNock = nockRequest('/api/v1/query?query=ALERTS', mockAlertMetrics)
-  const mockOperatorMetricsNock = nockRequest('/api/v1/query?query=cluster_operator_conditions', mockOperatorMetrics)
+  const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
+  const mockOperatorMetricsNock = nockRequest(
+    '/observability/query?query=cluster_operator_conditions',
+    mockOperatorMetrics
+  )
 
   const { getAllByText, getByText } = render(
     <RecoilRoot
