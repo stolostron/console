@@ -364,7 +364,7 @@ export function parseAlertsMetric(
       filteredClusterNames.length === 0
         ? alertsResult.data.result
         : alertsResult.data.result.filter((alert) => filteredClusterNames.includes(alert.metric.cluster))
-    filteredAlerts.filter((alert) => {
+    filteredAlerts.forEach((alert) => {
       if (alert.metric?.cluster && !clustersAffectedAlerts.includes(alert.metric.cluster)) {
         clustersAffectedAlerts.push(alert.metric.cluster)
       }
