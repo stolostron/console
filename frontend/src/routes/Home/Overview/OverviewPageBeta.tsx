@@ -443,7 +443,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                         <AcmButton
                           variant={'link'}
                           component={TextVariants.a}
-                          href={DOC_LINKS.MANAGE_APPLICATIONS}
+                          href={DOC_LINKS.ENABLE_OBSERVABILITY}
                           target="_blank"
                           style={{ padding: 0 }}
                         >
