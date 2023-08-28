@@ -1,11 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { CatalogCardItemType, ICatalogCard, ItemView, DataViewStringContext } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
-import { useIsHypershiftEnabled } from '../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../lib/dataViewStrings'
-import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, AcmPage, AcmPageHeader, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
@@ -13,7 +10,6 @@ import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
 export function CreateCredentialsAWS() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
-  const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
@@ -39,20 +35,11 @@ export function CreateCredentialsAWS() {
             description: t('OIDC Secret for Red Hat OpenShift Provisioning with hosted control plane'),
           },
         ],
-        onClick: isHypershiftEnabled ? nextStep(getTypedCreateCredentialsPath(Provider.awss3)) : undefined,
-        alertTitle: isHypershiftEnabled
-          ? undefined
-          : t('Hosted control plane operator and hypershift add-on must be enabled in order to continue'),
-        alertVariant: 'info',
-        alertContent: (
-          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-            {t('View documentation')} <ExternalLinkAltIcon />
-          </a>
-        ),
+        onClick: nextStep(getTypedCreateCredentialsPath(Provider.awss3)),
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled])
+  }, [nextStep, t])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 

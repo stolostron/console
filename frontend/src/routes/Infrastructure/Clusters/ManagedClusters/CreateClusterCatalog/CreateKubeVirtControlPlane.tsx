@@ -6,15 +6,17 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import GetHostedCard from './common/GetHostedCard'
+import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 
 export function CreateKubeVirtControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const cards = useMemo(() => {
-    const newCards: ICatalogCard[] = [GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI))]
+    const newCards: ICatalogCard[] = [GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI), t, isHypershiftEnabled)]
     return newCards
-  }, [nextStep])
+  }, [nextStep, t, isHypershiftEnabled])
 
   return (
     <GetControlPlane

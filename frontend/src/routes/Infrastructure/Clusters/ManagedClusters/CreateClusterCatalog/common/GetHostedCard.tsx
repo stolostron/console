@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon } from '@patternfly/react-icons'
+import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   CatalogColor,
@@ -7,10 +7,10 @@ import {
   ICatalogCard,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { TFunction } from 'react-i18next'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
 
-function GetHostedCard(onNext: () => void): ICatalogCard {
-  const [t] = useTranslation()
+function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean): ICatalogCard {
   return {
     id: 'hosted',
     title: t('Hosted'),
@@ -33,7 +33,16 @@ function GetHostedCard(onNext: () => void): ICatalogCard {
         ],
       },
     ],
-    onClick: onNext,
+    onClick: isHypershiftEnabled ? onNext : undefined,
+    alertTitle: isHypershiftEnabled
+      ? undefined
+      : t('Hosted control plane operator must be enabled in order to continue'),
+    alertVariant: 'info',
+    alertContent: (
+      <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+        {t('View documentation')} <ExternalLinkAltIcon />
+      </a>
+    ),
     badgeList: [
       {
         badge: t('Technology preview'),
