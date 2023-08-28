@@ -192,7 +192,7 @@ export function getClustersSummary(
       title: t('Applications'),
       icon: undefined,
       count: appsCount,
-      link: NavigationPath.applications,
+      link: NavigationPath.applications, // *Apps table has cluster name filter - select the matches.
     },
     {
       id: 'kube-types',
@@ -213,7 +213,7 @@ export function getClustersSummary(
       title: t('Nodes'),
       icon: <CubesIcon />,
       count: nodeCount,
-      link: `${NavigationPath.search}?filters={"textsearch":"kind%3ANode"}`,
+      link: `${NavigationPath.search}?filters={"textsearch":"kind%3ANode"}`, // add cluster label filter
     },
   ]
 }
@@ -339,60 +339,108 @@ export function getAddonHealth(
   ]
 }
 
-export function parseAlertsMetric(alertsResult: PrometheusResponse | undefined, t: TFunction<string, undefined>) {
-  const sevs = {
-    critical: { label: t('Critical'), count: 0, icon: <CriticalRiskIcon /> },
-    warning: { label: t('Warning'), count: 0, icon: <ImportantRiskIcon /> },
-    info: { label: t('Info'), count: 0, icon: undefined },
-    other: { label: t('Other'), count: 0, icon: undefined },
+export function parseAlertsMetric(
+  alertsResult: PrometheusResponse | undefined,
+  filteredClusterNames: string[],
+  t: TFunction<string, undefined>
+) {
+  const clustersAffectedAlerts: string[] = []
+  const alertSeverity: Record<
+    string,
+    {
+      key: string
+      label: string
+      alerts: string[]
+      icon?: JSX.Element
+    }
+  > = {
+    critical: { key: 'critical', label: t('Critical'), alerts: [], icon: <CriticalRiskIcon /> },
+    warning: { key: 'warning', label: t('Warning'), alerts: [], icon: <ImportantRiskIcon /> },
+    info: { key: 'info', label: t('Info'), alerts: [], icon: undefined },
+    other: { key: 'other', label: t('Other'), alerts: [], icon: undefined },
   }
   if (alertsResult?.data?.result) {
-    alertsResult?.data?.result.filter((res: any) => {
-      switch (res.metric.severity) {
+    const filteredAlerts =
+      filteredClusterNames.length === 0
+        ? alertsResult.data.result
+        : alertsResult.data.result.filter((alert) => filteredClusterNames.includes(alert.metric.cluster))
+    filteredAlerts.forEach((alert) => {
+      if (alert.metric?.cluster && !clustersAffectedAlerts.includes(alert.metric.cluster)) {
+        clustersAffectedAlerts.push(alert.metric.cluster)
+      }
+      switch (alert.metric.severity.toLowerCase()) {
         case 'critical':
-          sevs.critical.count++
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.critical.alerts.push(alert.metric.alertname)
+          }
           break
         case 'warning':
-          sevs.warning.count++
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.warning.alerts.push(alert.metric.alertname)
+          }
           break
         case 'info':
-          sevs.info.count++
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.info.alerts.push(alert.metric.alertname)
+          }
           break
         default:
-          sevs.other.count++
+          if (alert.metric.alertstate === 'firing') {
+            alertSeverity.other.alerts.push(alert.metric.alertname)
+          }
       }
     })
   }
-  return sevs
+  return { clustersAffectedAlerts, alertSeverity }
 }
 
-export function parseOperatorMetric(operatorResult: PrometheusResponse | undefined) {
-  let degradedCount = 0
-  let notAvailableCount = 0
-  let availableCount = 0
-  let otherCount = 0
+export function parseOperatorMetric(operatorResult: PrometheusResponse | undefined, filteredClusterNames: string[]) {
+  const clustersAffectedOperator: string[] = []
+  const degraded: string[] = []
+  const notAvailable: string[] = []
+  const other: string[] = []
 
-  operatorResult?.data?.result.forEach((operator) => {
-    // Use condition mapping from CCX.
-    // condition["type"] == "Available" and condition["status"] == "False" -> Not Available
-    // condition["type"] == "Degraded" and condition["status"] == "True" -> Degraded
-    // condition["type"] == "Progressing" and condition["status"] == "True" -> Other
-    // condition["type"] == "Upgradeable" and condition["status"] == "False" -> Other
-    // condition["type"] == "Failing" and condition["status"] == "True" -> Other
-    if (operator.metric.condition === 'Degraded' && operator?.value?.[1] === '1') {
-      degradedCount++
-    } else if (operator.metric.condition === 'Available' && operator?.value?.[1] === '0') {
-      notAvailableCount++
-    } else if (operator.metric.condition === 'Available' && operator?.value?.[1] === '1') {
-      availableCount++
-    } else if (
-      (operator.metric.condition === 'Failing' && operator?.value?.[1] === '1') ||
-      (operator.metric.condition === 'Progressing' && operator?.value?.[1] === '1') ||
-      (operator.metric.condition === 'Upgradeable' && operator?.value?.[1] === '0')
-    ) {
-      otherCount++
-    }
-  })
+  if (operatorResult?.data?.result) {
+    const filteredOperators =
+      filteredClusterNames.length === 0
+        ? operatorResult.data.result
+        : operatorResult.data.result.filter((operator) => filteredClusterNames.includes(operator.metric.cluster))
 
-  return { availableCount, degradedCount, notAvailableCount, otherCount }
+    filteredOperators.forEach((operator) => {
+      // Use condition mapping from CCX.
+      // condition["type"] == "Available" and condition["status"] == "False" -> Not Available
+      // condition["type"] == "Degraded" and condition["status"] == "True" -> Degraded
+      // condition["type"] == "Progressing" and condition["status"] == "True" -> Other
+      // condition["type"] == "Upgradeable" and condition["status"] == "False" -> Other
+      // condition["type"] == "Failing" and condition["status"] == "True" -> Other
+      if (operator.metric.condition === 'Degraded' && operator?.value?.[1] === '1') {
+        // Only add cluster to affected array if operator meets condition
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
+        degraded.push(operator.metric.name)
+      } else if (operator.metric.condition === 'Available' && operator?.value?.[1] === '0') {
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
+        notAvailable.push(operator.metric.name)
+      } else if (
+        (operator.metric.condition === 'Failing' && operator?.value?.[1] === '1') ||
+        (operator.metric.condition === 'Progressing' && operator?.value?.[1] === '1') ||
+        (operator.metric.condition === 'Upgradeable' && operator?.value?.[1] === '0')
+      ) {
+        if (operator.metric?.cluster && !clustersAffectedOperator.includes(operator.metric.cluster)) {
+          clustersAffectedOperator.push(operator.metric.cluster)
+        }
+        other.push(operator.metric.name)
+      }
+    })
+  }
+
+  return {
+    clustersAffectedOperator,
+    degraded,
+    notAvailable,
+    other,
+  }
 }

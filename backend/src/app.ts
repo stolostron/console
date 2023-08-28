@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { authenticated } from './lib/authenticated'
 import { loadSettings, stopSettingsWatch } from './lib/config'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
@@ -11,11 +12,11 @@ import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
-import { authenticated } from './lib/authenticated'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
+import { observabilityProxy } from './routes/observabilityProxy'
 import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
@@ -42,6 +43,7 @@ router.get('/apiPaths', apiPaths)
 router.get('/version', proxy)
 router.get('/version/', proxy)
 router.post('/operatorCheck', operatorCheck)
+router.get('/observability/*', observabilityProxy)
 if (!isProduction) {
   router.get('/configure', configure)
   router.get('/login', login)

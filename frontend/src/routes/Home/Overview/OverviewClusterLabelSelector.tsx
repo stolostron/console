@@ -56,7 +56,12 @@ export default function OverviewHeader(props: {
     const tempClusterLabels = { ...selectedClusterLabels }
     const copyOfChips = tempClusterLabels[groupLabel]
     const filteredCopy = copyOfChips.filter((chip) => chip !== chipLabel)
-    tempClusterLabels[groupLabel] = filteredCopy
+    if (filteredCopy.length === 0) {
+      // array is empty delete the label key
+      delete tempClusterLabels[groupLabel]
+    } else {
+      tempClusterLabels[groupLabel] = filteredCopy
+    }
 
     setSelectedClusterLabels(tempClusterLabels)
   }
@@ -86,6 +91,7 @@ export default function OverviewHeader(props: {
           maxHeight={'400px'}
           variant={SelectVariant.single}
           onToggle={(isExpanded) => setLabelSelectIsOpen(isExpanded)}
+          hasInlineFilter
           onSelect={(_, selection) => {
             if (selectedClusterLabel === selection) {
               setSelectedClusterLabel('')
@@ -116,11 +122,11 @@ export default function OverviewHeader(props: {
             const tempLabels = { ...selectedClusterLabels }
             const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
             if (tempValues?.includes(selection as string)) {
-              tempLabels[selectedClusterLabel ?? ''] = tempValues.filter((label) => label !== (selection as string))
+              deleteChip(selectedClusterLabel, selection as string)
             } else {
               tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
+              setSelectedClusterLabels(tempLabels)
             }
-            setSelectedClusterLabels(tempLabels)
           }}
           selections={selectedClusterLabels[selectedClusterLabel ?? '']}
           isOpen={valuesSelectIsOpen}

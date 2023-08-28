@@ -3,19 +3,15 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { mockAlertMetrics } from '../routes/Home/Overview/sharedmocks'
 import { nockRequest } from './nock-util'
-import { PrometheusEndpoint, usePrometheusPoll } from './usePrometheusPoll'
+import { ObservabilityEndpoint, useObservabilityPoll } from './useObservabilityPoll'
 
-// Mock the window.SERVER_FLAGS.prometheusBaseURL
-const mockServerFlags = { prometheusBaseURL: '/api/prometheus' }
-window.SERVER_FLAGS = mockServerFlags
-
-describe('usePrometheusPoll', () => {
+describe('useObservabilityPoll', () => {
   test('should make a successful QUERY API call and return the response', async () => {
-    nockRequest('/api/prometheus/api/v1/query?query=ALERTS', mockAlertMetrics)
+    nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
 
     const { result, waitForNextUpdate } = renderHook(() =>
-      usePrometheusPoll({
-        endpoint: PrometheusEndpoint.QUERY,
+      useObservabilityPoll({
+        endpoint: ObservabilityEndpoint.QUERY,
         query: 'ALERTS',
       })
     )
@@ -32,11 +28,11 @@ describe('usePrometheusPoll', () => {
   })
 
   test('should handle API call error and set the error state', async () => {
-    nockRequest('/api/prometheus/api/v1/query?query=ALERTS', mockAlertMetrics, 500)
+    nockRequest('/observability/query?query=ALERTS', mockAlertMetrics, 500)
 
     const { result, waitForNextUpdate } = renderHook(() =>
-      usePrometheusPoll({
-        endpoint: PrometheusEndpoint.QUERY,
+      useObservabilityPoll({
+        endpoint: ObservabilityEndpoint.QUERY,
         query: 'ALERTS',
       })
     )

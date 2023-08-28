@@ -49,15 +49,11 @@ it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  const mockAlertMetricsNock = nockRequest('/api/prometheus/api/v1/query?query=ALERTS', mockAlertMetrics)
+  const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
-    '/api/prometheus/api/v1/query?query=cluster_operator_conditions',
+    '/observability/query?query=cluster_operator_conditions',
     mockOperatorMetrics
   )
-
-  window.SERVER_FLAGS = {
-    prometheusBaseURL: '/api/prometheus',
-  }
 
   const { getAllByText, getByText } = render(
     <RecoilRoot

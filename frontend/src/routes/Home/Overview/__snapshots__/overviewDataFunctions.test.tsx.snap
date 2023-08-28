@@ -233,34 +233,57 @@ Object {
 
 exports[`Correctly returns parseAlertsMetric 1`] = `
 Object {
-  "critical": Object {
-    "count": 1,
-    "icon": <CriticalRiskIcon />,
-    "label": "Critical",
+  "alertSeverity": Object {
+    "critical": Object {
+      "alerts": Array [],
+      "icon": <CriticalRiskIcon />,
+      "key": "critical",
+      "label": "Critical",
+    },
+    "info": Object {
+      "alerts": Array [
+        "InsightsRecommendationActive",
+        "InsightsRecommendationActive",
+      ],
+      "icon": undefined,
+      "key": "info",
+      "label": "Info",
+    },
+    "other": Object {
+      "alerts": Array [],
+      "icon": undefined,
+      "key": "other",
+      "label": "Other",
+    },
+    "warning": Object {
+      "alerts": Array [
+        "AlertmanagerReceiversNotConfigured",
+      ],
+      "icon": <ImportantRiskIcon />,
+      "key": "warning",
+      "label": "Warning",
+    },
   },
-  "info": Object {
-    "count": 1,
-    "icon": undefined,
-    "label": "Info",
-  },
-  "other": Object {
-    "count": 1,
-    "icon": undefined,
-    "label": "Other",
-  },
-  "warning": Object {
-    "count": 2,
-    "icon": <ImportantRiskIcon />,
-    "label": "Warning",
-  },
+  "clustersAffectedAlerts": Array [
+    "local-cluster",
+    "managed-1",
+  ],
 }
 `;
 
 exports[`Correctly returns parseOperatorMetric 1`] = `
 Object {
-  "availableCount": 1,
-  "degradedCount": 1,
-  "notAvailableCount": 1,
-  "otherCount": 3,
+  "clustersAffectedOperator": Array [],
+  "degraded": Array [
+    "etcd",
+  ],
+  "notAvailable": Array [
+    "baremetal",
+  ],
+  "other": Array [
+    "cloud-controller-manager",
+    "cloud-credential",
+    "cloud-credential",
+  ],
 }
 `;
