@@ -33,7 +33,6 @@ import {
   nockIgnoreApiPaths,
   nockList,
   nockNamespacedList,
-  nockPatch,
 } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
@@ -68,7 +67,6 @@ import {
   ClusterProvisionKind,
   HostedClusterApiVersion,
   HostedClusterKind,
-  IResource,
   ManagedCluster,
   ManagedClusterAddOn,
   ManagedClusterAddOnApiVersion,
@@ -1555,16 +1553,6 @@ describe('ClusterDetails with not found', () => {
       nockCreate(createManagedcluster1, createManagedcluster1),
       nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfig),
       nockCreate(mockNamespace, mockNamespace),
-      nockPatch(mockHostedCluster1 as IResource, [
-        {
-          op: 'replace',
-          path: '/metadata/annotations',
-          value: {
-            'cluster.open-cluster-management.io/managedcluster-name': 'hostedcluster1',
-            'cluster.open-cluster-management.io/hypershiftdeployment': 'test-cluster/hostedcluster1',
-          },
-        },
-      ]),
     ]
 
     userEvent.click(

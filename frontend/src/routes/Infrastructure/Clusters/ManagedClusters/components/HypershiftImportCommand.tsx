@@ -16,7 +16,6 @@ import {
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
   KlusterletAddonConfig,
-  patchResource,
   unpackSecret,
   Namespace,
   NamespaceApiVersion,
@@ -62,7 +61,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
 
   function importHostedControlPlaneCluster() {
     const hdName = selectedHostedClusterResource.metadata?.name
-    const hdNamespace = selectedHostedClusterResource.metadata?.namespace
 
     const match = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(hdName!)
 
@@ -137,11 +135,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       },
     }
 
-    const updateAnnotations = {
-      'cluster.open-cluster-management.io/managedcluster-name': hdName,
-      'cluster.open-cluster-management.io/hypershiftdeployment': `${hdNamespace}/${hdName}`,
-    }
-
     createResource(managedClusterResource as IResource)
       .promise.then(() => {
         toastContext.addAlert({
@@ -153,10 +146,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       .catch((err) => {
         toastContext.addAlert(getErrorInfo(err, t))
       })
-
-    patchResource(selectedHostedClusterResource as IResource, [
-      { op: 'replace', path: '/metadata/annotations', value: updateAnnotations },
-    ])
 
     //Create namespace for addons if it doesn't already exist
     if (isACMAvailable) {
