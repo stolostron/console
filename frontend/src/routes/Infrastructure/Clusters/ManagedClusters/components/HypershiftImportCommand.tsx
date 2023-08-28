@@ -80,7 +80,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         annotations: {
           'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
           'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-          'open-cluster-management/created-via': 'other',
+          'open-cluster-management/created-via': 'hypershift',
         },
         labels: {
           cloud: 'auto-detect',
