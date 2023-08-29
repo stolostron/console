@@ -217,7 +217,7 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       } else if (castType.spec.template?.spec?.sources) {
         castType.spec.template?.spec?.sources.forEach((source) => {
           appRepos.push({
-            type: source.path ? 'git' : 'helmrepo',
+            type: source.path ? 'git' : source.chart ? 'helmrepo' : 'git',
             pathName: source.repoURL,
             gitPath: source.path,
             chart: source.chart,

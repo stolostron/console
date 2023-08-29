@@ -108,7 +108,11 @@ export function EditArgoApplicationSet() {
           return { ...source, repositoryType: 'helm' }
         }
 
-        return source
+        // path is optional
+        return {
+          ...source,
+          repositoryType: 'git',
+        }
       }
     )
 
