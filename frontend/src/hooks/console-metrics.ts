@@ -1,14 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useEffect } from 'react'
-import { getBackendUrl, postRequest } from '../resources'
+import { fetchRetry, getBackendUrl } from '../resources'
 
 export const handlePageVisitMetric = (page: string) => {
   console.log('handling page visit metric: ', page)
   useEffect(() => {
     console.log('Pre overview-fleet metrics POST')
-    postRequest(getBackendUrl() + '/metrics', {
-      page,
+    const abortController = new AbortController()
+    fetchRetry({
+      method: 'POST',
+      url: getBackendUrl() + '/metrics',
+      data: {
+        page,
+      },
+      signal: abortController.signal,
+      retries: /* istanbul ignore next */ process.env.NODE_ENV === 'production' ? 2 : 0,
     })
   }, [page])
 }
