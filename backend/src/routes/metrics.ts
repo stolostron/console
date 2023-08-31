@@ -4,6 +4,14 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Prometheus, { register } from 'prom-client'
 import { logger } from '../lib/logger'
 
+interface PageData {
+  page: string
+}
+
+// register.setDefaultLabels({
+//   // label to identify customer?
+// })
+
 const acm_console_page_visit_counter = new Prometheus.Counter({
   name: 'acm_console_page_visit_counter',
   help: 'Capture ACM page visit counts',
@@ -12,7 +20,7 @@ const acm_console_page_visit_counter = new Prometheus.Counter({
 })
 register.registerMetric(acm_console_page_visit_counter)
 
-export function metrics(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export async function metrics(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (req.method === 'POST') {
     // POSTs originate from the ACM page - get the page from req data and increase that pages count
     let data: string = undefined
@@ -20,13 +28,15 @@ export function metrics(req: Http2ServerRequest, res: Http2ServerResponse): void
     req.on('data', (chuck: string) => {
       chucks.push(chuck)
     })
-    req.on('end', async () => {
+    req.on('end', () => {
       data = chucks.join()
-      logger.info({ msg: 'Updating acm_console_page_visit_counter metric', page: JSON.parse(data).page })
-      acm_console_page_visit_counter.labels({ page: JSON.parse(data).page }).inc()
+      const parsedData = JSON.parse(data) as PageData
+      const page = parsedData.page
+      logger.info({ msg: 'Updating acm_console_page_visit_counter metric', page })
+      acm_console_page_visit_counter.labels({ page }).inc()
     })
   }
 
   res.setHeader('Content-Type', register.contentType)
-  register.metrics().then((data) => res.end(data))
+  await register.metrics().then((data) => res.end(data))
 }
