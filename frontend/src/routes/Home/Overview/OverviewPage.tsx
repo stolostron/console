@@ -20,6 +20,8 @@ import {
   ApplicationSetKind,
   Cluster,
   ClusterStatus,
+  fetchPost,
+  getBackendUrl,
   ManagedClusterInfo,
   Policy,
   PolicyReport,
@@ -231,6 +233,17 @@ export default function OverviewPage() {
     providers: [],
   })
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+
+  useEffect(() => {
+    const abortController = new AbortController()
+    fetchPost(
+      getBackendUrl() + '/metrics',
+      {
+        page: 'overview-classic',
+      },
+      abortController.signal
+    )
+  }, [])
 
   const clusters = useAllClusters(true)
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
