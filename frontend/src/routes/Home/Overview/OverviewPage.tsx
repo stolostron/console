@@ -235,6 +235,7 @@ export default function OverviewPage() {
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   useEffect(() => {
+    console.log('Pre overview-classic metrics POST')
     postRequest(getBackendUrl() + '/metrics', {
       page: 'overview-classic',
     })

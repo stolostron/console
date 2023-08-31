@@ -109,6 +109,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   useEffect(() => {
+    console.log('Pre overview-fleet metrics POST')
     postRequest(getBackendUrl() + '/metrics', {
       page: 'overview-fleet',
     })
