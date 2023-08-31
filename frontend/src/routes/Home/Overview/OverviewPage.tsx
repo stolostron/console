@@ -10,7 +10,7 @@ import {
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
-import { handlePageVisitMetric } from '../../../hooks/console-metrics'
+import { usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -204,7 +204,7 @@ export default function OverviewPage() {
     usePolicies,
   } = useSharedAtoms()
 
-  handlePageVisitMetric('overview-classic')
+  usePageVisitMetricHandler('overview-classic')
   const policies = usePolicies()
   const [apps] = useRecoilState(applicationsState)
   const [applicationSets] = useRecoilState(applicationSetsState)

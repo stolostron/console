@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { fetchRetry, getBackendUrl } from '../resources'
 
-export const handlePageVisitMetric = (page: string) => {
+export function usePageVisitMetricHandler(page: string) {
   console.log('handling page visit metric: ', page)
   useEffect(() => {
     console.log('Pre overview-fleet metrics POST')

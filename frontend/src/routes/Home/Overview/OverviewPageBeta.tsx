@@ -21,7 +21,7 @@ import {
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
-import { handlePageVisitMetric } from '../../../hooks/console-metrics'
+import { usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
@@ -90,7 +90,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     usePolicies,
     managedClusterInfosState,
   } = useSharedAtoms()
-  handlePageVisitMetric('overview-fleet')
+  usePageVisitMetricHandler('overview-fleet')
   const policies = usePolicies()
   const allAddons = useClusterAddons()
   const [apps] = useRecoilState(applicationsState)
