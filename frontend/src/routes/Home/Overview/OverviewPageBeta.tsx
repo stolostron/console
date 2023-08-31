@@ -14,18 +14,19 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useRouteMatch } from 'react-router-dom'
 import {
   GetArgoApplicationsHashSet,
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
+import { handlePageVisitMetric } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { Application, ApplicationSet, Cluster, getBackendUrl, postRequest } from '../../../resources'
+import { Application, ApplicationSet, Cluster } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
@@ -89,7 +90,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     usePolicies,
     managedClusterInfosState,
   } = useSharedAtoms()
-
+  handlePageVisitMetric('overview-fleet')
   const policies = usePolicies()
   const allAddons = useClusterAddons()
   const [apps] = useRecoilState(applicationsState)
@@ -108,12 +109,12 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
-  useEffect(() => {
-    console.log('Pre overview-fleet metrics POST')
-    postRequest(getBackendUrl() + '/metrics', {
-      page: 'overview-fleet',
-    })
-  }, [])
+  // useEffect(() => {
+  //   console.log('Pre overview-fleet metrics POST')
+  //   postRequest(getBackendUrl() + '/metrics', {
+  //     page: 'overview-fleet',
+  //   })
+  // }, [])
 
   const grafanaRoute = useMemo(() => {
     const obsAddOn = clusterManagementAddons.filter(

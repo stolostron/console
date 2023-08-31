@@ -10,6 +10,7 @@ import {
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
+import { handlePageVisitMetric } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -20,12 +21,10 @@ import {
   ApplicationSetKind,
   Cluster,
   ClusterStatus,
-  getBackendUrl,
   ManagedClusterInfo,
   Policy,
   PolicyReport,
   PolicyReportResults,
-  postRequest,
 } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -205,6 +204,7 @@ export default function OverviewPage() {
     usePolicies,
   } = useSharedAtoms()
 
+  handlePageVisitMetric('overview-classic')
   const policies = usePolicies()
   const [apps] = useRecoilState(applicationsState)
   const [applicationSets] = useRecoilState(applicationSetsState)
@@ -233,13 +233,6 @@ export default function OverviewPage() {
     providers: [],
   })
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
-
-  useEffect(() => {
-    console.log('Pre overview-classic metrics POST')
-    postRequest(getBackendUrl() + '/metrics', {
-      page: 'overview-classic',
-    })
-  }, [])
 
   const clusters = useAllClusters(true)
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
