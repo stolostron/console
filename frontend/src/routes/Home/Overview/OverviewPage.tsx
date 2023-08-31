@@ -20,12 +20,12 @@ import {
   ApplicationSetKind,
   Cluster,
   ClusterStatus,
-  fetchPost,
   getBackendUrl,
   ManagedClusterInfo,
   Policy,
   PolicyReport,
   PolicyReportResults,
+  postRequest,
 } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -235,14 +235,9 @@ export default function OverviewPage() {
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   useEffect(() => {
-    const abortController = new AbortController()
-    fetchPost(
-      getBackendUrl() + '/metrics',
-      {
-        page: 'overview-classic',
-      },
-      abortController.signal
-    )
+    postRequest(getBackendUrl() + '/metrics', {
+      page: 'overview-classic',
+    })
   }, [])
 
   const clusters = useAllClusters(true)

@@ -20,7 +20,7 @@ import {
   policyreportState,
   subscriptionsState,
 } from '../../../atoms'
-import { nockIgnoreApiPaths, nockRequest, nockSearch } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockPostRequest, nockRequest, nockSearch } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import {
   mockApplications,
@@ -49,6 +49,9 @@ it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  const metricNock = nockPostRequest('/metrics', {
+    page: 'overview-fleet',
+  })
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
     '/observability/query?query=cluster_operator_conditions',
@@ -82,7 +85,7 @@ it('should render overview page with expected data', async () => {
   )
 
   // Wait for prometheus nocks to finish
-  await waitForNocks([mockAlertMetricsNock, mockOperatorMetricsNock])
+  await waitForNocks([metricNock, mockAlertMetricsNock, mockOperatorMetricsNock])
 
   // Test that the component has rendered correctly
   await waitFor(() => expect(getAllByText(/powered by insights/i)).toHaveLength(2))

@@ -25,7 +25,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { Application, ApplicationSet, Cluster, fetchPost, getBackendUrl } from '../../../resources'
+import { Application, ApplicationSet, Cluster, getBackendUrl, postRequest } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
@@ -109,14 +109,9 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   useEffect(() => {
-    const abortController = new AbortController()
-    fetchPost(
-      getBackendUrl() + '/metrics',
-      {
-        page: 'overview-fleet',
-      },
-      abortController.signal
-    )
+    postRequest(getBackendUrl() + '/metrics', {
+      page: 'overview-fleet',
+    })
   }, [])
 
   const grafanaRoute = useMemo(() => {
