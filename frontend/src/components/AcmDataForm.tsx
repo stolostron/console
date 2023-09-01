@@ -77,7 +77,6 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons'
 import { Prompt } from 'react-router'
-import { useBeforeunload } from 'react-beforeunload'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
