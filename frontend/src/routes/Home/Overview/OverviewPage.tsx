@@ -188,6 +188,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 }
 
 export default function OverviewPage() {
+  usePageVisitMetricHandler('overview-classic')
   const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {
@@ -204,7 +205,6 @@ export default function OverviewPage() {
     usePolicies,
   } = useSharedAtoms()
 
-  usePageVisitMetricHandler('overview-classic')
   const policies = usePolicies()
   const [apps] = useRecoilState(applicationsState)
   const [applicationSets] = useRecoilState(applicationSetsState)

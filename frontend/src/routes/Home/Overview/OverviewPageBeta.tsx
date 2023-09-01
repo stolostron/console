@@ -74,6 +74,7 @@ function renderSummaryLoading() {
 
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
+  usePageVisitMetricHandler('overview-fleet')
   const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {
@@ -90,7 +91,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     usePolicies,
     managedClusterInfosState,
   } = useSharedAtoms()
-  usePageVisitMetricHandler('overview-fleet')
   const policies = usePolicies()
   const allAddons = useClusterAddons()
   const [apps] = useRecoilState(applicationsState)
