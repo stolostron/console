@@ -8,9 +8,9 @@ import {
   Split,
   Stack,
   StackItem,
-  Text,
-  TextContent,
-  TextVariants,
+  // Text,
+  // TextContent,
+  // TextVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
 import {
   ChannelApiVersion,
@@ -690,18 +690,7 @@ export default function AdvancedConfiguration() {
             )}
           />
         </Split>
-        <TextContent>
-          <Text
-            component={TextVariants.p}
-            style={{
-              textAlign: 'right',
-              display: 'inline-block',
-              width: '100%',
-            }}
-          >
-            {viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}
-          </Text>
-        </TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
       </AcmExpandableCard>
     )
   }

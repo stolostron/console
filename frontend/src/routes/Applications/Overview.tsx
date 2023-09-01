@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
@@ -1041,7 +1041,9 @@ export default function ApplicationsOverview() {
             action={
               <>
                 {appCreationButton}
-                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                <div>
+                  <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+                </div>
               </>
             }
           />

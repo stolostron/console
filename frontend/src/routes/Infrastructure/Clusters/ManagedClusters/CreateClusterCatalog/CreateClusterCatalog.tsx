@@ -18,8 +18,7 @@ import {
   ProviderIconMap,
   ProviderLongTextMap,
 } from '../../../../../ui-components'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { Divider, ExpandableSection } from '@patternfly/react-core'
@@ -178,9 +177,25 @@ export function CreateClusterCatalog() {
               )}
               <br />
               <br />
-              <a href={DOC_LINKS.CREATE_CLUSTER_PREREQ} target="_blank" rel="noopener noreferrer">
-                {t('View documentation')} <ExternalLinkAltIcon />
-              </a>
+              <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_PREREQ} />
+            </>
+          ),
+        }
+      }
+      if (provider === Provider.redhatvirtualization) {
+        card = {
+          ...card,
+          title: t('Red Hat Virtualization'),
+          alertTitle: t('Deprecated host platform'),
+          alertVariant: 'warning',
+          alertContent: (
+            <>
+              {t(
+                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release'
+              )}
+              <br />
+              <br />
+              <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
             </>
           ),
         }

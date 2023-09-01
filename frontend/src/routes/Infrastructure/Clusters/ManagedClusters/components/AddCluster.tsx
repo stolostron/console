@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmDropdown } from '../../../../../ui-components'
-import { ActionList, ActionListItem, Bullseye, TextContent } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
-import { DOC_LINKS, viewDocumentation } from '../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
   const { t } = useTranslation()
@@ -51,7 +51,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
             </ActionListItem>
           </ActionList>
         </Bullseye>
-        <TextContent>{viewDocumentation(DOC_LINKS.CLUSTERS, t)}</TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
       </div>
     )
   } else {
@@ -88,7 +88,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
           isKebab={false}
           isPrimary={true}
         />
-        <TextContent>{viewDocumentation(DOC_LINKS.CLUSTERS, t)}</TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
       </div>
     )
   }

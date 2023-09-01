@@ -6,7 +6,7 @@ import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { GetProjects } from '../../../../../../../../components/GetProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
-import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
+import { DOC_CREATE_HOSTED_CLUSTER, DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Provider } from '../../../../../../../../ui-components'
 import { CredentialsForm } from '../../../../../../../Credentials/CredentialsForm'
@@ -95,7 +95,7 @@ hcp create cluster aws \\
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
-          {viewDocumentation(DOC_CREATE_HOSTED_CLUSTER, t)}
+          <ViewDocumentationLink doclink={DOC_CREATE_HOSTED_CLUSTER} />
         </Fragment>
       ),
     },

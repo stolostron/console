@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { TextContent } from '@patternfly/react-core'
 import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { viewDocumentation } from '../../../lib/doc-util'
+import { ViewDocumentationLink } from '../../../lib/doc-util'
 
 // GovernanceCreatePolicysetEmptyState
 
@@ -28,7 +27,9 @@ export function GovernanceCreatePolicyEmptyState(props: { rbac: boolean }) {
           >
             {t('Create policy')}
           </AcmButton>
-          <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
+          <div>
+            <ViewDocumentationLink doclink={DOC_LINKS.POLICIES_OVERVIEW} />
+          </div>
         </div>
       }
     />
@@ -57,7 +58,9 @@ export function GovernanceManagePoliciesEmptyState(props: { rbac: boolean }) {
           >
             {t('Manage policies')}
           </AcmButton>
-          <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
+          <div>
+            <ViewDocumentationLink doclink={DOC_LINKS.POLICIES_OVERVIEW} />
+          </div>
         </div>
       }
     />
@@ -86,7 +89,9 @@ export function GovernanceCreatePolicysetEmptyState(props: { rbac: boolean }) {
           >
             {t('Create policy set')}
           </AcmButton>
-          <TextContent>{viewDocumentation(DOC_LINKS.POLICY_SETS, t)}</TextContent>
+          <div>
+            <ViewDocumentationLink doclink={DOC_LINKS.POLICIES_OVERVIEW} />
+          </div>
         </div>
       }
     />

@@ -2,7 +2,7 @@
 
 import _ from 'lodash'
 import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '../../../ui-components'
-import { TextContent, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
@@ -12,7 +12,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Fragment, useEffect, useState } from 'react'
 import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
 import { Trans } from '../../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 
 export interface IToggleSelectorProps<T = any> {
   keyFn: (item: T) => string
@@ -80,7 +80,9 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                     {t('Create application')}
                   </AcmButton>
                 )}
-                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                <div>
+                  <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+                </div>
               </Fragment>
             }
           />

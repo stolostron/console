@@ -3,7 +3,7 @@ import { LocationDescriptor } from 'history'
 import { DataViewStringContext, ICatalogCard, ItemView } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { AcmIcon, AcmPage, AcmPageHeader, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
 import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
@@ -16,7 +16,6 @@ export const getTypedCreateCredentialsPath = (type: CredentialsType): LocationDe
 
 const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.aws],
-  [Provider.awss3, 's3'],
   [Provider.azure, 'azure'],
   [Provider.gcp, 'google'],
   [Provider.openstack, 'openstack'],
@@ -34,19 +33,31 @@ export function CreateCredentialsCatalog() {
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
-      ...orderedProviders
-        // does not display AWS s3 card
-        .filter(([id]) => id !== Provider.awss3)
-        .map(([provider, id]) => ({
-          id: id || provider,
-          icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-          title: ProviderLongTextMap[provider],
-          onClick:
-            provider === Provider.aws
-              ? nextStep(NavigationPath.addAWSType)
-              : nextStep(getTypedCreateCredentialsPath(provider)),
-        })),
+      ...orderedProviders.map(([provider, id]) => ({
+        id: id || provider,
+        icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+        title: ProviderLongTextMap[provider],
+        onClick:
+          provider === Provider.aws
+            ? nextStep(NavigationPath.addAWSType)
+            : nextStep(getTypedCreateCredentialsPath(provider)),
+      })),
     ]
+    newCards.forEach((card) => {
+      if (card.id === 'rhv') {
+        ;(card.alertTitle = t('Deprecated host platform')),
+          (card.alertVariant = 'warning'),
+          (card.alertContent = (
+            <>
+              {t(
+                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
+              )}
+              <br />
+              <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
+            </>
+          ))
+      }
+    })
     return newCards
   }, [nextStep])
 

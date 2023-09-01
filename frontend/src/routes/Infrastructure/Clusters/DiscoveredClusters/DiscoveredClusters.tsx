@@ -11,13 +11,13 @@ import {
   IAcmTableColumn,
   Provider,
 } from '../../../../ui-components'
-import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
-import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
@@ -46,7 +46,7 @@ function EmptyStateNoCRHCredentials() {
           <AcmButton component={Link} to={NavigationPath.addCredentials}>
             {t('emptystate.addCredential')}
           </AcmButton>
-          <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+          <ViewDocumentationLink doclink={DOC_LINKS.DISCOVERED_CLUSTERS} />
         </div>
       }
     />
@@ -78,14 +78,14 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
             }
           })}
         />
-        <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.DISCOVERED_CLUSTERS} />
       </div>
     ) : (
       <div>
         <AcmButton component={Link} to={NavigationPath.createDiscovery}>
           {t('emptystate.enableClusterDiscovery')}
         </AcmButton>
-        <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.DISCOVERED_CLUSTERS} />
       </div>
     )
   return (
@@ -129,7 +129,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
               </ActionListItem>
             </ActionList>
           </Bullseye>
-          <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+          <ViewDocumentationLink doclink={DOC_LINKS.DISCOVERED_CLUSTERS} />
         </div>
       }
     />

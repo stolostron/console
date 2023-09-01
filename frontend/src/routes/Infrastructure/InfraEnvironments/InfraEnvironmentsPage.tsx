@@ -1,15 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  Button,
-  ButtonVariant,
-  Flex,
-  FlexItem,
-  PageSection,
-  Popover,
-  Stack,
-  StackItem,
-  TextContent,
-} from '@patternfly/react-core'
+import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, Stack, StackItem } from '@patternfly/react-core'
 import { CogIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { global_palette_blue_300 as blueInfoColor } from '@patternfly/react-tokens/dist/js/global_palette_blue_300'
@@ -50,7 +40,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, OCP_DOC_BASE_PATH, viewDocumentation } from '../../../lib/doc-util'
+import { DOC_LINKS, OCP_DOC_BASE_PATH, ViewDocumentationLink } from '../../../lib/doc-util'
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
@@ -617,7 +607,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     >
                       {t('Create infrastructure environment')}
                     </AcmButton>
-                    <TextContent>{viewDocumentation(DOC_LINKS.INFRASTRUCTURE_EVIRONMENTS, t)}</TextContent>
+                    <ViewDocumentationLink doclink={DOC_LINKS.INFRASTRUCTURE_ENVIRONMENTS} />
                   </div>
                 }
               />
