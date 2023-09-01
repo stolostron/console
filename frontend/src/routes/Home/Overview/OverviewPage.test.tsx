@@ -1062,9 +1062,7 @@ it('should render overview page in empty state', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
-  const metricNock = nockPostRequest('/metrics', {
-    page: 'overview-classic',
-  })
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
 
@@ -1086,9 +1084,7 @@ it('should render overview page in empty state', async () => {
 })
 
 it('should render overview page in error state', async () => {
-  const metricNock = nockPostRequest('/metrics', {
-    page: 'overview-classic',
-  })
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
@@ -1125,9 +1121,7 @@ it('should render overview page in error state', async () => {
 })
 
 it('should render overview page with expected data', async () => {
-  const metricNock = nockPostRequest('/metrics', {
-    page: 'overview-classic',
-  })
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   nockIgnoreApiPaths()

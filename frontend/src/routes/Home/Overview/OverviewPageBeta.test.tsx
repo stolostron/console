@@ -49,9 +49,7 @@ it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  const metricNock = nockPostRequest('/metrics', {
-    page: 'overview-fleet',
-  })
+  const metricNock = nockPostRequest('/metrics?overview-fleet', {})
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
     '/observability/query?query=cluster_operator_conditions',
