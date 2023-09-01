@@ -76,8 +76,9 @@ import {
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
+import { Prompt } from 'react-router'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Fragment, ReactNode, useRef, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import { TFunction } from 'i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
@@ -93,6 +94,7 @@ import {
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
+import isEqual from 'lodash/isEqual'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -121,6 +123,8 @@ const defaultPanelSize = 600
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const pageRef = useRef(null)
+  const dataRef = useRef<unknown>()
+  const dirtyRef = useRef(false)
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
@@ -133,6 +137,29 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const [copyHint, setCopyHint] = useState<ReactNode>(
     <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
   )
+
+  // prevent navigating away from dirty form
+  // also see <Prompt> below
+  const resources = formData.stateToData()
+  if (!dataRef.current) {
+    dataRef.current = resources
+  } else {
+    dirtyRef.current = !isEqual(dataRef.current, resources)
+  }
+  useEffect(() => {
+    const preventUnload = (event: BeforeUnloadEvent) => {
+      if (dirtyRef.current) {
+        // NOTE: This message isn't used in modern browsers, but is required
+        const message = 'Sure you want to leave?'
+        event.preventDefault()
+        event.returnValue = message
+      }
+    }
+    window.addEventListener('beforeunload', preventUnload)
+    return () => {
+      window.removeEventListener('beforeunload', preventUnload)
+    }
+  }, [])
 
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
@@ -160,7 +187,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     id="code-content"
                     editorTitle={editorTitle}
                     readonly={mode === 'details'}
-                    resources={formData.stateToData()}
+                    resources={resources}
                     schema={schema}
                     immutables={immutables}
                     secrets={secrets}
@@ -238,6 +265,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
+      <Prompt when={dirtyRef.current} message={t('changes.maybe.lost')} />
       {isModalWizard ? (
         drawerContent()
       ) : (
