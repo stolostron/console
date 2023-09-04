@@ -20,8 +20,9 @@ import {
   getOnSaveISOParams,
   importYaml,
   useInfraEnv,
+  useProvisioningConfiguration,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { getInfraEnvNMStates, isBMPlatform } from '../utils'
+import { getInfraEnvNMStates } from '../utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { DOC_VERSION } from '../../../../lib/doc-util'
@@ -33,11 +34,10 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
   const history = useHistory()
   const location = useLocation()
 
-  const { agentClusterInstallsState, agentsState, bareMetalHostsState, infrastructuresState, nmStateConfigsState } =
-    useSharedAtoms()
+  const { agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
-  const [agentClusterInstalls, agents, bareMetalHosts, infrastructures, nmStateConfigs] = useRecoilValue(
-    waitForAll([agentClusterInstallsState, agentsState, bareMetalHostsState, infrastructuresState, nmStateConfigsState])
+  const [agentClusterInstalls, agents, bareMetalHosts, nmStateConfigs] = useRecoilValue(
+    waitForAll([agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState])
   )
   const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
 
@@ -64,7 +64,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
   )
 
   const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
-
+  const provisioningConfigResult = useProvisioningConfiguration()
   if (!infraEnv) {
     return (
       <Page>
@@ -134,9 +134,9 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 docVersion={DOC_VERSION}
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onCreateBmcByYaml={importYaml}
-                isBMPlatform={isBMPlatform(infrastructures[0])}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 usedHostnames={usedHostnames}
+                provisioningConfigResult={provisioningConfigResult}
               />
             }
           />
@@ -154,7 +154,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 infraAgents={infraAgents}
                 bareMetalHosts={infraBMHs}
                 infraNMStates={infraNMStates}
-                infrastructure={infrastructures[0]}
               />
             </Route>
             <Route exact path={NavigationPath.infraEnvironmentDetails}>
