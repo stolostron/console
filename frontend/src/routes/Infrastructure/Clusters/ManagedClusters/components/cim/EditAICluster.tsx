@@ -41,11 +41,12 @@ import {
   useClusterDeploymentInfraEnv,
   importYaml,
   onSetInstallationDiskId,
+  useProvisioningConfiguration,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
+import { getInfraEnvNMStates } from '../../../../InfraEnvironments/utils'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
 import { DOC_VERSION } from '../../../../../../lib/doc-util'
@@ -64,11 +65,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   const { t } = useTranslation()
   const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
   const history = useHistory()
-  const { agentsState, clusterImageSetsState, nmStateConfigsState, infrastructuresState } = useSharedAtoms()
+  const { agentsState, clusterImageSetsState, nmStateConfigsState } = useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const { waitForAll } = useSharedRecoil()
-  const [clusterImageSets, agents, nmStateConfigs, infrastructures] = useRecoilValue(
-    waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState, infrastructuresState])
+  const [clusterImageSets, agents, nmStateConfigs] = useRecoilValue(
+    waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState])
   )
   const aiConfigMap = useAssistedServiceConfigMap()
 
@@ -84,6 +85,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
   const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
+  const provisioningConfigResult = useProvisioningConfiguration()
 
   const onSaveDetails = (values: ClusterDeploymentDetailsValues) => {
     return patchResource(agentClusterInstall as IResource, [
@@ -247,13 +249,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 infraEnv={infraEnv}
                 initialStep={(searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined}
                 fetchInfraEnv={fetchInfraEnv}
-                isBMPlatform={isBMPlatform(infrastructures[0])}
                 isPreviewOpen={isPreviewOpen}
                 setPreviewOpen={setPreviewOpen}
                 fetchManagedClusters={fetchManagedClusters}
                 fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
                 onCreateBmcByYaml={importYaml}
                 docVersion={DOC_VERSION}
+                provisioningConfigResult={provisioningConfigResult}
               />
               <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
             </FeatureGateContextProvider>

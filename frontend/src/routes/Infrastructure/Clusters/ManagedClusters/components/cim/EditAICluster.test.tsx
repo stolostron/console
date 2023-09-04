@@ -30,6 +30,7 @@ import {
   klusterletMock,
 } from './EditAICluster.sharedmocks'
 import { ClusterDeployment } from '../../../../../../resources'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 
 const Component = () => {
   return (
@@ -58,18 +59,26 @@ const Component = () => {
   )
 }
 
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
+  useK8sWatchResource: jest.fn(),
+}))
+
 describe('Edit AI Cluster', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can be rendered', async () => {
+    const provisioningConfig = { metadata: { name: 'foo', namespace: 'bar' } }
+    dynamicPluginSdk.useK8sWatchResource.mockReturnValue([provisioningConfig, true, null])
     const nocks = [
       nockGet(pullSecretMock, pullSecretMock),
       nockList(managedClusterMock, managedClusterMock),
       nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
     ]
-    render(<Component />)
+    const { debug } = render(<Component />)
+    debug()
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    await waitForText('Installation type')
+    await waitForText('ai:Installation type')
 
     await waitForText('ai:Cluster details')
     await waitForText('ai:Cluster hosts')

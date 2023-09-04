@@ -15,8 +15,10 @@ import {
   setProvisionRequirements,
   onHostsNext,
   onEditProxy,
+  useProvisioningConfiguration,
 } from './utils'
 import { AgentClusterInstallApiVersion, AgentClusterInstallKind } from '../../../../../../../resources'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -190,5 +192,35 @@ describe('onEditProxy', () => {
       },
       infraEnv
     )
+  })
+})
+
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
+  useK8sWatchResource: jest.fn(),
+}))
+
+describe('useProvisioningConfig', () => {
+  afterEach(() => {
+    jest.restoreAllMocks() // Restore all mocks after each test
+  })
+
+  it('should return provisioning config when load was successful', () => {
+    const provisioningConfig = { metadata: { name: 'foo', namespace: 'bar' } }
+    dynamicPluginSdk.useK8sWatchResource.mockReturnValue([provisioningConfig, true, null])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([provisioningConfig, true, null])
+  })
+
+  it('should return provisioning config null, error null and loaded true when error is NotFound', () => {
+    dynamicPluginSdk.useK8sWatchResource.mockReturnValue([null, false, { json: { reason: 'NotFound' } }])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([null, true, null])
+  })
+
+  it('should return loaded true if there was any error', () => {
+    dynamicPluginSdk.useK8sWatchResource.mockReturnValue([null, false, 'some error'])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([null, true, 'some error'])
   })
 })

@@ -17,7 +17,6 @@ import {
   useAssistedServiceConfigMap,
   useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { isBMPlatform } from '../utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AgentAlerts,
@@ -48,7 +47,6 @@ const HostsTab: React.FC<HostsTabProps> = ({
   agentClusterInstalls,
   bareMetalHosts,
   infraNMStates = [],
-  infrastructure,
 }) => {
   const { agentMachinesState } = useSharedAtoms()
   const agentMachines = useRecoilValue(agentMachinesState)
@@ -93,7 +91,6 @@ const HostsTab: React.FC<HostsTabProps> = ({
                 onChangeHostname={onSaveAgent}
                 onChangeBMHHostname={onChangeBMHHostname}
                 onMassDeleteHost={onMassDeleteHost}
-                isBMPlatform={isBMPlatform(infrastructure)}
               />
               <EditBMHModal
                 infraEnv={infraEnv}
