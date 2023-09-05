@@ -72,7 +72,7 @@ hypershift destroy cluster aws \\
         </Button>,
       ]}
     >
-      <DocPage listItems={listItems} />
+      <DocPage listItems={listItems} noMargin={true} />
     </AcmModal>
   )
 }

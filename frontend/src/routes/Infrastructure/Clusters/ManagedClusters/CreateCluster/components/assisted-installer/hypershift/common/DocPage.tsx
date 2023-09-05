@@ -15,9 +15,10 @@ type DocPageProps = {
   breadcrumbs?: ICatalogBreadcrumb[]
   onCancel?: () => void
   onBack?: () => void
+  noMargin?: boolean
 }
 
-export const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack }) => {
+const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack, noMargin }) => {
   const { t } = useTranslation()
   return (
     <Page>
@@ -43,7 +44,7 @@ export const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCanc
         ''
       )}
 
-      <Card style={{ padding: '2em' }}>
+      <Card style={{ margin: noMargin ? 0 : '2em', padding: '2em' }}>
         <List isPlain isBordered iconSize="large">
           {listItems.map((item) => {
             return (
