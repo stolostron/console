@@ -72,10 +72,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         ].includes(cluster.status)
       )
     case ClusterAction.Destroy:
-      return (
-        (cluster.isManaged && !cluster.isHypershift) ||
-        (cluster.isHive && !(cluster.hive.clusterPool && !cluster.hive.clusterClaimName))
-      )
+      return (cluster.isHive && !(cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) || !cluster.isHypershift
     case ClusterAction.EditAI:
       return cluster.provider === Provider.hostinventory && !cluster.isHypershift
     case ClusterAction.ScaleUpAI:

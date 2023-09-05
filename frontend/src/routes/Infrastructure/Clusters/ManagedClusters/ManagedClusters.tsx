@@ -412,9 +412,7 @@ export function ClustersTable(props: {
         id: 'destroyCluster',
         title: t('managed.destroy.plural'),
         click: (clusters) => {
-          const unDestroyedClusters = clusters.filter(
-            (cluster) => (cluster.isManaged || cluster.isHypershift) && !cluster.isHive
-          )
+          const unDestroyedClusters = clusters.filter((cluster) => !cluster.isHive)
           setModalProps({
             open: true,
             alert: (

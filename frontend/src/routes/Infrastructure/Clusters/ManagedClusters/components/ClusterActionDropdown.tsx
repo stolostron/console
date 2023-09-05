@@ -308,7 +308,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.Destroy,
           text: t('managed.destroy'),
           separator: true,
-          isDisabled: (cluster: Cluster) => cluster.isManaged && !cluster.hive,
+          isDisabled: (cluster: Cluster) => !cluster.isHive,
           description: t('Imported clusters cannot be destroyed'),
           click: (cluster: Cluster) => {
             setModalProps({
