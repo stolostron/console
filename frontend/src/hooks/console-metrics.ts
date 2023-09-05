@@ -3,7 +3,12 @@
 import { useEffect } from 'react'
 import { getBackendUrl, postRequest } from '../resources'
 
-export function usePageVisitMetricHandler(page: string) {
+export enum Pages {
+  overview = 'overview-classic',
+  overviewFleet = 'overview-fleet',
+}
+
+export function usePageVisitMetricHandler(page: Pages) {
   useEffect(() => {
     postRequest(getBackendUrl() + `/metrics?${page}`, {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
