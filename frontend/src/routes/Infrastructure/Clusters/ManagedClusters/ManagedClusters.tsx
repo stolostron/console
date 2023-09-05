@@ -1,6 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+  Alert,
+  ButtonVariant,
+  Label,
+  PageSection,
+  Stack,
+  StackItem,
+  Text,
+  TextContent,
+  TextVariants,
+  Tooltip,
+} from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlertContext,
@@ -197,6 +208,7 @@ export function ClustersTable(props: {
   }, [])
 
   const clusterNameColumn = useClusterNameColumn()
+  const clusterNameColumnModal = useClusterNameColumnModal()
   const clusterNamespaceColumn = useClusterNamespaceColumn()
   const clusterStatusColumn = useClusterStatusColumn()
   const clusterProviderColumn = useClusterProviderColumn()
@@ -208,8 +220,8 @@ export function ClustersTable(props: {
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
 
   const modalColumns = useMemo(
-    () => [clusterNameColumn, clusterStatusColumn, clusterProviderColumn],
-    [clusterNameColumn, clusterStatusColumn, clusterProviderColumn]
+    () => [clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn],
+    [clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn]
   )
 
   const columns = useMemo<IAcmTableColumn<Cluster>[]>(
@@ -400,8 +412,21 @@ export function ClustersTable(props: {
         id: 'destroyCluster',
         title: t('managed.destroy.plural'),
         click: (clusters) => {
+          const unDestroyedClusters = clusters.filter(
+            (cluster) => (cluster.isManaged || cluster.isHypershift) && !cluster.isHive
+          )
           setModalProps({
             open: true,
+            alert: (
+              <Alert
+                variant="danger"
+                isInline
+                title={t('You selected {{0}} clusters that cannot be destroyed', [unDestroyedClusters.length])}
+                style={{ marginTop: '20px' }}
+              >
+                <TextContent>{t('They will not be destroyed when you perform this action.')}</TextContent>
+              </Alert>
+            ),
             title: t('bulk.title.destroy'),
             action: t('destroy'),
             processing: t('destroying'),
@@ -569,6 +594,46 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
           <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
+        </span>
+        {cluster.hive.clusterClaimName && (
+          <TextContent>
+            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+          </TextContent>
+        )}
+      </>
+    ),
+  }
+}
+
+export function useClusterNameColumnModal(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  return {
+    header: t('table.name'),
+    tooltip: t('table.name.helperText.noBold'),
+    sort: 'displayName',
+    search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
+    cell: (cluster) => (
+      <>
+        <span style={{ whiteSpace: 'nowrap' }}>
+          <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
+          {!cluster.isHive &&
+            (cluster.isManaged ? (
+              <Tooltip
+                content={
+                  <Text>
+                    {cluster.isHypershift
+                      ? t('Hosted clusters cannot be destroyed.')
+                      : t('Imported clusters cannot be destroyed.')}
+                  </Text>
+                }
+              >
+                <Label style={{ marginLeft: '5px' }} color="red">
+                  {t('Undestroyable')}
+                </Label>
+              </Tooltip>
+            ) : (
+              ''
+            ))}
         </span>
         {cluster.hive.clusterClaimName && (
           <TextContent>
