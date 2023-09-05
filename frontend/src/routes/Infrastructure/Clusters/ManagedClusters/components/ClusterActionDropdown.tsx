@@ -8,7 +8,6 @@ import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../.
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
-import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -308,6 +307,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
           id: ClusterAction.Destroy,
           text: t('managed.destroy'),
+          separator: true,
+          isDisabled: (cluster: Cluster) => cluster.isManaged && !cluster.hive,
+          description: t('Imported clusters cannot be destroyed'),
           click: (cluster: Cluster) => {
             setModalProps({
               open: true,
@@ -348,29 +350,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
           id: ClusterAction.DestroyHosted,
+          separator: true,
           text: t('managed.destroy'),
-          click: (cluster: Cluster) => {
+          click: () => {
             setShowDestroyHostedModal(true)
-            // TBD
-            // setModalProps({
-            //   open: true,
-            //   title: t('bulk.title.destroy'),
-            //   action: t('destroy'),
-            //   processing: t('destroying'),
-            //   items: [cluster],
-            //   emptyState: undefined, // there is always 1 item supplied
-            //   description: t('bulk.message.destroy'),
-            //   columns: modalColumns,
-            //   keyFn: (cluster) => cluster.name as string,
-            //   actionFn: (cluster) => deleteHypershiftCluster(cluster),
-            //   close: () => {
-            //     setModalProps({ open: false })
-            //   },
-            //   isDanger: true,
-            //   icon: 'warning',
-            //   confirmText: cluster.displayName,
-            //   isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-            // })
           },
           isAriaDisabled: true,
           rbac: destroyRbac,
