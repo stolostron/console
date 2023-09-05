@@ -91,6 +91,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     usePolicies,
     managedClusterInfosState,
   } = useSharedAtoms()
+
   const policies = usePolicies()
   const allAddons = useClusterAddons()
   const [apps] = useRecoilState(applicationsState)
@@ -108,13 +109,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
-
-  // useEffect(() => {
-  //   console.log('Pre overview-fleet metrics POST')
-  //   postRequest(getBackendUrl() + '/metrics', {
-  //     page: 'overview-fleet',
-  //   })
-  // }, [])
 
   const grafanaRoute = useMemo(() => {
     const obsAddOn = clusterManagementAddons.filter(
