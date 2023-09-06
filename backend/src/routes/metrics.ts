@@ -19,6 +19,7 @@ export async function metrics(req: Http2ServerRequest, res: Http2ServerResponse)
     // POSTs originate from an ACM page - get the page from req url params and increase that pages count
     const page = req.url.split('?')[1]
     acm_console_page_count.labels({ page }).inc()
+    res.end(`Increased ${page} label count for metric acm_console_page_count`)
   } else {
     res.setHeader('Content-Type', register.contentType)
     await register.metrics().then((data) => res.end(data))
