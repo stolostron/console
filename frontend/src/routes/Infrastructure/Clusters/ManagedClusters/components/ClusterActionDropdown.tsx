@@ -310,6 +310,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           separator: true,
           isDisabled: true,
           description: t('Imported clusters cannot be destroyed'),
+          click: () => {},
         },
         {
           id: ClusterAction.Destroy,
