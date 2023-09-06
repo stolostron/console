@@ -305,11 +305,16 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
+          id: ClusterAction.DestroyManaged,
+          text: t('managed.destroy'),
+          separator: true,
+          isDisabled: true,
+          description: t('Imported clusters cannot be destroyed'),
+        },
+        {
           id: ClusterAction.Destroy,
           text: t('managed.destroy'),
           separator: true,
-          isDisabled: (cluster: Cluster) => !cluster.isHive,
-          description: t('Imported clusters cannot be destroyed'),
           click: (cluster: Cluster) => {
             setModalProps({
               open: true,
