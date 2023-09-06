@@ -6,7 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
 import DetailsPage from './DetailsPage'
 
@@ -89,7 +89,11 @@ const mockLocalClusterPod = {
 }
 
 describe('DetailsPage', () => {
-  nockIgnoreApiPaths()
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  const metricNock = nockPostRequest('/metrics?search-details', {})
 
   it('should render local-cluster resource details correctly', async () => {
     render(
@@ -101,12 +105,24 @@ describe('DetailsPage', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([nockGet(mockLocalClusterPod)])
+    await waitForNocks([metricNock, nockGet(mockLocalClusterPod)])
 
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('testLocalPod')).toBeTruthy())
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /testlocalpod/i,
+        })
+      ).toBeTruthy()
+    )
 
     // Wait for the details page to be loaded
-    await waitFor(() => expect(screen.queryByText('Pod details')).toBeTruthy())
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /pod details/i,
+        })
+      ).toBeTruthy()
+    )
   })
 })
