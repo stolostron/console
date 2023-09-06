@@ -620,7 +620,9 @@ export function useClusterNameColumnModal(): IAcmTableColumn<Cluster> {
                 content={
                   <Text>
                     {cluster.isHypershift
-                      ? t('Hosted clusters cannot be destroyed.')
+                      ? t(
+                          'Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.'
+                        )
                       : t('Imported clusters cannot be destroyed.')}
                   </Text>
                 }

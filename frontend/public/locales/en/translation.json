@@ -1441,7 +1441,7 @@
   "hostCount_plural": "{{count}} hosts",
   "Hosted": "Hosted",
   "Hosted cluster requires a manual import.": "Hosted cluster requires a manual import.",
-  "Hosted clusters cannot be destroyed.": "Hosted clusters cannot be destroyed.",
+  "Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.": "Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.",
   "Hosted control plane": "Hosted control plane",
   "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.",
   "Hosted control plane operator must be enabled in order to continue": "Hosted control plane operator must be enabled in order to continue",
