@@ -71,13 +71,15 @@ function RenderAccordionItem(props: {
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
+      const kindAndGroup = kind.toLowerCase() === "subscription" ? `subscription.${items[0].apigroup}` : kind.toLowerCase()
+     
       return (
         <AcmTable
           items={items}
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
             searchDefinitions,
-            `[${kind.toLowerCase()}].columns`,
+            `[${kindAndGroup}].columns`,
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
