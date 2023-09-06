@@ -30,7 +30,7 @@ export WORKER_COUNT="2"
 
 hypershift create cluster kubevirt \\
 --name $CLUSTER_NAME \\
---node-pool-replicas=$WORKER_COUNT \\
+--node-pool-replicas $WORKER_COUNT \\
 --pull-secret $PULL_SECRET \\
 --memory $MEM \\
 --cores $CPU`
