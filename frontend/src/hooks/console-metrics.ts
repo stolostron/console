@@ -6,6 +6,8 @@ import { getBackendUrl, postRequest } from '../resources'
 export enum Pages {
   overview = 'overview-classic',
   overviewFleet = 'overview-fleet',
+  search = 'search',
+  searchDetails = 'search-details',
 }
 
 export function usePageVisitMetricHandler(page: Pages) {

@@ -17,6 +17,7 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@pat
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
@@ -328,6 +329,7 @@ export default function SearchPage() {
     presetSearchQuery = '',
     preSelectedRelatedResources = [], // used to show any related resource on search page navigation
   } = transformBrowserUrlToSearchString(window.location.search || '')
+  usePageVisitMetricHandler(Pages.search)
   const { t } = useTranslation()
   const savedSearches = t('Saved searches')
   const { useSearchResultLimit } = useSharedAtoms()
