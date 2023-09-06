@@ -19,34 +19,36 @@ import {
 import { deleteResources } from './delete-resources'
 
 export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
-  const resources: IResource[] = [
-    {
-      apiVersion: ClusterDeploymentApiVersion,
-      kind: ClusterDeploymentKind,
-      metadata: { name: cluster.name!, namespace: cluster.namespace! },
-    },
-  ]
-  if (cluster.isManaged) {
-    resources.push({
-      apiVersion: ManagedClusterApiVersion,
-      kind: ManagedClusterKind,
-      metadata: { name: cluster.name! },
-    })
-  }
+  let resources: IResource[] = []
 
-  if (cluster.hive?.clusterClaimName) {
-    resources.push({
-      apiVersion: ClusterClaimApiVersion,
-      kind: ClusterClaimKind,
-      metadata: {
-        name: cluster.hive?.clusterClaimName!,
-        namespace: cluster.hive.clusterPoolNamespace!,
+  if (cluster.isHive) {
+    resources = [
+      {
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name: cluster.name!, namespace: cluster.namespace! },
       },
-    })
+    ]
+    if (cluster.isManaged) {
+      resources.push({
+        apiVersion: ManagedClusterApiVersion,
+        kind: ManagedClusterKind,
+        metadata: { name: cluster.name! },
+      })
+    }
+    if (cluster.hive?.clusterClaimName) {
+      resources.push({
+        apiVersion: ClusterClaimApiVersion,
+        kind: ClusterClaimKind,
+        metadata: {
+          name: cluster.hive?.clusterClaimName!,
+          namespace: cluster.hive.clusterPoolNamespace!,
+        },
+      })
+    }
   }
 
   const deleteResourcesResult = deleteResources(resources)
-
   return {
     promise: new Promise((resolve, reject) => {
       deleteResourcesResult.promise.then((promisesSettledResult) => {

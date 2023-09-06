@@ -8,7 +8,6 @@ import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../.
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
-import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -33,6 +32,7 @@ import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
+import { DestroyHostedModal } from './DestroyHostedModal'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -41,6 +41,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+  const [showDestroyHostedModal, setShowDestroyHostedModal] = useState<boolean>(false)
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
   const [showRemoveAutomationModal, setShowRemoveAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
@@ -304,8 +305,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
+          id: ClusterAction.DestroyManaged,
+          text: t('managed.destroy'),
+          separator: true,
+          isDisabled: true,
+          description: t('Imported clusters cannot be destroyed'),
+          click: () => {},
+        },
+        {
           id: ClusterAction.Destroy,
           text: t('managed.destroy'),
+          separator: true,
           click: (cluster: Cluster) => {
             setModalProps({
               open: true,
@@ -346,27 +356,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
           id: ClusterAction.DestroyHosted,
+          separator: true,
           text: t('managed.destroy'),
-          click: (cluster: Cluster) => {
-            setModalProps({
-              open: true,
-              title: t('bulk.title.destroy'),
-              action: t('destroy'),
-              processing: t('destroying'),
-              items: [cluster],
-              emptyState: undefined, // there is always 1 item supplied
-              description: t('bulk.message.destroy'),
-              columns: modalColumns,
-              keyFn: (cluster) => cluster.name as string,
-              actionFn: (cluster) => deleteHypershiftCluster(cluster),
-              close: () => {
-                setModalProps({ open: false })
-              },
-              isDanger: true,
-              icon: 'warning',
-              confirmText: cluster.displayName,
-              isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-            })
+          click: () => {
+            setShowDestroyHostedModal(true)
           },
           isAriaDisabled: true,
           rbac: destroyRbac,
@@ -377,6 +370,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
   return (
     <>
+      <DestroyHostedModal open={showDestroyHostedModal} close={() => setShowDestroyHostedModal(false)} />
       <UpdateAutomationModal
         clusters={[cluster]}
         open={showUpdateAutomationModal}

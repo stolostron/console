@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import {
   Dropdown,
   DropdownToggle,
@@ -11,6 +11,7 @@ import {
   LabelProps,
   DropdownProps,
   TooltipPosition,
+  DropdownSeparator,
 } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
@@ -47,6 +48,9 @@ export type AcmDropdownItems = {
   tooltipPosition?: TooltipPosition
   label?: string
   labelColor?: LabelProps['color']
+  separator?: boolean
+  isDisabled?: boolean
+  description?: string
 }
 
 const getStyles = (props: AcmDropdownProps) => {
@@ -118,23 +122,28 @@ export function AcmDropdown(props: AcmDropdownProps) {
         position={props.dropdownPosition || DropdownPosition.right}
         dropdownItems={props.dropdownItems.map((item) => {
           return (
-            <DropdownItem
-              key={item.id}
-              tooltip={item.tooltip}
-              tooltipProps={{ position: item.tooltipPosition }}
-              href={item.href}
-              id={item.id}
-              isAriaDisabled={item.isAriaDisabled}
-              icon={item.icon}
-              onClick={() => onSelect(item.id)}
-            >
-              {item.text}
-              {item.label && item.labelColor && (
-                <Label className={classes.label} color={item.labelColor}>
-                  {item.label}
-                </Label>
-              )}
-            </DropdownItem>
+            <Fragment key={item.id}>
+              {item.separator && <DropdownSeparator key="separator" />}
+              <DropdownItem
+                key={item.id}
+                tooltip={item.tooltip}
+                tooltipProps={{ position: item.tooltipPosition }}
+                href={item.href}
+                id={item.id}
+                isAriaDisabled={item.isAriaDisabled}
+                icon={item.icon}
+                onClick={() => onSelect(item.id)}
+                isDisabled={item.isDisabled}
+                description={item.description}
+              >
+                {item.text}
+                {item.label && item.labelColor && (
+                  <Label className={classes.label} color={item.labelColor}>
+                    {item.label}
+                  </Label>
+                )}
+              </DropdownItem>
+            </Fragment>
           )
         })}
         toggle={

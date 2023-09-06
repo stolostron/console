@@ -12,33 +12,39 @@ type DocPageProps = {
     title: string
     content: React.ReactNode
   }[]
-  breadcrumbs: ICatalogBreadcrumb[]
-  onCancel: () => void
-  onBack: () => void
+  breadcrumbs?: ICatalogBreadcrumb[]
+  onCancel?: () => void
+  onBack?: () => void
+  noMargin?: boolean
 }
 
-const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack }) => {
+const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack, noMargin }) => {
   const { t } = useTranslation()
   return (
     <Page>
-      <PageHeader
-        title={t('Create cluster')}
-        breadcrumbs={breadcrumbs}
-        titleHelp={
-          <>
-            {t('page.header.create-cluster.tooltip')}
-            <a
-              href={DOC_LINKS.CREATE_CLUSTER}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: 'block', marginTop: '4px' }}
-            >
-              {t('learn.more')}
-            </a>
-          </>
-        }
-      />
-      <Card style={{ margin: '2em', padding: '2em' }}>
+      {breadcrumbs ? (
+        <PageHeader
+          title={t('Create cluster')}
+          breadcrumbs={breadcrumbs}
+          titleHelp={
+            <>
+              {t('page.header.create-cluster.tooltip')}
+              <a
+                href={DOC_LINKS.CREATE_CLUSTER}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'block', marginTop: '4px' }}
+              >
+                {t('learn.more')}
+              </a>
+            </>
+          }
+        />
+      ) : (
+        ''
+      )}
+
+      <Card style={{ margin: noMargin ? 0 : '2em', padding: '2em' }}>
         <List isPlain isBordered iconSize="large">
           {listItems.map((item) => {
             return (
@@ -52,9 +58,13 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
           })}
         </List>
       </Card>
-      <PageGroup sticky="bottom" style={{ height: '68px' }}>
-        <DocPageToolbar onBack={onBack} onCancel={onCancel} />
-      </PageGroup>
+      {onCancel && onBack ? (
+        <PageGroup sticky="bottom" style={{ height: '68px' }}>
+          <DocPageToolbar onBack={onBack} onCancel={onCancel} />
+        </PageGroup>
+      ) : (
+        ''
+      )}
     </Page>
   )
 }

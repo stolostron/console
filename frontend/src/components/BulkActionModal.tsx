@@ -33,6 +33,7 @@ import { getRawErrorInfo } from './ErrorPage'
 export type BulkActionModalProps<T = undefined> = {
   action: string
   actionFn: (item: T) => IRequestResult
+  alert?: React.ReactNode
   checkBox?: JSX.Element
   close: () => void
   confirmText?: string
@@ -77,6 +78,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   const {
     action,
     actionFn,
+    alert,
     checkBox,
     close,
     columns,
@@ -120,6 +122,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
           <Fragment>
             {description}
             {checkBox}
+            {alert}
             {columns && !(hideTableAfterSubmit && progress != 0) && (
               <AcmTablePaginationContextProvider localStorageKey="model">
                 <AcmTable<T>

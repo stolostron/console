@@ -17,6 +17,7 @@ export enum ClusterAction {
   DestroyHosted = 'destroy-hypershift-cluster',
   UpdateAutomationTemplate = 'update-automation-template',
   RemoveAutomationTemplate = 'remove-automation-template',
+  DestroyManaged = 'destroy-managed-cluster',
 }
 
 function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
@@ -71,6 +72,8 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
           ClusterStatus.resuming,
         ].includes(cluster.status)
       )
+    case ClusterAction.DestroyManaged:
+      return !cluster.isHive && cluster.isManaged && !cluster.isHostedCluster
     case ClusterAction.Destroy:
       return cluster.isHive && !(cluster.hive.clusterPool && !cluster.hive.clusterClaimName)
     case ClusterAction.EditAI:
@@ -82,7 +85,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
       )
     case ClusterAction.DestroyHosted:
-      return cluster.isHypershift && !!cluster.hypershift?.agent && cluster.status !== ClusterStatus.destroying
+      return cluster.isHypershift
     case ClusterAction.UpdateAutomationTemplate:
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
