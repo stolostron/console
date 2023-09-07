@@ -168,67 +168,6 @@ Array [
 ]
 `;
 
-exports[`Correctly returns all resource definitions: SearchDefinitions-applicationrelationship 1`] = `
-Array [
-  Object {
-    "cell": <Link
-      to={
-        Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
-        }
-      }
-    >
-      testName
-    </Link>,
-    "header": "Name",
-    "sort": "name",
-  },
-  Object {
-    "cell": "namespace",
-    "header": "Namespace",
-    "sort": "namespace",
-  },
-  Object {
-    "cell": "source",
-    "header": "Source",
-    "sort": "source",
-  },
-  Object {
-    "cell": "destination",
-    "header": "Destination",
-    "sort": "destination",
-  },
-  Object {
-    "cell": "type",
-    "header": "Type",
-    "sort": "type",
-  },
-  Object {
-    "cell": "in a month",
-    "header": "Created",
-    "sort": "created",
-  },
-  Object {
-    "cell": <AcmLabels
-      collapse={Array []}
-      labels={
-        Array [
-          "testLabel=label",
-          "testLabel1=label1",
-        ]
-      }
-    />,
-    "header": "Labels",
-    "sort": "label",
-  },
-]
-`;
-
 exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1`] = `
 Array [
   Object {
@@ -366,7 +305,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns all resource definitions: SearchDefinitions-configmap 1`] = `
+exports[`Correctly returns all resource definitions: SearchDefinitions-clusteroperator 1`] = `
 Array [
   Object {
     "cell": <Link
@@ -395,6 +334,92 @@ Array [
     "cell": "cluster",
     "header": "Cluster",
     "sort": "cluster",
+  },
+  Object {
+    "cell": "version",
+    "header": "Version",
+    "sort": "version",
+  },
+  Object {
+    "cell": "available",
+    "header": "Available",
+    "sort": "available",
+  },
+  Object {
+    "cell": "progressing",
+    "header": "Progressing",
+    "sort": "progressing",
+  },
+  Object {
+    "cell": "degraded",
+    "header": "Degraded",
+    "sort": "degraded",
+  },
+  Object {
+    "cell": "in a month",
+    "header": "Created",
+    "sort": "created",
+  },
+  Object {
+    "cell": <AcmLabels
+      collapse={Array []}
+      labels={
+        Array [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "sort": "label",
+  },
+]
+`;
+
+exports[`Correctly returns all resource definitions: SearchDefinitions-clusterserviceversion 1`] = `
+Array [
+  Object {
+    "cell": <Link
+      to={
+        Object {
+          "pathname": "/multicloud/home/search/resources",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
+          "state": Object {
+            "from": "/multicloud/home/search",
+            "fromSearch": "",
+          },
+        }
+      }
+    >
+      testName
+    </Link>,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": "namespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  Object {
+    "cell": "cluster",
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "version",
+    "header": "Version",
+    "sort": "version",
+  },
+  Object {
+    "cell": "phase",
+    "header": "Phase",
+    "sort": "phase",
+  },
+  Object {
+    "cell": "display",
+    "header": "Display",
+    "sort": "display",
   },
   Object {
     "cell": "in a month",
@@ -1808,7 +1833,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns all resource definitions: SearchDefinitions-subscription 1`] = `
+exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.apps.open-cluster-management.io 1`] = `
 Array [
   Object {
     "cell": <Link
@@ -1857,6 +1882,72 @@ Array [
     "cell": "timeWindow",
     "header": "Time window",
     "sort": "timeWindow",
+  },
+  Object {
+    "cell": "in a month",
+    "header": "Created",
+    "sort": "created",
+  },
+  Object {
+    "cell": <AcmLabels
+      collapse={Array []}
+      labels={
+        Array [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "sort": "label",
+  },
+]
+`;
+
+exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.operators.coreos.io 1`] = `
+Array [
+  Object {
+    "cell": <Link
+      to={
+        Object {
+          "pathname": "/multicloud/home/search/resources",
+          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
+          "state": Object {
+            "from": "/multicloud/home/search",
+            "fromSearch": "",
+          },
+        }
+      }
+    >
+      testName
+    </Link>,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": "namespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  Object {
+    "cell": "cluster",
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "package",
+    "header": "Package",
+    "sort": "package",
+  },
+  Object {
+    "cell": "source",
+    "header": "Source",
+    "sort": "source",
+  },
+  Object {
+    "cell": "Channel",
+    "header": "Channel",
+    "sort": "Channel",
   },
   Object {
     "cell": "in a month",
