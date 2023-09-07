@@ -90,6 +90,111 @@ export const getSearchDefinitions = (t: TFunction) => {
         AddColumn(t, 'Labels'),
       ],
     },
+    clusteroperator: {
+      columns: [
+        {
+          header: t('Name'),
+          sort: 'name',
+          cell: (item: any) => {
+            return CreateDetailsLink(item)
+          },
+        },
+        {
+          header: t('Namespace'),
+          sort: 'namespace',
+          cell: 'namespace',
+        },
+        {
+          header: t('Cluster'),
+          sort: 'cluster',
+          cell: 'cluster',
+        },
+        {
+          header: t('Version'),
+          sort: 'version',
+          cell: 'version',
+        },
+        {
+          header: t('Available'),
+          sort: 'available',
+          cell: 'available',
+        },
+        {
+          header: t('Progressing'),
+          sort: 'progressing',
+          cell: 'progressing',
+        },
+        {
+          header: t('Degraded'),
+          sort: 'degraded',
+          cell: 'degraded',
+        },
+        {
+          header: t('Created'),
+          sort: 'created',
+          cell: (item: any) => {
+            return GetAge(item, 'created')
+          },
+        },
+        {
+          header: t('Labels'),
+          sort: 'label',
+          cell: (item: any) => {
+            return FormatLabels(item)
+          },
+        },
+      ],
+    },
+    clusterserviceversion: {
+      columns: [
+        {
+          header: t('Name'),
+          sort: 'name',
+          cell: (item: any) => {
+            return CreateDetailsLink(item)
+          },
+        },
+        {
+          header: t('Namespace'),
+          sort: 'namespace',
+          cell: 'namespace',
+        },
+        {
+          header: t('Cluster'),
+          sort: 'cluster',
+          cell: 'cluster',
+        },
+        {
+          header: t('Version'),
+          sort: 'version',
+          cell: 'version',
+        },
+        {
+          header: t('Phase'),
+          sort: 'phase',
+          cell: 'phase',
+        },
+        {
+          header: t('Display'),
+          sort: 'display',
+          cell: 'display',
+        },
+        {
+          header: t('Created'),
+          sort: 'created',
+          cell: (item: any) => {
+            return GetAge(item, 'created')
+          },
+        },
+        {
+          header: t('Labels'),
+          sort: 'label',
+          cell: (item: any) => {
+            return FormatLabels(item)
+          },
+        },
+      ],
+    },
     channel: {
       columns: [
         AddColumn(t, 'Name'),
@@ -480,7 +585,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         AddColumn(t, 'Labels'),
       ],
     },
-    "subscription.apps.open-cluster-management.io": {
+    'subscription.apps.open-cluster-management.io': {
       columns: [
         AddColumn(t, 'Name'),
         AddColumn(t, 'Namespace'),
@@ -501,7 +606,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         AddColumn(t, 'Labels'),
       ],
     },
-    "subscription.operators.coreos.io": {
+    'subscription.operators.coreos.io': {
       columns: [
         AddColumn(t, 'Name'),
         AddColumn(t, 'Namespace'),
