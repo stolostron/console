@@ -5,10 +5,13 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 import { GetControlPlane } from './common/GetControlPlane'
+import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
 
 export function CreateDiscoverHost() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+
+  const noAvailableHostsAlert = useNoAvailableHostsAlert('standalone')
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
@@ -23,7 +26,12 @@ export function CreateDiscoverHost() {
             ),
           },
         ],
-        onClick: nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIM)),
+        onClick: !noAvailableHostsAlert
+          ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIM))
+          : undefined,
+        alertTitle: noAvailableHostsAlert?.title,
+        alertVariant: 'info',
+        alertContent: noAvailableHostsAlert?.content,
       },
       {
         id: 'discover',
@@ -38,7 +46,7 @@ export function CreateDiscoverHost() {
       },
     ]
     return newCards
-  }, [nextStep, t])
+  }, [nextStep, t, noAvailableHostsAlert])
 
   const breadcrumbs: ICatalogBreadcrumb[] = [
     { label: t('Clusters'), to: NavigationPath.clusters },

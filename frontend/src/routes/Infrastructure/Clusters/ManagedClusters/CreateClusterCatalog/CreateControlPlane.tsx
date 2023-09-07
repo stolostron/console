@@ -10,17 +10,19 @@ import {
 import { useMemo } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
 import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
+import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 
 export function CreateControlPlane() {
-  const [t] = useTranslation()
+  const { t } = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
 
   const isHypershiftEnabled = useIsHypershiftEnabled()
+  const noAvailableHostsAlert = useNoAvailableHostsAlert('hosted')
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
@@ -36,7 +38,7 @@ export function CreateControlPlane() {
           },
           {
             type: CatalogCardItemType.List,
-            title: t(''),
+            title: '',
             icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
             items: [
               {
@@ -46,18 +48,21 @@ export function CreateControlPlane() {
             ],
           },
         ],
-        onClick: isHypershiftEnabled
-          ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIMHypershift))
-          : undefined,
-        alertTitle: isHypershiftEnabled
-          ? undefined
-          : t('Hosted control plane operator must be enabled in order to continue'),
-        alertVariant: 'info',
-        alertContent: (
+        onClick:
+          isHypershiftEnabled && !noAvailableHostsAlert
+            ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIMHypershift))
+            : undefined,
+        alertTitle: !isHypershiftEnabled
+          ? t('Hosted control plane operator must be enabled in order to continue')
+          : noAvailableHostsAlert?.title,
+        alertContent: !isHypershiftEnabled ? (
           <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
             {t('View documentation')} <ExternalLinkAltIcon />
           </a>
+        ) : (
+          noAvailableHostsAlert?.content
         ),
+        alertVariant: 'info',
       },
       {
         id: 'standalone',
@@ -71,7 +76,7 @@ export function CreateControlPlane() {
           },
           {
             type: CatalogCardItemType.List,
-            title: t(''),
+            title: '',
             icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
             items: [
               {
@@ -88,7 +93,7 @@ export function CreateControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled])
+  }, [nextStep, t, isHypershiftEnabled, noAvailableHostsAlert])
 
   return (
     <GetControlPlane

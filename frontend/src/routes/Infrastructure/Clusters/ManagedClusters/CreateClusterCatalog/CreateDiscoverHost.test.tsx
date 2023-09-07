@@ -2,14 +2,29 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId } from '../../../../../lib/test-util'
+
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateDiscoverHost } from './CreateDiscoverHost'
+import { agentsState, infraEnvironmentsState } from '../../../../../atoms'
+import { AgentK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { mockInfraEnv1, mockAgents } from '../components/cim/EditAICluster.sharedmocks'
+import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 
 describe('CreateDiscoverHost', () => {
-  const Component = () => {
+  const Component = ({
+    infraEnvsMock,
+    agentsMock,
+  }: {
+    infraEnvsMock?: InfraEnvK8sResource[]
+    agentsMock?: AgentK8sResource[]
+  }) => {
     return (
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(infraEnvironmentsState, infraEnvsMock || [])
+          snapshot.set(agentsState, agentsMock || [])
+        }}
+      >
         <MemoryRouter initialEntries={[NavigationPath.createDiscoverHost]}>
           <Route path={NavigationPath.createDiscoverHost}>
             <CreateDiscoverHost />
@@ -19,13 +34,34 @@ describe('CreateDiscoverHost', () => {
     )
   }
 
-  test('can click existinghost', async () => {
-    render(<Component />)
+  test('Use existing card should be disabled when there are no infrastructure environments', async () => {
+    const { getByTestId } = render(<Component />)
+    const card = getByTestId('existinghost')
+    expect(isCardEnabled(card)).toBe(false)
+    expect(card).toHaveTextContent('No infrastructure environments found')
+    expect(card).toHaveTextContent(
+      'To use existing hosts, create an infrastructure environment and add hosts in the Host inventory.'
+    )
+  })
+
+  test('Use existing card should be disabled when there are no available hosts', async () => {
+    const { getByTestId } = render(<Component infraEnvsMock={[mockInfraEnv1]} />)
+    const card = getByTestId('existinghost')
+    expect(isCardEnabled(card)).toBe(false)
+    expect(card).toHaveTextContent('No available hosts found')
+    expect(card).toHaveTextContent('To use existing hosts, go to Host inventory and add hosts')
+  })
+
+  test('Use existing card should be enabled when there are available hosts', async () => {
+    const { getByTestId } = render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+    const card = getByTestId('existinghost')
+    expect(isCardEnabled(card)).toBe(true)
     await clickByTestId('existinghost')
   })
 
   test('can click discover', async () => {
-    render(<Component />)
+    const { getByTestId } = render(<Component />)
+    expect(isCardEnabled(getByTestId('discover'))).toBe(true)
     await clickByTestId('discover')
   })
 })
