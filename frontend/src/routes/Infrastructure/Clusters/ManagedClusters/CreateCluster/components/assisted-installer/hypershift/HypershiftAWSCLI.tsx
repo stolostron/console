@@ -54,9 +54,7 @@ hcp create cluster aws \\
       title: t('Prerequisites and Configuration'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>
-            {t('Download and install the Hosted Control Plane CLI.')}
-          </Text>
+          <Text component={TextVariants.p}>{t('Download and install the Hosted Control Plane CLI.')}</Text>
           <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
             {t('Follow documentation for more information.')}
           </Text>
