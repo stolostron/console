@@ -51,51 +51,6 @@ export const getSearchDefinitions = (t: TFunction) => {
         },
       ],
     },
-    applicationrelationship: {
-      columns: [
-        {
-          header: t('Name'),
-          sort: 'name',
-          cell: (item: any) => {
-            return CreateDetailsLink(item)
-          },
-        },
-        {
-          header: t('Namespace'),
-          sort: 'namespace',
-          cell: 'namespace',
-        },
-        {
-          header: t('Source'),
-          sort: 'source',
-          cell: 'source',
-        },
-        {
-          header: t('Destination'),
-          sort: 'destination',
-          cell: 'destination',
-        },
-        {
-          header: t('Type'),
-          sort: 'type',
-          cell: 'type',
-        },
-        {
-          header: t('Created'),
-          sort: 'created',
-          cell: (item: any) => {
-            return GetAge(item, 'created')
-          },
-        },
-        {
-          header: t('Labels'),
-          sort: 'label',
-          cell: (item: any) => {
-            return FormatLabels(item)
-          },
-        },
-      ],
-    },
     cluster: {
       columns: [
         {
@@ -156,6 +111,111 @@ export const getSearchDefinitions = (t: TFunction) => {
         },
       ],
     },
+    clusteroperator: {
+      columns: [
+        {
+          header: t('Name'),
+          sort: 'name',
+          cell: (item: any) => {
+            return CreateDetailsLink(item)
+          },
+        },
+        {
+          header: t('Namespace'),
+          sort: 'namespace',
+          cell: 'namespace',
+        },
+        {
+          header: t('Cluster'),
+          sort: 'cluster',
+          cell: 'cluster',
+        },
+        {
+          header: t('Version'),
+          sort: 'version',
+          cell: 'version',
+        },
+        {
+          header: t('Available'),
+          sort: 'available',
+          cell: 'available',
+        },
+        {
+          header: t('Progressing'),
+          sort: 'progressing',
+          cell: 'progressing',
+        },
+        {
+          header: t('Degraded'),
+          sort: 'degraded',
+          cell: 'degraded',
+        },
+        {
+          header: t('Created'),
+          sort: 'created',
+          cell: (item: any) => {
+            return GetAge(item, 'created')
+          },
+        },
+        {
+          header: t('Labels'),
+          sort: 'label',
+          cell: (item: any) => {
+            return FormatLabels(item)
+          },
+        },
+      ],
+    },
+    clusterserviceversion: {
+      columns: [
+        {
+          header: t('Name'),
+          sort: 'name',
+          cell: (item: any) => {
+            return CreateDetailsLink(item)
+          },
+        },
+        {
+          header: t('Namespace'),
+          sort: 'namespace',
+          cell: 'namespace',
+        },
+        {
+          header: t('Cluster'),
+          sort: 'cluster',
+          cell: 'cluster',
+        },
+        {
+          header: t('Version'),
+          sort: 'version',
+          cell: 'version',
+        },
+        {
+          header: t('Phase'),
+          sort: 'phase',
+          cell: 'phase',
+        },
+        {
+          header: t('Display'),
+          sort: 'display',
+          cell: 'display',
+        },
+        {
+          header: t('Created'),
+          sort: 'created',
+          cell: (item: any) => {
+            return GetAge(item, 'created')
+          },
+        },
+        {
+          header: t('Labels'),
+          sort: 'label',
+          cell: (item: any) => {
+            return FormatLabels(item)
+          },
+        },
+      ],
+    },
     channel: {
       columns: [
         {
@@ -184,41 +244,6 @@ export const getSearchDefinitions = (t: TFunction) => {
           header: t('Pathname'),
           sort: 'pathname',
           cell: 'pathname',
-        },
-        {
-          header: t('Created'),
-          sort: 'created',
-          cell: (item: any) => {
-            return GetAge(item, 'created')
-          },
-        },
-        {
-          header: t('Labels'),
-          sort: 'label',
-          cell: (item: any) => {
-            return FormatLabels(item)
-          },
-        },
-      ],
-    },
-    configmap: {
-      columns: [
-        {
-          header: t('Name'),
-          sort: 'name',
-          cell: (item: any) => {
-            return CreateDetailsLink(item)
-          },
-        },
-        {
-          header: t('Namespace'),
-          sort: 'namespace',
-          cell: 'namespace',
-        },
-        {
-          header: t('Cluster'),
-          sort: 'cluster',
-          cell: 'cluster',
         },
         {
           header: t('Created'),
@@ -1311,7 +1336,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         },
       ],
     },
-    subscription: {
+    'subscription.apps.open-cluster-management.io': {
       columns: [
         {
           header: t('Name'),
@@ -1349,6 +1374,56 @@ export const getSearchDefinitions = (t: TFunction) => {
           header: t('Time window'),
           sort: 'timeWindow',
           cell: 'timeWindow',
+        },
+        {
+          header: t('Created'),
+          sort: 'created',
+          cell: (item: any) => {
+            return GetAge(item, 'created')
+          },
+        },
+        {
+          header: t('Labels'),
+          sort: 'label',
+          cell: (item: any) => {
+            return FormatLabels(item)
+          },
+        },
+      ],
+    },
+    'subscription.operators.coreos.io': {
+      columns: [
+        {
+          header: t('Name'),
+          sort: 'name',
+          cell: (item: any) => {
+            return CreateDetailsLink(item)
+          },
+        },
+        {
+          header: t('Namespace'),
+          sort: 'namespace',
+          cell: 'namespace',
+        },
+        {
+          header: t('Cluster'),
+          sort: 'cluster',
+          cell: 'cluster',
+        },
+        {
+          header: t('Package'),
+          sort: 'package',
+          cell: 'package',
+        },
+        {
+          header: t('Source'),
+          sort: 'source',
+          cell: 'source',
+        },
+        {
+          header: t('Channel'),
+          sort: 'Channel',
+          cell: 'Channel',
         },
         {
           header: t('Created'),
