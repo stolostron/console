@@ -26,7 +26,7 @@ describe('HypershiftKubeVirtCLI', () => {
     const initialNocks = [nockGet(mockOpenShiftConsoleConfigMap)]
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Prerequisite and Configuration')
+    await waitForText('Prerequisites and Configuration')
     await waitForText('Running the Hosted Control Plane command')
     // find code block
     await waitForTestId('code-content')

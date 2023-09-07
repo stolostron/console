@@ -33,14 +33,14 @@ CLUSTER_NAME="example"
 SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
 NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
 
-hypershift create cluster aws \\
+hcp create cluster aws \\
   --name $CLUSTER_NAME \\
   --namespace $NAMESPACE \\
   --node-pool-replicas=3 \\
   --secret-creds $SECRET_CREDS \\
   --region $REGION`
 
-  const helperCommand = `hypershift create cluster aws --help`
+  const helperCommand = `hcp create cluster aws --help`
   const handleModalToggleAws = () => {
     setIsModalOpenAws(!isModalOpenAws)
   }
@@ -51,12 +51,10 @@ hypershift create cluster aws \\
 
   const listItems = [
     {
-      title: t('Prerequisite'),
+      title: t('Prerequisites and Configuration'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>
-            {t('Enable Hosted Control Plane feature for AWS. Download and install Hosted Control Plane CLI.')}
-          </Text>
+          <Text component={TextVariants.p}>{t('Download and install the Hosted Control Plane CLI.')}</Text>
           <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
             {t('Follow documentation for more information.')}
           </Text>

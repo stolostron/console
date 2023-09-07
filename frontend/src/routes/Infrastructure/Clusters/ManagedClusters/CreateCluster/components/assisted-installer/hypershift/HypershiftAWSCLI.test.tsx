@@ -26,7 +26,7 @@ describe('HypershiftAWSCLI', () => {
     const initialNocks = [nockGet(mockOpenShiftConsoleConfigMap)]
     render(<Component />)
     await waitForNocks(initialNocks)
-    await waitForText('Prerequisite')
+    await waitForText('Prerequisites and Configuration')
     await waitForText('Amazon Web Services (AWS) credential')
     await waitForText('Running the Hosted Control Plane command')
     // find code block
