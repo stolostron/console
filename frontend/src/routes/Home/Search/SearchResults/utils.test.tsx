@@ -22,3 +22,8 @@ test('Correctly return empty row Actions for restricted resource', () => {
   const res = GetRowActions('cluster', 'kind:Cluster', false, () => {}, t)
   expect(res).toMatchSnapshot()
 })
+
+test('Correctly return empty row Actions for Application', () => {
+  const res = GetRowActions('application', 'kind:Application', false, () => {}, t)
+  expect(res).toMatchSnapshot()
+})
