@@ -15,6 +15,9 @@ const t = i18next.t.bind(i18next)
 
 test('Correctly return row Actions', () => {
   const res = GetRowActions('pod', 'kind:Pod', false, () => {}, t)
+  res[0].click({ kind: 'Pod' }) // edit resource
+  res[1].click({ kind: 'Pod' }) // view related resources
+  res[2].click({ kind: 'Pod' }) // delete resource
   expect(res).toMatchSnapshot()
 })
 
@@ -25,5 +28,19 @@ test('Correctly return empty row Actions for restricted resource', () => {
 
 test('Correctly return empty row Actions for Application', () => {
   const res = GetRowActions('application', 'kind:Application', false, () => {}, t)
+  res[0].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'local-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+  }) // edit app
+  res[1].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'local-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+  }) // view app topology
   expect(res).toMatchSnapshot()
 })

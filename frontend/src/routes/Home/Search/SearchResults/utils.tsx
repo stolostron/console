@@ -31,7 +31,7 @@ export function GetRowActions(
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: cluster === 'local-cluster' ? undefined : cluster,
-          applicationset: applicationSet == null ? undefined : applicationSet,
+          applicationset: applicationSet ?? undefined,
         })
         return history.push({
           pathname: generatePath(NavigationPath.applicationOverview, {
