@@ -28,22 +28,22 @@ export MEM="6Gi"
 export CPU="2"
 export WORKER_COUNT="2"
 
-hypershift create cluster kubevirt \\
---name $CLUSTER_NAME \\
---node-pool-replicas $WORKER_COUNT \\
---pull-secret $PULL_SECRET \\
---memory $MEM \\
---cores $CPU`
+hcp create cluster kubevirt \\
+  --name $CLUSTER_NAME \\
+  --node-pool-replicas $WORKER_COUNT \\
+  --pull-secret $PULL_SECRET \\
+  --memory $MEM \\
+  --cores $CPU`
 
-  const helperCommand = `hypershift create cluster kubevirt --help`
+  const helperCommand = `hcp create cluster kubevirt --help`
 
   const listItems = [
     {
-      title: t('Prerequisite and Configuration'),
+      title: t('Prerequisites and Configuration'),
       content: (
         <Fragment>
           <Text component={TextVariants.p}>
-            {t('Enable Hosted Control Plane Feature for OpenShift Virtualization. ')}
+            {t('Download and install the Hosted Control Plane CLI.')}
           </Text>
           <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_MANAGE_KUBEVIRT} target="_blank">
             {t('Follow documentation for more information.')}
