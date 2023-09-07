@@ -1172,6 +1172,7 @@
   "discoveryConfig.namespaces.placeholder": "Select a namespace",
   "discoveryConfig.subheader": "Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Clusters page.",
   "Disk storage account type": "Disk storage account type",
+  "Display": "Display",
   "Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.": "Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.",
   "Displays the name of the channel used by the subscription. Click to search for the channel.": "Displays the name of the channel used by the subscription. Click to search for the channel.",
   "Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.": "Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.",

@@ -1336,7 +1336,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         },
       ],
     },
-    "subscription.apps.open-cluster-management.io": {
+    'subscription.apps.open-cluster-management.io': {
       columns: [
         {
           header: t('Name'),
@@ -1391,7 +1391,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         },
       ],
     },
-    "subscription.operators.coreos.io": {
+    'subscription.operators.coreos.io': {
       columns: [
         {
           header: t('Name'),
