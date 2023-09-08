@@ -17,44 +17,28 @@ export const getSearchDefinitions = (t: TFunction) => {
   return {
     application: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Namespace', t('Namespace')),
-        AddColumn('Created', t('Created')),
+        AddColumn('name', t('Name')),
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('created', t('Created')),
         {
           header: t('Topology'),
           cell: (item: any) => {
             return CreateApplicationTopologyLink(item, t)
           },
         },
-        AddColumn('Labels', t('Labels')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     cluster: {
       columns: [
-        AddColumn('Name', t('Name')),
-        {
-          header: t('Available'),
-          sort: 'ManagedClusterConditionAvailable',
-          cell: 'ManagedClusterConditionAvailable',
-        },
-        {
-          header: t('Hub accepted'),
-          sort: 'HubAcceptedManagedCluster',
-          cell: 'HubAcceptedManagedCluster',
-        },
-        {
-          header: t('Joined'),
-          sort: 'ManagedClusterJoined',
-          cell: 'ManagedClusterJoined',
-        },
-        AddColumn('Nodes', t('Nodes')),
-        {
-          header: t('Kubernetes version'),
-          sort: 'kubernetesVersion',
-          cell: 'kubernetesVersion',
-        },
-        AddColumn('CPU', t('CPU')),
-        AddColumn('Memory', t('Memory')),
+        AddColumn('name', t('Name')),
+        AddColumn('ManagedClusterConditionAvailable', t('Available')),
+        AddColumn('HubAcceptedManagedCluster', t('Hub accepted')),
+        AddColumn('ManagedClusterJoined', t('Joined')),
+        AddColumn('nodes', t('Nodes')),
+        AddColumn('kubernetesVersion', t('Kubernetes version')),
+        AddColumn('cpu', t('CPU')),
+        AddColumn('memory', t('Memory')),
         {
           header: t('Console URL'),
           sort: 'consoleURL',
@@ -62,32 +46,32 @@ export const getSearchDefinitions = (t: TFunction) => {
             return CreateExternalLink(item, t)
           },
         },
-        AddColumn('Labels', t('Labels')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     clusteroperator: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Version', t('Version')),
-        AddColumn('Available', t('Available')),
-        AddColumn('Progressing', t('Progressing')),
-        AddColumn('Degraded', t('Degraded')),
+        AddColumn('version', t('Version')),
+        AddColumn('available', t('Available')),
+        AddColumn('progressing', t('Progressing')),
+        AddColumn('degraded', t('Degraded')),
       ]),
     },
     clusterserviceversion: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Version', t('Version')),
-        AddColumn('Phase', t('Phase')),
-        AddColumn('Display', t('Display')),
+        AddColumn('version', t('Version')),
+        AddColumn('phase', t('Phase')),
+        AddColumn('display', t('Display')),
       ]),
     },
     channel: {
-      columns: AddDefaultColumns(t, [AddColumn('Type', t('Type')), AddColumn('Pathname', t('Pathname'))]),
+      columns: AddDefaultColumns(t, [AddColumn('type', t('Type')), AddColumn('pathname', t('Pathname'))]),
     },
     cronjob: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Schedule', t('Schedule')),
-        AddColumn('Suspend', t('Suspend')),
-        AddColumn('Active', t('Active')),
+        AddColumn('schedule', t('Schedule')),
+        AddColumn('suspend', t('Suspend')),
+        AddColumn('active', t('Active')),
         {
           header: t('Last schedule'),
           sort: 'lastSchedule',
@@ -99,38 +83,34 @@ export const getSearchDefinitions = (t: TFunction) => {
     },
     daemonset: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Desired', t('Desired')),
-        AddColumn('Current', t('Current')),
-        AddColumn('Ready', t('Ready')),
-        AddColumn('Updated', t('Updated')),
-        AddColumn('Available', t('Available')),
+        AddColumn('desired', t('Desired')),
+        AddColumn('current', t('Current')),
+        AddColumn('ready', t('Ready')),
+        AddColumn('updated', t('Updated')),
+        AddColumn('available', t('Available')),
       ]),
     },
     deployable: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Namespace', t('Namespace')),
-        {
-          header: t('Chart URL'),
-          sort: 'chartUrl',
-          cell: 'chartUrl',
-        },
-        AddColumn('Dependencies', t('Dependencies')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('chartUrl', t('Chart URL')),
+        AddColumn('dependencies', t('Dependencies')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     deployment: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Desired', t('Desired')),
-        AddColumn('Current', t('Current')),
-        AddColumn('Ready', t('Ready')),
-        AddColumn('Available', t('Available')),
+        AddColumn('desired', t('Desired')),
+        AddColumn('current', t('Current')),
+        AddColumn('ready', t('Ready')),
+        AddColumn('available', t('Available')),
       ]),
     },
     genericresource: {
       columns: [
-        AddColumn('Name', t('Name')),
+        AddColumn('name', t('Name')),
         {
           header: t('Namespace'),
           sort: 'namespace',
@@ -138,153 +118,105 @@ export const getSearchDefinitions = (t: TFunction) => {
             return item?.namespace ?? '-'
           },
         },
-        AddColumn('Cluster', t('Cluster')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     helmrelease: {
       // This is the Application Helm CR.
       columns: AddDefaultColumns(t, [
-        {
-          header: t('Source type'),
-          sort: 'sourceType',
-          cell: 'sourceType',
-        },
-        AddColumn('URL', t('URL')),
-        {
-          header: t('Chart path'),
-          sort: 'chartPath',
-          cell: 'chartPath',
-        },
-        AddColumn('Branch', t('Branch')),
+        AddColumn('sourceType', t('Source type')),
+        AddColumn('url', t('URL')),
+        AddColumn('chartPath', t('Chart path')),
+        AddColumn('branch', t('Branch')),
       ]),
     },
     job: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Completions', t('Completions')),
-        AddColumn('Parallelism', t('Parallelism')),
-        AddColumn('Successful', t('Successful')),
+        AddColumn('completions', t('Completions')),
+        AddColumn('parallelism', t('Parallelism')),
+        AddColumn('successful', t('Successful')),
       ]),
     },
     namespace: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Cluster', t('Cluster')),
-        AddColumn('Status', t('Status')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('status', t('Status')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     node: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Cluster', t('Cluster')),
-        AddColumn('Role', t('Role')),
-        AddColumn('Architecture', t('Architecture')),
-        {
-          header: t('OS image'),
-          sort: 'osImage',
-          cell: 'osImage',
-        },
-        AddColumn('CPU', t('CPU')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('role', t('Role')),
+        AddColumn('architecture', t('Architecture')),
+        AddColumn('osImage', t('OS image')),
+        AddColumn('cpu', t('CPU')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     persistentvolume: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Cluster', t('Cluster')),
-        AddColumn('Type', t('Type')),
-        AddColumn('Status', t('Status')),
-        AddColumn('Capacity', t('Capacity')),
-        {
-          header: t('Access mode'),
-          sort: 'accessMode',
-          cell: 'accessMode',
-        },
-        {
-          header: t('Claim'),
-          sort: 'claimRef',
-          cell: 'claimRef',
-        },
-        {
-          header: t('Reclaim policy'),
-          sort: 'reclaimPolicy',
-          cell: 'reclaimPolicy',
-        },
-        AddColumn('Path', t('Path')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('type', t('Type')),
+        AddColumn('status', t('Status')),
+        AddColumn('capacity', t('Capacity')),
+        AddColumn('accessMode', t('Access mode')),
+        AddColumn('claimRef', t('Claim')),
+        AddColumn('reclaimPolicy', t('Reclaim policy')),
+        AddColumn('path', t('Path')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     persistentvolumeclaim: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Status', t('Status')),
-        {
-          header: t('Persistent volume'),
-          sort: 'volumeName',
-          cell: 'volumeName',
-        },
-        {
-          header: t('Requests'),
-          sort: 'request',
-          cell: 'request',
-        },
-        {
-          header: t('Access mode'),
-          sort: 'accessMode',
-          cell: 'accessMode',
-        },
+        AddColumn('status', t('Status')),
+        AddColumn('volumeName', t('Persistent volume')),
+        AddColumn('request', t('Requests')),
+        AddColumn('accessMode', t('Access mode')),
       ]),
     },
     placementbinding: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Namespace', t('Namespace')),
-        AddColumn('Subjects', t('Subjects')),
-        {
-          header: t('Placement policy'),
-          sort: 'placementpolicy',
-          cell: 'placementpolicy',
-        },
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('subjects', t('Subjects')),
+        AddColumn('placementpolicy', t('Placement policy')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     placementpolicy: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Namespace', t('Namespace')),
-        AddColumn('Replicas', t('Replicas')),
-        AddColumn('Decisions', t('Decisions')),
-        AddColumn('Created', t('Created')),
-        AddColumn('Labels', t('Labels')),
+        AddColumn('name', t('Name')),
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('replicas', t('Replicas')),
+        AddColumn('decisions', t('Decisions')),
+        AddColumn('created', t('Created')),
+        AddColumn('labels', t('Labels')),
       ],
     },
     placementrule: {
-      columns: AddDefaultColumns(t, [AddColumn('Replicas', t('Replicas'))]),
+      columns: AddDefaultColumns(t, [AddColumn('replicas', t('Replicas'))]),
     },
     pod: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Status', t('Status')),
-        AddColumn('Restarts', t('Restarts')),
-        {
-          header: t('Host IP'),
-          sort: 'hostIP',
-          cell: 'hostIP',
-        },
-        {
-          header: t('Pod IP'),
-          sort: 'podIP',
-          cell: 'podIP',
-        },
+        AddColumn('status', t('Status')),
+        AddColumn('restarts', t('Restarts')),
+        AddColumn('hostIP', t('Host IP')),
+        AddColumn('podIP', t('Pod IP')),
       ]),
     },
     policy: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Disabled', t('Disabled')),
+        AddColumn('disabled', t('Disabled')),
         {
           header: t('Violations'),
           sort: 'compliant',
@@ -307,26 +239,22 @@ export const getSearchDefinitions = (t: TFunction) => {
             }
           },
         },
-        {
-          header: t('Remediation action'),
-          sort: 'remediationAction',
-          cell: 'remediationAction',
-        },
+        AddColumn('remediationAction', t('Remediation action')),
       ]),
     },
     policyreport: {
       columns: [
-        AddColumn('Name', t('Name')),
+        AddColumn('name', t('Name')),
         {
           header: t('Scope'),
           sort: 'scope',
           cell: 'scope',
           tooltip: t('Scope refers to the cluster associated to the PolicyReport.'),
         },
-        AddColumn('Critical', t('Critical')),
-        AddColumn('Important', t('Important')),
-        AddColumn('Moderate', t('Moderate')),
-        AddColumn('Low', t('Low')),
+        AddColumn('critical', t('Critical')),
+        AddColumn('important', t('Important')),
+        AddColumn('moderate', t('Moderate')),
+        AddColumn('low', t('Low')),
         {
           header: t('Rules'),
           cell: (item: any) => {
@@ -344,20 +272,12 @@ export const getSearchDefinitions = (t: TFunction) => {
     },
     release: {
       columns: [
-        AddColumn('Name', t('Name')),
-        AddColumn('Namespace', t('Namespace')),
-        AddColumn('Cluster', t('Cluster')),
-        AddColumn('Status', t('Status')),
-        {
-          header: t('Chart name'),
-          sort: 'chartName',
-          cell: 'chartName',
-        },
-        {
-          header: t('Chart version'),
-          sort: 'chartVersion',
-          cell: 'chartVersion',
-        },
+        AddColumn('name', t('Name')),
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('status', t('Status')),
+        AddColumn('chartName', t('Chart name')),
+        AddColumn('chartVersion', t('Chart version')),
         {
           header: t('Updated'),
           sort: 'updated',
@@ -368,46 +288,34 @@ export const getSearchDefinitions = (t: TFunction) => {
       ],
     },
     replicaset: {
-      columns: AddDefaultColumns(t, [AddColumn('Desired', t('Desired')), AddColumn('Current', t('Current'))]),
+      columns: AddDefaultColumns(t, [AddColumn('desired', t('Desired')), AddColumn('current', t('Current'))]),
     },
     secret: {
-      columns: AddDefaultColumns(t, [AddColumn('Type', t('Type'))]),
+      columns: AddDefaultColumns(t, [AddColumn('type', t('Type'))]),
     },
     service: {
       columns: AddDefaultColumns(t, [
-        AddColumn('Type', t('Type')),
-        {
-          header: t('Cluster IP'),
-          sort: 'clusterIP',
-          cell: 'clusterIP',
-        },
-        AddColumn('Port', t('Port')),
+        AddColumn('type', t('Type')),
+        AddColumn('clusterIP', t('Cluster IP')),
+        AddColumn('port', t('Port')),
       ]),
     },
     statefulset: {
-      columns: AddDefaultColumns(t, [AddColumn('Desired', t('Desired')), AddColumn('Current', t('Current'))]),
+      columns: AddDefaultColumns(t, [AddColumn('desired', t('Desired')), AddColumn('current', t('Current'))]),
     },
     'subscription.apps.open-cluster-management.io': {
       columns: AddDefaultColumns(t, [
-        AddColumn('Package', t('Package')),
-        AddColumn('Status', t('Status')),
-        {
-          header: t('Local placement'),
-          sort: 'localPlacement',
-          cell: 'localPlacement',
-        },
-        {
-          header: t('Time window'),
-          sort: 'timeWindow',
-          cell: 'timeWindow',
-        },
+        AddColumn('package', t('Package')),
+        AddColumn('status', t('Status')),
+        AddColumn('localPlacement', t('Local placement')),
+        AddColumn('timeWindow', t('Time window')),
       ]),
     },
     'subscription.operators.coreos.io': {
       columns: AddDefaultColumns(t, [
-        AddColumn('Package', t('Package')),
-        AddColumn('Source', t('Source')),
-        AddColumn('Channel', t('Channel')),
+        AddColumn('package', t('Package')),
+        AddColumn('source', t('Source')),
+        AddColumn('channel', t('Channel')),
       ]),
     },
   }
@@ -607,18 +515,18 @@ export function FormatPolicyReportCategories(data: string) {
 
 function AddDefaultColumns(t: TFunction, customColumns: any[]) {
   return [
-    AddColumn('Name', t('Name')),
-    AddColumn('Namespace', t('Namespace')),
-    AddColumn('Cluster', t('Cluster')),
+    AddColumn('name', t('Name')),
+    AddColumn('namespace', t('Namespace')),
+    AddColumn('cluster', t('Cluster')),
     ...customColumns,
-    AddColumn('Created', t('Created')),
-    AddColumn('Labels', t('Labels')),
+    AddColumn('created', t('Created')),
+    AddColumn('labels', t('Labels')),
   ]
 }
 
 function AddColumn(key: string, localizedColumnName: string) {
   switch (key) {
-    case 'Name':
+    case 'name':
       return {
         header: localizedColumnName,
         sort: 'name',
@@ -626,7 +534,15 @@ function AddColumn(key: string, localizedColumnName: string) {
           return CreateDetailsLink(item)
         },
       }
-    case 'Labels':
+    // case 'namespace':
+    //   return {
+    //     header: localizedColumnName,
+    //     sort: 'namespace',
+    //     cell: (item: any) => {
+    //       return item?.namespace ?? '-'
+    //     },
+    //   }
+    case 'labels':
       return {
         header: localizedColumnName,
         sort: 'label',
@@ -634,7 +550,7 @@ function AddColumn(key: string, localizedColumnName: string) {
           return FormatLabels(item)
         },
       }
-    case 'Created':
+    case 'created':
       return {
         header: localizedColumnName,
         sort: 'created',
@@ -645,8 +561,8 @@ function AddColumn(key: string, localizedColumnName: string) {
     default:
       return {
         header: localizedColumnName,
-        sort: key.toLowerCase(),
-        cell: key.toLowerCase(),
+        sort: key,
+        cell: key,
       }
   }
 }
