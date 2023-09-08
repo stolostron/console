@@ -69,7 +69,7 @@ export const getSearchDefinitions = (t: TFunction) => {
     },
     cronjob: {
       columns: AddDefaultColumns(t, [
-        AddColumn('schedule', t('Schedule')),
+        AddColumn('schedule', t('schedule')),
         AddColumn('suspend', t('Suspend')),
         AddColumn('active', t('Active')),
         {
@@ -315,7 +315,7 @@ export const getSearchDefinitions = (t: TFunction) => {
       columns: AddDefaultColumns(t, [
         AddColumn('package', t('Package')),
         AddColumn('source', t('Source')),
-        AddColumn('channel', t('Channel')),
+        AddColumn('Channel', t('Channel')),
       ]),
     },
   }
@@ -534,14 +534,6 @@ function AddColumn(key: string, localizedColumnName: string) {
           return CreateDetailsLink(item)
         },
       }
-    // case 'namespace':
-    //   return {
-    //     header: localizedColumnName,
-    //     sort: 'namespace',
-    //     cell: (item: any) => {
-    //       return item?.namespace ?? '-'
-    //     },
-    //   }
     case 'labels':
       return {
         header: localizedColumnName,

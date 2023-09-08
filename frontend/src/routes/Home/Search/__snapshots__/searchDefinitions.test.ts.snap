@@ -474,7 +474,7 @@ Array [
   },
   Object {
     "cell": "schedule",
-    "header": "Schedule",
+    "header": "schedule",
     "sort": "schedule",
   },
   Object {
@@ -1945,9 +1945,9 @@ Array [
     "sort": "source",
   },
   Object {
-    "cell": "channel",
+    "cell": "Channel",
     "header": "Channel",
-    "sort": "channel",
+    "sort": "Channel",
   },
   Object {
     "cell": "in a month",
