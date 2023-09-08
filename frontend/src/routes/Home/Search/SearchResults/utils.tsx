@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardHeader, ExpandableSection } from '@patternfly/react-core'
-import { ReactNode, useEffect, useState } from 'react'
+import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { GetUrlSearchParam } from '../searchDefinitions'
@@ -14,30 +13,6 @@ export interface ISearchResult {
   __type: string
 }
 
-export function SearchResultExpandableCard(props: {
-  title: string
-  renderContent: () => ReactNode
-  defaultExpanded?: boolean
-}) {
-  const [open, setOpen] = useState(props.defaultExpanded !== undefined ? props.defaultExpanded : false)
-
-  useEffect(() => {
-    setOpen(props.defaultExpanded !== undefined ? props.defaultExpanded : false)
-    return () => {
-      setOpen(false)
-    }
-  }, [props.defaultExpanded])
-
-  return (
-    <Card isRounded isExpanded={open}>
-      <CardHeader>
-        <ExpandableSection toggleText={props.title} onToggle={() => setOpen(!open)} isExpanded={open} />
-      </CardHeader>
-      {open && <CardBody>{props.renderContent()}</CardBody>}
-    </Card>
-  )
-}
-
 export function GetRowActions(
   kind: string,
   currentQuery: string,
@@ -46,55 +21,104 @@ export function GetRowActions(
   t: TFunction
 ) {
   const history = useHistory()
-  return kind !== 'cluster' &&
-    kind !== 'release' &&
-    kind !== 'policyreport' &&
-    kind !== 'application' &&
-    kind !== 'policy'
-    ? [
-        {
-          id: 'edit',
-          title: t('Edit {{resourceKind}}', { resourceKind: kind }),
-          click: (item: any) => {
-            const searchParams = GetUrlSearchParam(item)
-            return history.push({
-              pathname: NavigationPath.resourceYAML,
-              search: searchParams,
-              state: {
-                from: NavigationPath.search,
-                fromSearch: window.location.search,
-              },
-            })
+
+  const viewApplication = {
+    id: 'view-application',
+    title: t('View Application'),
+    click: (item: any) => {
+      const { apigroup, applicationSet, cluster, name, namespace, kind } = item
+      if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
+        const params = queryString.stringify({
+          apiVersion: `${kind}.${apigroup}`.toLowerCase(),
+          cluster: cluster === 'local-cluster' ? undefined : cluster,
+          applicationset: applicationSet ?? undefined,
+        })
+        return history.push({
+          pathname: generatePath(NavigationPath.applicationOverview, {
+            namespace,
+            name,
+          }),
+          search: `?${params}`,
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
           },
+        })
+      }
+      const searchParams = GetUrlSearchParam(item)
+      return history.push({
+        pathname: NavigationPath.resourceRelated,
+        search: searchParams,
+        state: {
+          from: NavigationPath.search,
+          fromSearch: window.location.search,
         },
-        {
-          id: 'view-related',
-          title: t('View related resources'),
-          click: (item: any) => {
-            const searchParams = GetUrlSearchParam(item)
-            return history.push({
-              pathname: NavigationPath.resourceRelated,
-              search: searchParams,
-              state: {
-                from: NavigationPath.search,
-                fromSearch: window.location.search,
-              },
-            })
-          },
+      })
+    },
+  }
+  const viewAppTopology = {
+    id: 'view-application-topology',
+    title: t('View Application topology'),
+    click: (item: any) => {
+      const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
+      return history.push({
+        pathname: generatePath(NavigationPath.applicationTopology, { name: item?.name, namespace: item?.namespace }),
+        search: `?apiVersion=${apiversion}`,
+        state: {
+          from: NavigationPath.search,
+          fromSearch: window.location.search,
         },
-        {
-          id: 'delete',
-          title: t('Delete {{resourceKind}}', { resourceKind: kind }),
-          click: (item: any) => {
-            setDeleteResource({
-              open: true,
-              close: () => setDeleteResource(ClosedDeleteModalProps),
-              resource: item,
-              currentQuery,
-              relatedResource,
-            })
-          },
+      })
+    },
+  }
+  const editButton = {
+    id: 'edit',
+    title: t('Edit {{resourceKind}}', { resourceKind: kind }),
+    click: (item: any) => {
+      const searchParams = GetUrlSearchParam(item)
+      return history.push({
+        pathname: NavigationPath.resourceYAML,
+        search: searchParams,
+        state: {
+          from: NavigationPath.search,
+          fromSearch: window.location.search,
         },
-      ]
-    : []
+      })
+    },
+  }
+  const viewRelatedButton = {
+    id: 'view-related',
+    title: t('View related resources'),
+    click: (item: any) => {
+      const searchParams = GetUrlSearchParam(item)
+      return history.push({
+        pathname: NavigationPath.resourceRelated,
+        search: searchParams,
+        state: {
+          from: NavigationPath.search,
+          fromSearch: window.location.search,
+        },
+      })
+    },
+  }
+  const deleteButton = {
+    id: 'delete',
+    title: t('Delete {{resourceKind}}', { resourceKind: kind }),
+    click: (item: any) => {
+      setDeleteResource({
+        open: true,
+        close: () => setDeleteResource(ClosedDeleteModalProps),
+        resource: item,
+        currentQuery,
+        relatedResource,
+      })
+    },
+  }
+
+  if (kind === 'cluster' || kind === 'release' || kind === 'policyreport') {
+    return []
+  } else if (kind === 'application') {
+    return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
+  }
+  return [editButton, viewRelatedButton, deleteButton]
 }

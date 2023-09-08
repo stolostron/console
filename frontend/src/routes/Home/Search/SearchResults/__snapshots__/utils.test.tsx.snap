@@ -1,5 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Correctly return empty row Actions for Application 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "id": "view-application",
+    "title": "View Application",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-application-topology",
+    "title": "View Application topology",
+  },
+  Object {
+    "click": [Function],
+    "id": "edit",
+    "title": "Edit application",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-related",
+    "title": "View related resources",
+  },
+  Object {
+    "click": [Function],
+    "id": "delete",
+    "title": "Delete application",
+  },
+]
+`;
+
 exports[`Correctly return empty row Actions for restricted resource 1`] = `Array []`;
 
 exports[`Correctly return row Actions 1`] = `
