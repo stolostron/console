@@ -13,7 +13,8 @@ import {
   Modal,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import { useBeforeunload } from 'react-beforeunload'
+import { Fragment, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import {
   useItem,
   useData,
@@ -45,10 +46,11 @@ import { CreateArgoResources } from './CreateArgoResources'
 import { ApplicationSetKind, GitOpsCluster } from '../../resources'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
-import { get } from 'lodash'
+import { get, isEqual } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
+import { Prompt } from 'react-router-dom'
 
 export interface Channel {
   metadata?: {
@@ -741,7 +743,19 @@ function ArgoWizardPlacementSection(props: {
   createClusterSetCallback?: () => void
 }) {
   const { t } = useTranslation()
+
+  // prevent navigating away from dirty form
+  // also see <Prompt> below
+  const dataRef = useRef<unknown>()
+  const dirtyRef = useRef(false)
   const resources = useItem() as IResource[]
+  if (!dataRef.current) {
+    dataRef.current = resources
+  } else {
+    dirtyRef.current = !isEqual(dataRef.current, resources)
+  }
+  useBeforeunload(dirtyRef.current ? (event) => event.preventDefault() : undefined)
+
   const editMode = useEditMode()
   const hasPlacement = resources.find((r) => r.kind === PlacementKind) !== undefined
   const applicationSet = resources.find((r) => r.kind === 'ApplicationSet')
@@ -758,6 +772,7 @@ function ArgoWizardPlacementSection(props: {
   const { update } = useData()
   return (
     <Section label={t('Placement')}>
+      <Prompt when={dirtyRef.current} message={t('changes.maybe.lost')} />
       {(editMode === EditMode.Create || !hasPlacement) && (
         <WizDetailsHidden>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

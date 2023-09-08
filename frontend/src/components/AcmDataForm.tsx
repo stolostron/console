@@ -77,8 +77,9 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons'
 import { Prompt } from 'react-router'
+import { useBeforeunload } from 'react-beforeunload'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
+import { Fragment, ReactNode, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
@@ -146,20 +147,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   } else {
     dirtyRef.current = !isEqual(dataRef.current, resources)
   }
-  useEffect(() => {
-    const preventUnload = (event: BeforeUnloadEvent) => {
-      if (dirtyRef.current) {
-        // NOTE: This message isn't used in modern browsers, but is required
-        const message = 'Sure you want to leave?'
-        event.preventDefault()
-        event.returnValue = message
-      }
-    }
-    window.addEventListener('beforeunload', preventUnload)
-    return () => {
-      window.removeEventListener('beforeunload', preventUnload)
-    }
-  }, [])
+  useBeforeunload(dirtyRef.current ? (event) => event.preventDefault() : undefined)
 
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
