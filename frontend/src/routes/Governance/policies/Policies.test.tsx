@@ -63,7 +63,7 @@ describe('Policies Page', () => {
     await waitForText('Test policy description')
   })
 
-  test('Should render Policies page correctly', async () => {
+  test('Should render Policies page correctly with Default selected Columns', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -77,6 +77,14 @@ describe('Policies Page', () => {
     )
 
     await waitForText(mockPendingPolicy[0].metadata.name!)
+    await waitForText('Name')
+    await waitForText('Namespace')
+    await waitForText('Status')
+    await waitForText('Remediation')
+    await waitForText('Cluster violations')
+    await waitForText('Created')
+    // This is dot dot dot action button
+    await screen.getAllByRole('button', { name: 'Actions' })
   })
 
   test('Should have correct links to PolicySet & Policy detail results pages', async () => {

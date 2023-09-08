@@ -108,6 +108,9 @@ export interface IAcmTableColumn<T> {
   isDefault?: boolean
   // If it is true, This column always the last one and isn't managed by column management filter
   isActionCol?: boolean
+  // isFirstVisitChecked=true, When users visit at the first time, users can see these columns.
+  // unlike isDefualt columns, these columns can be controllable.
+  isFirstVisitChecked?: boolean
 }
 
 /* istanbul ignore next */
@@ -410,6 +413,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     () => columns.filter((col) => col.isDefault && col.id && !col.isActionCol).map((col) => col.id as string),
     [columns]
   )
+  const firstVisitColIds = useMemo(
+    () => columns.filter((col) => col.isFirstVisitChecked && col.id && !col.isActionCol).map((col) => col.id as string),
+    [columns]
+  )
   const defaultOrderIds = useMemo(
     () =>
       columns
@@ -423,7 +430,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols')!)
   const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder')!)
   const [colOrderIds, setColOrderIds] = useState<string[]>(localSavedColOrder || defaultOrderIds)
-  const [selectedColIds, setSelectedColIds] = useState<string[]>(localSavedCols || defaultColIds)
+  const [selectedColIds, setSelectedColIds] = useState<string[]>(
+    localSavedCols || [...defaultColIds, ...firstVisitColIds]
+  )
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
 

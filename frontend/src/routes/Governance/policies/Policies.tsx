@@ -176,6 +176,7 @@ export default function PoliciesPage() {
         id: 'status',
         order: 3,
         isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Remediation'),
@@ -190,6 +191,7 @@ export default function PoliciesPage() {
         id: 'remediation',
         order: 4,
         isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Policy set'),
@@ -330,6 +332,7 @@ export default function PoliciesPage() {
         id: 'created',
         order: 9,
         isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: '',
