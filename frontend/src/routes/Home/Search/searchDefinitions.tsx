@@ -81,10 +81,7 @@ export const getSearchDefinitions = (t: TFunction) => {
       ]),
     },
     channel: {
-      columns: AddDefaultColumns(t, [
-        AddColumn('Type', t('Type')),
-        AddColumn('Pathname', t('Pathname')),
-      ]),
+      columns: AddDefaultColumns(t, [AddColumn('Type', t('Type')), AddColumn('Pathname', t('Pathname'))]),
     },
     cronjob: {
       columns: AddDefaultColumns(t, [
@@ -267,9 +264,7 @@ export const getSearchDefinitions = (t: TFunction) => {
       ],
     },
     placementrule: {
-      columns: AddDefaultColumns(t, [
-        AddColumn('Replicas', t('Replicas')),
-      ]),
+      columns: AddDefaultColumns(t, [AddColumn('Replicas', t('Replicas'))]),
     },
     pod: {
       columns: AddDefaultColumns(t, [
@@ -373,15 +368,10 @@ export const getSearchDefinitions = (t: TFunction) => {
       ],
     },
     replicaset: {
-      columns: AddDefaultColumns(t, [
-        AddColumn('Desired', t('Desired')),
-        AddColumn('Current', t('Current')),
-      ]),
+      columns: AddDefaultColumns(t, [AddColumn('Desired', t('Desired')), AddColumn('Current', t('Current'))]),
     },
     secret: {
-      columns: AddDefaultColumns(t, [
-        AddColumn('Type', t('Type')),
-      ]),
+      columns: AddDefaultColumns(t, [AddColumn('Type', t('Type'))]),
     },
     service: {
       columns: AddDefaultColumns(t, [
@@ -395,10 +385,7 @@ export const getSearchDefinitions = (t: TFunction) => {
       ]),
     },
     statefulset: {
-      columns: AddDefaultColumns(t, [
-        AddColumn('Desired', t('Desired')),
-        AddColumn('Current', t('Current')),
-      ]),
+      columns: AddDefaultColumns(t, [AddColumn('Desired', t('Desired')), AddColumn('Current', t('Current'))]),
     },
     'subscription.apps.open-cluster-management.io': {
       columns: AddDefaultColumns(t, [
