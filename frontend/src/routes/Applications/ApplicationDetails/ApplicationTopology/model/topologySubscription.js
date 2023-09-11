@@ -98,7 +98,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       const subscriptionId = addSubscription(appId, clustersNames, subscription, source, isRulePlaced, links, nodes)
 
       // add rules node
-      if (subscription.decisions) {
+      if (subscription.decisions || subscription.placements) {
         addSubscriptionRules(subscriptionId, subscription, links, nodes)
       }
 
@@ -158,7 +158,10 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
 }
 
 const addSubscriptionRules = (parentId, subscription, links, nodes) => {
-  subscription.decisions.forEach((rule, idx) => {
+  const placementType = get(subscription, 'spec.placement.placementRef.kind')
+  const isPlacement = placementType === 'Placement' ? true : false
+  const ruleDecisionArr = subscription.decisions.length > 0 ? subscription.decisions : subscription.placements // fallback to placementrule when no decision is created
+  ruleDecisionArr.forEach((rule, idx) => {
     const {
       metadata: { name, namespace },
     } = rule
@@ -170,6 +173,7 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
       id: ruleId,
       uid: ruleId,
       specs: { isDesign: true, raw: rule },
+      isPlacement,
     })
     links.push({
       from: { uid: parentId },

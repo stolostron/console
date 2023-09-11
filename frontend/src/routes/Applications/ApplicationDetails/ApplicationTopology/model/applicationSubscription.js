@@ -236,15 +236,19 @@ const getAppPlacements = (placementsMap, placements, placementRules) => {
       if (placementRef) {
         const { kind } = placementRef
         if (kind === PlacementRuleKind) {
-          subscription.placements.push(
-            placementRules.find((pr) => pr.metadata.name === ruleName && pr.metadata.namespace === namespace)
+          const foundPR = placementRules.find(
+            (pr) => pr.metadata.name === ruleName && pr.metadata.namespace === namespace
           )
+          if (foundPR) {
+            subscription.placements.push(foundPR)
+          }
         } else if (kind === PlacementKind) {
-          subscription.placements.push(
-            placements.find(
-              (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
-            )
+          const foundPlacement = placements.find(
+            (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
           )
+          if (foundPlacement) {
+            subscription.placements.push(foundPlacement)
+          }
         }
       }
     })

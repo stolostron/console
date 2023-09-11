@@ -2711,6 +2711,7 @@
   "This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:": "This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:",
   "This application uses the following shared resources, which are not removable:": "This application uses the following shared resources, which are not removable:",
   "This is a required field.": "This is a required field.",
+  "This Placement does not have any status. Make sure the ManagedClusterSetBinding is created for the target namespace.": "This Placement does not have any status. Make sure the ManagedClusterSetBinding is created for the target namespace.",
   "This Placement does not match any remote clusters. Make sure the requiredClusterSelector property is valid and match your clusters.": "This Placement does not match any remote clusters. Make sure the requiredClusterSelector property is valid and match your clusters.",
   "This Placement Rule does not match any remote clusters. Make sure the clusterSelector and clusterConditions properties, when used, are valid and match your clusters. If using the clusterReplicas property make sure is being set to a positive value.": "This Placement Rule does not match any remote clusters. Make sure the clusterSelector and clusterConditions properties, when used, are valid and match your clusters. If using the clusterReplicas property make sure is being set to a positive value.",
   "This policy is managed externally": "This policy is managed externally",
