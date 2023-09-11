@@ -201,7 +201,10 @@ export function PolicyActionDropdown(props: {
             processing: t('policy.table.actions.enforcing'),
             items: [item],
             emptyState: undefined, // there is always 1 item supplied
-            description: t('policy.modal.message.enforce'),
+            description: policyRemediationAction.includes('informOnly')
+              ? t('policy.modal.message.enforce') +
+                ' When you enforce a policy where the remediation action for some of the policy templates are set to `informOnly`, there is no effect to those policy templates.'
+              : t('policy.modal.message.enforce'),
             columns: bulkModalRemediationColumns,
             keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
             actionFn: (item) => {

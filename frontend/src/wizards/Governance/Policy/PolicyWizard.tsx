@@ -488,6 +488,14 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                 'Automatically runs remediation action that is defined in the source, if this feature is supported.'
               )}
             />
+            <Radio
+              id="informOnly"
+              label={t('Inform Only')}
+              value="informOnly"
+              description={t(
+                "Reports the violation, which requires manual remediation. This cannot be overridden by the parent policy's remediation action."
+              )}
+            />
           </WizRadioGroup>
 
           <Select

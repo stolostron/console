@@ -35,7 +35,12 @@ import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { formatDescriptionForDropdown, getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import {
+  formatDescriptionForDropdown,
+  getInformOnlyPolicies,
+  getPlacementBindingsForResource,
+  getPlacementsForResource,
+} from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
@@ -559,7 +564,11 @@ export default function PoliciesPage() {
                 processing: t('policy.table.actions.enforcing'),
                 items: [...item],
                 emptyState: undefined, // there is always 1 item supplied
-                description: t('policy.modal.message.enforce'),
+                description: getInformOnlyPolicies(item)
+                  ? t('policy.modal.message.enforce') +
+                    ' When you enforce a policy where the remediation action for some of the policy templates are set to ' +
+                    '`informOnly`, there is no effect to those policy templates.'
+                  : t('policy.modal.message.enforce'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
                 actionFn: (item) => {
@@ -708,7 +717,11 @@ export default function PoliciesPage() {
         options: [
           { label: t('Inform'), value: 'inform' },
           { label: t('Enforce'), value: 'enforce' },
+          { label: t('InformOnly'), value: 'informOnly' },
           { label: t('Inform/Enforce'), value: 'inform/enforce' },
+          { label: t('Enforce/InformOnly'), value: 'enforce/informOnly' },
+          { label: t('Inform/InformOnly'), value: 'inform/informOnly' },
+          { label: t('Inform/Enforce/InformOnly'), value: 'inform/enforce/informOnly' },
         ],
         tableFilterFn: (selectedValues, item) => {
           const policyRemediation = getPolicyRemediation(item.policy)
