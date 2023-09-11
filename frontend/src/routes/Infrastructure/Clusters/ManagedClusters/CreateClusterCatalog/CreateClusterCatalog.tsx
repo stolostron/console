@@ -181,8 +181,7 @@ export function CreateClusterCatalog() {
             </>
           ),
         }
-      }
-      if (provider === Provider.redhatvirtualization) {
+      } else if (provider === Provider.redhatvirtualization) {
         card = {
           ...card,
           title: t('Red Hat Virtualization'),

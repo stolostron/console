@@ -8,9 +8,9 @@ import {
   Split,
   Stack,
   StackItem,
-  // Text,
-  // TextContent,
-  // TextVariants,
+  Text,
+  TextContent,
+  TextVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
@@ -690,7 +690,18 @@ export default function AdvancedConfiguration() {
             )}
           />
         </Split>
-        <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+        <TextContent>
+          <Text
+            component={TextVariants.p}
+            style={{
+              textAlign: 'right',
+              display: 'inline-block',
+              width: '100%',
+            }}
+          >
+            <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+          </Text>
+        </TextContent>
       </AcmExpandableCard>
     )
   }

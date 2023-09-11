@@ -1041,9 +1041,7 @@ export default function ApplicationsOverview() {
             action={
               <>
                 {appCreationButton}
-                <div>
-                  <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
-                </div>
+                <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
               </>
             }
           />

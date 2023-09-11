@@ -16,6 +16,7 @@ export const getTypedCreateCredentialsPath = (type: CredentialsType): LocationDe
 
 const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.aws],
+  [Provider.awss3, 's3'],
   [Provider.azure, 'azure'],
   [Provider.gcp, 'google'],
   [Provider.openstack, 'openstack'],
@@ -33,33 +34,36 @@ export function CreateCredentialsCatalog() {
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
-      ...orderedProviders.map(([provider, id]) => ({
-        id: id || provider,
-        icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-        title: ProviderLongTextMap[provider],
-        onClick:
-          provider === Provider.aws
-            ? nextStep(NavigationPath.addAWSType)
-            : nextStep(getTypedCreateCredentialsPath(provider)),
-      })),
+      ...orderedProviders
+        // does not display AWS s3 card
+        .filter(([id]) => id !== Provider.awss3)
+        .map(([provider, id]) => ({
+          id: id || provider,
+          icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+          title: ProviderLongTextMap[provider],
+          onClick:
+            provider === Provider.aws
+              ? nextStep(NavigationPath.addAWSType)
+              : nextStep(getTypedCreateCredentialsPath(provider)),
+          ...(provider === Provider.redhatvirtualization
+            ? ({
+                alertTitle: t('Deprecated host platform'),
+                alertVariant: 'warning',
+                alertContent: (
+                  <>
+                    {t(
+                      'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
+                    )}
+                    <br />
+                    <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
+                  </>
+                ),
+              } as ICatalogCard)
+            : {}),
+        })),
     ]
-    newCards.forEach((card) => {
-      if (card.id === 'rhv') {
-        ;(card.alertTitle = t('Deprecated host platform')),
-          (card.alertVariant = 'warning'),
-          (card.alertContent = (
-            <>
-              {t(
-                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-              )}
-              <br />
-              <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
-            </>
-          ))
-      }
-    })
     return newCards
-  }, [nextStep])
+  }, [nextStep, t])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
