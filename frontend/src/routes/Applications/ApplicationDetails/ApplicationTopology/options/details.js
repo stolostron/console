@@ -30,6 +30,8 @@ import {
   addIngressNodeInfo,
 } from '../helpers/diagram-helpers'
 import { kubeNaming } from './utilities'
+import { getLabels, getMatchLabels } from '../../../CreateApplication/Subscription/controlData/ControlDataPlacement'
+import { PlacementKind } from '../../../../../resources'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
@@ -283,10 +285,27 @@ function addK8Details(node, details, activeFilters, t) {
 
   if (type === 'placements' || type === 'placement') {
     const specNbOfClustersTarget = R.pathOr([], ['specs', 'raw', 'status', 'decisions'])(node)
-    mainDetails.push({
-      labelValue: t('Matched Clusters'),
-      value: specNbOfClustersTarget.length,
-    })
+
+    // placement
+    const clusterSets = _.get(node, 'placement.spec.clusterSets', undefined)
+    const clusterSelector =
+      _.get(node, 'placement.spec.predicates[0].requiredClusterSelector.labelSelector', undefined) ||
+      _.get(node, 'placement.spec.clusterSelector', undefined)
+
+    mainDetails.push(
+      {
+        labelValue: t('Matched Clusters'),
+        value: specNbOfClustersTarget.length,
+      },
+      { labelValue: t('ClusterSet'), value: clusterSets ? clusterSets.join() : t('Not defined') },
+      {
+        labelValue: t('LabelSelector'),
+        value:
+          _.get(node, 'placement.kind') === PlacementKind
+            ? getLabels(clusterSelector)
+            : getMatchLabels(clusterSelector),
+      }
+    )
   }
 
   //routes

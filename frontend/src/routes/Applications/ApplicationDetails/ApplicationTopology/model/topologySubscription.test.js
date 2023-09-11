@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { PlacementKind } from '../../../../../resources'
+import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
 import { createReplicaChild, getSubscriptionTopology } from './topologySubscription'
 
 const clustersNames = ['local-cluster']
@@ -8812,6 +8814,48 @@ describe('getSubscriptionTopology', () => {
       {
         id: 'member--rules--feng-cronjob--feng-cronjob-placement-1-decision-1--0',
         isPlacement: true,
+        placement: {
+          apiVersion: PlacementApiVersion,
+          kind: PlacementKind,
+          metadata: {
+            creationTimestamp: '2023-04-27T14:32:09Z',
+            generation: 1,
+            labels: {
+              app: 'feng-cronjob',
+            },
+            name: 'feng-cronjob-placement-1',
+            namespace: 'feng-cronjob',
+            resourceVersion: '15067336',
+            uid: 'b05f959a-c573-49e9-94d3-32ba37428a87',
+          },
+          spec: {
+            clusterSets: ['default'],
+            predicates: [
+              {
+                requiredClusterSelector: { labelSelector: {} },
+              },
+            ],
+          },
+          status: {
+            conditions: [
+              {
+                lastTransitionTime: '2023-04-27T14:32:09Z',
+                message: 'Placement configurations check pass',
+                reason: 'Succeedconfigured',
+                status: 'False',
+                type: 'PlacementMisconfigured',
+              },
+              {
+                lastTransitionTime: '2023-04-27T14:32:09Z',
+                message: 'All cluster decisions scheduled',
+                reason: 'AllDecisionsScheduled',
+                status: 'True',
+                type: 'PlacementSatisfied',
+              },
+            ],
+            numberOfSelectedClusters: 2,
+          },
+        },
         name: 'feng-cronjob-placement-1-decision-1',
         namespace: 'feng-cronjob',
         specs: {

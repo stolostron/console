@@ -1,5 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
+import { PlacementKind } from '../../../../../resources'
+import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
 import { getApplication } from './application'
 
 describe('getApplication Argo', () => {
@@ -22485,6 +22487,38 @@ describe('getApplication AppSet', () => {
     },
     name: 'magchen-old-appset',
     namespace: 'openshift-gitops',
+    relatedPlacement: {
+      kind: PlacementKind,
+      apiVersion: PlacementApiVersion,
+      metadata: {
+        creationTimestamp: '2023-06-14T17:45:14Z',
+        generation: 1,
+        name: 'magchen-old-appset-placement',
+        namespace: 'openshift-gitops',
+        resourceVersion: '39241989',
+        uid: '62cce892-d68f-483c-a0a0-bbe15ba976ef',
+      },
+      spec: {},
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2023-06-14T17:45:14Z',
+            message: 'Placement configurations check pass',
+            reason: 'Succeedconfigured',
+            status: 'False',
+            type: 'PlacementMisconfigured',
+          },
+          {
+            lastTransitionTime: '2023-06-20T12:54:22Z',
+            message: 'All cluster decisions scheduled',
+            reason: 'AllDecisionsScheduled',
+            status: 'True',
+            type: 'PlacementSatisfied',
+          },
+        ],
+        numberOfSelectedClusters: 1,
+      },
+    },
     placement: {
       apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'PlacementDecision',
@@ -31736,6 +31770,59 @@ describe('getApplication AppSet pull model', () => {
     },
     name: 'feng-pm',
     namespace: 'openshift-gitops',
+    relatedPlacement: {
+      apiVersion: PlacementApiVersion,
+      kind: PlacementKind,
+      metadata: {
+        annotations: {
+          'kubectl.kubernetes.io/last-applied-configuration':
+            '{"apiVersion":"cluster.open-cluster-management.io/v1beta1","kind":"Placement","metadata":{"annotations":{},"name":"feng-pm-placement","namespace":"openshift-gitops"},"spec":{"clusterSets":["default"],"predicates":[{"requiredClusterSelector":{"labelSelector":{"matchExpressions":[]}}}]}}\n',
+        },
+        creationTimestamp: '2023-08-02T17:59:14Z',
+        generation: 6,
+        name: 'feng-pm-placement',
+        namespace: 'openshift-gitops',
+        resourceVersion: '77555641',
+        uid: '554337d6-9137-4ed9-a03c-55d51485cb0d',
+      },
+      spec: {
+        clusterSets: ['default'],
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'name',
+                    operator: 'NotIn',
+                    values: ['local-cluster'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: '2023-08-02T17:59:14Z',
+            message: 'Placement configurations check pass',
+            reason: 'Succeedconfigured',
+            status: 'False',
+            type: 'PlacementMisconfigured',
+          },
+          {
+            lastTransitionTime: '2023-08-10T13:33:07Z',
+            message: 'All cluster decisions scheduled',
+            reason: 'AllDecisionsScheduled',
+            status: 'True',
+            type: 'PlacementSatisfied',
+          },
+        ],
+        numberOfSelectedClusters: 2,
+      },
+    },
     placement: {
       apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'PlacementDecision',
@@ -31785,7 +31872,8 @@ describe('getApplication AppSet pull model', () => {
       appData.recoilStates,
       appData.cluster,
       appData.apiversion,
-      appData.clusters
+      appData.clusters,
+      appData.relatedPlacement
     )
     expect(model).toEqual(result)
   })

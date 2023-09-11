@@ -158,6 +158,7 @@ const addSubscription = (appId, clustersNames, subscription, source, isPlaced, l
 }
 
 const addSubscriptionRules = (parentId, subscription, links, nodes) => {
+  let placement
   const placementType = get(subscription, 'spec.placement.placementRef.kind')
   const isPlacement = placementType === 'Placement' ? true : false
   const ruleDecisionArr = subscription.decisions.length > 0 ? subscription.decisions : subscription.placements // fallback to placementrule when no decision is created
@@ -166,6 +167,16 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
       metadata: { name, namespace },
     } = rule
     const ruleId = `member--rules--${namespace}--${name}--${idx}`
+    const decisionOwnerReference = get(rule, 'metadata.ownerReferences.0')
+    if (decisionOwnerReference) {
+      placement = get(subscription, 'placements').find(
+        (placement) =>
+          placement.kind === decisionOwnerReference?.kind &&
+          placement.metadata.name === decisionOwnerReference.name &&
+          placement.metadata.namespace === namespace
+      )
+    }
+
     nodes.push({
       name,
       namespace,
@@ -174,6 +185,7 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
       uid: ruleId,
       specs: { isDesign: true, raw: rule },
       isPlacement,
+      placement,
     })
     links.push({
       from: { uid: parentId },

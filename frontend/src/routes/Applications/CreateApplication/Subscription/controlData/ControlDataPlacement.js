@@ -42,10 +42,18 @@ export const loadExistingPlacementRules = (t) => {
   }
 }
 
-const getLabels = (clusterSelector) => {
+export const getLabels = (clusterSelector) => {
   return clusterSelector?.matchExpressions
     ?.map(({ key, operator, values }) => {
       return `${key} "${operator}" ${values.join(', ')}`
+    })
+    .join('; ')
+}
+
+export const getMatchLabels = (clusterSelector) => {
+  return Object.entries(clusterSelector?.matchLabels ? clusterSelector.matchLabels : {})
+    .map(([key, value]) => {
+      return `${key}=${value}`
     })
     .join('; ')
 }
@@ -104,14 +112,7 @@ const setAvailableRules = (control, result) => {
             : i18n('creation.app.clusters.only.online', [rule.kind, ruleName])
         } else if (clusterSelector.matchLabels) {
           if (!clusterSelector.matchLabels['local-cluster']) {
-            const getMatchLabels = () => {
-              return Object.entries(clusterSelector.matchLabels)
-                .map(([key, value]) => {
-                  return `${key}=${value}`
-                })
-                .join('; ')
-            }
-            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getMatchLabels()])
+            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getMatchLabels(clusterSelector)])
           }
         }
         control.availableInfo[ruleName] = selector
