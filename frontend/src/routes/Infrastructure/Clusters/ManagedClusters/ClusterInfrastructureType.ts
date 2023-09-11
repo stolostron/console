@@ -7,6 +7,8 @@ export enum HostInventoryInfrastructureType {
   CIMHypershift = 'cimhypershift',
   CIM = 'cim',
   AI = 'ai',
+  NutanixAI = 'nutanix-ai',
+  NutanixCIM = 'nutanix-cim',
 }
 const isHostInventoryInfrastructureType = (
   infrastructureType: string
@@ -25,6 +27,8 @@ const clusterInfrastructureTypes = [
   HostInventoryInfrastructureType.CIMHypershift,
   HostInventoryInfrastructureType.CIM,
   HostInventoryInfrastructureType.AI,
+  HostInventoryInfrastructureType.NutanixCIM,
+  HostInventoryInfrastructureType.NutanixAI,
 ] as const
 
 export type ClusterInfrastructureType = typeof clusterInfrastructureTypes[number]

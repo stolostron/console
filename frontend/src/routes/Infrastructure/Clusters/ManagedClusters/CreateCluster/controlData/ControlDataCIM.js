@@ -3,8 +3,9 @@
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { appendKlusterletAddonConfig, appendWarning, automationControlData } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import { Provider } from '../../../../../../ui-components'
 
-export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
+export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterletAddonConfig = true, isNutanix) => {
   const controlData = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
@@ -16,15 +17,17 @@ export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterl
     {
       id: 'infrastructure',
       name: t('Infrastructure'),
-      active: 'Host inventory',
+      active: isNutanix ? 'Nutanix' : 'Host inventory',
       type: 'reviewinfo',
     },
-    {
-      id: 'controlplane',
-      name: t('Control plane type'),
-      active: 'Standalone',
-      type: 'reviewinfo',
-    },
+    isNutanix
+      ? {}
+      : {
+          id: 'controlplane',
+          name: t('Control plane type'),
+          active: 'Standalone',
+          type: 'reviewinfo',
+        },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
@@ -32,7 +35,7 @@ export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterl
       id: 'connection',
       type: 'singleselect',
       placeholder: t('creation.ocp.cloud.select.connection'),
-      providerId: ['hybrid', 'hostinventory'],
+      providerId: isNutanix ? [Provider.nutanix] : [Provider.hybrid, Provider.hostinventory],
       validation: {
         notification: t('creation.ocp.cluster.must.select.connection'),
         required: false,
@@ -49,6 +52,7 @@ export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterl
       encodeValues: ['pullSecret'],
       additionalProps: {
         promptSshPublicKey: false,
+        isNutanix,
       },
     },
     ...automationControlData(t),

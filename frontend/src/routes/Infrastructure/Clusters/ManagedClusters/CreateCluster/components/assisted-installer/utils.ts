@@ -196,7 +196,8 @@ const appendPatch = (
 
 export const getNetworkingPatches = (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues
+  values: ClusterDeploymentNetworkingValues,
+  isNutanix: boolean
 ) => {
   const agentClusterInstallPatches: any = []
 
@@ -272,7 +273,7 @@ export const getNetworkingPatches = (
       }
       appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
     } else {
-      if (agentClusterInstall.spec?.platformType) {
+      if (agentClusterInstall.spec?.platformType && !isNutanix) {
         agentClusterInstallPatches.push({
           op: 'remove',
           path: '/spec/platformType',
@@ -317,10 +318,11 @@ export const getNetworkingPatches = (
 
 export const onSaveNetworking = async (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues
+  values: ClusterDeploymentNetworkingValues,
+  isNutanix: boolean
 ) => {
   try {
-    const patches = getNetworkingPatches(agentClusterInstall, values)
+    const patches = getNetworkingPatches(agentClusterInstall, values, isNutanix)
     if (patches.length > 0) {
       await patchResource(agentClusterInstall as IResource, patches).promise
     }

@@ -18,7 +18,10 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
   const history = useHistory()
   const { configMapsState } = useSharedAtoms()
   const [configMaps] = useRecoilState(configMapsState)
-  const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
+  const isHybrid =
+    props.cluster?.provider &&
+    [Provider.hostinventory, Provider.nutanix].includes(props.cluster?.provider) &&
+    !props.cluster?.isHypershift
   const { agentClusterInstall } = useContext(ClusterContext)
 
   /*

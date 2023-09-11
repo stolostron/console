@@ -63,7 +63,8 @@ export function HiveNotification() {
   }
 
   if (
-    cluster?.provider === Provider.hostinventory &&
+    cluster?.provider &&
+    [Provider.hostinventory, Provider.nutanix].includes(cluster.provider) &&
     (cluster?.status === ClusterStatus.provisionfailed || cluster?.status === ClusterStatus.deprovisionfailed)
   ) {
     return null

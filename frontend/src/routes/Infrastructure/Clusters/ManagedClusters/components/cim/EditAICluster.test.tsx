@@ -69,7 +69,7 @@ describe('Edit AI Cluster', () => {
     render(<Component />)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    await waitForText('Installation type')
+    await waitForText('ai:Installation type')
 
     await waitForText('ai:Cluster details')
     await waitForText('ai:Cluster hosts')
