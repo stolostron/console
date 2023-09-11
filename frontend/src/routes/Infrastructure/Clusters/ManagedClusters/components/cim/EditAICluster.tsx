@@ -170,6 +170,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     return res as AgentClusterInstallK8sResource
   }
 
+  const isNutanix = agentClusterInstall?.spec?.platformType === 'Nutanix'
+
   return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
     <LoadingState />
   ) : (
@@ -220,7 +222,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
-                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
+                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values, isNutanix)}
                 onSaveHostsSelection={(values) =>
                   onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                 }
@@ -256,6 +258,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onCreateBmcByYaml={importYaml}
                 docVersion={DOC_VERSION}
                 provisioningConfigResult={provisioningConfigResult}
+                isNutanix={isNutanix}
               />
               <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
             </FeatureGateContextProvider>

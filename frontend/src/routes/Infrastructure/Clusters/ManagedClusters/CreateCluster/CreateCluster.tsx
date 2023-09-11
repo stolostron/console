@@ -32,6 +32,8 @@ import hiveTemplate from './templates/hive-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
 import cimTemplate from './templates/assisted-installer/cim-template.hbs'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
+import nutanixCimTemplate from './templates/assisted-installer/nutanix-cim-template.hbs'
+import nutanixAiTemplate from './templates/assisted-installer/nutanix-ai-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
 import {
   HypershiftAgentContext,
@@ -106,6 +108,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }
   const controlPlaneBreadCrumbBM = generateBreadCrumb('Host Inventory', NavigationPath.createBMControlPlane)
+  const controlPlaneBreadCrumbNutanix = generateBreadCrumb('Nutanix', NavigationPath.createCluster)
   const controlPlaneBreadCrumbAWS = generateBreadCrumb('AWS', NavigationPath.createAWSControlPlane)
 
   const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
@@ -338,7 +341,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   useEffect(() => {
     if (
       (infrastructureType === HostInventoryInfrastructureType.CIM ||
-        infrastructureType === HostInventoryInfrastructureType.CIMHypershift) &&
+        infrastructureType === HostInventoryInfrastructureType.CIMHypershift ||
+        infrastructureType === HostInventoryInfrastructureType.NutanixCIM) &&
       !isInfraEnvAvailable
     ) {
       setWarning({
@@ -423,6 +427,16 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       template = Handlebars.compile(cimTemplate)
       controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM)
+      break
+    case HostInventoryInfrastructureType.NutanixCIM:
+      template = Handlebars.compile(nutanixCimTemplate)
+      controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable, true)
+      breadcrumbs.push(controlPlaneBreadCrumbNutanix)
+      break
+    case HostInventoryInfrastructureType.NutanixAI:
+      template = Handlebars.compile(nutanixAiTemplate)
+      controlData = getControlDataAI(t, handleModalToggle, isACMAvailable, true)
+      breadcrumbs.push(controlPlaneBreadCrumbNutanix)
       break
     case HostInventoryInfrastructureType.AI:
       template = Handlebars.compile(aiTemplate)

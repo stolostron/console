@@ -102,8 +102,8 @@ const AIClusterDetails: React.FC = () => {
   }, [clusterDeployment, agentClusterInstall, agents])
 
   const onFetchEvents = useMemo(
-    () => getOnFetchEventsHandler(fetchEvents, aiNamespace, agentClusterInstall),
-    [aiNamespace, agentClusterInstall]
+    () => getOnFetchEventsHandler(fetchEvents, aiNamespace, agents || [], agentClusterInstall),
+    [aiNamespace, agentClusterInstall, agents]
   )
 
   const fallbackEventsURL = namespaceError === true ? agentClusterInstall?.status?.debugInfo?.eventsURL : undefined

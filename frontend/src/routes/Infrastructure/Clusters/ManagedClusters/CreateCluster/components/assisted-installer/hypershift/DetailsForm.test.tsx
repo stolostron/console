@@ -34,6 +34,7 @@ describe('DetailsForm', () => {
                   diskEncryptionTangServers: [],
                   diskEncryption: {},
                   cpuArchitecture: '',
+                  platform: 'baremetal',
                 },
                 step: {
                   title: {

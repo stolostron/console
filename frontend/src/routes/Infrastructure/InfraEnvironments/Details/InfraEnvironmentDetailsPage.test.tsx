@@ -13,6 +13,13 @@ import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
 import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
 import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
+  useK8sWatchResource: jest.fn(),
+}))
+;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockReturnValue([null as any, true, null])
 
 const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
 

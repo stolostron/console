@@ -14,6 +14,7 @@ const credentialsTypes = [
   Provider.redhatcloud,
   Provider.redhatvirtualization,
   Provider.vmware,
+  Provider.nutanix,
 ] as const
 
 export type CredentialsType = typeof credentialsTypes[number]

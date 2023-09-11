@@ -69,9 +69,13 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
   const formRef = useRef<FormikProps<any>>(null)
 
-  const providerConnections = allProviderConnections.filter(
-    (p) => p.metadata?.labels?.['cluster.open-cluster-management.io/type'] === Provider.hostinventory
-  )
+  const providerConnections = allProviderConnections.filter((p) => {
+    const providerType = p.metadata?.labels?.['cluster.open-cluster-management.io/type']
+    if (providerType) {
+      return [Provider.hostinventory, Provider.nutanix].includes(providerType as Provider)
+    }
+    return false
+  })
 
   const onValuesChanged = useCallback((values: EnvironmentStepFormValues) => {
     control.active = values

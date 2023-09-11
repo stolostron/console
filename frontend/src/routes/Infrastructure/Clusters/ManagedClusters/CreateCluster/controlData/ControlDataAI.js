@@ -3,8 +3,9 @@
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import { automationControlData, appendKlusterletAddonConfig } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
+import { Provider } from '../../../../../../ui-components'
 
-export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonConfig = true) => {
+export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonConfig = true, isNutanix) => {
   const controlData = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
@@ -16,15 +17,17 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
     {
       id: 'infrastructure',
       name: t('Infrastructure'),
-      active: 'Host inventory',
+      active: isNutanix ? 'Nutanix' : 'Host inventory',
       type: 'reviewinfo',
     },
-    {
-      id: 'controlplane',
-      name: t('Control plane type'),
-      active: 'Standalone',
-      type: 'reviewinfo',
-    },
+    isNutanix
+      ? {}
+      : {
+          id: 'controlplane',
+          name: t('Control plane type'),
+          active: 'Standalone',
+          type: 'reviewinfo',
+        },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
@@ -32,7 +35,7 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
       id: 'connection',
       type: 'singleselect',
       placeholder: t('creation.ocp.cloud.select.connection'),
-      providerId: ['hybrid', 'hostinventory'],
+      providerId: isNutanix ? [Provider.nutanix] : [Provider.hybrid, Provider.hostinventory],
       validation: {
         notification: t('creation.ocp.cluster.must.select.connection'),
         required: false,
@@ -50,6 +53,7 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
       additionalProps: {
         promptSshPublicKey: true,
         aiFlow: true,
+        isNutanix,
       },
     },
     ...automationControlData(t),

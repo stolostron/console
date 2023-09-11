@@ -64,11 +64,17 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   useK8sWatchResource: jest.fn(),
 }))
 
+const provisioningConfig = {
+  metadata: {
+    name: 'foo',
+    namespace: 'bar',
+  },
+}
+
 describe('Edit AI Cluster', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can be rendered', async () => {
-    const provisioningConfig = { metadata: { name: 'foo', namespace: 'bar' } }
-    dynamicPluginSdk.useK8sWatchResource.mockReturnValue([provisioningConfig, true, null])
+    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockReturnValue([provisioningConfig, true, null])
     const nocks = [
       nockGet(pullSecretMock, pullSecretMock),
       nockList(managedClusterMock, managedClusterMock),

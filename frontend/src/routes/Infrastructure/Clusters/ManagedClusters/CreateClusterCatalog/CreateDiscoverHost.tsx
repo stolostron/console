@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'
@@ -10,6 +11,9 @@ import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-a
 export function CreateDiscoverHost() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const { search } = useLocation()
+
+  const isNutanix = search === '?nutanix=true'
 
   const noAvailableHostsAlert = useNoAvailableHostsAlert('standalone')
 
@@ -27,7 +31,11 @@ export function CreateDiscoverHost() {
           },
         ],
         onClick: !noAvailableHostsAlert
-          ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIM))
+          ? nextStep(
+              getTypedCreateClusterPath(
+                isNutanix ? HostInventoryInfrastructureType.NutanixCIM : HostInventoryInfrastructureType.CIM
+              )
+            )
           : undefined,
         alertTitle: noAvailableHostsAlert?.title,
         alertVariant: 'info',
@@ -42,19 +50,27 @@ export function CreateDiscoverHost() {
             description: t('Discover new hosts while creating the cluster without an existing host inventory.'),
           },
         ],
-        onClick: nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.AI)),
+        onClick: nextStep(
+          getTypedCreateClusterPath(
+            isNutanix ? HostInventoryInfrastructureType.NutanixAI : HostInventoryInfrastructureType.AI
+          )
+        ),
       },
     ]
     return newCards
-  }, [nextStep, t, noAvailableHostsAlert])
+  }, [nextStep, t, noAvailableHostsAlert, isNutanix])
 
   const breadcrumbs: ICatalogBreadcrumb[] = [
     { label: t('Clusters'), to: NavigationPath.clusters },
     { label: t('Infrastructure'), to: NavigationPath.createCluster },
-    {
-      label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
-      to: NavigationPath.createBMControlPlane,
-    },
+    ...(isNutanix
+      ? []
+      : [
+          {
+            label: t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' }),
+            to: NavigationPath.createBMControlPlane,
+          },
+        ]),
     { label: t('Hosts') },
   ]
   return (
@@ -67,7 +83,7 @@ export function CreateDiscoverHost() {
         />
       }
       cards={cards}
-      onBack={back(NavigationPath.createBMControlPlane)}
+      onBack={back(breadcrumbs[breadcrumbs.length - 2].to || '')}
       onCancel={cancel(NavigationPath.clusters)}
     />
   )
