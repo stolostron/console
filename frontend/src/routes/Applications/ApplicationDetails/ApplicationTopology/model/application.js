@@ -9,6 +9,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
   let model
   let placement
   let placementName
+  let relatedPlacement
 
   // get application
   const apiVersion = apiversion || 'application.app.k8s.io' // defaults to ACM app
@@ -29,6 +30,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
     app = applicationSets.find((app) => {
       return app?.metadata?.name === name && app?.metadata?.namespace === namespace
     })
+
     if (app) {
       placementName = get(
         app,
@@ -39,6 +41,15 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         const labels = get(placementDecision, 'metadata.labels', {})
         return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
+
+      const decisionOwnerReference = get(placement, 'metadata.ownerReferences')[0]
+
+      relatedPlacement = recoilStates.placements.find(
+        (resource) =>
+          resource.kind === decisionOwnerReference.kind &&
+          resource.metadata.name === decisionOwnerReference.name &&
+          resource.metadata.namespace === namespace
+      )
 
       if (get(app, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
         isAppSetPullModel = true
@@ -100,6 +111,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
       isOCPApp,
       isFluxApp,
       isAppSetPullModel,
+      relatedPlacement,
     }
 
     // a short sweet ride for argo

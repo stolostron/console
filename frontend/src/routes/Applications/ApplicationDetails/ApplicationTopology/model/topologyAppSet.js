@@ -11,7 +11,7 @@ import { addClusters, getClusterName, processMultiples } from './utils'
 export function getAppSetTopology(application) {
   const links = []
   const nodes = []
-  const { name, namespace, appSetClusters, appSetApps } = application
+  const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
   const clusterNames = appSetClusters.map((cluster) => {
     return cluster.name
   })
@@ -67,6 +67,7 @@ export function getAppSetTopology(application) {
         isDesign: true,
         raw: placement,
       },
+      placement: relatedPlacement,
     })
     links.push({
       from: { uid: appId },
