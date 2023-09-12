@@ -420,7 +420,9 @@ export function ClustersTable(props: {
                 <Alert
                   variant="danger"
                   isInline
-                  title={t('You selected {{0}} clusters that cannot be destroyed', [unDestroyedClusters.length])}
+                  title={t('You selected {{count}} cluster that cannot be destroyed', {
+                    count: unDestroyedClusters.length,
+                  })}
                   style={{ marginTop: '20px' }}
                 >
                   <TextContent>{t('They will not be destroyed when you perform this action.')}</TextContent>
