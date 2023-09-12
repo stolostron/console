@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { IResource } from '../../../../resources'
@@ -46,6 +47,7 @@ export function getResourceParams() {
 }
 
 export default function DetailsPage() {
+  usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()

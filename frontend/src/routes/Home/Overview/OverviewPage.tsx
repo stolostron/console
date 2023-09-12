@@ -10,6 +10,7 @@ import {
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
+import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -187,6 +188,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 }
 
 export default function OverviewPage() {
+  usePageVisitMetricHandler(Pages.overview)
   const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {

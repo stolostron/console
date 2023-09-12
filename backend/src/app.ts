@@ -15,6 +15,7 @@ import { apiPaths } from './routes/apiPaths'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
+import { metrics } from './routes/metrics'
 import { login, loginCallback, logout } from './routes/oauth'
 import { observabilityProxy } from './routes/observabilityProxy'
 import { operatorCheck } from './routes/operatorCheck'
@@ -59,6 +60,7 @@ router.get('/authenticated', authenticated)
 router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
+router.all('/metrics', metrics)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

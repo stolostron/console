@@ -21,6 +21,7 @@ import {
   GetDiscoveredOCPApps,
   GetOpenShiftAppResourceMaps,
 } from '../../../components/GetDiscoveredOCPApps'
+import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
@@ -73,6 +74,7 @@ function renderSummaryLoading() {
 
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
+  usePageVisitMetricHandler(Pages.overviewFleet)
   const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {

@@ -19,7 +19,7 @@ import {
   policiesState,
   policyreportState,
 } from '../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest, nockSearch } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
   ClusterManagementAddOn,
@@ -1062,6 +1062,7 @@ it('should render overview page in empty state', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
 
@@ -1079,10 +1080,11 @@ it('should render overview page in empty state', async () => {
   await waitFor(() => expect(screen.getByText(`You don't have any clusters`)).toBeInTheDocument())
 
   // Wait for delete resource requests to finish
-  await waitForNocks([getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
+  await waitForNocks([metricNock, getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
 })
 
 it('should render overview page in error state', async () => {
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
@@ -1112,13 +1114,14 @@ it('should render overview page in error state', async () => {
   await wait()
 
   // Wait for delete resource requests to finish
-  await waitForNocks([getAddonNock, getManageedClusterAccessRequeset])
+  await waitForNocks([metricNock, getAddonNock, getManageedClusterAccessRequeset])
 
   // Test that the component has rendered correctly with an error
   await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
 })
 
 it('should render overview page with expected data', async () => {
+  const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   nockIgnoreApiPaths()
@@ -1228,7 +1231,7 @@ it('should render overview page with expected data', async () => {
   )
 
   // Wait for delete resource requests to finish
-  await waitForNocks([getAddonNock])
+  await waitForNocks([metricNock, getAddonNock])
 
   // This wait pauses till apollo query is returning data
   await wait()
