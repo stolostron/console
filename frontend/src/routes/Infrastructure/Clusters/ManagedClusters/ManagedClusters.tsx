@@ -425,7 +425,11 @@ export function ClustersTable(props: {
                   })}
                   style={{ marginTop: '20px' }}
                 >
-                  <TextContent>{t('They will not be destroyed when you perform this action.')}</TextContent>
+                  <TextContent>
+                    {t('It will not be destroyed when you perform this action.', {
+                      count: unDestroyedClusters.length,
+                    })}
+                  </TextContent>
                 </Alert>
               ) : undefined,
             title: t('bulk.title.destroy'),
