@@ -5,12 +5,12 @@ Array [
   Object {
     "click": [Function],
     "id": "view-application",
-    "title": "View Application",
+    "title": "View application",
   },
   Object {
     "click": [Function],
     "id": "view-application-topology",
-    "title": "View Application topology",
+    "title": "View application topology",
   },
   Object {
     "click": [Function],

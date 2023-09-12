@@ -24,7 +24,7 @@ export function GetRowActions(
 
   const viewApplication = {
     id: 'view-application',
-    title: t('View Application'),
+    title: t('View application'),
     click: (item: any) => {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
@@ -58,7 +58,7 @@ export function GetRowActions(
   }
   const viewAppTopology = {
     id: 'view-application-topology',
-    title: t('View Application topology'),
+    title: t('View application topology'),
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
       return history.push({
