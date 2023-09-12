@@ -415,16 +415,17 @@ export function ClustersTable(props: {
           const unDestroyedClusters = clusters.filter((cluster) => !cluster.isHive)
           setModalProps({
             open: true,
-            alert: (
-              <Alert
-                variant="danger"
-                isInline
-                title={t('You selected {{0}} clusters that cannot be destroyed', [unDestroyedClusters.length])}
-                style={{ marginTop: '20px' }}
-              >
-                <TextContent>{t('They will not be destroyed when you perform this action.')}</TextContent>
-              </Alert>
-            ),
+            alert:
+              unDestroyedClusters.length > 0 ? (
+                <Alert
+                  variant="danger"
+                  isInline
+                  title={t('You selected {{0}} clusters that cannot be destroyed', [unDestroyedClusters.length])}
+                  style={{ marginTop: '20px' }}
+                >
+                  <TextContent>{t('They will not be destroyed when you perform this action.')}</TextContent>
+                </Alert>
+              ) : undefined,
             title: t('bulk.title.destroy'),
             action: t('destroy'),
             processing: t('destroying'),
