@@ -12,7 +12,7 @@ const acm_console_page_count = new Prometheus.Counter({
 })
 register.registerMetric(acm_console_page_count)
 
-export async function metrics(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function metrics(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const errorCatcher = catchInternalServerError(res)
   getAuthenticatedToken(req, res)
     .then(async () => {
