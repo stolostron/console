@@ -13,6 +13,5 @@ export enum Pages {
 export function usePageVisitMetricHandler(page: Pages) {
   useEffect(() => {
     postRequest(getBackendUrl() + `/metrics?${page}`, {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [page])
 }
