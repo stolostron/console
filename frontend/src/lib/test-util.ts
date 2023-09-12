@@ -360,3 +360,7 @@ export async function clickHostAction(text: string) {
   await clickByText('ai:Add hosts')
   await clickByText(text)
 }
+
+export function isCardEnabled(card: HTMLElement) {
+  return card.style.cursor === 'pointer'
+}
