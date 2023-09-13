@@ -37,7 +37,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import {
   formatDescriptionForDropdown,
-  getInformOnlyPolicies,
+  hasInformOnlyPolicies,
   getPlacementBindingsForResource,
   getPlacementsForResource,
 } from '../common/util'
@@ -56,7 +56,7 @@ import {
   replaceResource,
 } from '../../../resources'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
-import { getPolicyRemediation, getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
+import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -65,6 +65,7 @@ import {
   PolicyClusterViolationSummaryMap,
   usePolicyClusterViolationSummaryMap,
 } from '../overview/PolicyViolationSummary'
+import { useAddRemediationPolicies } from '../common/useCustom'
 
 export interface PolicyTableItem {
   policy: Policy
@@ -82,9 +83,8 @@ export default function PoliciesPage() {
     policyAutomationState,
     policySetsState,
     subscriptionsState,
-    usePolicies,
   } = useSharedAtoms()
-  const policies = usePolicies()
+  const policies = useAddRemediationPolicies()
   const [helmReleases] = useRecoilState(helmReleaseState)
   const [subscriptions] = useRecoilState(subscriptionsState)
   const [channels] = useRecoilState(channelsState)
@@ -186,12 +186,10 @@ export default function PoliciesPage() {
       {
         header: t('Remediation'),
         cell: (item: PolicyTableItem) => {
-          return getPolicyRemediation(item.policy)
+          return item.policy.remediationResult
         },
         sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
-          const itemARemediation = getPolicyRemediation(itemA.policy)
-          const itemBRemediation = getPolicyRemediation(itemB.policy)
-          return compareStrings(itemARemediation, itemBRemediation)
+          return compareStrings(itemA.policy.remediationResult, itemB.policy.remediationResult)
         },
         id: 'remediation',
         order: 4,
@@ -393,7 +391,7 @@ export default function PoliciesPage() {
       },
       {
         header: t('policy.table.actionGroup.status'),
-        cell: (item: PolicyTableItem) => getPolicyRemediation(item.policy),
+        cell: (item: PolicyTableItem) => item.policy.remediationResult,
       },
     ],
     [t]
@@ -564,7 +562,7 @@ export default function PoliciesPage() {
                 processing: t('policy.table.actions.enforcing'),
                 items: [...item],
                 emptyState: undefined, // there is always 1 item supplied
-                description: getInformOnlyPolicies(item)
+                description: hasInformOnlyPolicies(item)
                   ? t('policy.modal.message.enforce') +
                     ' When you enforce a policy where the remediation action for some of the policy templates are set to ' +
                     '`informOnly`, there is no effect to those policy templates.'
@@ -724,7 +722,7 @@ export default function PoliciesPage() {
           { label: t('Inform/Enforce/InformOnly'), value: 'inform/enforce/informOnly' },
         ],
         tableFilterFn: (selectedValues, item) => {
-          const policyRemediation = getPolicyRemediation(item.policy)
+          const policyRemediation = item.policy.remediationResult?.replace(' (overridden)', '') || ''
           return selectedValues.includes(policyRemediation)
         },
       },

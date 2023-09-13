@@ -15,6 +15,16 @@ export const PolicyDefinition: IResourceDefinition = {
   kind: PolicyKind,
 }
 
+export enum REMEDIATION_ACTION {
+  ENFORCE_OVERRIDDEN = 'enforce (overridden)',
+  INFORM_ENFORCE_OVERRIDDEN = 'inform/enforce (overridden)',
+  INFORM = 'inform',
+  ENFORCE = 'enforce',
+  INFORM_ENFORCE = 'inform/enforce',
+  INFORM_ONLY = 'informOnly',
+  INFORMONLY_ENFORCE_OVERRIDDEN = 'informOnly/enforce (overridden)',
+  INFORM_INFORMONLY_ENFORCE_OVERRIDDEN = 'inform/informOnly/enforce (overridden)',
+}
 export interface Policy {
   apiVersion: PolicyApiVersionType
   kind: PolicyKindType
@@ -30,6 +40,8 @@ export interface Policy {
     placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
     status?: { clustername: string; clusternamespace: string; compliant?: string }[]
   }
+  // This not from API, this will be added at console
+  remediationResult?: REMEDIATION_ACTION | string
 }
 
 export interface PolicyTemplate {

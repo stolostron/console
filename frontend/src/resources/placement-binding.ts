@@ -13,6 +13,10 @@ export interface PlacementBinding extends IResource {
   apiVersion: PlacementBindingApiVersionType
   kind: PlacementBindingKindType
   metadata: Metadata
+  bindingOverrides?: {
+    remediationAction?: 'Enforce' | 'enforce' | null
+  }
+  subfilter?: boolean | string
   placementRef: ResourceRef
   subjects?: ResourceRef[] | null
 }

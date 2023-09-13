@@ -13,12 +13,13 @@ import {
   PlacementRule,
   Policy,
   PolicySet,
-  PolicyTemplate,
   PolicyAutomation,
   reconcileResources,
   Subscription,
   IResource,
   Secret,
+  REMEDIATION_ACTION,
+  PolicyTemplate,
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
@@ -464,11 +465,12 @@ export function getPolicySetPolicies(policies: Policy[], policySet: PolicySet) {
   )
 }
 
-export function getPolicyRemediation(policy: Policy | undefined) {
+export function getPolicyRemediation(policy: Policy | undefined, propagatedPolicies: Policy[]): string {
   if (!policy) {
     return ''
   }
   const templates = policy.spec['policy-templates']
+  let rootRA = policy.spec.remediationAction || ''
   let remediationAggregation = ''
 
   const remediationSet = new Set()
@@ -492,19 +494,67 @@ export function getPolicyRemediation(policy: Policy | undefined) {
   }
 
   remediationAggregation = remediationAggregation.trim().replaceAll(' ', '/')
-  if (remediationAggregation === '') {
-    return '-'
+
+  if (remediationSet.size === 1 && remediationAggregation.includes(REMEDIATION_ACTION.INFORM_ONLY)) {
+    return REMEDIATION_ACTION.INFORM_ONLY
   }
-  if (policy.spec?.remediationAction) {
-    if (remediationAggregation.includes('informOnly')) {
+
+  if (rootRA === REMEDIATION_ACTION.ENFORCE) {
+    return remediationAggregation.includes(REMEDIATION_ACTION.INFORM_ONLY) ? rootRA.concat('/informOnly') : rootRA
+  }
+
+  if (rootRA) {
+    if (remediationAggregation.includes(REMEDIATION_ACTION.INFORM_ONLY)) {
       if (remediationSet.size > 1) {
-        return policy.spec.remediationAction.concat('/informOnly')
+        rootRA = rootRA.concat('/informOnly')
       }
-      return 'informOnly'
     }
-    return policy.spec.remediationAction
+  } else {
+    rootRA = remediationAggregation
+    // empty root remediation and template remedation all empty
+    if (!rootRA) {
+      return '-'
+    }
   }
-  return remediationAggregation
+
+  let remediationOverride = ''
+  let allOverridden = propagatedPolicies.length !== 0
+  propagatedPolicies.forEach((propaPolicy) => {
+    const propaPolicyRA = propaPolicy.spec.remediationAction
+    if (!propaPolicyRA) {
+      allOverridden = false
+      return
+    }
+    if (propaPolicyRA === rootRA.replace('/informOnly', '')) {
+      allOverridden = false
+      return
+    }
+
+    if (!remediationOverride) {
+      remediationOverride = REMEDIATION_ACTION.ENFORCE
+    }
+  })
+
+  if (allOverridden) {
+    return rootRA.includes('informOnly')
+      ? REMEDIATION_ACTION.INFORMONLY_ENFORCE_OVERRIDDEN
+      : REMEDIATION_ACTION.ENFORCE_OVERRIDDEN
+  }
+
+  // No overrides are present
+  if (!remediationOverride) {
+    return rootRA
+  }
+
+  return rootRA.includes('informOnly')
+    ? REMEDIATION_ACTION.INFORM_INFORMONLY_ENFORCE_OVERRIDDEN
+    : REMEDIATION_ACTION.INFORM_ENFORCE_OVERRIDDEN
+}
+
+export function getPolicyTempRemediation(propagatedPolicy: Policy, template: PolicyTemplate | undefined): string {
+  const propagatedRA = propagatedPolicy.spec.remediationAction
+  const objectRemediation = template?.objectDefinition.spec.remediationAction
+  return propagatedRA || objectRemediation || ''
 }
 
 export function getPolicyDescription(policy: Policy | undefined) {
@@ -582,11 +632,11 @@ export function formatDescriptionForDropdown(desc: string) {
   return formattedDescription
 }
 
-export function getInformOnlyPolicies(items: Array<PolicyTableItem>) {
+export function hasInformOnlyPolicies(items: Array<PolicyTableItem>): boolean {
   const policyList = items.map(({ policy }) => policy)
 
   const informOnlyPolicies = policyList.filter((policy) => {
-    return getPolicyRemediation(policy).includes('informOnly')
+    return policy.remediationResult?.includes('informOnly')
   })
 
   if (informOnlyPolicies.length == 0) {
