@@ -295,7 +295,25 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                   {t('Powered by Insights')}
                   <Popover
                     headerContent={t('Insights data')}
-                    bodyContent={t('Red Hat Insights provides data to monitor your clusters more efficiently.')}
+                    bodyContent={
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        {t('Red Hat Insights gathers data and uses it to produce actionable recommendations.')}
+                        <Button
+                          id={'redhat-insights-link'}
+                          variant="link"
+                          href={'https://console.redhat.com/openshift/insights'}
+                          component="a"
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            padding: 0,
+                            marginTop: '0.5rem',
+                          }}
+                        >
+                          {t('View Red Hat Insights')}
+                        </Button>
+                      </div>
+                    }
                   >
                     <Button
                       variant="plain"
