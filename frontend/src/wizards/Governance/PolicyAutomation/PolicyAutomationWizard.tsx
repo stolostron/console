@@ -81,6 +81,18 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     contentAriaLabel: t('Policy automation content'),
   })
 
+  const defaultData = props.resource ?? {
+    ...PolicyAutomationType,
+    metadata: {
+      name: `${props.policy.metadata?.name ?? ''}-policy-automation`,
+      namespace: props.policy.metadata?.namespace,
+    },
+    spec: {
+      policyRef: props.policy.metadata?.name,
+      mode: 'once',
+      automationDef: { name: '', secret: '', type: 'AnsibleJob' },
+    },
+  }
   return (
     <WizardPage
       id="policy-automation-wizard"
@@ -91,20 +103,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       onCancel={props.onCancel}
       editMode={props.editMode}
       yamlEditor={props.yamlEditor}
-      defaultData={
-        props.resource ?? {
-          ...PolicyAutomationType,
-          metadata: {
-            name: `${props.policy.metadata?.name ?? ''}-policy-automation`,
-            namespace: props.policy.metadata?.namespace,
-          },
-          spec: {
-            policyRef: props.policy.metadata?.name,
-            mode: 'once',
-            automationDef: { name: '', secret: '', type: 'AnsibleJob' },
-          },
-        }
-      }
+      defaultData={defaultData}
     >
       <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint component="alert" policyAutomation />
@@ -116,7 +115,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               </Alert>
             </WizDetailsHidden>
           )}
-          <LostChangesPrompt />
+          <LostChangesPrompt initialData={defaultData} />
           <Select
             id="secret"
             label={t('Ansible credential')}
