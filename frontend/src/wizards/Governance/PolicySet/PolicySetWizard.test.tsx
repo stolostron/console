@@ -10,21 +10,24 @@ import {
 } from '../../../routes/Governance/governance.sharedMocks'
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
+import { BrowserRouter as Router } from 'react-router-dom'
 
 function TestPolicySetWizard() {
   return (
-    <PolicySetWizard
-      title="Testing the policy set wizard"
-      namespaces={['argo-server-1']}
-      policies={[mockPolicy as IResource]}
-      placements={[mockPlacements as IResource]}
-      placementRules={[]}
-      clusters={mockManagedClusters}
-      clusterSets={[mockClusterSet]}
-      clusterSetBindings={[mockClusterSetBinding]}
-      onSubmit={() => new Promise(() => {})}
-      onCancel={() => {}}
-    />
+    <Router>
+      <PolicySetWizard
+        title="Testing the policy set wizard"
+        namespaces={['argo-server-1']}
+        policies={[mockPolicy as IResource]}
+        placements={[mockPlacements as IResource]}
+        placementRules={[]}
+        clusters={mockManagedClusters}
+        clusterSets={[mockClusterSet]}
+        clusterSetBindings={[mockClusterSetBinding]}
+        onSubmit={() => new Promise(() => {})}
+        onCancel={() => {}}
+      />
+    </Router>
   )
 }
 

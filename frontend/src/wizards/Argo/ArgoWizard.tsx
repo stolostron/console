@@ -14,6 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GitAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import { LostChangesPrompt } from '../../wizards/common/LostChangesPrompt'
 import {
   useItem,
   useData,
@@ -886,6 +887,7 @@ function ArgoWizardPlacementSection(props: {
   const { update } = useData()
   return (
     <Section label={t('Placement')}>
+      <LostChangesPrompt data={resources} />
       {(editMode === EditMode.Create || !hasPlacement) && (
         <WizDetailsHidden>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
