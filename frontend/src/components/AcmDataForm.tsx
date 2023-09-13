@@ -76,8 +76,6 @@ import {
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
-import { Prompt } from 'react-router'
-import { useBeforeunload } from 'react-beforeunload'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
@@ -95,7 +93,7 @@ import {
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
-import isEqual from 'lodash/isEqual'
+import { LostChangesPrompt } from '../wizards/common/LostChangesPrompt'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -124,8 +122,6 @@ const defaultPanelSize = 600
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const pageRef = useRef(null)
-  const dataRef = useRef<unknown>()
-  const dirtyRef = useRef(false)
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
@@ -139,15 +135,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
   )
 
-  // prevent navigating away from dirty form
-  // also see <Prompt> below
   const resources = formData.stateToData()
-  if (!dataRef.current) {
-    dataRef.current = resources
-  } else {
-    dirtyRef.current = !isEqual(dataRef.current, resources)
-  }
-  useBeforeunload(dirtyRef.current ? (event) => event.preventDefault() : undefined)
 
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
@@ -253,7 +241,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
-      <Prompt when={dirtyRef.current} message={t('changes.maybe.lost')} />
+      <LostChangesPrompt data={resources} />
       {isModalWizard ? (
         drawerContent()
       ) : (

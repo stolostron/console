@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { useBeforeunload } from 'react-beforeunload'
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
   EditMode,
@@ -30,8 +29,7 @@ import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
 import { PlacementRuleApiVersion } from '../../resources'
 import { NavigationPath } from '../../NavigationPath'
-import { cloneDeep, isEqual } from 'lodash'
-import { Prompt } from 'react-router-dom'
+import { LostChangesPrompt } from '../../wizards/common/LostChangesPrompt'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -47,17 +45,7 @@ export function PlacementSection(props: {
 }) {
   const { t } = useTranslation()
   const { update } = useData()
-  // prevent navigating away from dirty form
-  // also see <Prompt> below
-  const dataRef = useRef<unknown>()
-  const dirtyRef = useRef(false)
   const resources = useItem() as IResource[]
-  if (!dataRef.current) {
-    dataRef.current = cloneDeep(resources)
-  } else {
-    dirtyRef.current = !isEqual(dataRef.current, resources)
-  }
-  useBeforeunload(dirtyRef.current ? (event) => event.preventDefault() : undefined)
   const editMode = useEditMode()
   const displayMode = useDisplayMode()
 
@@ -219,7 +207,7 @@ export function PlacementSection(props: {
       // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
       autohide={false}
     >
-      <Prompt when={dirtyRef.current} message={t('changes.maybe.lost')} />
+      <LostChangesPrompt data={resources} />
       {usesPlacementRule && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
       {showPlacementSelector && (
         <PlacementSelector

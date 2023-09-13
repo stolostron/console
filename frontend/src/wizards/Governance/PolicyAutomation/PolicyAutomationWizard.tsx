@@ -20,6 +20,7 @@ import { ConfigMap } from '../../../resources'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
+import { LostChangesPrompt } from '../../../wizards/common/LostChangesPrompt'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -115,6 +116,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               </Alert>
             </WizDetailsHidden>
           )}
+          <LostChangesPrompt />
           <Select
             id="secret"
             label={t('Ansible credential')}
