@@ -29,6 +29,7 @@ import { PlacementRule } from './PlacementRule'
 import { useTranslation } from '../../lib/acm-i18next'
 import { PlacementRuleApiVersion } from '../../resources'
 import { NavigationPath } from '../../NavigationPath'
+import { LostChangesPrompt } from '../../wizards/common/LostChangesPrompt'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -206,6 +207,7 @@ export function PlacementSection(props: {
       // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
       autohide={false}
     >
+      <LostChangesPrompt data={resources} />
       {usesPlacementRule && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
       {showPlacementSelector && (
         <PlacementSelector

@@ -93,6 +93,7 @@ import {
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
+import { LostChangesPrompt } from '../wizards/common/LostChangesPrompt'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -134,6 +135,8 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
   )
 
+  const resources = formData.stateToData()
+
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
     setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
@@ -160,7 +163,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     id="code-content"
                     editorTitle={editorTitle}
                     readonly={mode === 'details'}
-                    resources={formData.stateToData()}
+                    resources={resources}
                     schema={schema}
                     immutables={immutables}
                     secrets={secrets}
@@ -238,6 +241,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
+      <LostChangesPrompt data={resources} />
       {isModalWizard ? (
         drawerContent()
       ) : (
