@@ -12,6 +12,7 @@ export function createAcmIcon(iconDefinition: {
   yOffset?: number
   svgPaths: ReactNode
   className?: string
+  color?: string
 }) {
   return (props: SVGIconProps) => {
     const { size, color, title, noVerticalAlign, ...otherProps } = props
@@ -29,7 +30,7 @@ export function createAcmIcon(iconDefinition: {
       <svg
         style={style}
         className={iconDefinition.className}
-        fill={color ?? 'currentColor'}
+        fill={iconDefinition.color ?? color ?? 'currentColor'}
         height={heightWidth}
         width={heightWidth}
         viewBox={viewBox}
