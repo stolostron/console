@@ -7,17 +7,19 @@ import DocPage from '../CreateCluster/components/assisted-installer/hypershift/c
 import { Fragment } from 'react'
 import { Actions, GetOCLogInCommand } from '../CreateCluster/components/assisted-installer/hypershift/common/common'
 
-export function DestroyHostedModal(props: { open: boolean; close: () => void }) {
-  const { open, close } = props
+export function DestroyHostedModal(props: { open: boolean; close: () => void; clusterName: string }) {
+  const { open, close, clusterName } = props
   const { t } = useTranslation()
 
   const destroyCode = `# Set environment variables
 export CLUSTER_NAME="example"
-SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 1.
+export SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 1.
 
-hypershift destroy cluster aws \\
+hcp destroy cluster aws \\
   --name $CLUSTER_NAME \\
   --secret-creds $SECRET_CREDS`
+
+  const destroyhelperCommand = `hcp create cluster aws --help`
 
   const listItems = [
     {
@@ -37,9 +39,15 @@ hypershift destroy cluster aws \\
     {
       title: t('Run command to destroy hosted cluster'),
       content: (
-        <CodeBlock actions={Actions(destroyCode, 'code-command')}>
-          <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
-        </CodeBlock>
+        <Fragment>
+          <CodeBlock actions={Actions(destroyCode, 'code-command')}>
+            <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
+          </CodeBlock>
+          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <CodeBlock actions={Actions(destroyhelperCommand, 'helper-command')}>
+            <CodeBlockCode id="helper-command">{destroyhelperCommand}</CodeBlockCode>
+          </CodeBlock>
+        </Fragment>
       ),
     },
   ]
@@ -55,8 +63,11 @@ hypershift destroy cluster aws \\
       }}
       description={
         <Trans
-          i18nKey="The <bold>oidc-cred</bold> cluster can only be destroyed through the CLI."
+          i18nKey="The <bold>{{clusterName}}</bold> cluster can only be destroyed through the CLI"
           components={{ bold: <strong /> }}
+          values={{
+            clusterName,
+          }}
         />
       }
       actions={[
