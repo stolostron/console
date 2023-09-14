@@ -30,7 +30,6 @@ import { Policy, PolicySet } from '../../../../resources'
 import {
   getClustersSummaryForPolicySet,
   getPlacementDecisionsForResource,
-  getPolicyRemediation,
   getPolicySetPolicies,
 } from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
@@ -38,6 +37,7 @@ import {
   useClusterViolationSummaryMap,
   usePolicySetClusterPolicyViolationsColumn,
 } from '../../overview/ClusterViolationSummary'
+import { useAddRemediationPolicies } from '../../common/useCustom'
 
 function renderDonutChart(
   clusterComplianceSummary: { compliant: string[]; nonCompliant: string[]; pending: string[] },
@@ -108,10 +108,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     placementDecisionsState,
     placementRulesState,
     placementsState,
-    usePolicies,
   } = useSharedAtoms()
   const [managedClusters] = useRecoilState(managedClustersState)
-  const policies = usePolicies()
+  const policies = useAddRemediationPolicies()
   const [placements] = useRecoilState(placementsState)
   const [placementRules] = useRecoilState(placementRulesState)
   const [placementBindings] = useRecoilState(placementBindingsState)
@@ -319,13 +318,12 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       {
         header: t('Remediation'),
         sort: (policyA: Policy, policyB: Policy) => {
-          const policyARemediation = getPolicyRemediation(policyA)
-          const policyBRemediation = getPolicyRemediation(policyB)
-          /* istanbul ignore next */
+          const policyARemediation = policyA.remediationResult
+          const policyBRemediation = policyB.remediationResult
           return compareStrings(policyARemediation, policyBRemediation)
         },
         cell: (policy: Policy) => {
-          return getPolicyRemediation(policy)
+          return policy.remediationResult
         },
       },
     ],

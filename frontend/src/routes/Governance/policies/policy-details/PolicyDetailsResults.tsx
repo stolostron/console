@@ -11,6 +11,7 @@ import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
+import { getPolicyTempRemediation } from '../../common/util'
 
 interface resultsTableData {
   templateName: string
@@ -23,6 +24,7 @@ interface resultsTableData {
   timestamp: moment.MomentInput
   policyName: string
   policyNamespace: string
+  remediationAction: string
 }
 
 export default function PolicyDetailsResults(props: { policy: Policy }) {
@@ -72,6 +74,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
             policyName,
             policyNamespace,
+            remediationAction: getPolicyTempRemediation(policyResponse, template),
           })
         })
       })
@@ -191,6 +194,12 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           return '-'
         },
         search: (item: resultsTableData) => item.message,
+      },
+      {
+        header: t('Remediation'),
+        sort: 'remediationAction',
+        cell: (item: resultsTableData) => item.remediationAction,
+        search: (item: resultsTableData) => item.remediationAction,
       },
       {
         header: t('Last report'),

@@ -11,7 +11,14 @@ import {
   policiesState,
 } from '../../../../atoms'
 import { clickByText, waitForText } from '../../../../lib/test-util'
-import { PlacementBinding, PlacementDecision, PlacementRule, Policy, PolicySet } from '../../../../resources'
+import {
+  PlacementBinding,
+  PlacementDecision,
+  PlacementRule,
+  Policy,
+  PolicySet,
+  REMEDIATION_ACTION,
+} from '../../../../resources'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { PolicySetDetailSidebar } from './PolicySetDetailSidebar'
 
@@ -124,7 +131,7 @@ const mockPolicy0: Policy = {
         },
       },
     ],
-    remediationAction: 'inform',
+    remediationAction: 'enforce',
   },
   status: {
     compliant: 'Compliant',
@@ -243,6 +250,9 @@ const mockPlacementRules: PlacementRule[] = [mockPlacementRule]
 const mockPlacementBinding: PlacementBinding = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'PlacementBinding',
+  bindingOverrides: {
+    remediationAction: 'enforce',
+  },
   metadata: {
     name: 'policy-set-with-1-placement-rule',
     namespace: 'test',
@@ -333,6 +343,10 @@ describe('PolicySets Page', () => {
 
     // switch to the policies table
     await clickByText('Policies')
+
+    // Find remediation
+    await waitForText('Cluster violation')
+    await waitForText(REMEDIATION_ACTION.ENFORCE_OVERRIDDEN)
 
     // find the policy names in table
     await waitForText(mockPolicy.metadata.name!)

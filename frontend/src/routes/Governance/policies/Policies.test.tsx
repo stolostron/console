@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, waitFor, screen, fireEvent } from '@testing-library/react'
+import { render, waitFor, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -13,7 +13,13 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule } from '../../../resources'
 import PoliciesPage, { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from './Policies'
-import { mockPolicy, mockEmptyPolicy, mockPolicySets, mockPendingPolicy } from '../governance.sharedMocks'
+import {
+  mockPolicy,
+  mockEmptyPolicy,
+  mockPolicySets,
+  mockPendingPolicy,
+  mockPolicyBinding,
+} from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
   beforeEach(async () => {
@@ -127,6 +133,26 @@ describe('Policies Page', () => {
         '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy/results?sort=-1'
       )
     )
+  })
+
+  test('should show enforce fitler without (overridden)', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicyBinding)
+        }}
+      >
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('enforce (overridden)')
+    await waitForText('Filter')
+    screen.getByRole('button', { name: 'Options menu' }).click()
+    await waitForText('Enforce')
+    const enforceDiv = screen.getByText('Enforce').closest('div')
+    within(enforceDiv!).getByText('1')
   })
 })
 
