@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider, Provider } from '../../../../../ui-components'
+import { AcmInlineProvider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
@@ -30,7 +30,7 @@ import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
-import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../utils/cluster-actions'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
@@ -360,7 +360,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           separator: true,
           text: t('managed.destroy'),
           click: (cluster: Cluster) => {
-            if (cluster.provider === Provider.hostinventory) {
+            if (clusterDestroyable(cluster)) {
               setModalProps({
                 open: true,
                 title: t('bulk.title.destroy'),
