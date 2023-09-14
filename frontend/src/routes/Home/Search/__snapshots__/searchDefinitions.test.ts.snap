@@ -981,6 +981,11 @@ Array [
     "sort": "cluster",
   },
   Object {
+    "cell": "status",
+    "header": "Status",
+    "sort": "status",
+  },
+  Object {
     "cell": "role",
     "header": "Role",
     "sort": "role",

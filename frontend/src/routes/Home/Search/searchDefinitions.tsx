@@ -152,6 +152,7 @@ export const getSearchDefinitions = (t: TFunction) => {
       columns: [
         AddColumn('name', t('Name')),
         AddColumn('cluster', t('Cluster')),
+        AddColumn('status', t('Status')),
         AddColumn('role', t('Role')),
         AddColumn('architecture', t('Architecture')),
         AddColumn('osImage', t('OS image')),
