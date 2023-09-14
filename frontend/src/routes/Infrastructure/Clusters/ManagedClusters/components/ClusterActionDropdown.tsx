@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider } from '../../../../../ui-components'
+import { AcmInlineProvider, Provider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
@@ -358,8 +358,30 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.DestroyHosted,
           separator: true,
           text: t('managed.destroy'),
-          click: () => {
-            setShowDestroyHostedModal(true)
+          click: (cluster: Cluster) => {
+            if (cluster.provider === Provider.hostinventory) {
+              setModalProps({
+                open: true,
+                title: t('bulk.title.destroy'),
+                action: t('destroy'),
+                processing: t('destroying'),
+                items: [cluster],
+                emptyState: undefined, // there is always 1 item supplied
+                description: t('bulk.message.destroy'),
+                columns: modalColumns,
+                keyFn: (cluster) => cluster.name as string,
+                actionFn: (cluster) => deleteCluster(cluster),
+                close: () => {
+                  setModalProps({ open: false })
+                },
+                isDanger: true,
+                icon: 'warning',
+                confirmText: cluster.displayName,
+                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+              })
+            } else {
+              setShowDestroyHostedModal(true)
+            }
           },
           isAriaDisabled: true,
           rbac: destroyRbac,
