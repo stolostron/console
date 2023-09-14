@@ -33,6 +33,7 @@ import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
+import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -370,7 +371,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 description: t('bulk.message.destroy'),
                 columns: modalColumns,
                 keyFn: (cluster) => cluster.name as string,
-                actionFn: (cluster) => deleteCluster(cluster),
+                actionFn: (cluster) => deleteHypershiftCluster(cluster),
                 close: () => {
                   setModalProps({ open: false })
                 },

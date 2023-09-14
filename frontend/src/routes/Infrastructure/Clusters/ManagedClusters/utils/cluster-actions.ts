@@ -99,7 +99,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
       )
     case ClusterAction.DestroyHosted:
-      return cluster.isHypershift
+      return cluster.isHypershift && cluster.status !== ClusterStatus.destroying
     case ClusterAction.UpdateAutomationTemplate:
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
