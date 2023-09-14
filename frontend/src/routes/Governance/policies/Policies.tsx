@@ -181,7 +181,7 @@ export default function PoliciesPage() {
         id: 'status',
         order: 3,
         isDefault: false,
-        isFirstVisitChecked: true,
+        isFirstVisitChecked: false,
       },
       {
         header: t('Remediation'),
@@ -225,6 +225,7 @@ export default function PoliciesPage() {
         id: 'policyset',
         order: 5,
         isDefault: false,
+        isFirstVisitChecked: true,
       },
       { ...policyClusterViolationsColumn, id: 'cv', isDefault: true, order: 6 },
       {
@@ -248,6 +249,7 @@ export default function PoliciesPage() {
         id: 'source',
         order: 7,
         isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Automation'),
@@ -335,7 +337,7 @@ export default function PoliciesPage() {
         id: 'created',
         order: 9,
         isDefault: false,
-        isFirstVisitChecked: true,
+        isFirstVisitChecked: false,
       },
       {
         header: '',
