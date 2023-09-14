@@ -8,7 +8,6 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { patchResource, Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
-import { getPolicyRemediation } from '../common/util'
 import { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
 
 export function PolicyActionDropdown(props: {
@@ -24,7 +23,7 @@ export function PolicyActionDropdown(props: {
     open: false,
   })
   const { item, setModal } = props
-  const policyRemediationAction = useMemo(() => getPolicyRemediation(item.policy), [item.policy])
+  const policyRemediationAction = item.policy.remediationResult
 
   const bulkModalStatusColumns = useMemo(
     () => [
@@ -56,7 +55,7 @@ export function PolicyActionDropdown(props: {
       },
       {
         header: t('policy.table.actionGroup.status'),
-        cell: (item: PolicyTableItem) => getPolicyRemediation(item.policy),
+        cell: (item: PolicyTableItem) => item.policy.remediationResult,
       },
     ],
     [t]
@@ -68,7 +67,7 @@ export function PolicyActionDropdown(props: {
         id: 'add-to-set',
         text: t('Add to policy set'),
         tooltip: t('Add to policy set'),
-        click: (policy: PolicyTableItem) => {
+        click: (policy: PolicyTableItem): void => {
           setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
         },
         rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
@@ -153,7 +152,7 @@ export function PolicyActionDropdown(props: {
         tooltip: policyRemediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
         addSeparator: true,
         isAriaDisabled: policyRemediationAction === 'inform',
-        click: (item: PolicyTableItem) => {
+        click: (item: PolicyTableItem): void => {
           setModalProps({
             open: true,
             title: t('policy.modal.title.inform'),
@@ -201,7 +200,7 @@ export function PolicyActionDropdown(props: {
             processing: t('policy.table.actions.enforcing'),
             items: [item],
             emptyState: undefined, // there is always 1 item supplied
-            description: policyRemediationAction.includes('informOnly')
+            description: policyRemediationAction?.includes('informOnly')
               ? t('policy.modal.message.enforce') +
                 ' When you enforce a policy where the remediation action for some of the policy templates are set to `informOnly`, there is no effect to those policy templates.'
               : t('policy.modal.message.enforce'),

@@ -6,7 +6,7 @@ import { policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
-import { mockPolicy, mockPendingPolicy } from '../../governance.sharedMocks'
+import { mockPolicy, mockPendingPolicy, mockPolicyBinding } from '../../governance.sharedMocks'
 
 describe('Policy Details Results', () => {
   beforeEach(async () => {
@@ -36,6 +36,23 @@ describe('Policy Details Results', () => {
     await waitForText(
       'notification - namespaces [test] found as specified, therefore this Object template is compliant'
     )
+    await waitForText('Remediation')
+    await waitForText('inform')
+  })
+  test('Should render Policy Details Results Page with Remediation enforce', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicyBinding)
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsResults policy={mockPolicyBinding[0]} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Remediation')
+    await waitForText('enforce')
   })
 })
 

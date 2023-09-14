@@ -224,6 +224,104 @@ const policy1: Policy = {
   },
 }
 
+export const policy2: Policy = {
+  apiVersion: 'policy.open-cluster-management.io/v1',
+  kind: 'Policy',
+  metadata: {
+    name: 'test.policy-set-with-1-placement-policy',
+    namespace: 'local-cluster',
+    labels: {
+      'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+      'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+      'policy.open-cluster-management.io/root-policy': 'test.policy-set-with-1-placement-policy',
+    },
+  },
+  spec: {
+    disabled: false,
+    remediationAction: 'enforce',
+    'policy-templates': [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: { name: 'policy-set-with-1-placement-policy-1' },
+          spec: {
+            namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+            remediationAction: 'inform',
+            severity: 'low',
+          },
+        },
+      },
+    ],
+  },
+  status: {
+    compliant: 'Compliant',
+    details: [
+      {
+        compliant: 'Compliant',
+        history: [
+          {
+            eventName: 'test.policy-set-with-1-placement-policy.16d459c516462fbf',
+            lastTimestamp: '2022-02-16T19:07:46Z',
+            message:
+              'Compliant; notification - namespaces [test] found as specified, therefore this Object template is compliant',
+          },
+        ],
+        templateMeta: { creationTimestamp: null, name: 'policy-set-with-1-placement-policy-1' },
+      },
+    ],
+  },
+}
+
+export const policy3: Policy = {
+  apiVersion: 'policy.open-cluster-management.io/v1',
+  kind: 'Policy',
+  metadata: {
+    name: 'test.policy-set-with-1-placement-policy',
+    namespace: 'test',
+    labels: {
+      'policy.open-cluster-management.io/cluster-name': 'local-cluster1',
+      'policy.open-cluster-management.io/cluster-namespace': 'local-cluster1',
+      'policy.open-cluster-management.io/root-policy': 'test.policy-set-with-1-placement-policy',
+    },
+  },
+  spec: {
+    disabled: false,
+    remediationAction: 'inform',
+    'policy-templates': [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: {
+            name: 'test-policy-namespace-2',
+          },
+          spec: {
+            remediationAction: 'inform',
+            severity: 'low',
+            namespaceSelector: {
+              exclude: ['kube-*'],
+              include: ['default'],
+            },
+            'object-templates': [
+              {
+                complianceType: 'musthave',
+                objectDefinition: {
+                  kind: 'Namespace',
+                  apiVersion: 'v1',
+                  metadata: {
+                    name: 'test',
+                  },
+                },
+              },
+            ],
+            pruneObjectBehavior: 'DeleteIfCreated',
+          },
+        },
+      },
+    ],
+  },
+}
 const pendingPolicy: Policy = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'Policy',
@@ -668,6 +766,7 @@ export const mockEditedPolicyAutomation: PolicyAutomation = {
 
 export const mockEmptyPolicy: Policy[] = []
 export const mockPolicy: Policy[] = [rootPolicy, policy0, policy1]
+export const mockPolicyBinding: Policy[] = [rootPolicy, policy2]
 export const mockPendingPolicy: Policy[] = [pendingPolicy, pendingPolicy0]
 
 export const mockPolicyNoStatus: Policy = policyWithoutStatus

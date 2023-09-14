@@ -30,6 +30,7 @@ import {
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
+import { usePropagatedPolicies } from '../../common/useCustom'
 
 interface TableData {
   apiVersion: string
@@ -59,6 +60,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [policyAutomations] = useRecoilState(policyAutomationState)
   const [namespaces] = useRecoilState(namespacesState)
+  const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
     govData.clusterRisks.high +
@@ -99,7 +101,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
       },
       {
         key: t('Remediation'),
-        value: getPolicyRemediation(policy),
+        value: getPolicyRemediation(policy, policies),
       },
       {
         key: t('Cluster violations'),
@@ -193,6 +195,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     setDrawerContext,
     canCreatePolicyAutomation,
     canUpdatePolicyAutomation,
+    policies,
     t,
   ])
 
