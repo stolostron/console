@@ -99,6 +99,7 @@ exports[`NetworkForm it renders 1`] = `
                   >
                     <div
                       class="pf-l-stack"
+                      id="form-control__form-input-nodePortAddress-field"
                     >
                       <div
                         class="pf-l-stack__item"
@@ -346,6 +347,7 @@ exports[`NetworkForm it renders 1`] = `
     </div>
     <div
       class="pf-l-stack"
+      id="form-control__form-checkbox-isAdvanced-field"
     >
       <div
         class="pf-l-stack__item"
@@ -398,6 +400,7 @@ exports[`NetworkForm it renders 1`] = `
     </div>
     <div
       class="pf-l-stack"
+      id="form-control__form-checkbox-enableProxy-field"
     >
       <div
         class="pf-l-stack__item"
@@ -451,6 +454,7 @@ exports[`NetworkForm it renders 1`] = `
                 >
                   <div
                     class="pf-l-stack"
+                    id="form-control__form-input-httpProxy-field"
                   >
                     <div
                       class="pf-l-stack__item"
@@ -545,6 +549,7 @@ exports[`NetworkForm it renders 1`] = `
                   </div>
                   <div
                     class="pf-l-stack"
+                    id="form-control__form-input-httpsProxy-field"
                   >
                     <div
                       class="pf-l-stack__item"
@@ -639,6 +644,7 @@ exports[`NetworkForm it renders 1`] = `
                   </div>
                   <div
                     class="pf-l-stack"
+                    id="form-control__form-input-noProxy-field"
                   >
                     <div
                       class="pf-l-stack__item"

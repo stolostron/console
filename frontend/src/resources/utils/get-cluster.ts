@@ -472,7 +472,7 @@ export function getCluster(
       '',
     status,
     statusMessage,
-    provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster),
+    provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster, agentClusterInstall),
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
     acmDistribution,
     microshiftDistribution: getMicroshiftDistributionInfo(managedCluster),
@@ -581,13 +581,14 @@ export function getProvider(
   managedClusterInfo?: ManagedClusterInfo,
   managedCluster?: ManagedCluster,
   clusterDeployment?: ClusterDeployment,
-  hostedCluster?: HostedClusterK8sResource
+  hostedCluster?: HostedClusterK8sResource,
+  agentClusterInstall?: AgentClusterInstallK8sResource
 ) {
   if (hostedCluster) return getHostedClusterProvider(hostedCluster)
 
   const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
   if (clusterInstallRef?.kind === AgentClusterInstallKind) {
-    return Provider.hostinventory
+    return agentClusterInstall?.spec?.platformType === 'Nutanix' ? Provider.nutanix : Provider.hostinventory
   }
 
   const productClusterClaim = managedCluster?.status?.clusterClaims?.find(

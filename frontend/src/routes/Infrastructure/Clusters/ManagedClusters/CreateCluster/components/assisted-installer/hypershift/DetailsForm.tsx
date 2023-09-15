@@ -39,7 +39,7 @@ type FormControl = {
   validate?: VoidFunction
   summary?: VoidFunction
   step?: any
-  additionalProps?: { [x: string]: string }
+  additionalProps?: { isNutanix: boolean; aiFlow: boolean; promptSshPublicKey: boolean }
 }
 
 type DetailsFormProps = {

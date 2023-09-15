@@ -181,7 +181,7 @@ export default function ClusterDetailsPage({
     cluster.isHive &&
     cluster.isManaged &&
     cluster.provider &&
-    ![Provider.baremetal, Provider.hostinventory].includes(cluster.provider)
+    ![Provider.baremetal, Provider.hostinventory, Provider.nutanix].includes(cluster.provider)
 
   const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
   useEffect(() => {

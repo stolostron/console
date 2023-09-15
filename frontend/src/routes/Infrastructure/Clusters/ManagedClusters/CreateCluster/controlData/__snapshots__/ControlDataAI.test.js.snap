@@ -41,6 +41,7 @@ Array [
   Object {
     "additionalProps": Object {
       "aiFlow": true,
+      "isNutanix": undefined,
       "promptSshPublicKey": true,
     },
     "component": <DetailsForm />,
@@ -210,6 +211,7 @@ Array [
   Object {
     "additionalProps": Object {
       "aiFlow": true,
+      "isNutanix": undefined,
       "promptSshPublicKey": true,
     },
     "component": <DetailsForm />,

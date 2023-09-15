@@ -41,7 +41,7 @@ import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { AgentK8sResource, BareMetalHostK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 
 type OnHostsNext = {
   values: any
@@ -196,7 +196,8 @@ const appendPatch = (
 
 export const getNetworkingPatches = (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues
+  values: ClusterDeploymentNetworkingValues,
+  isNutanix: boolean
 ) => {
   const agentClusterInstallPatches: any = []
 
@@ -272,7 +273,7 @@ export const getNetworkingPatches = (
       }
       appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
     } else {
-      if (agentClusterInstall.spec?.platformType) {
+      if (agentClusterInstall.spec?.platformType && !isNutanix) {
         agentClusterInstallPatches.push({
           op: 'remove',
           path: '/spec/platformType',
@@ -317,10 +318,11 @@ export const getNetworkingPatches = (
 
 export const onSaveNetworking = async (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues
+  values: ClusterDeploymentNetworkingValues,
+  isNutanix: boolean
 ) => {
   try {
-    const patches = getNetworkingPatches(agentClusterInstall, values)
+    const patches = getNetworkingPatches(agentClusterInstall, values, isNutanix)
     if (patches.length > 0) {
       await patchResource(agentClusterInstall as IResource, patches).promise
     }
@@ -857,4 +859,20 @@ export const onSetInstallationDiskId = (agent: AgentK8sResource, diskId: string)
       value: diskId,
     },
   ]).promise as Promise<AgentK8sResource>
+}
+
+export const useProvisioningConfiguration = (): [K8sResourceCommon | null, boolean, unknown] => {
+  const [config, loaded, error] = useK8sWatchResource<K8sResourceCommon>({
+    name: 'provisioning-configuration',
+    groupVersionKind: {
+      group: 'metal3.io',
+      version: 'v1alpha1',
+      kind: 'Provisioning',
+    },
+  })
+  const _error = error as { json?: { reason?: string } }
+  if (_error?.json?.reason === 'NotFound') {
+    return [null, true, null]
+  }
+  return [config, loaded || !!error, error]
 }

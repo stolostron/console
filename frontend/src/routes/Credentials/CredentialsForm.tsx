@@ -463,6 +463,7 @@ export function CredentialsForm(
         break
       case Provider.hostinventory:
       case Provider.hybrid:
+      case Provider.nutanix:
         stringData.baseDomain = baseDomain
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
@@ -477,7 +478,7 @@ export function CredentialsForm(
     if (
       stringData?.['ssh-publickey'] &&
       !stringData['ssh-publickey'].endsWith('\n') &&
-      credentialsType !== Provider.hostinventory
+      ![Provider.hostinventory, Provider.nutanix].includes(credentialsType as Provider)
     ) {
       stringData['ssh-publickey'] += '\n'
     }
@@ -671,6 +672,7 @@ export function CredentialsForm(
               Provider.redhatvirtualization,
               Provider.hybrid,
               Provider.hostinventory,
+              Provider.nutanix,
             ].includes(credentialsType as Provider),
             type: 'Text',
             label: t('Base DNS domain'),
@@ -1413,6 +1415,7 @@ export function CredentialsForm(
               Provider.redhatvirtualization,
               Provider.hybrid,
               Provider.hostinventory,
+              Provider.nutanix,
             ].includes(credentialsType as Provider),
             type: 'TextArea',
             label: t('Pull secret'),
@@ -1457,6 +1460,7 @@ export function CredentialsForm(
               Provider.vmware,
               Provider.hybrid,
               Provider.hostinventory,
+              Provider.nutanix,
             ].includes(credentialsType as Provider),
             type: 'TextArea',
             label: t('SSH public key'),
@@ -1468,9 +1472,11 @@ export function CredentialsForm(
               validatePublicSshKey(
                 value,
                 t,
-                ![Provider.hybrid, Provider.hostinventory].includes(credentialsType as Provider)
+                ![Provider.hybrid, Provider.hostinventory, Provider.nutanix].includes(credentialsType as Provider)
               ),
-            isRequired: ![Provider.hybrid, Provider.hostinventory].includes(credentialsType as Provider),
+            isRequired: ![Provider.hybrid, Provider.hostinventory, Provider.nutanix].includes(
+              credentialsType as Provider
+            ),
             isSecret: true,
           },
         ],

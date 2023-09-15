@@ -42,7 +42,7 @@ type FormControl = {
   validate?: VoidFunction
   summary?: VoidFunction
   step?: any
-  additionalProps?: { [x: string]: string }
+  additionalProps?: { isNutanix: boolean; aiFlow: boolean; promptSshPublicKey: boolean }
 }
 
 type DetailsFormProps = {
@@ -281,6 +281,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           clusterImages={clusterImages as ClusterImageSetK8sResource[]}
           usedClusterNames={usedClusterNames}
           extensionAfter={extensionAfter}
+          isNutanix={control.additionalProps?.isNutanix}
         />
       </ACMFeatureSupportLevelProvider>
     </FeatureGateContextProvider>

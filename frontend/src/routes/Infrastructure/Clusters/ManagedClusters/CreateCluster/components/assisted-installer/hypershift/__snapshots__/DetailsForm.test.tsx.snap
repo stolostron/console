@@ -8,6 +8,7 @@ exports[`DetailsForm it renders 1`] = `
   >
     <div
       class="pf-l-stack"
+      id="form-control__form-input-name-field"
     >
       <div
         class="pf-l-stack__item"
@@ -188,6 +189,7 @@ exports[`DetailsForm it renders 1`] = `
     </div>
     <div
       class="pf-l-stack"
+      id="form-control__form-input-baseDnsDomain-field"
     >
       <div
         class="pf-l-stack__item"
@@ -268,6 +270,7 @@ exports[`DetailsForm it renders 1`] = `
     </div>
     <div
       class="pf-l-stack"
+      id="form-control__form-input-openshiftVersion-field"
     >
       <div
         class="pf-l-stack__item"
@@ -332,6 +335,7 @@ exports[`DetailsForm it renders 1`] = `
     </div>
     <div
       class="pf-l-stack"
+      id="form-control__form-input-pullSecret-field"
     >
       <div
         class="pf-l-stack__item"

@@ -318,7 +318,11 @@ export function ClusterOverviewPageContent(props: {
     !(cluster?.isHostedCluster || cluster?.isHypershift) && clusterProperties.clusterPool?.value !== undefined
   const hasOCPVersion = cluster?.distribution?.ocp?.version
   const hasAIClusterProperties =
-    cluster?.provider === Provider.hostinventory && !cluster?.isHypershift && clusterDeployment && agentClusterInstall
+    cluster?.provider &&
+    [Provider.hostinventory, Provider.nutanix].includes(cluster.provider) &&
+    !cluster.isHypershift &&
+    clusterDeployment &&
+    agentClusterInstall
 
   const clusterClaimedBySetPool = [
     ...(!cluster?.isHypershift ? [clusterProperties.claimedBy] : []),
@@ -368,7 +372,7 @@ export function ClusterOverviewPageContent(props: {
   if (cluster?.isHypershift) {
     details = <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
   }
-  if (cluster?.provider === Provider.hostinventory) {
+  if (cluster?.provider && [Provider.hostinventory, Provider.nutanix].includes(cluster.provider)) {
     if (cluster.isHypershift) {
       details = <AIHypershiftClusterDetails />
     } else if (!agentClusterInstall) {

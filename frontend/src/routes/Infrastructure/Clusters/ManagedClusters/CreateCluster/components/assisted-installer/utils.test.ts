@@ -15,8 +15,10 @@ import {
   setProvisionRequirements,
   onHostsNext,
   onEditProxy,
+  useProvisioningConfiguration,
 } from './utils'
 import { AgentClusterInstallApiVersion, AgentClusterInstallKind } from '../../../../../../../resources'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -50,11 +52,15 @@ describe('networking patch utils', () => {
         ingressVIP: '10.10.10.10',
       },
     }
-    const patches = getNetworkingPatches(aci, {
-      managedNetworkingType: 'userManaged',
-      enableProxy: false,
-      editProxy: false,
-    })
+    const patches = getNetworkingPatches(
+      aci,
+      {
+        managedNetworkingType: 'userManaged',
+        enableProxy: false,
+        editProxy: false,
+      },
+      false
+    )
     expect(patches.length).toBe(5)
   })
   it('enables cluster networking', () => {
@@ -69,13 +75,17 @@ describe('networking patch utils', () => {
         },
       },
     }
-    const patches = getNetworkingPatches(aci, {
-      managedNetworkingType: 'clusterManaged',
-      enableProxy: false,
-      editProxy: false,
-      apiVip: '10.10.10.10',
-      ingressVip: '10.10.10.10',
-    })
+    const patches = getNetworkingPatches(
+      aci,
+      {
+        managedNetworkingType: 'clusterManaged',
+        enableProxy: false,
+        editProxy: false,
+        apiVip: '10.10.10.10',
+        ingressVip: '10.10.10.10',
+      },
+      false
+    )
     expect(patches.length).toBe(6)
   })
 })
@@ -190,5 +200,37 @@ describe('onEditProxy', () => {
       },
       infraEnv
     )
+  })
+})
+
+const useK8sWatchResourceMock = jest.spyOn(dynamicPluginSdk, 'useK8sWatchResource')
+
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
+  useK8sWatchResource: jest.fn(),
+}))
+
+describe('useProvisioningConfig', () => {
+  afterEach(() => {
+    jest.restoreAllMocks() // Restore all mocks after each test
+  })
+
+  it('should return provisioning config when load was successful', () => {
+    const provisioningConfig = { metadata: { name: 'foo', namespace: 'bar' } }
+    useK8sWatchResourceMock.mockReturnValue([provisioningConfig, true, null])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([provisioningConfig, true, null])
+  })
+
+  it('should return provisioning config null, error null and loaded true when error is NotFound', () => {
+    useK8sWatchResourceMock.mockReturnValue([null as any, false, { json: { reason: 'NotFound' } }])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([null, true, null])
+  })
+
+  it('should return loaded true if there was any error', () => {
+    useK8sWatchResourceMock.mockReturnValue([null as any, false, 'some error'])
+    const ret = useProvisioningConfiguration()
+    expect(ret).toEqual([null, true, 'some error'])
   })
 })

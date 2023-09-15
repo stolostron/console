@@ -39,7 +39,10 @@ export function StatusField(props: { cluster: Cluster }) {
   const prehooks = curator?.spec?.install?.prehook?.length
   const posthooks = curator?.spec?.install?.posthook?.length
 
-  const isHybrid = props.cluster?.provider === Provider.hostinventory && !props.cluster?.isHypershift
+  const isHybrid =
+    props.cluster?.provider &&
+    [Provider.hostinventory, Provider.nutanix].includes(props.cluster?.provider) &&
+    !props.cluster?.isHypershift
   const type = getClusterStatusType(props.cluster.status)
 
   let hasAction = false

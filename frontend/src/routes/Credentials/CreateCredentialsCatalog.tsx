@@ -25,6 +25,7 @@ const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.hostinventory],
   [Provider.ansible, 'ansible'],
   [Provider.redhatcloud, 'redhatcloud'],
+  [Provider.nutanix],
 ]
 
 export function CreateCredentialsCatalog() {

@@ -27,6 +27,7 @@ export enum Provider {
   other = 'other',
   kubevirt = 'kubevirt',
   microshift = 'microshift',
+  nutanix = 'nutanix',
 }
 
 export const ProviderShortTextMap = {
@@ -50,6 +51,7 @@ export const ProviderShortTextMap = {
   [Provider.other]: 'Other',
   [Provider.kubevirt]: 'OpenShift Virtualization',
   [Provider.microshift]: 'Red Hat Device Edge',
+  [Provider.nutanix]: 'Nutanix',
 }
 
 export const ProviderLongTextMap = {
@@ -73,6 +75,7 @@ export const ProviderLongTextMap = {
   [Provider.other]: 'Other',
   [Provider.kubevirt]: 'Red Hat OpenShift Virtualization',
   [Provider.microshift]: 'Red Hat Device Edge',
+  [Provider.nutanix]: 'Nutanix',
 }
 
 export const ProviderIconMap = {
@@ -96,4 +99,5 @@ export const ProviderIconMap = {
   [Provider.hypershift]: AcmIconVariant.cloud,
   [Provider.kubevirt]: AcmIconVariant.kubevirt,
   [Provider.microshift]: AcmIconVariant.redhat,
+  [Provider.nutanix]: AcmIconVariant.nutanix,
 }

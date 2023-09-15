@@ -77,10 +77,15 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
     case ClusterAction.Destroy:
       return cluster.isHive && !(cluster.hive.clusterPool && !cluster.hive.clusterClaimName)
     case ClusterAction.EditAI:
-      return cluster.provider === Provider.hostinventory && !cluster.isHypershift
+      return (
+        !!cluster.provider &&
+        [Provider.hostinventory, Provider.nutanix].includes(cluster.provider) &&
+        !cluster.isHypershift
+      )
     case ClusterAction.ScaleUpAI:
       return (
-        cluster.provider === Provider.hostinventory &&
+        !!cluster.provider &&
+        [Provider.hostinventory, Provider.nutanix].includes(cluster.provider) &&
         !cluster.isHypershift &&
         [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
       )

@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useState } from 'react'
+import { ClusterCredentials } from '@openshift-assisted/ui-lib/cim'
+import { Cluster } from '@openshift-assisted/types/assisted-installer-service'
 import { getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
-import { Cluster, ClusterCredentials } from '@openshift-assisted/ui-lib/cim'
 
 type ClusterDeploymentCredentialsProps = {
   cluster: Cluster

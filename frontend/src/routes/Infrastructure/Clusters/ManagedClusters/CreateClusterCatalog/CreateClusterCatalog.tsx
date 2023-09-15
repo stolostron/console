@@ -25,7 +25,7 @@ import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../Cluster
 import { Divider, ExpandableSection } from '@patternfly/react-core'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 
-type CardProvider = Provider & (ClusterInfrastructureType | Provider.hostinventory)
+type CardProvider = Provider & (ClusterInfrastructureType | Provider.hostinventory | Provider.nutanix)
 type CardData = {
   id: string
   provider: CardProvider
@@ -115,6 +115,11 @@ export function CreateClusterCatalog() {
           'A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.'
         ),
       },
+      {
+        id: 'nutanix',
+        provider: Provider.nutanix,
+        description: t('A Red Hat OpenShift cluster that is running in a Nutanix environment.'),
+      },
     ]
   }, [t])
 
@@ -126,6 +131,13 @@ export function CreateClusterCatalog() {
         return nextStep(NavigationPath.createKubeVirtControlPlane)
       } else if (provider === Provider.hostinventory) {
         return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
+      } else if (provider === Provider.nutanix) {
+        return clusterImageSets.length
+          ? nextStep({
+              pathname: NavigationPath.createDiscoverHost,
+              search: 'nutanix=true',
+            })
+          : undefined
       } else {
         return nextStep(getTypedCreateClusterPath(provider))
       }
