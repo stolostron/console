@@ -46,9 +46,9 @@ export function CreateCredentialsCatalog() {
               ? nextStep(NavigationPath.addAWSType)
               : nextStep(getTypedCreateCredentialsPath(provider)),
           ...(provider === Provider.redhatvirtualization
-            ? ({
+            ? {
                 alertTitle: t('Deprecated host platform'),
-                alertVariant: 'warning',
+                alertVariant: 'warning' as const,
                 alertContent: (
                   <>
                     {t(
@@ -58,7 +58,7 @@ export function CreateCredentialsCatalog() {
                     <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
                   </>
                 ),
-              } as ICatalogCard)
+              }
             : {}),
         })),
     ]

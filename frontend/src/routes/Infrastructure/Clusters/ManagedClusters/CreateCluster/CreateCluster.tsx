@@ -26,7 +26,12 @@ import {
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
+import {
+  addDeprecationWarningRHV,
+  append,
+  arrayItemHasKey,
+  setAvailableConnections,
+} from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
@@ -505,7 +510,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   type={'cluster'}
                   title={t('Cluster YAML')}
                   monacoEditor={<MonacoEditor />}
-                  controlData={controlData}
+                  controlData={addDeprecationWarningRHV(controlData, t)}
                   template={template}
                   portals={Portals}
                   createControl={{

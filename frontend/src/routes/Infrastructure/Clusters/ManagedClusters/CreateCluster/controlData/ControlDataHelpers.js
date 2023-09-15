@@ -19,6 +19,7 @@ import _ from 'lodash'
 import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
+import { AcmAlert } from '../../../../../../ui-components'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -102,6 +103,11 @@ export const setAvailableOCPImages = (provider, control, result) => {
               break
             case 'vmw':
               if (name.includes('img4.3') || name.includes('img4.4')) {
+                return
+              }
+              break
+            case 'rhv':
+              if (name.includes('img4.14')) {
                 return
               }
               break
@@ -716,6 +722,40 @@ const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
   const matches = version.match(versionRegex)
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
+}
+
+export const addDeprecationWarningRHV = (controlData, t) => {
+  let inx = controlData.findIndex(({ id }) => id === 'imageSet')
+
+  controlData.splice(inx, 1, {
+    name: t('cluster.create.ocp.image'),
+    tooltip: t('tooltip.cluster.create.ocp.image'),
+    id: 'imageSet',
+    type: 'combobox',
+    simplified: getSimplifiedImageName,
+    placeholder: t('creation.ocp.cloud.select.ocp.image'),
+    fetchAvailable: LOAD_OCP_IMAGES('rhv', t),
+    validation: {
+      notification: t('creation.ocp.cluster.must.select.ocp.image'),
+      required: true,
+    },
+    info: (control, _controlData) => {
+      const imageSet = getControlByID(_controlData, 'imageSet')
+      if (imageSet && imageSet.active && imageSet.active.includes('4.13')) {
+        return (
+          <AcmAlert
+            variant="warning"
+            title={t('Deprecated host platform')}
+            message={t(
+              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release'
+            )}
+          />
+        )
+      }
+      return
+    },
+  })
+  return controlData
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
