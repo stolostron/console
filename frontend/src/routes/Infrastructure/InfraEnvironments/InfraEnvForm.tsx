@@ -30,6 +30,7 @@ import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import { Provider } from '../../../ui-components'
 import { GetProjects } from '../../../components/GetProjects'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
+import { DOC_VERSION } from '../../../lib/doc-util'
 
 // where to put Create/Cancel buttons
 export const Portals = Object.freeze({
@@ -122,6 +123,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
               formRef={formRef}
               pullSecret={currentConnection?.stringData?.['pullSecret']}
               sshPublicKey={currentConnection?.stringData?.['ssh-publickey']}
+              docVersion={DOC_VERSION}
             >
               <FormGroup fieldId="credentials" label={t('Infrastructure provider credentials')}>
                 <Select
