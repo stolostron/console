@@ -23,7 +23,7 @@ import {
   ClusterDeploymentProgress,
   ClusterDeploymentValidationsOverview,
   ClusterInstallationError,
-  EventsModalButton,
+  EventsModal,
   FetchSecret,
   LogsDownloadButton,
   SecretK8sResource,
@@ -58,6 +58,7 @@ const AIClusterDetails: React.FC = () => {
   const [aiNamespace, setAiNamespace] = useState<string>('')
   const [namespaceError, setNamespaceError] = useState<boolean>()
   const history = useHistory()
+  const [isEventsModalOpen, setIsEventsModalOpen] = useState(false);
 
   const cdName = clusterDeployment?.metadata?.name
   const cdNamespace = clusterDeployment?.metadata?.namespace
@@ -160,20 +161,14 @@ const AIClusterDetails: React.FC = () => {
                     fetchSecret={fetchSecret}
                   />
                   {cluster && (
-                    <EventsModalButton
+                    <Button
                       id="cluster-events-button"
-                      entityKind="cluster"
-                      cluster={cluster}
-                      title={t('Cluster Events')}
                       variant={ButtonVariant.link}
                       style={{ textAlign: 'right' }}
-                      onFetchEvents={onFetchEvents}
-                      ButtonComponent={Button}
-                      fallbackEventsURL={fallbackEventsURL}
-                      disablePagination
+                      onClick={() => setIsEventsModalOpen(true)}
                     >
-                      {t('View cluster events')}
-                    </EventsModalButton>
+                      {t('ai:View cluster events')}
+                    </Button>
                   )}
                   <LogsDownloadButton
                     id="cluster-logs-button"
@@ -206,6 +201,19 @@ const AIClusterDetails: React.FC = () => {
           )}
         </AcmExpandableCard>
       </div>
+      {isEventsModalOpen && cluster && (
+        <EventsModal
+          entityKind="cluster"
+          title={t('Cluster Events')}
+          cluster={cluster}
+          onFetchEvents={onFetchEvents}
+          fallbackEventsURL={fallbackEventsURL}
+          disablePagination
+          isOpen
+          onClose={() => setIsEventsModalOpen(false)}
+          hostId={undefined}
+        />
+      )}
     </>
   )
 }
