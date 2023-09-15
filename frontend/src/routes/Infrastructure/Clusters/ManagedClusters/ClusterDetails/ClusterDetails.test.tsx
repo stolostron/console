@@ -38,6 +38,7 @@ import {
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
   clickByLabel,
+  clickByTestId,
   clickByText,
   typeByText,
   waitForCalled,
@@ -1442,6 +1443,17 @@ describe('ClusterDetails for On Premise', () => {
     await waitForText('Host inventory')
 
     // screen.debug(undefined, -1)
+  })
+
+  test('opens events modal', async () => {
+    const nocks: Scope[] = [mockMultiClusterEngineList()]
+    render(<AIComponent />)
+    await waitForNocks(nocks)
+
+    await waitForText(clusterName, true)
+
+    await clickByTestId('cluster-events-button')
+    await waitForText('Cluster Events')
   })
 })
 
