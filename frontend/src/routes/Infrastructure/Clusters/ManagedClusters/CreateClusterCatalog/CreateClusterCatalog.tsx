@@ -190,7 +190,7 @@ export function CreateClusterCatalog() {
           alertContent: (
             <>
               {t(
-                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release'
+                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
               )}
               <br />
               <br />

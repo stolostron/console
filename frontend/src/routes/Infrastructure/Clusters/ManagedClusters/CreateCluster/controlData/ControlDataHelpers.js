@@ -747,7 +747,7 @@ export const addDeprecationWarningRHV = (controlData, t) => {
             variant="warning"
             title={t('Deprecated host platform')}
             message={t(
-              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release'
+              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
             )}
           />
         )
