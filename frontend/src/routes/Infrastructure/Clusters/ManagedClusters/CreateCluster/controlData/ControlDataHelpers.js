@@ -107,7 +107,7 @@ export const setAvailableOCPImages = (provider, control, result) => {
               }
               break
             case 'rhv':
-              if (name.includes('img4.14')) {
+              if (versionGreater(releaseImage, 4, 13)) {
                 return
               }
               break
@@ -749,6 +749,8 @@ export const addDeprecationWarningRHV = (controlData, t) => {
             message={t(
               'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
             )}
+            noClose={true}
+            style={{ marginTop: '2em' }}
           />
         )
       }
