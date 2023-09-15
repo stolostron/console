@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
@@ -1440,6 +1440,28 @@ describe('ClusterDetails for On Premise', () => {
     await waitForText('Host inventory')
 
     // screen.debug(undefined, -1)
+  })
+
+  test('open cluster events', async () => {
+    const nocks: Scope[] = [mockMultiClusterEngineList()]
+    render(<AIComponent />)
+    await waitForNocks(nocks)
+
+    await waitForText(clusterName, true)
+    await waitForText('Overview')
+    await waitForText('Details')
+
+    fireEvent(
+      screen.getByRole('button', {
+        name: /view cluster events/i,
+      }),
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      })
+    )
+
+    await waitForText('Cluster Events')
   })
 })
 
