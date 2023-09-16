@@ -727,7 +727,7 @@ function versionGreater(version, x, y) {
 export const addDeprecationWarningRHV = (controlData, t) => {
   const infraIndex = controlData.findIndex(({ id }) => id === 'infrastructure')
   if (controlData[infraIndex].active === 'RHV') {
-    let inx = controlData.findIndex(({ id }) => id === 'imageSet')
+    const inx = controlData.findIndex(({ id }) => id === 'imageSet')
     controlData.splice(inx, 1, {
       name: t('cluster.create.ocp.image'),
       tooltip: t('tooltip.cluster.create.ocp.image'),
@@ -740,7 +740,7 @@ export const addDeprecationWarningRHV = (controlData, t) => {
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
-      info: (control, _controlData) => {
+      info: (_controlData) => {
         const imageSet = getControlByID(_controlData, 'imageSet')
         if (imageSet && imageSet.active && imageSet.active.includes('4.13')) {
           return (
@@ -755,7 +755,6 @@ export const addDeprecationWarningRHV = (controlData, t) => {
             />
           )
         }
-        return
       },
     })
   }
