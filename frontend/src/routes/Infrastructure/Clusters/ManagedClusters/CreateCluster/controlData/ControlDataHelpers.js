@@ -725,38 +725,41 @@ function versionGreater(version, x, y) {
 }
 
 export const addDeprecationWarningRHV = (controlData, t) => {
-  let inx = controlData.findIndex(({ id }) => id === 'imageSet')
+  const infraIndex = controlData.findIndex(({ id }) => id === 'infrastructure')
+  if (controlData[infraIndex].active === 'RHV') {
+    let inx = controlData.findIndex(({ id }) => id === 'imageSet')
+    controlData.splice(inx, 1, {
+      name: t('cluster.create.ocp.image'),
+      tooltip: t('tooltip.cluster.create.ocp.image'),
+      id: 'imageSet',
+      type: 'combobox',
+      simplified: getSimplifiedImageName,
+      placeholder: t('creation.ocp.cloud.select.ocp.image'),
+      fetchAvailable: LOAD_OCP_IMAGES('rhv', t),
+      validation: {
+        notification: t('creation.ocp.cluster.must.select.ocp.image'),
+        required: true,
+      },
+      info: (control, _controlData) => {
+        const imageSet = getControlByID(_controlData, 'imageSet')
+        if (imageSet && imageSet.active && imageSet.active.includes('4.13')) {
+          return (
+            <AcmAlert
+              variant="warning"
+              title={t('Deprecated host platform')}
+              message={t(
+                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
+              )}
+              noClose={true}
+              style={{ marginTop: '2em' }}
+            />
+          )
+        }
+        return
+      },
+    })
+  }
 
-  controlData.splice(inx, 1, {
-    name: t('cluster.create.ocp.image'),
-    tooltip: t('tooltip.cluster.create.ocp.image'),
-    id: 'imageSet',
-    type: 'combobox',
-    simplified: getSimplifiedImageName,
-    placeholder: t('creation.ocp.cloud.select.ocp.image'),
-    fetchAvailable: LOAD_OCP_IMAGES('rhv', t),
-    validation: {
-      notification: t('creation.ocp.cluster.must.select.ocp.image'),
-      required: true,
-    },
-    info: (control, _controlData) => {
-      const imageSet = getControlByID(_controlData, 'imageSet')
-      if (imageSet && imageSet.active && imageSet.active.includes('4.13')) {
-        return (
-          <AcmAlert
-            variant="warning"
-            title={t('Deprecated host platform')}
-            message={t(
-              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-            )}
-            noClose={true}
-            style={{ marginTop: '2em' }}
-          />
-        )
-      }
-      return
-    },
-  })
   return controlData
 }
 
