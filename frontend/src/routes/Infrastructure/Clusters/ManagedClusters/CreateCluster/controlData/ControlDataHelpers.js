@@ -740,7 +740,7 @@ export const addDeprecationWarningRHV = (controlData, t) => {
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
-      info: (_controlData) => {
+      info: (_control, _controlData) => {
         const imageSet = getControlByID(_controlData, 'imageSet')
         if (imageSet && imageSet.active && imageSet.active.includes('4.13')) {
           return (
@@ -755,6 +755,7 @@ export const addDeprecationWarningRHV = (controlData, t) => {
             />
           )
         }
+        return {}
       },
     })
   }
