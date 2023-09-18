@@ -11,6 +11,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
+import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmLabels } from '../../../ui-components'
 
 export const getSearchDefinitions = (t: TFunction) => {
@@ -321,6 +322,7 @@ export const getSearchDefinitions = (t: TFunction) => {
     },
   }
 }
+
 export const useSearchDefinitions = () => {
   const { t } = useTranslation()
 
@@ -357,6 +359,13 @@ export const GetUrlSearchParam = (resource: any) => {
 }
 
 export function CreateDetailsLink(item: any) {
+  const { useIsGlobalHub } = useSharedAtoms()
+  const globalHub = useIsGlobalHub()
+
+  if (globalHub) {
+    return item.name
+  }
+
   switch (item.kind.toLowerCase()) {
     case 'cluster':
       return (
@@ -533,6 +542,7 @@ function AddColumn(key: string, localizedColumnName: string) {
         sort: 'name',
         cell: (item: any) => {
           return CreateDetailsLink(item)
+          // return !globalHub ? CreateDetailsLink(item) : item.name
         },
       }
     case 'labels':

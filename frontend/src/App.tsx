@@ -17,23 +17,24 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
-import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
-import { logout } from './logout'
 import { LoadingPage } from './components/LoadingPage'
-import { configure } from './lib/configure'
-import './lib/test-shots'
-import './lib/i18n'
-import { getUsername } from './lib/username'
-import { NavigationPath } from './NavigationPath'
-import { setLightTheme, ThemeSwitcher } from './theme'
-import { usePluginDataContextValue } from './lib/PluginDataContext'
-import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { LoadPluginData } from './components/LoadPluginData'
+import { PluginDataContextProvider } from './components/PluginDataContextProvider'
 import { Truncate } from './components/Truncate'
+import { configure } from './lib/configure'
+import './lib/i18n'
+import { usePluginDataContextValue } from './lib/PluginDataContext'
+import './lib/test-shots'
+import { getUsername } from './lib/username'
+import { logout } from './logout'
+import { NavigationPath } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
+import { useSharedAtoms } from './shared-recoil'
+import { setLightTheme, ThemeSwitcher } from './theme'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -144,6 +145,9 @@ function UserDropdown() {
 }
 
 export default function App() {
+  const { useIsGlobalHub } = useSharedAtoms()
+  const globalHub = useIsGlobalHub()
+
   const routes: (IRoute | IRouteGroup)[] = useMemo(
     () => [
       {
@@ -163,7 +167,7 @@ export default function App() {
             component: OverviewPage,
           },
           {
-            title: 'Search',
+            title: globalHub ? 'Global search' : 'Search',
             type: 'route',
             route: NavigationPath.search,
             component: Search,
@@ -214,7 +218,7 @@ export default function App() {
         component: Credentials,
       },
     ],
-    []
+    [globalHub]
   )
 
   // Enforce light mode for standalone

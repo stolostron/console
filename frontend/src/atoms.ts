@@ -43,9 +43,9 @@ import {
   ManagedClusterInfo,
   ManagedClusterSet,
   ManagedClusterSetBinding,
+  MulticlusterApplicationSetReport,
   MultiClusterEngine,
   MultiClusterHub,
-  MulticlusterApplicationSetReport,
   Namespace,
   OCPAppResource,
   Placement,
@@ -186,4 +186,14 @@ export function useSearchResultLimit() {
 export function useSearchAutocompleteLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
+}
+
+export function useIsGlobalHub() {
+  const crds = useRecoilValue(customResourceDefinitionsState)
+  return useMemo(
+    () =>
+      crds.filter((crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io').length >
+      0,
+    [crds]
+  )
 }

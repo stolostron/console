@@ -28,7 +28,8 @@ export function RenderItemContent(props: {
 }) {
   const { currentQuery, relatedKind, setDeleteResource } = props
   const { t } = useTranslation()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { useSearchResultLimit, useIsGlobalHub } = useSharedAtoms()
+  const globalHub = useIsGlobalHub()
   const searchResultLimit = useSearchResultLimit()
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -65,7 +66,9 @@ export function RenderItemContent(props: {
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t)}
+      rowActions={
+        !globalHub ? GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t) : undefined
+      }
     />
   )
 }

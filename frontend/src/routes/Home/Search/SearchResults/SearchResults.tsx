@@ -61,6 +61,8 @@ function RenderAccordionItem(props: {
 }) {
   const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
+  const { useIsGlobalHub } = useSharedAtoms()
+  const globalHub = useIsGlobalHub()
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -80,11 +82,13 @@ function RenderAccordionItem(props: {
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(searchDefinitions, `[${kindAndGroup}].columns`, searchDefinitions['genericresource'].columns)}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)}
+          rowActions={
+            !globalHub ? GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t) : undefined
+          }
         />
       )
     },
-    [currentQuery, setDeleteResource, searchDefinitions, t]
+    [currentQuery, globalHub, setDeleteResource, searchDefinitions, t]
   )
 
   return (

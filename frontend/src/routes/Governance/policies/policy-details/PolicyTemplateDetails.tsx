@@ -36,7 +36,8 @@ export function PolicyTemplateDetails(props: {
 }) {
   const { t } = useTranslation()
   const { clusterName, apiGroup, apiVersion, kind, templateName } = props
-  const { managedClusterAddonsState } = useSharedAtoms()
+  const { managedClusterAddonsState, useIsGlobalHub } = useSharedAtoms()
+  const globalHub = useIsGlobalHub()
   const [template, setTemplate] = useState<any>()
   const [relatedObjects, setRelatedObjects] = useState<any>()
   const [templateError, setTemplateError] = useState<string>()
@@ -242,7 +243,11 @@ export function PolicyTemplateDetails(props: {
               metadata: { name, namespace = '' },
             },
           } = item
-          if (reason === 'Resource not found but should exist' || reason === 'Resource not found as expected') {
+          if (
+            globalHub ||
+            reason === 'Resource not found but should exist' ||
+            reason === 'Resource not found as expected'
+          ) {
             return ''
           }
           if (cluster && kind && apiVersion && name) {
@@ -272,7 +277,7 @@ export function PolicyTemplateDetails(props: {
         },
       },
     ],
-    [t]
+    [globalHub, t]
   )
 
   if (templateError) {
