@@ -9,7 +9,7 @@ import {
 } from './atoms'
 import { Curation } from './resources/cluster-curator'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { selector } from 'recoil'
+import { GetRecoilValue, selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'
 
 export const providerConnectionsValue = selector({
@@ -80,26 +80,26 @@ export const validClusterCuratorTemplatesValue = selector({
   },
 })
 
+const findInstalledSubscription = (name: string, get: GetRecoilValue) => {
+  const subscriptionOperators = get(subscriptionOperatorsState)
+  return subscriptionOperators.filter(
+    (op) =>
+      op.metadata.name === name &&
+      op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
+  )
+}
+
 export const ansibleOperatorSubscriptionsValue = selector({
   key: 'ansibleOperatorSubscriptions',
-  get: ({ get }) => {
-    const subscriptionOperators = get(subscriptionOperatorsState)
-    return subscriptionOperators.filter(
-      (op) =>
-        op.metadata.name === 'ansible-automation-platform-operator' &&
-        op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
-    )
-  },
+  get: ({ get }) => findInstalledSubscription('ansible-automation-platform-operator', get),
 })
 
 export const gitOpsOperatorSubscriptionsValue = selector({
   key: 'gitOpsOperatorSubscriptions',
-  get: ({ get }) => {
-    const subscriptionOperators = get(subscriptionOperatorsState)
-    return subscriptionOperators.filter(
-      (op) =>
-        op.metadata.name === 'openshift-gitops-operator' &&
-        op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
-    )
-  },
+  get: ({ get }) => findInstalledSubscription('openshift-gitops-operator', get),
+})
+
+export const acmOperatorSubscriptionsValue = selector({
+  key: 'acmOperatorSubscriptions',
+  get: ({ get }) => findInstalledSubscription('acm-operator-subscription', get),
 })

@@ -12,6 +12,7 @@ const apiUrl = '/operatorCheck'
 export enum SupportedOperator {
   ansible = 'ansible-automation-platform-operator',
   gitOps = 'openshift-gitops-operator',
+  acm = 'acm-operator-subscription',
 }
 
 type OperatorCheckRequest = {
