@@ -61,6 +61,7 @@ export const DOC_LINKS = {
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
   RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/release_notes/ocp-4-13-release-notes.html#ocp-4-13-rhv-deprecations`,
+  ACCESSING_CONSOLE: `${DOC_HOME}/html/web_console/web-console#accessing-your-console`,
 }
 
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
