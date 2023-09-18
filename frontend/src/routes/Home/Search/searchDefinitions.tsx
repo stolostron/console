@@ -358,10 +358,10 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
-export function CreateDetailsLink(item: any) {
+export function CreateDetailsLink(props: { item: any }) {
+  const { item } = props
   const { useIsGlobalHub } = useSharedAtoms()
   const globalHub = useIsGlobalHub()
-
   if (globalHub) {
     return item.name
   }
@@ -541,8 +541,7 @@ function AddColumn(key: string, localizedColumnName: string) {
         header: localizedColumnName,
         sort: 'name',
         cell: (item: any) => {
-          return CreateDetailsLink(item)
-          // return !globalHub ? CreateDetailsLink(item) : item.name
+          return <CreateDetailsLink item={item} />
         },
       }
     case 'labels':

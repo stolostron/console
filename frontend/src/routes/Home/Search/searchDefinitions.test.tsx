@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
+import { render } from '@testing-library/react'
+import i18next from 'i18next'
+import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { customResourceDefinitionsState } from '../../../atoms'
 import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
@@ -9,10 +14,9 @@ import {
   FormatPolicyReportCategories,
   FormatPolicyReportPolicies,
   GetAge,
-  GetUrlSearchParam,
   getSearchDefinitions,
+  GetUrlSearchParam,
 } from './searchDefinitions'
-import i18next from 'i18next'
 const t = i18next.t.bind(i18next)
 
 test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
@@ -53,8 +57,14 @@ test('Correctly returns CreateDetailsLink - Cluster', () => {
     namespace: 'testClusterNamespace',
     kind: 'Cluster',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - ACM-Application', () => {
@@ -66,8 +76,14 @@ test('Correctly returns CreateDetailsLink - ACM-Application', () => {
     cluster: 'cluster',
     apiversion: 'v1beta1',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - NON-Application', () => {
@@ -78,8 +94,14 @@ test('Correctly returns CreateDetailsLink - NON-Application', () => {
     cluster: 'testCluster',
     selfLink: '/self/link',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
@@ -90,8 +112,14 @@ test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
     _hubClusterResource: true,
     apigroup: 'policy.open-cluster-management.io',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
@@ -102,8 +130,14 @@ test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
     cluster: 'testCluster',
     selfLink: '/self/link',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - PolicyReport', () => {
@@ -114,8 +148,14 @@ test('Correctly returns CreateDetailsLink - PolicyReport', () => {
     cluster: 'testCluster',
     selfLink: '/self/link',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateDetailsLink - Default', () => {
@@ -126,8 +166,51 @@ test('Correctly returns CreateDetailsLink - Default', () => {
     cluster: 'testCluster',
     selfLink: '/self/link',
   }
-  const result = CreateDetailsLink(item)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns GlobalHub CreateDetailsLink - Default', () => {
+  const item = {
+    name: 'testPodName',
+    namespace: 'testPodNamespace',
+    kind: 'Pod',
+    cluster: 'testCluster',
+    selfLink: '/self/link',
+  }
+  const { baseElement } = render(
+    <RecoilRoot
+      initializeState={(snapshot) =>
+        snapshot.set(customResourceDefinitionsState, [
+          {
+            apiVersion: 'apiextensions.k8s.io/v1',
+            kind: 'CustomResourceDefinition',
+            metadata: {
+              name: 'multiclusterglobalhubs.operator.open-cluster-management.io',
+            },
+            spec: {
+              group: 'operator.open-cluster-management.io',
+              names: {
+                kind: 'MulticlusterGlobalHub',
+                plural: 'multiclusterglobalhubs',
+              },
+            },
+          },
+        ])
+      }
+    >
+      <MemoryRouter>
+        <CreateDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateApplicationTopologyLink', () => {
