@@ -33,6 +33,23 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
   )
 }
 
+export function clusterDestroyable(cluster: Cluster) {
+  if (cluster.isHive) {
+    // hive clusters can be destroyed
+    return true
+  }
+
+  if (
+    cluster.isHostedCluster &&
+    (cluster.provider === Provider.hostinventory || cluster.provider === Provider.kubevirt)
+  ) {
+    // BM hosted clusters & kubevirt can be destroyed
+    return true
+  }
+
+  return false
+}
+
 export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAction): boolean {
   switch (clusterAction) {
     case ClusterAction.EditLabels:
@@ -90,7 +107,7 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
         [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
       )
     case ClusterAction.DestroyHosted:
-      return cluster.isHypershift
+      return cluster.isHypershift && cluster.status !== ClusterStatus.destroying
     case ClusterAction.UpdateAutomationTemplate:
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:

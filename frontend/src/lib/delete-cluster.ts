@@ -16,12 +16,13 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../resources'
+import { clusterDestroyable } from '../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
 import { deleteResources } from './delete-resources'
 
 export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
   let resources: IResource[] = []
 
-  if (cluster.isHive) {
+  if (clusterDestroyable(cluster)) {
     resources = [
       {
         apiVersion: ClusterDeploymentApiVersion,

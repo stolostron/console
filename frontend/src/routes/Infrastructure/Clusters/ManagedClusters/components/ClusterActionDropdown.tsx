@@ -30,9 +30,10 @@ import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
-import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../utils/cluster-actions'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
+import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -358,8 +359,30 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.DestroyHosted,
           separator: true,
           text: t('managed.destroy'),
-          click: () => {
-            setShowDestroyHostedModal(true)
+          click: (cluster: Cluster) => {
+            if (clusterDestroyable(cluster)) {
+              setModalProps({
+                open: true,
+                title: t('bulk.title.destroy'),
+                action: t('destroy'),
+                processing: t('destroying'),
+                items: [cluster],
+                emptyState: undefined, // there is always 1 item supplied
+                description: t('bulk.message.destroy'),
+                columns: modalColumns,
+                keyFn: (cluster) => cluster.name as string,
+                actionFn: (cluster) => deleteHypershiftCluster(cluster),
+                close: () => {
+                  setModalProps({ open: false })
+                },
+                isDanger: true,
+                icon: 'warning',
+                confirmText: cluster.displayName,
+                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+              })
+            } else {
+              setShowDestroyHostedModal(true)
+            }
           },
           isAriaDisabled: true,
           rbac: destroyRbac,

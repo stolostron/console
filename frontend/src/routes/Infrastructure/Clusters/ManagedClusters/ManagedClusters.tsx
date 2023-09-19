@@ -68,7 +68,7 @@ import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
-import { ClusterAction, clusterSupportsAction } from './utils/cluster-actions'
+import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
 import { RemoveAutomationModal } from './components/RemoveAutomationModal'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
@@ -412,7 +412,7 @@ export function ClustersTable(props: {
         id: 'destroyCluster',
         title: t('managed.destroy.plural'),
         click: (clusters) => {
-          const unDestroyedClusters = clusters.filter((cluster) => !cluster.isHive)
+          const unDestroyedClusters = clusters.filter((cluster) => !clusterDestroyable(cluster))
           setModalProps({
             open: true,
             alert:
@@ -621,26 +621,25 @@ export function useClusterNameColumnModal(): IAcmTableColumn<Cluster> {
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
           <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
-          {!cluster.isHive &&
-            (cluster.isManaged ? (
-              <Tooltip
-                content={
-                  <Text>
-                    {cluster.isHypershift
-                      ? t(
-                          'Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.'
-                        )
-                      : t('Imported clusters cannot be destroyed.')}
-                  </Text>
-                }
-              >
-                <Label style={{ marginLeft: '5px' }} color="red">
-                  {t('Undestroyable')}
-                </Label>
-              </Tooltip>
-            ) : (
-              ''
-            ))}
+          {!clusterDestroyable(cluster) ? (
+            <Tooltip
+              content={
+                <Text>
+                  {cluster.isHypershift
+                    ? t(
+                        'Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.'
+                      )
+                    : t('Imported clusters cannot be destroyed.')}
+                </Text>
+              }
+            >
+              <Label style={{ marginLeft: '5px' }} color="red">
+                {t('Undestroyable')}
+              </Label>
+            </Tooltip>
+          ) : (
+            ''
+          )}
         </span>
         {cluster.hive.clusterClaimName && (
           <TextContent>
