@@ -17,6 +17,7 @@ export interface FormData {
   reviewTitle: string
   reviewDescription: string
   cancelLabel: string
+  wasSubmitted?: boolean
   nextLabel: string
   backLabel: string
   customData?: unknown

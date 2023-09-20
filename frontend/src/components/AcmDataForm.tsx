@@ -241,7 +241,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
-      <LostChangesPrompt data={resources} />
       {isModalWizard ? (
         drawerContent()
       ) : (
@@ -598,6 +597,7 @@ export function AcmDataFormWizard(props: {
                         onClick={() => {
                           if (!formHasErrors(t, formData)) {
                             try {
+                              formData.wasSubmitted = true
                               const result = formData.submit()
                               if ((result as unknown) instanceof Promise) {
                                 setSubmitText(formData.submittingText)
@@ -642,6 +642,7 @@ export function AcmDataFormWizard(props: {
 
   return (
     <Fragment>
+      <LostChangesPrompt data={formData.stateToData()} wasSubmitted={formData.wasSubmitted} />
       {isModalWizard ? (
         <Wizard
           titleId="create-credential-title"
