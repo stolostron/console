@@ -11,7 +11,6 @@ import {
 
 import { Policy } from '../../../resources'
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
-import { BrowserRouter as Router } from 'react-router-dom'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { waitForText } from '../../../lib/test-util'
 
@@ -29,20 +28,18 @@ describe('ExistingTemplateName', () => {
 
 function TestPolicyWizard() {
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicy as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-      />
-    </Router>
+    <PolicyWizard
+      title="Testing the policy wizard"
+      namespaces={['argo-server-1']}
+      policies={[mockPolicy as IResource]}
+      placements={[mockPlacements as IResource]}
+      placementRules={[]}
+      clusters={mockManagedClusters}
+      clusterSets={[mockClusterSet]}
+      clusterSetBindings={[mockClusterSetBinding]}
+      onSubmit={() => new Promise(() => {})}
+      onCancel={() => {}}
+    />
   )
 }
 
@@ -68,21 +65,19 @@ function TestPolicyWizardGK() {
   ]
 
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicyGK as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        resources={[mockPolicyGK as IResource]}
-      />
-    </Router>
+    <PolicyWizard
+      title="Testing the policy wizard"
+      namespaces={['argo-server-1']}
+      policies={[mockPolicyGK as IResource]}
+      placements={[mockPlacements as IResource]}
+      placementRules={[]}
+      clusters={mockManagedClusters}
+      clusterSets={[mockClusterSet]}
+      clusterSetBindings={[mockClusterSetBinding]}
+      onSubmit={() => new Promise(() => {})}
+      onCancel={() => {}}
+      resources={[mockPolicyGK as IResource]}
+    />
   )
 }
 
