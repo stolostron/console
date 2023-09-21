@@ -29,7 +29,7 @@ export async function globalHub(req: Http2ServerRequest, res: Http2ServerRespons
     const serviceAccountToken = getServiceAccountToken()
 
     try {
-      let path = process.env.CLUSTER_API_URL + '/apis/apiextensions.k8s.io/v1/customresourcedefinitions'
+      const path = process.env.CLUSTER_API_URL + '/apis/apiextensions.k8s.io/v1/customresourcedefinitions'
       const getResponse = await jsonRequest(path, serviceAccountToken)
         .then((response: ResourceList) => {
           const mcgh = response.items.find(
