@@ -36,7 +36,7 @@ export function GetOCLogInCommand() {
   const { t } = useTranslation()
   return (
     <Fragment>
-      <Text component={TextVariants.h4}>{t('How to log in to OpenShift Container Platform')}</Text>
+      <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform.')}</Text>
       <Text
         component={TextVariants.a}
         onClick={() => {

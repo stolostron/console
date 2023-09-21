@@ -57,7 +57,7 @@ hcp create cluster kubevirt \\
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
             {t(
-              'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. To create the Hosted Control Plane, copy and paste the following command: '
+              'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. Create the Hosted Control Plane by copying and pasting the following command: '
             )}
           </Text>
           <CodeBlock actions={Actions(code, 'code-command')}>

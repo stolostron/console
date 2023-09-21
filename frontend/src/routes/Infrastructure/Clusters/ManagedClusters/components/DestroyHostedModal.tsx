@@ -23,27 +23,27 @@ hcp destroy cluster aws \\
 
   const listItems = [
     {
-      title: t('Prerequisite'),
+      title: t('Log in to your hosted cluster'),
       content: (
         <Fragment>
           <Text component={TextVariants.p}>
-            {t('Have the Amazon Web Services (AWS) credential you used to create the cluster.')}
+            {t('Use the Amazon Web Services (AWS) credential that you used to create your hosted cluster.')}
           </Text>
         </Fragment>
       ),
     },
     {
-      title: t('Log into OpenShift Container Platform'),
+      title: t('Log in to OpenShift Container Platform'),
       content: GetOCLogInCommand(),
     },
     {
-      title: t('Run command to destroy hosted cluster'),
+      title: t('Destroy the hosted cluster'),
       content: (
         <Fragment>
           <CodeBlock actions={Actions(destroyCode, 'code-command')}>
             <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <Text style={{ marginTop: '1em' }}>{t('Run the following command:')}</Text>
           <CodeBlock actions={Actions(destroyhelperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{destroyhelperCommand}</CodeBlockCode>
           </CodeBlock>
