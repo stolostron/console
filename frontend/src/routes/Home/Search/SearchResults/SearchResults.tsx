@@ -20,7 +20,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import {
   ClosedDeleteModalProps,
@@ -62,7 +62,7 @@ function RenderAccordionItem(props: {
   const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
   const { isGlobalHubState } = useSharedAtoms()
-  const [isGlobalHub] = useRecoilState(isGlobalHubState)
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 

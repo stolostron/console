@@ -11,7 +11,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLabels } from '../../../ui-components'
 
 export const getSearchDefinitions = (t: TFunction) => {
@@ -361,7 +361,7 @@ export const GetUrlSearchParam = (resource: any) => {
 export function CreateDetailsLink(props: { item: any }) {
   const { item } = props
   const { isGlobalHubState } = useSharedAtoms()
-  const [isGlobalHub] = useRecoilState(isGlobalHubState)
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
 
   if (isGlobalHub) {
     return item.name

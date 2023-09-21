@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useSetRecoilState } from 'recoil'
@@ -484,12 +484,6 @@ export function LoadData(props: { children?: ReactNode }) {
     }
   }, [setSettings, setters, setLoaded])
 
-  // Query for GlobalHub check
-  const globalHubQueryFn = useCallback(() => {
-    return getRequest<{
-      isGlobalHub: boolean
-    }>(getBackendUrl() + '/globalhub')
-  }, [])
   const {
     data: globalHubRes,
     loading: globalHubLoading,
@@ -516,11 +510,9 @@ export function LoadData(props: { children?: ReactNode }) {
   }, [globalHubRes, globalHubLoading, setIsGlobalHub])
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global values is loaded (globalValuesLoaded) -> set loaded to true
-  useEffect(() => {
-    if (!loaded && eventsLoaded && globalValuesLoaded) {
-      setLoaded(true)
-    }
-  }, [loaded, setLoaded, eventsLoaded, globalValuesLoaded])
+  if (!loaded && eventsLoaded && globalValuesLoaded) {
+    setLoaded(true)
+  }
 
   useEffect(() => {
     function checkLoggedIn() {
@@ -553,4 +545,11 @@ export function LoadData(props: { children?: ReactNode }) {
   const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
   return children
+}
+
+// Query for GlobalHub check
+const globalHubQueryFn = () => {
+  return getRequest<{
+    isGlobalHub: boolean
+  }>(getBackendUrl() + '/globalhub')
 }

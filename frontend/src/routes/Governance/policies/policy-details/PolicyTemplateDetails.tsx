@@ -17,7 +17,7 @@ import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlert,
   AcmDescriptionList,
@@ -43,7 +43,7 @@ export function PolicyTemplateDetails(props: {
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
   const [editorHeight, setEditorHeight] = useState<number>(250)
   const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
-  const [isGlobalHub] = useRecoilState(isGlobalHubState)
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
 
   let templateClusterName = clusterName
   let templateNamespace = clusterName
