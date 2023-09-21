@@ -32,7 +32,6 @@ import { getUsername } from './lib/username'
 import { logout } from './logout'
 import { NavigationPath } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
-import { useSharedAtoms } from './shared-recoil'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 
@@ -145,9 +144,6 @@ function UserDropdown() {
 }
 
 export default function App() {
-  const { useIsGlobalHub } = useSharedAtoms()
-  const globalHub = useIsGlobalHub()
-
   const routes: (IRoute | IRouteGroup)[] = useMemo(
     () => [
       {
@@ -167,7 +163,7 @@ export default function App() {
             component: OverviewPage,
           },
           {
-            title: globalHub ? 'Global search' : 'Search',
+            title: 'Search',
             type: 'route',
             route: NavigationPath.search,
             component: Search,
@@ -218,7 +214,7 @@ export default function App() {
         component: Credentials,
       },
     ],
-    [globalHub]
+    []
   )
 
   // Enforce light mode for standalone

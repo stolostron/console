@@ -134,6 +134,11 @@ export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
+export const isGlobalHubState = atom<boolean>({
+  key: 'isGlobalHub',
+  default: false,
+})
+
 export interface Settings {
   LOG_LEVEL?: string
   SAVED_SEARCH_LIMIT?: string
@@ -186,14 +191,4 @@ export function useSearchResultLimit() {
 export function useSearchAutocompleteLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
-}
-
-export function useIsGlobalHub() {
-  const crds = useRecoilValue(customResourceDefinitionsState)
-  return useMemo(
-    () =>
-      crds.filter((crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io').length >
-      0,
-    [crds]
-  )
 }

@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import DetailsPage from './Details/DetailsPage'
 import SearchPage from './SearchPage'
 
 export default function Search() {
-  const { useIsGlobalHub } = useSharedAtoms()
-  const globalHub = useIsGlobalHub()
+  const { isGlobalHubState } = useSharedAtoms()
+  const [isGlobalHub] = useRecoilState(isGlobalHubState)
 
-  if (globalHub) {
+  if (isGlobalHub) {
     // Details page is not supported in Global search in 2.9
     return (
       <Switch>

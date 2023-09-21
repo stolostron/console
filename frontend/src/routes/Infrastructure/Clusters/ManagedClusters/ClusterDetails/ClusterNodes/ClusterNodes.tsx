@@ -9,7 +9,7 @@ import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { NodeInfo } from '../../../../../../resources'
-import { useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmInlineStatus,
@@ -37,8 +37,8 @@ export function NodesPoolsTable() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { isSearchAvailable } = useContext(PluginContext)
-  const { useIsGlobalHub } = useSharedAtoms()
-  const globalHub = useIsGlobalHub()
+  const { isGlobalHubState } = useSharedAtoms()
+  const [isGlobalHub] = useRecoilState(isGlobalHubState)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
@@ -111,7 +111,7 @@ export function NodesPoolsTable() {
             </span>
             {node.name}
           </a>
-        ) : !globalHub && isSearchAvailable ? (
+        ) : !isGlobalHub && isSearchAvailable ? (
           <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
             {node.name}
           </Link>

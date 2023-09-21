@@ -1,17 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Fragment, ReactNode, useEffect, useMemo, useContext } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useSetRecoilState } from 'recoil'
+import { tokenExpired } from '../logout'
 import {
   AgentClusterInstallApiVersion,
   AgentClusterInstallKind,
   AgentKind,
   AgentKindVersion,
-  AgentServiceConfigKind,
-  AgentServiceConfigKindVersion,
   AgentMachineApiVersion,
   AgentMachineKind,
+  AgentServiceConfigKind,
+  AgentServiceConfigKindVersion,
   AnsibleJobApiVersion,
   AnsibleJobKind,
   ApplicationApiVersion,
@@ -51,6 +52,7 @@ import {
   DiscoveryConfigApiVersion,
   DiscoveryConfigKind,
   getBackendUrl,
+  getRequest,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
   HelmReleaseApiVersion,
@@ -73,12 +75,12 @@ import {
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
   ManagedClusterSetKind,
+  MulticlusterApplicationSetReportApiVersion,
+  MulticlusterApplicationSetReportKind,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
   MultiClusterHubApiVersion,
   MultiClusterHubKind,
-  MulticlusterApplicationSetReportApiVersion,
-  MulticlusterApplicationSetReportKind,
   NamespaceApiVersion,
   NamespaceKind,
   NMStateConfigApiVersion,
@@ -116,16 +118,16 @@ import {
   UserPreferenceApiVersion,
   UserPreferenceKind,
 } from '../resources'
-import { tokenExpired } from '../logout'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
   agentClusterInstallsState,
-  agentsState,
+  agentMachinesState,
   agentServiceConfigsState,
+  agentsState,
   ansibleJobState,
-  appProjectsState,
   applicationSetsState,
   applicationsState,
+  appProjectsState,
   argoApplicationsState,
   argoCDsState,
   bareMetalHostsState,
@@ -145,45 +147,48 @@ import {
   discoveryConfigState,
   gitOpsClustersState,
   helmReleaseState,
+  hostedClustersState,
   infraEnvironmentsState,
   infrastructuresState,
+  isGlobalHubState,
   machinePoolsState,
   managedClusterAddonsState,
   managedClusterInfosState,
   managedClusterSetBindingsState,
   managedClusterSetsState,
   managedClustersState,
+  multiclusterApplicationSetReportState,
   multiClusterEnginesState,
   multiClusterHubState,
-  multiclusterApplicationSetReportState,
   namespacesState,
   nmStateConfigsState,
+  nodePoolsState,
+  placementBindingsState,
+  placementDecisionsState,
+  placementRulesState,
+  placementsState,
   policiesState,
   policyAutomationState,
-  policySetsState,
-  placementBindingsState,
-  placementsState,
-  placementRulesState,
-  placementDecisionsState,
   policyreportState,
+  policySetsState,
   secretsState,
+  ServerSideEventData,
   settingsState,
   storageClassState,
   submarinerConfigsState,
-  subscriptionsState,
   subscriptionOperatorsState,
   subscriptionReportsState,
-  userPreferencesState,
-  hostedClustersState,
-  nodePoolsState,
-  agentMachinesState,
-  WatchEvent,
-  ServerSideEventData,
+  subscriptionsState,
   THROTTLE_EVENTS_DELAY,
+  userPreferencesState,
+  WatchEvent,
 } from '../atoms'
+import { useQuery } from '../lib/useQuery'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { setLoaded } = useContext(PluginDataContext)
+  const { loaded, setLoaded } = useContext(PluginDataContext)
+  const [eventsLoaded, setEventsLoaded] = useState(false)
+  const [globalValuesLoaded, setGlobalValuesLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
   const setAgents = useSetRecoilState(agentsState)
@@ -243,6 +248,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setHostedClustersState = useSetRecoilState(hostedClustersState)
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
+  const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
 
   const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -437,8 +443,8 @@ export function LoadData(props: { children?: ReactNode }) {
               eventQueue.length = 0
               break
             case 'LOADED':
-              setLoaded((loaded) => {
-                if (!loaded) {
+              setEventsLoaded((eventsLoaded) => {
+                if (!eventsLoaded) {
                   processEventQueue()
                 }
                 return true
@@ -477,6 +483,44 @@ export function LoadData(props: { children?: ReactNode }) {
       if (evtSource) evtSource.close()
     }
   }, [setSettings, setters, setLoaded])
+
+  // Query for GlobalHub check
+  const globalHubQueryFn = useCallback(() => {
+    return getRequest<{
+      isGlobalHub: boolean
+    }>(getBackendUrl() + '/globalhub')
+  }, [])
+  const {
+    data: globalHubRes,
+    loading: globalHubLoading,
+    startPolling: globalHubStartPoll,
+    stopPolling: globalHubStopPoll,
+  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false }])
+
+  // Start all Polls for Global values here
+  useEffect(() => {
+    globalHubStartPoll()
+    return () => {
+      // Stop polls on dismount
+      globalHubStopPoll()
+    }
+  }, [globalHubStartPoll, globalHubStopPoll])
+
+  // Update global value setters when data has finished
+  // if all global value queriees have finished set setGlobalValuesLoaded to true
+  useEffect(() => {
+    if (globalHubRes && !globalHubLoading) {
+      setIsGlobalHub(globalHubRes[0].isGlobalHub)
+      setGlobalValuesLoaded(true)
+    }
+  }, [globalHubRes, globalHubLoading])
+
+  // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global values is loaded (globalValuesLoaded) -> set loaded to true
+  useEffect(() => {
+    if (!loaded && eventsLoaded && globalValuesLoaded) {
+      setLoaded(true)
+    }
+  }, [loaded, setLoaded, eventsLoaded, globalValuesLoaded])
 
   useEffect(() => {
     function checkLoggedIn() {

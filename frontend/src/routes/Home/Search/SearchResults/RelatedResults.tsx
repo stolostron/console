@@ -12,7 +12,7 @@ import {
 import _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
@@ -28,8 +28,8 @@ export function RenderItemContent(props: {
 }) {
   const { currentQuery, relatedKind, setDeleteResource } = props
   const { t } = useTranslation()
-  const { useSearchResultLimit, useIsGlobalHub } = useSharedAtoms()
-  const globalHub = useIsGlobalHub()
+  const { useSearchResultLimit, isGlobalHubState } = useSharedAtoms()
+  const [isGlobalHub] = useRecoilState(isGlobalHubState)
   const searchResultLimit = useSearchResultLimit()
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -67,7 +67,7 @@ export function RenderItemContent(props: {
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
       rowActions={
-        !globalHub ? GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t) : undefined
+        !isGlobalHub ? GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t) : undefined
       }
     />
   )

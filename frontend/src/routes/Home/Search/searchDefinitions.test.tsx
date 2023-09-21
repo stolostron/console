@@ -5,7 +5,7 @@ import { render } from '@testing-library/react'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { customResourceDefinitionsState } from '../../../atoms'
+import { isGlobalHubState } from '../../../atoms'
 import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
@@ -185,26 +185,7 @@ test('Correctly returns GlobalHub CreateDetailsLink - Default', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) =>
-        snapshot.set(customResourceDefinitionsState, [
-          {
-            apiVersion: 'apiextensions.k8s.io/v1',
-            kind: 'CustomResourceDefinition',
-            metadata: {
-              name: 'multiclusterglobalhubs.operator.open-cluster-management.io',
-            },
-            spec: {
-              group: 'operator.open-cluster-management.io',
-              names: {
-                kind: 'MulticlusterGlobalHub',
-                plural: 'multiclusterglobalhubs',
-              },
-            },
-          },
-        ])
-      }
-    >
+    <RecoilRoot initializeState={(snapshot) => snapshot.set(isGlobalHubState, true)}>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>

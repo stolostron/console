@@ -4,25 +4,28 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmAlert, AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
 import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
   const { t } = useTranslation()
+  const { isGlobalHubState } = useSharedAtoms()
+  const [isGlobalHub] = useRecoilState(isGlobalHubState)
   const { messages } = props
-  const { useIsGlobalHub } = useSharedAtoms()
-  const globalHub = useIsGlobalHub()
 
   return (
     <div style={{ outline: 'none', display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{ flex: 1 }}>
-        <AcmPageHeader
-          title={globalHub ? t('Global search') : t('Search')}
-          titleTooltip={
-            globalHub ? t('Find Kubernetes resources across all of your managed hubs and clusters') : undefined
-          }
-        />
+        {isGlobalHub && (
+          <AcmAlert
+            variant="info"
+            noClose
+            isInline
+            title={t('Find Kubernetes resources across all of your managed hubs and clusters')}
+          />
+        )}
+        <AcmPageHeader title={isGlobalHub ? t('Global search') : t('Search')} />
       </div>
 
       {messages.map((msg, index) => {
