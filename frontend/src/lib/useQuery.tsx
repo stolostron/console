@@ -113,7 +113,7 @@ export function useQuery<T>(
         return () => stopPolling()
       }
     },
-    [stopPolling]
+    [stopPolling, options?.pollInterval]
   )
 
   useEffect(() => {
