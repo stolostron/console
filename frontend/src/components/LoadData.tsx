@@ -184,6 +184,7 @@ import {
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
+import { useRecoilValue } from '../shared-recoil'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loaded, setLoaded } = useContext(PluginDataContext)
@@ -481,7 +482,7 @@ export function LoadData(props: { children?: ReactNode }) {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [setSettings, setters, setLoaded])
+  }, [setSettings, setters])
 
   const {
     data: globalHubRes,
@@ -500,11 +501,10 @@ export function LoadData(props: { children?: ReactNode }) {
   }, [globalHubStartPoll, globalHubStopPoll])
 
   // Update global value setters when data has finished
-  useEffect(() => {
-    if (globalHubRes && !globalHubLoading) {
-      setIsGlobalHub(globalHubRes[0].isGlobalHub)
-    }
-  }, [globalHubRes, globalHubLoading, setIsGlobalHub])
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  if (globalHubRes && !globalHubLoading && !isGlobalHub) {
+    setIsGlobalHub(globalHubRes[0].isGlobalHub)
+  }
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
   if (!loaded && eventsLoaded && !globalHubLoading) {
