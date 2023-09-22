@@ -409,12 +409,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const tableDivRef = useCallback((elem: HTMLDivElement | null) => setTableDiv(elem), [])
 
   //Column management
-  const defaultColIds = useMemo(
+  const requiredColIds = useMemo(
     () => columns.filter((col) => col.isDefault && col.id && !col.isActionCol).map((col) => col.id as string),
     [columns]
   )
-  const firstVisitColIds = useMemo(
-    () => columns.filter((col) => col.isFirstVisitChecked && col.id && !col.isActionCol).map((col) => col.id as string),
+  const defaultColIds = useMemo(
+    () =>
+      columns
+        .filter((col) => (col.isFirstVisitChecked || col.isDefault) && col.id && !col.isActionCol)
+        .map((col) => col.id as string),
     [columns]
   )
   const defaultOrderIds = useMemo(
@@ -431,7 +434,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder')!)
   const [colOrderIds, setColOrderIds] = useState<string[]>(localSavedColOrder || defaultOrderIds)
   const [selectedColIds, setSelectedColIds] = useState<string[]>(
-    localSavedCols || [...defaultColIds, ...firstVisitColIds]
+    localSavedCols || [...requiredColIds, ...defaultColIds]
   )
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
@@ -1016,7 +1019,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             )}
             {showColumManagement && (
               <AcmManageColumn<T>
-                {...{ selectedColIds, setSelectedColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
             )}
