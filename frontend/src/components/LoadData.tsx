@@ -188,7 +188,6 @@ import { useQuery } from '../lib/useQuery'
 export function LoadData(props: { children?: ReactNode }) {
   const { loaded, setLoaded } = useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
-  const [globalValuesLoaded, setGlobalValuesLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
   const setAgents = useSetRecoilState(agentsState)
@@ -489,7 +488,7 @@ export function LoadData(props: { children?: ReactNode }) {
     loading: globalHubLoading,
     startPolling: globalHubStartPoll,
     stopPolling: globalHubStopPoll,
-  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false }])
+  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false }], { pollInterval: 30 })
 
   // Start all Polls for Global values here
   useEffect(() => {
@@ -501,16 +500,14 @@ export function LoadData(props: { children?: ReactNode }) {
   }, [globalHubStartPoll, globalHubStopPoll])
 
   // Update global value setters when data has finished
-  // if all global value queriees have finished set setGlobalValuesLoaded to true
   useEffect(() => {
     if (globalHubRes && !globalHubLoading) {
       setIsGlobalHub(globalHubRes[0].isGlobalHub)
-      setGlobalValuesLoaded(true)
     }
   }, [globalHubRes, globalHubLoading, setIsGlobalHub])
 
-  // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global values is loaded (globalValuesLoaded) -> set loaded to true
-  if (!loaded && eventsLoaded && globalValuesLoaded) {
+  // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
+  if (!loaded && eventsLoaded && !globalHubLoading) {
     setLoaded(true)
   }
 

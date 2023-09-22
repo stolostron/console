@@ -97,6 +97,16 @@ export function NodesPoolsTable() {
     return scalarToQuantity(memory)
   }
 
+  function getSearchLink(node: NodeInfo) {
+    return !isGlobalHub && isSearchAvailable ? (
+      <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
+        {node.name}
+      </Link>
+    ) : (
+      node.name
+    )
+  }
+
   const columns: IAcmTableColumn<NodeInfo>[] = [
     {
       header: t('table.name'),
@@ -111,12 +121,8 @@ export function NodesPoolsTable() {
             </span>
             {node.name}
           </a>
-        ) : !isGlobalHub && isSearchAvailable ? (
-          <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
-            {node.name}
-          </Link>
         ) : (
-          node.name
+          getSearchLink(node)
         )
       },
     },
