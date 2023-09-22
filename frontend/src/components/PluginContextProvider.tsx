@@ -1,10 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { isContextProvider, isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import {
+  isContextProvider,
+  isHrefNavItem,
+  useResolvedExtensions,
+  UseK8sWatchResource,
+} from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
-import { ReactNode, useCallback, useMemo } from 'react'
+import { ReactNode, useMemo, useEffect, useState } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
+
 // import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { /*PluginData,*/ usePluginDataContextValue } from '../lib/PluginDataContext'
 // import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
@@ -13,26 +19,44 @@ import { /*PluginData,*/ usePluginDataContextValue } from '../lib/PluginDataCont
 //     isSharedContext(e) && e.properties.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
+  const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
+    useK8sWatchResource: () => [[] as any, false, undefined],
+  })
   const [hrefs] = useResolvedExtensions(isHrefNavItem)
-  const hrefAvailable = useCallback(
-    (id: string) =>
-      hrefs?.findIndex((e) => {
-        return e.properties.perspective === 'acm' && e.properties.id === id
-      }) >= 0,
-    [hrefs]
-  )
 
   const [contextProviders] = useResolvedExtensions(isContextProvider)
   const contextProvider = contextProviders?.find((e) => {
     return e.pluginName === 'mce'
   })
 
-  const isOverviewAvailable = useMemo(() => hrefAvailable('acm-overview'), [hrefAvailable])
-  const isApplicationsAvailable = useMemo(() => hrefAvailable('acm-applications'), [hrefAvailable])
-  const isGovernanceAvailable = useMemo(() => hrefAvailable('acm-governance'), [hrefAvailable])
-  const isSearchAvailable = useMemo(() => hrefAvailable('acm-search'), [hrefAvailable])
+  const [isOverviewAvailable, isApplicationsAvailable, isGovernanceAvailable, isSearchAvailable] = useMemo(() => {
+    const hrefAvailable = (id: string) =>
+      hrefs?.some((e) => e.properties.perspective === 'acm' && e.properties.id === id)
+
+    return [
+      hrefAvailable('acm-overview'),
+      hrefAvailable('acm-applications'),
+      hrefAvailable('acm-governance'),
+      hrefAvailable('acm-search'),
+    ]
+  }, [hrefs])
+
   const isACMAvailable = isOverviewAvailable
   const isSubmarinerAvailable = isOverviewAvailable
+
+  useEffect(() => {
+    const loadOCPAPI = async () => {
+      try {
+        const api = await import('@openshift-console/dynamic-plugin-sdk')
+        setOcpApi({
+          useK8sWatchResource: api.useK8sWatchResource,
+        })
+      } catch (err) {
+        console.error('Failed to load OCP API', err)
+      }
+    }
+    loadOCPAPI()
+  }, [])
 
   // ACM Custom extensions
 
@@ -49,6 +73,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         isSubmarinerAvailable,
         dataContext: (contextProvider.properties.useValueHook as typeof usePluginDataContextValue).context,
         acmExtensions,
+        ocpApi,
       }}
     >
       <div style={{ position: 'relative', height: '100%', width: '100%' }}>

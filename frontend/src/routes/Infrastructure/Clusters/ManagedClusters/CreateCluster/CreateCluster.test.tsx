@@ -57,6 +57,7 @@ import {
   waitForNocks,
   waitForNotText,
   waitForText,
+  ocpApi,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Scope } from 'nock/types'
@@ -899,7 +900,7 @@ describe('CreateCluster AWS', () => {
 
     // create the form
     const { container } = render(
-      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
+      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext, ocpApi }}>
         <Component />
       </PluginContext.Provider>
     )

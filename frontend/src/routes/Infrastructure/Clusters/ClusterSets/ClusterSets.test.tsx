@@ -23,6 +23,7 @@ import {
   waitForText,
   waitForNotText,
   typeByTestId,
+  ocpApi,
 } from '../../../../lib/test-util'
 import {
   mockClusterDeployments,
@@ -89,7 +90,7 @@ describe('ClusterSets page without Submariner', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
+      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
         <Component />
       </PluginContext.Provider>
     )

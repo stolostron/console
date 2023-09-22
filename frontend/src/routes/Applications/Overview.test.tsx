@@ -17,7 +17,7 @@ import {
   subscriptionsState,
 } from '../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
-import { waitForText } from '../../lib/test-util'
+import { waitForText, ocpApi } from '../../lib/test-util'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import { PluginContext } from '../../lib/PluginContext'
 import { NavigationPath } from '../../NavigationPath'
@@ -69,7 +69,13 @@ describe('Applications Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.applications]}>
-          <PluginContext.Provider value={{ acmExtensions: acmExtension, dataContext: PluginDataContext }}>
+          <PluginContext.Provider
+            value={{
+              acmExtensions: acmExtension,
+              dataContext: PluginDataContext,
+              ocpApi,
+            }}
+          >
             <ApplicationsPage />
           </PluginContext.Provider>
         </MemoryRouter>

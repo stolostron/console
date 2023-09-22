@@ -60,6 +60,7 @@ import {
   waitForNocks,
   waitForNotText,
   waitForText,
+  ocpApi,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
@@ -517,7 +518,7 @@ describe('ImportCluster', () => {
     const importSecretNock = nockGet(mockSecretResponse)
 
     render(
-      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext }}>
+      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext, ocpApi }}>
         <Component />
       </PluginContext.Provider>
     )
