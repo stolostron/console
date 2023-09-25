@@ -66,7 +66,6 @@ export function PolicyActionDropdown(props: {
       {
         id: 'add-to-set',
         text: t('Add to policy set'),
-        tooltip: t('Add to policy set'),
         click: (policy: PolicyTableItem): void => {
           setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
         },
@@ -75,7 +74,7 @@ export function PolicyActionDropdown(props: {
       {
         id: 'enable-policy',
         text: t('Enable'),
-        tooltip: item.policy.spec.disabled ? t('Enable policy') : t('Policy is already enabled'),
+        tooltip: !item.policy.spec.disabled ? t('Policy is already enabled') : undefined,
         isAriaDisabled: item.policy.spec.disabled === false,
         click: (item: PolicyTableItem) => {
           setModalProps({
@@ -112,7 +111,7 @@ export function PolicyActionDropdown(props: {
       {
         id: 'disable-policy',
         text: t('policy.table.actions.disable'),
-        tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : t('Disable policy'),
+        tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : undefined,
         isAriaDisabled: item.policy.spec.disabled === true,
         click: (item: PolicyTableItem) => {
           setModalProps({
@@ -149,7 +148,7 @@ export function PolicyActionDropdown(props: {
       {
         id: 'inform-policy',
         text: t('policy.table.actions.inform'),
-        tooltip: policyRemediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
+        tooltip: policyRemediationAction === 'inform' ? t('Already informing') : undefined,
         addSeparator: true,
         isAriaDisabled: policyRemediationAction === 'inform',
         click: (item: PolicyTableItem): void => {
@@ -190,7 +189,7 @@ export function PolicyActionDropdown(props: {
       {
         id: 'enforce-policy',
         text: t('policy.table.actions.enforce'),
-        tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
+        tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : undefined,
         isAriaDisabled: policyRemediationAction === 'enforce',
         click: (item: PolicyTableItem) => {
           setModalProps({
@@ -233,7 +232,6 @@ export function PolicyActionDropdown(props: {
       {
         id: 'edit-policy',
         text: t('Edit'),
-        tooltip: t('Edit policy'),
         addSeparator: true,
         click: (item: PolicyTableItem) => {
           let path = NavigationPath.editPolicy
@@ -249,7 +247,6 @@ export function PolicyActionDropdown(props: {
       {
         id: 'delete-policy',
         text: t('Delete'),
-        tooltip: t('Delete policy'),
         addSeparator: true,
         click: (policy: PolicyTableItem) => {
           setModal(<DeletePolicyModal item={policy} onClose={() => setModal(undefined)} />)
