@@ -111,10 +111,14 @@ export function EditPolicySet() {
               autoClose: true,
             })
           }
+          history.block(() => {})
           history.push(NavigationPath.policySets)
         })
       }}
-      onCancel={() => history.push(NavigationPath.policySets)}
+      onCancel={() => {
+        history.block(() => {})
+        history.push(NavigationPath.policySets)
+      }}
     />
   )
 }

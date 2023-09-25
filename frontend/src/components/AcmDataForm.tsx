@@ -94,6 +94,7 @@ import {
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { LostChangesPrompt } from '../wizards/common/LostChangesPrompt'
+import { useHistory } from 'react-router-dom'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -241,7 +242,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
-      <LostChangesPrompt data={resources} />
       {isModalWizard ? (
         drawerContent()
       ) : (
@@ -445,11 +445,17 @@ export function AcmDataFormWizard(props: {
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
+  const history = useHistory()
   const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+
+  const cancel = () => {
+    history.block(() => {})
+    formData.cancel()
+  }
 
   function createStep(section: Section | SectionGroup): WizardStep | undefined {
     if (sectionHidden(section)) return undefined
@@ -626,7 +632,7 @@ export function AcmDataFormWizard(props: {
                   </ActionListGroup>
                   <ActionListGroup>
                     <ActionListItem>
-                      <Button variant="link" onClick={formData.cancel} isDisabled={isSubmitting}>
+                      <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
                         {formData.cancelLabel}
                       </Button>
                     </ActionListItem>
@@ -642,6 +648,7 @@ export function AcmDataFormWizard(props: {
 
   return (
     <Fragment>
+      <LostChangesPrompt data={formData.stateToData()} />
       {isModalWizard ? (
         <Wizard
           titleId="create-credential-title"
@@ -650,10 +657,10 @@ export function AcmDataFormWizard(props: {
           description={formData.description}
           steps={steps}
           footer={Footer}
-          onClose={formData.cancel}
+          onClose={cancel}
         />
       ) : (
-        <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
+        <Wizard steps={steps} footer={Footer} onClose={cancel} />
       )}
     </Fragment>
   )

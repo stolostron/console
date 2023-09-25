@@ -14,7 +14,6 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { LostChangesPrompt } from '../../wizards/common/LostChangesPrompt'
 import {
   useItem,
   useData,
@@ -50,6 +49,7 @@ import { get } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
+import { LostChangesPrompt } from '../common/LostChangesPrompt'
 
 export interface Channel {
   metadata?: {
@@ -278,6 +278,54 @@ export function ArgoWizard(props: ArgoWizardProps) {
     contentAriaLabel: t('Argo application content'),
   })
 
+  const defaultData = props.resources ?? [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: { name: '', namespace: '' },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: {
+                matchLabels: {
+                  'cluster.open-cluster-management.io/placement': '-placement',
+                },
+              },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: {
+            name: '-{{name}}',
+            labels: {
+              'velero.io/exclude-from-backup': 'true',
+            },
+          },
+          spec: {
+            project: 'default',
+            sources: [],
+            destination: { namespace: '', server: '{{server}}' },
+            syncPolicy: {
+              automated: {
+                selfHeal: true,
+                prune: true,
+              },
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+        },
+      },
+    },
+    {
+      ...PlacementType,
+      metadata: { name: '', namespace: '' },
+      spec: {},
+    },
+  ]
+
   return (
     <Fragment>
       <Modal
@@ -297,60 +345,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
         breadcrumb={props.breadcrumb}
         title={props.resources ? t('Edit application set') : t('Create application set')}
         yamlEditor={props.yamlEditor}
-        defaultData={
-          props.resources ?? [
-            {
-              apiVersion: 'argoproj.io/v1alpha1',
-              kind: 'ApplicationSet',
-              metadata: { name: '', namespace: '' },
-              spec: {
-                generators: [
-                  {
-                    clusterDecisionResource: {
-                      configMapRef: 'acm-placement',
-                      labelSelector: {
-                        matchLabels: {
-                          'cluster.open-cluster-management.io/placement': '-placement',
-                        },
-                      },
-                      requeueAfterSeconds: 180,
-                    },
-                  },
-                ],
-                template: {
-                  metadata: {
-                    name: '-{{name}}',
-                    labels: {
-                      'velero.io/exclude-from-backup': 'true',
-                    },
-                  },
-                  spec: {
-                    project: 'default',
-                    sources: [],
-                    destination: { namespace: '', server: '{{server}}' },
-                    syncPolicy: {
-                      automated: {
-                        selfHeal: true,
-                        prune: true,
-                      },
-                      syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                    },
-                  },
-                },
-              },
-            },
-            {
-              ...PlacementType,
-              metadata: { name: '', namespace: '' },
-              spec: {},
-            },
-          ]
-        }
+        defaultData={defaultData}
         editMode={props.resources ? EditMode.Edit : EditMode.Create}
         onCancel={props.onCancel}
         onSubmit={props.onSubmit}
       >
         <Step id="general" label={t('General')}>
+          <LostChangesPrompt initialData={defaultData} />
           <Sync
             kind={PlacementKind}
             path="metadata.name"
@@ -759,7 +760,6 @@ function ArgoWizardPlacementSection(props: {
   const { update } = useData()
   return (
     <Section label={t('Placement')}>
-      <LostChangesPrompt data={resources} />
       {(editMode === EditMode.Create || !hasPlacement) && (
         <WizDetailsHidden>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
