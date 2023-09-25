@@ -17,7 +17,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/noc
 import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom'
-import { waitForText } from '../../../lib/test-util'
+import { ocpApi, waitForText } from '../../../lib/test-util'
 import ApplicationDetailsPage from './ApplicationDetails'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Home/Search/search-sdk/search-sdk'
 import { MockedProvider } from '@apollo/client/testing'
@@ -374,7 +374,13 @@ describe('Applications Page', () => {
       >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <PluginContext.Provider value={{ acmExtensions: acmExtension, dataContext: PluginDataContext }}>
+            <PluginContext.Provider
+              value={{
+                acmExtensions: acmExtension,
+                dataContext: PluginDataContext,
+                ocpApi,
+              }}
+            >
               <ApplicationDetailsPage {...props} />
             </PluginContext.Provider>
           </MockedProvider>

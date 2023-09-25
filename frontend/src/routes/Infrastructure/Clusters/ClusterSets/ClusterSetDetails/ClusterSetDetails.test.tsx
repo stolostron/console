@@ -37,6 +37,7 @@ import {
   waitForNotText,
   waitForTestId,
   waitForText,
+  ocpApi,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
@@ -1527,7 +1528,7 @@ describe('ClusterSetDetails page without Submariner', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
+      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
         <Component />
       </PluginContext.Provider>
     )
@@ -1551,7 +1552,7 @@ describe('ClusterSetDetails page global clusterset', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext }}>
+      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
         <Component isGlobal />
       </PluginContext.Provider>
     )
