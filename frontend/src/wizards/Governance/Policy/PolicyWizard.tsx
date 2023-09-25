@@ -44,6 +44,7 @@ import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { LostChangesPrompt } from '../../common/LostChangesPrompt'
 
 export function PolicyWizard(props: {
   title: string
@@ -67,6 +68,13 @@ export function PolicyWizard(props: {
     stepsAriaLabel: t('Policy steps'),
     contentAriaLabel: t('Policy content'),
   })
+  const defaultData = props.resources ?? [
+    {
+      ...PolicyType,
+      metadata: { name: '', namespace: '' },
+      spec: { disabled: false },
+    },
+  ]
 
   return (
     <WizardPage
@@ -81,17 +89,10 @@ export function PolicyWizard(props: {
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}
       editMode={props.editMode}
-      defaultData={
-        props.resources ?? [
-          {
-            ...PolicyType,
-            metadata: { name: '', namespace: '' },
-            spec: { disabled: false },
-          },
-        ]
-      }
+      defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
+        <LostChangesPrompt initialData={defaultData} />
         {props.editMode !== EditMode.Edit && (
           <Fragment>
             <Sync kind={PolicyKind} path="metadata.namespace" />

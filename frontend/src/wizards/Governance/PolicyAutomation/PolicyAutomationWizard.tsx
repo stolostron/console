@@ -21,6 +21,7 @@ import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { LostChangesPrompt } from '../../../wizards/common/LostChangesPrompt'
+import { useHistory } from 'react-router-dom'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -57,6 +58,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
   const [selectedAnsibleCredentialHost, setSelectedAnsibleCredentialHost] = useState<string>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
+  const history = useHistory()
 
   useEffect(() => {
     if (props.editMode === EditMode.Edit) {
@@ -93,6 +95,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       automationDef: { name: '', secret: '', type: 'AnsibleJob' },
     },
   }
+
   return (
     <WizardPage
       id="policy-automation-wizard"
@@ -100,7 +103,10 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       title={props.title}
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}
-      onCancel={props.onCancel}
+      onCancel={() => {
+        history.block(() => {})
+        props.onCancel()
+      }}
       editMode={props.editMode}
       yamlEditor={props.yamlEditor}
       defaultData={defaultData}
@@ -108,6 +114,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint component="alert" policyAutomation />
         <Section label={t('Policy automation')}>
+          <LostChangesPrompt initialData={defaultData} />
           {alert && (
             <WizDetailsHidden>
               <Alert title={alert.title} isInline variant="danger">
@@ -115,7 +122,6 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               </Alert>
             </WizDetailsHidden>
           )}
-          <LostChangesPrompt initialData={defaultData} />
           <Select
             id="secret"
             label={t('Ansible credential')}

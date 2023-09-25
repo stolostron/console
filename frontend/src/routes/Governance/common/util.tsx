@@ -616,6 +616,7 @@ export function handlePolicyAutomationSubmit(
         autoClose: true,
       })
     }
+    history.block(() => {})
     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
   })
 }
