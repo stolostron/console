@@ -43,9 +43,9 @@ import {
   ManagedClusterInfo,
   ManagedClusterSet,
   ManagedClusterSetBinding,
+  MulticlusterApplicationSetReport,
   MultiClusterEngine,
   MultiClusterHub,
-  MulticlusterApplicationSetReport,
   Namespace,
   OCPAppResource,
   Placement,
@@ -133,6 +133,11 @@ export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
+
+export const isGlobalHubState = atom<boolean>({
+  key: 'isGlobalHub',
+  default: false,
+})
 
 export interface Settings {
   LOG_LEVEL?: string

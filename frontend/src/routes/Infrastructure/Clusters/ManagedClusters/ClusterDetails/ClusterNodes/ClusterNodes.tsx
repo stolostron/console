@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ReactNode, useContext } from 'react'
+import { Link } from 'react-router-dom'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { PluginContext } from '../../../../../../lib/PluginContext'
+import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
+import { NavigationPath } from '../../../../../../NavigationPath'
 import { NodeInfo } from '../../../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmInlineStatus,
@@ -11,16 +20,8 @@ import {
   IAcmTableColumn,
   StatusType,
 } from '../../../../../../ui-components'
-import { PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { ReactNode, useContext } from 'react'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
-import { NavigationPath } from '../../../../../../NavigationPath'
-import { Link } from 'react-router-dom'
-import { PluginContext } from '../../../../../../lib/PluginContext'
 
 export function NodePoolsPageContent() {
   return (
@@ -36,6 +37,8 @@ export function NodesPoolsTable() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { isSearchAvailable } = useContext(PluginContext)
+  const { isGlobalHubState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
@@ -94,6 +97,16 @@ export function NodesPoolsTable() {
     return scalarToQuantity(memory)
   }
 
+  function getSearchLink(node: NodeInfo) {
+    return !isGlobalHub && isSearchAvailable ? (
+      <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
+        {node.name}
+      </Link>
+    ) : (
+      node.name
+    )
+  }
+
   const columns: IAcmTableColumn<NodeInfo>[] = [
     {
       header: t('table.name'),
@@ -108,12 +121,8 @@ export function NodesPoolsTable() {
             </span>
             {node.name}
           </a>
-        ) : isSearchAvailable ? (
-          <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
-            {node.name}
-          </Link>
         ) : (
-          node.name
+          getSearchLink(node)
         )
       },
     },

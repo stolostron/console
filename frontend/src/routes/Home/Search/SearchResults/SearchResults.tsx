@@ -20,7 +20,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import {
   ClosedDeleteModalProps,
@@ -61,6 +61,8 @@ function RenderAccordionItem(props: {
 }) {
   const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
   const { t } = useTranslation()
+  const { isGlobalHubState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -80,11 +82,13 @@ function RenderAccordionItem(props: {
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(searchDefinitions, `[${kindAndGroup}].columns`, searchDefinitions['genericresource'].columns)}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)}
+          rowActions={
+            !isGlobalHub ? GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t) : undefined
+          }
         />
       )
     },
-    [currentQuery, setDeleteResource, searchDefinitions, t]
+    [currentQuery, isGlobalHub, setDeleteResource, searchDefinitions, t]
   )
 
   return (

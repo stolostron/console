@@ -14,6 +14,7 @@ import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
+import { globalHub } from './routes/globalHub'
 import { liveness } from './routes/liveness'
 import { metrics } from './routes/metrics'
 import { login, loginCallback, logout } from './routes/oauth'
@@ -61,6 +62,7 @@ router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
 router.all('/metrics', metrics)
+router.get('/globalhub', globalHub)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
