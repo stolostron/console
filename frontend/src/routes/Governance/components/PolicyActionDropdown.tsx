@@ -66,7 +66,6 @@ export function PolicyActionDropdown(props: {
       {
         id: 'add-to-set',
         text: t('Add to policy set'),
-        tooltip: t('Add to policy set'),
         click: (policy: PolicyTableItem): void => {
           setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
         },
