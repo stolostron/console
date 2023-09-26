@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom'
 import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
@@ -1043,7 +1043,7 @@ export default function ApplicationsOverview() {
             action={
               <>
                 {appCreationButton}
-                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
               </>
             }
           />

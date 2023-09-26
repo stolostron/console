@@ -3,7 +3,7 @@
 import { CodeBlock, CodeBlockCode, Page, Text, TextVariants } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
-import { DOC_CREATE_kUBEVIRT_CLUSTER, DOC_LINKS, viewDocumentation } from '../../../../../../../../lib/doc-util'
+import { DOC_CREATE_KUBEVIRT_CLUSTER, DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
 import { Actions, GetOCLogInCommand } from './common/common'
 import DocPage from './common/DocPage'
@@ -67,7 +67,7 @@ hcp create cluster kubevirt \\
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
-          {viewDocumentation(DOC_CREATE_kUBEVIRT_CLUSTER, t)}
+          <ViewDocumentationLink doclink={DOC_CREATE_KUBEVIRT_CLUSTER} />
         </Fragment>
       ),
     },

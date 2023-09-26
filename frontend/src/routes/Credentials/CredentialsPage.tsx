@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmButton,
@@ -20,7 +20,7 @@ import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
@@ -141,7 +141,7 @@ export function CredentialsTable(props: {
                 >
                   {t('Add credential')}
                 </AcmButton>
-                <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
+                <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
               </div>
             }
           />

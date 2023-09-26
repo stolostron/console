@@ -3,7 +3,7 @@ import { LocationDescriptor } from 'history'
 import { DataViewStringContext, ICatalogCard, ItemView } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { AcmIcon, AcmPage, AcmPageHeader, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
 import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
@@ -20,12 +20,12 @@ const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.azure, 'azure'],
   [Provider.gcp, 'google'],
   [Provider.openstack, 'openstack'],
-  [Provider.redhatvirtualization, 'rhv'],
   [Provider.vmware, 'vsphere'],
   [Provider.hostinventory],
   [Provider.ansible, 'ansible'],
   [Provider.redhatcloud, 'redhatcloud'],
   [Provider.nutanix],
+  [Provider.redhatvirtualization, 'rhv'],
 ]
 
 export function CreateCredentialsCatalog() {
@@ -45,10 +45,22 @@ export function CreateCredentialsCatalog() {
             provider === Provider.aws
               ? nextStep(NavigationPath.addAWSType)
               : nextStep(getTypedCreateCredentialsPath(provider)),
+          ...(provider === Provider.redhatvirtualization
+            ? {
+                alertTitle: t('Deprecated host platform'),
+                alertVariant: 'info' as const,
+                alertContent: (
+                  <>
+                    {t('RHV is deprecated for OpenShift 4.13.')}
+                    <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
+                  </>
+                ),
+              }
+            : {}),
         })),
     ]
     return newCards
-  }, [nextStep])
+  }, [nextStep, t])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 

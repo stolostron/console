@@ -25,7 +25,7 @@ import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
-import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -271,7 +271,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
                 >
                   {t('managed.createClusterSet')}
                 </AcmButton>
-                <TextContent>{viewDocumentation(DOC_LINKS.CLUSTER_SETS, t)}</TextContent>
+                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTER_SETS} />
               </div>
             }
           />
