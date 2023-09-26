@@ -92,7 +92,7 @@ export function PolicyWizard(props: {
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
-        <LostChangesPrompt initialData={defaultData} />
+        <LostChangesPrompt initialData={defaultData} isEdit={props?.editMode === EditMode.Edit} />
         {props.editMode !== EditMode.Edit && (
           <Fragment>
             <Sync kind={PolicyKind} path="metadata.namespace" />

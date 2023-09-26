@@ -309,13 +309,14 @@ export function AcmDataForm(
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, edit } = props
   switch (props.mode) {
     case 'wizard':
       return (
         <AcmDataFormWizard
           formData={formData}
           isHorizontal={isHorizontal ?? false}
+          isEdit={edit !== undefined}
           showFormErrors={showFormErrors}
           setShowFormErrors={setShowFormErrors}
           globalWizardAlert={globalWizardAlert}
@@ -439,6 +440,7 @@ export function AcmDataFormDefault(props: {
 export function AcmDataFormWizard(props: {
   formData: FormData
   isHorizontal: boolean
+  isEdit: boolean
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
   isModalWizard?: boolean
@@ -446,7 +448,7 @@ export function AcmDataFormWizard(props: {
 }): JSX.Element {
   const { t } = useTranslation()
   const history = useHistory()
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, isEdit } = props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
@@ -648,7 +650,7 @@ export function AcmDataFormWizard(props: {
 
   return (
     <Fragment>
-      <LostChangesPrompt data={formData.stateToData()} />
+      <LostChangesPrompt data={formData.stateToData()} isEdit={isEdit} />
       {isModalWizard ? (
         <Wizard
           titleId="create-credential-title"

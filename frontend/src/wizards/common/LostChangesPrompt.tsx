@@ -12,14 +12,14 @@ const beforeUnloadListener = (event: { preventDefault: () => void; returnValue: 
   return (event.returnValue = '')
 }
 
-export function LostChangesPrompt(props: { initialData?: any; data?: any }) {
+export function LostChangesPrompt(props: { initialData?: any; data?: any; isEdit: boolean }) {
   const { t } = useTranslation()
   const history = useHistory()
   const [isOpen, setIsOpen] = useState(false)
   const [destinationLocation, setDestinationLocation] = useState<any>()
 
   const resources = useItem()
-  const { data = resources, initialData } = props
+  const { data = resources, initialData, isEdit } = props
   const [originalData] = useState(initialData || data)
   const isDirty = !isEqual(data, originalData)
 
@@ -55,16 +55,16 @@ export function LostChangesPrompt(props: { initialData?: any; data?: any }) {
   return isOpen ? (
     <Modal
       variant={ModalVariant.small}
-      title="Leave creation"
+      title={isEdit ? t('Leave edit') : t('Leave creation')}
       titleIconVariant="warning"
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
       actions={[
         <Button key="leave" variant="primary" onClick={onLeave} data-testid="submit-button">
-          Leave
+          {t('Leave')}
         </Button>,
         <Button key="stay" variant="link" onClick={() => setIsOpen(false)} data-testid="cancel-button">
-          Stay
+          {t('Stay')}
         </Button>,
       ]}
       data-testid="leave-cluster-modal"

@@ -351,7 +351,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         onSubmit={props.onSubmit}
       >
         <Step id="general" label={t('General')}>
-          <LostChangesPrompt initialData={defaultData} />
+          <LostChangesPrompt initialData={defaultData} isEdit={!!props.resources} />
           <Sync
             kind={PlacementKind}
             path="metadata.name"

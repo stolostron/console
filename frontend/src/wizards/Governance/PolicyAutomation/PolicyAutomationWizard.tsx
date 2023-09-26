@@ -114,7 +114,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint component="alert" policyAutomation />
         <Section label={t('Policy automation')}>
-          <LostChangesPrompt initialData={defaultData} />
+          <LostChangesPrompt initialData={defaultData} isEdit={props?.editMode === EditMode.Edit} />
           {alert && (
             <WizDetailsHidden>
               <Alert title={alert.title} isInline variant="danger">
