@@ -1504,6 +1504,7 @@ export function CredentialsForm(
             type: 'success',
             autoClose: true,
           })
+          history.block(() => {})
           history.push(NavigationPath.credentials)
         })
       } else {
