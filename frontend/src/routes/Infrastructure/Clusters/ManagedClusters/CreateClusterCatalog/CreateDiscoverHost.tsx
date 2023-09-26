@@ -43,11 +43,11 @@ export function CreateDiscoverHost() {
       },
       {
         id: 'discover',
-        title: t('Discover new hosts'),
+        title: t('Add new hosts'),
         items: [
           {
             type: CatalogCardItemType.Description,
-            description: t('Discover new hosts while creating the cluster without an existing host inventory.'),
+            description: t('Create a cluster by adding new hosts without an existing host inventory.'),
           },
         ],
         onClick: nextStep(
