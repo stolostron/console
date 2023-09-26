@@ -812,7 +812,7 @@
   "Create wizard content": "Create wizard content",
   "Create wizard steps": "Create wizard steps",
   "Create, update, scale, and remove clusters reliably, consistently using an open source programming model that supports and encourages Infrastructure as Code best practices and design principles.": "Create, update, scale, and remove clusters reliably, consistently using an open source programming model that supports and encourages Infrastructure as Code best practices and design principles.",
-  "createCluster.card.noHosts.alert": "To use {{ controlPlaneTypeTxt }}, go to <a>Host inventory</a> and add hosts.<br />1. To use existing infrastructure environments, make sure there are available hosts or add hosts.<br />2. To use a new infrastructure environment, create one add then add hosts to it.",
+  "createCluster.card.noHosts.alert": "To use {{ controlPlaneTypeTxt }}, go to <a>Host inventory</a> and add hosts.<br />1. To use existing infrastructure environments, make sure there are available hosts or add hosts.<br />2. To use a new infrastructure environment, create one and then add hosts to it.",
   "createCluster.card.noInfraEnvs.alert": "To use {{controlPlaneTypeTxt}}, create an infrastructure environment and add hosts in the <a>Host inventory</a>.",
   "createClusterSet.description": "Creating a <bold>ManagedClusterSet</bold> will allow you to group resources and manage access control to all of the resources in the group together. You will be able to manage the resource assignments for access control after creating the cluster set.",
   "createClusterSet.form.name.label": "Cluster set name",
