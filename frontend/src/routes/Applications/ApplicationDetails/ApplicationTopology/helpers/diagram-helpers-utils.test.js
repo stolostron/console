@@ -277,7 +277,6 @@ describe('getTargetNsForNode', () => {
             pulse: 'green',
             shapeType: 'namespace',
         },
-        namespace: 'vb-crash-ns',
     }
 
     it('return local-cluster namespace for namespace node type', () => {
@@ -339,7 +338,6 @@ describe('getTargetNsForNode', () => {
             pulse: 'green',
             shapeType: 'clusterrole',
         },
-        namespace: 'vb-crash-ns',
     }
 
     it('return local-cluster namespace for clusterrole node type', () => {

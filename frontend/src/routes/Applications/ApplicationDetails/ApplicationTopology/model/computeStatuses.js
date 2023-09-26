@@ -20,7 +20,7 @@ import {
     filterSubscriptionObject,
     showMissingClusterDetails,
     getTargetNsForNode,
-    nodesWithNoNS,
+    isResourceNamespaceScoped,
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
 import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
@@ -382,7 +382,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     let pulse = greenPulse
     const namespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`)
-    const resources = _.get(node, `specs.resources`)
+    const resourceCount = _.get(node, 'specs.resourceCount')
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
 
@@ -396,7 +396,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     }
 
     // check resources against the resourceMap
-    if (resources && resources.length !== Object.keys(resourceMap).length) {
+    if (resourceCount && resourceCount !== Object.keys(resourceMap).length) {
         return yellowPulse
     }
 
@@ -406,7 +406,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     clusterNames.forEach((clusterName) => {
         clusterName = R.trim(clusterName)
         //get target cluster namespaces
-        const resourceNSString = _.includes(nodesWithNoNS, nodeType) ? 'name' : 'namespace'
+        const resourceNSString = !isResourceNamespaceScoped(node) ? 'name' : 'namespace'
         const resourcesForCluster = _.filter(
             _.flatten(Object.values(resourceMap)),
             (obj) => _.get(obj, 'cluster', '') === clusterName
@@ -1334,7 +1334,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
             _.flatten(Object.values(resourceMap)),
             (obj) => _.get(obj, 'cluster', '') === clusterName
         )
-        const resourceNSString = _.includes(nodesWithNoNS, nodeType) ? 'name' : 'namespace'
+        const resourceNSString = !isResourceNamespaceScoped(node) ? 'name' : 'namespace'
         //get cluster target namespaces
         const targetNSList = getTargetNsForNode(node, resourcesForCluster, clusterName, '*')
         targetNSList.forEach((targetNS) => {

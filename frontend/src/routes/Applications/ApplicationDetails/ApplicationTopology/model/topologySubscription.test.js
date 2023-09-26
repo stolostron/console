@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createReplicaChild } from './topologySubscription'
+import { createReplicaChild, getSubscriptionTopology } from './topologySubscription'
 
 const clustersNames = ['local-cluster']
 const parentObject = {
@@ -5400,5 +5400,3267 @@ describe('createReplicaChild', () => {
             uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
         }
         expect(createReplicaChild(parentObjectRC, clustersNames, template, [], [])).toEqual(result)
+    })
+})
+
+describe('getSubscriptionTopology', () => {
+    const application = {
+        name: 'feng-cronjob',
+        namespace: 'feng-cronjob',
+        app: {
+            apiVersion: 'app.k8s.io/v1beta1',
+            kind: 'Application',
+            metadata: {
+                annotations: {
+                    'apps.open-cluster-management.io/deployables': '',
+                    'apps.open-cluster-management.io/subscriptions':
+                        'feng-cronjob/feng-cronjob-subscription-1,feng-cronjob/feng-cronjob-subscription-1-local',
+                    'open-cluster-management.io/user-group':
+                        'c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LHN5c3RlbTphdXRoZW50aWNhdGVk',
+                    'open-cluster-management.io/user-identity':
+                        'c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM=',
+                },
+                creationTimestamp: '2023-05-02T18:40:30Z',
+                generation: 1,
+                name: 'feng-cronjob',
+                namespace: 'feng-cronjob',
+                resourceVersion: '100212',
+                uid: '6572e3a0-1c41-4a83-8e35-2089b63f51e8',
+            },
+            spec: {
+                componentKinds: [
+                    {
+                        group: 'apps.open-cluster-management.io',
+                        kind: 'Subscription',
+                    },
+                ],
+                descriptor: {},
+                selector: {
+                    matchExpressions: [
+                        {
+                            key: 'app',
+                            operator: 'In',
+                            values: ['feng-cronjob'],
+                        },
+                    ],
+                },
+            },
+        },
+        metadata: {
+            annotations: {
+                'apps.open-cluster-management.io/deployables': '',
+                'apps.open-cluster-management.io/subscriptions':
+                    'feng-cronjob/feng-cronjob-subscription-1,feng-cronjob/feng-cronjob-subscription-1-local',
+                'open-cluster-management.io/user-group':
+                    'c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LHN5c3RlbTphdXRoZW50aWNhdGVk',
+                'open-cluster-management.io/user-identity':
+                    'c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM=',
+            },
+            creationTimestamp: '2023-05-02T18:40:30Z',
+            generation: 1,
+            name: 'feng-cronjob',
+            namespace: 'feng-cronjob',
+            resourceVersion: '100212',
+            uid: '6572e3a0-1c41-4a83-8e35-2089b63f51e8',
+        },
+        isArgoApp: false,
+        isAppSet: false,
+        isOCPApp: false,
+        isFluxApp: false,
+        channels: [
+            'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+        ],
+        subscriptions: [
+            {
+                apiVersion: 'apps.open-cluster-management.io/v1',
+                kind: 'Subscription',
+                metadata: {
+                    annotations: {
+                        'apps.open-cluster-management.io/git-branch': 'main',
+                        'apps.open-cluster-management.io/git-current-commit':
+                            '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                        'apps.open-cluster-management.io/git-path': 'cronjob',
+                        'apps.open-cluster-management.io/reconcile-option': 'merge',
+                        'open-cluster-management.io/user-group':
+                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                    },
+                    creationTimestamp: '2023-05-02T18:40:30Z',
+                    generation: 1,
+                    labels: {
+                        app: 'feng-cronjob',
+                        'app.kubernetes.io/part-of': 'feng-cronjob',
+                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                    },
+                    name: 'feng-cronjob-subscription-1',
+                    namespace: 'feng-cronjob',
+                    resourceVersion: '100233',
+                    uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                },
+                spec: {
+                    channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                    placement: {
+                        placementRef: {
+                            kind: 'PlacementRule',
+                            name: 'feng-cronjob-placement-1',
+                        },
+                    },
+                },
+                status: {
+                    lastUpdateTime: '2023-05-02T18:40:32Z',
+                    message: 'Active',
+                    phase: 'Propagated',
+                },
+                posthooks: [],
+                prehooks: [],
+                channels: [
+                    {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        kind: 'Channel',
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            name: 'ggithubcom-fxiang1-app-samples',
+                            namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                            resourceVersion: '100154',
+                            uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                        },
+                        spec: {
+                            pathname: 'https://github.com/fxiang1/app-samples',
+                            type: 'Git',
+                        },
+                    },
+                ],
+                rules: [
+                    {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        kind: 'PlacementRule',
+                        metadata: {
+                            annotations: {
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            labels: {
+                                app: 'feng-cronjob',
+                            },
+                            name: 'feng-cronjob-placement-1',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100165',
+                            uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                        },
+                        spec: {
+                            clusterConditions: [
+                                {
+                                    status: 'True',
+                                    type: 'ManagedClusterConditionAvailable',
+                                },
+                            ],
+                        },
+                        status: {
+                            decisions: [
+                                {
+                                    clusterName: 'local-cluster',
+                                    clusterNamespace: 'local-cluster',
+                                },
+                                {
+                                    clusterName: 'feng-managed',
+                                    clusterNamespace: 'feng-managed',
+                                },
+                            ],
+                        },
+                    },
+                ],
+                report: {
+                    apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                    kind: 'SubscriptionReport',
+                    metadata: {
+                        creationTimestamp: '2023-05-02T18:40:31Z',
+                        generation: 9,
+                        labels: {
+                            'apps.open-cluster-management.io/hosting-subscription':
+                                'feng-cronjob.feng-cronjob-subscription-1',
+                        },
+                        name: 'feng-cronjob-subscription-1',
+                        namespace: 'feng-cronjob',
+                        ownerReferences: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                blockOwnerDeletion: true,
+                                controller: true,
+                                kind: 'Subscription',
+                                name: 'feng-cronjob-subscription-1',
+                                uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                            },
+                        ],
+                        resourceVersion: '100502',
+                        uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                    },
+                    reportType: 'Application',
+                    resources: [
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello1',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello2',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello5',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello8',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello3',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello4',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello6',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello7',
+                            namespace: 'feng-cronjob',
+                        },
+                    ],
+                    results: [
+                        {
+                            result: 'deployed',
+                            source: 'feng-managed',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                        {
+                            result: 'deployed',
+                            source: 'local-cluster',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                    ],
+                    summary: {
+                        clusters: '2',
+                        deployed: '2',
+                        failed: '0',
+                        inProgress: '0',
+                        propagationFailed: '0',
+                    },
+                },
+            },
+        ],
+        allSubscriptions: [
+            {
+                apiVersion: 'apps.open-cluster-management.io/v1',
+                kind: 'Subscription',
+                metadata: {
+                    annotations: {
+                        'apps.open-cluster-management.io/git-branch': 'main',
+                        'apps.open-cluster-management.io/git-current-commit':
+                            '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                        'apps.open-cluster-management.io/git-path': 'cronjob',
+                        'apps.open-cluster-management.io/reconcile-option': 'merge',
+                        'open-cluster-management.io/user-group':
+                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                    },
+                    creationTimestamp: '2023-05-02T18:40:30Z',
+                    generation: 1,
+                    labels: {
+                        app: 'feng-cronjob',
+                        'app.kubernetes.io/part-of': 'feng-cronjob',
+                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                    },
+                    name: 'feng-cronjob-subscription-1',
+                    namespace: 'feng-cronjob',
+                    resourceVersion: '100233',
+                    uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                },
+                spec: {
+                    channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                    placement: {
+                        placementRef: {
+                            kind: 'PlacementRule',
+                            name: 'feng-cronjob-placement-1',
+                        },
+                    },
+                },
+                status: {
+                    lastUpdateTime: '2023-05-02T18:40:32Z',
+                    message: 'Active',
+                    phase: 'Propagated',
+                },
+                posthooks: [],
+                prehooks: [],
+                channels: [
+                    {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        kind: 'Channel',
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            name: 'ggithubcom-fxiang1-app-samples',
+                            namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                            resourceVersion: '100154',
+                            uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                        },
+                        spec: {
+                            pathname: 'https://github.com/fxiang1/app-samples',
+                            type: 'Git',
+                        },
+                    },
+                ],
+                rules: [
+                    {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        kind: 'PlacementRule',
+                        metadata: {
+                            annotations: {
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            labels: {
+                                app: 'feng-cronjob',
+                            },
+                            name: 'feng-cronjob-placement-1',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100165',
+                            uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                        },
+                        spec: {
+                            clusterConditions: [
+                                {
+                                    status: 'True',
+                                    type: 'ManagedClusterConditionAvailable',
+                                },
+                            ],
+                        },
+                        status: {
+                            decisions: [
+                                {
+                                    clusterName: 'local-cluster',
+                                    clusterNamespace: 'local-cluster',
+                                },
+                                {
+                                    clusterName: 'feng-managed',
+                                    clusterNamespace: 'feng-managed',
+                                },
+                            ],
+                        },
+                    },
+                ],
+                report: {
+                    apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                    kind: 'SubscriptionReport',
+                    metadata: {
+                        creationTimestamp: '2023-05-02T18:40:31Z',
+                        generation: 9,
+                        labels: {
+                            'apps.open-cluster-management.io/hosting-subscription':
+                                'feng-cronjob.feng-cronjob-subscription-1',
+                        },
+                        name: 'feng-cronjob-subscription-1',
+                        namespace: 'feng-cronjob',
+                        ownerReferences: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                blockOwnerDeletion: true,
+                                controller: true,
+                                kind: 'Subscription',
+                                name: 'feng-cronjob-subscription-1',
+                                uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                            },
+                        ],
+                        resourceVersion: '100502',
+                        uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                    },
+                    reportType: 'Application',
+                    resources: [
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello1',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello2',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello5',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello8',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello3',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello4',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello6',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello7',
+                            namespace: 'feng-cronjob',
+                        },
+                    ],
+                    results: [
+                        {
+                            result: 'deployed',
+                            source: 'feng-managed',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                        {
+                            result: 'deployed',
+                            source: 'local-cluster',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                    ],
+                    summary: {
+                        clusters: '2',
+                        deployed: '2',
+                        failed: '0',
+                        inProgress: '0',
+                        propagationFailed: '0',
+                    },
+                },
+            },
+        ],
+        allChannels: [
+            {
+                apiVersion: 'apps.open-cluster-management.io/v1',
+                kind: 'Channel',
+                metadata: {
+                    annotations: {
+                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                        'open-cluster-management.io/user-group':
+                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                    },
+                    creationTimestamp: '2023-05-02T18:40:30Z',
+                    generation: 1,
+                    name: 'ggithubcom-fxiang1-app-samples',
+                    namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                    resourceVersion: '100154',
+                    uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                },
+                spec: {
+                    pathname: 'https://github.com/fxiang1/app-samples',
+                    type: 'Git',
+                },
+            },
+        ],
+        allClusters: ['local-cluster', 'feng-managed'],
+        reports: [
+            {
+                apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                kind: 'SubscriptionReport',
+                metadata: {
+                    creationTimestamp: '2023-05-02T18:40:31Z',
+                    generation: 9,
+                    labels: {
+                        'apps.open-cluster-management.io/hosting-subscription':
+                            'feng-cronjob.feng-cronjob-subscription-1',
+                    },
+                    name: 'feng-cronjob-subscription-1',
+                    namespace: 'feng-cronjob',
+                    ownerReferences: [
+                        {
+                            apiVersion: 'apps.open-cluster-management.io/v1',
+                            blockOwnerDeletion: true,
+                            controller: true,
+                            kind: 'Subscription',
+                            name: 'feng-cronjob-subscription-1',
+                            uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                        },
+                    ],
+                    resourceVersion: '100502',
+                    uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                },
+                reportType: 'Application',
+                resources: [
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello1',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello2',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello5',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello8',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello3',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello4',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello6',
+                        namespace: 'feng-cronjob',
+                    },
+                    {
+                        apiVersion: 'batch/v1',
+                        kind: 'CronJob',
+                        name: 'hello7',
+                        namespace: 'feng-cronjob',
+                    },
+                ],
+                results: [
+                    {
+                        result: 'deployed',
+                        source: 'feng-managed',
+                        timestamp: {
+                            nanos: 0,
+                            seconds: 0,
+                        },
+                    },
+                    {
+                        result: 'deployed',
+                        source: 'local-cluster',
+                        timestamp: {
+                            nanos: 0,
+                            seconds: 0,
+                        },
+                    },
+                ],
+                summary: {
+                    clusters: '2',
+                    deployed: '2',
+                    failed: '0',
+                    inProgress: '0',
+                    propagationFailed: '0',
+                },
+            },
+        ],
+        activeChannel:
+            'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+    }
+
+    const managedClusters = [
+        {
+            name: 'feng-managed',
+            displayName: 'feng-managed',
+            namespace: 'feng-managed',
+            uid: '547e52d2-b12f-4d51-89c8-02549543bea9',
+            status: 'ready',
+            provider: 'aws',
+            distribution: {
+                k8sVersion: 'v1.25.7+eab9cc9',
+                ocp: {
+                    availableUpdates: ['4.12.13', '4.12.14'],
+                    channel: 'stable-4.12',
+                    desired: {
+                        channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                        image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                        url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                        version: '4.12.12',
+                    },
+                    desiredVersion: '4.12.12',
+                    managedClusterClientConfig: {
+                        caBundle:
+                            'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJUlZwcnZzZVZkZzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05ESTBNVGsxTnpFNVdoY05Nek13TkRJeE1UazFOekU1V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTDJnUEFWeFZPS1RMTFBmRkVNYzZ0cTFJZjVCZmJ5Vgo3NCtCZU9Beklud1N3WVIvelJJNzNrdldYclAxejV5ZDV4YXV5aStPdmNQSXNuLy9qL0NWZEJsSi9TTklaY1hJCmR0SlBIUHE3Sk8zTHFzQmxxZCtLNHdHL2dPdTV5TDd1WVRGLy81SjN5N3ViWVNrN2FkZjF0dnFUQVRKaTIxVlkKZFRHMTcwZG5way9kVXluZVQ2NGd1SjV1VmhKcWw5ZGFBR2J2QlM5UllRZzhtOXd0aDcxa1pkZ2lnRStJZHZJZQpha3g2enE3NEQrQ2xORy9MRFlPYnZ0dTNGaFQvNytBSjExUDVJZUV5VE1tSi94dVgxempEOXpacUpva2crWFV2CllkSW5CWEdycFBTeHFvYnZDNGorejNaK3pDNFlIcWN1elZGZHZxUjR0VWtMb3Z6NmtnUXV3TlVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkcxbQoxRDlmb2Z6RnROUVhaWHpYK2pRSnNlRXZNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNGa1UwYjU2anlOSGpXCmtkU1BzL3F5RmxMMXkxZTdoOWNiWWR2bXl1N0w2SFl5WWxRQ05OcjdJOGVMbTVwOEV5THNaYXh2Rzg1aFNwYlgKTEZHVXFwSVVwMy9EdlBvRHRoTlFCYURVNHNtLzJYT3BKN2svdStSNkZxL2lvMTJHcXBvZHc1QWlzVkplb0FIVQpUV0RyYllNRnBQdzhZLzJzellYR2JnRjRjNHFSemdkWFpBZ0tVN21nZmc1OFI5OFMrVGxpNXdJY2I3ZWlEYSs1CmNCWXBhaXpVS1hFTTdkbEEzMHRYYzg5NTVRRmt6MW5oU1VDM3FUSE84aWluMXNFbHI2QTFiRkJhc2lFbVhhQkYKRldnT01oRFhSVmJ5YTl3K05ZVjFoY09vMDJvLy9oc2wvekUxZUorTHh5OVFRTVo4b2ZIQzQydXVpMmFIWG5RQwp3NU0zUXFkZgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSVFmZURtZmNGZC8wd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EUXlOREU1TlRjeE9Wb1hEVE16TURReU1URTVOVGN4T1Zvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzVTVvSmZsTkVFSlkKaGNyZDJZSjYvNnk2RXNzWi9aR3lEYmIwblVZSUFNVWFNWHJNVFNRUkFPMHBQa1JBTHZEMlJMdGVvWUh4ZSt6TAp4WXBpcTVSU2hzdDhHYTh3M1ZvQmFmT1ZpOHgxYTk4MlJKNzVrLzRLN0l6WnBUT1NyQlJMNUR2V213UCs2ZGtvCjVKSlNzVXMzVUQrbVhvck40VzFsRHZIU1h0ZFcxbU5HbDJ2L2RxTWZlZFBNTzZYdGQvZFh5T3FHdFBJcWtOQU0KRjFnUmZaMlBoQjNtY3lWZmEyREJwVittQWtGejN0UEFNWHhZVm9RdWVGb0tFWGlhRVBROElLSUFpM0ZNQms4OQpPZHNCVjlrZStoNGVZR1ZtNDdCV1JOUzQxdlNRSHVqQlY4WVB0WXlCZ1RNRmZkcC91ZHBkTFNoMWJmKytldVFpCjU0S2tydlpEelFJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVUJnRUtlRkdDS3JaV1I5T1FxUzI4MjUvN1Q1UXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUh2eDZmWXphZVJUQlJYbG0rSGJSR2NWSHliang1RnkrMXpLeHZTWGR3bEoxZlZPeG9ZenZETng2TmlaCmk0Qlh4ZlRXZkJ6WjRKcWpDUW5zb2VPNzlBb0dJdGFtVlFkVlQxSjgxM2lkK1RiUElnYlBINGdtNkpoNHQyN3IKTVVmcklpR2dpdlNuTkFVeHFRZVpFSk5uSDRjYm1vWEd2Q1FyUlZobFJUY0U2TmdwMXlPT29rc1FoMzFQM2VmSwpNazVmNkh3Vm1YM3NRTWZzb2VzUXgrQ0NSNldiQnhtNCtBQk1tL3hMQVFGME1xTTlNRE1ldnpXQmM0QUVYUjNnCmNsYWZWWk1yNWhzTWlUdFBwa0RnUEV4L3loaFBucDZ2V2E3eEw3QXFrdUhBeXpMcGVMZC80Y3crZzZNMDFMbkcKc0xUdlBzbG5rYUUwNGhhbjFZMDJtRnFQa1kwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSUlRdGl4V2h2T2Jvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURReU5ERTVOVGN4T1ZvWERUTXpNRFF5TVRFNU5UY3hPVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQXQ2SWdlTWtaQkV4cHM4Qlk0VithcElhR3l1YTczMnYzZFpjT1FWY0NiUFJuL21mTVpMc211dERzMC8yKwp6eDA4MnVjZnRpYkNaSTB6NE1hM1ZueWhPSnU0S1dpamZ1azNyK04vd0xXc3M4cjdtQ1ltMjE2RDhoVFZRTEhaCnM2Um5wWWFJYTZtN25CeVB3UzFRMU8yL0Z4c1AvdnY2cDAwbU5lNEZobmx3RVJBdDMrNU5mSlByNlV5VWI1aXIKeGFlckRXV3pVRGgyNUtpZFhlek1RZ2lBRXUyamdueEhDdTNiZ2o3N0dLeEJCbE9RREhKNy9UUU10V1pUUnNlZwpCRmJZR2IycVdFaGtVbXRid3UwY1M0VzU2bEdEeEdrekdSSGpCZU1WK0NiYlNWTVVmdEdHYkdncDR3eExaL2ZsCm1EK2RHbGRId0VkK3paL0k0Y2ZZWTZIc253SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVV2QzMzMk04UWVUMUlFM0UwUlRGUmxVcG4vSTB3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS1Vjc21EODdORFU3RmRmR2VoRTZnU3c3eDJVTXFWQmQ1UHdETlR6MUQ2ClN4TGxLMmtmeTJuNnJGZkNlVFE3WTR6Z1YyL0I1bXdqRk50MC9oeXZLZDVSbnhlUzdFRzhtNzdkK2Y4WkpVSzQKQzdoS1duWVp6R2RxSUZtcDVrOVpsOUs4RkY0Y2ZCc0h3U0xMc2lHZDgra2piMk5sTmJJOVE0OTFmd0xxOVFOQgp0Q0JZanB1MWxNZCtjOEVEVlBtT0s3UzQwcHNjaGFRbHZhWGJzbzFsSE00SUtTZHVyTExPTzUvcXRqcU9IeFN0CmIzbW9udzY3YldmaFZicHEwb21vb0NGUzAvaTZKcTdyd0UwU1JWSFoxK1ZCMkc1NGxLbjJMZllPT1k0Z0N6bkUKVGdkQnA5NTBNVWZCSkJ5RSt1VWFFS2R0QWtOVU5XVTZoMUVQK2JHTlZFQT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlQdTNjQkh1UU04Y3dEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4TmpneU16WTNNREkzTUI0WERUSXpNRFF5TkRJd01UQXkKT0ZvWERUTXpNRFF5TVRJd01UQXlPVm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd5TXpZM01ESTNNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTFrOFUKMlZpaEtEZnJIZ2diaFFhbkhaNUx5QTd5Z1BRSkU4OHl4aERXcms1MVZtWG9HQWhhV1h0SERnNTZ2S1BpQWI0agpYb1ZGT0pLeTN5clc0eHhOUWR3a3g2Z3VqaXpsMnpaOC81Sk8rQXpaaFhNbmlXSzVrSGlkSTMrSTJURk5zL3pPCmNjbXJ3YWlyZWtVK05LVW5qdHNVTjBlRGxYQ2xxSFcrZ1U1cXYxcWY3d0ZydDgzMDFoa2NBYk9BcnhQdmF6dGYKSUFXeGtnRko2ZWdWNHdwSGIxQ3R1YXU1VjRLZkYxY2ZOamx3ZTAvaHozQ1RRUU1xeCt6bWxhWTJlYzVYajVkbQpLWEFSSElyQ25wT0dQbXZQYnRrZ2FnTzREQytaamNjR3cyL1VLZkhjU3dSZjVLU1VmUjJINUxGa3oyT2RucW4yClhxZXQxZnczWGl6Q3VmcS9vUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0h3WURWUjBqQkJndwpGb0FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDVkhiL29YCllscE1LSTBRbmlBcFdvQUJpTDJyRk1MdWJoeTFWLzB2ZDhtTi83NnVUWGtwT0RaMVpmcjA0UEZaSjN5SlFIemgKTHZFcGU5bGh6azhpMGVhb2VKbHZCTGFFZnRiZGd1R0dhMngzcGpHODJKQ2VuT0hlZ25td3NYUHZMSFBjd21DVQp6RVpoaHdoMEluWjdHYnFCTHBrZjFNcTZBV21tZWUza3Jnc1haaWNrZGdqaWFCY0o0WnF5V3ZRTmNpaUNjRlRTCkRDbUpWbm5ZeDdPOUxTMzEzU3FwVUJnU0sweTFqRzQ4L2pGVURFNVI4UE53WEpiRzVnSTJzQWZhelF6NmV1WVEKMHk2ajc1a0IwRE92ODdQWGNJLzlpN3pPdUIxQ3kzVnJxeVZlOGFGc3FLbVM5SmFNdnQvTDUxU2FWc0Npb0tTUAptNitFUzZXbjhNa0xKOGs9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJYjhSeFQ2aWZpRjR3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3lNelkzTVRBM01CNFhEVEl6TURReU5ESXdNVEUwTjFvWApEVEkxTURReU16SXdNVEUwT0Zvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdFpXRnpkREl0Ck5ERXlMWE51YnkxMFoyMW5hQzVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTdUeVp1M0JpVjRqenpDeGVPY3BvZngzQnBDM0tBdgp1N1IxRllhTXlvQUhURGxJZ0JxeDZaLzYxdENPZTdQNVlqRUxpNHdZT3ZabEk3YzhGNHBQVGxQVTIwOU5HQVNVCnFaWGxKSmJ1REdrbWlNb0NmOXo5b01OL0dGdXJncE51UDBZQm5UTWMvUnIrZ2d5TTlPR2VtR0E1Sm9rYmE5RlEKS3A1OEJnOVpuelFZcWRLR041UjBEZWhkOVZoc0hBMTN6N21QY2lOUmZxc2tWRU1idy9GTFB3Zm9yMldydnlZMwpBQnNGbElOMlcyM3doK08yNENCbjJPUkxGUC9adVNzWmxVQU5iYjZjclcwdFVPMGpjV3ZUd2NoZGlBL21aQzAvClN3RmNzRnJ3ZHV2YlZwWUZiVmwwSDBXOVU1VS9tM3J1Y0swb2krNEpGVnhDZ2t4MHJYTTVDcmNDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVZSnMzR2lFbVp1dHhMOU14THdFRmxGc3hzWTB3SHdZRFZSMGpCQmd3CkZvQVVjSWxNL2tzUnZ2R0lia3hKb0JpTUthZEhnK0F3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdFpXRnpkREl0TkRFeUxYTnVieTEwWjIxbmFDNWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBVy8xNmMyKzlPTVZYMzdvWExKd0tQRTFDekFydXhneEp5R3RYCklaSXhIaWlvWjFONXU5WU9qUkZVR1hTOUlBc29ZVE9DWXU0R0lZd0lIUFpBRStzUnVxcVBxeGVQZzZ6RzhrczcKejZkZnROWHUwQTdPUWtuSHBUTERWWWpnSXlLUDhUME9FT2E5VEJhNnN0Wi9sbG4vQVVBbDQzczFIVnh6cHV6RgpPMjZkSGJMaXRBemN5aDBkSTZuZVpQalBYaWJuSy9wUzdwSnZ4NTBoK1ZLZjJ6MktDaUw4a3REQ3VMNFI0Qnc5ClB4V0ZDbWpTelNidGdaeEJJd3JMa29CWk1TWWlSc1FmNDJoeFYyNXhBOUdWL2VoRWVYN3U4QkFHcXhWeXc5blQKWXhjUFVsM1RIem1kYmZudGdROXd1Zk5qZmFKeHlrMSszT0Y3YlNhUjhEKzVCNzU5Z0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RJek5qY3hNRGN3SGhjTk1qTXdOREkwTWpBeE1UUTNXaGNOTWpVd05ESXoKTWpBeE1UUTRXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ESXpOamN4TURjdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFETXppbS9yaWQ1bm9JSFFJbnJ0SzVpClFqWjFRQTE0cS85VEFmS0VGQkFzT2FzTEJUbEhwVDVHSUNxeWdXZk5zQ2doaDJ4SE8vQzFUbjJNeUR3L3hKZCsKazBicG41dEpQODBuZ3VVVE5Rc3RweUFJRThub1lSNXptWkN3QlJYdGhJZVgvWFpRc2doc1Z4aWg3cjVuMnBBbApVYVQ0SS9jdHRjR2tYZ3ptcUdYQVVJSWQyeldrZlBzS0lkZ3U2RTZCT0xESk1iRFRrbDV0QndHWEtUTmdhQkwyCmNGb0xaL3BTbHNPRkhjdDgxR2FWZUxmVGNXSSswd0pKQUp6a1hmM1hsb2tCbXhwbzdwRmlKbkpJVXIvQ080TVkKR200VjgvUURINGlheGxGVDh0dGpkTjRYSlhDbUo4VEpvaGdJTngzaU80R1I4STVLU0p1dVFJdzFQY3hIQ3BlQgpBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSd2lVeitTeEcrOFlodVRFbWdHSXdwcDBlRDREQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKVGFOVnB3aXFnODR0VjYvWG44NDNycDRVc1ltYUx1UEtjK2pOVzFacVlRWjFxczV1MXRJeHNPekFzU2ErN1l6bwpTOVFCdzI2TERSajh2eCswcE1vNzc1QWEzVkd5QTg5K1NUU2wxWnEzMThyVTBsR2V6Y0dpNXBITXBIaTVwYjR3CmZhRU8wSEd5aTFqLy9BcFlGZmJlanhsNzVWaGlsY1NWblErNFBZcXVFOTRMRmxTMmZ1OWdDbzZvN3JDYldKVC8KZTBvRExLWkx3K3NrU2FLOERCTUprZnI1N1hkMC91Z3Q0ZzZPdzJ0Z20yZmIvQytMekJXYTIwV3ZXSVRFS0pEZwpVVkJPOUtRY0VpUldDMWZxMlkvb2NReUZMN0RiTitqRFJTTzVkdUNkMTkweUpFclYzTlB4S1RzWC9XVTY0cmNRClg4d3N1SWhhZm5rcmplc041QXlzU2c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                        url: 'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+                    },
+                    version: '4.12.12',
+                    versionAvailableUpdates: [
+                        {
+                            channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:5c8ef9fba0a75318e0dfeab9ac472ab34aab7334d0d3c56fb4e78e34913b3012',
+                            url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                            version: '4.12.13',
+                        },
+                        {
+                            channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:3cbffaf162ab3328c6eb0c2479705eba6cb1b9df4d60bbe370019038b26dd66a',
+                            url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                            version: '4.12.14',
+                        },
+                    ],
+                    versionHistory: [
+                        {
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                            state: 'Completed',
+                            verified: false,
+                            version: '4.12.12',
+                        },
+                    ],
+                },
+                displayVersion: 'OpenShift 4.12.12',
+                isManagedOpenShift: false,
+                upgradeInfo: {
+                    isUpgrading: false,
+                    isReadyUpdates: true,
+                    upgradePercentage: '',
+                    upgradeFailed: false,
+                    hooksInProgress: false,
+                    hookFailed: false,
+                    latestJob: {
+                        conditionMessage: '',
+                        step: 'prehook-ansiblejob',
+                    },
+                    currentVersion: '4.12.12',
+                    desiredVersion: '4.12.12',
+                    isReadySelectChannels: true,
+                    isSelectingChannel: false,
+                    isUpgradeCuration: false,
+                    currentChannel: 'stable-4.12',
+                    desiredChannel: 'stable-4.12',
+                    availableUpdates: ['4.12.13', '4.12.14'],
+                    availableChannels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                    prehooks: {
+                        hasHooks: false,
+                        inProgress: false,
+                        success: false,
+                        failed: false,
+                    },
+                    posthooks: {
+                        hasHooks: false,
+                        inProgress: false,
+                        success: false,
+                        failed: false,
+                    },
+                    posthookDidNotRun: false,
+                },
+            },
+            acmDistribution: {},
+            labels: {
+                cloud: 'Amazon',
+                'cluster.open-cluster-management.io/clusterset': 'default',
+                clusterID: 'eee92b88-cca4-415e-a1b5-15d34f6e136f',
+                'feature.open-cluster-management.io/addon-application-manager': 'available',
+                'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-search-collector': 'available',
+                'feature.open-cluster-management.io/addon-work-manager': 'available',
+                name: 'feng-managed',
+                openshiftVersion: '4.12.12',
+                'openshiftVersion-major': '4',
+                'openshiftVersion-major-minor': '4.12',
+                vendor: 'OpenShift',
+            },
+            nodes: {
+                nodeList: [
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '16100728Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-east-2',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-east-2a',
+                            'node-role.kubernetes.io/control-plane': '',
+                            'node-role.kubernetes.io/master': '',
+                            'node-role.kubernetes.io/worker': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-133-122.us-east-2.compute.internal',
+                    },
+                ],
+                ready: 1,
+                unhealthy: 0,
+                unknown: 0,
+            },
+            kubeApiServer: 'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+            consoleURL: 'https://console-openshift-console.apps.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com',
+            isHive: false,
+            isHypershift: false,
+            isManaged: true,
+            isCurator: false,
+            isHostedCluster: false,
+            isSNOCluster: false,
+            isRegionalHubCluster: false,
+            hive: {
+                isHibernatable: false,
+                secrets: {},
+            },
+            clusterSet: 'default',
+            owner: {},
+            creationTimestamp: '2023-05-02T18:27:49Z',
+        },
+        {
+            name: 'local-cluster',
+            displayName: 'local-cluster',
+            namespace: 'local-cluster',
+            uid: '4228ed1d-9b60-4718-9028-a5c97fc8bbcf',
+            status: 'ready',
+            provider: 'aws',
+            distribution: {
+                k8sVersion: 'v1.25.7+eab9cc9',
+                ocp: {
+                    availableUpdates: ['4.12.13', '4.12.14'],
+                    channel: 'stable-4.12',
+                    desired: {
+                        channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                        image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                        url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                        version: '4.12.12',
+                    },
+                    desiredVersion: '4.12.12',
+                    managedClusterClientConfig: {
+                        caBundle:
+                            'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJWkpEV1NkYVhpNzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05UQXlNVFV3TlRJeldoY05Nek13TkRJNU1UVXdOVEl6V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWVrK3Jtd3hBbVAxQ2VPcnZteHRyVWkvTms0MHNqeApwdUtQbmxjYnBYMHJoS1R1b3Btemloa1Eza3R0VkNjbW1OUldFVlBYZXY0ZTB2ZW0rcVBLRXV0UDNvYU5kNDMyCjRFOW80aVhya3l1YUxIVGxzN1YxNDhKSnBqeXF5bEV5K0x1RnlnYzN3ajRDNEdXVllMdmJySzh0Zjc4SWpiQTQKQkp1TnNjdlVNdWc3dld3QVp3c3NTYzM5SkVFMkdSQlc5L3k1WnIwYWUvbUpYUzhGSlhwUllGYTMxb3Z5SWVuZgoyQnZwME1na3BJVGdDRDlLNDIyckt6NkhPK3I1QzRycTYyNXFlR20yMXI3WHVNQjFEY05scTZFQWZ2cHFvcUFzCmVxZ2tyYnRNL1g1aG9hbDJQaXhjYTJocnJJWTRKWm9XSGQ4MWE5bDZZdnBYTnp3L2NIazRwcEVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkFMNApCN1REMzFlZkl5OEZNSmYzTkVZbEFDMVBNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJHMmpqcHFnRUk4VVhsCmhSTEVrWXBBUEx0azAxaCsyUjdZZWVEVFZwb2xxQ1BGWmhWVkFPbEtkZi9OZ3FQYUR4Ym01VTk2UDRjdjBRUWEKbW1CeFlyVXA1UzRqdWRqM3JSMUxydTU5TjZBZzYrTnJlV1YxL3Nialo4YUVoZVcyNGZkU1Z2SmhsckJvOEJYbAo0K2pnQzhSTzRadHZCNFNOVUJoYXlZTHQvZlREcVRSbG1ibGdkUXFpeEdXTmx4WUV5c1F4Zi96WWRUNXJEa3RHCkpHZVErNk84R2hocEQzTzFSTkdEenhhUnUrWnkrZjMvZmNYZ20xemE2UVlRbXBhWGVJdG1QUzFZcDNoNXZEL3oKaXhhWjNGTnJmajdlbm9GLzByKzN3ZVFzdnVjTFB1S2RVOUQwMytOUWtvQWIvTEdxZ0E4RDJvV2JFOVkySjRuLwpENUYrTmJOQwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSU1IcE90VVdJNzdvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EVXdNakUxTURVeU1sb1hEVE16TURReU9URTFNRFV5TWxvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1cHQ1dElzbkJZSFcKOHZMd0ltNVdTaDg3OXRFTFMzRDBKNGV6aHU1bkZKamNXMVIvd3h1REZOTkJWV3ZaNzl6NVNpckViSVhGZ2JUZwpHKzlmNEsxYXR1UmxNRDl3Z1RCUG1JdHRNeEpSTWt4QzFVem9xS2p3RWJEQnFCV1hzb1FCUTVQRWtVVVZ5OFpYCkJZVk5tZHJMYkJpY24vdG5LTHVtaFlrYmN4NStuU2c2U3VXQXRJWVhoaVdyKzRNUThZalVVeVJ3WHFGV3RtVkUKanlZNnVHaHd2SUU4VS9YbkFGR3V1bDZBM2NIay9rU2t2dVMvM1liaWJrOGhwWDR6VzJBcVovUTJiN0p4dTQ0bgpzaFRCYjcvREtWZG1sYkZMQkJCVmVsUVk3d2VWMTlLQXRvcjhwTWk2TVYvQ3l1OHJlZkt3MXUzaGplNDNMNUVMCi9yWld4RFlXRXdJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVWhKNUs0RStvUmR6dmErRzliK1VqQ1dMT1BqUXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUJ5NVlwMVFYSkhFalB0SGFNMzF4TnY3OEVzaVJjTTR1U2RXYnd4TFBzVXd1ODkvSHVrb2lBV3hWMUdpCmJWRHlqMmVSWDdGTjRDaG9ab09NSENBYkwwaXh2Z1lSNTVFTS9QSThZZi9vckhwSFd5aldFUmIvMU44UUMyTEsKN0l1V3ExdWhpajhtOEc4QzRTemZwbE9PZGYrekhHTHM5MFFrazBuSmpMWlRvZ1V1dDR3NXF4bzZuNjNlU3VaVwp5Zk90cVdqWFp4d29JbmkxQ2h2T3BxdVlaVWNvdWRGZCttaVhLSXpaWjFJL0REUTlnYlBrb1hFdWtGclBWendXCmNoVTVlb1lid0FZaFFURVJzWHg1c1dqYk5ya2JLODZ5am8vRW1IK1BPTWNMb1NhU1c0SnBoam9RdTRwR2VFbVUKbDFPK1VjZzBlbngvaUJjZ1RxY25pZmx4anBBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSURzUFJYSHl4c0E4d0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURVd01qRTFNRFV5TWxvWERUTXpNRFF5T1RFMU1EVXlNbG93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTZ1bDVKVXRZQUJ4WUs5WkEwYUM4V0t0RXpBUjk5SjlUMUU0TkhJTWM2cHplaWFUMlNRNlUyOGl0SGNQRApBWUVGcUVpNE5nbVJ0NWkvUHF1NU5GNGlDV2FYQUxjVmwrQXk0KzM1QzJMNlhiUDBqdDluV0ZIb0RaUC9uREgvCmFPcUI0THJHRGJjQWlydmxRYlR2a2Q5TFpCaWQ3TnBmbkFOSWFkRFlaS09PWlR6aHA0MWxPOGs1bzR6UzNqcUIKNUtGNXdWekVLZ0dJQ3hYazhndGkwNWlvQU1VSzJpV0wrNjVOQjJtWlZjOUNPY3N2RTJvK2VBSXp5b2xxKzJETApYTFdKVUgwY1pVMHJ0cmlRK2VHbFNvY1JXK1ZRNkFKLzBldllRKytCSHNTWUp3Z2tVaDdSN0JONnRhMzQ0Zy8yCjIxeHA2czlzUkZjNHZkeWJXeW5BQ0YvNTd3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVMM1BDK0NsMTZWd0U3aG4reW1SNmtIaGJxSWN3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGYkpMN3ZQVHhKd2ZHSUJ6aElGcnI0L0dBTGZwVlhRcFFEMTg1V2lDdjZuCnBIVDVFRGIwZU1Pakd2WklUQTNXeVdtYXVNZ0VFSm93YnBWc2hiTkkxREpjSzJCNS9yMzA4ZlhqdU14SEJKOWwKeU1JemNRMGl1K3NlUTJ0VlNZcDFWck9kTkxCTnIyNkUwWEFxZHUxSWhhRDVUdEh4TUpkTzRtZTQxM0NERlZPUgpla0RwWTh6dTJQbm1aNTJNekNJVGVSMFB4U3JmVFF0b09VWVBUV0hjMGhLV29rWFRWK3V4U1FndjRCblZOS1JTCnBDNjQ5cmQzZkErbWJOazBJOWwyVXFBMmlDRFk3MjJjS0tjbHJxM2ZvMk81S0dVdVlhU0UySjkvUWkwVUlodUYKempYcUlDVVZhaWJTbEtNM29OdklVZmVJTk9VRmRJRUFsOUk2MHZKcytUVT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlSNFlyZEZOSTZTTXdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmpnek1EUXdOakV6TUI0WERUSXpNRFV3TWpFMU1UWTEKTWxvWERUTXpNRFF5T1RFMU1UWTFNMW93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd6TURRd05qRXpNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTBEYmQKZ1dob3VjcWRveG5mNzh1bDFtd3pFc0VMdEJWeHErdnZwUGtjVEhjUXN3ZnA2blFOZFdHUlpSbFZ1TFczNzNXVgpUcGF5dUVIaldLcWM0djNxcGdpTUhjMmtoUG5ndzZJRHozRUdLQ2p2ZHBtb0FVNzRndFRYc1g3bC96QWs5ZVZtCjVwNis0bGhPVVJiYUhtWjk5REs0d09KMm8rWGx4d09KZGFrU3JtMjJySG9Lc21wcnI1UktqdUZFdmp5c2VlWTIKS2VGVkZFblArYit1K3JwZzJLRGpyZUQ1ZW4yRmkxK2JZeTRhdDVYVktmOThZREkrOWZCWm1TQnVXUkJ3NURTQQpSQnMxKy84OEI4YTRETzFJKytEQ2liSE1jMklqYmNDU1JWeStRQUo5bEFkM2xtQW1zQ0ltTlhvZEhxQ3dyNGpDCm5BYXdUcTJseHQ0aTIrb1BsUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0h3WURWUjBqQkJndwpGb0FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS25GSktaCkVQcDVMdmdpdnJ1OWZEdUFVTkFIaEE4Yk5xaHNaTHF6dTkyakkwQkU4WmFKM0krUjF1ZGY5bDlETklPVFYwWUUKMWluWnhyWmZHTHZnMXFld0JuL0s4UFVLQnZMZEV3RDdTa25XL3BzU2FVZUl2cWpVWVo4TTU2YkJWTDRwT3h6VApsR2cxYlhSZDd0ZEdYNHdBdEx4T0kxM09FcXlPYVVxTjUxc3UrcGE3WVdsczYrL2Q5ZlBwQTF6ajBibHBJcndaCmQ4emNJaVV3RTA4TmdmZG5FTGpQb21VMzl1RlNJMk11OG5oZmJPa2JVNWJyMjFwTHoyV3l4SDNlTXQvSjI0aEUKODFjbWYvL3U5S08zWHU4c05meHkxODFzYkNUY0ZJKzdSem5qTDdCaTJNb1J4TmRuMHlielB6ZmMyeFIvT01tawovVEpGU09SRjdIb3dhQ1E9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJSEJ4YkI5Qkh4Y3d3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3pNRFF3Tmprek1CNFhEVEl6TURVd01qRTFNVGd4TWxvWApEVEkxTURVd01URTFNVGd4TTFvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdGQyVnpkREV0Ck5ERXlMV2gxWWkxeE9IZHNheTVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTEs3NjRybkg2MzQ0QlBRRDdaM2JXblRNR0JlRnl2Ngp4T25Pb3pvc2U1cUFycG16VnRTQlRld0pjWkFCN1NUbGg2cVRpRVVzSVhpVGU2UFNSVnNKVVF2UG9kc093ZVJ3CjE5Z3ltTU16MXJOKzdqVjBtcS80WkZLaXkzaDA4aUcyODhFZDNnM3ZBU2hsb21RM1pNYWszMENzWFd2M2FSbUgKN0ttOUV6UGdtckFNSmRMR1NONEg2QlF3OVdrWDdrYkpQbUNhS3l5YTVUQWdKc0FNM0F1ekF4aVJ4OVByTTlNUAp3RVQ2K0Z0SmlkdDlGYmx6bHBCVTBwbzVpSkNwMDhRZFJoRnp0b0RjZzNPWVRJWlZxU0V2OWl5bmpLaDF1MXErCnJHUmRyZ3lUU1Z1RTkvZjd6Vm1mR2lFWDNpcFVMcXZtY3pqK1JhUXYrYlprQnpsekRCNk9ScThDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVrclBlb1I1RThRK3o5QmtrQkNlSVphMmFxNzB3SHdZRFZSMGpCQmd3CkZvQVVSMldFaXluc3RicHlKdncxRTliMS9hM2VWWFl3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdGQyVnpkREV0TkRFeUxXaDFZaTF4T0hkc2F5NWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQ1FYVXVKaVAxWW12MmJCN0pJWkhUSnlnVXhkbnR3TUZHaXdxCmFQdzlONktDZjFhalN0dGltSUJNam04SjJpenpNSnhTMWxUamJ6YWlRZnFtbm5WYWlzZmN4Tmt0QnlMV21yRG4KaWpKSHJUMU81Y2lndGhHN1BRazM2T0gvdHpHRjVQWVN4MGlicGxQMlpySlptOHJRcGVxTHl5UFA2N042eithRAovV2FoaSsrRHZYRUR4U0k2QkhGNGR0UWE0UURyVmtZdzhqTWlKbXhoTmxWM2lDdlB0Rm92WjNjeHY2RUJFdGJlClJaYWtNanlHSm1wVWdQN1RKd2I2Umh4VmFEZlhidWRGT3NDcTJjc04wcXVLNnI4OHRWbktERHdVbzhtRVdRUXEKcHlNSWNLTGtGSFJFU1FBc1BnYnJqcnJVZjRoTVRWOHVML0w5RWwwUkx2WTZvRmg3dmc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RNd05EQTJPVE13SGhjTk1qTXdOVEF5TVRVeE9ERXlXaGNOTWpVd05UQXgKTVRVeE9ERXpXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ETXdOREEyT1RNdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDejdmTUlrMzFuaU92OXg2U1A0TUZSCmVjTlkvVjdZVFVKWkk1MXk2c3hHcVdRbmJjOFg0UndQcW0vaXI0bzZWeURRakx1bEVuanVDL2pDeXB6Mm13ZVYKcHlHRXV0bWpnVWVISjRuZFI4bEh4dmdLMG95L1ZjQnRYSVZsTmxIMXdTR0FiVk1oSGpMamEyUitHMzJSVG14OQp3UDJDaEw0dWUrWXRscXorLzNYYmNseG8rUUFiQjNTajhvNzNZcys1RURqTUhnQUdsMGM0TDVuZDQyM2NFRDlvClk0cUVGUWgwem9VL1pDalZ1UXRJZnVNU0JzMkJ4NVRMRWhya096UW5jdHFNcjhLRWJ6RjZycXBQck8rb1Vqd0wKUE1vSFIrVXgwemJPaC9pa21zVk1FL3F6WWt1bXpadzVLRjNOcHlGMTNENmQ2d3k3UFkzVERZU3B1Vldtd1RrZApBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSSFpZU0xLZXkxdW5JbS9EVVQxdlg5cmQ1VmRqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKcmNQaFQrV2dFZmxYVVEwazJtOVZxZ2o2eWhwOGdwY0NlVFJBS2JNb3Ywa0ZXanRHN1JlaWxMMTZxWEFBbXdLawpYc0NUVlFIaE0zbUw0ME5EL2VkVUNUYmI3VHJ2b2dDVFd0VXVXcnVJRzdLUnRpREJON2ZNMmcwSGN4R080RXJICkYvamtzUU9GRWVhbnhMcFN2TTRYd2UyZ3pOL2prcFNvbUFCSTF6SlVQNzd3dVFMcExSNzc3TE9uZkdkY2ZyZUYKaHcrS0tpd2N3bVp5NitSNlROaFFwMVF6YWI2bTIvMWlFNFpZRWx5WTFVdHNZZHcrVk5uSituZlJHZXAwV29YSQp0anhCMjlkNUhlczNHWnBVL2JScWExZDM0SERLM1I1OUQzVXVRbW9SQ1lrcHdNSHRFSmZ4VDYwdE5Zd2xkZnUwClBvZFREMzlJVXlNKzdvdVEzempIN0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                        url: 'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+                    },
+                    version: '4.12.12',
+                    versionAvailableUpdates: [
+                        {
+                            channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:af5e923e8e1c1e67e22c8d037a247b678ae6da220de4a5191729a9bed00be041',
+                            url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                            version: '4.12.13',
+                        },
+                        {
+                            channels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a',
+                            url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                            version: '4.12.14',
+                        },
+                    ],
+                    versionHistory: [
+                        {
+                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                            state: 'Completed',
+                            verified: false,
+                            version: '4.12.12',
+                        },
+                    ],
+                },
+                displayVersion: 'OpenShift 4.12.12',
+                isManagedOpenShift: false,
+                upgradeInfo: {
+                    isUpgrading: false,
+                    isReadyUpdates: true,
+                    upgradePercentage: '',
+                    upgradeFailed: false,
+                    hooksInProgress: false,
+                    hookFailed: false,
+                    latestJob: {
+                        conditionMessage: '',
+                        step: 'prehook-ansiblejob',
+                    },
+                    currentVersion: '4.12.12',
+                    desiredVersion: '4.12.12',
+                    isReadySelectChannels: true,
+                    isSelectingChannel: false,
+                    isUpgradeCuration: false,
+                    currentChannel: 'stable-4.12',
+                    desiredChannel: 'stable-4.12',
+                    availableUpdates: ['4.12.13', '4.12.14'],
+                    availableChannels: ['candidate-4.12', 'candidate-4.13', 'eus-4.12', 'fast-4.12', 'stable-4.12'],
+                    prehooks: {
+                        hasHooks: false,
+                        inProgress: false,
+                        success: false,
+                        failed: false,
+                    },
+                    posthooks: {
+                        hasHooks: false,
+                        inProgress: false,
+                        success: false,
+                        failed: false,
+                    },
+                    posthookDidNotRun: false,
+                },
+            },
+            acmDistribution: {},
+            labels: {
+                cloud: 'Amazon',
+                'cluster.open-cluster-management.io/clusterset': 'default',
+                clusterID: '5a7e7a0e-68f1-4169-8c14-5593eedfaeb8',
+                'feature.open-cluster-management.io/addon-application-manager': 'available',
+                'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                'feature.open-cluster-management.io/addon-work-manager': 'available',
+                'local-cluster': 'true',
+                name: 'local-cluster',
+                openshiftVersion: '4.12.12',
+                'openshiftVersion-major': '4',
+                'openshiftVersion-major-minor': '4.12',
+                'velero.io/exclude-from-backup': 'true',
+                vendor: 'OpenShift',
+            },
+            nodes: {
+                nodeList: [
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '16100736Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                            'node-role.kubernetes.io/worker': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-133-134.us-west-1.compute.internal',
+                    },
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '16100736Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                            'node-role.kubernetes.io/worker': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-145-81.us-west-1.compute.internal',
+                    },
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '15928704Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                            'node-role.kubernetes.io/control-plane': '',
+                            'node-role.kubernetes.io/master': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-152-72.us-west-1.compute.internal',
+                    },
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '15928704Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                            'node-role.kubernetes.io/control-plane': '',
+                            'node-role.kubernetes.io/master': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-190-241.us-west-1.compute.internal',
+                    },
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '15928704Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                            'node-role.kubernetes.io/worker': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-224-140.us-west-1.compute.internal',
+                    },
+                    {
+                        capacity: {
+                            cpu: '4',
+                            memory: '15928696Ki',
+                            socket: '1',
+                        },
+                        conditions: [
+                            {
+                                status: 'True',
+                                type: 'Ready',
+                            },
+                        ],
+                        labels: {
+                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                            'node-role.kubernetes.io/control-plane': '',
+                            'node-role.kubernetes.io/master': '',
+                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                        },
+                        name: 'ip-10-0-251-55.us-west-1.compute.internal',
+                    },
+                ],
+                ready: 6,
+                unhealthy: 0,
+                unknown: 0,
+            },
+            kubeApiServer: 'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+            consoleURL: 'https://console-openshift-console.apps.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com',
+            isHive: false,
+            isHypershift: false,
+            isManaged: true,
+            isCurator: false,
+            isHostedCluster: false,
+            isSNOCluster: false,
+            isRegionalHubCluster: false,
+            hive: {
+                isHibernatable: false,
+                secrets: {},
+            },
+            clusterSet: 'default',
+            owner: {},
+            creationTimestamp: '2023-05-02T17:54:50Z',
+        },
+    ]
+
+    const result = {
+        links: [
+            {
+                from: {
+                    uid: 'application--feng-cronjob',
+                },
+                specs: {
+                    isDesign: true,
+                },
+                to: {
+                    uid: 'member--subscription--feng-cronjob--feng-cronjob-subscription-1',
+                },
+                type: '',
+            },
+            {
+                from: {
+                    uid: 'member--subscription--feng-cronjob--feng-cronjob-subscription-1',
+                },
+                specs: {
+                    isDesign: true,
+                },
+                to: {
+                    uid: 'member--rules--feng-cronjob--feng-cronjob-placement-1--0',
+                },
+                type: '',
+            },
+            {
+                from: {
+                    uid: 'member--subscription--feng-cronjob--feng-cronjob-subscription-1',
+                },
+                specs: {
+                    isDesign: true,
+                },
+                to: {
+                    uid: 'member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1',
+                },
+                type: '',
+            },
+            {
+                from: {
+                    uid: 'member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1',
+                },
+                to: {
+                    uid: 'member--deployed-resource--member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1------cronjob',
+                },
+                type: '',
+            },
+        ],
+        nodes: [
+            {
+                id: 'application--feng-cronjob',
+                name: '',
+                namespace: 'feng-cronjob',
+                specs: {
+                    activeChannel:
+                        'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                    allChannels: [
+                        {
+                            apiVersion: 'apps.open-cluster-management.io/v1',
+                            kind: 'Channel',
+                            metadata: {
+                                annotations: {
+                                    'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                    'open-cluster-management.io/user-group':
+                                        'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                    'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                },
+                                creationTimestamp: '2023-05-02T18:40:30Z',
+                                generation: 1,
+                                name: 'ggithubcom-fxiang1-app-samples',
+                                namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                                resourceVersion: '100154',
+                                uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                            },
+                            spec: {
+                                pathname: 'https://github.com/fxiang1/app-samples',
+                                type: 'Git',
+                            },
+                        },
+                    ],
+                    allClusters: {
+                        isLocal: true,
+                        remoteCount: 1,
+                    },
+                    allSubscriptions: [
+                        {
+                            apiVersion: 'apps.open-cluster-management.io/v1',
+                            channels: [
+                                {
+                                    apiVersion: 'apps.open-cluster-management.io/v1',
+                                    kind: 'Channel',
+                                    metadata: {
+                                        annotations: {
+                                            'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                            'open-cluster-management.io/user-group':
+                                                'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                        },
+                                        creationTimestamp: '2023-05-02T18:40:30Z',
+                                        generation: 1,
+                                        name: 'ggithubcom-fxiang1-app-samples',
+                                        namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                                        resourceVersion: '100154',
+                                        uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                                    },
+                                    spec: {
+                                        pathname: 'https://github.com/fxiang1/app-samples',
+                                        type: 'Git',
+                                    },
+                                },
+                            ],
+                            kind: 'Subscription',
+                            metadata: {
+                                annotations: {
+                                    'apps.open-cluster-management.io/git-branch': 'main',
+                                    'apps.open-cluster-management.io/git-current-commit':
+                                        '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                                    'apps.open-cluster-management.io/git-path': 'cronjob',
+                                    'apps.open-cluster-management.io/reconcile-option': 'merge',
+                                    'open-cluster-management.io/user-group':
+                                        'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                    'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                },
+                                creationTimestamp: '2023-05-02T18:40:30Z',
+                                generation: 1,
+                                labels: {
+                                    app: 'feng-cronjob',
+                                    'app.kubernetes.io/part-of': 'feng-cronjob',
+                                    'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                },
+                                name: 'feng-cronjob-subscription-1',
+                                namespace: 'feng-cronjob',
+                                resourceVersion: '100233',
+                                uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                            },
+                            posthooks: [],
+                            prehooks: [],
+                            report: {
+                                apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                                kind: 'SubscriptionReport',
+                                metadata: {
+                                    creationTimestamp: '2023-05-02T18:40:31Z',
+                                    generation: 9,
+                                    labels: {
+                                        'apps.open-cluster-management.io/hosting-subscription':
+                                            'feng-cronjob.feng-cronjob-subscription-1',
+                                    },
+                                    name: 'feng-cronjob-subscription-1',
+                                    namespace: 'feng-cronjob',
+                                    ownerReferences: [
+                                        {
+                                            apiVersion: 'apps.open-cluster-management.io/v1',
+                                            blockOwnerDeletion: true,
+                                            controller: true,
+                                            kind: 'Subscription',
+                                            name: 'feng-cronjob-subscription-1',
+                                            uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                                        },
+                                    ],
+                                    resourceVersion: '100502',
+                                    uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                                },
+                                reportType: 'Application',
+                                resources: [
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello1',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello2',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello5',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello8',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello3',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello4',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello6',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                    {
+                                        apiVersion: 'batch/v1',
+                                        kind: 'CronJob',
+                                        name: 'hello7',
+                                        namespace: 'feng-cronjob',
+                                    },
+                                ],
+                                results: [
+                                    {
+                                        result: 'deployed',
+                                        source: 'feng-managed',
+                                        timestamp: {
+                                            nanos: 0,
+                                            seconds: 0,
+                                        },
+                                    },
+                                    {
+                                        result: 'deployed',
+                                        source: 'local-cluster',
+                                        timestamp: {
+                                            nanos: 0,
+                                            seconds: 0,
+                                        },
+                                    },
+                                ],
+                                summary: {
+                                    clusters: '2',
+                                    deployed: '2',
+                                    failed: '0',
+                                    inProgress: '0',
+                                    propagationFailed: '0',
+                                },
+                            },
+                            rules: [
+                                {
+                                    apiVersion: 'apps.open-cluster-management.io/v1',
+                                    kind: 'PlacementRule',
+                                    metadata: {
+                                        annotations: {
+                                            'open-cluster-management.io/user-group':
+                                                'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                        },
+                                        creationTimestamp: '2023-05-02T18:40:30Z',
+                                        generation: 1,
+                                        labels: {
+                                            app: 'feng-cronjob',
+                                        },
+                                        name: 'feng-cronjob-placement-1',
+                                        namespace: 'feng-cronjob',
+                                        resourceVersion: '100165',
+                                        uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                                    },
+                                    spec: {
+                                        clusterConditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'ManagedClusterConditionAvailable',
+                                            },
+                                        ],
+                                    },
+                                    status: {
+                                        decisions: [
+                                            {
+                                                clusterName: 'local-cluster',
+                                                clusterNamespace: 'local-cluster',
+                                            },
+                                            {
+                                                clusterName: 'feng-managed',
+                                                clusterNamespace: 'feng-managed',
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                            spec: {
+                                channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                                placement: {
+                                    placementRef: {
+                                        kind: 'PlacementRule',
+                                        name: 'feng-cronjob-placement-1',
+                                    },
+                                },
+                            },
+                            status: {
+                                lastUpdateTime: '2023-05-02T18:40:32Z',
+                                message: 'Active',
+                                phase: 'Propagated',
+                            },
+                        },
+                    ],
+                    channels: [
+                        'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                    ],
+                    isDesign: true,
+                    raw: {
+                        apiVersion: 'app.k8s.io/v1beta1',
+                        kind: 'Application',
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/deployables': '',
+                                'apps.open-cluster-management.io/subscriptions':
+                                    'feng-cronjob/feng-cronjob-subscription-1,feng-cronjob/feng-cronjob-subscription-1-local',
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOnNlcnZpY2VhY2NvdW50cyxzeXN0ZW06c2VydmljZWFjY291bnRzOm9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50LHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity':
+                                    'c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM=',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            name: 'feng-cronjob',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100212',
+                            uid: '6572e3a0-1c41-4a83-8e35-2089b63f51e8',
+                        },
+                        spec: {
+                            componentKinds: [
+                                {
+                                    group: 'apps.open-cluster-management.io',
+                                    kind: 'Subscription',
+                                },
+                            ],
+                            descriptor: {},
+                            selector: {
+                                matchExpressions: [
+                                    {
+                                        key: 'app',
+                                        operator: 'In',
+                                        values: ['feng-cronjob'],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+                type: 'application',
+                uid: 'application--feng-cronjob',
+            },
+            {
+                id: 'member--subscription--feng-cronjob--feng-cronjob-subscription-1',
+                name: 'feng-cronjob-subscription-1',
+                namespace: 'feng-cronjob',
+                report: {
+                    apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                    kind: 'SubscriptionReport',
+                    metadata: {
+                        creationTimestamp: '2023-05-02T18:40:31Z',
+                        generation: 9,
+                        labels: {
+                            'apps.open-cluster-management.io/hosting-subscription':
+                                'feng-cronjob.feng-cronjob-subscription-1',
+                        },
+                        name: 'feng-cronjob-subscription-1',
+                        namespace: 'feng-cronjob',
+                        ownerReferences: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                blockOwnerDeletion: true,
+                                controller: true,
+                                kind: 'Subscription',
+                                name: 'feng-cronjob-subscription-1',
+                                uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                            },
+                        ],
+                        resourceVersion: '100502',
+                        uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                    },
+                    reportType: 'Application',
+                    resources: [
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello1',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello2',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello5',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello8',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello3',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello4',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello6',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello7',
+                            namespace: 'feng-cronjob',
+                        },
+                    ],
+                    results: [
+                        {
+                            result: 'deployed',
+                            source: 'feng-managed',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                        {
+                            result: 'deployed',
+                            source: 'local-cluster',
+                            timestamp: {
+                                nanos: 0,
+                                seconds: 0,
+                            },
+                        },
+                    ],
+                    summary: {
+                        clusters: '2',
+                        deployed: '2',
+                        failed: '0',
+                        inProgress: '0',
+                        propagationFailed: '0',
+                    },
+                },
+                specs: {
+                    clustersNames: ['feng-managed', 'local-cluster'],
+                    hasRules: true,
+                    isDesign: true,
+                    isPlaced: true,
+                    raw: {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        channels: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                kind: 'Channel',
+                                metadata: {
+                                    annotations: {
+                                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                        'open-cluster-management.io/user-group':
+                                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                    },
+                                    creationTimestamp: '2023-05-02T18:40:30Z',
+                                    generation: 1,
+                                    name: 'ggithubcom-fxiang1-app-samples',
+                                    namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                                    resourceVersion: '100154',
+                                    uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                                },
+                                spec: {
+                                    pathname: 'https://github.com/fxiang1/app-samples',
+                                    type: 'Git',
+                                },
+                            },
+                        ],
+                        kind: 'Subscription',
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/git-branch': 'main',
+                                'apps.open-cluster-management.io/git-current-commit':
+                                    '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                                'apps.open-cluster-management.io/git-path': 'cronjob',
+                                'apps.open-cluster-management.io/reconcile-option': 'merge',
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            labels: {
+                                app: 'feng-cronjob',
+                                'app.kubernetes.io/part-of': 'feng-cronjob',
+                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                            },
+                            name: 'feng-cronjob-subscription-1',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100233',
+                            uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                        },
+                        posthooks: [],
+                        prehooks: [],
+                        report: {
+                            apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                            kind: 'SubscriptionReport',
+                            metadata: {
+                                creationTimestamp: '2023-05-02T18:40:31Z',
+                                generation: 9,
+                                labels: {
+                                    'apps.open-cluster-management.io/hosting-subscription':
+                                        'feng-cronjob.feng-cronjob-subscription-1',
+                                },
+                                name: 'feng-cronjob-subscription-1',
+                                namespace: 'feng-cronjob',
+                                ownerReferences: [
+                                    {
+                                        apiVersion: 'apps.open-cluster-management.io/v1',
+                                        blockOwnerDeletion: true,
+                                        controller: true,
+                                        kind: 'Subscription',
+                                        name: 'feng-cronjob-subscription-1',
+                                        uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                                    },
+                                ],
+                                resourceVersion: '100502',
+                                uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                            },
+                            reportType: 'Application',
+                            resources: [
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello1',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello2',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello5',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello8',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello3',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello4',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello6',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello7',
+                                    namespace: 'feng-cronjob',
+                                },
+                            ],
+                            results: [
+                                {
+                                    result: 'deployed',
+                                    source: 'feng-managed',
+                                    timestamp: {
+                                        nanos: 0,
+                                        seconds: 0,
+                                    },
+                                },
+                                {
+                                    result: 'deployed',
+                                    source: 'local-cluster',
+                                    timestamp: {
+                                        nanos: 0,
+                                        seconds: 0,
+                                    },
+                                },
+                            ],
+                            summary: {
+                                clusters: '2',
+                                deployed: '2',
+                                failed: '0',
+                                inProgress: '0',
+                                propagationFailed: '0',
+                            },
+                        },
+                        rules: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                kind: 'PlacementRule',
+                                metadata: {
+                                    annotations: {
+                                        'open-cluster-management.io/user-group':
+                                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                    },
+                                    creationTimestamp: '2023-05-02T18:40:30Z',
+                                    generation: 1,
+                                    labels: {
+                                        app: 'feng-cronjob',
+                                    },
+                                    name: 'feng-cronjob-placement-1',
+                                    namespace: 'feng-cronjob',
+                                    resourceVersion: '100165',
+                                    uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                                },
+                                spec: {
+                                    clusterConditions: [
+                                        {
+                                            status: 'True',
+                                            type: 'ManagedClusterConditionAvailable',
+                                        },
+                                    ],
+                                },
+                                status: {
+                                    decisions: [
+                                        {
+                                            clusterName: 'local-cluster',
+                                            clusterNamespace: 'local-cluster',
+                                        },
+                                        {
+                                            clusterName: 'feng-managed',
+                                            clusterNamespace: 'feng-managed',
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                        spec: {
+                            channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                            placement: {
+                                placementRef: {
+                                    kind: 'PlacementRule',
+                                    name: 'feng-cronjob-placement-1',
+                                },
+                            },
+                        },
+                        status: {
+                            lastUpdateTime: '2023-05-02T18:40:32Z',
+                            message: 'Active',
+                            phase: 'Propagated',
+                        },
+                    },
+                    title: 'cronjob',
+                },
+                type: 'subscription',
+                uid: 'member--subscription--feng-cronjob--feng-cronjob-subscription-1',
+            },
+            {
+                id: 'member--rules--feng-cronjob--feng-cronjob-placement-1--0',
+                name: 'feng-cronjob-placement-1',
+                namespace: 'feng-cronjob',
+                specs: {
+                    isDesign: true,
+                    raw: {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        kind: 'PlacementRule',
+                        metadata: {
+                            annotations: {
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            labels: {
+                                app: 'feng-cronjob',
+                            },
+                            name: 'feng-cronjob-placement-1',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100165',
+                            uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                        },
+                        spec: {
+                            clusterConditions: [
+                                {
+                                    status: 'True',
+                                    type: 'ManagedClusterConditionAvailable',
+                                },
+                            ],
+                        },
+                        status: {
+                            decisions: [
+                                {
+                                    clusterName: 'local-cluster',
+                                    clusterNamespace: 'local-cluster',
+                                },
+                                {
+                                    clusterName: 'feng-managed',
+                                    clusterNamespace: 'feng-managed',
+                                },
+                            ],
+                        },
+                    },
+                },
+                type: 'placements',
+                uid: 'member--rules--feng-cronjob--feng-cronjob-placement-1--0',
+            },
+            {
+                id: 'member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1',
+                name: '',
+                namespace: '',
+                specs: {
+                    appClusters: undefined,
+                    clusters: [
+                        {
+                            acmDistribution: {},
+                            clusterSet: 'default',
+                            consoleURL:
+                                'https://console-openshift-console.apps.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com',
+                            creationTimestamp: '2023-05-02T18:27:49Z',
+                            displayName: 'feng-managed',
+                            distribution: {
+                                displayVersion: 'OpenShift 4.12.12',
+                                isManagedOpenShift: false,
+                                k8sVersion: 'v1.25.7+eab9cc9',
+                                ocp: {
+                                    availableUpdates: ['4.12.13', '4.12.14'],
+                                    channel: 'stable-4.12',
+                                    desired: {
+                                        channels: [
+                                            'candidate-4.12',
+                                            'candidate-4.13',
+                                            'eus-4.12',
+                                            'fast-4.12',
+                                            'stable-4.12',
+                                        ],
+                                        image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                                        url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                                        version: '4.12.12',
+                                    },
+                                    desiredVersion: '4.12.12',
+                                    managedClusterClientConfig: {
+                                        caBundle:
+                                            'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJUlZwcnZzZVZkZzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05ESTBNVGsxTnpFNVdoY05Nek13TkRJeE1UazFOekU1V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTDJnUEFWeFZPS1RMTFBmRkVNYzZ0cTFJZjVCZmJ5Vgo3NCtCZU9Beklud1N3WVIvelJJNzNrdldYclAxejV5ZDV4YXV5aStPdmNQSXNuLy9qL0NWZEJsSi9TTklaY1hJCmR0SlBIUHE3Sk8zTHFzQmxxZCtLNHdHL2dPdTV5TDd1WVRGLy81SjN5N3ViWVNrN2FkZjF0dnFUQVRKaTIxVlkKZFRHMTcwZG5way9kVXluZVQ2NGd1SjV1VmhKcWw5ZGFBR2J2QlM5UllRZzhtOXd0aDcxa1pkZ2lnRStJZHZJZQpha3g2enE3NEQrQ2xORy9MRFlPYnZ0dTNGaFQvNytBSjExUDVJZUV5VE1tSi94dVgxempEOXpacUpva2crWFV2CllkSW5CWEdycFBTeHFvYnZDNGorejNaK3pDNFlIcWN1elZGZHZxUjR0VWtMb3Z6NmtnUXV3TlVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkcxbQoxRDlmb2Z6RnROUVhaWHpYK2pRSnNlRXZNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNGa1UwYjU2anlOSGpXCmtkU1BzL3F5RmxMMXkxZTdoOWNiWWR2bXl1N0w2SFl5WWxRQ05OcjdJOGVMbTVwOEV5THNaYXh2Rzg1aFNwYlgKTEZHVXFwSVVwMy9EdlBvRHRoTlFCYURVNHNtLzJYT3BKN2svdStSNkZxL2lvMTJHcXBvZHc1QWlzVkplb0FIVQpUV0RyYllNRnBQdzhZLzJzellYR2JnRjRjNHFSemdkWFpBZ0tVN21nZmc1OFI5OFMrVGxpNXdJY2I3ZWlEYSs1CmNCWXBhaXpVS1hFTTdkbEEzMHRYYzg5NTVRRmt6MW5oU1VDM3FUSE84aWluMXNFbHI2QTFiRkJhc2lFbVhhQkYKRldnT01oRFhSVmJ5YTl3K05ZVjFoY09vMDJvLy9oc2wvekUxZUorTHh5OVFRTVo4b2ZIQzQydXVpMmFIWG5RQwp3NU0zUXFkZgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSVFmZURtZmNGZC8wd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EUXlOREU1TlRjeE9Wb1hEVE16TURReU1URTVOVGN4T1Zvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzVTVvSmZsTkVFSlkKaGNyZDJZSjYvNnk2RXNzWi9aR3lEYmIwblVZSUFNVWFNWHJNVFNRUkFPMHBQa1JBTHZEMlJMdGVvWUh4ZSt6TAp4WXBpcTVSU2hzdDhHYTh3M1ZvQmFmT1ZpOHgxYTk4MlJKNzVrLzRLN0l6WnBUT1NyQlJMNUR2V213UCs2ZGtvCjVKSlNzVXMzVUQrbVhvck40VzFsRHZIU1h0ZFcxbU5HbDJ2L2RxTWZlZFBNTzZYdGQvZFh5T3FHdFBJcWtOQU0KRjFnUmZaMlBoQjNtY3lWZmEyREJwVittQWtGejN0UEFNWHhZVm9RdWVGb0tFWGlhRVBROElLSUFpM0ZNQms4OQpPZHNCVjlrZStoNGVZR1ZtNDdCV1JOUzQxdlNRSHVqQlY4WVB0WXlCZ1RNRmZkcC91ZHBkTFNoMWJmKytldVFpCjU0S2tydlpEelFJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVUJnRUtlRkdDS3JaV1I5T1FxUzI4MjUvN1Q1UXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUh2eDZmWXphZVJUQlJYbG0rSGJSR2NWSHliang1RnkrMXpLeHZTWGR3bEoxZlZPeG9ZenZETng2TmlaCmk0Qlh4ZlRXZkJ6WjRKcWpDUW5zb2VPNzlBb0dJdGFtVlFkVlQxSjgxM2lkK1RiUElnYlBINGdtNkpoNHQyN3IKTVVmcklpR2dpdlNuTkFVeHFRZVpFSk5uSDRjYm1vWEd2Q1FyUlZobFJUY0U2TmdwMXlPT29rc1FoMzFQM2VmSwpNazVmNkh3Vm1YM3NRTWZzb2VzUXgrQ0NSNldiQnhtNCtBQk1tL3hMQVFGME1xTTlNRE1ldnpXQmM0QUVYUjNnCmNsYWZWWk1yNWhzTWlUdFBwa0RnUEV4L3loaFBucDZ2V2E3eEw3QXFrdUhBeXpMcGVMZC80Y3crZzZNMDFMbkcKc0xUdlBzbG5rYUUwNGhhbjFZMDJtRnFQa1kwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSUlRdGl4V2h2T2Jvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURReU5ERTVOVGN4T1ZvWERUTXpNRFF5TVRFNU5UY3hPVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQXQ2SWdlTWtaQkV4cHM4Qlk0VithcElhR3l1YTczMnYzZFpjT1FWY0NiUFJuL21mTVpMc211dERzMC8yKwp6eDA4MnVjZnRpYkNaSTB6NE1hM1ZueWhPSnU0S1dpamZ1azNyK04vd0xXc3M4cjdtQ1ltMjE2RDhoVFZRTEhaCnM2Um5wWWFJYTZtN25CeVB3UzFRMU8yL0Z4c1AvdnY2cDAwbU5lNEZobmx3RVJBdDMrNU5mSlByNlV5VWI1aXIKeGFlckRXV3pVRGgyNUtpZFhlek1RZ2lBRXUyamdueEhDdTNiZ2o3N0dLeEJCbE9RREhKNy9UUU10V1pUUnNlZwpCRmJZR2IycVdFaGtVbXRid3UwY1M0VzU2bEdEeEdrekdSSGpCZU1WK0NiYlNWTVVmdEdHYkdncDR3eExaL2ZsCm1EK2RHbGRId0VkK3paL0k0Y2ZZWTZIc253SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVV2QzMzMk04UWVUMUlFM0UwUlRGUmxVcG4vSTB3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS1Vjc21EODdORFU3RmRmR2VoRTZnU3c3eDJVTXFWQmQ1UHdETlR6MUQ2ClN4TGxLMmtmeTJuNnJGZkNlVFE3WTR6Z1YyL0I1bXdqRk50MC9oeXZLZDVSbnhlUzdFRzhtNzdkK2Y4WkpVSzQKQzdoS1duWVp6R2RxSUZtcDVrOVpsOUs4RkY0Y2ZCc0h3U0xMc2lHZDgra2piMk5sTmJJOVE0OTFmd0xxOVFOQgp0Q0JZanB1MWxNZCtjOEVEVlBtT0s3UzQwcHNjaGFRbHZhWGJzbzFsSE00SUtTZHVyTExPTzUvcXRqcU9IeFN0CmIzbW9udzY3YldmaFZicHEwb21vb0NGUzAvaTZKcTdyd0UwU1JWSFoxK1ZCMkc1NGxLbjJMZllPT1k0Z0N6bkUKVGdkQnA5NTBNVWZCSkJ5RSt1VWFFS2R0QWtOVU5XVTZoMUVQK2JHTlZFQT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlQdTNjQkh1UU04Y3dEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4TmpneU16WTNNREkzTUI0WERUSXpNRFF5TkRJd01UQXkKT0ZvWERUTXpNRFF5TVRJd01UQXlPVm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd5TXpZM01ESTNNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTFrOFUKMlZpaEtEZnJIZ2diaFFhbkhaNUx5QTd5Z1BRSkU4OHl4aERXcms1MVZtWG9HQWhhV1h0SERnNTZ2S1BpQWI0agpYb1ZGT0pLeTN5clc0eHhOUWR3a3g2Z3VqaXpsMnpaOC81Sk8rQXpaaFhNbmlXSzVrSGlkSTMrSTJURk5zL3pPCmNjbXJ3YWlyZWtVK05LVW5qdHNVTjBlRGxYQ2xxSFcrZ1U1cXYxcWY3d0ZydDgzMDFoa2NBYk9BcnhQdmF6dGYKSUFXeGtnRko2ZWdWNHdwSGIxQ3R1YXU1VjRLZkYxY2ZOamx3ZTAvaHozQ1RRUU1xeCt6bWxhWTJlYzVYajVkbQpLWEFSSElyQ25wT0dQbXZQYnRrZ2FnTzREQytaamNjR3cyL1VLZkhjU3dSZjVLU1VmUjJINUxGa3oyT2RucW4yClhxZXQxZnczWGl6Q3VmcS9vUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0h3WURWUjBqQkJndwpGb0FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDVkhiL29YCllscE1LSTBRbmlBcFdvQUJpTDJyRk1MdWJoeTFWLzB2ZDhtTi83NnVUWGtwT0RaMVpmcjA0UEZaSjN5SlFIemgKTHZFcGU5bGh6azhpMGVhb2VKbHZCTGFFZnRiZGd1R0dhMngzcGpHODJKQ2VuT0hlZ25td3NYUHZMSFBjd21DVQp6RVpoaHdoMEluWjdHYnFCTHBrZjFNcTZBV21tZWUza3Jnc1haaWNrZGdqaWFCY0o0WnF5V3ZRTmNpaUNjRlRTCkRDbUpWbm5ZeDdPOUxTMzEzU3FwVUJnU0sweTFqRzQ4L2pGVURFNVI4UE53WEpiRzVnSTJzQWZhelF6NmV1WVEKMHk2ajc1a0IwRE92ODdQWGNJLzlpN3pPdUIxQ3kzVnJxeVZlOGFGc3FLbVM5SmFNdnQvTDUxU2FWc0Npb0tTUAptNitFUzZXbjhNa0xKOGs9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJYjhSeFQ2aWZpRjR3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3lNelkzTVRBM01CNFhEVEl6TURReU5ESXdNVEUwTjFvWApEVEkxTURReU16SXdNVEUwT0Zvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdFpXRnpkREl0Ck5ERXlMWE51YnkxMFoyMW5hQzVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTdUeVp1M0JpVjRqenpDeGVPY3BvZngzQnBDM0tBdgp1N1IxRllhTXlvQUhURGxJZ0JxeDZaLzYxdENPZTdQNVlqRUxpNHdZT3ZabEk3YzhGNHBQVGxQVTIwOU5HQVNVCnFaWGxKSmJ1REdrbWlNb0NmOXo5b01OL0dGdXJncE51UDBZQm5UTWMvUnIrZ2d5TTlPR2VtR0E1Sm9rYmE5RlEKS3A1OEJnOVpuelFZcWRLR041UjBEZWhkOVZoc0hBMTN6N21QY2lOUmZxc2tWRU1idy9GTFB3Zm9yMldydnlZMwpBQnNGbElOMlcyM3doK08yNENCbjJPUkxGUC9adVNzWmxVQU5iYjZjclcwdFVPMGpjV3ZUd2NoZGlBL21aQzAvClN3RmNzRnJ3ZHV2YlZwWUZiVmwwSDBXOVU1VS9tM3J1Y0swb2krNEpGVnhDZ2t4MHJYTTVDcmNDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVZSnMzR2lFbVp1dHhMOU14THdFRmxGc3hzWTB3SHdZRFZSMGpCQmd3CkZvQVVjSWxNL2tzUnZ2R0lia3hKb0JpTUthZEhnK0F3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdFpXRnpkREl0TkRFeUxYTnVieTEwWjIxbmFDNWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBVy8xNmMyKzlPTVZYMzdvWExKd0tQRTFDekFydXhneEp5R3RYCklaSXhIaWlvWjFONXU5WU9qUkZVR1hTOUlBc29ZVE9DWXU0R0lZd0lIUFpBRStzUnVxcVBxeGVQZzZ6RzhrczcKejZkZnROWHUwQTdPUWtuSHBUTERWWWpnSXlLUDhUME9FT2E5VEJhNnN0Wi9sbG4vQVVBbDQzczFIVnh6cHV6RgpPMjZkSGJMaXRBemN5aDBkSTZuZVpQalBYaWJuSy9wUzdwSnZ4NTBoK1ZLZjJ6MktDaUw4a3REQ3VMNFI0Qnc5ClB4V0ZDbWpTelNidGdaeEJJd3JMa29CWk1TWWlSc1FmNDJoeFYyNXhBOUdWL2VoRWVYN3U4QkFHcXhWeXc5blQKWXhjUFVsM1RIem1kYmZudGdROXd1Zk5qZmFKeHlrMSszT0Y3YlNhUjhEKzVCNzU5Z0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RJek5qY3hNRGN3SGhjTk1qTXdOREkwTWpBeE1UUTNXaGNOTWpVd05ESXoKTWpBeE1UUTRXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ESXpOamN4TURjdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFETXppbS9yaWQ1bm9JSFFJbnJ0SzVpClFqWjFRQTE0cS85VEFmS0VGQkFzT2FzTEJUbEhwVDVHSUNxeWdXZk5zQ2doaDJ4SE8vQzFUbjJNeUR3L3hKZCsKazBicG41dEpQODBuZ3VVVE5Rc3RweUFJRThub1lSNXptWkN3QlJYdGhJZVgvWFpRc2doc1Z4aWg3cjVuMnBBbApVYVQ0SS9jdHRjR2tYZ3ptcUdYQVVJSWQyeldrZlBzS0lkZ3U2RTZCT0xESk1iRFRrbDV0QndHWEtUTmdhQkwyCmNGb0xaL3BTbHNPRkhjdDgxR2FWZUxmVGNXSSswd0pKQUp6a1hmM1hsb2tCbXhwbzdwRmlKbkpJVXIvQ080TVkKR200VjgvUURINGlheGxGVDh0dGpkTjRYSlhDbUo4VEpvaGdJTngzaU80R1I4STVLU0p1dVFJdzFQY3hIQ3BlQgpBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSd2lVeitTeEcrOFlodVRFbWdHSXdwcDBlRDREQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKVGFOVnB3aXFnODR0VjYvWG44NDNycDRVc1ltYUx1UEtjK2pOVzFacVlRWjFxczV1MXRJeHNPekFzU2ErN1l6bwpTOVFCdzI2TERSajh2eCswcE1vNzc1QWEzVkd5QTg5K1NUU2wxWnEzMThyVTBsR2V6Y0dpNXBITXBIaTVwYjR3CmZhRU8wSEd5aTFqLy9BcFlGZmJlanhsNzVWaGlsY1NWblErNFBZcXVFOTRMRmxTMmZ1OWdDbzZvN3JDYldKVC8KZTBvRExLWkx3K3NrU2FLOERCTUprZnI1N1hkMC91Z3Q0ZzZPdzJ0Z20yZmIvQytMekJXYTIwV3ZXSVRFS0pEZwpVVkJPOUtRY0VpUldDMWZxMlkvb2NReUZMN0RiTitqRFJTTzVkdUNkMTkweUpFclYzTlB4S1RzWC9XVTY0cmNRClg4d3N1SWhhZm5rcmplc041QXlzU2c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                                        url: 'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+                                    },
+                                    version: '4.12.12',
+                                    versionAvailableUpdates: [
+                                        {
+                                            channels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:5c8ef9fba0a75318e0dfeab9ac472ab34aab7334d0d3c56fb4e78e34913b3012',
+                                            url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                                            version: '4.12.13',
+                                        },
+                                        {
+                                            channels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:3cbffaf162ab3328c6eb0c2479705eba6cb1b9df4d60bbe370019038b26dd66a',
+                                            url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                                            version: '4.12.14',
+                                        },
+                                    ],
+                                    versionHistory: [
+                                        {
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                                            state: 'Completed',
+                                            verified: false,
+                                            version: '4.12.12',
+                                        },
+                                    ],
+                                },
+                                upgradeInfo: {
+                                    availableChannels: [
+                                        'candidate-4.12',
+                                        'candidate-4.13',
+                                        'eus-4.12',
+                                        'fast-4.12',
+                                        'stable-4.12',
+                                    ],
+                                    availableUpdates: ['4.12.13', '4.12.14'],
+                                    currentChannel: 'stable-4.12',
+                                    currentVersion: '4.12.12',
+                                    desiredChannel: 'stable-4.12',
+                                    desiredVersion: '4.12.12',
+                                    hookFailed: false,
+                                    hooksInProgress: false,
+                                    isReadySelectChannels: true,
+                                    isReadyUpdates: true,
+                                    isSelectingChannel: false,
+                                    isUpgradeCuration: false,
+                                    isUpgrading: false,
+                                    latestJob: {
+                                        conditionMessage: '',
+                                        step: 'prehook-ansiblejob',
+                                    },
+                                    posthookDidNotRun: false,
+                                    posthooks: {
+                                        failed: false,
+                                        hasHooks: false,
+                                        inProgress: false,
+                                        success: false,
+                                    },
+                                    prehooks: {
+                                        failed: false,
+                                        hasHooks: false,
+                                        inProgress: false,
+                                        success: false,
+                                    },
+                                    upgradeFailed: false,
+                                    upgradePercentage: '',
+                                },
+                            },
+                            hive: {
+                                isHibernatable: false,
+                                secrets: {},
+                            },
+                            isCurator: false,
+                            isHive: false,
+                            isHostedCluster: false,
+                            isHypershift: false,
+                            isManaged: true,
+                            isRegionalHubCluster: false,
+                            isSNOCluster: false,
+                            kubeApiServer: 'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+                            labels: {
+                                cloud: 'Amazon',
+                                'cluster.open-cluster-management.io/clusterset': 'default',
+                                clusterID: 'eee92b88-cca4-415e-a1b5-15d34f6e136f',
+                                'feature.open-cluster-management.io/addon-application-manager': 'available',
+                                'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                                'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+                                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-search-collector': 'available',
+                                'feature.open-cluster-management.io/addon-work-manager': 'available',
+                                name: 'feng-managed',
+                                openshiftVersion: '4.12.12',
+                                'openshiftVersion-major': '4',
+                                'openshiftVersion-major-minor': '4.12',
+                                vendor: 'OpenShift',
+                            },
+                            name: 'feng-managed',
+                            namespace: 'feng-managed',
+                            nodes: {
+                                nodeList: [
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '16100728Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-east-2',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-east-2a',
+                                            'node-role.kubernetes.io/control-plane': '',
+                                            'node-role.kubernetes.io/master': '',
+                                            'node-role.kubernetes.io/worker': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-133-122.us-east-2.compute.internal',
+                                    },
+                                ],
+                                ready: 1,
+                                unhealthy: 0,
+                                unknown: 0,
+                            },
+                            owner: {},
+                            provider: 'aws',
+                            status: 'ready',
+                            uid: '547e52d2-b12f-4d51-89c8-02549543bea9',
+                        },
+                        {
+                            acmDistribution: {},
+                            clusterSet: 'default',
+                            consoleURL:
+                                'https://console-openshift-console.apps.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com',
+                            creationTimestamp: '2023-05-02T17:54:50Z',
+                            displayName: 'local-cluster',
+                            distribution: {
+                                displayVersion: 'OpenShift 4.12.12',
+                                isManagedOpenShift: false,
+                                k8sVersion: 'v1.25.7+eab9cc9',
+                                ocp: {
+                                    availableUpdates: ['4.12.13', '4.12.14'],
+                                    channel: 'stable-4.12',
+                                    desired: {
+                                        channels: [
+                                            'candidate-4.12',
+                                            'candidate-4.13',
+                                            'eus-4.12',
+                                            'fast-4.12',
+                                            'stable-4.12',
+                                        ],
+                                        image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                                        url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                                        version: '4.12.12',
+                                    },
+                                    desiredVersion: '4.12.12',
+                                    managedClusterClientConfig: {
+                                        caBundle:
+                                            'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJWkpEV1NkYVhpNzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05UQXlNVFV3TlRJeldoY05Nek13TkRJNU1UVXdOVEl6V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWVrK3Jtd3hBbVAxQ2VPcnZteHRyVWkvTms0MHNqeApwdUtQbmxjYnBYMHJoS1R1b3Btemloa1Eza3R0VkNjbW1OUldFVlBYZXY0ZTB2ZW0rcVBLRXV0UDNvYU5kNDMyCjRFOW80aVhya3l1YUxIVGxzN1YxNDhKSnBqeXF5bEV5K0x1RnlnYzN3ajRDNEdXVllMdmJySzh0Zjc4SWpiQTQKQkp1TnNjdlVNdWc3dld3QVp3c3NTYzM5SkVFMkdSQlc5L3k1WnIwYWUvbUpYUzhGSlhwUllGYTMxb3Z5SWVuZgoyQnZwME1na3BJVGdDRDlLNDIyckt6NkhPK3I1QzRycTYyNXFlR20yMXI3WHVNQjFEY05scTZFQWZ2cHFvcUFzCmVxZ2tyYnRNL1g1aG9hbDJQaXhjYTJocnJJWTRKWm9XSGQ4MWE5bDZZdnBYTnp3L2NIazRwcEVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkFMNApCN1REMzFlZkl5OEZNSmYzTkVZbEFDMVBNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJHMmpqcHFnRUk4VVhsCmhSTEVrWXBBUEx0azAxaCsyUjdZZWVEVFZwb2xxQ1BGWmhWVkFPbEtkZi9OZ3FQYUR4Ym01VTk2UDRjdjBRUWEKbW1CeFlyVXA1UzRqdWRqM3JSMUxydTU5TjZBZzYrTnJlV1YxL3Nialo4YUVoZVcyNGZkU1Z2SmhsckJvOEJYbAo0K2pnQzhSTzRadHZCNFNOVUJoYXlZTHQvZlREcVRSbG1ibGdkUXFpeEdXTmx4WUV5c1F4Zi96WWRUNXJEa3RHCkpHZVErNk84R2hocEQzTzFSTkdEenhhUnUrWnkrZjMvZmNYZ20xemE2UVlRbXBhWGVJdG1QUzFZcDNoNXZEL3oKaXhhWjNGTnJmajdlbm9GLzByKzN3ZVFzdnVjTFB1S2RVOUQwMytOUWtvQWIvTEdxZ0E4RDJvV2JFOVkySjRuLwpENUYrTmJOQwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSU1IcE90VVdJNzdvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EVXdNakUxTURVeU1sb1hEVE16TURReU9URTFNRFV5TWxvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1cHQ1dElzbkJZSFcKOHZMd0ltNVdTaDg3OXRFTFMzRDBKNGV6aHU1bkZKamNXMVIvd3h1REZOTkJWV3ZaNzl6NVNpckViSVhGZ2JUZwpHKzlmNEsxYXR1UmxNRDl3Z1RCUG1JdHRNeEpSTWt4QzFVem9xS2p3RWJEQnFCV1hzb1FCUTVQRWtVVVZ5OFpYCkJZVk5tZHJMYkJpY24vdG5LTHVtaFlrYmN4NStuU2c2U3VXQXRJWVhoaVdyKzRNUThZalVVeVJ3WHFGV3RtVkUKanlZNnVHaHd2SUU4VS9YbkFGR3V1bDZBM2NIay9rU2t2dVMvM1liaWJrOGhwWDR6VzJBcVovUTJiN0p4dTQ0bgpzaFRCYjcvREtWZG1sYkZMQkJCVmVsUVk3d2VWMTlLQXRvcjhwTWk2TVYvQ3l1OHJlZkt3MXUzaGplNDNMNUVMCi9yWld4RFlXRXdJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVWhKNUs0RStvUmR6dmErRzliK1VqQ1dMT1BqUXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUJ5NVlwMVFYSkhFalB0SGFNMzF4TnY3OEVzaVJjTTR1U2RXYnd4TFBzVXd1ODkvSHVrb2lBV3hWMUdpCmJWRHlqMmVSWDdGTjRDaG9ab09NSENBYkwwaXh2Z1lSNTVFTS9QSThZZi9vckhwSFd5aldFUmIvMU44UUMyTEsKN0l1V3ExdWhpajhtOEc4QzRTemZwbE9PZGYrekhHTHM5MFFrazBuSmpMWlRvZ1V1dDR3NXF4bzZuNjNlU3VaVwp5Zk90cVdqWFp4d29JbmkxQ2h2T3BxdVlaVWNvdWRGZCttaVhLSXpaWjFJL0REUTlnYlBrb1hFdWtGclBWendXCmNoVTVlb1lid0FZaFFURVJzWHg1c1dqYk5ya2JLODZ5am8vRW1IK1BPTWNMb1NhU1c0SnBoam9RdTRwR2VFbVUKbDFPK1VjZzBlbngvaUJjZ1RxY25pZmx4anBBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSURzUFJYSHl4c0E4d0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURVd01qRTFNRFV5TWxvWERUTXpNRFF5T1RFMU1EVXlNbG93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTZ1bDVKVXRZQUJ4WUs5WkEwYUM4V0t0RXpBUjk5SjlUMUU0TkhJTWM2cHplaWFUMlNRNlUyOGl0SGNQRApBWUVGcUVpNE5nbVJ0NWkvUHF1NU5GNGlDV2FYQUxjVmwrQXk0KzM1QzJMNlhiUDBqdDluV0ZIb0RaUC9uREgvCmFPcUI0THJHRGJjQWlydmxRYlR2a2Q5TFpCaWQ3TnBmbkFOSWFkRFlaS09PWlR6aHA0MWxPOGs1bzR6UzNqcUIKNUtGNXdWekVLZ0dJQ3hYazhndGkwNWlvQU1VSzJpV0wrNjVOQjJtWlZjOUNPY3N2RTJvK2VBSXp5b2xxKzJETApYTFdKVUgwY1pVMHJ0cmlRK2VHbFNvY1JXK1ZRNkFKLzBldllRKytCSHNTWUp3Z2tVaDdSN0JONnRhMzQ0Zy8yCjIxeHA2czlzUkZjNHZkeWJXeW5BQ0YvNTd3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVMM1BDK0NsMTZWd0U3aG4reW1SNmtIaGJxSWN3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGYkpMN3ZQVHhKd2ZHSUJ6aElGcnI0L0dBTGZwVlhRcFFEMTg1V2lDdjZuCnBIVDVFRGIwZU1Pakd2WklUQTNXeVdtYXVNZ0VFSm93YnBWc2hiTkkxREpjSzJCNS9yMzA4ZlhqdU14SEJKOWwKeU1JemNRMGl1K3NlUTJ0VlNZcDFWck9kTkxCTnIyNkUwWEFxZHUxSWhhRDVUdEh4TUpkTzRtZTQxM0NERlZPUgpla0RwWTh6dTJQbm1aNTJNekNJVGVSMFB4U3JmVFF0b09VWVBUV0hjMGhLV29rWFRWK3V4U1FndjRCblZOS1JTCnBDNjQ5cmQzZkErbWJOazBJOWwyVXFBMmlDRFk3MjJjS0tjbHJxM2ZvMk81S0dVdVlhU0UySjkvUWkwVUlodUYKempYcUlDVVZhaWJTbEtNM29OdklVZmVJTk9VRmRJRUFsOUk2MHZKcytUVT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlSNFlyZEZOSTZTTXdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmpnek1EUXdOakV6TUI0WERUSXpNRFV3TWpFMU1UWTEKTWxvWERUTXpNRFF5T1RFMU1UWTFNMW93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd6TURRd05qRXpNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTBEYmQKZ1dob3VjcWRveG5mNzh1bDFtd3pFc0VMdEJWeHErdnZwUGtjVEhjUXN3ZnA2blFOZFdHUlpSbFZ1TFczNzNXVgpUcGF5dUVIaldLcWM0djNxcGdpTUhjMmtoUG5ndzZJRHozRUdLQ2p2ZHBtb0FVNzRndFRYc1g3bC96QWs5ZVZtCjVwNis0bGhPVVJiYUhtWjk5REs0d09KMm8rWGx4d09KZGFrU3JtMjJySG9Lc21wcnI1UktqdUZFdmp5c2VlWTIKS2VGVkZFblArYit1K3JwZzJLRGpyZUQ1ZW4yRmkxK2JZeTRhdDVYVktmOThZREkrOWZCWm1TQnVXUkJ3NURTQQpSQnMxKy84OEI4YTRETzFJKytEQ2liSE1jMklqYmNDU1JWeStRQUo5bEFkM2xtQW1zQ0ltTlhvZEhxQ3dyNGpDCm5BYXdUcTJseHQ0aTIrb1BsUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0h3WURWUjBqQkJndwpGb0FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS25GSktaCkVQcDVMdmdpdnJ1OWZEdUFVTkFIaEE4Yk5xaHNaTHF6dTkyakkwQkU4WmFKM0krUjF1ZGY5bDlETklPVFYwWUUKMWluWnhyWmZHTHZnMXFld0JuL0s4UFVLQnZMZEV3RDdTa25XL3BzU2FVZUl2cWpVWVo4TTU2YkJWTDRwT3h6VApsR2cxYlhSZDd0ZEdYNHdBdEx4T0kxM09FcXlPYVVxTjUxc3UrcGE3WVdsczYrL2Q5ZlBwQTF6ajBibHBJcndaCmQ4emNJaVV3RTA4TmdmZG5FTGpQb21VMzl1RlNJMk11OG5oZmJPa2JVNWJyMjFwTHoyV3l4SDNlTXQvSjI0aEUKODFjbWYvL3U5S08zWHU4c05meHkxODFzYkNUY0ZJKzdSem5qTDdCaTJNb1J4TmRuMHlielB6ZmMyeFIvT01tawovVEpGU09SRjdIb3dhQ1E9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJSEJ4YkI5Qkh4Y3d3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3pNRFF3Tmprek1CNFhEVEl6TURVd01qRTFNVGd4TWxvWApEVEkxTURVd01URTFNVGd4TTFvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdGQyVnpkREV0Ck5ERXlMV2gxWWkxeE9IZHNheTVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTEs3NjRybkg2MzQ0QlBRRDdaM2JXblRNR0JlRnl2Ngp4T25Pb3pvc2U1cUFycG16VnRTQlRld0pjWkFCN1NUbGg2cVRpRVVzSVhpVGU2UFNSVnNKVVF2UG9kc093ZVJ3CjE5Z3ltTU16MXJOKzdqVjBtcS80WkZLaXkzaDA4aUcyODhFZDNnM3ZBU2hsb21RM1pNYWszMENzWFd2M2FSbUgKN0ttOUV6UGdtckFNSmRMR1NONEg2QlF3OVdrWDdrYkpQbUNhS3l5YTVUQWdKc0FNM0F1ekF4aVJ4OVByTTlNUAp3RVQ2K0Z0SmlkdDlGYmx6bHBCVTBwbzVpSkNwMDhRZFJoRnp0b0RjZzNPWVRJWlZxU0V2OWl5bmpLaDF1MXErCnJHUmRyZ3lUU1Z1RTkvZjd6Vm1mR2lFWDNpcFVMcXZtY3pqK1JhUXYrYlprQnpsekRCNk9ScThDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVrclBlb1I1RThRK3o5QmtrQkNlSVphMmFxNzB3SHdZRFZSMGpCQmd3CkZvQVVSMldFaXluc3RicHlKdncxRTliMS9hM2VWWFl3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdGQyVnpkREV0TkRFeUxXaDFZaTF4T0hkc2F5NWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQ1FYVXVKaVAxWW12MmJCN0pJWkhUSnlnVXhkbnR3TUZHaXdxCmFQdzlONktDZjFhalN0dGltSUJNam04SjJpenpNSnhTMWxUamJ6YWlRZnFtbm5WYWlzZmN4Tmt0QnlMV21yRG4KaWpKSHJUMU81Y2lndGhHN1BRazM2T0gvdHpHRjVQWVN4MGlicGxQMlpySlptOHJRcGVxTHl5UFA2N042eithRAovV2FoaSsrRHZYRUR4U0k2QkhGNGR0UWE0UURyVmtZdzhqTWlKbXhoTmxWM2lDdlB0Rm92WjNjeHY2RUJFdGJlClJaYWtNanlHSm1wVWdQN1RKd2I2Umh4VmFEZlhidWRGT3NDcTJjc04wcXVLNnI4OHRWbktERHdVbzhtRVdRUXEKcHlNSWNLTGtGSFJFU1FBc1BnYnJqcnJVZjRoTVRWOHVML0w5RWwwUkx2WTZvRmg3dmc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RNd05EQTJPVE13SGhjTk1qTXdOVEF5TVRVeE9ERXlXaGNOTWpVd05UQXgKTVRVeE9ERXpXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ETXdOREEyT1RNdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDejdmTUlrMzFuaU92OXg2U1A0TUZSCmVjTlkvVjdZVFVKWkk1MXk2c3hHcVdRbmJjOFg0UndQcW0vaXI0bzZWeURRakx1bEVuanVDL2pDeXB6Mm13ZVYKcHlHRXV0bWpnVWVISjRuZFI4bEh4dmdLMG95L1ZjQnRYSVZsTmxIMXdTR0FiVk1oSGpMamEyUitHMzJSVG14OQp3UDJDaEw0dWUrWXRscXorLzNYYmNseG8rUUFiQjNTajhvNzNZcys1RURqTUhnQUdsMGM0TDVuZDQyM2NFRDlvClk0cUVGUWgwem9VL1pDalZ1UXRJZnVNU0JzMkJ4NVRMRWhya096UW5jdHFNcjhLRWJ6RjZycXBQck8rb1Vqd0wKUE1vSFIrVXgwemJPaC9pa21zVk1FL3F6WWt1bXpadzVLRjNOcHlGMTNENmQ2d3k3UFkzVERZU3B1Vldtd1RrZApBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSSFpZU0xLZXkxdW5JbS9EVVQxdlg5cmQ1VmRqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKcmNQaFQrV2dFZmxYVVEwazJtOVZxZ2o2eWhwOGdwY0NlVFJBS2JNb3Ywa0ZXanRHN1JlaWxMMTZxWEFBbXdLawpYc0NUVlFIaE0zbUw0ME5EL2VkVUNUYmI3VHJ2b2dDVFd0VXVXcnVJRzdLUnRpREJON2ZNMmcwSGN4R080RXJICkYvamtzUU9GRWVhbnhMcFN2TTRYd2UyZ3pOL2prcFNvbUFCSTF6SlVQNzd3dVFMcExSNzc3TE9uZkdkY2ZyZUYKaHcrS0tpd2N3bVp5NitSNlROaFFwMVF6YWI2bTIvMWlFNFpZRWx5WTFVdHNZZHcrVk5uSituZlJHZXAwV29YSQp0anhCMjlkNUhlczNHWnBVL2JScWExZDM0SERLM1I1OUQzVXVRbW9SQ1lrcHdNSHRFSmZ4VDYwdE5Zd2xkZnUwClBvZFREMzlJVXlNKzdvdVEzempIN0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                                        url: 'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+                                    },
+                                    version: '4.12.12',
+                                    versionAvailableUpdates: [
+                                        {
+                                            channels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:af5e923e8e1c1e67e22c8d037a247b678ae6da220de4a5191729a9bed00be041',
+                                            url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                                            version: '4.12.13',
+                                        },
+                                        {
+                                            channels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a',
+                                            url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                                            version: '4.12.14',
+                                        },
+                                    ],
+                                    versionHistory: [
+                                        {
+                                            image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                                            state: 'Completed',
+                                            verified: false,
+                                            version: '4.12.12',
+                                        },
+                                    ],
+                                },
+                                upgradeInfo: {
+                                    availableChannels: [
+                                        'candidate-4.12',
+                                        'candidate-4.13',
+                                        'eus-4.12',
+                                        'fast-4.12',
+                                        'stable-4.12',
+                                    ],
+                                    availableUpdates: ['4.12.13', '4.12.14'],
+                                    currentChannel: 'stable-4.12',
+                                    currentVersion: '4.12.12',
+                                    desiredChannel: 'stable-4.12',
+                                    desiredVersion: '4.12.12',
+                                    hookFailed: false,
+                                    hooksInProgress: false,
+                                    isReadySelectChannels: true,
+                                    isReadyUpdates: true,
+                                    isSelectingChannel: false,
+                                    isUpgradeCuration: false,
+                                    isUpgrading: false,
+                                    latestJob: {
+                                        conditionMessage: '',
+                                        step: 'prehook-ansiblejob',
+                                    },
+                                    posthookDidNotRun: false,
+                                    posthooks: {
+                                        failed: false,
+                                        hasHooks: false,
+                                        inProgress: false,
+                                        success: false,
+                                    },
+                                    prehooks: {
+                                        failed: false,
+                                        hasHooks: false,
+                                        inProgress: false,
+                                        success: false,
+                                    },
+                                    upgradeFailed: false,
+                                    upgradePercentage: '',
+                                },
+                            },
+                            hive: {
+                                isHibernatable: false,
+                                secrets: {},
+                            },
+                            isCurator: false,
+                            isHive: false,
+                            isHostedCluster: false,
+                            isHypershift: false,
+                            isManaged: true,
+                            isRegionalHubCluster: false,
+                            isSNOCluster: false,
+                            kubeApiServer: 'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+                            labels: {
+                                cloud: 'Amazon',
+                                'cluster.open-cluster-management.io/clusterset': 'default',
+                                clusterID: '5a7e7a0e-68f1-4169-8c14-5593eedfaeb8',
+                                'feature.open-cluster-management.io/addon-application-manager': 'available',
+                                'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                                'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+                                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                                'feature.open-cluster-management.io/addon-work-manager': 'available',
+                                'local-cluster': 'true',
+                                name: 'local-cluster',
+                                openshiftVersion: '4.12.12',
+                                'openshiftVersion-major': '4',
+                                'openshiftVersion-major-minor': '4.12',
+                                'velero.io/exclude-from-backup': 'true',
+                                vendor: 'OpenShift',
+                            },
+                            name: 'local-cluster',
+                            namespace: 'local-cluster',
+                            nodes: {
+                                nodeList: [
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '16100736Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                            'node-role.kubernetes.io/worker': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-133-134.us-west-1.compute.internal',
+                                    },
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '16100736Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                            'node-role.kubernetes.io/worker': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-145-81.us-west-1.compute.internal',
+                                    },
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '15928704Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                            'node-role.kubernetes.io/control-plane': '',
+                                            'node-role.kubernetes.io/master': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-152-72.us-west-1.compute.internal',
+                                    },
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '15928704Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                            'node-role.kubernetes.io/control-plane': '',
+                                            'node-role.kubernetes.io/master': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-190-241.us-west-1.compute.internal',
+                                    },
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '15928704Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                                            'node-role.kubernetes.io/worker': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-224-140.us-west-1.compute.internal',
+                                    },
+                                    {
+                                        capacity: {
+                                            cpu: '4',
+                                            memory: '15928696Ki',
+                                            socket: '1',
+                                        },
+                                        conditions: [
+                                            {
+                                                status: 'True',
+                                                type: 'Ready',
+                                            },
+                                        ],
+                                        labels: {
+                                            'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                            'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                            'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                                            'node-role.kubernetes.io/control-plane': '',
+                                            'node-role.kubernetes.io/master': '',
+                                            'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                        },
+                                        name: 'ip-10-0-251-55.us-west-1.compute.internal',
+                                    },
+                                ],
+                                ready: 6,
+                                unhealthy: 0,
+                                unknown: 0,
+                            },
+                            owner: {},
+                            provider: 'aws',
+                            status: 'ready',
+                            uid: '4228ed1d-9b60-4718-9028-a5c97fc8bbcf',
+                        },
+                    ],
+                    clustersNames: ['local-cluster', 'feng-managed'],
+                    resourceCount: 2,
+                    sortedClusterNames: ['feng-managed', 'local-cluster'],
+                    subscription: {
+                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        channels: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                kind: 'Channel',
+                                metadata: {
+                                    annotations: {
+                                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                        'open-cluster-management.io/user-group':
+                                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                    },
+                                    creationTimestamp: '2023-05-02T18:40:30Z',
+                                    generation: 1,
+                                    name: 'ggithubcom-fxiang1-app-samples',
+                                    namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                                    resourceVersion: '100154',
+                                    uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                                },
+                                spec: {
+                                    pathname: 'https://github.com/fxiang1/app-samples',
+                                    type: 'Git',
+                                },
+                            },
+                        ],
+                        kind: 'Subscription',
+                        metadata: {
+                            annotations: {
+                                'apps.open-cluster-management.io/git-branch': 'main',
+                                'apps.open-cluster-management.io/git-current-commit':
+                                    '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                                'apps.open-cluster-management.io/git-path': 'cronjob',
+                                'apps.open-cluster-management.io/reconcile-option': 'merge',
+                                'open-cluster-management.io/user-group':
+                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                            },
+                            creationTimestamp: '2023-05-02T18:40:30Z',
+                            generation: 1,
+                            labels: {
+                                app: 'feng-cronjob',
+                                'app.kubernetes.io/part-of': 'feng-cronjob',
+                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                            },
+                            name: 'feng-cronjob-subscription-1',
+                            namespace: 'feng-cronjob',
+                            resourceVersion: '100233',
+                            uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                        },
+                        posthooks: [],
+                        prehooks: [],
+                        report: {
+                            apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                            kind: 'SubscriptionReport',
+                            metadata: {
+                                creationTimestamp: '2023-05-02T18:40:31Z',
+                                generation: 9,
+                                labels: {
+                                    'apps.open-cluster-management.io/hosting-subscription':
+                                        'feng-cronjob.feng-cronjob-subscription-1',
+                                },
+                                name: 'feng-cronjob-subscription-1',
+                                namespace: 'feng-cronjob',
+                                ownerReferences: [
+                                    {
+                                        apiVersion: 'apps.open-cluster-management.io/v1',
+                                        blockOwnerDeletion: true,
+                                        controller: true,
+                                        kind: 'Subscription',
+                                        name: 'feng-cronjob-subscription-1',
+                                        uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                                    },
+                                ],
+                                resourceVersion: '100502',
+                                uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                            },
+                            reportType: 'Application',
+                            resources: [
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello1',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello2',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello5',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello8',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello3',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello4',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello6',
+                                    namespace: 'feng-cronjob',
+                                },
+                                {
+                                    apiVersion: 'batch/v1',
+                                    kind: 'CronJob',
+                                    name: 'hello7',
+                                    namespace: 'feng-cronjob',
+                                },
+                            ],
+                            results: [
+                                {
+                                    result: 'deployed',
+                                    source: 'feng-managed',
+                                    timestamp: {
+                                        nanos: 0,
+                                        seconds: 0,
+                                    },
+                                },
+                                {
+                                    result: 'deployed',
+                                    source: 'local-cluster',
+                                    timestamp: {
+                                        nanos: 0,
+                                        seconds: 0,
+                                    },
+                                },
+                            ],
+                            summary: {
+                                clusters: '2',
+                                deployed: '2',
+                                failed: '0',
+                                inProgress: '0',
+                                propagationFailed: '0',
+                            },
+                        },
+                        rules: [
+                            {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                kind: 'PlacementRule',
+                                metadata: {
+                                    annotations: {
+                                        'open-cluster-management.io/user-group':
+                                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                    },
+                                    creationTimestamp: '2023-05-02T18:40:30Z',
+                                    generation: 1,
+                                    labels: {
+                                        app: 'feng-cronjob',
+                                    },
+                                    name: 'feng-cronjob-placement-1',
+                                    namespace: 'feng-cronjob',
+                                    resourceVersion: '100165',
+                                    uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                                },
+                                spec: {
+                                    clusterConditions: [
+                                        {
+                                            status: 'True',
+                                            type: 'ManagedClusterConditionAvailable',
+                                        },
+                                    ],
+                                },
+                                status: {
+                                    decisions: [
+                                        {
+                                            clusterName: 'local-cluster',
+                                            clusterNamespace: 'local-cluster',
+                                        },
+                                        {
+                                            clusterName: 'feng-managed',
+                                            clusterNamespace: 'feng-managed',
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                        spec: {
+                            channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                            placement: {
+                                placementRef: {
+                                    kind: 'PlacementRule',
+                                    name: 'feng-cronjob-placement-1',
+                                },
+                            },
+                        },
+                        status: {
+                            lastUpdateTime: '2023-05-02T18:40:32Z',
+                            message: 'Active',
+                            phase: 'Propagated',
+                        },
+                    },
+                    targetNamespaces: undefined,
+                    title: '',
+                },
+                type: 'cluster',
+                uid: 'member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1',
+            },
+            {
+                id: 'member--deployed-resource--member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1------cronjob',
+                name: '',
+                namespace: '',
+                specs: {
+                    clustersNames: ['feng-managed', 'local-cluster'],
+                    isDesign: false,
+                    parent: {
+                        parentId: 'member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1',
+                        parentName: '',
+                        parentSpecs: {
+                            appClusters: undefined,
+                            clusters: [
+                                {
+                                    acmDistribution: {},
+                                    clusterSet: 'default',
+                                    consoleURL:
+                                        'https://console-openshift-console.apps.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com',
+                                    creationTimestamp: '2023-05-02T18:27:49Z',
+                                    displayName: 'feng-managed',
+                                    distribution: {
+                                        displayVersion: 'OpenShift 4.12.12',
+                                        isManagedOpenShift: false,
+                                        k8sVersion: 'v1.25.7+eab9cc9',
+                                        ocp: {
+                                            availableUpdates: ['4.12.13', '4.12.14'],
+                                            channel: 'stable-4.12',
+                                            desired: {
+                                                channels: [
+                                                    'candidate-4.12',
+                                                    'candidate-4.13',
+                                                    'eus-4.12',
+                                                    'fast-4.12',
+                                                    'stable-4.12',
+                                                ],
+                                                image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                                                url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                                                version: '4.12.12',
+                                            },
+                                            desiredVersion: '4.12.12',
+                                            managedClusterClientConfig: {
+                                                caBundle:
+                                                    'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJUlZwcnZzZVZkZzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05ESTBNVGsxTnpFNVdoY05Nek13TkRJeE1UazFOekU1V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTDJnUEFWeFZPS1RMTFBmRkVNYzZ0cTFJZjVCZmJ5Vgo3NCtCZU9Beklud1N3WVIvelJJNzNrdldYclAxejV5ZDV4YXV5aStPdmNQSXNuLy9qL0NWZEJsSi9TTklaY1hJCmR0SlBIUHE3Sk8zTHFzQmxxZCtLNHdHL2dPdTV5TDd1WVRGLy81SjN5N3ViWVNrN2FkZjF0dnFUQVRKaTIxVlkKZFRHMTcwZG5way9kVXluZVQ2NGd1SjV1VmhKcWw5ZGFBR2J2QlM5UllRZzhtOXd0aDcxa1pkZ2lnRStJZHZJZQpha3g2enE3NEQrQ2xORy9MRFlPYnZ0dTNGaFQvNytBSjExUDVJZUV5VE1tSi94dVgxempEOXpacUpva2crWFV2CllkSW5CWEdycFBTeHFvYnZDNGorejNaK3pDNFlIcWN1elZGZHZxUjR0VWtMb3Z6NmtnUXV3TlVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkcxbQoxRDlmb2Z6RnROUVhaWHpYK2pRSnNlRXZNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNGa1UwYjU2anlOSGpXCmtkU1BzL3F5RmxMMXkxZTdoOWNiWWR2bXl1N0w2SFl5WWxRQ05OcjdJOGVMbTVwOEV5THNaYXh2Rzg1aFNwYlgKTEZHVXFwSVVwMy9EdlBvRHRoTlFCYURVNHNtLzJYT3BKN2svdStSNkZxL2lvMTJHcXBvZHc1QWlzVkplb0FIVQpUV0RyYllNRnBQdzhZLzJzellYR2JnRjRjNHFSemdkWFpBZ0tVN21nZmc1OFI5OFMrVGxpNXdJY2I3ZWlEYSs1CmNCWXBhaXpVS1hFTTdkbEEzMHRYYzg5NTVRRmt6MW5oU1VDM3FUSE84aWluMXNFbHI2QTFiRkJhc2lFbVhhQkYKRldnT01oRFhSVmJ5YTl3K05ZVjFoY09vMDJvLy9oc2wvekUxZUorTHh5OVFRTVo4b2ZIQzQydXVpMmFIWG5RQwp3NU0zUXFkZgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSVFmZURtZmNGZC8wd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EUXlOREU1TlRjeE9Wb1hEVE16TURReU1URTVOVGN4T1Zvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzVTVvSmZsTkVFSlkKaGNyZDJZSjYvNnk2RXNzWi9aR3lEYmIwblVZSUFNVWFNWHJNVFNRUkFPMHBQa1JBTHZEMlJMdGVvWUh4ZSt6TAp4WXBpcTVSU2hzdDhHYTh3M1ZvQmFmT1ZpOHgxYTk4MlJKNzVrLzRLN0l6WnBUT1NyQlJMNUR2V213UCs2ZGtvCjVKSlNzVXMzVUQrbVhvck40VzFsRHZIU1h0ZFcxbU5HbDJ2L2RxTWZlZFBNTzZYdGQvZFh5T3FHdFBJcWtOQU0KRjFnUmZaMlBoQjNtY3lWZmEyREJwVittQWtGejN0UEFNWHhZVm9RdWVGb0tFWGlhRVBROElLSUFpM0ZNQms4OQpPZHNCVjlrZStoNGVZR1ZtNDdCV1JOUzQxdlNRSHVqQlY4WVB0WXlCZ1RNRmZkcC91ZHBkTFNoMWJmKytldVFpCjU0S2tydlpEelFJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVUJnRUtlRkdDS3JaV1I5T1FxUzI4MjUvN1Q1UXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUh2eDZmWXphZVJUQlJYbG0rSGJSR2NWSHliang1RnkrMXpLeHZTWGR3bEoxZlZPeG9ZenZETng2TmlaCmk0Qlh4ZlRXZkJ6WjRKcWpDUW5zb2VPNzlBb0dJdGFtVlFkVlQxSjgxM2lkK1RiUElnYlBINGdtNkpoNHQyN3IKTVVmcklpR2dpdlNuTkFVeHFRZVpFSk5uSDRjYm1vWEd2Q1FyUlZobFJUY0U2TmdwMXlPT29rc1FoMzFQM2VmSwpNazVmNkh3Vm1YM3NRTWZzb2VzUXgrQ0NSNldiQnhtNCtBQk1tL3hMQVFGME1xTTlNRE1ldnpXQmM0QUVYUjNnCmNsYWZWWk1yNWhzTWlUdFBwa0RnUEV4L3loaFBucDZ2V2E3eEw3QXFrdUhBeXpMcGVMZC80Y3crZzZNMDFMbkcKc0xUdlBzbG5rYUUwNGhhbjFZMDJtRnFQa1kwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSUlRdGl4V2h2T2Jvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURReU5ERTVOVGN4T1ZvWERUTXpNRFF5TVRFNU5UY3hPVm93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQXQ2SWdlTWtaQkV4cHM4Qlk0VithcElhR3l1YTczMnYzZFpjT1FWY0NiUFJuL21mTVpMc211dERzMC8yKwp6eDA4MnVjZnRpYkNaSTB6NE1hM1ZueWhPSnU0S1dpamZ1azNyK04vd0xXc3M4cjdtQ1ltMjE2RDhoVFZRTEhaCnM2Um5wWWFJYTZtN25CeVB3UzFRMU8yL0Z4c1AvdnY2cDAwbU5lNEZobmx3RVJBdDMrNU5mSlByNlV5VWI1aXIKeGFlckRXV3pVRGgyNUtpZFhlek1RZ2lBRXUyamdueEhDdTNiZ2o3N0dLeEJCbE9RREhKNy9UUU10V1pUUnNlZwpCRmJZR2IycVdFaGtVbXRid3UwY1M0VzU2bEdEeEdrekdSSGpCZU1WK0NiYlNWTVVmdEdHYkdncDR3eExaL2ZsCm1EK2RHbGRId0VkK3paL0k0Y2ZZWTZIc253SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVV2QzMzMk04UWVUMUlFM0UwUlRGUmxVcG4vSTB3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS1Vjc21EODdORFU3RmRmR2VoRTZnU3c3eDJVTXFWQmQ1UHdETlR6MUQ2ClN4TGxLMmtmeTJuNnJGZkNlVFE3WTR6Z1YyL0I1bXdqRk50MC9oeXZLZDVSbnhlUzdFRzhtNzdkK2Y4WkpVSzQKQzdoS1duWVp6R2RxSUZtcDVrOVpsOUs4RkY0Y2ZCc0h3U0xMc2lHZDgra2piMk5sTmJJOVE0OTFmd0xxOVFOQgp0Q0JZanB1MWxNZCtjOEVEVlBtT0s3UzQwcHNjaGFRbHZhWGJzbzFsSE00SUtTZHVyTExPTzUvcXRqcU9IeFN0CmIzbW9udzY3YldmaFZicHEwb21vb0NGUzAvaTZKcTdyd0UwU1JWSFoxK1ZCMkc1NGxLbjJMZllPT1k0Z0N6bkUKVGdkQnA5NTBNVWZCSkJ5RSt1VWFFS2R0QWtOVU5XVTZoMUVQK2JHTlZFQT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlQdTNjQkh1UU04Y3dEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4TmpneU16WTNNREkzTUI0WERUSXpNRFF5TkRJd01UQXkKT0ZvWERUTXpNRFF5TVRJd01UQXlPVm93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd5TXpZM01ESTNNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTFrOFUKMlZpaEtEZnJIZ2diaFFhbkhaNUx5QTd5Z1BRSkU4OHl4aERXcms1MVZtWG9HQWhhV1h0SERnNTZ2S1BpQWI0agpYb1ZGT0pLeTN5clc0eHhOUWR3a3g2Z3VqaXpsMnpaOC81Sk8rQXpaaFhNbmlXSzVrSGlkSTMrSTJURk5zL3pPCmNjbXJ3YWlyZWtVK05LVW5qdHNVTjBlRGxYQ2xxSFcrZ1U1cXYxcWY3d0ZydDgzMDFoa2NBYk9BcnhQdmF6dGYKSUFXeGtnRko2ZWdWNHdwSGIxQ3R1YXU1VjRLZkYxY2ZOamx3ZTAvaHozQ1RRUU1xeCt6bWxhWTJlYzVYajVkbQpLWEFSSElyQ25wT0dQbXZQYnRrZ2FnTzREQytaamNjR3cyL1VLZkhjU3dSZjVLU1VmUjJINUxGa3oyT2RucW4yClhxZXQxZnczWGl6Q3VmcS9vUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0h3WURWUjBqQkJndwpGb0FVOUdyaHZuS08wQzRnOWl0RG5pdlVVdlVtc21Zd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFDVkhiL29YCllscE1LSTBRbmlBcFdvQUJpTDJyRk1MdWJoeTFWLzB2ZDhtTi83NnVUWGtwT0RaMVpmcjA0UEZaSjN5SlFIemgKTHZFcGU5bGh6azhpMGVhb2VKbHZCTGFFZnRiZGd1R0dhMngzcGpHODJKQ2VuT0hlZ25td3NYUHZMSFBjd21DVQp6RVpoaHdoMEluWjdHYnFCTHBrZjFNcTZBV21tZWUza3Jnc1haaWNrZGdqaWFCY0o0WnF5V3ZRTmNpaUNjRlRTCkRDbUpWbm5ZeDdPOUxTMzEzU3FwVUJnU0sweTFqRzQ4L2pGVURFNVI4UE53WEpiRzVnSTJzQWZhelF6NmV1WVEKMHk2ajc1a0IwRE92ODdQWGNJLzlpN3pPdUIxQ3kzVnJxeVZlOGFGc3FLbVM5SmFNdnQvTDUxU2FWc0Npb0tTUAptNitFUzZXbjhNa0xKOGs9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJYjhSeFQ2aWZpRjR3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3lNelkzTVRBM01CNFhEVEl6TURReU5ESXdNVEUwTjFvWApEVEkxTURReU16SXdNVEUwT0Zvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdFpXRnpkREl0Ck5ERXlMWE51YnkxMFoyMW5hQzVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTdUeVp1M0JpVjRqenpDeGVPY3BvZngzQnBDM0tBdgp1N1IxRllhTXlvQUhURGxJZ0JxeDZaLzYxdENPZTdQNVlqRUxpNHdZT3ZabEk3YzhGNHBQVGxQVTIwOU5HQVNVCnFaWGxKSmJ1REdrbWlNb0NmOXo5b01OL0dGdXJncE51UDBZQm5UTWMvUnIrZ2d5TTlPR2VtR0E1Sm9rYmE5RlEKS3A1OEJnOVpuelFZcWRLR041UjBEZWhkOVZoc0hBMTN6N21QY2lOUmZxc2tWRU1idy9GTFB3Zm9yMldydnlZMwpBQnNGbElOMlcyM3doK08yNENCbjJPUkxGUC9adVNzWmxVQU5iYjZjclcwdFVPMGpjV3ZUd2NoZGlBL21aQzAvClN3RmNzRnJ3ZHV2YlZwWUZiVmwwSDBXOVU1VS9tM3J1Y0swb2krNEpGVnhDZ2t4MHJYTTVDcmNDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVZSnMzR2lFbVp1dHhMOU14THdFRmxGc3hzWTB3SHdZRFZSMGpCQmd3CkZvQVVjSWxNL2tzUnZ2R0lia3hKb0JpTUthZEhnK0F3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdFpXRnpkREl0TkRFeUxYTnVieTEwWjIxbmFDNWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBVy8xNmMyKzlPTVZYMzdvWExKd0tQRTFDekFydXhneEp5R3RYCklaSXhIaWlvWjFONXU5WU9qUkZVR1hTOUlBc29ZVE9DWXU0R0lZd0lIUFpBRStzUnVxcVBxeGVQZzZ6RzhrczcKejZkZnROWHUwQTdPUWtuSHBUTERWWWpnSXlLUDhUME9FT2E5VEJhNnN0Wi9sbG4vQVVBbDQzczFIVnh6cHV6RgpPMjZkSGJMaXRBemN5aDBkSTZuZVpQalBYaWJuSy9wUzdwSnZ4NTBoK1ZLZjJ6MktDaUw4a3REQ3VMNFI0Qnc5ClB4V0ZDbWpTelNidGdaeEJJd3JMa29CWk1TWWlSc1FmNDJoeFYyNXhBOUdWL2VoRWVYN3U4QkFHcXhWeXc5blQKWXhjUFVsM1RIem1kYmZudGdROXd1Zk5qZmFKeHlrMSszT0Y3YlNhUjhEKzVCNzU5Z0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RJek5qY3hNRGN3SGhjTk1qTXdOREkwTWpBeE1UUTNXaGNOTWpVd05ESXoKTWpBeE1UUTRXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ESXpOamN4TURjdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFETXppbS9yaWQ1bm9JSFFJbnJ0SzVpClFqWjFRQTE0cS85VEFmS0VGQkFzT2FzTEJUbEhwVDVHSUNxeWdXZk5zQ2doaDJ4SE8vQzFUbjJNeUR3L3hKZCsKazBicG41dEpQODBuZ3VVVE5Rc3RweUFJRThub1lSNXptWkN3QlJYdGhJZVgvWFpRc2doc1Z4aWg3cjVuMnBBbApVYVQ0SS9jdHRjR2tYZ3ptcUdYQVVJSWQyeldrZlBzS0lkZ3U2RTZCT0xESk1iRFRrbDV0QndHWEtUTmdhQkwyCmNGb0xaL3BTbHNPRkhjdDgxR2FWZUxmVGNXSSswd0pKQUp6a1hmM1hsb2tCbXhwbzdwRmlKbkpJVXIvQ080TVkKR200VjgvUURINGlheGxGVDh0dGpkTjRYSlhDbUo4VEpvaGdJTngzaU80R1I4STVLU0p1dVFJdzFQY3hIQ3BlQgpBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSd2lVeitTeEcrOFlodVRFbWdHSXdwcDBlRDREQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKVGFOVnB3aXFnODR0VjYvWG44NDNycDRVc1ltYUx1UEtjK2pOVzFacVlRWjFxczV1MXRJeHNPekFzU2ErN1l6bwpTOVFCdzI2TERSajh2eCswcE1vNzc1QWEzVkd5QTg5K1NUU2wxWnEzMThyVTBsR2V6Y0dpNXBITXBIaTVwYjR3CmZhRU8wSEd5aTFqLy9BcFlGZmJlanhsNzVWaGlsY1NWblErNFBZcXVFOTRMRmxTMmZ1OWdDbzZvN3JDYldKVC8KZTBvRExLWkx3K3NrU2FLOERCTUprZnI1N1hkMC91Z3Q0ZzZPdzJ0Z20yZmIvQytMekJXYTIwV3ZXSVRFS0pEZwpVVkJPOUtRY0VpUldDMWZxMlkvb2NReUZMN0RiTitqRFJTTzVkdUNkMTkweUpFclYzTlB4S1RzWC9XVTY0cmNRClg4d3N1SWhhZm5rcmplc041QXlzU2c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                                                url: 'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+                                            },
+                                            version: '4.12.12',
+                                            versionAvailableUpdates: [
+                                                {
+                                                    channels: [
+                                                        'candidate-4.12',
+                                                        'candidate-4.13',
+                                                        'eus-4.12',
+                                                        'fast-4.12',
+                                                        'stable-4.12',
+                                                    ],
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:5c8ef9fba0a75318e0dfeab9ac472ab34aab7334d0d3c56fb4e78e34913b3012',
+                                                    url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                                                    version: '4.12.13',
+                                                },
+                                                {
+                                                    channels: [
+                                                        'candidate-4.12',
+                                                        'candidate-4.13',
+                                                        'eus-4.12',
+                                                        'fast-4.12',
+                                                        'stable-4.12',
+                                                    ],
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:3cbffaf162ab3328c6eb0c2479705eba6cb1b9df4d60bbe370019038b26dd66a',
+                                                    url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                                                    version: '4.12.14',
+                                                },
+                                            ],
+                                            versionHistory: [
+                                                {
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:31510c9b02d7dbfc31b5cc3d914415d7515961eb1a23066af3ae9639b344ed13',
+                                                    state: 'Completed',
+                                                    verified: false,
+                                                    version: '4.12.12',
+                                                },
+                                            ],
+                                        },
+                                        upgradeInfo: {
+                                            availableChannels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            availableUpdates: ['4.12.13', '4.12.14'],
+                                            currentChannel: 'stable-4.12',
+                                            currentVersion: '4.12.12',
+                                            desiredChannel: 'stable-4.12',
+                                            desiredVersion: '4.12.12',
+                                            hookFailed: false,
+                                            hooksInProgress: false,
+                                            isReadySelectChannels: true,
+                                            isReadyUpdates: true,
+                                            isSelectingChannel: false,
+                                            isUpgradeCuration: false,
+                                            isUpgrading: false,
+                                            latestJob: {
+                                                conditionMessage: '',
+                                                step: 'prehook-ansiblejob',
+                                            },
+                                            posthookDidNotRun: false,
+                                            posthooks: {
+                                                failed: false,
+                                                hasHooks: false,
+                                                inProgress: false,
+                                                success: false,
+                                            },
+                                            prehooks: {
+                                                failed: false,
+                                                hasHooks: false,
+                                                inProgress: false,
+                                                success: false,
+                                            },
+                                            upgradeFailed: false,
+                                            upgradePercentage: '',
+                                        },
+                                    },
+                                    hive: {
+                                        isHibernatable: false,
+                                        secrets: {},
+                                    },
+                                    isCurator: false,
+                                    isHive: false,
+                                    isHostedCluster: false,
+                                    isHypershift: false,
+                                    isManaged: true,
+                                    isRegionalHubCluster: false,
+                                    isSNOCluster: false,
+                                    kubeApiServer:
+                                        'https://api.app-aws-east2-412-sno-tgmgh.dev11.red-chesterfield.com:6443',
+                                    labels: {
+                                        cloud: 'Amazon',
+                                        'cluster.open-cluster-management.io/clusterset': 'default',
+                                        clusterID: 'eee92b88-cca4-415e-a1b5-15d34f6e136f',
+                                        'feature.open-cluster-management.io/addon-application-manager': 'available',
+                                        'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                                        'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                                        'feature.open-cluster-management.io/addon-config-policy-controller':
+                                            'available',
+                                        'feature.open-cluster-management.io/addon-governance-policy-framework':
+                                            'available',
+                                        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                                        'feature.open-cluster-management.io/addon-search-collector': 'available',
+                                        'feature.open-cluster-management.io/addon-work-manager': 'available',
+                                        name: 'feng-managed',
+                                        openshiftVersion: '4.12.12',
+                                        'openshiftVersion-major': '4',
+                                        'openshiftVersion-major-minor': '4.12',
+                                        vendor: 'OpenShift',
+                                    },
+                                    name: 'feng-managed',
+                                    namespace: 'feng-managed',
+                                    nodes: {
+                                        nodeList: [
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '16100728Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-east-2',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-east-2a',
+                                                    'node-role.kubernetes.io/control-plane': '',
+                                                    'node-role.kubernetes.io/master': '',
+                                                    'node-role.kubernetes.io/worker': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-133-122.us-east-2.compute.internal',
+                                            },
+                                        ],
+                                        ready: 1,
+                                        unhealthy: 0,
+                                        unknown: 0,
+                                    },
+                                    owner: {},
+                                    provider: 'aws',
+                                    status: 'ready',
+                                    uid: '547e52d2-b12f-4d51-89c8-02549543bea9',
+                                },
+                                {
+                                    acmDistribution: {},
+                                    clusterSet: 'default',
+                                    consoleURL:
+                                        'https://console-openshift-console.apps.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com',
+                                    creationTimestamp: '2023-05-02T17:54:50Z',
+                                    displayName: 'local-cluster',
+                                    distribution: {
+                                        displayVersion: 'OpenShift 4.12.12',
+                                        isManagedOpenShift: false,
+                                        k8sVersion: 'v1.25.7+eab9cc9',
+                                        ocp: {
+                                            availableUpdates: ['4.12.13', '4.12.14'],
+                                            channel: 'stable-4.12',
+                                            desired: {
+                                                channels: [
+                                                    'candidate-4.12',
+                                                    'candidate-4.13',
+                                                    'eus-4.12',
+                                                    'fast-4.12',
+                                                    'stable-4.12',
+                                                ],
+                                                image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                                                url: 'https://access.redhat.com/errata/RHBA-2023:1734',
+                                                version: '4.12.12',
+                                            },
+                                            desiredVersion: '4.12.12',
+                                            managedClusterClientConfig: {
+                                                caBundle:
+                                                    'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNakNDQWhxZ0F3SUJBZ0lJWkpEV1NkYVhpNzB3RFFZSktvWklodmNOQVFFTEJRQXdOekVTTUJBR0ExVUUKQ3hNSmIzQmxibk5vYVdaME1TRXdId1lEVlFRREV4aHJkV0psTFdGd2FYTmxjblpsY2kxc1lpMXphV2R1WlhJdwpIaGNOTWpNd05UQXlNVFV3TlRJeldoY05Nek13TkRJNU1UVXdOVEl6V2pBM01SSXdFQVlEVlFRTEV3bHZjR1Z1CmMyaHBablF4SVRBZkJnTlZCQU1UR0d0MVltVXRZWEJwYzJWeWRtVnlMV3hpTFhOcFoyNWxjakNDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWVrK3Jtd3hBbVAxQ2VPcnZteHRyVWkvTms0MHNqeApwdUtQbmxjYnBYMHJoS1R1b3Btemloa1Eza3R0VkNjbW1OUldFVlBYZXY0ZTB2ZW0rcVBLRXV0UDNvYU5kNDMyCjRFOW80aVhya3l1YUxIVGxzN1YxNDhKSnBqeXF5bEV5K0x1RnlnYzN3ajRDNEdXVllMdmJySzh0Zjc4SWpiQTQKQkp1TnNjdlVNdWc3dld3QVp3c3NTYzM5SkVFMkdSQlc5L3k1WnIwYWUvbUpYUzhGSlhwUllGYTMxb3Z5SWVuZgoyQnZwME1na3BJVGdDRDlLNDIyckt6NkhPK3I1QzRycTYyNXFlR20yMXI3WHVNQjFEY05scTZFQWZ2cHFvcUFzCmVxZ2tyYnRNL1g1aG9hbDJQaXhjYTJocnJJWTRKWm9XSGQ4MWE5bDZZdnBYTnp3L2NIazRwcEVDQXdFQUFhTkMKTUVBd0RnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkFMNApCN1REMzFlZkl5OEZNSmYzTkVZbEFDMVBNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJHMmpqcHFnRUk4VVhsCmhSTEVrWXBBUEx0azAxaCsyUjdZZWVEVFZwb2xxQ1BGWmhWVkFPbEtkZi9OZ3FQYUR4Ym01VTk2UDRjdjBRUWEKbW1CeFlyVXA1UzRqdWRqM3JSMUxydTU5TjZBZzYrTnJlV1YxL3Nialo4YUVoZVcyNGZkU1Z2SmhsckJvOEJYbAo0K2pnQzhSTzRadHZCNFNOVUJoYXlZTHQvZlREcVRSbG1ibGdkUXFpeEdXTmx4WUV5c1F4Zi96WWRUNXJEa3RHCkpHZVErNk84R2hocEQzTzFSTkdEenhhUnUrWnkrZjMvZmNYZ20xemE2UVlRbXBhWGVJdG1QUzFZcDNoNXZEL3oKaXhhWjNGTnJmajdlbm9GLzByKzN3ZVFzdnVjTFB1S2RVOUQwMytOUWtvQWIvTEdxZ0E4RDJvV2JFOVkySjRuLwpENUYrTmJOQwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEUURDQ0FpaWdBd0lCQWdJSU1IcE90VVdJNzdvd0RRWUpLb1pJaHZjTkFRRUxCUUF3UGpFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNU2d3SmdZRFZRUURFeDlyZFdKbExXRndhWE5sY25abGNpMXNiMk5oYkdodmMzUXQKYzJsbmJtVnlNQjRYRFRJek1EVXdNakUxTURVeU1sb1hEVE16TURReU9URTFNRFV5TWxvd1BqRVNNQkFHQTFVRQpDeE1KYjNCbGJuTm9hV1owTVNnd0pnWURWUVFERXg5cmRXSmxMV0Z3YVhObGNuWmxjaTFzYjJOaGJHaHZjM1F0CmMybG5ibVZ5TUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF1cHQ1dElzbkJZSFcKOHZMd0ltNVdTaDg3OXRFTFMzRDBKNGV6aHU1bkZKamNXMVIvd3h1REZOTkJWV3ZaNzl6NVNpckViSVhGZ2JUZwpHKzlmNEsxYXR1UmxNRDl3Z1RCUG1JdHRNeEpSTWt4QzFVem9xS2p3RWJEQnFCV1hzb1FCUTVQRWtVVVZ5OFpYCkJZVk5tZHJMYkJpY24vdG5LTHVtaFlrYmN4NStuU2c2U3VXQXRJWVhoaVdyKzRNUThZalVVeVJ3WHFGV3RtVkUKanlZNnVHaHd2SUU4VS9YbkFGR3V1bDZBM2NIay9rU2t2dVMvM1liaWJrOGhwWDR6VzJBcVovUTJiN0p4dTQ0bgpzaFRCYjcvREtWZG1sYkZMQkJCVmVsUVk3d2VWMTlLQXRvcjhwTWk2TVYvQ3l1OHJlZkt3MXUzaGplNDNMNUVMCi9yWld4RFlXRXdJREFRQUJvMEl3UURBT0JnTlZIUThCQWY4RUJBTUNBcVF3RHdZRFZSMFRBUUgvQkFVd0F3RUIKL3pBZEJnTlZIUTRFRmdRVWhKNUs0RStvUmR6dmErRzliK1VqQ1dMT1BqUXdEUVlKS29aSWh2Y05BUUVMQlFBRApnZ0VCQUJ5NVlwMVFYSkhFalB0SGFNMzF4TnY3OEVzaVJjTTR1U2RXYnd4TFBzVXd1ODkvSHVrb2lBV3hWMUdpCmJWRHlqMmVSWDdGTjRDaG9ab09NSENBYkwwaXh2Z1lSNTVFTS9QSThZZi9vckhwSFd5aldFUmIvMU44UUMyTEsKN0l1V3ExdWhpajhtOEc4QzRTemZwbE9PZGYrekhHTHM5MFFrazBuSmpMWlRvZ1V1dDR3NXF4bzZuNjNlU3VaVwp5Zk90cVdqWFp4d29JbmkxQ2h2T3BxdVlaVWNvdWRGZCttaVhLSXpaWjFJL0REUTlnYlBrb1hFdWtGclBWendXCmNoVTVlb1lid0FZaFFURVJzWHg1c1dqYk5ya2JLODZ5am8vRW1IK1BPTWNMb1NhU1c0SnBoam9RdTRwR2VFbVUKbDFPK1VjZzBlbngvaUJjZ1RxY25pZmx4anBBPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlEVERDQ0FqU2dBd0lCQWdJSURzUFJYSHl4c0E4d0RRWUpLb1pJaHZjTkFRRUxCUUF3UkRFU01CQUdBMVVFCkN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyYVdObExXNWwKZEhkdmNtc3RjMmxuYm1WeU1CNFhEVEl6TURVd01qRTFNRFV5TWxvWERUTXpNRFF5T1RFMU1EVXlNbG93UkRFUwpNQkFHQTFVRUN4TUpiM0JsYm5Ob2FXWjBNUzR3TEFZRFZRUURFeVZyZFdKbExXRndhWE5sY25abGNpMXpaWEoyCmFXTmxMVzVsZEhkdmNtc3RjMmxuYm1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTZ1bDVKVXRZQUJ4WUs5WkEwYUM4V0t0RXpBUjk5SjlUMUU0TkhJTWM2cHplaWFUMlNRNlUyOGl0SGNQRApBWUVGcUVpNE5nbVJ0NWkvUHF1NU5GNGlDV2FYQUxjVmwrQXk0KzM1QzJMNlhiUDBqdDluV0ZIb0RaUC9uREgvCmFPcUI0THJHRGJjQWlydmxRYlR2a2Q5TFpCaWQ3TnBmbkFOSWFkRFlaS09PWlR6aHA0MWxPOGs1bzR6UzNqcUIKNUtGNXdWekVLZ0dJQ3hYazhndGkwNWlvQU1VSzJpV0wrNjVOQjJtWlZjOUNPY3N2RTJvK2VBSXp5b2xxKzJETApYTFdKVUgwY1pVMHJ0cmlRK2VHbFNvY1JXK1ZRNkFKLzBldllRKytCSHNTWUp3Z2tVaDdSN0JONnRhMzQ0Zy8yCjIxeHA2czlzUkZjNHZkeWJXeW5BQ0YvNTd3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQXFRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVMM1BDK0NsMTZWd0U3aG4reW1SNmtIaGJxSWN3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGYkpMN3ZQVHhKd2ZHSUJ6aElGcnI0L0dBTGZwVlhRcFFEMTg1V2lDdjZuCnBIVDVFRGIwZU1Pakd2WklUQTNXeVdtYXVNZ0VFSm93YnBWc2hiTkkxREpjSzJCNS9yMzA4ZlhqdU14SEJKOWwKeU1JemNRMGl1K3NlUTJ0VlNZcDFWck9kTkxCTnIyNkUwWEFxZHUxSWhhRDVUdEh4TUpkTzRtZTQxM0NERlZPUgpla0RwWTh6dTJQbm1aNTJNekNJVGVSMFB4U3JmVFF0b09VWVBUV0hjMGhLV29rWFRWK3V4U1FndjRCblZOS1JTCnBDNjQ5cmQzZkErbWJOazBJOWwyVXFBMmlDRFk3MjJjS0tjbHJxM2ZvMk81S0dVdVlhU0UySjkvUWkwVUlodUYKempYcUlDVVZhaWJTbEtNM29OdklVZmVJTk9VRmRJRUFsOUk2MHZKcytUVT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJRGx6Q0NBbitnQXdJQkFnSUlSNFlyZEZOSTZTTXdEUVlKS29aSWh2Y05BUUVMQlFBd1dURlhNRlVHQTFVRQpBd3hPYjNCbGJuTm9hV1owTFd0MVltVXRZWEJwYzJWeWRtVnlMVzl3WlhKaGRHOXlYMnh2WTJGc2FHOXpkQzF5ClpXTnZkbVZ5ZVMxelpYSjJhVzVuTFhOcFoyNWxja0F4Tmpnek1EUXdOakV6TUI0WERUSXpNRFV3TWpFMU1UWTEKTWxvWERUTXpNRFF5T1RFMU1UWTFNMW93V1RGWE1GVUdBMVVFQXd4T2IzQmxibk5vYVdaMExXdDFZbVV0WVhCcApjMlZ5ZG1WeUxXOXdaWEpoZEc5eVgyeHZZMkZzYUc5emRDMXlaV052ZG1WeWVTMXpaWEoyYVc1bkxYTnBaMjVsCmNrQXhOamd6TURRd05qRXpNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTBEYmQKZ1dob3VjcWRveG5mNzh1bDFtd3pFc0VMdEJWeHErdnZwUGtjVEhjUXN3ZnA2blFOZFdHUlpSbFZ1TFczNzNXVgpUcGF5dUVIaldLcWM0djNxcGdpTUhjMmtoUG5ndzZJRHozRUdLQ2p2ZHBtb0FVNzRndFRYc1g3bC96QWs5ZVZtCjVwNis0bGhPVVJiYUhtWjk5REs0d09KMm8rWGx4d09KZGFrU3JtMjJySG9Lc21wcnI1UktqdUZFdmp5c2VlWTIKS2VGVkZFblArYit1K3JwZzJLRGpyZUQ1ZW4yRmkxK2JZeTRhdDVYVktmOThZREkrOWZCWm1TQnVXUkJ3NURTQQpSQnMxKy84OEI4YTRETzFJKytEQ2liSE1jMklqYmNDU1JWeStRQUo5bEFkM2xtQW1zQ0ltTlhvZEhxQ3dyNGpDCm5BYXdUcTJseHQ0aTIrb1BsUUlEQVFBQm8yTXdZVEFPQmdOVkhROEJBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC8KQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0h3WURWUjBqQkJndwpGb0FVbVpJc0NBVG1kWmU4Rno0ZGlReFBYV2dpYno0d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBS25GSktaCkVQcDVMdmdpdnJ1OWZEdUFVTkFIaEE4Yk5xaHNaTHF6dTkyakkwQkU4WmFKM0krUjF1ZGY5bDlETklPVFYwWUUKMWluWnhyWmZHTHZnMXFld0JuL0s4UFVLQnZMZEV3RDdTa25XL3BzU2FVZUl2cWpVWVo4TTU2YkJWTDRwT3h6VApsR2cxYlhSZDd0ZEdYNHdBdEx4T0kxM09FcXlPYVVxTjUxc3UrcGE3WVdsczYrL2Q5ZlBwQTF6ajBibHBJcndaCmQ4emNJaVV3RTA4TmdmZG5FTGpQb21VMzl1RlNJMk11OG5oZmJPa2JVNWJyMjFwTHoyV3l4SDNlTXQvSjI0aEUKODFjbWYvL3U5S08zWHU4c05meHkxODFzYkNUY0ZJKzdSem5qTDdCaTJNb1J4TmRuMHlielB6ZmMyeFIvT01tawovVEpGU09SRjdIb3dhQ1E9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURzVENDQXBtZ0F3SUJBZ0lJSEJ4YkI5Qkh4Y3d3RFFZSktvWklodmNOQVFFTEJRQXdKakVrTUNJR0ExVUUKQXd3YmFXNW5jbVZ6Y3kxdmNHVnlZWFJ2Y2tBeE5qZ3pNRFF3Tmprek1CNFhEVEl6TURVd01qRTFNVGd4TWxvWApEVEkxTURVd01URTFNVGd4TTFvd1NERkdNRVFHQTFVRUF3dzlLaTVoY0hCekxtRndjQzFoZDNNdGQyVnpkREV0Ck5ERXlMV2gxWWkxeE9IZHNheTVrWlhZeE1TNXlaV1F0WTJobGMzUmxjbVpwWld4a0xtTnZiVENDQVNJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTEs3NjRybkg2MzQ0QlBRRDdaM2JXblRNR0JlRnl2Ngp4T25Pb3pvc2U1cUFycG16VnRTQlRld0pjWkFCN1NUbGg2cVRpRVVzSVhpVGU2UFNSVnNKVVF2UG9kc093ZVJ3CjE5Z3ltTU16MXJOKzdqVjBtcS80WkZLaXkzaDA4aUcyODhFZDNnM3ZBU2hsb21RM1pNYWszMENzWFd2M2FSbUgKN0ttOUV6UGdtckFNSmRMR1NONEg2QlF3OVdrWDdrYkpQbUNhS3l5YTVUQWdKc0FNM0F1ekF4aVJ4OVByTTlNUAp3RVQ2K0Z0SmlkdDlGYmx6bHBCVTBwbzVpSkNwMDhRZFJoRnp0b0RjZzNPWVRJWlZxU0V2OWl5bmpLaDF1MXErCnJHUmRyZ3lUU1Z1RTkvZjd6Vm1mR2lFWDNpcFVMcXZtY3pqK1JhUXYrYlprQnpsekRCNk9ScThDQXdFQUFhT0IKd0RDQnZUQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdEQVlEVlIwVApBUUgvQkFJd0FEQWRCZ05WSFE0RUZnUVVrclBlb1I1RThRK3o5QmtrQkNlSVphMmFxNzB3SHdZRFZSMGpCQmd3CkZvQVVSMldFaXluc3RicHlKdncxRTliMS9hM2VWWFl3U0FZRFZSMFJCRUV3UDRJOUtpNWhjSEJ6TG1Gd2NDMWgKZDNNdGQyVnpkREV0TkRFeUxXaDFZaTF4T0hkc2F5NWtaWFl4TVM1eVpXUXRZMmhsYzNSbGNtWnBaV3hrTG1OdgpiVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQ1FYVXVKaVAxWW12MmJCN0pJWkhUSnlnVXhkbnR3TUZHaXdxCmFQdzlONktDZjFhalN0dGltSUJNam04SjJpenpNSnhTMWxUamJ6YWlRZnFtbm5WYWlzZmN4Tmt0QnlMV21yRG4KaWpKSHJUMU81Y2lndGhHN1BRazM2T0gvdHpHRjVQWVN4MGlicGxQMlpySlptOHJRcGVxTHl5UFA2N042eithRAovV2FoaSsrRHZYRUR4U0k2QkhGNGR0UWE0UURyVmtZdzhqTWlKbXhoTmxWM2lDdlB0Rm92WjNjeHY2RUJFdGJlClJaYWtNanlHSm1wVWdQN1RKd2I2Umh4VmFEZlhidWRGT3NDcTJjc04wcXVLNnI4OHRWbktERHdVbzhtRVdRUXEKcHlNSWNLTGtGSFJFU1FBc1BnYnJqcnJVZjRoTVRWOHVML0w5RWwwUkx2WTZvRmg3dmc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlERERDQ0FmU2dBd0lCQWdJQkFUQU5CZ2txaGtpRzl3MEJBUXNGQURBbU1TUXdJZ1lEVlFRRERCdHBibWR5ClpYTnpMVzl3WlhKaGRHOXlRREUyT0RNd05EQTJPVE13SGhjTk1qTXdOVEF5TVRVeE9ERXlXaGNOTWpVd05UQXgKTVRVeE9ERXpXakFtTVNRd0lnWURWUVFEREJ0cGJtZHlaWE56TFc5d1pYSmhkRzl5UURFMk9ETXdOREEyT1RNdwpnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDejdmTUlrMzFuaU92OXg2U1A0TUZSCmVjTlkvVjdZVFVKWkk1MXk2c3hHcVdRbmJjOFg0UndQcW0vaXI0bzZWeURRakx1bEVuanVDL2pDeXB6Mm13ZVYKcHlHRXV0bWpnVWVISjRuZFI4bEh4dmdLMG95L1ZjQnRYSVZsTmxIMXdTR0FiVk1oSGpMamEyUitHMzJSVG14OQp3UDJDaEw0dWUrWXRscXorLzNYYmNseG8rUUFiQjNTajhvNzNZcys1RURqTUhnQUdsMGM0TDVuZDQyM2NFRDlvClk0cUVGUWgwem9VL1pDalZ1UXRJZnVNU0JzMkJ4NVRMRWhya096UW5jdHFNcjhLRWJ6RjZycXBQck8rb1Vqd0wKUE1vSFIrVXgwemJPaC9pa21zVk1FL3F6WWt1bXpadzVLRjNOcHlGMTNENmQ2d3k3UFkzVERZU3B1Vldtd1RrZApBZ01CQUFHalJUQkRNQTRHQTFVZER3RUIvd1FFQXdJQ3BEQVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQjBHCkExVWREZ1FXQkJSSFpZU0xLZXkxdW5JbS9EVVQxdlg5cmQ1VmRqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUEKcmNQaFQrV2dFZmxYVVEwazJtOVZxZ2o2eWhwOGdwY0NlVFJBS2JNb3Ywa0ZXanRHN1JlaWxMMTZxWEFBbXdLawpYc0NUVlFIaE0zbUw0ME5EL2VkVUNUYmI3VHJ2b2dDVFd0VXVXcnVJRzdLUnRpREJON2ZNMmcwSGN4R080RXJICkYvamtzUU9GRWVhbnhMcFN2TTRYd2UyZ3pOL2prcFNvbUFCSTF6SlVQNzd3dVFMcExSNzc3TE9uZkdkY2ZyZUYKaHcrS0tpd2N3bVp5NitSNlROaFFwMVF6YWI2bTIvMWlFNFpZRWx5WTFVdHNZZHcrVk5uSituZlJHZXAwV29YSQp0anhCMjlkNUhlczNHWnBVL2JScWExZDM0SERLM1I1OUQzVXVRbW9SQ1lrcHdNSHRFSmZ4VDYwdE5Zd2xkZnUwClBvZFREMzlJVXlNKzdvdVEzempIN0E9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==',
+                                                url: 'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+                                            },
+                                            version: '4.12.12',
+                                            versionAvailableUpdates: [
+                                                {
+                                                    channels: [
+                                                        'candidate-4.12',
+                                                        'candidate-4.13',
+                                                        'eus-4.12',
+                                                        'fast-4.12',
+                                                        'stable-4.12',
+                                                    ],
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:af5e923e8e1c1e67e22c8d037a247b678ae6da220de4a5191729a9bed00be041',
+                                                    url: 'https://access.redhat.com/errata/RHBA-2023:1750',
+                                                    version: '4.12.13',
+                                                },
+                                                {
+                                                    channels: [
+                                                        'candidate-4.12',
+                                                        'candidate-4.13',
+                                                        'eus-4.12',
+                                                        'fast-4.12',
+                                                        'stable-4.12',
+                                                    ],
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:157cc02d63bfe67988429fd803da632e495e230d811759b1aed1e6ffa7a3f31a',
+                                                    url: 'https://access.redhat.com/errata/RHBA-2023:1858',
+                                                    version: '4.12.14',
+                                                },
+                                            ],
+                                            versionHistory: [
+                                                {
+                                                    image: 'quay.io/openshift-release-dev/ocp-release@sha256:b9d6ccb5ba5a878141e468e56fa62912ad7c04864acfec0c0056d2b41e3259cc',
+                                                    state: 'Completed',
+                                                    verified: false,
+                                                    version: '4.12.12',
+                                                },
+                                            ],
+                                        },
+                                        upgradeInfo: {
+                                            availableChannels: [
+                                                'candidate-4.12',
+                                                'candidate-4.13',
+                                                'eus-4.12',
+                                                'fast-4.12',
+                                                'stable-4.12',
+                                            ],
+                                            availableUpdates: ['4.12.13', '4.12.14'],
+                                            currentChannel: 'stable-4.12',
+                                            currentVersion: '4.12.12',
+                                            desiredChannel: 'stable-4.12',
+                                            desiredVersion: '4.12.12',
+                                            hookFailed: false,
+                                            hooksInProgress: false,
+                                            isReadySelectChannels: true,
+                                            isReadyUpdates: true,
+                                            isSelectingChannel: false,
+                                            isUpgradeCuration: false,
+                                            isUpgrading: false,
+                                            latestJob: {
+                                                conditionMessage: '',
+                                                step: 'prehook-ansiblejob',
+                                            },
+                                            posthookDidNotRun: false,
+                                            posthooks: {
+                                                failed: false,
+                                                hasHooks: false,
+                                                inProgress: false,
+                                                success: false,
+                                            },
+                                            prehooks: {
+                                                failed: false,
+                                                hasHooks: false,
+                                                inProgress: false,
+                                                success: false,
+                                            },
+                                            upgradeFailed: false,
+                                            upgradePercentage: '',
+                                        },
+                                    },
+                                    hive: {
+                                        isHibernatable: false,
+                                        secrets: {},
+                                    },
+                                    isCurator: false,
+                                    isHive: false,
+                                    isHostedCluster: false,
+                                    isHypershift: false,
+                                    isManaged: true,
+                                    isRegionalHubCluster: false,
+                                    isSNOCluster: false,
+                                    kubeApiServer:
+                                        'https://api.app-aws-west1-412-hub-q8wlk.dev11.red-chesterfield.com:6443',
+                                    labels: {
+                                        cloud: 'Amazon',
+                                        'cluster.open-cluster-management.io/clusterset': 'default',
+                                        clusterID: '5a7e7a0e-68f1-4169-8c14-5593eedfaeb8',
+                                        'feature.open-cluster-management.io/addon-application-manager': 'available',
+                                        'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+                                        'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+                                        'feature.open-cluster-management.io/addon-config-policy-controller':
+                                            'available',
+                                        'feature.open-cluster-management.io/addon-governance-policy-framework':
+                                            'available',
+                                        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
+                                        'feature.open-cluster-management.io/addon-work-manager': 'available',
+                                        'local-cluster': 'true',
+                                        name: 'local-cluster',
+                                        openshiftVersion: '4.12.12',
+                                        'openshiftVersion-major': '4',
+                                        'openshiftVersion-major-minor': '4.12',
+                                        'velero.io/exclude-from-backup': 'true',
+                                        vendor: 'OpenShift',
+                                    },
+                                    name: 'local-cluster',
+                                    namespace: 'local-cluster',
+                                    nodes: {
+                                        nodeList: [
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '16100736Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                                    'node-role.kubernetes.io/worker': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-133-134.us-west-1.compute.internal',
+                                            },
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '16100736Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                                    'node-role.kubernetes.io/worker': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-145-81.us-west-1.compute.internal',
+                                            },
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '15928704Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                                    'node-role.kubernetes.io/control-plane': '',
+                                                    'node-role.kubernetes.io/master': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-152-72.us-west-1.compute.internal',
+                                            },
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '15928704Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1a',
+                                                    'node-role.kubernetes.io/control-plane': '',
+                                                    'node-role.kubernetes.io/master': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-190-241.us-west-1.compute.internal',
+                                            },
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '15928704Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                                                    'node-role.kubernetes.io/worker': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-224-140.us-west-1.compute.internal',
+                                            },
+                                            {
+                                                capacity: {
+                                                    cpu: '4',
+                                                    memory: '15928696Ki',
+                                                    socket: '1',
+                                                },
+                                                conditions: [
+                                                    {
+                                                        status: 'True',
+                                                        type: 'Ready',
+                                                    },
+                                                ],
+                                                labels: {
+                                                    'beta.kubernetes.io/instance-type': 'm5.xlarge',
+                                                    'failure-domain.beta.kubernetes.io/region': 'us-west-1',
+                                                    'failure-domain.beta.kubernetes.io/zone': 'us-west-1c',
+                                                    'node-role.kubernetes.io/control-plane': '',
+                                                    'node-role.kubernetes.io/master': '',
+                                                    'node.kubernetes.io/instance-type': 'm5.xlarge',
+                                                },
+                                                name: 'ip-10-0-251-55.us-west-1.compute.internal',
+                                            },
+                                        ],
+                                        ready: 6,
+                                        unhealthy: 0,
+                                        unknown: 0,
+                                    },
+                                    owner: {},
+                                    provider: 'aws',
+                                    status: 'ready',
+                                    uid: '4228ed1d-9b60-4718-9028-a5c97fc8bbcf',
+                                },
+                            ],
+                            clustersNames: ['local-cluster', 'feng-managed'],
+                            resourceCount: 2,
+                            sortedClusterNames: ['feng-managed', 'local-cluster'],
+                            subscription: {
+                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                channels: [
+                                    {
+                                        apiVersion: 'apps.open-cluster-management.io/v1',
+                                        kind: 'Channel',
+                                        metadata: {
+                                            annotations: {
+                                                'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                                'open-cluster-management.io/user-group':
+                                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                            },
+                                            creationTimestamp: '2023-05-02T18:40:30Z',
+                                            generation: 1,
+                                            name: 'ggithubcom-fxiang1-app-samples',
+                                            namespace: 'ggithubcom-fxiang1-app-samples-ns',
+                                            resourceVersion: '100154',
+                                            uid: '694f8f5b-bb2c-4a0e-aeb8-96609033931f',
+                                        },
+                                        spec: {
+                                            pathname: 'https://github.com/fxiang1/app-samples',
+                                            type: 'Git',
+                                        },
+                                    },
+                                ],
+                                kind: 'Subscription',
+                                metadata: {
+                                    annotations: {
+                                        'apps.open-cluster-management.io/git-branch': 'main',
+                                        'apps.open-cluster-management.io/git-current-commit':
+                                            '727da1f0fd2a1e9784f0c4fe95c18507ce28fc2c',
+                                        'apps.open-cluster-management.io/git-path': 'cronjob',
+                                        'apps.open-cluster-management.io/reconcile-option': 'merge',
+                                        'open-cluster-management.io/user-group':
+                                            'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                    },
+                                    creationTimestamp: '2023-05-02T18:40:30Z',
+                                    generation: 1,
+                                    labels: {
+                                        app: 'feng-cronjob',
+                                        'app.kubernetes.io/part-of': 'feng-cronjob',
+                                        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+                                    },
+                                    name: 'feng-cronjob-subscription-1',
+                                    namespace: 'feng-cronjob',
+                                    resourceVersion: '100233',
+                                    uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                                },
+                                posthooks: [],
+                                prehooks: [],
+                                report: {
+                                    apiVersion: 'apps.open-cluster-management.io/v1alpha1',
+                                    kind: 'SubscriptionReport',
+                                    metadata: {
+                                        creationTimestamp: '2023-05-02T18:40:31Z',
+                                        generation: 9,
+                                        labels: {
+                                            'apps.open-cluster-management.io/hosting-subscription':
+                                                'feng-cronjob.feng-cronjob-subscription-1',
+                                        },
+                                        name: 'feng-cronjob-subscription-1',
+                                        namespace: 'feng-cronjob',
+                                        ownerReferences: [
+                                            {
+                                                apiVersion: 'apps.open-cluster-management.io/v1',
+                                                blockOwnerDeletion: true,
+                                                controller: true,
+                                                kind: 'Subscription',
+                                                name: 'feng-cronjob-subscription-1',
+                                                uid: '70d04ba1-4d11-483c-9543-59888126ed6f',
+                                            },
+                                        ],
+                                        resourceVersion: '100502',
+                                        uid: 'a3817056-2813-4395-88d6-d85187e5843e',
+                                    },
+                                    reportType: 'Application',
+                                    resources: [
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello1',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello2',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello5',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello8',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello3',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello4',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello6',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                        {
+                                            apiVersion: 'batch/v1',
+                                            kind: 'CronJob',
+                                            name: 'hello7',
+                                            namespace: 'feng-cronjob',
+                                        },
+                                    ],
+                                    results: [
+                                        {
+                                            result: 'deployed',
+                                            source: 'feng-managed',
+                                            timestamp: {
+                                                nanos: 0,
+                                                seconds: 0,
+                                            },
+                                        },
+                                        {
+                                            result: 'deployed',
+                                            source: 'local-cluster',
+                                            timestamp: {
+                                                nanos: 0,
+                                                seconds: 0,
+                                            },
+                                        },
+                                    ],
+                                    summary: {
+                                        clusters: '2',
+                                        deployed: '2',
+                                        failed: '0',
+                                        inProgress: '0',
+                                        propagationFailed: '0',
+                                    },
+                                },
+                                rules: [
+                                    {
+                                        apiVersion: 'apps.open-cluster-management.io/v1',
+                                        kind: 'PlacementRule',
+                                        metadata: {
+                                            annotations: {
+                                                'open-cluster-management.io/user-group':
+                                                    'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+                                                'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
+                                            },
+                                            creationTimestamp: '2023-05-02T18:40:30Z',
+                                            generation: 1,
+                                            labels: {
+                                                app: 'feng-cronjob',
+                                            },
+                                            name: 'feng-cronjob-placement-1',
+                                            namespace: 'feng-cronjob',
+                                            resourceVersion: '100165',
+                                            uid: '426e31bd-ea66-4dab-982b-8326c1ac50ab',
+                                        },
+                                        spec: {
+                                            clusterConditions: [
+                                                {
+                                                    status: 'True',
+                                                    type: 'ManagedClusterConditionAvailable',
+                                                },
+                                            ],
+                                        },
+                                        status: {
+                                            decisions: [
+                                                {
+                                                    clusterName: 'local-cluster',
+                                                    clusterNamespace: 'local-cluster',
+                                                },
+                                                {
+                                                    clusterName: 'feng-managed',
+                                                    clusterNamespace: 'feng-managed',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                                spec: {
+                                    channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+                                    placement: {
+                                        placementRef: {
+                                            kind: 'PlacementRule',
+                                            name: 'feng-cronjob-placement-1',
+                                        },
+                                    },
+                                },
+                                status: {
+                                    lastUpdateTime: '2023-05-02T18:40:32Z',
+                                    message: 'Active',
+                                    phase: 'Propagated',
+                                },
+                            },
+                            targetNamespaces: undefined,
+                            title: '',
+                        },
+                        parentType: 'cluster',
+                    },
+                    resourceCount: 18,
+                    resources: [
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello1',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello2',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello5',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello8',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello3',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello4',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello6',
+                            namespace: 'feng-cronjob',
+                        },
+                        {
+                            apiVersion: 'batch/v1',
+                            kind: 'CronJob',
+                            name: 'hello7',
+                            namespace: 'feng-cronjob',
+                        },
+                    ],
+                    template: undefined,
+                },
+                type: 'cronjob',
+                uid: 'member--deployed-resource--member--clusters--feng-managed--local-cluster--feng-cronjob-subscription-1------cronjob',
+            },
+        ],
+    }
+
+    it('returns subscriptionTopology', () => {
+        expect(getSubscriptionTopology(application, managedClusters, undefined)).toEqual(result)
     })
 })

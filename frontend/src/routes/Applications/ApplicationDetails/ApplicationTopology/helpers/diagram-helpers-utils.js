@@ -21,16 +21,6 @@ import {
     metadataName,
 } from '../model/computeStatuses'
 
-export const nodesWithNoNS = [
-    'namespace',
-    'clusterrole',
-    'clusterrolebinding',
-    'customresourcedefinition',
-    'node',
-    'project',
-    'consolelink',
-]
-
 export const isDeployableResource = (node) => {
     //check if this node has been created using a deployable object
     //used to differentiate between app, subscription, rules deployed using an app deployable
@@ -322,8 +312,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
 export const getTargetNsForNode = (node, resourcesForCluster, clusterName, defaultNS) => {
     // list of target namespaces per cluster
     const targetNamespaces = _.get(node, 'clusters.specs.targetNamespaces', {})
-    const nodeType = _.get(node, 'type', '')
-    const deployedResourcesNS = _.includes(nodesWithNoNS, nodeType)
+    const deployedResourcesNS = !isResourceNamespaceScoped(node)
         ? _.map(resourcesForCluster, 'name')
         : _.map(resourcesForCluster, 'namespace')
     //get cluster target namespaces
@@ -402,4 +391,19 @@ export const mustRefreshTopologyMap = (topology, currentUpdate) => {
         _.set(firstNode, '_lastUpdated', currentUpdate)
     }
     return true
+}
+
+export const isResourceNamespaceScoped = (node) => {
+    if (_.get(node, 'namespace')) {
+        return true
+    }
+
+    const resources = _.get(node, 'specs.resources', [])
+    if (resources.length > 0) {
+        if (_.get(resources[0], 'namespace')) {
+            return true
+        }
+    }
+
+    return false
 }
