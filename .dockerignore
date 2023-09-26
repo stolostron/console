@@ -1,5 +1,4 @@
 .husky
-.triggerbuild
 
 /build
 
@@ -28,6 +27,7 @@
 /Dockerfile
 /Dockerfile.mce.prow
 /Dockerfile.prow
+/Conatinerfile.mce.rhtap
 /console.code-workspace
 /*.md
 
