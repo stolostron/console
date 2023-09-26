@@ -16,41 +16,42 @@ import {
   placementRulesState,
   subscriptionsState,
 } from '../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
-import { waitForText, ocpApi } from '../../lib/test-util'
-import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockSearch } from '../../lib/nock-util'
 import { PluginContext } from '../../lib/PluginContext'
+import { PluginDataContext } from '../../lib/PluginDataContext'
+import { ocpApi, waitForText } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import ApplicationsPage from './ApplicationsPage'
+import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import {
-  mockSearchQueryArgoApps,
-  mockSearchResponseArgoApps,
-  mockSearchQueryOCPApplications,
-  mockSearchResponseOCPApplications,
-  mockApplications,
-  mockSubscriptions,
-  mockChannels,
-  mockPlacementrules,
-  mockManagedClusters,
-  mockApplicationSets,
-  mockArgoApplications,
-  mockManagedClusterInfos,
-  mockNamespaces,
   acmExtension,
   mockApplication0,
+  mockApplications,
   mockApplicationSet0,
-  mockArgoApplication1,
-  mockOCPApplication0,
-  mockFluxApplication0,
-  mockPlacementsDecisions,
   mockApplicationSet1,
+  mockApplicationSets,
+  mockArgoApplication1,
+  mockArgoApplications,
+  mockChannels,
+  mockFluxApplication0,
+  mockManagedClusterInfos,
+  mockManagedClusters,
+  mockNamespaces,
+  mockOCPApplication0,
+  mockPlacementrules,
+  mockPlacementsDecisions,
+  mockSearchQueryArgoApps,
+  mockSearchQueryOCPApplications,
+  mockSearchResponseArgoApps,
+  mockSearchResponseOCPApplications,
+  mockSubscriptions,
 } from './Application.sharedmocks'
-import { PluginDataContext } from '../../lib/PluginDataContext'
+import ApplicationsPage from './ApplicationsPage'
 
 describe('Applications Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockPostRequest('/metrics?application', {})
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
     render(
