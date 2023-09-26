@@ -1,9 +1,5 @@
 FROM registry.redhat.io/ubi8/nodejs-18:1 AS builder
 
-#ENV COMPONENT_NAME=multicluster-engine-console-mce
-#ENV COMPONENT_VERSION=${CI_VERSION}
-#ENV COMPONENT_TAG_EXTENSION=" "
-
 WORKDIR /app
 
 USER root
@@ -29,14 +25,14 @@ COPY --from=builder /app/frontend/plugins/mce/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]
 
-#LABEL com.redhat.component="multicluster-engine-console-mce-container" \
-#      name="multicluster-engine/console-mce-rhel8" \
-#      version="${CI_CONTAINER_VERSION}" \
-#      upstream-ref="${CI_CONSOLE_UPSTREAM_COMMIT}" \
-#      upstream-url="${CI_CONSOLE_UPSTREAM_URL}" \
-#      summary="multicluster-engine-console-mce" \
-#      io.openshift.expose-services="" \
-#      io.openshift.tags="data,images" \
-#      io.k8s.display-name="multicluster-engine-console-mce" \
-#      maintainer="['acm-component-maintainers@redhat.com']" \
-#      description="multicluster-engine-console-mce"
+LABEL com.redhat.component="multicluster-engine-console-mce-container" \
+      name="multicluster-engine/console-mce-rhel8" \
+      summary="multicluster-engine-console-mce" \
+      io.openshift.expose-services="" \
+      io.openshift.tags="data,images" \
+      io.k8s.display-name="multicluster-engine-console-mce" \
+      maintainer="['acm-component-maintainers@redhat.com']" \
+      description="multicluster-engine-console-mce"
+#     version="${CI_CONTAINER_VERSION}" \
+#     upstream-ref="${CI_CONSOLE_UPSTREAM_COMMIT}" \
+#     upstream-url="${CI_CONSOLE_UPSTREAM_URL}" \
