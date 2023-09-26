@@ -8,6 +8,9 @@ export enum Pages {
   overviewFleet = 'overview-fleet',
   search = 'search',
   searchDetails = 'search-details',
+  clusters = 'clusters',
+  application = 'application',
+  governance = 'governance',
 }
 
 export function usePageVisitMetricHandler(page: Pages) {

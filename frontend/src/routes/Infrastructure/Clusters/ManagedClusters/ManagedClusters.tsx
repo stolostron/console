@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
   ButtonVariant,
@@ -13,6 +14,31 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../components/BulkActionModal'
+import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
+import { canUser } from '../../../../lib/rbac-util'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
+import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
+import {
+  addonPathKey,
+  AddonStatus,
+  addonTextKey,
+  Cluster,
+  ClusterCurator,
+  ClusterDeployment,
+  ClusterDeploymentDefinition,
+  ClusterStatus,
+  getAddonStatusLabel,
+  getClusterStatusLabel,
+  ManagedClusterDefinition,
+  patchResource,
+  ResourceErrorCode,
+} from '../../../../resources'
+import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlertContext,
   AcmEmptyState,
@@ -32,28 +58,6 @@ import {
   ProviderLongTextMap,
   StatusType,
 } from '../../../../ui-components'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
-import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { canUser } from '../../../../lib/rbac-util'
-import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
-import {
-  addonPathKey,
-  AddonStatus,
-  addonTextKey,
-  Cluster,
-  ClusterCurator,
-  ClusterDeployment,
-  ClusterDeploymentDefinition,
-  ClusterStatus,
-  getAddonStatusLabel,
-  getClusterStatusLabel,
-  ManagedClusterDefinition,
-  patchResource,
-  ResourceErrorCode,
-} from '../../../../resources'
 import { getDateTimeCell } from '../../helpers/table-row-helpers'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
@@ -61,15 +65,12 @@ import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
-import { StatusField } from './components/StatusField'
-import { useAllClusters } from './components/useAllClusters'
-import { UpdateAutomationModal } from './components/UpdateAutomationModal'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { useSharedAtoms, useRecoilState } from '../../../../shared-recoil'
 import { OnboardingModal } from './components/OnboardingModal'
-import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
-import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
 import { RemoveAutomationModal } from './components/RemoveAutomationModal'
+import { StatusField } from './components/StatusField'
+import { UpdateAutomationModal } from './components/UpdateAutomationModal'
+import { useAllClusters } from './components/useAllClusters'
+import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -77,6 +78,7 @@ const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
 }
 
 export default function ManagedClusters() {
+  usePageVisitMetricHandler(Pages.clusters)
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
   const clusters = useAllClusters(true)
