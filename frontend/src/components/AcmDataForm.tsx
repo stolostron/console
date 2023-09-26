@@ -354,8 +354,16 @@ export function AcmDataFormDefault(props: {
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+  const history = useHistory()
+
+  const cancel = () => {
+    history.block(() => {})
+    formData.cancel()
+  }
+
   return (
     <Form isHorizontal={isHorizontal}>
+      <LostChangesPrompt data={formData.stateToData()} isEdit={true} />
       {formData.sections.map((section) => {
         if (sectionHidden(section)) return <Fragment key={`hidden-${section.title}`} />
         if (section.type === 'Section') {
@@ -424,7 +432,7 @@ export function AcmDataFormDefault(props: {
                   </Button>
                 </ActionListItem>
                 <ActionListItem>
-                  <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
+                  <Button variant="secondary" onClick={cancel} isDisabled={isSubmitting}>
                     {formData.cancelLabel}
                   </Button>
                 </ActionListItem>
