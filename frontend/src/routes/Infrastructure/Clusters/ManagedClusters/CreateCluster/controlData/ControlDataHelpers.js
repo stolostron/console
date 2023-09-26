@@ -735,6 +735,7 @@ export const isDeprecatedRHV = (control, _controlData, t) => {
         )}
         noClose={true}
         style={{ marginTop: '2em' }}
+        isInline
       />
     )
   } else {
