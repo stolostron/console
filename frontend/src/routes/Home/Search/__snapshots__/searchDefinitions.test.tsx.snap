@@ -14,96 +14,87 @@ exports[`Correctly returns CreateApplicationTopologyLink 1`] = `
 `;
 
 exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
-<Link
-  to={
-    Object {
-      "pathname": "/multicloud/applications/details/testApplicationNamespace/testApplicationName/overview",
-      "search": "?apiVersion=application.app.k8s.io&cluster=cluster",
-    }
-  }
->
-  testApplicationName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/overview?apiVersion=application.app.k8s.io&cluster=cluster"
+    >
+      testApplicationName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Cluster 1`] = `
-<Link
-  to="/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview"
->
-  testClusterName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview"
+    >
+      testClusterName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Default 1`] = `
-<Link
-  to={
-    Object {
-      "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
-      "state": Object {
-        "from": "/multicloud/home/search",
-        "fromSearch": "",
-      },
-    }
-  }
->
-  testPodName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/home/search/resources?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName"
+    >
+      testPodName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - HUB-Policy 1`] = `
-<Link
-  to="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
->
-  testPolicyName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
+    >
+      testPolicyName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
-<Link
-  to={
-    Object {
-      "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3DPolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
-      "state": Object {
-        "from": "/multicloud/home/search",
-        "fromSearch": "",
-      },
-    }
-  }
->
-  testPolicyName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/home/search/resources?cluster%3DtestCluster%26kind%3DPolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName"
+    >
+      testPolicyName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
-<Link
-  to={
-    Object {
-      "pathname": "/multicloud/home/search/resources",
-      "search": "?cluster%3DtestCluster%26kind%3DApplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
-      "state": Object {
-        "from": "/multicloud/home/search",
-        "fromSearch": "",
-      },
-    }
-  }
->
-  testApplicationName
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/home/search/resources?cluster%3DtestCluster%26kind%3DApplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName"
+    >
+      testApplicationName
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateDetailsLink - PolicyReport 1`] = `
-<Link
-  to={
-    Object {
-      "pathname": "/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/testPolicyReportNamespace/overview",
-      "search": "?showClusterIssues%3Dtrue",
-    }
-  }
->
-  testPolicyReport
-</Link>
+<body>
+  <div>
+    <a
+      href="/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/testPolicyReportNamespace/overview?showClusterIssues%3Dtrue"
+    >
+      testPolicyReport
+    </a>
+  </div>
+</body>
 `;
 
 exports[`Correctly returns CreateExternalLink from clusterip 1`] = `"http://clusterip"`;
@@ -118,23 +109,30 @@ exports[`Correctly returns CreateExternalLink from consoleURL 1`] = `
 </a>
 `;
 
+exports[`Correctly returns GlobalHub CreateDetailsLink - Default 1`] = `
+<body>
+  <div>
+    testPodName
+  </div>
+</body>
+`;
+
 exports[`Correctly returns all resource definitions: SearchDefinitions-application 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -171,20 +169,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -232,20 +229,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-cluster 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -308,20 +304,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-clusteroperator 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -379,20 +374,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-clusterserviceversion 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -445,20 +439,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -516,20 +509,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -592,20 +584,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-deployable 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -648,20 +639,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-deployment 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -719,20 +709,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-genericresource 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -770,20 +759,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelease 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -841,20 +829,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -907,20 +894,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-namespace 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -958,20 +944,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1029,20 +1014,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-persistentvolume 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1110,20 +1094,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-persistentvolumeclaim 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1181,20 +1164,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementbinding 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1237,20 +1219,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementpolicy 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1293,20 +1274,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementrule 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1349,20 +1329,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1420,20 +1399,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1486,20 +1464,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-policyreport 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1544,20 +1521,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-release 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1597,20 +1573,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-replicaset 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1658,20 +1633,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1714,20 +1688,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-service 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1780,20 +1753,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-statefulset 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1841,20 +1813,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.apps.open-cluster-management.io 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },
@@ -1912,20 +1883,19 @@ Array [
 exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.operators.coreos.io 1`] = `
 Array [
   Object {
-    "cell": <Link
-      to={
+    "cell": <CreateDetailsLink
+      item={
         Object {
-          "pathname": "/multicloud/home/search/resources",
-          "search": "?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestNamespace%26name%3DtestName",
-          "state": Object {
-            "from": "/multicloud/home/search",
-            "fromSearch": "",
-          },
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
         }
       }
-    >
-      testName
-    </Link>,
+    />,
     "header": "Name",
     "sort": "name",
   },

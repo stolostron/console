@@ -89,8 +89,26 @@ describe('Policies Page', () => {
     await waitForText('Cluster violations')
     await waitForText('Source')
     await waitForText('Policy set')
+    expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
     // This is dot dot dot action button
     await screen.getAllByRole('button', { name: 'Actions' })
+
+    // Add a non-default column
+    screen.getByRole('button', { name: /columns-management/i }).click()
+    await waitForText('Manage columns')
+    screen.getByTestId('checkbox-status').click()
+    screen.getByRole('button', { name: /save/i }).click()
+    screen.getByRole('columnheader', { name: /Status/ })
+
+    screen.getByRole('button', { name: /columns-management/i }).click()
+    await waitForText('Manage columns')
+    screen.getByRole('button', { name: /restore defaults/i }).click()
+    // Verify that the Status column was unchecked.
+    expect(screen.getByTestId('checkbox-status')).not.toBeChecked()
+    screen.getByRole('button', { name: /save/i }).click()
+
+    // Verify that the Status column is no longer present
+    expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
   })
 
   test('Should have correct links to PolicySet & Policy detail results pages', async () => {

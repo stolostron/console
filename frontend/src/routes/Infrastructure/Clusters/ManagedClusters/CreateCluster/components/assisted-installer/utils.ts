@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useMemo, useState, useEffect } from 'react'
+import { useCallback, useMemo, useState, useEffect, useContext } from 'react'
 import { generatePath } from 'react-router'
 import { isEqual } from 'lodash'
 import {
@@ -41,7 +41,8 @@ import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { AgentK8sResource, BareMetalHostK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../shared-recoil'
-import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { PluginContext } from '../../../../../../../lib/PluginContext'
 
 type OnHostsNext = {
   values: any
@@ -862,6 +863,9 @@ export const onSetInstallationDiskId = (agent: AgentK8sResource, diskId: string)
 }
 
 export const useProvisioningConfiguration = (): [K8sResourceCommon | null, boolean, unknown] => {
+  const {
+    ocpApi: { useK8sWatchResource },
+  } = useContext(PluginContext)
   const [config, loaded, error] = useK8sWatchResource<K8sResourceCommon>({
     name: 'provisioning-configuration',
     groupVersionKind: {

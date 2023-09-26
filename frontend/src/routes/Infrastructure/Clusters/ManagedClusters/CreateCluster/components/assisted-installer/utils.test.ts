@@ -18,7 +18,7 @@ import {
   useProvisioningConfiguration,
 } from './utils'
 import { AgentClusterInstallApiVersion, AgentClusterInstallKind } from '../../../../../../../resources'
-import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+import * as React from 'react'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -203,11 +203,11 @@ describe('onEditProxy', () => {
   })
 })
 
-const useK8sWatchResourceMock = jest.spyOn(dynamicPluginSdk, 'useK8sWatchResource')
+const useContextMock = jest.spyOn(React, 'useContext')
 
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
-  useK8sWatchResource: jest.fn(),
+jest.mock('react', () => ({
+  ...jest.requireActual('react'), // use actual for all non-hook parts
+  useContext: jest.fn(),
 }))
 
 describe('useProvisioningConfig', () => {
@@ -217,19 +217,31 @@ describe('useProvisioningConfig', () => {
 
   it('should return provisioning config when load was successful', () => {
     const provisioningConfig = { metadata: { name: 'foo', namespace: 'bar' } }
-    useK8sWatchResourceMock.mockReturnValue([provisioningConfig, true, null])
+    useContextMock.mockReturnValue({
+      ocpApi: {
+        useK8sWatchResource: () => [provisioningConfig, true, null],
+      },
+    })
     const ret = useProvisioningConfiguration()
     expect(ret).toEqual([provisioningConfig, true, null])
   })
 
   it('should return provisioning config null, error null and loaded true when error is NotFound', () => {
-    useK8sWatchResourceMock.mockReturnValue([null as any, false, { json: { reason: 'NotFound' } }])
+    useContextMock.mockReturnValue({
+      ocpApi: {
+        useK8sWatchResource: () => [null as any, false, { json: { reason: 'NotFound' } }],
+      },
+    })
     const ret = useProvisioningConfiguration()
     expect(ret).toEqual([null, true, null])
   })
 
   it('should return loaded true if there was any error', () => {
-    useK8sWatchResourceMock.mockReturnValue([null as any, false, 'some error'])
+    useContextMock.mockReturnValue({
+      ocpApi: {
+        useK8sWatchResource: () => [null as any, false, 'some error'],
+      },
+    })
     const ret = useProvisioningConfiguration()
     expect(ret).toEqual([null, true, 'some error'])
   })

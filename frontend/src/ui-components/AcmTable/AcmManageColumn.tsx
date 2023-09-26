@@ -26,7 +26,8 @@ interface AcmManageColumnProps<T> {
   allCols: IAcmTableColumn<T>[]
   selectedColIds: string[]
   setSelectedColIds: (selectedIds: string[]) => void
-  defaultColIds: string[]
+  requiredColIds: string[]
+  defaultColIds?: string[]
   setColOrderIds: (colOrderIds: string[]) => void
   colOrderIds: string[]
 }
@@ -37,6 +38,7 @@ export function AcmManageColumn<T>({
   colOrderIds,
   setColOrderIds,
   setSelectedColIds,
+  requiredColIds,
   defaultColIds,
 }: AcmManageColumnProps<T>) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -49,7 +51,16 @@ export function AcmManageColumn<T>({
   return (
     <>
       <ManageColumnModal<T>
-        {...{ isModalOpen, selectedColIds, allCols, setSelectedColIds, defaultColIds, setColOrderIds, colOrderIds }}
+        {...{
+          isModalOpen,
+          selectedColIds,
+          allCols,
+          setSelectedColIds,
+          requiredColIds,
+          defaultColIds,
+          setColOrderIds,
+          colOrderIds,
+        }}
         toggleModal={toggleModal}
       />
       <Tooltip content={t('Manage columns')} enableFlip trigger="mouseenter" position="top" exitDelay={50}>
@@ -82,7 +93,8 @@ interface ManageColumnModalProps<T> {
   selectedColIds: string[]
   setSelectedColIds: (selectedIds: string[]) => void
   allCols: IAcmTableColumn<T>[]
-  defaultColIds: string[]
+  requiredColIds: string[]
+  defaultColIds?: string[]
   colOrderIds: string[]
   setColOrderIds: (colOrderIds: string[]) => void
 }
@@ -97,6 +109,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
     setSelectedColIds,
     colOrderIds,
     setColOrderIds,
+    requiredColIds,
     defaultColIds,
   } = props
   const [items, setItems] = useState<IAcmTableColumn<T>[]>(sortByList(colOrderIds, allCols))
@@ -128,7 +141,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
   }
 
   const restoreDefault = () => {
-    setlocalSelectedIds(defaultColIds)
+    setlocalSelectedIds(defaultColIds || requiredColIds)
     const sortedItems = [...items].sort((a, b) => {
       return a.order != null && b.order != null ? a.order - b.order : -1
     })
@@ -184,9 +197,9 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
                       <DataListCheck
                         aria-labelledby={`table-column-management-${policy.id}`}
                         checked={
-                          defaultColIds.includes(policy.id as string) || localSelectedIds.includes(policy.id as string)
+                          requiredColIds.includes(policy.id as string) || localSelectedIds.includes(policy.id as string)
                         }
-                        isDisabled={defaultColIds.includes(policy.id!)}
+                        isDisabled={requiredColIds.includes(policy.id!)}
                         name={policy.id}
                         id={`checkbox-${policy.id}`}
                         onChange={handleChange}

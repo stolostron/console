@@ -17,7 +17,7 @@ import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlert,
   AcmDescriptionList,
@@ -36,13 +36,14 @@ export function PolicyTemplateDetails(props: {
 }) {
   const { t } = useTranslation()
   const { clusterName, apiGroup, apiVersion, kind, templateName } = props
-  const { managedClusterAddonsState } = useSharedAtoms()
+  const { managedClusterAddonsState, isGlobalHubState } = useSharedAtoms()
   const [template, setTemplate] = useState<any>()
   const [relatedObjects, setRelatedObjects] = useState<any>()
   const [templateError, setTemplateError] = useState<string>()
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
   const [editorHeight, setEditorHeight] = useState<number>(250)
   const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
 
   let templateClusterName = clusterName
   let templateNamespace = clusterName
@@ -242,7 +243,11 @@ export function PolicyTemplateDetails(props: {
               metadata: { name, namespace = '' },
             },
           } = item
-          if (reason === 'Resource not found but should exist' || reason === 'Resource not found as expected') {
+          if (
+            isGlobalHub ||
+            reason === 'Resource not found but should exist' ||
+            reason === 'Resource not found as expected'
+          ) {
             return ''
           }
           if (cluster && kind && apiVersion && name) {
@@ -272,7 +277,7 @@ export function PolicyTemplateDetails(props: {
         },
       },
     ],
-    [t]
+    [isGlobalHub, t]
   )
 
   if (templateError) {

@@ -7,7 +7,7 @@ import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
-import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
 import {
   mockSearchQueryArgoApps,
@@ -303,7 +303,7 @@ describe('StatusSummaryCount', () => {
   test('renders without applications and governance', async () => {
     render(
       <PluginContext.Provider
-        value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext }}
+        value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext, ocpApi }}
       >
         <Component />
       </PluginContext.Provider>

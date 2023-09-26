@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ProviderProps } from 'react'
 import { render } from '@testing-library/react'
+import { ProviderProps } from 'react'
+import { nockRequest } from '../lib/nock-util'
 import { defaultContext, PluginData } from '../lib/PluginDataContext'
+import { waitForText } from '../lib/test-util'
 import { LoadPluginData } from './LoadPluginData'
 import { PluginDataContextProvider } from './PluginDataContextProvider'
-import { waitForText } from '../lib/test-util'
 
 const TestPluginDataContextProvider = (props: ProviderProps<PluginData>) => {
   return (
@@ -27,6 +28,8 @@ describe('PluginDataContextProvider', () => {
     expect(pluginData.load).toHaveBeenCalled()
   })
   it('renders LoadData when requested', async () => {
+    const mockGlobalHubReq: any = { isGlobalHub: true }
+    nockRequest('/globalhub', mockGlobalHubReq)
     const pluginData: PluginData = {
       ...defaultContext,
       loaded: true,

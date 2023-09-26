@@ -1,9 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources'
 
-export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData?: T[]) {
+export function useQuery<T>(
+  restFunc: () => IRequestResult<T | T[]>,
+  initialData?: T[],
+  options?: { pollInterval?: number }
+) {
   const [data, setData] = useState<T[] | undefined>(initialData)
   const [error, setError] = useState<Error>()
   const [loading, setLoading] = useState(true)
@@ -99,7 +103,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     dataRef.current.polling = 0
   }, [])
   const startPolling = useCallback(
-    (interval: number = 5 * 1000) => {
+    (interval: number = (options?.pollInterval ?? 5) * 1000) => {
       if (!dataRef.current.ismounted) return
       if (process.env.NODE_ENV !== 'test') {
         dataRef.current.polling = interval
@@ -109,7 +113,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
         return () => stopPolling()
       }
     },
-    [stopPolling]
+    [stopPolling, options?.pollInterval]
   )
 
   useEffect(() => {
