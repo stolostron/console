@@ -1125,6 +1125,8 @@
   "Destination namespace": "Destination namespace",
   "destroy": "Destroy",
   "destroying": "Destroying",
+  "destroying.ai.inprogress.message": "It might take a few minutes for the destroy process to complete. Select <bold>Back to clusters</bold> or <bold>Download Installation Logs</bold> to see the cluster destroy logs, or wait here.",
+  "destroying.ai.nologs.inprogress.message": "It might take a few minutes for the destroy process to complete. Select <bold>Back to clusters</bold> or wait here.",
   "destroying.inprogress": "{{clusterName}} is being destroyed",
   "destroying.inprogress.message": "It might take a few minutes for the destroy process to complete. Select <bold>Back to clusters</bold> or <bold>View logs</bold> to see the cluster destroy logs, or wait here.",
   "destroying.success": "{{clusterName}} was successfully destroyed",

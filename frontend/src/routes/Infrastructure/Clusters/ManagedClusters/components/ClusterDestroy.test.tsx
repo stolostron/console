@@ -6,6 +6,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { ClusterDestroy } from './ClusterDestroy'
+import { Provider } from '../../../../../ui-components'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 const mockDestroyCluster: Cluster = {
   name: 'test-cluster',
@@ -13,6 +15,43 @@ const mockDestroyCluster: Cluster = {
   namespace: 'test-cluster',
   uid: 'test-cluster-uid',
   provider: undefined,
+  isCurator: false,
+  owner: {},
+  status: ClusterStatus.destroying,
+  distribution: {
+    k8sVersion: '1.19',
+    ocp: undefined,
+    displayVersion: '1.19',
+    isManagedOpenShift: false,
+  },
+  labels: undefined,
+  nodes: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hasAutomationTemplate: false,
+  hive: {
+    isHibernatable: true,
+    clusterPool: undefined,
+    secrets: {
+      installConfig: '',
+    },
+  },
+  isHive: false,
+  isManaged: true,
+  isHostedCluster: false,
+  isSNOCluster: false,
+  kubeadmin: '',
+  kubeconfig: '',
+  isHypershift: false,
+  isRegionalHubCluster: false,
+}
+
+const mockDestroyAICluster: Cluster = {
+  name: 'test-ai-cluster',
+  displayName: 'test-ai-cluster',
+  namespace: 'test-ai-cluster',
+  uid: 'test-ai-cluster-uid',
+  provider: Provider.hostinventory,
   isCurator: false,
   owner: {},
   status: ClusterStatus.destroying,
@@ -109,5 +148,41 @@ describe('ClusterDestroy', () => {
       </RecoilRoot>
     )
     expect(screen.getByText('was successfully detached')).toBeInTheDocument()
+  })
+
+  describe('AI', () => {
+    test('renders the destroying state without logs btn', async () => {
+      render(
+        <RecoilRoot>
+          <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+        </RecoilRoot>
+      )
+      screen.logTestingPlaygroundURL()
+      expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
+      expect(screen.queryByText('ai:Download Installation Logs')).not.toBeInTheDocument()
+    })
+
+    test('renders the destroying state with logs btn', async () => {
+      render(
+        <ClusterContext.Provider
+          value={{
+            agentClusterInstall: {
+              status: {
+                debugInfo: {
+                  logsURL: 'foobar',
+                },
+              },
+            },
+          }}
+        >
+          <RecoilRoot>
+            <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+          </RecoilRoot>
+        </ClusterContext.Provider>
+      )
+      screen.logTestingPlaygroundURL()
+      expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
+      expect(screen.queryByText('ai:Download Installation Logs')).toBeInTheDocument()
+    })
   })
 })
