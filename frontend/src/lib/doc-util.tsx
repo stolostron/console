@@ -75,7 +75,7 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
           iconPosition="right"
           style={{
             display: 'inline-block',
-            padding: '15px 10px',
+            paddingTop: '15px',
             fontSize: '14px',
           }}
         >

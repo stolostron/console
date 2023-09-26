@@ -101,13 +101,6 @@ export function CreateClusterCatalog() {
         ),
       },
       {
-        id: 'rhv',
-        provider: Provider.redhatvirtualization,
-        description: t(
-          'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
-        ),
-      },
-      {
         id: 'vsphere',
         provider: Provider.vmware,
         description: t(
@@ -118,6 +111,13 @@ export function CreateClusterCatalog() {
         id: 'nutanix',
         provider: Provider.nutanix,
         description: t('A Red Hat OpenShift cluster that is running in a Nutanix environment.'),
+      },
+      {
+        id: 'rhv',
+        provider: Provider.redhatvirtualization,
+        description: t(
+          'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
+        ),
       },
     ]
   }, [t])
@@ -175,8 +175,6 @@ export function CreateClusterCatalog() {
               {t(
                 'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
               )}
-              <br />
-              <br />
               <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_PREREQ} />
             </>
           ),
@@ -184,16 +182,11 @@ export function CreateClusterCatalog() {
       } else if (provider === Provider.redhatvirtualization) {
         card = {
           ...card,
-          title: t('Red Hat Virtualization'),
           alertTitle: t('Deprecated host platform'),
-          alertVariant: 'warning',
+          alertVariant: 'info',
           alertContent: (
             <>
-              {t(
-                'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-              )}
-              <br />
-              <br />
+              {t('RHV is deprecated for OpenShift 4.13.')}
               <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
             </>
           ),

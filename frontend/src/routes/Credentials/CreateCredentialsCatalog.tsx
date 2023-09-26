@@ -20,12 +20,12 @@ const orderedProviders: [provider: CredentialsType, id?: string][] = [
   [Provider.azure, 'azure'],
   [Provider.gcp, 'google'],
   [Provider.openstack, 'openstack'],
-  [Provider.redhatvirtualization, 'rhv'],
   [Provider.vmware, 'vsphere'],
   [Provider.hostinventory],
   [Provider.ansible, 'ansible'],
   [Provider.redhatcloud, 'redhatcloud'],
   [Provider.nutanix],
+  [Provider.redhatvirtualization, 'rhv'],
 ]
 
 export function CreateCredentialsCatalog() {
@@ -48,13 +48,10 @@ export function CreateCredentialsCatalog() {
           ...(provider === Provider.redhatvirtualization
             ? {
                 alertTitle: t('Deprecated host platform'),
-                alertVariant: 'warning' as const,
+                alertVariant: 'info' as const,
                 alertContent: (
                   <>
-                    {t(
-                      'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-                    )}
-                    <br />
+                    {t('RHV is deprecated for OpenShift 4.13.')}
                     <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
                   </>
                 ),
