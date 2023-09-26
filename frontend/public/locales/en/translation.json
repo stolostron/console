@@ -1097,6 +1097,8 @@
   "Delete If Created": "Delete If Created",
   "Delete placement": "Delete placement",
   "Delete placement rule": "Delete placement rule",
+  "Delete pull-secret resource": "Delete pull-secret resource",
+  "Delete pull-secret resource_plural": "Delete pull-secret resources",
   "Delete resources that are no longer defined in the source repository": "Delete resources that are no longer defined in the source repository",
   "Delete resources that are no longer defined in the source repository at the end of a sync operation": "Delete resources that are no longer defined in the source repository at the end of a sync operation",
   "Delete saved search?": "Delete saved search?",

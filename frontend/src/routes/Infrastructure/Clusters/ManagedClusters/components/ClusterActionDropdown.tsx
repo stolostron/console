@@ -34,6 +34,7 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../uti
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
+import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -50,6 +51,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     open: false,
   })
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+  const { infraEnvironmentsState } = useSharedAtoms()
+  const [infraEnvs] = useRecoilState(infraEnvironmentsState)
 
   const { cluster } = props
 
@@ -328,7 +331,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               description: t('bulk.message.destroy'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
-              actionFn: (cluster) => deleteCluster(cluster),
+              actionFn: (cluster, options) =>
+                deleteCluster({
+                  cluster,
+                  ignoreClusterDeploymentNotFound: false,
+                  infraEnvs,
+                  deletePullSecret: !!options?.deletePullSecret,
+                }),
               close: () => {
                 setModalProps({ open: false })
               },
@@ -336,6 +345,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               icon: 'warning',
               confirmText: cluster.displayName,
               isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+              enableDeletePullSecret: true,
             })
           },
           isAriaDisabled: true,
@@ -388,7 +398,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: destroyRbac,
         },
       ].filter((action) => clusterSupportsAction(cluster, action.id)),
-    [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
+    [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t, infraEnvs]
   )
 
   return (

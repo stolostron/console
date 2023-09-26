@@ -24,6 +24,7 @@ import {
   ProgressMeasureLocation,
   Stack,
   StackItem,
+  Checkbox,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -32,7 +33,7 @@ import { getRawErrorInfo } from './ErrorPage'
 
 export type BulkActionModalProps<T = undefined> = {
   action: string
-  actionFn: (item: T) => IRequestResult
+  actionFn: (item: T, options?: { [key: string]: boolean }) => IRequestResult
   alert?: React.ReactNode
   checkBox?: JSX.Element
   close: () => void
@@ -48,6 +49,7 @@ export type BulkActionModalProps<T = undefined> = {
   open: true
   processing: string
   title: string
+  enableDeletePullSecret?: boolean
 } & Required<Pick<AcmTableProps<T>, 'items'>> &
   Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
   Omit<AcmTableProps<T>, 'columns'>
@@ -63,12 +65,14 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   const [progressCount, setProgressCount] = useState(0)
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState<ItemError<T>[] | undefined>()
+  const [deletePullSecret, setDeletePullSecret] = useState(true)
 
   useEffect(() => {
     setConfirm('')
     setErrors(undefined)
     setProgress(0)
     setProgressCount(1)
+    setDeletePullSecret(true)
   }, [props.open])
 
   if (props.open === false) {
@@ -94,6 +98,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     open,
     processing,
     title,
+    enableDeletePullSecret,
     ...tableProps
   } = props
 
@@ -147,15 +152,30 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                 <div style={{ minHeight: '24px' }} />
               )}
             </div>
-            {confirmText !== undefined && (
-              <AcmTextInput
-                label={t(`type.to.confirm`, { confirm: confirmText })}
-                id="confirm"
-                value={confirm}
-                onChange={setConfirm}
-                autoComplete="off"
-              />
-            )}
+            <Stack hasGutter>
+              {enableDeletePullSecret && (
+                <StackItem>
+                  <Checkbox
+                    id="delete-pull-secret"
+                    label={t('Delete pull-secret resource', { count: columns?.length })}
+                    isChecked={deletePullSecret}
+                    onChange={setDeletePullSecret}
+                    isDisabled={progress > 0}
+                  />
+                </StackItem>
+              )}
+              {confirmText !== undefined && (
+                <StackItem>
+                  <AcmTextInput
+                    label={t(`type.to.confirm`, { confirm: confirmText })}
+                    id="confirm"
+                    value={confirm}
+                    onChange={setConfirm}
+                    autoComplete="off"
+                  />
+                </StackItem>
+              )}
+            </Stack>
           </Fragment>
         ) : (
           <Fragment>
@@ -249,7 +269,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                       setProgressCount(tableProps.items.length)
                       const requestResult = resultsSettled(
                         tableProps.items.map((resource) => {
-                          const r = actionFn(resource)
+                          const r = actionFn(resource, { deletePullSecret })
                           return {
                             promise: r.promise.finally(() => setProgress((progress) => progress + 1)),
                             abort: r.abort,

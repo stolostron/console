@@ -191,9 +191,10 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     sessionStorage.removeItem('DiscoveredClusterApiURL')
   }, [])
-  const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
+  const { clusterCuratorsState, hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
   const [clusterCurators] = useRecoilState(clusterCuratorsState)
   const [hostedClusters] = useRecoilState(hostedClustersState)
+  const [infraEnvs] = useRecoilState(infraEnvironmentsState)
 
   const { t } = useTranslation()
   const presets = transformBrowserUrlToFilterPresets(window.location.search)
@@ -451,18 +452,25 @@ export function ClustersTable(props: {
             description: t('bulk.message.destroy'),
             columns: modalColumns,
             keyFn: (cluster) => cluster.name as string,
-            actionFn: (cluster) => deleteCluster(cluster, true),
+            actionFn: (cluster, options) =>
+              deleteCluster({
+                cluster,
+                ignoreClusterDeploymentNotFound: true,
+                infraEnvs,
+                deletePullSecret: !!options?.deletePullSecret,
+              }),
             close: () => setModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
             confirmText: t('confirm'),
             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+            enableDeletePullSecret: true,
           })
         },
         variant: 'bulk-action',
       },
     ],
-    [modalColumns, t]
+    [modalColumns, infraEnvs, t]
   )
 
   const rowActions = useMemo(() => [], [])
