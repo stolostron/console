@@ -136,6 +136,7 @@ export function EditPolicy() {
               type: 'success',
               autoClose: true,
             })
+            history.block(() => {})
             if (searchParams.get('context') === 'policies') {
               history.push(NavigationPath.policies)
             } else {
@@ -149,6 +150,7 @@ export function EditPolicy() {
         })
       }}
       onCancel={() => {
+        history.block(() => {})
         if (searchParams.get('context') === 'policies') {
           history.push(NavigationPath.policies)
         } else {

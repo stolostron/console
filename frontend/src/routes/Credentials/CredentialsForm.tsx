@@ -1497,10 +1497,12 @@ export function CredentialsForm(
             type: 'success',
             autoClose: true,
           })
+          history.block(() => {})
           history.push(NavigationPath.credentials)
         })
       } else {
         return createResource(credentialData as IResource).promise.then((resource) => {
+          history.block(() => {})
           toastContext.addAlert({
             title: t('Credentials created'),
             message: t('credentialsForm.created.message', { name }),

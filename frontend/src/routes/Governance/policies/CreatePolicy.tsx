@@ -75,7 +75,10 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}
-      onCancel={() => history.push(NavigationPath.policies)}
+      onCancel={() => {
+        history.block(() => {})
+        history.push(NavigationPath.policies)
+      }}
       onSubmit={(data) => {
         const resources = data as IResource[]
         return reconcileResources(resources, []).then(() => {
@@ -87,6 +90,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
               type: 'success',
               autoClose: true,
             })
+            history.block(() => {})
             history.push(
               NavigationPath.policyDetails
                 .replace(':namespace', policy.metadata?.namespace ?? '')

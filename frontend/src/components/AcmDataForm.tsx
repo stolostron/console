@@ -93,6 +93,8 @@ import {
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
+import { LostChangesPrompt } from '../wizards/common/LostChangesPrompt'
+import { useHistory } from 'react-router-dom'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -305,13 +307,14 @@ export function AcmDataForm(
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, edit } = props
   switch (props.mode) {
     case 'wizard':
       return (
         <AcmDataFormWizard
           formData={formData}
           isHorizontal={isHorizontal ?? false}
+          isEdit={edit !== undefined}
           showFormErrors={showFormErrors}
           setShowFormErrors={setShowFormErrors}
           globalWizardAlert={globalWizardAlert}
@@ -349,8 +352,16 @@ export function AcmDataFormDefault(props: {
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+  const history = useHistory()
+
+  const cancel = () => {
+    history.block(() => {})
+    formData.cancel()
+  }
+
   return (
     <Form isHorizontal={isHorizontal}>
+      <LostChangesPrompt data={formData.stateToData()} isEdit={true} />
       {formData.sections.map((section) => {
         if (sectionHidden(section)) return <Fragment key={`hidden-${section.title}`} />
         if (section.type === 'Section') {
@@ -419,7 +430,7 @@ export function AcmDataFormDefault(props: {
                   </Button>
                 </ActionListItem>
                 <ActionListItem>
-                  <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
+                  <Button variant="secondary" onClick={cancel} isDisabled={isSubmitting}>
                     {formData.cancelLabel}
                   </Button>
                 </ActionListItem>
@@ -435,17 +446,24 @@ export function AcmDataFormDefault(props: {
 export function AcmDataFormWizard(props: {
   formData: FormData
   isHorizontal: boolean
+  isEdit: boolean
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
   isModalWizard?: boolean
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const history = useHistory()
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, isEdit } = props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+
+  const cancel = () => {
+    history.block(() => {})
+    formData.cancel()
+  }
 
   function createStep(section: Section | SectionGroup): WizardStep | undefined {
     if (sectionHidden(section)) return undefined
@@ -622,7 +640,7 @@ export function AcmDataFormWizard(props: {
                   </ActionListGroup>
                   <ActionListGroup>
                     <ActionListItem>
-                      <Button variant="link" onClick={formData.cancel} isDisabled={isSubmitting}>
+                      <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
                         {formData.cancelLabel}
                       </Button>
                     </ActionListItem>
@@ -638,6 +656,7 @@ export function AcmDataFormWizard(props: {
 
   return (
     <Fragment>
+      <LostChangesPrompt data={formData.stateToData()} isEdit={isEdit} />
       {isModalWizard ? (
         <Wizard
           titleId="create-credential-title"
@@ -646,10 +665,10 @@ export function AcmDataFormWizard(props: {
           description={formData.description}
           steps={steps}
           footer={Footer}
-          onClose={formData.cancel}
+          onClose={cancel}
         />
       ) : (
-        <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
+        <Wizard steps={steps} footer={Footer} onClose={cancel} />
       )}
     </Fragment>
   )

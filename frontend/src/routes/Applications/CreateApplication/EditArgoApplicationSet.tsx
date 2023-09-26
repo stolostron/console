@@ -120,6 +120,7 @@ export function EditArgoApplicationSet() {
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}
       onCancel={() => {
+        history.block(() => {})
         if (searchParams.get('context') === 'applicationsets') {
           history.push(NavigationPath.applications)
         } else {
@@ -145,6 +146,7 @@ export function EditArgoApplicationSet() {
               type: 'success',
               autoClose: true,
             })
+            history.block(() => {})
             if (searchParams.get('context') === 'applicationsets') {
               history.push(NavigationPath.applications)
             } else {
