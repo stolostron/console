@@ -33,7 +33,7 @@ import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../c
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
@@ -140,7 +140,7 @@ export default function ClusterPoolsPage() {
                       >
                         {t('managed.createClusterPool')}
                       </AcmButton>
-                      <TextContent>{viewDocumentation(DOC_LINKS.CLUSTER_POOLS, t)}</TextContent>
+                      <ViewDocumentationLink doclink={DOC_LINKS.CLUSTER_POOLS} />
                     </div>
                   }
                 />

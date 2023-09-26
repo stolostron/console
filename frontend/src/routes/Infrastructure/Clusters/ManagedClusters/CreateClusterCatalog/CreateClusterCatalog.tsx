@@ -18,8 +18,7 @@ import {
   ProviderIconMap,
   ProviderLongTextMap,
 } from '../../../../../ui-components'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { Divider, ExpandableSection } from '@patternfly/react-core'
@@ -102,13 +101,6 @@ export function CreateClusterCatalog() {
         ),
       },
       {
-        id: 'rhv',
-        provider: Provider.redhatvirtualization,
-        description: t(
-          'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
-        ),
-      },
-      {
         id: 'vsphere',
         provider: Provider.vmware,
         description: t(
@@ -119,6 +111,13 @@ export function CreateClusterCatalog() {
         id: 'nutanix',
         provider: Provider.nutanix,
         description: t('A Red Hat OpenShift cluster that is running in a Nutanix environment.'),
+      },
+      {
+        id: 'rhv',
+        provider: Provider.redhatvirtualization,
+        description: t(
+          'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
+        ),
       },
     ]
   }, [t])
@@ -176,11 +175,19 @@ export function CreateClusterCatalog() {
               {t(
                 'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
               )}
-              <br />
-              <br />
-              <a href={DOC_LINKS.CREATE_CLUSTER_PREREQ} target="_blank" rel="noopener noreferrer">
-                {t('View documentation')} <ExternalLinkAltIcon />
-              </a>
+              <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_PREREQ} />
+            </>
+          ),
+        }
+      } else if (provider === Provider.redhatvirtualization) {
+        card = {
+          ...card,
+          alertTitle: t('Deprecated host platform'),
+          alertVariant: 'info',
+          alertContent: (
+            <>
+              {t('RHV is deprecated for OpenShift 4.13.')}
+              <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
             </>
           ),
         }

@@ -18,6 +18,7 @@ import {
   disabledForFirstInGroup,
   reverseImageSet,
   onImageChange,
+  isDeprecatedRHV,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -77,6 +78,7 @@ export const getControlDataRHV = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
+      info: isDeprecatedRHV,
       onSelect: onImageChange,
       reverse: reverseImageSet,
     },

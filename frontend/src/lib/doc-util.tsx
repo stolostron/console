@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
 import { AcmButton } from '../ui-components'
+import { TextContent } from '@patternfly/react-core'
+import { useTranslation } from './acm-i18next'
 
 export const DOC_VERSION = '2.9'
 
@@ -11,7 +12,7 @@ export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_CREATE_HOSTED_CLUSTER = `${DOC_BASE_PATH}/clusters/index#create-hosted-aws`
-export const DOC_CREATE_kUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
+export const DOC_CREATE_KUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
 
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
@@ -46,12 +47,11 @@ export const DOC_LINKS = {
   CIM_CONFIG_AWS: `${DOC_BASE_PATH}/clusters/index#enable-cim-aws`,
   CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/clusters/index#disconnected-vm`,
   CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#disconnected-openstack`,
-  INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#creating-an-infrastructure-environment`,
+  INFRASTRUCTURE_ENVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#creating-an-infrastructure-environment`,
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
-  POLICIES: `${DOC_BASE_PATH}/governance/index#policy-overview`,
-  POLICY_SETS: `${DOC_BASE_PATH}/governance/index#policy-overview`,
+  POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#policy-overview`,
   HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
   HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-aws`,
   HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
@@ -60,24 +60,28 @@ export const DOC_LINKS = {
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
+  RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/release_notes/ocp-4-13-release-notes.html#ocp-4-13-rhv-deprecations`,
 }
 
-export function viewDocumentation(doclink: string, t: TFunction) {
+export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
+  const { t } = useTranslation()
   return (
-    <a href={doclink} target="_blank" rel="noreferrer">
-      <AcmButton
-        variant="link"
-        isInline
-        icon={<ExternalLinkAltIcon />}
-        iconPosition="right"
-        style={{
-          display: 'inline-block',
-          padding: '15px 10px',
-          fontSize: '14px',
-        }}
-      >
-        {t('View documentation')}
-      </AcmButton>
-    </a>
+    <TextContent>
+      <a href={props.doclink} target="_blank" rel="noreferrer">
+        <AcmButton
+          variant="link"
+          isInline
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
+          style={{
+            display: 'inline-block',
+            paddingTop: '15px',
+            fontSize: '14px',
+          }}
+        >
+          {t('View documentation')}
+        </AcmButton>
+      </a>
+    </TextContent>
   )
 }

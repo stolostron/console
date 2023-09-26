@@ -3,7 +3,7 @@
 import { Alert, TextContent } from '@patternfly/react-core'
 import React from 'react'
 import { Trans, useTranslation } from '../lib/acm-i18next'
-import { viewDocumentation, DOC_LINKS } from '../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../lib/doc-util'
 
 const PlacementRuleDeprecationAlert = () => {
   const { t } = useTranslation()
@@ -14,7 +14,7 @@ const PlacementRuleDeprecationAlert = () => {
         <TextContent style={{ paddingTop: '5px' }}>
           <Trans i18nKey="<bold>Best practice:</bold> Use Placement." components={{ bold: <strong /> }} />
         </TextContent>
-        <TextContent>{viewDocumentation(DOC_LINKS.DEPRECATIONS_AND_REMOVALS, t)}</TextContent>
+        <ViewDocumentationLink doclink={DOC_LINKS.DEPRECATIONS_AND_REMOVALS} />
       </Alert>
     </React.Fragment>
   )

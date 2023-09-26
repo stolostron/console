@@ -1,19 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Popover, TextContent } from '@patternfly/react-core'
+import { Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { AcmButton } from '../../../../../ui-components'
+import { Trans } from '../../../../../lib/acm-i18next'
 
 export function GlobalClusterSetPopover() {
-  const { t } = useTranslation()
   return (
     <Popover
       bodyContent={
         <>
           <Trans i18nKey="learn.global.clusterSet" components={{ bold: <strong /> }} />
-          <TextContent>{viewDocumentation(DOC_LINKS.GLOBAL_CLUSTER_SET, t)}</TextContent>
+          <ViewDocumentationLink doclink={DOC_LINKS.GLOBAL_CLUSTER_SET} />
         </>
       }
     >

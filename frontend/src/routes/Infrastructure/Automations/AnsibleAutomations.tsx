@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlertContext,
@@ -19,7 +19,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
-import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../../NavigationPath'
 import {
@@ -285,7 +285,7 @@ function AnsibleJobTemplateTable() {
                 >
                   {t('template.create')}
                 </AcmButton>
-                <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
+                <ViewDocumentationLink doclink={DOC_LINKS.ANSIBLE_JOBS} />
               </div>
             }
           />
