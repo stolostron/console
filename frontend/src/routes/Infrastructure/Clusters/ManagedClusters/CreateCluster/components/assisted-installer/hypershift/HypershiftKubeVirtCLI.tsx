@@ -50,7 +50,7 @@ hcp create cluster kubevirt \\
       ),
     },
     {
-      title: t('Running the Hosted Control Plane command'),
+      title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
           {GetOCLogInCommand()}
@@ -63,7 +63,9 @@ hcp create cluster kubevirt \\
           <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <Text style={{ marginTop: '1em' }}>
+            {t('Use the following command to get a list of available parameters: ')}
+          </Text>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
