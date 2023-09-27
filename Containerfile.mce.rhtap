@@ -33,6 +33,3 @@ LABEL com.redhat.component="multicluster-engine-console-mce-container" \
       io.k8s.display-name="multicluster-engine-console-mce" \
       maintainer="['acm-component-maintainers@redhat.com']" \
       description="multicluster-engine-console-mce"
-#     version="${CI_CONTAINER_VERSION}" \
-#     upstream-ref="${CI_CONSOLE_UPSTREAM_COMMIT}" \
-#     upstream-url="${CI_CONSOLE_UPSTREAM_URL}" \
