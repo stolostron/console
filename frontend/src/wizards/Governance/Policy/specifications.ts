@@ -27,7 +27,7 @@ function getPolicySpecification(description: string, yaml: string) {
   yaml = yaml.replace('sample-role', '')
   yaml = yaml.replace('-example', '')
   yaml = yaml.replace('name: prod', 'name: ""')
-  yaml = yaml.replace('sample-nginx-pod', '')
+  yaml = yaml.replace('sample-httpd-pod', '')
   const policy = getExamplePolicy(yaml)
   return {
     name: description,

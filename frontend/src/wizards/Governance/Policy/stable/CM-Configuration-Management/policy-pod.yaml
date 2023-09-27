@@ -25,15 +25,20 @@ spec:
             - complianceType: musthave
               objectDefinition:
                 apiVersion: v1
-                kind: Pod # nginx pod must exist
+                kind: Pod # httpd pod must exist
                 metadata:
-                  name: sample-nginx-pod
+                  name: sample-httpd-pod
                 spec:
                   containers:
-                    - image: nginx:1.18.0
-                      name: nginx
-                      ports:
-                        - containerPort: 80
+                    - image: registry.redhat.io/rhel9/httpd-24:latest
+                      name: httpd
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
+                        privileged: false
+                        runAsNonRoot: true
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
