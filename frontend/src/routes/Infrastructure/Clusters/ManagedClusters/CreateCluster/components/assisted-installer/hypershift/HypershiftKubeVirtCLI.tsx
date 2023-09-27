@@ -50,20 +50,22 @@ hcp create cluster kubevirt \\
       ),
     },
     {
-      title: t('Running the Hosted Control Plane command'),
+      title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
           {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
             {t(
-              'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. To create the Hosted Control Plane, copy and paste the following command: '
+              'Hosted Control Planes for OpenShift Virtualization are created using the KubeVirt platform type. Create the Hosted Control Plane by copying and pasting the following command: '
             )}
           </Text>
           <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <Text style={{ marginTop: '1em' }}>
+            {t('Use the following command to get a list of available parameters: ')}
+          </Text>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>

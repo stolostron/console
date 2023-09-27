@@ -27,8 +27,8 @@ describe('HypershiftAWSCLI', () => {
     render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Prerequisites and Configuration')
-    await waitForText('Amazon Web Services (AWS) credential')
-    await waitForText('Running the Hosted Control Plane command')
+    await waitForText('Add your Amazon Web Services (AWS) credential')
+    await waitForText('Create the Hosted Control Plane')
     // find code block
     await waitForTestId('code-content')
     await waitForTestId('helper-command')

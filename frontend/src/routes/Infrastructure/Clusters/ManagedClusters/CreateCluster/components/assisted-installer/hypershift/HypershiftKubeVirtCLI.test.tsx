@@ -27,7 +27,7 @@ describe('HypershiftKubeVirtCLI', () => {
     render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Prerequisites and Configuration')
-    await waitForText('Running the Hosted Control Plane command')
+    await waitForText('Create the Hosted Control Plane')
     // find code block
     await waitForTestId('code-content')
     await waitForTestId('helper-command')

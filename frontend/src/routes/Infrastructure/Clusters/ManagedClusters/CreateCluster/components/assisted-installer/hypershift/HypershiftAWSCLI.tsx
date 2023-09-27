@@ -62,7 +62,7 @@ hcp create cluster aws \\
       ),
     },
     {
-      title: t('Amazon Web Services (AWS) credential'),
+      title: t('Add your Amazon Web Services (AWS) credential'),
       content: (
         <Text component={TextVariants.p}>
           {t('Create a new or update an existing AWS credential.')}
@@ -71,7 +71,7 @@ hcp create cluster aws \\
       ),
     },
     {
-      title: t('Amazon Web Services (AWS) S3 bucket credential'),
+      title: t('Add your AWS S3 bucket credential'),
       content: (
         <Text component={TextVariants.p}>
           {t('Create a new or update an existing AWS S3 bucket credential.')}
@@ -80,18 +80,20 @@ hcp create cluster aws \\
       ),
     },
     {
-      title: t('Running the Hosted Control Plane command'),
+      title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
           {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
-            {t('To create the Hosted Control Plane, copy and paste the following command:')}
+            {t('Create the Hosted Control Plane by copying and pasting the following command:')}
           </Text>
           <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>{t('Use the following command to see all available parameters.')}</Text>
+          <Text style={{ marginTop: '1em' }}>
+            {t('Use the following command to get a list of available parameters: ')}
+          </Text>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
