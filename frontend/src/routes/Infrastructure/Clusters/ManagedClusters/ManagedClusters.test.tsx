@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -14,7 +14,7 @@ import {
   managedClusterInfosState,
   managedClustersState,
 } from '../../../../atoms'
-import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockRBAC } from '../../../../lib/nock-util'
 import { rbacCreateTestHelper } from '../../../../lib/rbac-util'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import {
@@ -482,6 +482,7 @@ describe('Clusters Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -498,6 +499,7 @@ describe('Clusters Page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNock(metricNock)
     await waitForText(mockManagedCluster0.metadata.name!, true)
   })
 
@@ -594,6 +596,7 @@ describe('Clusters Page', () => {
 describe('Clusters Page RBAC', () => {
   test('should perform RBAC checks', async () => {
     nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
     const rbacCreateManagedClusterNock = nockRBAC(rbacCreateTestHelper(ManagedClusterDefinition))
     const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
       prev.push(
@@ -617,8 +620,7 @@ describe('Clusters Page RBAC', () => {
       </RecoilRoot>
     )
     await waitForText(mockManagedCluster0.metadata.name!, true)
-    await waitForNock(rbacCreateManagedClusterNock)
-    await waitForNocks(upgradeRBACNocks)
+    await waitForNocks([metricNock, rbacCreateManagedClusterNock, ...upgradeRBACNocks])
   })
 })
 
@@ -626,6 +628,7 @@ describe('Clusters Page hypershift', () => {
   test('should render hypershift clusters', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
     const hypershiftMockManagedClusters: ManagedCluster[] = [mockManagedCluster6, mockManagedCluster7]
     const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo6, mockManagedClusterInfo7]
     render(
@@ -643,6 +646,7 @@ describe('Clusters Page hypershift', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNock(metricNock)
     await waitForText(mockManagedCluster6.metadata.name!, true)
   })
 })
@@ -651,6 +655,7 @@ describe('Clusters Page regional hub cluster', () => {
   test('should render regional hub clusters', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
     const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
     const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
@@ -667,6 +672,7 @@ describe('Clusters Page regional hub cluster', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNock(metricNock)
     await waitForText(mockManagedCluster8.metadata.name!, true)
     await waitForText('Hub')
   })

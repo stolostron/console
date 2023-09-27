@@ -3,20 +3,16 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import {
-  AcmDropdown,
-  AcmEmptyState,
-  AcmTable,
-  compareStrings,
-  IAcmRowAction,
-  IAcmTableColumn,
-} from '../../ui-components'
+import { get } from 'lodash'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { useCallback, useEffect, useMemo, useState, useContext } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
+import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
+import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
+import { PluginContext } from '../../lib/PluginContext'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
@@ -37,7 +33,17 @@ import {
   OCPAppResource,
   Subscription,
 } from '../../resources'
+import {
+  AcmDropdown,
+  AcmEmptyState,
+  AcmTable,
+  compareStrings,
+  IAcmRowAction,
+  IAcmTableColumn,
+} from '../../ui-components'
+import { getResourceParams } from '../Home/Search/Details/DetailsPage'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
@@ -58,11 +64,6 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
-import { PluginContext } from '../../lib/PluginContext'
-import { get } from 'lodash'
-import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
-import { getResourceParams } from '../Home/Search/Details/DetailsPage'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -231,6 +232,7 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 }
 
 export default function ApplicationsOverview() {
+  usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
   const { cluster } = getResourceParams()
 

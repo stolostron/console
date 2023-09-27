@@ -3,6 +3,7 @@ import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, T
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
+import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
@@ -19,6 +20,7 @@ import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolati
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 
 export default function GovernanceOverview() {
+  usePageVisitMetricHandler(Pages.governance)
   const { usePolicies, namespacesState } = useSharedAtoms()
   const policies = usePolicies()
   const [namespaces] = useRecoilState(namespacesState)
