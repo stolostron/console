@@ -51,7 +51,7 @@ export function CreateCredentialsCatalog() {
                 alertVariant: 'info' as const,
                 alertContent: (
                   <>
-                    {t('RHV is deprecated for OpenShift 4.13.')}
+                    {t('Red Hat Virtualization is deprecated for OpenShift 4.13.')}
                     <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
                   </>
                 ),
