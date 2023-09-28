@@ -27,6 +27,7 @@ import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { GetGitOpsClusters } from './CreateApplicationArgo'
 import { get, set } from 'lodash'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -130,6 +131,8 @@ export function EditArgoApplicationSet() {
     setExistingResources([copyOfAppSet, ...applicationSetPlacements])
   }, [applicationSets, history, params.name, params.namespace, placements])
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   if (existingResources === undefined) {
     return <LoadingPage />
   }
@@ -148,7 +151,7 @@ export function EditArgoApplicationSet() {
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}
       onCancel={() => {
-        history.block(() => {})
+        cancelForm()
         if (searchParams.get('context') === 'applicationsets') {
           history.push(NavigationPath.applications)
         } else {
@@ -174,7 +177,7 @@ export function EditArgoApplicationSet() {
               type: 'success',
               autoClose: true,
             })
-            history.block(() => {})
+            submitForm()
             if (searchParams.get('context') === 'applicationsets') {
               history.push(NavigationPath.applications)
             } else {

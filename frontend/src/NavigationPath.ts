@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { LocationDescriptor } from 'history'
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 import { generatePath } from 'react-router'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Cluster } from './resources'
+import { LostChangesContext } from './components/LostChanges'
 
 export const UNKNOWN_NAMESPACE = '~managed-cluster'
 
@@ -160,6 +161,7 @@ export function useBackCancelNavigation(): {
 } {
   const history = useHistory<BackCancelState>()
   const { state } = useLocation<BackCancelState>()
+  const { cancelForm } = useContext(LostChangesContext)
 
   return useMemo(
     () => ({
@@ -182,6 +184,7 @@ export function useBackCancelNavigation(): {
         )
       },
       back: (defaultLocation) => () => {
+        cancelForm()
         if (state?.maxBackSteps) {
           history.goBack()
         } else {
@@ -189,6 +192,7 @@ export function useBackCancelNavigation(): {
         }
       },
       cancel: (defaultLocation) => () => {
+        cancelForm()
         if (state?.cancelSteps) {
           history.go(-state.cancelSteps)
         } else {
@@ -196,6 +200,6 @@ export function useBackCancelNavigation(): {
         }
       },
     }),
-    [history, state]
+    [cancelForm, history, state]
   )
 }

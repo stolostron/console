@@ -44,7 +44,6 @@ import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { LostChangesPrompt } from '../../common/LostChangesPrompt'
 
 export function PolicyWizard(props: {
   title: string
@@ -92,7 +91,6 @@ export function PolicyWizard(props: {
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
-        <LostChangesPrompt initialData={defaultData} isEdit={props?.editMode === EditMode.Edit} />
         {props.editMode !== EditMode.Edit && (
           <Fragment>
             <Sync kind={PolicyKind} path="metadata.namespace" />

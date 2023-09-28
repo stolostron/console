@@ -21,6 +21,7 @@ import {
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export default function CreateArgoApplicationSetPage() {
   return <CreateApplicationArgo />
@@ -92,6 +93,8 @@ export function CreateApplicationArgo() {
     ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
     : moment.tz.names()
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   return (
     <ArgoWizard
       createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
@@ -109,7 +112,7 @@ export function CreateApplicationArgo() {
       getGitPaths={getGitChannelPaths}
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
-        history.block(() => {})
+        cancelForm()
         history.push(NavigationPath.applications)
       }}
       onSubmit={(data) => {
@@ -124,7 +127,7 @@ export function CreateApplicationArgo() {
               autoClose: true,
             })
           }
-          history.block(() => {})
+          submitForm()
 
           history.push(
             NavigationPath.applicationOverview

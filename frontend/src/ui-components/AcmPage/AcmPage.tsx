@@ -28,24 +28,18 @@ import { AcmDrawer, AcmDrawerProvider } from '../AcmDrawer/AcmDrawer'
 import { AcmErrorBoundary } from '../AcmErrorBoundary/AcmErrorBoundary'
 
 export function AcmPage(props: { header: ReactNode; children: ReactNode; hasDrawer?: boolean }) {
-  /* istanbul ignore if */
-  if (props.hasDrawer) {
-    return (
-      <AcmDrawerProvider>
-        <AcmDrawer>
-          <Page additionalGroupedContent={<Fragment>{props.header}</Fragment>} groupProps={{ sticky: 'top' }}>
-            {props.children}
-          </Page>
-        </AcmDrawer>
-      </AcmDrawerProvider>
-    )
-  } else {
-    return (
-      <Page additionalGroupedContent={<Fragment>{props.header}</Fragment>} groupProps={{ sticky: 'top' }}>
-        {props.children}
-      </Page>
-    )
-  }
+  const page = (
+    <Page additionalGroupedContent={<Fragment>{props.header}</Fragment>} groupProps={{ sticky: 'top' }}>
+      {props.children}
+    </Page>
+  )
+  return props.hasDrawer ? (
+    <AcmDrawerProvider>
+      <AcmDrawer>{page}</AcmDrawer>
+    </AcmDrawerProvider>
+  ) : (
+    page
+  )
 }
 
 export interface AcmPageHeaderProps {

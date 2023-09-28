@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, Button, ButtonVariant } from '@patternfly/react-core'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
   EditMode,
@@ -20,8 +20,7 @@ import { ConfigMap } from '../../../resources'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { LostChangesPrompt } from '../../../wizards/common/LostChangesPrompt'
-import { useHistory } from 'react-router-dom'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -58,7 +57,6 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
   const [selectedAnsibleCredentialHost, setSelectedAnsibleCredentialHost] = useState<string>()
   const [alert, setAlert] = useState<{ title: string; message: string }>()
   const { t } = useTranslation()
-  const history = useHistory()
 
   useEffect(() => {
     if (props.editMode === EditMode.Edit) {
@@ -96,6 +94,8 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
     },
   }
 
+  const { cancelForm } = useContext(LostChangesContext)
+
   return (
     <WizardPage
       id="policy-automation-wizard"
@@ -104,7 +104,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}
       onCancel={() => {
-        history.block(() => {})
+        cancelForm()
         props.onCancel()
       }}
       editMode={props.editMode}
@@ -114,7 +114,6 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       <Step label={t('Automation')} id="automation-step">
         <AutomationProviderHint component="alert" policyAutomation />
         <Section label={t('Policy automation')}>
-          <LostChangesPrompt initialData={defaultData} isEdit={props?.editMode === EditMode.Edit} />
           {alert && (
             <WizDetailsHidden>
               <Alert title={alert.title} isInline variant="danger">

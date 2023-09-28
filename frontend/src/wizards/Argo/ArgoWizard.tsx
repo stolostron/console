@@ -49,7 +49,6 @@ import { get } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
-import { LostChangesPrompt } from '../common/LostChangesPrompt'
 
 export interface Channel {
   metadata?: {
@@ -142,10 +141,11 @@ export interface ArgoWizardProps {
   yamlEditor?: () => ReactNode
 }
 
+function onlyUnique(value: any, index: any, self: string | any[]) {
+  return self.indexOf(value) === index
+}
+
 export function ArgoWizard(props: ArgoWizardProps) {
-  function onlyUnique(value: any, index: any, self: string | any[]) {
-    return self.indexOf(value) === index
-  }
   const { resources } = props
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
   const source = applicationSet?.spec.template.spec.source
@@ -351,7 +351,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
         onSubmit={props.onSubmit}
       >
         <Step id="general" label={t('General')}>
-          <LostChangesPrompt initialData={defaultData} isEdit={!!props.resources} />
           <Sync
             kind={PlacementKind}
             path="metadata.name"

@@ -18,6 +18,7 @@ import {
   resolveSource,
 } from '../common/util'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -106,6 +107,8 @@ export function EditPolicy() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   if (existingResources === undefined) {
     return <LoadingPage />
   }
@@ -136,7 +139,7 @@ export function EditPolicy() {
               type: 'success',
               autoClose: true,
             })
-            history.block(() => {})
+            submitForm()
             if (searchParams.get('context') === 'policies') {
               history.push(NavigationPath.policies)
             } else {
@@ -150,7 +153,7 @@ export function EditPolicy() {
         })
       }}
       onCancel={() => {
-        history.block(() => {})
+        cancelForm()
         if (searchParams.get('context') === 'policies') {
           history.push(NavigationPath.policies)
         } else {

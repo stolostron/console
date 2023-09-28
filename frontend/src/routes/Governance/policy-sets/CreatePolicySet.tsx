@@ -10,6 +10,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -56,6 +57,8 @@ export function CreatePolicySet() {
     () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
     [namespaces]
   )
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   return (
     <PolicySetWizard
       title={t('Create policy set')}
@@ -80,12 +83,12 @@ export function CreatePolicySet() {
               autoClose: true,
             })
           }
-          history.block(() => {})
+          submitForm()
           history.push(NavigationPath.policySets)
         })
       }}
       onCancel={() => {
-        history.block(() => {})
+        cancelForm()
         history.push(NavigationPath.policySets)
       }}
     />

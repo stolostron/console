@@ -11,6 +11,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { listAnsibleTowerJobs, PolicyAutomationApiVersion, PolicyAutomationKind, Secret } from '../../../resources'
 import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -59,6 +60,8 @@ export function CreatePolicyAutomation() {
     [secrets]
   )
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   return (
     <PolicyAutomationWizard
       title={t('Create policy automation')}
@@ -88,8 +91,11 @@ export function CreatePolicyAutomation() {
           automationDef: { name: '', secret: '', type: 'AnsibleJob' },
         },
       }}
-      onCancel={() => history.push(NavigationPath.policies)}
-      onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t)}
+      onCancel={() => {
+        cancelForm()
+        history.push(NavigationPath.policies)
+      }}
+      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t)}
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

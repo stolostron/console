@@ -26,6 +26,7 @@ import ResourceLabels from '../../Applications/components/ResourceLabels'
 import { IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export interface PolicyCompliance {
   policyName: string
@@ -571,6 +572,7 @@ export function getPolicyDescription(policy: Policy | undefined) {
 }
 
 export function handlePolicyAutomationSubmit(
+  submitForm: LostChangesContext['submitForm'],
   data: any,
   secrets: Secret[],
   history: any,
@@ -616,7 +618,7 @@ export function handlePolicyAutomationSubmit(
         autoClose: true,
       })
     }
-    history.block(() => {})
+    submitForm()
     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
   })
 }

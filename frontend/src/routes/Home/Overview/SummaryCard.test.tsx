@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { CriticalRiskIcon } from '@patternfly/react-icons'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { BrowserRouter } from 'react-router-dom'
 import SummaryCard, { LoadingCard } from './SummaryCard'
@@ -84,7 +84,6 @@ describe('SummaryCard', () => {
 
   test('Renders Loading Card correctly', async () => {
     const { queryByTestId } = render(<LoadingCard />)
-    screen.logTestingPlaygroundURL()
     await waitFor(() => expect(queryByTestId('sevrating-loading-0')).toBeTruthy())
   })
 })

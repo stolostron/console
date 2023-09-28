@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, Switch } from '@patternfly/react-core'
-import { ReactNode, useCallback, useState } from 'react'
-import { Wizard, WizardProps } from '@patternfly-labs/react-form-wizard'
+import { Children, cloneElement, isValidElement, ReactElement, ReactNode, useCallback, useState } from 'react'
+import { Step, Wizard, WizardProps } from '@patternfly-labs/react-form-wizard'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
 import './WizardPage.css'
+import { LostChangesMonitor, LostChangesPrompt } from '../components/LostChanges'
 
 export type WizardPageProps = {
   breadcrumb?: { text: string; to?: string }[]
@@ -49,8 +50,21 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
       <AcmErrorBoundary>
         <AcmPageContent id={id}>
           <PageSection variant="light" type="wizard" className="no-drawer-transition">
+            <LostChangesPrompt initialData={props.defaultData} />
             <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
-              {children}
+              {(
+                Children.toArray(children).filter(
+                  (child) => isValidElement(child) && child.type === Step
+                ) as ReactElement[]
+              ).map((child, index) => {
+                return index === 0
+                  ? // Insert LostChangesMonitor in first Step child
+                    cloneElement(child, {
+                      ...child.props,
+                      children: [<LostChangesMonitor key="lost-changes-monitor" />, ...child.props.children],
+                    })
+                  : child
+              })}
             </Wizard>
           </PageSection>
         </AcmPageContent>
