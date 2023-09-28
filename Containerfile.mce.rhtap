@@ -1,10 +1,10 @@
 FROM registry.access.redhat.com/ubi8/nodejs-18:1-32.1679484519 AS builder
 
-WORKDIR /app
-COPY . .
-
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
+
+WORKDIR /app
+COPY . .
 
 # Running installs concurrently fails on aarch64
 RUN npm ci --no-optional --unsafe-perm --ignore-scripts
