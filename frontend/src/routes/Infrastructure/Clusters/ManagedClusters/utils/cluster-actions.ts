@@ -39,10 +39,7 @@ export function clusterDestroyable(cluster: Cluster) {
     return true
   }
 
-  if (
-    cluster.isHostedCluster &&
-    (cluster.provider === Provider.hostinventory || cluster.provider === Provider.kubevirt)
-  ) {
+  if (cluster.isHypershift && (cluster.provider === Provider.hostinventory || cluster.provider === Provider.kubevirt)) {
     // BM hosted clusters & kubevirt can be destroyed
     return true
   }
