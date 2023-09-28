@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/nodejs-18:1-32.1679484519 AS builder
+FROM registry.access.redhat.com/ubi8/nodejs-18:1-40 AS builder
 
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
