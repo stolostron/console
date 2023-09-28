@@ -62,6 +62,7 @@ export const getUniqueChannelName = (channelPath, groupControlData) => {
   channelName = _.replace(channelName, /\./g, '')
   channelName = _.replace(channelName, /:/g, '')
   channelName = _.replace(channelName, /\//g, '-')
+  channelName = _.replace(channelName, /_/g, '-')
 
   channelName = _.trimEnd(channelName, '-')
   channelName = channelName.toLowerCase()
