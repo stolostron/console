@@ -101,6 +101,11 @@ export function ClusterOverviewPageContent(props: {
   }
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
+    /*
+      Translation hack, otherwise the text will get removed:
+      t('table.clusterName.helperText')
+      t('table.clusterName.helperText.hypershift')
+    */
     clusterName: {
       key: t('table.clusterName'),
       value: (
