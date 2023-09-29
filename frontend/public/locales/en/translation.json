@@ -2544,6 +2544,7 @@
   "table.clusterId": "Cluster ID",
   "table.clusterName": "Cluster resource name",
   "table.clusterName.helperText": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>.",
+  "table.clusterName.helperText.hypershift": "The common Kubernetes resource name shared by multiple resources generated from hosted cluster creation; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>HostedCluster</bold>.",
   "table.clusterPool": "Cluster pool",
   "table.clusterRole": "Cluster role",
   "table.clusterSet": "Cluster set",

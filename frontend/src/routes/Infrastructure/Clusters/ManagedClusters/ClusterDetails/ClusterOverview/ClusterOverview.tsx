@@ -101,12 +101,26 @@ export function ClusterOverviewPageContent(props: {
   }
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
+    /*
+      Translation hack, otherwise the text will get removed:
+      t('table.clusterName.helperText')
+      t('table.clusterName.helperText.hypershift')
+    */
     clusterName: {
       key: t('table.clusterName'),
       value: (
         <span>
           {cluster!.name}
-          <Popover bodyContent={<Trans i18nKey="table.clusterName.helperText" components={{ bold: <strong /> }} />}>
+          <Popover
+            bodyContent={
+              <Trans
+                i18nKey={
+                  cluster?.isHostedCluster ? 'table.clusterName.helperText.hypershift' : 'table.clusterName.helperText'
+                }
+                components={{ bold: <strong /> }}
+              />
+            }
+          >
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
               <OutlinedQuestionCircleIcon />
             </AcmButton>
