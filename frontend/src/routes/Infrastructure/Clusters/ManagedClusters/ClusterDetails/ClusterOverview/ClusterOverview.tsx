@@ -106,7 +106,7 @@ export function ClusterOverviewPageContent(props: {
       value: (
         <span>
           {cluster!.name}
-          <Popover bodyContent={<Trans i18nKey="table.clusterName.helperText" components={{ bold: <strong /> }} />}>
+          <Popover bodyContent={<Trans i18nKey={cluster?.isHostedCluster ? "table.clusterName.helperText.hypershift" : "table.clusterName.helperText"} components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
               <OutlinedQuestionCircleIcon />
             </AcmButton>
