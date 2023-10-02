@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ExpandableSection } from "@patternfly/react-core"
-import { AcmButton } from "../../../../../../ui-components"
-import { TFunction } from "i18next"
-import { ExternalLinkAltIcon } from "@patternfly/react-icons"
-import { DOC_LINKS } from "../../../../../../lib/doc-util"
-import { HypershiftDiagram } from "./HypershiftDiagram"
+import { ExpandableSection } from '@patternfly/react-core'
+import { AcmButton } from '../../../../../../ui-components'
+import { TFunction } from 'i18next'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { HypershiftDiagram } from './HypershiftDiagram'
 
 type HypershiftDiagramExpandProps = {
   isDiagramExpanded: boolean
