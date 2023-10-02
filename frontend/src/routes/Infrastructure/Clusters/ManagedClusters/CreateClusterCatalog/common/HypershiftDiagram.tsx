@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Split, SplitItem } from '@patternfly/react-core'
-import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import './HypershiftDiagram.css'
 
 export function HypershiftDiagram() {

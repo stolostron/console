@@ -16,9 +16,7 @@ import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { ExpandableSection } from '@patternfly/react-core'
-import { AcmButton } from '../../../../../ui-components'
-import { HypershiftDiagram } from './HypershiftDiagram'
+import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
 
 export function CreateControlPlane() {
   const { t } = useTranslation()
@@ -119,31 +117,12 @@ export function CreateControlPlane() {
       onBack={back(NavigationPath.createCluster)}
       onCancel={cancel(NavigationPath.clusters)}
       customCatalogSection={
-        <ExpandableSection
-          style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
-          isExpanded={isDiagramExpanded}
-          onToggle={onDiagramToggle}
-          toggleContent={
-            <>
-              <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
-                {t('Compare control plane types')}
-              </span>
-              <AcmButton
-                variant="link"
-                icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
-                iconPosition="right"
-                isInline
-                onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
-                onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
-                onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
-              >
-                {t('Learn more about control plane types')}
-              </AcmButton>
-            </>
-          }
-        >
-          <HypershiftDiagram />
-        </ExpandableSection>
+        <HypershiftDiagramExpand
+          isDiagramExpanded={isDiagramExpanded}
+          onDiagramToggle={onDiagramToggle}
+          setIsMouseOverControlPlaneLink={setIsMouseOverControlPlaneLink}
+          t={t}
+        />
       }
     />
   )
