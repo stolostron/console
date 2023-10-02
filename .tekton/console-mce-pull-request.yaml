@@ -19,7 +19,7 @@ metadata:
 spec:
   params:
   - name: dockerfile
-    value: Dockerfile.mce.prow
+    value: Containerfile.mce.rhtap
   - name: git-url
     value: '{{repo_url}}'
   - name: image-expires-after
@@ -188,8 +188,8 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:97f21661e237735af04b37feeeaedd328424bfa0ebd4cd0f79ac39cde17137f6
-        name: buildah
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1-e2fb6023e4b419942feb4964d59d6cec72eb5293759f14ab19ae8a915a410b4b
+        name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
         operator: in
@@ -262,9 +262,6 @@ spec:
         operator: in
         values:
         - "false"
-      workspaces:
-      - name: test-ws
-        workspace: workspace
     - name: clair-scan
       params:
       - name: image-digest
