@@ -42,14 +42,16 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
 
-      const decisionOwnerReference = get(placement, 'metadata.ownerReferences')[0]
+      const decisionOwnerReference = get(placement, 'metadata.ownerReferences', undefined)
 
-      relatedPlacement = recoilStates.placements.find(
-        (resource) =>
-          resource.kind === decisionOwnerReference.kind &&
-          resource.metadata.name === decisionOwnerReference.name &&
-          resource.metadata.namespace === namespace
-      )
+      if (decisionOwnerReference) {
+        relatedPlacement = recoilStates.placements.find(
+          (resource) =>
+            resource.kind === decisionOwnerReference[0].kind &&
+            resource.metadata.name === decisionOwnerReference[0].name &&
+            resource.metadata.namespace === namespace
+        )
+      }
 
       if (get(app, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
         isAppSetPullModel = true
