@@ -18,6 +18,7 @@ import {
   mockMultiClusterEngine,
   mockMultiClusterEngineWithHypershiftDisabled,
 } from './sharedMocks'
+import userEvent from '@testing-library/user-event'
 
 describe('CreateControlPlane', () => {
   const Component = ({
@@ -84,5 +85,13 @@ describe('CreateControlPlane', () => {
   test('can click standalone', async () => {
     render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
     await clickByTestId('standalone')
+  })
+
+  test('can click compare diagram', async () => {
+    const { getByText } = render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+
+    userEvent.click(getByText('Learn more about control plane types'))
+    expect(getByText('Compare control plane types')).toBeTruthy()
+    userEvent.click(getByText('Compare control plane types'))
   })
 })
