@@ -7,7 +7,7 @@ import {
   PageHeader,
   PatternFlyColor,
 } from '@stolostron/react-data-view'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
@@ -16,19 +16,30 @@ import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { ExpandableSection } from '@patternfly/react-core'
+import { AcmButton } from '../../../../../ui-components'
+import { HypershiftDiagram } from './HypershiftDiagram'
 
 export function CreateControlPlane() {
   const { t } = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
+  const [isDiagramExpanded, setIsDiagramExpanded] = useState(true)
+  const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
 
   const isHypershiftEnabled = useIsHypershiftEnabled()
   const noAvailableHostsAlert = useNoAvailableHostsAlert('hosted')
+
+  const onDiagramToggle = (isExpanded: boolean) => {
+    if (!isMouseOverControlPlaneLink) {
+      setIsDiagramExpanded(isExpanded)
+    }
+  }
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
       {
         id: 'hosted',
-        title: t('Hosted control plane'),
+        title: t('Hosted'),
         items: [
           {
             type: CatalogCardItemType.Description,
@@ -66,7 +77,7 @@ export function CreateControlPlane() {
       },
       {
         id: 'standalone',
-        title: t('Standalone control plane'),
+        title: t('Standalone'),
         items: [
           {
             type: CatalogCardItemType.Description,
@@ -107,6 +118,33 @@ export function CreateControlPlane() {
       cards={cards}
       onBack={back(NavigationPath.createCluster)}
       onCancel={cancel(NavigationPath.clusters)}
+      customCatalogSection={
+        <ExpandableSection
+          style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+          isExpanded={isDiagramExpanded}
+          onToggle={onDiagramToggle}
+          toggleContent={
+            <>
+              <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
+                {t('Compare control plane types')}
+              </span>
+              <AcmButton
+                variant="link"
+                icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
+                iconPosition="right"
+                isInline
+                onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
+                onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
+                onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
+              >
+                {t('Learn more about control plane types')}
+              </AcmButton>
+            </>
+          }
+        >
+          <HypershiftDiagram />
+        </ExpandableSection>
+      }
     />
   )
 }
