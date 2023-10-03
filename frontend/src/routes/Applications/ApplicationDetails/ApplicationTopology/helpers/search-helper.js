@@ -12,12 +12,12 @@
 export const convertStringToQuery = (searchText) => {
   let relatedKinds = []
 
-  if (searchText.indexOf('kind:subscription') >= 0) {
-    relatedKinds = ['placementrule', 'deployable', 'application', 'subscription', 'channel']
-  } else if (searchText.indexOf('kind:channel') >= 0) {
-    relatedKinds = ['subscription']
-  } else if (searchText.indexOf('kind:placementrule') >= 0) {
-    relatedKinds = ['subscription']
+  if (searchText.indexOf('kind:Subscription') >= 0) {
+    relatedKinds = ['PlacementRule', 'Deployable', 'Application', 'Subscription', 'Channel']
+  } else if (searchText.indexOf('kind:Channel') >= 0) {
+    relatedKinds = ['Subscription']
+  } else if (searchText.indexOf('kind:PlacementRule') >= 0) {
+    relatedKinds = ['Subscription']
   }
 
   const searchTokens = searchText.split(' ')

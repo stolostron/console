@@ -72,7 +72,7 @@ async function getRelatedResources(reports) {
         const query = {
           keywords: [],
           filters: [
-            { property: 'kind', values: [kind.toLowerCase()] },
+            { property: 'kind', values: [kind] },
             { property: 'name', values: [name] },
             { property: 'namespace', values: [namespace] },
           ],
@@ -82,10 +82,10 @@ async function getRelatedResources(reports) {
         }
         switch (kind) {
           case 'Deployment':
-            promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicaset', 'pod']))
+            promises.push(getSearchPromise(cluster, kind, name, namespace, ['ReplicaSet', 'Pod']))
             break
           case 'DeploymentConfig':
-            promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicationcontroller', 'pod']))
+            promises.push(getSearchPromise(cluster, kind, name, namespace, ['ReplicationController', 'Pod']))
             break
           case 'Route':
             promises.push(fireManagedClusterView(cluster, 'route', 'route.openshift.io/v1', name, namespace))
@@ -126,7 +126,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
   const query = {
     keywords: [],
     filters: [
-      { property: 'kind', values: [kind.toLowerCase()] },
+      { property: 'kind', values: [kind] },
       { property: 'name', values: [name] },
       { property: 'namespace', values: [namespace] },
     ],
@@ -151,10 +151,10 @@ const getQueryStringForResource = (resourcename, name, namespace) => {
   if (resourcename) {
     switch (resourcename) {
       case 'Subscription':
-        resource = 'kind:subscription '
+        resource = 'kind:Subscription '
         break
       case 'Application':
-        resource = 'kind:application'
+        resource = 'kind:Application'
         break
       default:
         resource = `kind:${resourcename} `
