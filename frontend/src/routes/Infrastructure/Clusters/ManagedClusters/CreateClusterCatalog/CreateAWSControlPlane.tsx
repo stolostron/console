@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ExpandableSection } from '@patternfly/react-core'
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
@@ -15,10 +14,10 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import { AcmButton, AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
+import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
-import { HypershiftDiagram } from './HypershiftDiagram'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
+import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -95,6 +94,10 @@ export function CreateAWSControlPlane() {
               {
                 text: t('Increases resiliency with closely interconnected control plane and worker nodes.'),
               },
+              {
+                text: t('Provide customized control plane cluster configuration.'),
+                subTitles: [t('Standard'), t('Single node OpenShift'), t('Three-node cluster')],
+              },
             ],
           },
         ],
@@ -135,31 +138,12 @@ export function CreateAWSControlPlane() {
           onBack={back(NavigationPath.createCluster)}
           onCancel={cancel(NavigationPath.clusters)}
           customCatalogSection={
-            <ExpandableSection
-              style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
-              isExpanded={isDiagramExpanded}
-              onToggle={onDiagramToggle}
-              toggleContent={
-                <>
-                  <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
-                    {t('Compare control plane types')}
-                  </span>
-                  <AcmButton
-                    variant="link"
-                    icon={<ExternalLinkAltIcon style={{ fontSize: '14px' }} />}
-                    iconPosition="right"
-                    isInline
-                    onClick={() => window.open(DOC_LINKS.HYPERSHIFT_INTRO, '_blank')}
-                    onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
-                    onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
-                  >
-                    {t('Learn more about control plane types')}
-                  </AcmButton>
-                </>
-              }
-            >
-              <HypershiftDiagram />
-            </ExpandableSection>
+            <HypershiftDiagramExpand
+              isDiagramExpanded={isDiagramExpanded}
+              onDiagramToggle={onDiagramToggle}
+              setIsMouseOverControlPlaneLink={setIsMouseOverControlPlaneLink}
+              t={t}
+            />
           }
         />
       </DataViewStringContext.Provider>
