@@ -2,7 +2,7 @@
 
 import { ExpandableSection } from '@patternfly/react-core'
 import { AcmButton } from '../../../../../../ui-components'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { HypershiftDiagram } from './HypershiftDiagram'
@@ -25,7 +25,7 @@ export const HypershiftDiagramExpand = (props: HypershiftDiagramExpandProps) => 
       toggleContent={
         <>
           <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
-            {`${t('Compare control plane types')}`}
+            {t('Compare control plane types')}
           </span>
           <AcmButton
             variant="link"
@@ -36,7 +36,7 @@ export const HypershiftDiagramExpand = (props: HypershiftDiagramExpandProps) => 
             onMouseEnter={() => setIsMouseOverControlPlaneLink(true)}
             onMouseLeave={() => setIsMouseOverControlPlaneLink(false)}
           >
-            {`${t('Learn more about control plane types')}`}
+            {t('Learn more about control plane types')}
           </AcmButton>
         </>
       }
