@@ -336,7 +336,7 @@ export const mockArgoApplication1: ArgoApplication = {
 }
 export const mockOCPApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
-  kind: 'deployment',
+  kind: 'Deployment',
   name: 'authentication-operator',
   namespace: 'authentication-operator-ns',
   label: 'app=authentication-operator',
@@ -346,7 +346,7 @@ export const mockOCPApplication0: OCPAppResource = {
 }
 export const mockFluxApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
-  kind: 'deployment',
+  kind: 'Deployment',
   name: 'authentication-operator',
   namespace: 'authentication-operator-ns',
   label: 'kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
@@ -414,7 +414,7 @@ export const mockSearchQueryArgoApps = {
     input: [
       {
         filters: [
-          { property: 'kind', values: ['application'] },
+          { property: 'kind', values: ['Application'] },
           { property: 'apigroup', values: ['argoproj.io'] },
           { property: 'cluster', values: ['!local-cluster'] },
         ],
@@ -435,7 +435,7 @@ export const mockSearchResponseArgoApps = {
             created: '2021-12-03T18:55:47Z',
             destinationName: 'in-cluster',
             destinationNamespace: 'feng-remote-namespace',
-            kind: 'application',
+            kind: 'Application',
             name: 'feng-remote-argo8',
             namespace: 'openshift-gitops',
             path: 'helloworld-perf',
@@ -464,7 +464,7 @@ export const mockSearchResponseArgoApps1 = {
             created: '2021-12-03T18:55:47Z',
             destinationName: 'in-cluster',
             destinationNamespace: 'feng-remote-namespace',
-            kind: 'application',
+            kind: 'Application',
             name: 'feng-remote-argo8',
             namespace: 'openshift-gitops',
             path: 'helloworld-perf',
@@ -488,7 +488,7 @@ export const mockSearchQueryOCPApplications = {
         filters: [
           {
             property: 'kind',
-            values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
           },
         ],
         limit: 6500,
