@@ -69,6 +69,9 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
     <TextContent>
       <a href={props.doclink} target="_blank" rel="noreferrer">
         <AcmButton
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
           variant="link"
           isInline
           icon={<ExternalLinkAltIcon />}
