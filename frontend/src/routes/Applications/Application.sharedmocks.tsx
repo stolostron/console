@@ -381,7 +381,7 @@ export const mockArgoApplication1: ArgoApplication = {
 }
 export const mockOCPApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
-  kind: 'Deployment',
+  kind: 'deployment',
   name: 'authentication-operator',
   namespace: 'authentication-operator-ns',
   label: 'app=authentication-operator',
@@ -391,7 +391,7 @@ export const mockOCPApplication0: OCPAppResource = {
 }
 export const mockFluxApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
-  kind: 'Deployment',
+  kind: 'deployment',
   name: 'authentication-operator',
   namespace: 'authentication-operator-ns',
   label: 'kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
