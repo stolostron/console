@@ -60,7 +60,7 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
       input: [
         {
           filters: [
-            { property: 'kind', values: ['application'] },
+            { property: 'kind', values: ['Application'] },
             { property: 'apigroup', values: ['argoproj.io'] },
             { property: 'cluster', values: ['!local-cluster'] },
           ],
@@ -80,7 +80,7 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
           filters: [
             {
               property: 'kind',
-              values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
+              values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
             },
           ],
           limit: 6500, // search said not to use unlimited results so use this for now until pagination is available
