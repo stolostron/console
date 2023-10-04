@@ -20,6 +20,7 @@ import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../.
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import { AcmAlert } from '../../../../../../ui-components'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util.tsx'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -728,11 +729,16 @@ export const isDeprecatedRHV = (control, _controlData, t) => {
   if (control.active && control.active.includes('4.13')) {
     return (
       <AcmAlert
-        variant="warning"
+        variant="info"
         title={t('Deprecated host platform')}
-        message={t(
-          'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-        )}
+        message={
+          <>
+            {t(
+              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
+            )}
+            <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
+          </>
+        }
         noClose={true}
         style={{ marginTop: '2em' }}
         isInline
