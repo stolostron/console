@@ -15,7 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -87,10 +87,10 @@ function HandleErrors(schemaError: ApolloError | undefined, completeError: Apoll
       </EmptyState>
     )
   }
-  return <Fragment />
+  return undefined
 }
 
-function RenderSearchBar(props: {
+interface SearchbarProps {
   presetSearchQuery: string
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   queryErrors: boolean
@@ -99,8 +99,9 @@ function RenderSearchBar(props: {
   userPreference?: UserPreference
   setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
   refetchSearch: any
-  searchQueryLoading: boolean
-}) {
+}
+
+function RenderSearchBar(props: Readonly<SearchbarProps>) {
   const {
     presetSearchQuery,
     queryErrors,
@@ -115,11 +116,11 @@ function RenderSearchBar(props: {
   const history = useHistory()
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
   const [saveSearch, setSaveSearch] = useState<SavedSearch>()
-  const [open, toggleOpen] = useState<boolean>(false)
+  const [toggleOpen, setToggleOpen] = useState<boolean>(false)
   const { useSavedSearchLimit, useSearchAutocompleteLimit } = useSharedAtoms()
   const savedSearchLimit = useSavedSearchLimit()
   const searchAutocompleteLimit = useSearchAutocompleteLimit()
-  const toggle = () => toggleOpen(!open)
+  const toggle = () => setToggleOpen(!toggleOpen)
 
   useEffect(() => {
     setCurrentSearch(presetSearchQuery)
@@ -218,47 +219,51 @@ function RenderSearchBar(props: {
   }, [currentSearch, savedSearchLimit, savedSearchQueries, t])
 
   return (
-    <Fragment>
-      <PageSection>
-        <SaveAndEditSearchModal
-          setSelectedSearch={setSelectedSearch}
-          savedSearch={saveSearch}
-          onClose={() => setSaveSearch(undefined)}
-          savedSearchQueries={savedSearchQueries}
-          userPreference={userPreference}
-          setUserPreference={setUserPreference}
-        />
-        <SearchInfoModal isOpen={open} onClose={() => toggleOpen(false)} />
-        <Searchbar
-          queryString={currentSearch}
-          saveSearchTooltip={saveSearchTooltip}
-          setSaveSearch={setSaveSearch}
-          suggestions={suggestions}
-          currentQueryCallback={(newQuery) => {
-            setCurrentSearch(newQuery)
-            if (newQuery === '') {
-              updateBrowserUrl(history, newQuery)
-            }
-            if (newQuery !== currentSearch) {
-              setSelectedSearch(t('Saved searches'))
-            }
-          }}
-          toggleInfoModal={toggle}
-          updateBrowserUrl={updateBrowserUrl}
-          savedSearchQueries={savedSearchQueries}
-          refetchSearch={refetchSearch}
-        />
-        {HandleErrors(searchSchemaError, searchCompleteError)}
-      </PageSection>
-    </Fragment>
+    <PageSection>
+      <SaveAndEditSearchModal
+        setSelectedSearch={setSelectedSearch}
+        savedSearch={saveSearch}
+        onClose={() => setSaveSearch(undefined)}
+        savedSearchQueries={savedSearchQueries}
+        userPreference={userPreference}
+        setUserPreference={setUserPreference}
+      />
+      <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
+      <Searchbar
+        queryString={currentSearch}
+        saveSearchTooltip={saveSearchTooltip}
+        setSaveSearch={setSaveSearch}
+        suggestions={suggestions}
+        currentQueryCallback={(newQuery) => {
+          setCurrentSearch(newQuery)
+          if (newQuery === '') {
+            updateBrowserUrl(history, newQuery)
+          }
+          if (newQuery !== currentSearch) {
+            setSelectedSearch(t('Saved searches'))
+          }
+        }}
+        toggleInfoModal={toggle}
+        updateBrowserUrl={updateBrowserUrl}
+        savedSearchQueries={savedSearchQueries}
+        refetchSearch={refetchSearch}
+      />
+      {HandleErrors(searchSchemaError, searchCompleteError)}
+    </PageSection>
   )
 }
 
-function RenderDropDownAndNewTab(props: {
+interface DropDownAndNewTabProps {
   selectedSearch: string
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   savedSearchQueries: SavedSearch[]
-}) {
+}
+interface SavedSearchDropdownProps {
+  selectedSearch: string
+  savedSearchQueries: SavedSearch[]
+}
+
+function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
   const { selectedSearch, setSelectedSearch, savedSearchQueries } = props
   const { t } = useTranslation()
   const history = useHistory()
@@ -277,7 +282,7 @@ function RenderDropDownAndNewTab(props: {
     [history, savedSearchQueries, setSelectedSearch, t]
   )
 
-  function SavedSearchDropdown(props: { selectedSearch: string; savedSearchQueries: SavedSearch[] }) {
+  function SavedSearchDropdown(props: Readonly<SavedSearchDropdownProps>) {
     const dropdownItems: any[] = useMemo(() => {
       const items: any[] = props.savedSearchQueries.map((query) => {
         return { id: query.id, text: query.name }
@@ -403,7 +408,6 @@ export default function SearchPage() {
           userPreference={userPreference}
           setUserPreference={setUserPreference}
           refetchSearch={refetch}
-          searchQueryLoading={loading}
         />
         {!queryErrors &&
           (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
