@@ -129,6 +129,7 @@ function RenderSearchBar(props: {
   const { data: searchSchemaData, error: searchSchemaError } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    fetchPolicy: 'cache-and-network',
   })
 
   const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
@@ -143,6 +144,7 @@ function RenderSearchBar(props: {
   const { data: searchCompleteData, error: searchCompleteError } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    fetchPolicy: 'cache-and-network',
     variables: {
       property: searchCompleteValue,
       query: searchCompleteQuery,
