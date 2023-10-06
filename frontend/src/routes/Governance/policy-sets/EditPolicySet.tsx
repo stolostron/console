@@ -12,6 +12,7 @@ import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -81,6 +82,8 @@ export function EditPolicySet() {
     setExistingResources([policySet, ...policySetPlacements, ...policySetPlacementRules, ...policySetPlacementBindings])
   }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policySets])
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   if (existingResources === undefined) {
     return <LoadingPage />
   }
@@ -111,10 +114,14 @@ export function EditPolicySet() {
               autoClose: true,
             })
           }
+          submitForm()
           history.push(NavigationPath.policySets)
         })
       }}
-      onCancel={() => history.push(NavigationPath.policySets)}
+      onCancel={() => {
+        cancelForm()
+        history.push(NavigationPath.policySets)
+      }}
     />
   )
 }

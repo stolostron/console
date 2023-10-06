@@ -67,6 +67,13 @@ export function PolicyWizard(props: {
     stepsAriaLabel: t('Policy steps'),
     contentAriaLabel: t('Policy content'),
   })
+  const defaultData = props.resources ?? [
+    {
+      ...PolicyType,
+      metadata: { name: '', namespace: '' },
+      spec: { disabled: false },
+    },
+  ]
 
   return (
     <WizardPage
@@ -81,15 +88,7 @@ export function PolicyWizard(props: {
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}
       editMode={props.editMode}
-      defaultData={
-        props.resources ?? [
-          {
-            ...PolicyType,
-            metadata: { name: '', namespace: '' },
-            spec: { disabled: false },
-          },
-        ]
-      }
+      defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
         {props.editMode !== EditMode.Edit && (

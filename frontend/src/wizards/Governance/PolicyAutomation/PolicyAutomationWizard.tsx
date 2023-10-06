@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, Button, ButtonVariant } from '@patternfly/react-core'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
   EditMode,
@@ -20,7 +20,7 @@ import { ConfigMap } from '../../../resources'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
-import { LostChangesPrompt } from '../../../wizards/common/LostChangesPrompt'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export interface PolicyAutomationWizardProps {
   title: string
@@ -93,6 +93,9 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       automationDef: { name: '', secret: '', type: 'AnsibleJob' },
     },
   }
+
+  const { cancelForm } = useContext(LostChangesContext)
+
   return (
     <WizardPage
       id="policy-automation-wizard"
@@ -100,7 +103,10 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
       title={props.title}
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}
-      onCancel={props.onCancel}
+      onCancel={() => {
+        cancelForm()
+        props.onCancel()
+      }}
       editMode={props.editMode}
       yamlEditor={props.yamlEditor}
       defaultData={defaultData}
@@ -115,7 +121,6 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               </Alert>
             </WizDetailsHidden>
           )}
-          <LostChangesPrompt initialData={defaultData} />
           <Select
             id="secret"
             label={t('Ansible credential')}

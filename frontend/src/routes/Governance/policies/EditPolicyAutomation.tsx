@@ -12,6 +12,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { listAnsibleTowerJobs, PolicyAutomation, Secret } from '../../../resources'
 import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -68,6 +69,8 @@ export function EditPolicyAutomation() {
     [secrets]
   )
 
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
+
   if (currentPolicyAutomation === undefined) {
     return <LoadingPage />
   }
@@ -89,9 +92,14 @@ export function EditPolicyAutomation() {
       credentials={credentials}
       createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
       resource={currentPolicyAutomation}
-      onCancel={() => history.push(NavigationPath.policies)}
+      onCancel={() => {
+        cancelForm()
+        history.push(NavigationPath.policies)
+      }}
       configMaps={configMaps}
-      onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t, currentPolicyAutomation)}
+      onSubmit={(data) =>
+        handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t, currentPolicyAutomation)
+      }
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

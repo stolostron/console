@@ -3,7 +3,6 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Prompt } from 'react-router-dom'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import isEmpty from 'lodash/isEmpty'
@@ -40,6 +39,7 @@ import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import keyBy from 'lodash/keyBy'
 import merge from 'lodash/merge'
+import { LostChangesContext, LostChangesPrompt } from '../LostChanges'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 const TEMPLATE_EDITOR_SHOW_SECRETS_COOKIE = 'template-editor-show-secrets-cookie'
@@ -249,13 +249,6 @@ export default class TemplateEditor extends React.Component {
     if (props.initialOpen) {
       localStorage.setItem(TEMPLATE_EDITOR_OPEN_COOKIE, 'true')
     }
-    this.beforeUnloadFunc = ((event) => {
-      if (this.isDirty) {
-        event.preventDefault()
-        event.returnValue = this.isDirty
-      }
-    }).bind(this)
-    window.addEventListener('beforeunload', this.beforeUnloadFunc)
   }
 
   componentDidMount() {
@@ -265,10 +258,6 @@ export default class TemplateEditor extends React.Component {
         this.forceUpdate()
       }, 0)
     }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('beforeunload', this.beforeUnloadFunc)
   }
 
   setContainerRef = (container) => {
@@ -318,7 +307,7 @@ export default class TemplateEditor extends React.Component {
   }
 
   render() {
-    const { isLoaded, showEditor, showWizard, resetInx, i18n } = this.state
+    const { isLoaded, showEditor, showWizard, resetInx } = this.state
     if (!showEditor) {
       this.editors = []
     }
@@ -329,7 +318,7 @@ export default class TemplateEditor extends React.Component {
     })
     return (
       <div key={`key${resetInx}`} className={viewClasses} ref={this.setContainerRef}>
-        <Prompt when={this.isDirty} message={i18n('changes.maybe.lost')} />
+        <LostChangesPrompt dirty={this.isDirty} />
         {this.renderSplitEditor(isLoaded)}
         {this.renderEditButton(isLoaded)}
         {this.renderCreateButton(isLoaded)}
@@ -1125,7 +1114,7 @@ export default class TemplateEditor extends React.Component {
       hasFormExceptions: !canCreate,
       isFinalValidate: true,
     })
-    this.isDirty = false
+    this.context.submitForm()
     this.scrollControlPaneToNotifications()
 
     if (canCreate) {
@@ -1341,6 +1330,7 @@ export default class TemplateEditor extends React.Component {
   handleCancelCreate() {
     const { createControl } = this.props
     const { cancelCreate } = createControl
+    this.context.cancelForm()
     cancelCreate()
   }
 
@@ -1384,3 +1374,5 @@ export default class TemplateEditor extends React.Component {
     this.editors = []
   }
 }
+
+TemplateEditor.contextType = LostChangesContext

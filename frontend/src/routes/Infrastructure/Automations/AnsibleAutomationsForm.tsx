@@ -12,7 +12,7 @@ import {
   SelectOption,
   SelectVariant,
 } from '@patternfly/react-core'
-import { Fragment, SetStateAction, useCallback, useEffect, useState } from 'react'
+import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
@@ -55,6 +55,7 @@ import {
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import get from 'lodash/get'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export default function AnsibleAutomationsFormPage({
   match,
@@ -248,6 +249,8 @@ export function AnsibleAutomationsForm(props: {
       })
     }
   }, [ansibleSelection, ansibleCredentials, t])
+
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
 
   function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
     if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -720,18 +723,23 @@ export function AnsibleAutomationsForm(props: {
       if (isEditing) {
         return replaceResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
+          submitForm()
           history.push(NavigationPath.ansibleAutomations)
         })
       } else {
         return createResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
+          submitForm()
           history.push(NavigationPath.ansibleAutomations)
         })
       }
     },
     submitText: isEditing ? t('save') : t('add'),
     submittingText: isEditing ? t('saving') : t('adding'),
-    cancel: () => history.push(NavigationPath.ansibleAutomations),
+    cancel: () => {
+      cancelForm()
+      history.push(NavigationPath.ansibleAutomations)
+    },
     stateToSyncs,
     stateToData,
   }

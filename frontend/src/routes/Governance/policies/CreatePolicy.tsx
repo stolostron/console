@@ -10,6 +10,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -61,6 +62,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
         .sort(),
     [namespaces]
   )
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
 
   return (
     <PolicyWizard
@@ -75,7 +77,10 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}
-      onCancel={() => history.push(NavigationPath.policies)}
+      onCancel={() => {
+        cancelForm()
+        history.push(NavigationPath.policies)
+      }}
       onSubmit={(data) => {
         const resources = data as IResource[]
         return reconcileResources(resources, []).then(() => {
@@ -87,6 +92,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
               type: 'success',
               autoClose: true,
             })
+            submitForm()
             history.push(
               NavigationPath.policyDetails
                 .replace(':namespace', policy.metadata?.namespace ?? '')

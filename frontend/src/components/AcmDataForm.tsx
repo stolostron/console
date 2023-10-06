@@ -77,7 +77,7 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Fragment, ReactNode, useRef, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
@@ -93,7 +93,7 @@ import {
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
-import { LostChangesPrompt } from '../wizards/common/LostChangesPrompt'
+import { LostChangesContext, LostChangesPrompt } from './LostChanges'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -241,7 +241,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   return (
     <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
-      <LostChangesPrompt data={resources} />
       {isModalWizard ? (
         drawerContent()
       ) : (
@@ -309,36 +308,36 @@ export function AcmDataForm(
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
-  switch (props.mode) {
-    case 'wizard':
-      return (
-        <AcmDataFormWizard
-          formData={formData}
-          isHorizontal={isHorizontal ?? false}
-          showFormErrors={showFormErrors}
-          setShowFormErrors={setShowFormErrors}
-          globalWizardAlert={globalWizardAlert}
-          isModalWizard={isModalWizard}
-        />
-      )
-
-    case 'details':
-      return (
-        <Form>
-          <AcmDataFormDetails formData={formData} />
-        </Form>
-      )
-
-    default:
-      return (
-        <AcmDataFormDefault
-          formData={formData}
-          isHorizontal={isHorizontal}
-          showFormErrors={showFormErrors}
-          setShowFormErrors={setShowFormErrors}
-        />
-      )
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, mode } = props
+  if (mode === 'details') {
+    return (
+      <Form>
+        <AcmDataFormDetails formData={formData} />
+      </Form>
+    )
+  } else {
+    return (
+      <>
+        <LostChangesPrompt isNested={isModalWizard} data={formData.stateToData()} />
+        {mode === 'wizard' ? (
+          <AcmDataFormWizard
+            formData={formData}
+            isHorizontal={isHorizontal ?? false}
+            showFormErrors={showFormErrors}
+            setShowFormErrors={setShowFormErrors}
+            globalWizardAlert={globalWizardAlert}
+            isModalWizard={isModalWizard}
+          />
+        ) : (
+          <AcmDataFormDefault
+            formData={formData}
+            isHorizontal={isHorizontal}
+            showFormErrors={showFormErrors}
+            setShowFormErrors={setShowFormErrors}
+          />
+        )}
+      </>
+    )
   }
 }
 
@@ -353,6 +352,13 @@ export function AcmDataFormDefault(props: {
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+  const { cancelForm } = useContext(LostChangesContext)
+
+  const cancel = useCallback(() => {
+    cancelForm()
+    formData.cancel()
+  }, [cancelForm, formData])
+
   return (
     <Form isHorizontal={isHorizontal}>
       {formData.sections.map((section) => {
@@ -423,7 +429,7 @@ export function AcmDataFormDefault(props: {
                   </Button>
                 </ActionListItem>
                 <ActionListItem>
-                  <Button variant="secondary" onClick={formData.cancel} isDisabled={isSubmitting}>
+                  <Button variant="secondary" onClick={cancel} isDisabled={isSubmitting}>
                     {formData.cancelLabel}
                   </Button>
                 </ActionListItem>
@@ -450,6 +456,12 @@ export function AcmDataFormWizard(props: {
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
+  const { cancelForm } = useContext(LostChangesContext)
+
+  const cancel = () => {
+    cancelForm()
+    formData.cancel()
+  }
 
   function createStep(section: Section | SectionGroup): WizardStep | undefined {
     if (sectionHidden(section)) return undefined
@@ -626,7 +638,7 @@ export function AcmDataFormWizard(props: {
                   </ActionListGroup>
                   <ActionListGroup>
                     <ActionListItem>
-                      <Button variant="link" onClick={formData.cancel} isDisabled={isSubmitting}>
+                      <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
                         {formData.cancelLabel}
                       </Button>
                     </ActionListItem>
@@ -650,10 +662,10 @@ export function AcmDataFormWizard(props: {
           description={formData.description}
           steps={steps}
           footer={Footer}
-          onClose={formData.cancel}
+          onClose={cancel}
         />
       ) : (
-        <Wizard steps={steps} footer={Footer} onClose={formData.cancel} />
+        <Wizard steps={steps} footer={Footer} onClose={cancel} />
       )}
     </Fragment>
   )

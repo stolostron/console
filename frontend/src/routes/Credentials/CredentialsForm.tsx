@@ -12,7 +12,7 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import _, { noop, get } from 'lodash'
-import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
 import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -56,6 +56,7 @@ import {
 import schema from './schema.json'
 import { CredentialsType } from './CredentialsType'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
+import { LostChangesContext } from '../../components/LostChanges'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -126,7 +127,10 @@ export function ViewEditCredentialsFormPage() {
   useEffect(() => {
     const result = getSecret({ name, namespace })
     result.promise
-      .then((secret) => setProviderConnection(unpackProviderConnection(secret as ProviderConnection)))
+      .then((secret) => {
+        setError(undefined)
+        setProviderConnection(unpackProviderConnection(secret as ProviderConnection))
+      })
       .catch(setError)
     return result.abort
   }, [name, namespace])
@@ -207,6 +211,8 @@ export function CredentialsForm(
   const [cloudName, setCloudName] = useState<CloudNames | string>(
     providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
   )
+
+  const { submitForm } = useContext(LostChangesContext)
 
   function getDisconnectedDocLink(credentialsType: Provider) {
     switch (credentialsType) {
@@ -323,6 +329,10 @@ export function CredentialsForm(
     () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
     []
   )
+
+  const { cancelForm } = useContext(LostChangesContext)
+  const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
+
   const isHostedControlPlane = credentialsType === Provider.awss3
 
   function stateToData() {
@@ -1503,6 +1513,7 @@ export function CredentialsForm(
             type: 'success',
             autoClose: true,
           })
+          submitForm()
           history.push(NavigationPath.credentials)
         })
       } else {
@@ -1513,6 +1524,7 @@ export function CredentialsForm(
             type: 'success',
             autoClose: true,
           })
+          submitForm()
 
           if (newCredentialCallback) {
             newCredentialCallback(resource as Secret)
@@ -1533,8 +1545,8 @@ export function CredentialsForm(
     cancelLabel: t('Cancel'),
     nextLabel: t('Next'),
     backLabel: t('Back'),
-    back: handleModalToggle ? handleModalToggle : back(NavigationPath.credentials),
-    cancel: handleModalToggle ? handleModalToggle : cancel(NavigationPath.credentials),
+    back: handleModalToggle ? guardedHandleModalToggle : back(NavigationPath.credentials),
+    cancel: handleModalToggle ? guardedHandleModalToggle : cancel(NavigationPath.credentials),
     stateToSyncs,
     stateToData,
   }
