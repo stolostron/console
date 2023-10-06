@@ -36,7 +36,7 @@ const useNoAvailableHostsAlert = (
           <Trans
             values={{ controlPlaneTypeTxt: controlPlaneTypeTxt }}
             i18nKey="createCluster.card.noHosts.alert"
-            components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a>, br: <br /> }}
+            components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
           />
         ),
       }
