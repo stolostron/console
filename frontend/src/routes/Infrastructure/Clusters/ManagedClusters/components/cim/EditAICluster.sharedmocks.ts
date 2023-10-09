@@ -101,7 +101,7 @@ export const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
     namespace: clusterName,
   },
   spec: {
-    clusterDeploymentRef: { name: clusterName },
+    clusterDeploymentRef: { name: clusterName, namespace: clusterName },
     holdInstallation: true,
     provisionRequirements: { controlPlaneAgents: 3 },
     imageSetRef: { name: 'ocp-release48' },

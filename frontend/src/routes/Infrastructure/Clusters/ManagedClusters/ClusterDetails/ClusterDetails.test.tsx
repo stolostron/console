@@ -291,6 +291,7 @@ const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
     ingressVIP: '192.168.122.155',
     clusterDeploymentRef: {
       name: clusterName,
+      namespace: clusterName,
     },
     clusterMetadata: {
       clusterID: '6aa9cdfe-a13c-4e8c-b7e3-0219fad10163',

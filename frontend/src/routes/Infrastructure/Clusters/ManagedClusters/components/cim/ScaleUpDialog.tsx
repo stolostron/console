@@ -17,10 +17,16 @@ type ScaleUpDialogProps = {
 }
 
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
-  const { agentsState } = useSharedAtoms()
+  const { agentsState, agentClusterInstallsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
-  const [agents] = useRecoilValue(waitForAll([agentsState]))
+  const [agents, agentClusterInstalls] = useRecoilValue(waitForAll([agentsState, agentClusterInstallsState]))
   const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
+
+  const agentClusterInstall = agentClusterInstalls.find(
+    (aci) =>
+      aci.spec?.clusterDeploymentRef?.name === clusterDeployment?.metadata?.name &&
+      aci.spec?.clusterDeploymentRef?.namespace === clusterDeployment?.metadata?.namespace
+  )
 
   const addHostsToCluster = useCallback(
     async (agentsToAdd: AgentK8sResource[]) => {
@@ -65,6 +71,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
       addHostsToCluster={addHostsToCluster}
       onChangeHostname={onSaveAgent}
       onSetInstallationDiskId={onSetInstallationDiskId}
+      isNutanix={agentClusterInstall?.spec?.platformType === 'Nutanix'}
     />
   )
 }
