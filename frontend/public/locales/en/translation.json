@@ -371,7 +371,7 @@
   "access.users": "Users",
   "access.usersInGroup": "Users in group",
   "access.usersInGroup.view": "View users in group",
-  "acm.plugin.not.ready": "The <bold>Red Hat Advanced Cluster Management for Kubernetes</bold> operator is installed, but the console plugin is not available. If operator installation has just completed, an alert should appear in a few moments prompting you to refresh the web console to access the latest version.",
+  "acm.plugin.not.ready": "The <bold>Red Hat Advanced Cluster Management for Kubernetes</bold> operator is installed, but the console plugin is not available. If you just completed the installation procedure within the last few minutes, wait a few moments for a web console update alert to appear. Click the link in the alert to refresh the web console to the latest version.",
   "acm.plugin.not.ready.tips": "If the alert does not appear, confirm that a <code>MultiClusterHub</code> resource has been created and is available, and that the <code>acm</code> console plugin is enabled.",
   "Action": "Action",
   "action.message.delete": "You are about to delete infrastructure environment. The infrastructure environment will no longer be available.",
