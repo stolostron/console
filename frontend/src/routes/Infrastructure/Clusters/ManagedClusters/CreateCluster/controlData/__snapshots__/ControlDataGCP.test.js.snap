@@ -23,7 +23,7 @@ Array [
     "onSelect": [Function],
     "placeholder": "Select a credential",
     "providerId": "gcp",
-    "tooltip": "The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.",
+    "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Select a connection",
@@ -1114,7 +1114,7 @@ Array [
     "onSelect": [Function],
     "placeholder": "Select a credential",
     "providerId": "gcp",
-    "tooltip": "The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.",
+    "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Select a connection",
@@ -2205,7 +2205,7 @@ Array [
     "onSelect": [Function],
     "placeholder": "Select a credential",
     "providerId": "gcp",
-    "tooltip": "The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.",
+    "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Select a connection",
@@ -3228,7 +3228,7 @@ Array [
     "onSelect": [Function],
     "placeholder": "Select a credential",
     "providerId": "gcp",
-    "tooltip": "The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.",
+    "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Select a connection",
