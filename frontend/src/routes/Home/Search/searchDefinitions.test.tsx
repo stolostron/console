@@ -309,6 +309,25 @@ test('Correctly returns all resource definitions', () => {
   })
 })
 
+test('Correctly returns resource with managedHub column', () => {
+  const testItem = {
+    cluster: 'testCluster',
+    managedhub: 'testManagedHub',
+    kind: 'Node',
+    apiversion: 'v1',
+    name: 'node.1',
+  }
+
+  const nodeDefinition = getSearchDefinitions((key) => key).node
+  const definition = nodeDefinition.columns.map((col: any) => {
+    if (typeof col.cell === 'function') {
+      col.cell = col.cell(testItem)
+    }
+    return col
+  })
+  expect(definition).toMatchSnapshot('SearchDefinitions-global-node')
+})
+
 test('Correctly returns url search params with all params & apigroup', () => {
   const item = {
     cluster: 'testCluster',
