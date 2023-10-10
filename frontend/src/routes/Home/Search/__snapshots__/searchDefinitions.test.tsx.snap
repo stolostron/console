@@ -191,7 +191,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -326,7 +328,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -396,7 +400,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -461,7 +467,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -531,7 +539,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -661,7 +671,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -731,7 +743,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -781,7 +795,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -851,7 +867,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -911,7 +929,9 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -961,7 +981,9 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1031,7 +1053,9 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1116,7 +1140,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1296,7 +1322,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1351,7 +1379,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1421,7 +1451,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1543,7 +1575,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1595,7 +1629,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1655,7 +1691,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1710,7 +1748,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1775,7 +1815,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1835,7 +1877,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -1905,7 +1949,9 @@ Array [
     "sort": "namespace",
   },
   Object {
-    "cell": "cluster",
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
@@ -2000,6 +2046,75 @@ exports[`Correctly returns policyreport policies 1`] = `
     ]
   }
 />
+`;
+
+exports[`Correctly returns resource with managedHub column: SearchDefinitions-global-node 1`] = `
+Array [
+  Object {
+    "cell": <CreateDetailsLink
+      item={
+        Object {
+          "apiversion": "v1",
+          "cluster": "testCluster",
+          "kind": "Node",
+          "managedhub": "testManagedHub",
+          "name": "node.1",
+        }
+      }
+    />,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": <React.Fragment>
+      testCluster
+      <TextContent>
+        <Text
+          component="small"
+        >
+          testManagedHub
+        </Text>
+      </TextContent>
+    </React.Fragment>,
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "status",
+    "header": "Status",
+    "sort": "status",
+  },
+  Object {
+    "cell": "role",
+    "header": "Role",
+    "sort": "role",
+  },
+  Object {
+    "cell": "architecture",
+    "header": "Architecture",
+    "sort": "architecture",
+  },
+  Object {
+    "cell": "osImage",
+    "header": "OS image",
+    "sort": "osImage",
+  },
+  Object {
+    "cell": "cpu",
+    "header": "CPU",
+    "sort": "cpu",
+  },
+  Object {
+    "cell": "-",
+    "header": "Created",
+    "sort": "created",
+  },
+  Object {
+    "cell": "-",
+    "header": "Labels",
+    "sort": "label",
+  },
+]
 `;
 
 exports[`Correctly returns url search params with 0 params 1`] = `"?cluster%3DtestCluster"`;

@@ -4,10 +4,10 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound } from '../lib/respond'
-import { getAuthenticatedToken } from '../lib/token'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
+import { notFound } from '../lib/respond'
 import { getNamespace, getServiceCACertificate } from '../lib/serviceAccountToken'
+import { getAuthenticatedToken } from '../lib/token'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -30,8 +30,8 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     const searchService = `https://search-search-api.${mch?.metadata?.namespace || namespace}.svc.cluster.local:4010`
 
     const searchUrl = process.env.SEARCH_API_URL || searchService
-
-    const url = new URL(searchUrl + '/searchapi/graphql')
+    const endpoint = process.env.globalSearchAPIEndpoint || '/searchapi/graphql'
+    const url = new URL(searchUrl + endpoint)
     headers.authorization = `Bearer ${token}`
     headers.host = url.hostname
     const options: RequestOptions = {

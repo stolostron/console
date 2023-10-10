@@ -2,6 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import moment from 'moment'
@@ -559,6 +560,23 @@ function AddColumn(key: string, localizedColumnName: string) {
         sort: 'created',
         cell: (item: any) => {
           return GetAge(item, 'created')
+        },
+      }
+    case 'cluster':
+      return {
+        header: localizedColumnName,
+        sort: 'cluster',
+        cell: (item: any) => {
+          return (
+            <>
+              {item?.cluster ?? '-'}
+              {item?.managedhub && (
+                <TextContent>
+                  <Text component={TextVariants.small}>{item.managedhub}</Text>
+                </TextContent>
+              )}
+            </>
+          )
         },
       }
     default:
