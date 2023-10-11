@@ -414,10 +414,11 @@ export const mockSearchQueryArgoApps = {
     input: [
       {
         filters: [
-          { property: 'kind', values: ['application'] },
+          { property: 'kind', values: ['Application'] },
           { property: 'apigroup', values: ['argoproj.io'] },
           { property: 'cluster', values: ['!local-cluster'] },
         ],
+        limit: 20000,
       },
     ],
   },
@@ -488,10 +489,10 @@ export const mockSearchQueryOCPApplications = {
         filters: [
           {
             property: 'kind',
-            values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
           },
         ],
-        limit: 6500,
+        limit: 20000,
       },
     ],
   },
