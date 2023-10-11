@@ -64,6 +64,7 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
             { property: 'apigroup', values: ['argoproj.io'] },
             { property: 'cluster', values: ['!local-cluster'] },
           ],
+          limit: 20000,
         },
       ],
     },
@@ -83,7 +84,7 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
               values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
             },
           ],
-          limit: 6500, // search said not to use unlimited results so use this for now until pagination is available
+          limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
         },
       ],
     },
