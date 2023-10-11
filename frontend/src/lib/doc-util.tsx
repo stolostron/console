@@ -9,7 +9,7 @@ export const DOC_VERSION = '2.9'
 
 export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
-export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
+export const OCP_DOC_BASE_PATH = 'https://access.redhat.com/documentation/en-us/openshift_container_platform'
 
 export const DOC_CREATE_HOSTED_CLUSTER = `${DOC_BASE_PATH}/clusters/index#create-hosted-aws`
 export const DOC_CREATE_KUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
@@ -60,7 +60,7 @@ export const DOC_LINKS = {
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
-  RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/release_notes/ocp-4-13-release-notes.html#ocp-4-13-rhv-deprecations`,
+  RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/html/release_notes/ocp-4-13-release-notes#ocp-4-13-rhv-deprecations`,
   ACCESSING_CONSOLE: `${DOC_HOME}/html/web_console/web-console#accessing-your-console`,
 }
 
