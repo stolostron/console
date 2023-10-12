@@ -1,0 +1,7 @@
+.nutanix-icon {
+  fill: #131313;
+}
+
+:root:where(.pf-theme-dark) .nutanix-icon {
+  fill: #ffffff;
+}
