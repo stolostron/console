@@ -28,10 +28,10 @@ export function HypershiftAWSCLI() {
   const { projects } = GetProjects()
 
   const code = `# Set environment variables
-REGION="us-east-1"
-CLUSTER_NAME="example"
-SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
-NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
+export REGION="us-east-1"
+export CLUSTER_NAME="example"
+export SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
+export NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
 
 hcp create cluster aws \\
   --name $CLUSTER_NAME \\
@@ -83,6 +83,7 @@ hcp create cluster aws \\
       title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
+          <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform.')}</Text>
           {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
