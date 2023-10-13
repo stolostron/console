@@ -69,6 +69,7 @@ interface MockEditor {
   getVisibleRanges: () => any[]
   onDidBlurEditorWidget: () => void
   changeViewZones: () => void
+  getDomNode: () => HTMLElement
   addCommand: () => void
   getSelection: () => void
   setSelection: () => void
@@ -165,6 +166,9 @@ const MonacoEditor = (props: {
       getVisibleRanges: () => [],
       addCommand: () => {},
       changeViewZones: () => {},
+      getDomNode: () => {
+        return editorMockRef.current.textArea
+      },
       getSelection: () => {},
       setSelection: () => {},
       setSelections: () => {},
