@@ -295,6 +295,9 @@ export type MicroshiftDistributionInfo = {
 
 export type HiveSecrets = {
   installConfig?: string
+  pullSecret?: string
+  kubeconfig?: string
+  kubeadmin?: string
 }
 
 export type Nodes = {
@@ -538,7 +541,7 @@ export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: C
   }
 }
 
-export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
+export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim): Cluster['hive'] {
   const isInstalled = clusterDeployment?.spec?.installed
   const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
   const supportsHibernation = hibernatingCondition?.status === 'False' && hibernatingCondition?.reason !== 'Unsupported'
@@ -554,6 +557,7 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
       kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name,
       kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name,
       installConfig: clusterDeployment?.spec?.provisioning?.installConfigSecretRef?.name,
+      pullSecret: clusterDeployment?.spec?.pullSecretRef.name,
     },
     lifetime: clusterClaim?.spec?.lifetime,
   }

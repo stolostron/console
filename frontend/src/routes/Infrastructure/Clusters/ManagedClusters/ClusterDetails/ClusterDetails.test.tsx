@@ -1134,6 +1134,15 @@ const mockSecret: Secret = {
   },
 }
 
+const mockPullSecret: Secret = {
+  apiVersion: SecretApiVersion,
+  kind: SecretKind,
+  metadata: {
+    namespace: 'test-cluster',
+    name: 'test-cluster-pull-secret',
+  },
+}
+
 const mockClusterProvisions: ClusterProvision = {
   apiVersion: ClusterProvisionApiVersion,
   kind: ClusterProvisionKind,
@@ -1390,7 +1399,11 @@ describe('ClusterDetails', () => {
       mockManagedCluster.metadata.name!
     )
 
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
+    const deleteNocks: Scope[] = [
+      nockDelete(mockManagedCluster),
+      nockDelete(mockClusterDeployment),
+      nockDelete(mockPullSecret),
+    ]
     await clickByText('Destroy')
     await waitForNocks(deleteNocks)
   })
