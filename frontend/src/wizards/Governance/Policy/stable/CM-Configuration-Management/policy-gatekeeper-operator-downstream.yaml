@@ -31,7 +31,7 @@ spec:
                   name: gatekeeper-operator-product
                   namespace: openshift-operators
                 spec:
-                  channel: '3.11'
+                  channel: stable
                   installPlanApproval: Automatic
                   name: gatekeeper-operator-product
                   source: redhat-operators
