@@ -19,7 +19,7 @@ hcp destroy cluster aws \\
   --name $CLUSTER_NAME \\
   --secret-creds $SECRET_CREDS`
 
-  const destroyhelperCommand = `hcp create cluster aws --help`
+  const destroyhelperCommand = `hcp destroy cluster aws --help`
 
   const listItems = [
     {
@@ -40,10 +40,13 @@ hcp destroy cluster aws \\
       title: t('Destroy the hosted cluster'),
       content: (
         <Fragment>
+          <Text>{t('Destroy the Hosted Control Plane by copying and pasting the following command:')}</Text>
           <CodeBlock actions={Actions(destroyCode, 'code-command')}>
             <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>{t('Run the following command:')}</Text>
+          <Text style={{ marginTop: '1em' }}>
+            {t('Use the following command to get a list of available parameters:')}
+          </Text>
           <CodeBlock actions={Actions(destroyhelperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{destroyhelperCommand}</CodeBlockCode>
           </CodeBlock>

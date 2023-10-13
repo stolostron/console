@@ -35,17 +35,14 @@ export function Actions(code: string, id: string) {
 export function GetOCLogInCommand() {
   const { t } = useTranslation()
   return (
-    <Fragment>
-      <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform.')}</Text>
-      <Text
-        component={TextVariants.a}
-        onClick={() => {
-          window.open(window.SERVER_FLAGS?.requestTokenURL)
-        }}
-        target="_blank"
-      >
-        {t('Use the oc login command.')}
-      </Text>
-    </Fragment>
+    <Text
+      component={TextVariants.a}
+      onClick={() => {
+        window.open(window.SERVER_FLAGS?.requestTokenURL)
+      }}
+      target="_blank"
+    >
+      {t('Run the following `oc login` command')}
+    </Text>
   )
 }

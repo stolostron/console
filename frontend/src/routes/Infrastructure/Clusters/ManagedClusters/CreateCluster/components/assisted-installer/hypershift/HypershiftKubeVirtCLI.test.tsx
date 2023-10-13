@@ -31,6 +31,6 @@ describe('HypershiftKubeVirtCLI', () => {
     // find code block
     await waitForTestId('code-content')
     await waitForTestId('helper-command')
-    await clickByText('Use the oc login command.')
+    await clickByText('Run the following `oc login` command')
   })
 })
