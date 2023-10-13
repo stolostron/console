@@ -14,24 +14,31 @@ do
   esac
 done
 
+echo "Checking if git workspace is clean"
+GIT_STATUS="$(git status --short --untracked-files -- public/locales)"
+if [ -n "$GIT_STATUS" ]; then
+  echo "There are uncommitted files in public or package locales folders. Remove or commit the files, then run this script again."
+  git diff
+  exit 1
+fi
+
 BRANCH=$(git branch  --show-current)
+COMMIT=$(git rev-parse HEAD)
+PROJECT_TITLE="[ACM $VERSION] Console UI - Branch $BRANCH/Commit $COMMIT"
 
-echo "Creating project with title \"[OCP $VERSION] UI Localization - Sprint $SPRINT/Branch $BRANCH\""
+echo "Creating project with title \"$PROJECT_TITLE\""
 
-PROJECT_INFO=$(memsource project create --name "[OCP $VERSION] UI Localization - Sprint $SPRINT/Branch $BRANCH" --template-id 169304 -f json)
+PROJECT_INFO=$(memsource project create --name "$PROJECT_TITLE" --template-id 203224 -f json)
 PROJECT_ID=$(echo "$PROJECT_INFO" | jq -r '.uid')
 
-echo "Exporting PO files"
-yarn export-pos
-echo "Exported all PO files"
+echo "Prepare JSON files for upload"
+npm run i18n-generate
+echo "Generated all JSON files"
 
-echo "Creating jobs for exported PO files"
+echo "Creating jobs for generated JSON files"
 for i in "${LANGUAGES[@]}"
 do
-  memsource job create --filenames po-files/"$i"/*.po --target-langs "$i" --project-id "${PROJECT_ID}"
+  memsource job create --filenames public/locales/upload/"$i"-translation.json --target-langs "$i" --project-id "${PROJECT_ID}"
 done
 
-echo "Uploaded PO files to Memsource"
-
-# Clean up PO file directory
-rm -rf po-files
+echo "Uploaded JSON files to Memsource"
