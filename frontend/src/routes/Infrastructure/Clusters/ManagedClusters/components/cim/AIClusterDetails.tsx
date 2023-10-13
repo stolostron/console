@@ -35,7 +35,9 @@ import {
   shouldShowClusterDeploymentValidationOverview,
   shouldShowClusterInstallationError,
   shouldShowClusterInstallationProgress,
+  PostInstallAlert,
 } from '@openshift-assisted/ui-lib/cim'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
 
 const fetchSecret: FetchSecret = (name, namespace) =>
   getResource<Secret>({
@@ -125,6 +127,11 @@ const AIClusterDetails: React.FC = () => {
               )
             }
           />
+        </div>
+      )}
+      {shouldShowClusterCredentials(agentClusterInstall) && agentClusterInstall?.spec?.platformType === 'Nutanix' && (
+        <div style={{ marginBottom: '24px' }}>
+          <PostInstallAlert link={DOC_LINKS.NUTANIX_POST_INSTALL} />
         </div>
       )}
       {shouldShowClusterInstallationProgress(agentClusterInstall) && (
