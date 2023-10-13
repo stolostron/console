@@ -2,63 +2,30 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId } from '../../../../../lib/test-util'
+import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
-import { nockIgnoreApiPaths, nockList } from '../../../../../lib/nock-util'
-import { multiClusterEnginesState } from '../../../../../atoms'
-import { MultiClusterEngine, MultiClusterEngineApiVersion, MultiClusterEngineKind } from '../../../../../resources'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
+import {
+  mockManagedClusterAddOn,
+  mockMultiClusterEngine,
+  mockMultiClusterEngineWithHypershiftDisabled,
+} from './sharedMocks'
 
-const mockMultiClusterEngine: MultiClusterEngine = {
-  apiVersion: MultiClusterEngineApiVersion,
-  kind: MultiClusterEngineKind,
-  spec: {
-    availabilityConfig: 'High',
-    imagePullSecret: 'multiclusterhub-operator-pull-secret',
-    overrides: {
-      components: [
-        { enabled: true, name: 'hypershift-local-hosting' },
-        {
-          enabled: true,
-          name: 'hypershift',
-        },
-      ],
-    },
-    targetNamespace: 'multicluster-engine',
-    tolerations: [],
-  },
-  metadata: {
-    name: 'multiclusterengine',
-    generation: 2,
-  },
-  status: {
-    conditions: [
-      {
-        reason: 'ManagedClusterAddOnLeaseUpdated',
-        status: 'True',
-      },
-    ],
-  },
-}
-
-const listMulticlusterengines1 = {
-  req: {
-    apiVersion: 'multicluster.openshift.io/v1',
-    kind: 'multiclusterengines',
-  },
-  res: [],
-}
-
-describe('CreateAWSControlPlane hosted', () => {
+describe('CreateAWSControlPlane', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
   })
 
-  const Component = () => {
+  const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(multiClusterEnginesState, [mockMultiClusterEngine])
+          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddOn])
+          snapshot.set(multiClusterEnginesState, [
+            enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
+          ])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createAWSControlPlane]}>
@@ -70,14 +37,18 @@ describe('CreateAWSControlPlane hosted', () => {
     )
   }
 
-  test('can click hosted', async () => {
-    render(<Component />)
+  test('Hosted should be enabled when hypershift is enabled', async () => {
+    const { getByTestId } = render(<Component />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+  })
+
+  test('Hosted should be disabled when hypershift is disabled', async () => {
+    const { getByTestId } = render(<Component enableHypershift={false} />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
     await clickByTestId('hosted')
   })
 
   test('can click standalone', async () => {
-    nockList(listMulticlusterengines1.req, listMulticlusterengines1.res)
-    nockList(listMulticlusterengines1.req, listMulticlusterengines1.res)
     render(<Component />)
     await clickByTestId('standalone')
   })
