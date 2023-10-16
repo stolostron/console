@@ -906,8 +906,10 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     clusterName: 'hostedcluster1',
     clusterNamespace: 'hostedcluster1',
     clusterLabels: {
-      cloud: 'Amazon',
-      vendor: 'Openshift',
+      name: 'hostedcluster1',
+      cloud: 'auto-detect',
+      vendor: 'OpenShift',
+      'cluster.open-cluster-management.io/clusterset': 'default',
     },
     applicationManager: {
       enabled: true,
@@ -1237,7 +1239,6 @@ const createManagedcluster1: ManagedCluster = {
   },
   spec: {
     hubAcceptsClient: true,
-    leaseDurationSeconds: 60,
   },
 }
 

@@ -33,7 +33,7 @@ import { getRawErrorInfo } from './ErrorPage'
 
 export type BulkActionModalProps<T = undefined> = {
   action: string
-  actionFn: (item: T, options?: { [key: string]: boolean }) => IRequestResult
+  actionFn: (item: T, options?: { [key: string]: boolean }) => IRequestResult | undefined
   alert?: React.ReactNode
   checkBox?: JSX.Element
   close: () => void

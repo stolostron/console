@@ -18,6 +18,7 @@ export enum ClusterAction {
   UpdateAutomationTemplate = 'update-automation-template',
   RemoveAutomationTemplate = 'remove-automation-template',
   DestroyManaged = 'destroy-managed-cluster',
+  ImportHosted = 'import-hypershift-cluster',
 }
 
 function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
@@ -105,6 +106,8 @@ export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAc
       )
     case ClusterAction.DestroyHosted:
       return cluster.isHypershift && cluster.status !== ClusterStatus.destroying
+    case ClusterAction.ImportHosted:
+      return cluster.isHypershift && cluster.status === ClusterStatus.pendingimport
     case ClusterAction.UpdateAutomationTemplate:
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
