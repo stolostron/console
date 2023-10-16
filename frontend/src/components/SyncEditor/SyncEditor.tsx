@@ -194,7 +194,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
           const lead = ' '.repeat(spaces - selection.selectionStartColumn + 1)
           const spacer = ' '.repeat(spaces)
-          const text = `${lead}${lines.map((line: string) => line.trim()).join(`\r\n${spacer}`)}\r\n`
+          const joint = `\r\n${spacer}`
+          const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
           editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
         }
       },
