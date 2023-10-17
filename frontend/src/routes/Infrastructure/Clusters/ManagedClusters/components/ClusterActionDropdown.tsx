@@ -110,7 +110,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   }
 
   const importTemplate = useCallback(
-    (action: (item: T, options?: { [key: string]: boolean }) => IRequestResult) => {
+    (action: (item: Cluster, options?: { [key: string]: boolean } | undefined) => IRequestResult) => {
       return {
         text: t('managed.import'),
         click: (cluster: Cluster) => {
