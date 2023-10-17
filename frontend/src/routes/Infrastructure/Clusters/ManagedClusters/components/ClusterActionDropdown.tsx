@@ -19,6 +19,7 @@ import {
   ClusterDeploymentDefinition,
   ClusterStatus,
   HostedClusterDefinition,
+  IRequestResult,
   ManagedClusterDefinition,
   patchResource,
   ResourceErrorCode,
@@ -414,7 +415,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   ) as HostedClusterK8sResource,
                   t,
                   toastContext
-                ),
+                ) as IRequestResult,
             })
           },
           rbac: [rbacCreate(ManagedClusterDefinition)],
