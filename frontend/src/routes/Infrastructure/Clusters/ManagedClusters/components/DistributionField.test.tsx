@@ -602,6 +602,39 @@ const mockClusterImageSet2: ClusterImageSet = {
   },
 }
 
+const mockClusterImageSet3: ClusterImageSet = {
+  apiVersion: ClusterImageSetApiVersion,
+  kind: ClusterImageSetKind,
+  metadata: {
+    name: 'img4.11.8-multi',
+  },
+  spec: {
+    releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.11.8-multi',
+  },
+}
+
+const mockClusterImageSet4: ClusterImageSet = {
+  apiVersion: ClusterImageSetApiVersion,
+  kind: ClusterImageSetKind,
+  metadata: {
+    name: 'img4.11.9-multi',
+  },
+  spec: {
+    releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.11.9-multi',
+  },
+}
+
+const mockClusterImageSet5: ClusterImageSet = {
+  apiVersion: ClusterImageSetApiVersion,
+  kind: ClusterImageSetKind,
+  metadata: {
+    name: 'img4.12.0-multi',
+  },
+  spec: {
+    releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.12.0-multi',
+  },
+}
+
 const mockHostedCluster: HostedClusterK8sResource = {
   apiVersion: HostedClusterApiVersion,
   kind: HostedClusterKind,
@@ -824,7 +857,16 @@ describe('DistributionField hypershift clusters', () => {
           snapshot.set(nodePoolsState, mockNodepools)
           snapshot.set(
             clusterImageSetsState,
-            setClusterImageSet ? [mockClusterImageSet0, mockClusterImageSet1, mockClusterImageSet2] : []
+            setClusterImageSet
+              ? [
+                  mockClusterImageSet0,
+                  mockClusterImageSet1,
+                  mockClusterImageSet2,
+                  mockClusterImageSet3,
+                  mockClusterImageSet4,
+                  mockClusterImageSet5,
+                ]
+              : []
           )
         }}
       >
