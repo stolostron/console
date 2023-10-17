@@ -58,6 +58,7 @@ import {
   waitForNotText,
   waitForText,
   ocpApi,
+  pasteByTestId,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Scope } from 'nock/types'
@@ -1001,7 +1002,6 @@ describe('CreateCluster on premise', () => {
 
       // wait for tables/combos to fill in
       await waitForNocks(initialNocks)
-
       // check integration of AI in the left-side navigation
       await waitForText('Cluster details', true)
       await waitForText('Review and save')
@@ -1021,10 +1021,11 @@ describe('CreateCluster on premise', () => {
       await typeByTestId('additionalLabels', 'myLabelKey=myValue')
       await clickByTestId('form-input-pullSecret-field')
 
-      await typeByTestId('form-input-pullSecret-field', pullSecretAI)
+      await pasteByTestId('form-input-pullSecret-field', pullSecretAI)
 
       // transition to Automation
       await new Promise((resolve) => setTimeout(resolve, 500))
+
       await clickByText('Next')
       // The test is flaky here
       await new Promise((resolve) => setTimeout(resolve, 500))
