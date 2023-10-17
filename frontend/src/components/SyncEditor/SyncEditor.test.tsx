@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { SyncEditor, SyncEditorProps } from './SyncEditor'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, createEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -225,8 +225,8 @@ describe('SyncEditor component', () => {
 
     // >>>EDIT CHANGE: 'disabled: true' to 'false'
     // ensure resource has disabled==false
-    const text = 'disabled: true'
-    const i = input.value.indexOf(text) + text.length - 4
+    let text = 'disabled: true'
+    let i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
     userEvent.type(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
@@ -275,6 +275,20 @@ describe('SyncEditor component', () => {
       })
     )
     expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
+    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
+
+    // paste certificate
+    text = 'pem:'
+    i = input.value.indexOf(text) + text.length + 5
+    input.setSelectionRange(i, i)
+    const paste = createEvent.paste(input, {
+      clipboardData: {
+        getData: () => certificate,
+      },
+    })
+    fireEvent(input, paste)
+    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
+    expect(input).toHaveMultilineValue(pastedResource)
   })
 
   it('synchronize', async () => {
@@ -358,6 +372,7 @@ const propsNewResource: SyncEditorProps = {
       metadata: {
         name: 'test',
         namespace: 'default',
+        pem: '>',
         annotations: {
           'policy.open-cluster-management.io/categories': 'AC Access Control',
           'policy.open-cluster-management.io/standards': 'NIST SP 800-53',
@@ -650,12 +665,30 @@ const propsNewResource: SyncEditorProps = {
   secrets: ['PlacementRule.0.metadata.name', 'PlacementBinding.0.metadata.namespace'],
   onEditorChange: mockOneditorchangeCreate,
 }
+
+const certificate =
+  '-----BEGIN CERTIFICATE-----\r\n' +
+  'MIIEFzCCAv+gAwIBAgIUR51LnFfrTrRFtk3p6vIinn8fXiswDQYJKoZIhvcNAQEL\r\n' +
+  'BQAwgYoxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOQzEQMA4GA1UEBwwHUmFsZWln\r\n' +
+  'aDEVMBMGA1UECgwMVGVzdCBDb21wYW55MRAwDgYDVQQLDAdUZXN0aW5nMTMwMQYD\r\n' +
+  'VQQDDCpmMDUtaDE1LTAwMC0xMDI5cC5yZHUyLnNjYWxlbGFiLnJlZGhhdC5jb20w\r\n' +
+  'HhcNMjAwNzA4MjE0NzU0WhcNMjEwNzA4MjE0NzU0WjCBijELMAkGA1UEBhMCVVMx\r\n' +
+  '371Ep8nRfNBcbF2PIaGRYIOPu+E+emJsCsWymC7byUtLmuWJnOMQ7bgB82y9V2rA\r\n' +
+  '8fcSyMdaV3Py3DQiNaQ1cKgXnH7Ec149ZSv4Jbos0WG6CUjEk7S7B586sOvrwPUW\r\n' +
+  '3pe+QMJeSxSNo0L+SM1wu6LzfPxi6hj9Wnvyl0GjNAwVxzqLHIi9H1XBe/Sg1UkH\r\n' +
+  'mdSmC9wrE5oGay2J3Le06ulZQke6lTw+StP5TjSu6od+v2nsEfBggWXioQ==    \r\n' +
+  '-----END CERTIFICATE-----'
+
+const pastedResource =
+  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: ">"\n    -----BEGIN CERTIFICATE-----\n    MIIEFzCCAv+gAwIBAgIUR51LnFfrTrRFtk3p6vIinn8fXiswDQYJKoZIhvcNAQEL\n    BQAwgYoxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOQzEQMA4GA1UEBwwHUmFsZWln\n    aDEVMBMGA1UECgwMVGVzdCBDb21wYW55MRAwDgYDVQQLDAdUZXN0aW5nMTMwMQYD\n    VQQDDCpmMDUtaDE1LTAwMC0xMDI5cC5yZHUyLnNjYWxlbGFiLnJlZGhhdC5jb20w\n    HhcNMjAwNzA4MjE0NzU0WhcNMjEwNzA4MjE0NzU0WjCBijELMAkGA1UEBhMCVVMx\n    371Ep8nRfNBcbF2PIaGRYIOPu+E+emJsCsWymC7byUtLmuWJnOMQ7bgB82y9V2rA\n    8fcSyMdaV3Py3DQiNaQ1cKgXnH7Ec149ZSv4Jbos0WG6CUjEk7S7B586sOvrwPUW\n    3pe+QMJeSxSNo0L+SM1wu6LzfPxi6hj9Wnvyl0GjNAwVxzqLHIi9H1XBe/Sg1UkH\n    mdSmC9wrE5oGay2J3Le06ulZQke6lTw+StP5TjSu6od+v2nsEfBggWXioQ==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  clusterSelector:\n    matchExpressions:\n      - key: name\n        operator: In\n        values:\n          - local-cluster\n  clusterConditions: []\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: apps.open-cluster-management.io\n  kind: PlacementRule\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
+
 const newResourceYaml =
   'apiVersion: policy.open-cluster-management.io/v1\n' +
   'kind: Policy\n' +
   'metadata:\n' +
   '  name: test\n' +
   '  namespace: default\n' +
+  '  pem: ">"\n' +
   '  annotations:\n' +
   '    policy.open-cluster-management.io/categories: AC Access Control\n' +
   '    policy.open-cluster-management.io/standards: NIST SP 800-53\n' +
@@ -705,9 +738,9 @@ const newResourceYaml =
 const newResourceDecorators: Decorators = [
   {
     range: {
-      endLineNumber: 26,
+      endLineNumber: 27,
       endColumn: 132,
-      startLineNumber: 26,
+      startLineNumber: 27,
       startColumn: 1,
     },
     options: {
@@ -717,9 +750,9 @@ const newResourceDecorators: Decorators = [
   },
   {
     range: {
-      endLineNumber: 41,
+      endLineNumber: 42,
       endColumn: 132,
-      startLineNumber: 41,
+      startLineNumber: 42,
       startColumn: 1,
     },
     options: {
@@ -729,9 +762,9 @@ const newResourceDecorators: Decorators = [
   },
   {
     range: {
-      endLineNumber: 44,
+      endLineNumber: 45,
       endColumn: 132,
-      startLineNumber: 44,
+      startLineNumber: 45,
       startColumn: 1,
     },
     options: {
@@ -1224,9 +1257,9 @@ const existingResourceDecorators: Decorators = [
 const protectedDecorators = [
   {
     range: {
-      endLineNumber: 9,
+      endLineNumber: 10,
       endColumn: 0,
-      startLineNumber: 9,
+      startLineNumber: 10,
       startColumn: 0,
     },
     options: {
@@ -1239,9 +1272,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 9,
+      endLineNumber: 10,
       endColumn: 132,
-      startLineNumber: 9,
+      startLineNumber: 10,
       startColumn: 0,
     },
     options: {
@@ -1251,9 +1284,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 24,
+      endLineNumber: 25,
       endColumn: 132,
-      startLineNumber: 24,
+      startLineNumber: 25,
       startColumn: 1,
     },
     options: {
@@ -1263,9 +1296,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 39,
+      endLineNumber: 40,
       endColumn: 132,
-      startLineNumber: 39,
+      startLineNumber: 40,
       startColumn: 1,
     },
     options: {
@@ -1275,9 +1308,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 42,
+      endLineNumber: 43,
       endColumn: 132,
-      startLineNumber: 42,
+      startLineNumber: 43,
       startColumn: 1,
     },
     options: {

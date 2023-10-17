@@ -31,6 +31,8 @@ class Range {
 }
 class Selection {
   startLineNumber: number | undefined
+  selectionStartLineNumber: number | undefined
+  selectionStartColumn: number | undefined
   endLineNumber: number | undefined
   endColumn: number | undefined
   startColumn: number | undefined
@@ -38,7 +40,9 @@ class Selection {
     this.endLineNumber = endLineNumber
     this.endColumn = endColumn
     this.startLineNumber = startLineNumber
+    this.selectionStartLineNumber = startLineNumber
     this.startColumn = startColumn
+    this.selectionStartColumn = startColumn
   }
 }
 
@@ -50,6 +54,7 @@ interface MockModel {
   forceTokenization: () => void
   getValue: () => string
   setValue: (value: string) => void
+  getLineContent: (line: number) => string
   getAllDecorations: () => any[]
   getLineCount: () => void
   getFullModelRange: () => void
@@ -81,6 +86,7 @@ interface MockEditor {
   onDidChangeModelContent: (cb: any) => void
   deltaDecorations: () => void
   getModel: () => MockModel
+  executeEdits: (id: string, edits: [{ range: Range; text: string }]) => void
 }
 
 interface MockMonaco {
@@ -121,6 +127,9 @@ const MonacoEditor = (props: {
       setValue: (value: string) => {
         editorMockRef.current.editorContent = value
         editorMockRef.current.undoStack = [value]
+      },
+      getLineContent: (line) => {
+        return editorMockRef.current.editorContent.split('\n')[line]
       },
       getAllDecorations: () => [],
       getValueInRange: () => '',
@@ -169,7 +178,17 @@ const MonacoEditor = (props: {
       getDomNode: () => {
         return editorMockRef.current.textArea
       },
-      getSelection: () => {},
+      getSelection: () => {
+        const ta = editorMockRef.current.textArea
+        const value = ta.value
+        const startLines = value.slice(0, ta.selectionStart).split('\n')
+        const startLineNumber = startLines.length - 1
+        const startColumn = startLines[startLineNumber].length + 1
+        const endLines = value.slice(0, ta.selectionEnd).split('\n')
+        const endLineNumber = endLines.length - 1
+        const endColumn = ta.selectionEnd - startLines.join('').length
+        return new Selection(startLineNumber, startColumn, endLineNumber, endColumn)
+      },
       setSelection: () => {},
       setSelections: () => {},
       saveViewState: () => null,
@@ -183,6 +202,13 @@ const MonacoEditor = (props: {
         editorMockRef.current.newDecorations = JSON.stringify(newDecorations)
       },
       getModel: () => model,
+      executeEdits: (id, edits) => {
+        const { text } = edits[0]
+        const ta = editorMockRef.current.textArea
+        const v = editorMockRef.current.textArea.value
+        editorMockRef.current.textArea.value =
+          v.substring(0, ta.selectionStart) + text + v.substring(ta.selectionEnd, v.length)
+      },
     }
     editorMockRef.current.mockMonaco = {
       editor: { setModelLanguage: () => {}, defineTheme: () => {}, setTheme: () => {} },

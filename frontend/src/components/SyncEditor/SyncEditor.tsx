@@ -192,7 +192,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const lines = pasteText.split('\r\n')
           const model = editorRef.current.getModel()
           const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
-          const lead = ' '.repeat(spaces - selection.selectionStartColumn + 1)
+          const leadSpaces = spaces - selection.selectionStartColumn + 1
+          const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
           const spacer = ' '.repeat(spaces)
           const joint = `\r\n${spacer}`
           const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
