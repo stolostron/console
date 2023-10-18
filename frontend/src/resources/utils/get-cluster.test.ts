@@ -760,6 +760,116 @@ const mockClusterDeploymentUnknown: ClusterDeployment = {
   },
 }
 
+const mockClusterCuratorPrehookFailed: ClusterCurator = {
+  apiVersion: ClusterCuratorApiVersion,
+  kind: ClusterCuratorKind,
+  metadata: {
+    name: 'feng-hyper-test24',
+    namespace: 'clusters',
+  },
+  spec: {
+    install: {
+      jobMonitorTimeout: 5,
+      posthook: [
+        {
+          extra_vars: {},
+          name: 'Demo Job Template 2',
+          type: 'Job',
+        },
+      ],
+      prehook: [
+        {
+          extra_vars: {},
+          name: 'Demo Job Template 2',
+          type: 'Job',
+        },
+      ],
+      towerAuthSecret: 'toweraccess',
+    },
+  },
+  status: {
+    conditions: [
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:55Z'),
+        message:
+          'curator-job-ghgkc DesiredCuration: install Failed - AnsibleJob clusters/prehookjob-q5qqn exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'clustercurator-job',
+      },
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:55Z'),
+        message: 'AnsibleJob clusters/prehookjob-q5qqn exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'prehook-ansiblejob',
+      },
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:40Z'),
+        message: 'prehookjob-q5qqn',
+        reason: 'Job_has_finished',
+        status: 'False',
+        type: 'current-ansiblejob',
+      },
+    ],
+  },
+}
+
+const mockClusterCuratorPosthookFailed: ClusterCurator = {
+  apiVersion: ClusterCuratorApiVersion,
+  kind: ClusterCuratorKind,
+  metadata: {
+    name: 'feng-hyper-test24',
+    namespace: 'clusters',
+  },
+  spec: {
+    install: {
+      jobMonitorTimeout: 5,
+      posthook: [
+        {
+          extra_vars: {},
+          name: 'Demo Job Template 2',
+          type: 'Job',
+        },
+      ],
+      prehook: [
+        {
+          extra_vars: {},
+          name: 'Demo Job Template 2',
+          type: 'Job',
+        },
+      ],
+      towerAuthSecret: 'toweraccess',
+    },
+  },
+  status: {
+    conditions: [
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:55Z'),
+        message:
+          'curator-job-ghgkc DesiredCuration: install Failed - AnsibleJob clusters/posthookjob-q5qqn exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'clustercurator-job',
+      },
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:55Z'),
+        message: 'AnsibleJob clusters/posthookjob-q5qqn exited with an error',
+        reason: 'Job_failed',
+        status: 'True',
+        type: 'posthook-ansiblejob',
+      },
+      {
+        lastTransitionTime: new Date('2023-10-18T17:31:40Z'),
+        message: 'posthookjob-q5qqn',
+        reason: 'Job_has_finished',
+        status: 'False',
+        type: 'current-ansiblejob',
+      },
+    ],
+  },
+}
+
 describe('getDistributionInfo', () => {
   it('should have correct available updates and available channels', () => {
     const d = getDistributionInfo(
@@ -1014,6 +1124,30 @@ describe('getClusterStatus', () => {
     expect(status.statusMessage).toBe(
       'Try to import managed cluster, retry times: 15/15, error: [the server could not find the requested resource (post customresourcedefinitions.apiextensions.k8s.io)'
     )
+  })
+  it('should return failed for clustercurator prehook job', () => {
+    const status = getClusterStatus(
+      undefined /* clusterDeployment */,
+      undefined /* managedClusterInfo */,
+      undefined /* certificateSigningRequests */,
+      mockHostedClusterManagedCluster /* managedCluster */,
+      mockClusterCuratorPrehookFailed /* clusterCurator */,
+      undefined /* agentClusterInstall */,
+      mockHostedCluster /* hostedCluster */
+    )
+    expect(status.status).toBe(ClusterStatus.prehookfailed)
+  })
+  it('should return failed for clustercurator posthook job', () => {
+    const status = getClusterStatus(
+      undefined /* clusterDeployment */,
+      undefined /* managedClusterInfo */,
+      undefined /* certificateSigningRequests */,
+      mockHostedClusterManagedCluster /* managedCluster */,
+      mockClusterCuratorPosthookFailed /* clusterCurator */,
+      undefined /* agentClusterInstall */,
+      mockHostedCluster /* hostedCluster */
+    )
+    expect(status.status).toBe(ClusterStatus.posthookfailed)
   })
 })
 
