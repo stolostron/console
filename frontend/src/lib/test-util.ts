@@ -217,6 +217,15 @@ export async function typeByTestId(id: string, type: string, index?: number) {
   }
 }
 
+export async function pasteByTestId(id: string, type: string, index?: number) {
+  await waitForInputByTestId(id, index)
+  if (index !== undefined) {
+    userEvent.paste(screen.getAllByTestId(id)[index], type)
+  } else {
+    userEvent.paste(screen.getByTestId(id), type)
+  }
+}
+
 export async function clearByTestId(id: string, index?: number) {
   await waitForInputByTestId(id, index)
   if (index !== undefined) {
