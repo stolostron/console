@@ -381,7 +381,9 @@ export function mapClusters(
     const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
     const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
     const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
-    const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+    const clusterCurator = clusterCurators.find(
+      (cc) => cc.metadata.namespace === cluster || cc.metadata.name === cluster
+    )
     const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
@@ -1133,6 +1135,19 @@ export function getClusterStatus(
         if (!clusterDeployment.spec?.installed) {
           ccStatus = ClusterStatus.prehookfailed
         } else {
+          ccStatus = ClusterStatus.posthookfailed
+        }
+        statusMessage = clusterCurator.status?.conditions[0].message
+        return { status: ccStatus, statusMessage }
+      }
+    } else if (hostedCluster) {
+      if (
+        checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
+        checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions)
+      ) {
+        if (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions)) {
+          ccStatus = ClusterStatus.prehookfailed
+        } else if (checkCuratorConditionFailed(CuratorCondition.posthook, ccConditions)) {
           ccStatus = ClusterStatus.posthookfailed
         }
         statusMessage = clusterCurator.status?.conditions[0].message
