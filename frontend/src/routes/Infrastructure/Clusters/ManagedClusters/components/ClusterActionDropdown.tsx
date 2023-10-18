@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider } from '../../../../../ui-components'
-import { useContext, useMemo, useState } from 'react'
+import { AcmInlineProvider, AcmToastContext } from '../../../../../ui-components'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
@@ -19,6 +19,7 @@ import {
   ClusterDeploymentDefinition,
   ClusterStatus,
   HostedClusterDefinition,
+  IRequestResult,
   ManagedClusterDefinition,
   patchResource,
   ResourceErrorCode,
@@ -34,12 +35,15 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../uti
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
-import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
   const history = useHistory()
   const { isSearchAvailable } = useContext(PluginContext)
+  const toastContext = useContext(AcmToastContext)
 
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -51,8 +55,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     open: false,
   })
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
-  const { infraEnvironmentsState } = useSharedAtoms()
-  const [infraEnvs] = useRecoilState(infraEnvironmentsState)
+  const { waitForAll } = useSharedRecoil()
+  const { hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
+  const [infraEnvs, hostedClusters] = useRecoilValue(waitForAll([infraEnvironmentsState, hostedClustersState]))
 
   const { cluster } = props
 
@@ -103,6 +108,54 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   if (cluster.isManaged) {
     destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
   }
+
+  const importTemplate = useCallback(
+    (action: (item: Cluster, options?: { [key: string]: boolean } | undefined) => IRequestResult) => {
+      return {
+        text: t('managed.import'),
+        click: (cluster: Cluster) => {
+          setModalProps({
+            open: true,
+            title: t('bulk.title.import'),
+            action: t('import'),
+            processing: t('importing'),
+            items: [cluster],
+            emptyState: undefined, // there is always 1 item supplied
+            close: () => {
+              setModalProps({ open: false })
+            },
+            description: t('bulk.message.import'),
+            columns: [
+              {
+                header: t('upgrade.table.name'),
+                sort: 'displayName',
+                cell: (cluster) => (
+                  <>
+                    <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                    {cluster.hive.clusterClaimName && (
+                      <TextContent>
+                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                      </TextContent>
+                    )}
+                  </>
+                ),
+              },
+              {
+                header: t('table.provider'),
+                sort: 'provider',
+                cell: (cluster: Cluster) =>
+                  cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+              },
+            ],
+            keyFn: (cluster) => cluster.name as string,
+            actionFn: action,
+          })
+        },
+        rbac: [rbacCreate(ManagedClusterDefinition)],
+      }
+    },
+    [t]
+  )
 
   const actions = useMemo(
     () =>
@@ -170,46 +223,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           : []),
         {
           id: ClusterAction.Import,
-          text: t('managed.import'),
-          click: (cluster: Cluster) => {
-            setModalProps({
-              open: true,
-              title: t('bulk.title.import'),
-              action: t('import'),
-              processing: t('importing'),
-              items: [cluster],
-              emptyState: undefined, // there is always 1 item supplied
-              close: () => {
-                setModalProps({ open: false })
-              },
-              description: t('bulk.message.import'),
-              columns: [
-                {
-                  header: t('upgrade.table.name'),
-                  sort: 'displayName',
-                  cell: (cluster) => (
-                    <>
-                      <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
-                      {cluster.hive.clusterClaimName && (
-                        <TextContent>
-                          <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                        </TextContent>
-                      )}
-                    </>
-                  ),
-                },
-                {
-                  header: t('table.provider'),
-                  sort: 'provider',
-                  cell: (cluster: Cluster) =>
-                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-                },
-              ],
-              keyFn: (cluster) => cluster.name as string,
-              actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
-            })
-          },
-          rbac: [rbacCreate(ManagedClusterDefinition)],
+          ...importTemplate((cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!)),
         },
         {
           id: ClusterAction.Hibernate,
@@ -366,6 +380,19 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
         },
         {
+          id: ClusterAction.ImportHosted,
+          ...importTemplate(
+            (cluster) =>
+              importHostedControlPlaneCluster(
+                hostedClusters.find(
+                  (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
+                ) as HostedClusterK8sResource,
+                t,
+                toastContext
+              ) as IRequestResult
+          ),
+        },
+        {
           id: ClusterAction.DestroyHosted,
           separator: true,
           text: t('managed.destroy'),
@@ -398,7 +425,18 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: destroyRbac,
         },
       ].filter((action) => clusterSupportsAction(cluster, action.id)),
-    [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t, infraEnvs]
+    [
+      cluster,
+      destroyRbac,
+      history,
+      isSearchAvailable,
+      modalColumns,
+      t,
+      infraEnvs,
+      hostedClusters,
+      toastContext,
+      importTemplate,
+    ]
   )
 
   return (

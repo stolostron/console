@@ -1545,7 +1545,6 @@
   "Imported clusters cannot be destroyed.": "Imported clusters cannot be destroyed.",
   "importing": "Importing",
   "Importing": "Importing",
-  "Importing hosted control plane cluster...": "Importing hosted control plane cluster...",
   "Include namespaces": "Include namespaces",
   "Increased resiliency with closely interconnected control plane and worker nodes.": "Increased resiliency with closely interconnected control plane and worker nodes.",
   "Increases resiliency with closely interconnected control plane and worker nodes.": "Increases resiliency with closely interconnected control plane and worker nodes.",

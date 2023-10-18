@@ -2,30 +2,85 @@
 import { AlertVariant, List, ListComponent, ListItem, OrderType, Stack, StackItem } from '@patternfly/react-core'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import * as React from 'react'
-import { useContext } from 'react'
-import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { PluginContext } from '../../../../../lib/PluginContext'
 import {
-  createResource,
   getSecret,
-  IResource,
-  ManagedCluster,
-  ManagedClusterApiVersion,
-  ManagedClusterKind,
-  KlusterletAddonConfigApiVersion,
-  KlusterletAddonConfigKind,
-  KlusterletAddonConfig,
   unpackSecret,
+  createManagedCluster,
+  createKlusterletAddonConfig,
+  ResourceError,
+  ResourceErrorCode,
+  IResource,
+  createResource,
   Namespace,
-  NamespaceApiVersion,
   NamespaceKind,
+  NamespaceApiVersion,
 } from '../../../../../resources'
-import { AcmAlert, AcmButton, AcmToastContext } from '../../../../../ui-components'
+import { AcmAlert, AcmButton, AcmToastContext, IAlertContext } from '../../../../../ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/HypershiftKubeAPI'
 import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
+import { getErrorInfo } from '../../../../../components/ErrorPage'
+import { TFunction } from 'i18next'
+import { useContext } from 'react'
+
+export const importHostedControlPlaneCluster = (
+  selectedHostedClusterResource: HostedClusterK8sResource,
+  t: TFunction,
+  toastContext: IAlertContext
+) => {
+  const hdName = selectedHostedClusterResource.metadata?.name
+  const clusterName = hdName
+
+  const match = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(hdName!)
+
+  if (!match) {
+    //Invalid hostname
+    //throw error, don't import cluster
+    toastContext.addAlert({ ...getErrorInfo(t('invalidclustername.message'), t), autoClose: true })
+    return
+  }
+
+  const clusterLabels: Record<string, string> = {
+    cloud: 'auto-detect',
+    'cluster.open-cluster-management.io/clusterset': 'default',
+    name: hdName || '',
+    vendor: 'OpenShift',
+  }
+
+  const clusterAnnotations: Record<string, string> = {
+    'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+    'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+    'open-cluster-management/created-via': 'hypershift',
+  }
+
+  const clusterNameSpace: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+      name: hdName,
+    },
+  }
+
+  try {
+    createResource(clusterNameSpace as IResource)
+  } catch (err) {}
+
+  return {
+    promise: createManagedCluster({ clusterName, clusterLabels, clusterAnnotations }).promise.then((mc) =>
+      createKlusterletAddonConfig({ clusterName, clusterLabels })
+        .promise.catch((err) => {
+          // ignore conflict if KlusterletAddonConfig already exists
+          if (!(err instanceof ResourceError && err.code === ResourceErrorCode.Conflict)) {
+            throw err
+          }
+        })
+        .then(() => mc)
+    ),
+    abort: () => {},
+  }
+}
 
 export const HypershiftImportCommand = (props: { selectedHostedClusterResource: HostedClusterK8sResource }) => {
   const { selectedHostedClusterResource } = props
@@ -33,7 +88,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const [hypershiftKubeAPI, error] = useHypershiftKubeconfig()
   const { cluster, managedCluster } = React.useContext(ClusterContext)
   const toastContext = useContext(AcmToastContext)
-  const { isACMAvailable } = useContext(PluginContext)
 
   const [credentials, setCredentials] = React.useState<LoginCredential>()
   const name = cluster?.kubeadmin
@@ -59,106 +113,6 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       (c.reason === 'AsExpected' && c.message === 'The hosted control plane is available')
   )
 
-  function importHostedControlPlaneCluster() {
-    const hdName = selectedHostedClusterResource.metadata?.name
-
-    const match = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(hdName!)
-
-    if (!match) {
-      //Invalid hostname
-      //throw error, don't import cluster
-      toastContext.addAlert({ ...getErrorInfo(t('invalidclustername.message'), t), autoClose: true })
-      return
-    }
-
-    const managedClusterResource: ManagedCluster = {
-      apiVersion: ManagedClusterApiVersion,
-      kind: ManagedClusterKind,
-      metadata: {
-        annotations: {
-          'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
-          'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-          'open-cluster-management/created-via': 'hypershift',
-        },
-        labels: {
-          cloud: 'auto-detect',
-          'cluster.open-cluster-management.io/clusterset': 'default',
-          name: hdName || '',
-          vendor: 'OpenShift',
-        },
-        name: hdName,
-      },
-      spec: {
-        hubAcceptsClient: true,
-        leaseDurationSeconds: 60,
-      },
-    }
-
-    const klusterletAddonConfig: KlusterletAddonConfig = {
-      apiVersion: KlusterletAddonConfigApiVersion,
-      kind: KlusterletAddonConfigKind,
-      metadata: {
-        name: hdName,
-        namespace: hdName,
-      },
-      spec: {
-        clusterName: hdName!,
-        clusterNamespace: hdName!,
-        clusterLabels: {
-          cloud: 'Amazon',
-          vendor: 'Openshift',
-        },
-        applicationManager: {
-          enabled: true,
-          argocdCluster: false,
-        },
-        policyController: {
-          enabled: true,
-        },
-        searchCollector: {
-          enabled: true,
-        },
-        certPolicyController: {
-          enabled: true,
-        },
-        iamPolicyController: {
-          enabled: true,
-        },
-      },
-    }
-
-    const clusterNameSpace: Namespace = {
-      apiVersion: NamespaceApiVersion,
-      kind: NamespaceKind,
-      metadata: {
-        name: hdName,
-      },
-    }
-
-    createResource(managedClusterResource as IResource)
-      .promise.then(() => {
-        toastContext.addAlert({
-          title: t('Importing hosted control plane cluster...'),
-          type: 'success',
-          autoClose: true,
-        })
-      })
-      .catch((err) => {
-        toastContext.addAlert(getErrorInfo(err, t))
-      })
-
-    //Create namespace for addons if it doesn't already exist
-    if (isACMAvailable) {
-      try {
-        createResource(clusterNameSpace as IResource)
-      } catch (err) {}
-
-      try {
-        createResource(klusterletAddonConfig as IResource)
-      } catch (err) {}
-    }
-  }
-
   if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {
     // import alert
     return (
@@ -175,7 +129,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                 <AcmButton
                   variant="link"
                   style={{ paddingLeft: '0px' }}
-                  onClick={() => importHostedControlPlaneCluster()}
+                  onClick={() => importHostedControlPlaneCluster(selectedHostedClusterResource, t, toastContext)}
                   isDisabled={HostedClusterReadyStatus?.status !== 'True'}
                 >
                   {t('managed.importCluster')}
