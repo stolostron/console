@@ -420,7 +420,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       break
     case HostInventoryInfrastructureType.CIMHypershift:
       template = Handlebars.compile(hypershiftTemplate)
-      controlData = getControlDataHypershift(t, handleModalToggle, <Warning />, true, isACMAvailable)
+      controlData = getControlDataHypershift(t, handleModalToggle, <Warning />, false, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM)
       break
     case HostInventoryInfrastructureType.CIM:
