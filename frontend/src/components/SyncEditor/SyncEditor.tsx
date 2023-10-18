@@ -189,7 +189,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (selection.selectionStartLineNumber - 1 > 0 && pasteText.startsWith('-----BEGIN')) {
           event.stopPropagation()
           event.preventDefault()
-          const lines = pasteText.split('\r\n')
+          const lines = pasteText.split(/\r?\n/)
           const model = editorRef.current.getModel()
           const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
           const leadSpaces = spaces - selection.selectionStartColumn + 1

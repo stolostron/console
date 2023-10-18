@@ -372,7 +372,7 @@ const propsNewResource: SyncEditorProps = {
       metadata: {
         name: 'test',
         namespace: 'default',
-        pem: '>',
+        pem: '|',
         annotations: {
           'policy.open-cluster-management.io/categories': 'AC Access Control',
           'policy.open-cluster-management.io/standards': 'NIST SP 800-53',
@@ -680,7 +680,7 @@ const certificate =
   '-----END CERTIFICATE-----'
 
 const pastedResource =
-  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: ">"\n    -----BEGIN CERTIFICATE-----\n    MIIEFzCCAv+gAwIBAgIUR51LnFfrTrRFtk3p6vIinn8fXiswDQYJKoZIhvcNAQEL\n    BQAwgYoxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOQzEQMA4GA1UEBwwHUmFsZWln\n    aDEVMBMGA1UECgwMVGVzdCBDb21wYW55MRAwDgYDVQQLDAdUZXN0aW5nMTMwMQYD\n    VQQDDCpmMDUtaDE1LTAwMC0xMDI5cC5yZHUyLnNjYWxlbGFiLnJlZGhhdC5jb20w\n    HhcNMjAwNzA4MjE0NzU0WhcNMjEwNzA4MjE0NzU0WjCBijELMAkGA1UEBhMCVVMx\n    371Ep8nRfNBcbF2PIaGRYIOPu+E+emJsCsWymC7byUtLmuWJnOMQ7bgB82y9V2rA\n    8fcSyMdaV3Py3DQiNaQ1cKgXnH7Ec149ZSv4Jbos0WG6CUjEk7S7B586sOvrwPUW\n    3pe+QMJeSxSNo0L+SM1wu6LzfPxi6hj9Wnvyl0GjNAwVxzqLHIi9H1XBe/Sg1UkH\n    mdSmC9wrE5oGay2J3Le06ulZQke6lTw+StP5TjSu6od+v2nsEfBggWXioQ==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  clusterSelector:\n    matchExpressions:\n      - key: name\n        operator: In\n        values:\n          - local-cluster\n  clusterConditions: []\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: apps.open-cluster-management.io\n  kind: PlacementRule\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
+  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: "|"\n    -----BEGIN CERTIFICATE-----\n    MIIEFzCCAv+gAwIBAgIUR51LnFfrTrRFtk3p6vIinn8fXiswDQYJKoZIhvcNAQEL\n    BQAwgYoxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJOQzEQMA4GA1UEBwwHUmFsZWln\n    aDEVMBMGA1UECgwMVGVzdCBDb21wYW55MRAwDgYDVQQLDAdUZXN0aW5nMTMwMQYD\n    VQQDDCpmMDUtaDE1LTAwMC0xMDI5cC5yZHUyLnNjYWxlbGFiLnJlZGhhdC5jb20w\n    HhcNMjAwNzA4MjE0NzU0WhcNMjEwNzA4MjE0NzU0WjCBijELMAkGA1UEBhMCVVMx\n    371Ep8nRfNBcbF2PIaGRYIOPu+E+emJsCsWymC7byUtLmuWJnOMQ7bgB82y9V2rA\n    8fcSyMdaV3Py3DQiNaQ1cKgXnH7Ec149ZSv4Jbos0WG6CUjEk7S7B586sOvrwPUW\n    3pe+QMJeSxSNo0L+SM1wu6LzfPxi6hj9Wnvyl0GjNAwVxzqLHIi9H1XBe/Sg1UkH\n    mdSmC9wrE5oGay2J3Le06ulZQke6lTw+StP5TjSu6od+v2nsEfBggWXioQ==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  clusterSelector:\n    matchExpressions:\n      - key: name\n        operator: In\n        values:\n          - local-cluster\n  clusterConditions: []\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: apps.open-cluster-management.io\n  kind: PlacementRule\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
 
 const newResourceYaml =
   'apiVersion: policy.open-cluster-management.io/v1\n' +
@@ -688,7 +688,7 @@ const newResourceYaml =
   'metadata:\n' +
   '  name: test\n' +
   '  namespace: default\n' +
-  '  pem: ">"\n' +
+  '  pem: "|"\n' +
   '  annotations:\n' +
   '    policy.open-cluster-management.io/categories: AC Access Control\n' +
   '    policy.open-cluster-management.io/standards: NIST SP 800-53\n' +
