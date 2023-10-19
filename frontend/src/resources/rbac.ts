@@ -72,7 +72,7 @@ export interface ClusterRoleBinding {
   apiVersion: RbacApiVersionType
   kind: ClusterRoleBindingKindType
   metadata: Metadata
-  subjects: {
+  subjects?: {
     kind: 'User' | 'Group'
     apiGroup: 'rbac.authorization.k8s.io'
     name: string

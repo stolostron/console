@@ -44,7 +44,7 @@ export function ClusterSetOverviewPageContent() {
   let users = 0
   let groups = 0
   clusterRoleBindings?.forEach((binding) => {
-    binding.subjects.forEach((subject) => {
+    binding.subjects?.forEach((subject) => {
       if (subject.kind === 'Group') {
         groups += 1
       }

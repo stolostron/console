@@ -85,17 +85,17 @@ export function ClusterSetAccessManagement() {
           const bValue = b.subjects?.[0]?.name ?? ''
           return compareStrings(aValue, bValue)
         },
-        search: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects[0].name,
+        search: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects?.[0].name ?? '',
         cell: (clusterRoleBinding: ClusterRoleBinding) => {
-          if (clusterRoleBinding.subjects[0].kind === 'User') {
+          if (clusterRoleBinding.subjects && clusterRoleBinding.subjects[0].kind === 'User') {
             return clusterRoleBinding.subjects[0].name
           } else {
             return (
               <span style={{ display: 'flex' }}>
-                {clusterRoleBinding.subjects[0].name}{' '}
+                {clusterRoleBinding.subjects?.[0].name}{' '}
                 <GroupUsersPopover
                   useIcon
-                  group={groups?.find((group) => group.metadata.name === clusterRoleBinding.subjects[0].name)}
+                  group={groups?.find((group) => group.metadata.name === clusterRoleBinding.subjects?.[0].name)}
                 />
               </span>
             )
@@ -139,8 +139,8 @@ export function ClusterSetAccessManagement() {
           const bValue = b.subjects?.[0]?.kind ?? ''
           return compareStrings(aValue, bValue)
         },
-        search: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects[0].kind,
-        cell: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects[0].kind,
+        search: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects?.[0].kind ?? '',
+        cell: (clusterRoleBinding: ClusterRoleBinding) => clusterRoleBinding.subjects?.[0].kind,
       },
     ],
     [t, groups, clusterSet]
@@ -273,7 +273,7 @@ function AddUsersModal(props: {
     props.users?.filter(
       (user) =>
         !props.clusterRoleBindings?.find(
-          (crb) => crb.subjects[0].kind === 'User' && crb.subjects[0].name === user.metadata.name
+          (crb) => crb.subjects?.[0].kind === 'User' && crb.subjects[0].name === user.metadata.name
         )
     ) ?? []
 
@@ -281,7 +281,7 @@ function AddUsersModal(props: {
     props.groups?.filter(
       (group) =>
         !props.clusterRoleBindings?.find(
-          (crb) => crb.subjects[0].kind === 'Group' && crb.subjects[0].name === group.metadata.name
+          (crb) => crb.subjects?.[0].kind === 'Group' && crb.subjects[0].name === group.metadata.name
         )
     ) ?? []
 
