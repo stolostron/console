@@ -178,8 +178,31 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     monacoRef.current = monaco
   }
 
-  // clear our the getEditorValue method
   useEffect(() => {
+    // if user is pasting a certificate, fix the indent
+    const domNode = editorRef.current.getDomNode()
+    domNode.addEventListener(
+      'paste',
+      (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
+        const selection = editorRef.current.getSelection()
+        const pasteText = (event.originalEvent || event).clipboardData.getData('text/plain').trim()
+        if (selection.selectionStartLineNumber - 1 > 0 && pasteText.startsWith('-----BEGIN')) {
+          event.stopPropagation()
+          event.preventDefault()
+          const lines = pasteText.split(/\r?\n/)
+          const model = editorRef.current.getModel()
+          const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
+          const leadSpaces = spaces - selection.selectionStartColumn + 1
+          const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
+          const spacer = ' '.repeat(spaces)
+          const joint = `\r\n${spacer}`
+          const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
+          editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+        }
+      },
+      true
+    )
+    // clear our the getEditorValue method
     return () => {
       window.getEditorValue = undefined
     }
