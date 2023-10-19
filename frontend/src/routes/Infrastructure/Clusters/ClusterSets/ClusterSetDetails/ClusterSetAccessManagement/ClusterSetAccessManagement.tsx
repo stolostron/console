@@ -43,7 +43,7 @@ import {
   ToggleGroupItem,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
@@ -58,9 +58,20 @@ export function ClusterSetAccessManagement() {
   })
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
-  const { data, refresh, error } = useQuery(listClusterRoleBindings)
-  const { data: users } = useQuery(listUsers)
-  const { data: groups } = useQuery(listGroups)
+  const { data, refresh, error, startPolling, stopPolling } = useQuery(listClusterRoleBindings)
+  const { data: users, startPolling: usersStartPolling, stopPolling: usersStopPolling } = useQuery(listUsers)
+  const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
+
+  useEffect(() => {
+    startPolling()
+    usersStartPolling()
+    groupsStartPolling()
+    return () => {
+      stopPolling()
+      usersStopPolling()
+      groupsStopPolling()
+    }
+  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling, usersStartPolling, usersStopPolling])
 
   let clusterRoleBindings: ClusterRoleBinding[] | undefined
   if (data) {
