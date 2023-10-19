@@ -65,7 +65,7 @@ export function ClusterSetAccessManagement() {
   let clusterRoleBindings: ClusterRoleBinding[] | undefined
   if (data) {
     clusterRoleBindings = data.filter((item) => {
-      const role = item.roleRef.name
+      const role = item.subjects ? item.roleRef.name : ''
       return (
         role.startsWith('open-cluster-management:managedclusterset:') && role.endsWith(`:${clusterSet!.metadata.name!}`)
       )
