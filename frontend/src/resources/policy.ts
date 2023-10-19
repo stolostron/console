@@ -86,6 +86,7 @@ export enum PolicySeverity {
   Low,
   Medium,
   High,
+  Critical,
 }
 
 export function getPolicySeverity(policy: Policy): PolicySeverity {
@@ -94,13 +95,16 @@ export function getPolicySeverity(policy: Policy): PolicySeverity {
   for (const template of policy.spec['policy-templates']) {
     switch (template.objectDefinition.spec.severity) {
       case 'low':
-        severity = severity < PolicySeverity.Low ? PolicySeverity.Low : severity
+        if (severity < PolicySeverity.Low) severity = PolicySeverity.Low
         break
       case 'medium':
-        severity = severity < PolicySeverity.Medium ? PolicySeverity.Medium : severity
+        if (severity < PolicySeverity.Medium) severity = PolicySeverity.Medium
         break
       case 'high':
-        severity = severity < PolicySeverity.High ? PolicySeverity.High : severity
+        if (severity < PolicySeverity.High) severity = PolicySeverity.High
+        break
+      case 'critical':
+        severity = PolicySeverity.Critical
         break
     }
   }

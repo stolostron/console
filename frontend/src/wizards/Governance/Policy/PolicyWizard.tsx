@@ -505,6 +505,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
               { label: t('low'), value: 'low' },
               { label: t('medium'), value: 'medium' },
               { label: t('high'), value: 'high' },
+              { label: t('critical'), value: 'critical' },
             ]}
             required
           />
