@@ -10,7 +10,7 @@ oc get oauthclient console-oauth-client -o jsonpath='{.secret}' > ocp-console/co
 oc get secrets -n default --field-selector type=kubernetes.io/service-account-token -o json | \
     jq '.items[0].data."ca.crt"' -r | python -m base64 -d > ocp-console/ca.crt
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.11}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.12}
 CONSOLE_PORT=${CONSOLE_PORT:=9000}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
@@ -70,6 +70,7 @@ if [ -x "$(command -v podman)" ]; then
           --pull always --rm -p "$CONSOLE_PORT":9000 \
           --env-file <(set | grep BRIDGE) \
           --env BRIDGE_PLUGIN_PROXY='{"services": [{"consoleAPIPath": "/api/proxy/plugin/mce/console/", "endpoint":"https://host.containers.internal:4000","authorize":true}, {"consoleAPIPath": "/api/proxy/plugin/acm/console/", "endpoint":"https://host.containers.internal:4000","authorize":true}]}' \
+          --arch amd64 \
           $CONSOLE_IMAGE
     fi
 else
@@ -81,5 +82,6 @@ else
       --pull always --rm -p "$CONSOLE_PORT":9000 \
       --env-file <(set | grep BRIDGE) \
       --env BRIDGE_PLUGIN_PROXY='{"services": [{"consoleAPIPath": "/api/proxy/plugin/mce/console/", "endpoint":"https://host.docker.internal:4000","authorize":true}, {"consoleAPIPath": "/api/proxy/plugin/acm/console/", "endpoint":"https://host.docker.internal:4000","authorize":true}]}' \
+      --platform linux/amd64 \
       $CONSOLE_IMAGE
 fi
