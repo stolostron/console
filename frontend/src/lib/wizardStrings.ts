@@ -36,7 +36,7 @@ export const useWizardStrings = (
       syncButtonTooltip: t('Refresh'),
       required: t('Required'),
       expandToFixValidationErrors: t('Expand to fix validation errors'),
-      selectNoItems: t('Select none (0 items)'),
+      selectNoItems: t('Select none'),
       selectPageItems: (count: number) => t('Select page ({{count}} items)', { count }),
       selectAllItems: (count: number) => t('Select all ({{count}} items)', { count }),
     }),
