@@ -13,3 +13,6 @@
 .build-harness-bootstrap
 build-harness
 build-harness-extensions
+.vscode/settings.json
+frontend/public/locales/upload
+frontend/public/locales/download

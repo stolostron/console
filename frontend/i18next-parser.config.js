@@ -1,10 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
-
+const { readFileSync } = require('fs')
 const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js')
 
 const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
 const JsxLexer = { lexer: 'JsxLexer', functions: ['t', 'i18n'] }
+
+const GENERATE = process.env.MODE === 'generate'
+
+let enTranslations
 
 module.exports = {
     contextSeparator: '_',
@@ -16,7 +20,16 @@ module.exports = {
     defaultNamespace: 'translation',
     // Default namespace used in your i18next config
 
-    defaultValue: '',
+    defaultValue: (locale, _namespace, key) => {
+        if (locale === 'en') {
+            return key
+        } else {
+            if (!enTranslations) {
+                enTranslations = JSON.parse(readFileSync('public/locales/en/translation.json', 'utf-8'))
+            }
+            return enTranslations[key]
+        }
+    },
     // Default value to give to empty keys
     // You may also specify a function accepting the locale, namespace, and key as arguments
 
@@ -51,14 +64,14 @@ module.exports = {
     lineEnding: 'auto',
     // Control the line ending. See options at https://github.com/ryanve/eol
 
-    locales: ['en'],
+    locales: GENERATE ? ['ja', 'ko', 'zh'] : ['en'],
     // An array of the locales in your applications
 
     namespaceSeparator: '~',
     // Namespace separator used in your translation keys
     // If you want to use plain english keys, separators such as `.` and `:` will conflict. You might want to set `keySeparator: false` and `namespaceSeparator: false`. That way, `t('Status: Loading...')` will not think that there are a namespace and three separator dots for instance.
 
-    output: 'public/locales/$LOCALE/translation.json',
+    output: GENERATE ? 'public/locales/upload/$LOCALE-translation.json' : 'public/locales/$LOCALE/translation.json',
     // Supports $LOCALE and $NAMESPACE injection
     // Supports JSON (.json) and YAML (.yml) file formats
     // Where to write the locale files relative to process.cwd()
@@ -78,7 +91,7 @@ module.exports = {
     // Whether to ignore default values
     // You may also specify a function accepting the locale and namespace as arguments
 
-    useKeysAsDefaultValue: true,
+    useKeysAsDefaultValue: false,
     // Whether to use the keys as the default value; ex. "Hello": "Hello", "World": "World"
     // This option takes precedence over the `defaultValue` and `skipDefaultValues` options
     // You may also specify a function accepting the locale and namespace as arguments
