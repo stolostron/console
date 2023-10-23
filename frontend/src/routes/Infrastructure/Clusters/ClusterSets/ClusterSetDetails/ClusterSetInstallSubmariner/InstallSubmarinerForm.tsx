@@ -51,6 +51,7 @@ import {
 } from '../../../../../../ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import schema from './schema.json'
+import { LostChangesContext } from '../../../../../../components/LostChanges'
 
 const installNamespace = 'submariner-operator'
 export function InstallSubmarinerFormPage() {
@@ -255,6 +256,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         })
     }
   }, [clusterSet])
+
+  const { cancelForm, submitForm } = useContext(LostChangesContext)
 
   function stateToData() {
     const resources: any = []
@@ -530,7 +533,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     cancelLabel: t('cancel'),
     nextLabel: t('next'),
     backLabel: t('back'),
-    cancel: () => history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
+    cancel: () => {
+      cancelForm()
+      history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
+    },
     stateToData,
     sections: [
       {
@@ -1132,6 +1138,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         if (errors.length > 0) {
           throw errors[0]
         } else {
+          submitForm()
           return history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
         }
       })
