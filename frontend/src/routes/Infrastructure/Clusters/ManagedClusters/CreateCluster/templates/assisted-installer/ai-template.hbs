@@ -8,6 +8,10 @@ metadata:
   {{/if}}
   name: '{{{ai.name}}}'
   namespace: '{{{ai.name}}}'
+{{#if reconcilePause}}
+  annotations:
+    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
+{{/if}}
 spec:
   baseDomain: {{{ai.baseDnsDomain}}}
   clusterInstallRef:
@@ -83,6 +87,8 @@ metadata:
   name: '{{{ai.name}}}'
 spec:
   hubAcceptsClient: true
+
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---

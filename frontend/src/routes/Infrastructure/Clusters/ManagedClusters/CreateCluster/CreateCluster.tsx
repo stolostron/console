@@ -28,6 +28,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 // template/data
 import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
+import clusterCuratorTemplate from './templates/cluster-curator.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
 import cimTemplate from './templates/assisted-installer/cim-template.hbs'
@@ -265,6 +266,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   //compile templates
   let template = Handlebars.compile(hiveTemplate)
   Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
+  Handlebars.registerPartial('clusterCurator', Handlebars.compile(clusterCuratorTemplate))
   Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
   Handlebars.registerHelper('append', append)
 
