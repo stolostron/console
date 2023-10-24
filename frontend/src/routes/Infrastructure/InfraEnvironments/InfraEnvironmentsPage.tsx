@@ -195,8 +195,8 @@ const InfraEnvironmentsPage: React.FC = () => {
               <span>
                 {
                   // i18next-parser does not detect nested references in values
-                  // t('hostCount')
-                  // t('infraEnvCount')
+                  // t('hostCount', { count: 0 })
+                  // t('infraEnvCount', { count: 0 })
                   t('hostInfraEnvCounts', {
                     hostCount: agents.length,
                     infraEnvCount: infraEnvs.length,
