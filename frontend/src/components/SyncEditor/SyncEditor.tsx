@@ -665,7 +665,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       {editorHasErrors && (
         <Alert
           variant="danger"
-          title="Changes will be ignored until errors are fixed."
+          title={t('Form edits will be ignored until YAML syntax errors are fixed.')}
           actionClose={<AlertActionCloseButton onClose={() => setEditorHasErrors(false)} />}
         />
       )}
