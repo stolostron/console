@@ -17,7 +17,7 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { InfraEnvFormPage, getLabels, EnvironmentStepFormValues } from '@openshift-assisted/ui-lib/cim'
+import { InfraEnvFormPage, EnvironmentStepFormValues } from '@openshift-assisted/ui-lib/cim'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FormikProps } from 'formik'
 
@@ -51,6 +51,13 @@ const portals = (
     </Split>
   </PageSection>
 )
+
+const getLabels = (values: EnvironmentStepFormValues) =>
+  values.labels.reduce((acc, curr) => {
+    const label = curr.split('=')
+    acc[label[0]] = label[1]
+    return acc
+  }, {} as Record<string, string>)
 
 type InfraEnvFormProps = {
   control?: any
