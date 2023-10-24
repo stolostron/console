@@ -1220,7 +1220,7 @@
   "Edit time window": "编辑时间窗",
   "edit.yaml.off": "YAML: 关",
   "edit.yaml.on": "YAML: 开",
-  "edit.yaml.on.ro": "YAML (read only): On",
+  "edit.yaml.on.ro": "YAML (只读): 开",
   "editor.bar.close": "关闭编辑器",
   "editor.bar.next": "下一个",
   "editor.bar.previous": "以前",
