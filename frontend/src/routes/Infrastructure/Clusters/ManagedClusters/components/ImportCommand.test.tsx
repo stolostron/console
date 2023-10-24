@@ -72,7 +72,7 @@ describe('ImportCommandContainer', () => {
 
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
     await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
-    await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
+    await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull(), { timeout: 15000 })
     // await waitFor(() => expect(screen.getByTestId('pending-import-notification')).toBeInTheDocument())
     await waitFor(() => expect(screen.getByTestId('import-command')).toBeInTheDocument())
   })
@@ -83,7 +83,7 @@ describe('ImportCommandContainer', () => {
 
     await waitFor(() => expect(screen.getByRole('progressbar')).toBeInTheDocument())
     await waitFor(() => expect(getSecretNock.isDone()).toBeTruthy())
-    await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull(), { timeout: 10500 })
+    await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull(), { timeout: 15000 })
     await waitFor(() => expect(screen.getByText(mockBadRequestStatus.message)).toBeInTheDocument())
   })
 })

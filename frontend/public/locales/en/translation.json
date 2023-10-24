@@ -1055,6 +1055,7 @@
   "credentialsForm.vsphereFolder.placeholder": "Enter the absolute path to your vSphere folder",
   "credentialsForm.vsphereResourcePool.labelHelp": "The absolute path (case-sensitive) of the vSphere resource pool to use. For example: /DATACENTER/host/CLUSTER/Resources/RESOURCE",
   "credentialsForm.vsphereResourcePool.placeholder": "Enter the absolute path to your vSphere resource pool",
+  "critical": "critical",
   "Critical": "Critical",
   "Current": "Current",
   "Current log": "Current log",
