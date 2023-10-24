@@ -719,6 +719,8 @@ export const architectureData = (t) => {
   ]
 }
 
+export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
+
 const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
   const matches = version.match(versionRegex)

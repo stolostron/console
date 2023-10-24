@@ -26,7 +26,7 @@ import {
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
+import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
 import clusterCuratorTemplate from './templates/cluster-curator.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
@@ -269,6 +269,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   Handlebars.registerPartial('clusterCurator', Handlebars.compile(clusterCuratorTemplate))
   Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
   Handlebars.registerHelper('append', append)
+  Handlebars.registerHelper('getName', getName)
 
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
