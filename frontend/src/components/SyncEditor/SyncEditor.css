@@ -37,7 +37,7 @@
   background-color: #25282c;
 }
 
-.sync-editor__container .pf-c-button.pf-m-plain,
+.sync-editor__container .sy-toolbar-buttons .pf-c-button.pf-m-plain,
 .pf-c-code-editor__controls .pf-c-button.pf-m-control:not([disabled]) {
   color: #ededed;
 }

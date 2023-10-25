@@ -1392,6 +1392,7 @@
   "For Subscription applications, displays the number of remote and local clusters where resources for the application are deployed. For Argo applications, this is the name of the destination cluster. For OpenShift applications, this is the cluster where the application is deployed.": "For Subscription applications, displays the number of remote and local clusters where resources for the application are deployed. For Argo applications, this is the name of the destination cluster. For OpenShift applications, this is the cluster where the application is deployed.",
   "Forbidden": "Forbidden",
   "foreground": "foreground",
+  "Form edits will be ignored until YAML syntax errors are fixed.": "Form edits will be ignored until YAML syntax errors are fixed.",
   "formerror.valid.baseDNSPeriod": "The base DNS domain must not begin with a period.",
   "formerror.valid.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
   "G3 - NVIDIA Tesla M60 GPUs": "G3 - NVIDIA Tesla M60 GPUs",

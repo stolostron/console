@@ -5,7 +5,7 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
-import { ClipboardCopyButton } from '@patternfly/react-core'
+import { Alert, ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
@@ -112,6 +112,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showFiltered, setShowFiltered] = useState<boolean>(false)
   const [clickedOnFilteredLine, setClickedOnFilteredLine] = useState<boolean>(false)
   const [editorHasFocus, setEditorHasFocus] = useState<boolean>(false)
+  const [editorHasErrors, setEditorHasErrors] = useState<boolean>(false)
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
@@ -326,7 +327,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   useEffect(() => {
     // debounce changes from form
     const formChange = () => {
-      if (editorHasFocus) {
+      if (editorHasFocus || editorHasErrors) {
         return
       }
       // parse/validate/secrets
@@ -471,16 +472,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
       // report new resources/errors/useredits to form
       // if there are validation errors still pass it to form
+      const editorHasErrors =
+        errors.syntax.length > 0 || errors.validation.filter(({ errorType }) => errorType === 'error').length > 0
       let customErrors = []
-      if (
-        errors.syntax.length === 0 &&
-        errors.validation.filter(({ errorType }) => errorType === 'error').length === 0
-      ) {
+      if (!editorHasErrors) {
         const clonedUnredactedChange = cloneDeep(unredactedChange)
         setResourceChanges(clonedUnredactedChange)
         customErrors = setFormValues(syncs, clonedUnredactedChange) || []
         setCustomValidationErrors(customErrors)
       }
+      setEditorHasErrors(editorHasErrors)
       setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
 
       // decorate errors, changes
@@ -568,7 +569,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     return (
       <>
         <div className="sy-c-code-editor__title">{editorTitle || 'YAML'}</div>
-        <div style={{ display: 'flex' }}>
+        <div className="sy-toolbar-buttons" style={{ display: 'flex' }}>
           {/* undo */}
           {!readonly && (
             <CodeEditorControl
@@ -675,12 +676,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (variant === 'toolbar') {
       height -= 36
     }
+    if (editorHasErrors) {
+      height -= 75
+    }
     editorRef?.current?.layout({ width, height })
     setShowCondensed(width < 500)
   })
 
   return (
     <div ref={pageRef} className="sync-editor__container">
+      {editorHasErrors && (
+        <Alert variant="danger" title={t('Form edits will be ignored until YAML syntax errors are fixed.')} />
+      )}
       <CodeEditor
         isLineNumbersVisible={true}
         isReadOnly={readonly}
