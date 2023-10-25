@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { getLabels, getMatchLabels } from "./ControlDataPlacement"
+import { getLabels } from './ControlDataPlacement'
 
 describe('getLabels normal operation', () => {
   const clusterSelector = {
@@ -8,30 +8,24 @@ describe('getLabels normal operation', () => {
       {
         key: 'name',
         operator: 'In',
-        values: [
-          'local-cluster'
-        ]
+        values: ['local-cluster'],
       },
       {
         operator: 'In',
-        values: [
-          'Amazon'
-        ]
+        values: ['Amazon'],
       },
       {
         key: 'cloud',
-        values: [
-          'Amazon'
-        ]
+        values: ['Amazon'],
       },
       {
         key: 'cloud',
         operator: 'In',
       },
-    ]
+    ],
   }
 
   it('should get labels from clusterselector', () => {
-    expect(getLabels(clusterSelector)).toEqual('name \"In\" local-cluster; #invalidExpr; #invalidExpr; #invalidExpr')
+    expect(getLabels(clusterSelector)).toEqual('name "In" local-cluster; #invalidExpr; #invalidExpr; #invalidExpr')
   })
 })
