@@ -45,6 +45,9 @@ export const loadExistingPlacementRules = (t) => {
 export const getLabels = (clusterSelector) => {
   return clusterSelector?.matchExpressions
     ?.map(({ key, operator, values }) => {
+      if (!key || !operator || !values) {
+        return '#invalidExpr'
+      }
       return `${key} "${operator}" ${values.join(', ')}`
     })
     .join('; ')
