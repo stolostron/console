@@ -92,6 +92,7 @@ export function ViolationsCard(props: {
           },
         ]}
         colorScale={colorThemes.criticalLowSuccess}
+        countViolationsOnly={true}
       />
     </Card>
   )

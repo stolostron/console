@@ -84,12 +84,18 @@ export function AcmDonutChart(props: {
     title: string
     subTitle: string
   }
+  countViolationsOnly?: boolean
 }) {
   const chartData = props.data.map((d) => ({ x: d.key, y: d.value }))
   const legendData: Array<LegendData> = props.data.map((d) => ({ name: `${d.value} ${d.key}`, link: d.link }))
-  const total = props.data.reduce((a, b) => a + b.value, 0)
   /* istanbul ignore next */
   const primary = props.data.find((d) => d.isPrimary) || { key: '', value: 0 }
+  let total = 0
+  if (props.countViolationsOnly) {
+    total = props.data[0].value
+  } else {
+    total = props.data.reduce((a, b) => a + b.value, 0)
+  }
   let donutLabel = ''
   if (props.donutLabel) {
     donutLabel = props.donutLabel.title

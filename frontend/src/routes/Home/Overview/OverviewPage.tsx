@@ -664,6 +664,7 @@ export default function OverviewPage() {
                 loading={!complianceData}
                 data={complianceData}
                 colorScale={colorThemes.criticalSuccess}
+                countViolationsOnly={true}
               />
               {!searchError ? (
                 <AcmDonutChart
