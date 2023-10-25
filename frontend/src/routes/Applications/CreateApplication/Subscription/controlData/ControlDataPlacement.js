@@ -56,9 +56,6 @@ export const getLabels = (clusterSelector) => {
 export const getMatchLabels = (clusterSelector) => {
   return Object.entries(clusterSelector?.matchLabels ? clusterSelector.matchLabels : {})
     .map(([key, value]) => {
-      if (!key || !value) {
-        return '#invalidLabel'
-      }
       return `${key}=${value}`
     })
     .join('; ')
