@@ -5,7 +5,7 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
-import { Alert, AlertActionCloseButton, ClipboardCopyButton } from '@patternfly/react-core'
+import { Alert, ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
@@ -654,7 +654,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       height -= 36
     }
     if (editorHasErrors) {
-      height -= 36
+      height -= 75
     }
     editorRef?.current?.layout({ width, height })
     setShowCondensed(width < 500)
@@ -663,11 +663,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   return (
     <div ref={pageRef} className="sync-editor__container">
       {editorHasErrors && (
-        <Alert
-          variant="danger"
-          title={t('Form edits will be ignored until YAML syntax errors are fixed.')}
-          actionClose={<AlertActionCloseButton onClose={() => setEditorHasErrors(false)} />}
-        />
+        <Alert variant="danger" title={t('Form edits will be ignored until YAML syntax errors are fixed.')} />
       )}
       <CodeEditor
         isLineNumbersVisible={true}
