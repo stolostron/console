@@ -7,7 +7,7 @@ import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
 import OverviewPage from './OverviewPage'
 import OverviewPageBeta from './OverviewPageBeta'
 
-export default function OverviewTemp() {
+export default function Overview() {
   const [isBetaView, setIsBetaView] = useState<boolean>(localStorage.getItem('overview-isBeta') === 'true')
   const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
   const { t } = useTranslation()
@@ -20,7 +20,7 @@ export default function OverviewTemp() {
             title={t('Overview')}
             switches={
               <Switch
-                label={t('Beta view')}
+                label={t('Fleet view preview')}
                 isChecked={isBetaView}
                 onChange={() => {
                   setIsBetaView(!isBetaView)
@@ -29,7 +29,7 @@ export default function OverviewTemp() {
               />
             }
           />
-          {/* Beta view includes a cluster label filter */}
+          {/* Fleet view preview includes a cluster label filter */}
           {isBetaView && (
             <OverviewClusterLabelSelector
               selectedClusterLabels={selectedClusterLabels}
