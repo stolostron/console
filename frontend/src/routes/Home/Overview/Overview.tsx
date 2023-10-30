@@ -20,7 +20,7 @@ export default function Overview() {
             title={t('Overview')}
             switches={
               <Switch
-                label={t('Fleet view preview')}
+                label={t('Fleet view')}
                 isChecked={isBetaView}
                 onChange={() => {
                   setIsBetaView(!isBetaView)
@@ -29,7 +29,7 @@ export default function Overview() {
               />
             }
           />
-          {/* Fleet view preview includes a cluster label filter */}
+          {/* Fleet view includes a cluster label filter */}
           {isBetaView && (
             <OverviewClusterLabelSelector
               selectedClusterLabels={selectedClusterLabels}
