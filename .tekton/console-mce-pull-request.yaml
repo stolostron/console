@@ -188,7 +188,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:76fb05be2a817ea785ba6daf2d81263733a1f80d37424aa129c14f2a845e4aa3
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:a0dd6afc24669d5546eda1ca4f3e6f701274c387cae2e8ba5ff25e4dab2d71cf
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
@@ -255,7 +255,7 @@ spec:
       - name: BASE_IMAGES_DIGESTS
         value: $(tasks.build-container.results.BASE_IMAGES_DIGESTS)
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:d507b3441d6c039691aa75c18d30f5191febcdca8f7f57f6122d75bb2f6f585d
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-deprecated-image-check:0.3@sha256:35e2708505614397ede771474a2e2d6f04e911efc46afae47ca4a63e2f6fc9a0
         name: deprecated-image-check
       when:
       - input: $(params.skip-checks)
