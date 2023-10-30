@@ -25,7 +25,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
   const agentClusterInstall = agentClusterInstalls.find(
     (aci) =>
       aci.spec?.clusterDeploymentRef?.name === clusterDeployment?.metadata?.name &&
-      aci.spec?.clusterDeploymentRef?.namespace === clusterDeployment?.metadata?.namespace
+      aci.metadata?.namespace === clusterDeployment?.metadata?.namespace
   )
 
   const addHostsToCluster = useCallback(
