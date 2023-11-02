@@ -10,10 +10,6 @@ export enum HostInventoryInfrastructureType {
   NutanixAI = 'nutanix-ai',
   NutanixCIM = 'nutanix-cim',
 }
-const isHostInventoryInfrastructureType = (
-  infrastructureType: string
-): infrastructureType is HostInventoryInfrastructureType =>
-  (Object.values(HostInventoryInfrastructureType) as string[]).includes(infrastructureType)
 
 const clusterInfrastructureTypes = [
   Provider.aws,
@@ -40,8 +36,25 @@ export const isClusterInfrastructureType = (
 
 export const getCredentialsTypeForClusterInfrastructureType = (
   infrastructureType: ClusterInfrastructureType
-): CredentialsType =>
-  isHostInventoryInfrastructureType(infrastructureType) ? Provider.hostinventory : infrastructureType
+): CredentialsType => {
+  if (
+    [HostInventoryInfrastructureType.NutanixAI, HostInventoryInfrastructureType.NutanixCIM].includes(
+      infrastructureType as any
+    )
+  ) {
+    return Provider.nutanix
+  }
+  if (
+    [
+      HostInventoryInfrastructureType.AI,
+      HostInventoryInfrastructureType.CIM,
+      HostInventoryInfrastructureType.CIMHypershift,
+    ].includes(infrastructureType as any)
+  ) {
+    return Provider.hostinventory
+  }
+  return infrastructureType as CredentialsType
+}
 
 export const CLUSTER_INFRA_TYPE_PARAM = 'type'
 
