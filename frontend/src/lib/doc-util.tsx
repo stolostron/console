@@ -47,7 +47,7 @@ export const DOC_LINKS = {
   CIM_CONFIG_AWS: `${DOC_BASE_PATH}/clusters/index#enable-cim-aws`,
   CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/clusters/index#disconnected-vm`,
   CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#disconnected-openstack`,
-  INFRASTRUCTURE_ENVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#creating-an-infrastructure-environment`,
+  INFRASTRUCTURE_ENVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#create-host-inventory-console`,
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
