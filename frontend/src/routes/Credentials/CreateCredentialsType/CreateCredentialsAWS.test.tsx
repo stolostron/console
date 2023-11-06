@@ -7,7 +7,10 @@ import { clickByTestId } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreateCredentialsAWS } from './CreateCredentialsAWS'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../atoms'
-import { mockManagedClusterAddOn, mockMultiClusterEngine } from '../../Infrastructure/Clusters/ManagedClusters/CreateClusterCatalog/sharedMocks'
+import {
+  mockManagedClusterAddOn,
+  mockMultiClusterEngine,
+} from '../../Infrastructure/Clusters/ManagedClusters/CreateClusterCatalog/sharedMocks'
 
 describe('CreateCredentialsAWS', () => {
   beforeEach(() => {

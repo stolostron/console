@@ -7,10 +7,7 @@ import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateControlPlane } from './CreateControlPlane'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
-import {
-  mockManagedClusterAddOn,
-  mockMultiClusterEngine,
-} from './sharedMocks'
+import { mockManagedClusterAddOn, mockMultiClusterEngine } from './sharedMocks'
 
 describe('CreateControlPlane', () => {
   beforeEach(() => {
