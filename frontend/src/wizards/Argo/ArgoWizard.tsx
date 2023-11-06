@@ -391,9 +391,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     if (placement?.spec?.clusterSets) {
                       if (placement?.spec?.clusterSets.length > 0) {
                         return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-                      } else {
-                        return clusterSet
                       }
+                    } else {
+                      return clusterSet
                     }
                   })
 
@@ -879,10 +879,13 @@ function ArgoWizardPlacementSection(props: {
   const namespaceClusterSetNames =
     props.clusterSetBindings
       .filter((clusterSetBinding) =>
-        props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet)
+        props.clusterSets?.find(
+          (clusterSet) =>
+            clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet &&
+            clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace
+        )
       )
       .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
-
   const { update } = useData()
   return (
     <Section label={t('Placement')}>
