@@ -878,11 +878,8 @@ function ArgoWizardPlacementSection(props: {
   )
   const namespaceClusterSetNames =
     props.clusterSetBindings
-      .filter((clusterSetBinding) =>
-        props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet)
-      )
+      .filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace)
       .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
-
   const { update } = useData()
   return (
     <Section label={t('Placement')}>
