@@ -2,14 +2,32 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId } from '../../../../../lib/test-util'
+import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
+import {
+  mockManagedClusterAddOn,
+  mockMultiClusterEngine,
+  mockMultiClusterEngineWithHypershiftDisabled,
+} from './sharedMocks'
 
 describe('CreateAWSControlPlane', () => {
-  const Component = () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+
+  const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
     return (
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddOn])
+          snapshot.set(multiClusterEnginesState, [
+            enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
+          ])
+        }}
+      >
         <MemoryRouter initialEntries={[NavigationPath.createAWSControlPlane]}>
           <Route path={NavigationPath.createAWSControlPlane}>
             <CreateAWSControlPlane />
@@ -19,8 +37,14 @@ describe('CreateAWSControlPlane', () => {
     )
   }
 
-  test('can click hosted', async () => {
-    render(<Component />)
+  test('Hosted should be enabled when hypershift is enabled', async () => {
+    const { getByTestId } = render(<Component />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+  })
+
+  test('Hosted should be disabled when hypershift is disabled', async () => {
+    const { getByTestId } = render(<Component enableHypershift={false} />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
     await clickByTestId('hosted')
   })
 

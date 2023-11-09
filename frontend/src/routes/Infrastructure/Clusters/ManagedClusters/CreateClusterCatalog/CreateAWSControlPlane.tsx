@@ -18,12 +18,14 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import { AcmButton, AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { HypershiftDiagram } from './HypershiftDiagram'
+import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const [isDiagramExpanded, setIsDiagramExpanded] = useState(true)
   const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
+  const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const onDiagramToggle = (isExpanded: boolean) => {
     if (!isMouseOverControlPlaneLink) {
@@ -54,8 +56,21 @@ export function CreateAWSControlPlane() {
             ],
           },
         ],
-        onClick: nextStep(NavigationPath.createAWSCLI),
+        onClick: isHypershiftEnabled ? nextStep(NavigationPath.createAWSCLI) : undefined,
+        alertTitle: isHypershiftEnabled
+          ? undefined
+          : t('Hosted control plane operator must be enabled in order to continue'),
+        alertVariant: 'info',
+        alertContent: (
+          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+            {t('View documentation')} <ExternalLinkAltIcon />
+          </a>
+        ),
         badgeList: [
+          {
+            badge: t('Technology preview'),
+            badgeColor: CatalogColor.orange,
+          },
           {
             badge: t('CLI-based'),
             badgeColor: CatalogColor.purple,
@@ -87,7 +102,7 @@ export function CreateAWSControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t])
+  }, [nextStep, t, isHypershiftEnabled])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
