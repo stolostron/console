@@ -7,6 +7,9 @@ metadata:
     {{#if ai.cpuArchitecture}}
     agentBareMetal-cpuArchitecture: {{{ai.cpuArchitecture}}}
     {{/if}}
+    {{#if reconcilePause}}
+    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
+    {{/if}}
   {{#if ai.managedClusterSet}}
   labels:
     "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'
@@ -91,10 +94,6 @@ metadata:
     {{{key}}}: '{{{value}}}'
     {{/each}}
   name: '{{{ai.name}}}'
-{{#if reconcilePause}}
-  annotations:
-    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
-{{/if}}
 spec:
   hubAcceptsClient: true
 
