@@ -16,9 +16,18 @@ import {
   onHostsNext,
   onEditProxy,
   useProvisioningConfiguration,
+  onEditFinish,
 } from './utils'
-import { AgentClusterInstallApiVersion, AgentClusterInstallKind } from '../../../../../../../resources'
+import {
+  AgentClusterInstallApiVersion,
+  AgentClusterInstallKind,
+  ClusterCurator,
+  ClusterCuratorApiVersion,
+  ClusterCuratorKind,
+} from '../../../../../../../resources'
 import * as React from 'react'
+
+import * as resourceUtils from '../../../../../../../resources'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -116,11 +125,11 @@ describe('getDeleteHostAction utils', () => {
 
 jest.mock('../../../../../../../resources', () => {
   return {
-    patchResource: () => {
+    patchResource: jest.fn(() => {
       return {
         promise: undefined,
       }
-    },
+    }),
   }
 })
 
@@ -200,6 +209,50 @@ describe('onEditProxy', () => {
       },
       infraEnv
     )
+  })
+})
+
+describe('onEditFinish', () => {
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('patches ACI', async () => {
+    const agentClusterInstall: AgentClusterInstallK8sResource = {}
+    await onEditFinish(agentClusterInstall, undefined)
+
+    expect(resourceUtils.patchResource).toHaveBeenCalledWith(agentClusterInstall, [
+      { op: 'add', path: '/spec/holdInstallation', value: false },
+    ])
+  })
+
+  it('patches ACI and ClusterCurator', async () => {
+    const clusterCurator: ClusterCurator = {
+      apiVersion: ClusterCuratorApiVersion,
+      kind: ClusterCuratorKind,
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+      spec: {
+        install: {
+          prehook: [
+            {
+              name: 'foo',
+            },
+          ],
+        },
+      },
+    }
+    const agentClusterInstall: AgentClusterInstallK8sResource = {}
+    await onEditFinish(agentClusterInstall, clusterCurator)
+
+    expect(resourceUtils.patchResource).toHaveBeenCalledWith(agentClusterInstall, [
+      { op: 'add', path: '/spec/holdInstallation', value: false },
+    ])
+    expect(resourceUtils.patchResource).toHaveBeenLastCalledWith(clusterCurator, [
+      { op: 'add', path: '/spec/desiredCuration', value: 'install' },
+    ])
   })
 })
 

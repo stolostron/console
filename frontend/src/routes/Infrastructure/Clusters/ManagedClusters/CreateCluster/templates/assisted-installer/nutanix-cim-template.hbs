@@ -5,6 +5,9 @@ metadata:
   annotations:
     agentBareMetal-agentSelector/autoSelect: "true"
     agentBareMetal-cpuArchitecture: x86_64
+    {{#if reconcilePause}}
+    hive.openshift.io/reconcile-pause: '{{{reconcilePause}}}'
+    {{/if}}
   {{#if ai.managedClusterSet}}
   labels:
     "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'
@@ -92,6 +95,8 @@ metadata:
   name: '{{{ai.name}}}'
 spec:
   hubAcceptsClient: true
+
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---
