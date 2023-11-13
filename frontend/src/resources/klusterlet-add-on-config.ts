@@ -22,7 +22,7 @@ export interface KlusterletAddonConfig extends IResource {
     clusterName: string
     clusterNamespace: string
     clusterLabels: Record<string, string>
-    applicationManager: { enabled: boolean; argocdCluster: boolean }
+    applicationManager: { enabled: boolean }
     policyController: { enabled: boolean }
     searchCollector: { enabled: boolean }
     certPolicyController: { enabled: boolean }
@@ -43,7 +43,7 @@ export const createKlusterletAddonConfig = (data: {
       clusterName: data.clusterName,
       clusterNamespace: data.clusterName,
       clusterLabels: { ...data.clusterLabels },
-      applicationManager: { enabled: true, argocdCluster: false },
+      applicationManager: { enabled: true },
       policyController: { enabled: true },
       searchCollector: { enabled: true },
       certPolicyController: { enabled: true },
