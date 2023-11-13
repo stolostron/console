@@ -912,7 +912,6 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     },
     applicationManager: {
       enabled: true,
-      argocdCluster: false,
     },
     policyController: {
       enabled: true,

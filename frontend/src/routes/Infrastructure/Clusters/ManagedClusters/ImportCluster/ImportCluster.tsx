@@ -257,7 +257,7 @@ export default function ImportClusterPage() {
           clusterName: initialClusterName,
           clusterNamespace: initialClusterName,
           clusterLabels: { ...state.kacDefaultLabels },
-          applicationManager: { enabled: true, argocdCluster: false },
+          applicationManager: { enabled: true },
           policyController: { enabled: true },
           searchCollector: { enabled: true },
           certPolicyController: { enabled: true },
