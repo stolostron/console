@@ -101,5 +101,5 @@ export const gitOpsOperatorSubscriptionsValue = selector({
 
 export const acmOperatorSubscriptionsValue = selector({
   key: 'acmOperatorSubscriptions',
-  get: ({ get }) => findInstalledSubscription('acm-operator-subscription', get),
+  get: ({ get }) => findInstalledSubscription('advanced-cluster-management', get),
 })
