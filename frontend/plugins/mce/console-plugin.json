@@ -1,18 +1,18 @@
 {
-    "name": "mce",
-    "version": "2.4.0",
-    "displayName": "multicluster engine for Kubernetes",
-    "description": "Integrates multicluster engine for Kubernetes functionality into the OpenShift Container Platform web console",
-    "exposedModules": {
-        "context": "../../src/lib/PluginDataContext.tsx",
-        "contextProvider": "../../src/components/PluginDataContextProvider.tsx",
-        "perspective": "../../src/perspective.tsx",
-        "clusters": "../../src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
-        "automations": "../../src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
-        "environments": "../../src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx",
-        "credentials": "../../src/routes/Credentials/CredentialsPlugin.tsx"
-    },
-    "dependencies": {
-        "@console/pluginAPI": "*"
-    }
+  "name": "mce",
+  "version": "2.5.0",
+  "displayName": "multicluster engine for Kubernetes",
+  "description": "Integrates multicluster engine for Kubernetes functionality into the OpenShift Container Platform web console",
+  "exposedModules": {
+    "context": "../../src/lib/PluginDataContext.tsx",
+    "contextProvider": "../../src/components/PluginDataContextProvider.tsx",
+    "perspective": "../../src/perspective.tsx",
+    "clusters": "../../src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
+    "automations": "../../src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
+    "environments": "../../src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx",
+    "credentials": "../../src/routes/Credentials/CredentialsPlugin.tsx"
+  },
+  "dependencies": {
+    "@console/pluginAPI": "*"
+  }
 }
