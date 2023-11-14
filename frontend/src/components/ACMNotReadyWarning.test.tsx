@@ -14,7 +14,7 @@ const acm_unhealthy: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'acm-operator-subscription',
+    name: 'advanced-cluster-management',
     namespace: 'open-cluster-management',
   },
   status: {
@@ -36,7 +36,7 @@ const acm: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'acm-operator-subscription',
+    name: 'advanced-cluster-management',
     namespace: 'open-cluster-management',
   },
   status: {
