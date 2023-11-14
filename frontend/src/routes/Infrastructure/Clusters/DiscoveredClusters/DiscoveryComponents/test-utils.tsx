@@ -114,7 +114,7 @@ export const discoveryConfig: DiscoveryConfig = {
   spec: {
     filters: {
       lastActive: 14,
-      openShiftVersions: ['4.11'],
+      openShiftVersions: ['4.14'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
   },
@@ -145,7 +145,7 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
   spec: {
     filters: {
       lastActive: 30,
-      openShiftVersions: ['4.11', '4.12'],
+      openShiftVersions: ['4.14', '4.15'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
   },
