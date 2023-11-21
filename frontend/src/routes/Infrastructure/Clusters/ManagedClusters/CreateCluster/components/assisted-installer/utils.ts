@@ -826,7 +826,7 @@ export const importYaml = (yamlContent: unknown) => {
 
 // Simple string search is _so far_ enough.
 // Full key-path support would be ineffective when not actually needed.
-export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: string, index?: number) => {
+export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: string, index = 0) => {
   const lines = yaml.split('\n')
   const regex = new RegExp(`^ *${simpleKey}: *`)
   let value
@@ -835,11 +835,6 @@ export const getTemplateValue = (yaml: string, simpleKey: string, defaultValue: 
 
   if (rows.length === 0) {
     return defaultValue
-  }
-
-  if (rows.length > 1 && index === undefined) {
-    // Provide better key (i.e. leverage indentation). If this is not enough, let's full-parse the yaml instead.
-    throw new Error(`Multiple matches for yaml key "${simpleKey}"`)
   }
 
   if (rows.length > 1 && index) {
