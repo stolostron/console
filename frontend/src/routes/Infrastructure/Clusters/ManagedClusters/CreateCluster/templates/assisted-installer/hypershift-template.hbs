@@ -39,6 +39,9 @@ spec:
         httpsProxy: '{{{hypershift-network.httpsProxy}}}'
         noProxy: '{{{hypershift-network.noProxy}}}'
   {{/if}}
+  {{#if hypershift-hosts.controllerAvailabilityPolicy}}
+  controllerAvailabilityPolicy: {{{hypershift-hosts.controllerAvailabilityPolicy}}}
+  {{/if}}
   platform:
     type: Agent
     agent:
