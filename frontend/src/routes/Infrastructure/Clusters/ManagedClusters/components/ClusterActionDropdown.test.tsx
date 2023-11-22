@@ -176,7 +176,7 @@ describe('ClusterActionDropdown', () => {
           vendor: 'auto-detect',
           name: mockDetachedCluster.name!,
         },
-        applicationManager: { enabled: true, argocdCluster: false },
+        applicationManager: { enabled: true },
         policyController: { enabled: true },
         searchCollector: { enabled: true },
         certPolicyController: { enabled: true },

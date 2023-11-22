@@ -30,9 +30,6 @@ spec:
 {{/switch}}
     vendor: OpenShift
   applicationManager:
-    {{#if argocdcluster}}
-    argocdCluster: true
-    {{/if}}
 {{#if hasProxy}}
     proxyPolicy: OCPGlobalProxy
 {{/if}}

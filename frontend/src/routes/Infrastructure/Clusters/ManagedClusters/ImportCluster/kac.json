@@ -30,8 +30,7 @@
             "applicationManager": {
               "type": "object",
               "properties": {
-                "enabled": { "type": "boolean" },
-                "argocdCluster": { "type": "boolean" }
+                "enabled": { "type": "boolean" }
               },
               "required": ["enabled"]
             },
