@@ -760,9 +760,9 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
   return true
 }
 
-export const isHidden_gt_OCP46 = (control, controlData) => {
+export const isHidden_lt_OCP47 = (control, controlData) => {
   const imageSet = getControlByID(controlData, 'imageSet')
-  return imageSet && imageSet.active && versionGreater(imageSet.active, 4, 6)
+  return imageSet && imageSet.active && !versionGreater(imageSet.active, 4, 6)
 }
 
 export const isHidden_SNO = (control, controlData) => {
