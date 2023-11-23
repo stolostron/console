@@ -421,11 +421,13 @@ export function AnsibleAutomationsForm(props: {
         <FlexItem>{ansibleJob.name}</FlexItem>
         {ansibleJob.extra_vars && (
           <AcmChipGroup aria-label={t('Extra variables')}>
-            {Object.keys(ansibleJob.extra_vars).map((key) => (
-              <AcmChip isReadOnly key={`${ansibleJob.name}-${key}`}>
-                {key}={ansibleJob.extra_vars![key]}
-              </AcmChip>
-            ))}
+            {Object.keys(ansibleJob.extra_vars)
+              .filter((key) => typeof ansibleJob.extra_vars?.[key] === 'string')
+              .map((key) => (
+                <AcmChip isReadOnly key={`${ansibleJob.name}-${key}`}>
+                  {key}={ansibleJob.extra_vars![key]}
+                </AcmChip>
+              ))}
           </AcmChipGroup>
         )}
       </Flex>,
