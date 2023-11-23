@@ -20,6 +20,75 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { Link } from 'react-router-dom'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 
+function getNodeLabelValue(node: NodeInfo, label: string | string[]) {
+    // find first label present if given an array, or just use single label provided
+    const preferredLabel = Array.isArray(label) ? label.find((label) => node.labels?.[label]) : label
+    return preferredLabel ? node.labels?.[preferredLabel] || '' : ''
+}
+
+function getLabelCellFn(label: string | string[]) {
+    const labelCellFn = (node: NodeInfo) => {
+        return <span>{getNodeLabelValue(node, label)}</span>
+    }
+    return labelCellFn
+}
+function getLabelSortFn(label: string | string[]) {
+    const labelSortFn = (a: NodeInfo, b: NodeInfo): number => {
+        const aValue = getNodeLabelValue(a, label)
+        const bValue = getNodeLabelValue(b, label)
+        return aValue.localeCompare(bValue)
+    }
+    return labelSortFn
+}
+
+function getRoles(node: NodeInfo): string[] {
+    const roles: string[] = []
+    const nodeRolePrefix = 'node-role.kubernetes.io/'
+    const index = nodeRolePrefix.length
+    if (node.labels) {
+        Object.keys(node.labels!).forEach((label) => {
+            if (label.startsWith(nodeRolePrefix)) {
+                roles.push(label.substring(index))
+            }
+        })
+    }
+    return roles
+}
+
+function rolesCellFn(node: NodeInfo): ReactNode {
+    const roles = getRoles(node)
+    return <span>{roles.join(', ')}</span>
+}
+
+function rolesSortFn(a: NodeInfo, b: NodeInfo): number {
+    const roleA = getRoles(a).join(', ')
+    const roleB = getRoles(b).join(', ')
+    return roleA.localeCompare(roleB)
+}
+
+function getNodeMemory(node: NodeInfo): number {
+    try {
+        const memory = quantityToScalar(node.capacity!.memory)
+        return memory
+    } catch (err) {
+        return 0
+    }
+}
+
+function memorySortFn(a: NodeInfo, b: NodeInfo): number {
+    return compareNumbers(getNodeMemory(a), getNodeMemory(b))
+}
+
+function memoryCellFn(node: NodeInfo): ReactNode {
+    const memory = getNodeMemory(node)
+    if (memory === 0 || memory === undefined) return '-'
+    return scalarToQuantity(memory)
+}
+
+const REGION_LABELS = ['topology.kubernetes.io/region', 'failure-domain.beta.kubernetes.io/region']
+const ZONE_LABELS = ['topology.kubernetes.io/zone', 'failure-domain.beta.kubernetes.io/zone']
+const INSTANCE_TYPE_LABELS = ['node.kubernetes.io/instance-type', 'beta.kubernetes.io/instance-type']
+
 export function NodePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
@@ -36,61 +105,6 @@ export function NodesPoolsTable() {
     const { isSearchAvailable } = useContext(PluginContext)
 
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
-
-    function getLabelCellFn(label: string) {
-        const labelCellFn = (node: NodeInfo) => {
-            return <span>{(node.labels && node.labels[label]) || ''}</span>
-        }
-        return labelCellFn
-    }
-    function getLabelSortFn(label: string) {
-        const labelSortFn = (a: NodeInfo, b: NodeInfo): number => {
-            const aValue = (a.labels && a.labels[label]) || ''
-            const bValue = (b.labels && b.labels[label]) || ''
-            return aValue.localeCompare(bValue)
-        }
-        return labelSortFn
-    }
-
-    function getRoles(node: NodeInfo): string[] {
-        const roles: string[] = []
-        const nodeRolePrefix = 'node-role.kubernetes.io/'
-        const index = nodeRolePrefix.length
-        if (node.labels) {
-            Object.keys(node.labels!).forEach((label) => {
-                if (label.startsWith(nodeRolePrefix)) {
-                    roles.push(label.substring(index))
-                }
-            })
-        }
-        return roles
-    }
-    function rolesCellFn(node: NodeInfo): ReactNode {
-        const roles = getRoles(node)
-        return <span>{roles.join(', ')}</span>
-    }
-    function rolesSortFn(a: NodeInfo, b: NodeInfo): number {
-        const roleA = getRoles(a).join(', ')
-        const roleB = getRoles(b).join(', ')
-        return roleA.localeCompare(roleB)
-    }
-
-    function getNodeMemory(node: NodeInfo): number {
-        try {
-            const memory = quantityToScalar(node.capacity!.memory)
-            return memory
-        } catch (err) {
-            return 0
-        }
-    }
-    function memorySortFn(a: NodeInfo, b: NodeInfo): number {
-        return compareNumbers(getNodeMemory(a), getNodeMemory(b))
-    }
-    function memoryCellFn(node: NodeInfo): ReactNode {
-        const memory = getNodeMemory(node)
-        if (memory === 0 || memory === undefined) return '-'
-        return scalarToQuantity(memory)
-    }
 
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
@@ -154,18 +168,18 @@ export function NodesPoolsTable() {
         },
         {
             header: t('table.region'),
-            sort: getLabelSortFn('failure-domain.beta.kubernetes.io/region'),
-            cell: getLabelCellFn('failure-domain.beta.kubernetes.io/region'),
+            sort: getLabelSortFn(REGION_LABELS),
+            cell: getLabelCellFn(REGION_LABELS),
         },
         {
             header: t('table.zone'),
-            sort: getLabelSortFn('failure-domain.beta.kubernetes.io/zone'),
-            cell: getLabelCellFn('failure-domain.beta.kubernetes.io/zone'),
+            sort: getLabelSortFn(ZONE_LABELS),
+            cell: getLabelCellFn(ZONE_LABELS),
         },
         {
             header: t('table.instanceType'),
-            sort: getLabelSortFn('beta.kubernetes.io/instance-type'),
-            cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
+            sort: getLabelSortFn(INSTANCE_TYPE_LABELS),
+            cell: getLabelCellFn(INSTANCE_TYPE_LABELS),
         },
         {
             header: t('table.cpu'),
