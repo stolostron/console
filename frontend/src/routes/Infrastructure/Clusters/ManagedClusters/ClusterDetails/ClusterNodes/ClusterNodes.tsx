@@ -26,7 +26,7 @@ import { ClusterContext } from '../ClusterDetails'
 function getNodeLabelValue(node: NodeInfo, label: string | string[]) {
   // find first label present if given an array, or just use single label provided
   const preferredLabel = Array.isArray(label) ? label.find((label) => node.labels?.[label]) : label
-  return preferredLabel ? node.labels?.[preferredLabel] || '' : ''
+  return preferredLabel ? node.labels?.[preferredLabel] ?? '' : ''
 }
 
 function getLabelCellFn(label: string | string[]) {
