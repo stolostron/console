@@ -59,6 +59,7 @@ import {
   HostInventoryInfrastructureType,
   getCredentialsTypeForClusterInfrastructureType,
 } from '../ClusterInfrastructureType'
+import jsyaml from 'js-yaml'
 
 interface CreationStatus {
   status: string
@@ -270,6 +271,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
   Handlebars.registerHelper('append', append)
   Handlebars.registerHelper('getName', getName)
+  Handlebars.registerHelper('escapeYAML', (value) => jsyaml.dump(Array.isArray(value) ? value[0] : value))
 
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
