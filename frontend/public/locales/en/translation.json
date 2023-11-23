@@ -2044,6 +2044,7 @@
   "policy.modal.message.enable": "After you enable the selected policies, policies are ready to report violations or run remediations as defined in the source.",
   "policy.modal.message.enforce": "After you set the selected policies to enforce, remediation actions run automatically as defined in the resource.",
   "policy.modal.message.inform": "After you set the selected policies to inform, violations are reported and manual remediation is required.",
+  "policy.modal.message.informOnly": "After you set the selected policies to enforce, remediation actions run automatically as defined in the resource. When you enforce a policy where the remediation action for some of the policy templates are set to `informOnly`, there is no effect to those policy templates.",
   "policy.modal.message.reused": "These {{kind}} are in use elsewhere",
   "policy.modal.title.delete": "Permanently delete policy?",
   "policy.modal.title.disable": "Disable policy",
