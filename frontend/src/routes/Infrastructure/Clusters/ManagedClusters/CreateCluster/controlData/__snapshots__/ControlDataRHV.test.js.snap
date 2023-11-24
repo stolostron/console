@@ -419,7 +419,7 @@ Array [
     ],
     "id": "networkType",
     "name": "Network type",
-    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6. The default value is OpenShiftSDN.",
+    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6 and is the default for OpenShift 4.12 and newer.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Value must be a valid security key.",
@@ -1085,7 +1085,7 @@ Array [
     ],
     "id": "networkType",
     "name": "Network type",
-    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6. The default value is OpenShiftSDN.",
+    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6 and is the default for OpenShift 4.12 and newer.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Value must be a valid security key.",
@@ -1751,7 +1751,7 @@ Array [
     ],
     "id": "networkType",
     "name": "Network type",
-    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6. The default value is OpenShiftSDN.",
+    "tooltip": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6 and is the default for OpenShift 4.12 and newer.",
     "type": "singleselect",
     "validation": Object {
       "notification": "Value must be a valid security key.",
