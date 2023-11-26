@@ -130,9 +130,8 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
       {
         name: 'ip-10-0-134-240.ec2.internal',
         labels: {
-          'beta.kubernetes.io/instance-type': 'm5.xlarge',
-          'failure-domain.beta.kubernetes.io/region': 'us-west-1',
-          'failure-domain.beta.kubernetes.io/zone': 'us-east-1c',
+          'topology.kubernetes.io/region': 'us-west-1',
+          'topology.kubernetes.io/zone': 'us-east-1c',
           'node-role.kubernetes.io/worker': '',
           'node.kubernetes.io/instance-type': 'm5.xlarge',
         },
@@ -169,8 +168,10 @@ const mockManagedClusterInfo: ManagedClusterInfo = {
           'beta.kubernetes.io/instance-type': 'm5.xlarge',
           'failure-domain.beta.kubernetes.io/region': 'us-south-1',
           'failure-domain.beta.kubernetes.io/zone': 'us-east-1b',
+          'topology.kubernetes.io/region': 'ap-southeast-1',
+          'topology.kubernetes.io/zone': 'ap-southeast-1c',
           'node-role.kubernetes.io/master': '',
-          'node.kubernetes.io/instance-type': 'm5.xlarge',
+          'node.kubernetes.io/instance-type': 'm6a.large',
         },
         capacity: {
           cpu: '4',
@@ -1357,6 +1358,18 @@ describe('ClusterDetails', () => {
   test('nodes page renders', async () => {
     await clickByText('Nodes')
     await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
+
+    screen.getByRole('row', {
+      name: /ip-10-0-130-30\.ec2\.internal Unknown master us-east-1 us-east-1a m5\.xlarge 4 15\.2 gi/i,
+    })
+
+    screen.getByRole('row', {
+      name: /ip-10-0-134-240\.ec2\.internal Ready worker us-west-1 us-east-1c m5\.xlarge - -/i,
+    })
+
+    screen.getByRole('row', {
+      name: /ip-10-0-151-254\.ec2\.internal Unhealthy master ap-southeast-1 ap-southeast-1c m6a\.large 4 7\.8 undefined/i,
+    })
 
     await clickByText('Role')
     await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
