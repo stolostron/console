@@ -92,8 +92,10 @@ spec:
 
   {{#case 'OpenStack'}}
     openstack:
+      {{#if_truthy os_ca_bundle}}
       certificatesSecretRef:
         name: {{{name}}}-openstack-trust
+      {{/if_truthy}}
       credentialsSecretRef:
         name: {{{name}}}-openstack-creds
       cloud: {{{cloud}}}
@@ -466,8 +468,8 @@ stringData:
 {{else}}
   clouds.yaml: # injected on create
 {{/if}}
+{{#if_truthy os_ca_bundle}}
 ---
-
 apiVersion: v1
 kind: Secret
 type: Opaque
@@ -481,6 +483,7 @@ stringData:
 {{else}}
   ca.crt: # injected on create
 {{/if}}
+{{/if_truthy}}
 {{/case}}
 
 {{/switch}}
@@ -488,3 +491,4 @@ stringData:
 {{#if includeKlusterletAddonConfig}}
 {{>endpoints}}
 {{/if}}
+
