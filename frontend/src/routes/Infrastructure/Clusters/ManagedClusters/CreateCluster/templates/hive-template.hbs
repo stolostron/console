@@ -402,8 +402,8 @@ metadata:
   name: {{{name}}}-vsphere-creds
   namespace: '{{{name}}}'
 stringData:
-  username: {{{username}}}
-  password: {{{password}}}
+  username: {{{escapeYAML username}}}
+  password: {{{escapeYAML password}}}
 
 ---
 

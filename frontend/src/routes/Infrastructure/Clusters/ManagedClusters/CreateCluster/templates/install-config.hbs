@@ -276,8 +276,8 @@ publish: Internal
 {{#case 'vSphere'}}
   vsphere:
     vCenter: {{{vCenter}}}
-    username: {{{username}}}
-    password: {{{password}}}
+    username: {{{escapeYAML username}}}
+    password: {{{escapeYAML password}}}
     datacenter: {{{datacenter}}}
     defaultDatastore: {{{defaultDatastore}}}
     cluster: {{{cluster}}}
