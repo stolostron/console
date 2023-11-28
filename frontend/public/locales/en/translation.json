@@ -2857,7 +2857,7 @@
   "tooltip.creation.ocp.cloud.connection": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
   "tooltip.creation.ocp.cluster.network": "A block of IP addresses from which pod IP addresses are allocated. The OpenShiftSDN network plug-in supports multiple cluster networks. The address blocks for multiple cluster networks must not overlap. Select address pools large enough to fit your anticipated workload. The default value is 10.128.0.0/14.",
   "tooltip.creation.ocp.cluster.network.host.prefix": "The subnet prefix length to assign to each individual node. For example, if hostPrefix is set to 23, then each node is assigned a /23 subnet out of the given CIDR, allowing for 510 (2^(32 - 23) - 2) pod IP addresses. The default is 23.",
-  "tooltip.creation.ocp.cluster.network.type": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6. The default value is OpenShiftSDN.",
+  "tooltip.creation.ocp.cluster.network.type": "The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6 and is the default for OpenShift 4.12 and newer.",
   "tooltip.creation.ocp.cluster.ost.api.floating.ip": "The existing floating IP address on the external network for the OpenShift API.",
   "tooltip.creation.ocp.cluster.ost.external.dns": "The external DNS IP addresses for name resolution on the private network.",
   "tooltip.creation.ocp.cluster.ost.external.network.name": "The name for the external OpenStack network.",
