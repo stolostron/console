@@ -11,7 +11,7 @@ import {
   getOSTNetworkingControlData,
   getWorkerName,
   isHidden_lt_OCP48,
-  isHidden_gt_OCP46,
+  isHidden_lt_OCP47,
   isHidden_SNO,
   onChangeSNO,
   onChangeConnection,
@@ -253,7 +253,7 @@ export const getControlDataOST = (
       placeholder: t('placeholder.creation.ocp.cluster.ost.lb.floating.ip'),
       tooltip: t('tooltip.creation.ocp.cluster.ost.lb.floating.ip'),
       hidden: (control, controlData) => {
-        if (isHidden_gt_OCP46(control, controlData)) {
+        if (!isHidden_lt_OCP47(control, controlData)) {
           control.active = undefined
           return true
         }
@@ -268,7 +268,7 @@ export const getControlDataOST = (
       placeholder: t('placeholder.creation.ocp.cluster.ost.api.floating.ip'),
       tooltip: t('tooltip.creation.ocp.cluster.ost.api.floating.ip'),
       hidden: (control, ctrlData) => {
-        if (!isHidden_gt_OCP46(control, ctrlData)) {
+        if (isHidden_lt_OCP47(control, ctrlData)) {
           control.active = undefined
           return true
         }
