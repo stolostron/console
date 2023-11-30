@@ -2286,6 +2286,7 @@
   "Select the label": "Select the label",
   "Select the namespace": "Select the namespace",
   "Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.": "Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.",
+  "Select the placement": "Select the placement",
   "Select the placement rule": "Select the placement rule",
   "Select the values": "Select the values",
   "Select to disable the policy from being propagated to managed clusters.": "Select to disable the policy from being propagated to managed clusters.",

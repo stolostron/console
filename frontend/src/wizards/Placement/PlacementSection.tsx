@@ -285,6 +285,7 @@ export function PlacementSection(props: {
             <WizSingleSelect
               path="placementRef.name"
               label={t('Placement')}
+              placeholder={t('Select the placement')}
               required
               options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
             />
