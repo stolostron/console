@@ -15,7 +15,7 @@ export function HypershiftKubeVirtCLI() {
     { label: t('Clusters'), to: NavigationPath.clusters },
     { label: t('Infrastructure'), to: NavigationPath.createCluster },
     {
-      label: t('Control plane type - {{hcType}}', { hcType: 'Openshift Virtualization' }),
+      label: t('Control plane type - {{hcType}}', { hcType: 'OpenShift Virtualization' }),
       to: NavigationPath.createKubeVirtControlPlane,
     },
     { label: t('Create cluster') },
