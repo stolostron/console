@@ -22,9 +22,9 @@ export function CreateKubeVirtControlPlane() {
     <GetControlPlane
       pageHeader={
         <PageHeader
-          title={t('Control plane type - {{hcType}}', { hcType: 'Openshift Virtualization' })}
+          title={t('Control plane type - {{hcType}}', { hcType: 'OpenShift Virtualization' })}
           description={t('Choose a control plane type for your cluster.')}
-          breadcrumbs={breadcrumbs('Openshift Virtualization', t)}
+          breadcrumbs={breadcrumbs('OpenShift Virtualization', t)}
         />
       }
       cards={cards}
