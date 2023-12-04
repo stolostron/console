@@ -171,7 +171,7 @@ export function getClustersSummary(
   t: TFunction<string, undefined>
 ) {
   const kubernetesTypes = new Set()
-  const regions = new Set() // regions could be retrieved from Node labels?
+  const regions = new Set()
   filteredClusters.forEach((curr: Cluster) => {
     kubernetesTypes.add(curr.labels?.vendor ?? 'Other')
     regions.add(curr.labels?.region ?? 'Other')
@@ -365,28 +365,29 @@ export function parseAlertsMetric(
         ? alertsResult.data.result
         : alertsResult.data.result.filter((alert) => filteredClusterNames.includes(alert.metric.cluster))
     filteredAlerts.forEach((alert) => {
-      if (alert.metric?.cluster && !clustersAffectedAlerts.includes(alert.metric.cluster)) {
-        clustersAffectedAlerts.push(alert.metric.cluster)
+      const metric = alert.metric ?? {}
+      if (metric.cluster && !clustersAffectedAlerts.includes(metric.cluster)) {
+        clustersAffectedAlerts.push(metric.cluster)
       }
-      switch (alert.metric.severity.toLowerCase()) {
+      switch (metric.severity?.toLowerCase()) {
         case 'critical':
-          if (alert.metric.alertstate === 'firing') {
-            alertSeverity.critical.alerts.push(alert.metric.alertname)
+          if (metric.alertstate === 'firing') {
+            metric.alertname && alertSeverity.critical.alerts.push(metric.alertname)
           }
           break
         case 'warning':
-          if (alert.metric.alertstate === 'firing') {
-            alertSeverity.warning.alerts.push(alert.metric.alertname)
+          if (metric.alertstate === 'firing') {
+            metric.alertname && alertSeverity.warning.alerts.push(metric.alertname)
           }
           break
         case 'info':
-          if (alert.metric.alertstate === 'firing') {
-            alertSeverity.info.alerts.push(alert.metric.alertname)
+          if (metric.alertstate === 'firing') {
+            metric.alertname && alertSeverity.info.alerts.push(metric.alertname)
           }
           break
         default:
-          if (alert.metric.alertstate === 'firing') {
-            alertSeverity.other.alerts.push(alert.metric.alertname)
+          if (metric.alertstate === 'firing') {
+            metric.alertname && alertSeverity.other.alerts.push(metric.alertname)
           }
       }
     })
