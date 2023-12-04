@@ -11,6 +11,7 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 export enum SupportedOperator {
   ansible = 'ansible-automation-platform-operator',
   gitOps = 'openshift-gitops-operator',
+  acm = 'advanced-cluster-management',
 }
 type OperatorCheckRequest = {
   operator: SupportedOperator
