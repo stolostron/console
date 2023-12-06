@@ -196,7 +196,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [allAddons, filteredClusterNames, t])
 
   const grafanaLinkClusterLabelCondition = useMemo(() => {
-    let filteredSelectedClusterLabels = { ...selectedClusterLabels }
+    const filteredSelectedClusterLabels = { ...selectedClusterLabels }
     if (selectedClusterLabels['region']) {
       filteredSelectedClusterLabels['region'] = selectedClusterLabels['region'].filter((value) => value !== 'Other')
     }
