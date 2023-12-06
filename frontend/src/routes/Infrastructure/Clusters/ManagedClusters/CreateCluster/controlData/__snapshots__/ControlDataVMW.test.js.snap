@@ -551,6 +551,20 @@ Array [
   },
   Object {
     "disabled": true,
+    "id": "clusterOSImage",
+    "name": "Cluster OS image",
+    "tip": "The location of the Red Hat Enterprise Linux CoreOS image in your local registry.",
+    "type": "text",
+    "validation": Object {
+      "notification": "Value must be a valid URL format.",
+      "required": true,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
+  },
+  Object {
+    "disabled": true,
     "id": "imageContentSources",
     "name": "Image Content Sources",
     "tip": "The imageContentSources values that were generated during mirror registry creation.",
@@ -1213,6 +1227,20 @@ Array [
   },
   Object {
     "disabled": true,
+    "id": "clusterOSImage",
+    "name": "Cluster OS image",
+    "tip": "The location of the Red Hat Enterprise Linux CoreOS image in your local registry.",
+    "type": "text",
+    "validation": Object {
+      "notification": "Value must be a valid URL format.",
+      "required": true,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
+  },
+  Object {
+    "disabled": true,
     "id": "imageContentSources",
     "name": "Image Content Sources",
     "tip": "The imageContentSources values that were generated during mirror registry creation.",
@@ -1872,6 +1900,20 @@ Array [
     "name": "Create disconnected installation",
     "onSelect": [Function],
     "type": "checkbox",
+  },
+  Object {
+    "disabled": true,
+    "id": "clusterOSImage",
+    "name": "Cluster OS image",
+    "tip": "The location of the Red Hat Enterprise Linux CoreOS image in your local registry.",
+    "type": "text",
+    "validation": Object {
+      "notification": "Value must be a valid URL format.",
+      "required": true,
+      "tester": Object {
+        "test": [Function],
+      },
+    },
   },
   Object {
     "disabled": true,

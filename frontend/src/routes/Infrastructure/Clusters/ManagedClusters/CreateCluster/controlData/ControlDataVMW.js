@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getNumericValidator, getIPValidator } from '../../../../../../components/TemplateEditor'
+import { getNumericValidator, getURLValidator, getIPValidator } from '../../../../../../components/TemplateEditor'
 import {
   LOAD_OCP_IMAGES,
   getSimplifiedImageName,
@@ -336,6 +336,14 @@ export const getControlDataVMW = (
       type: 'checkbox',
       active: false,
       onSelect: onChangeDisconnect,
+    },
+    {
+      id: 'clusterOSImage',
+      type: 'text',
+      name: t('Cluster OS image'),
+      disabled: true,
+      tip: t('The location of the Red Hat Enterprise Linux CoreOS image in your local registry.'),
+      validation: getURLValidator(t),
     },
     {
       id: 'imageContentSources',

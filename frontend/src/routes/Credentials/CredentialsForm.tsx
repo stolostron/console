@@ -426,6 +426,7 @@ export function CredentialsForm(
         stringData.pullSecret = pullSecret
         stringData['ssh-privatekey'] = sshPrivatekey
         stringData['ssh-publickey'] = sshPublickey
+        stringData.clusterOSImage = clusterOSImage
         stringData.imageContentSources = imageContentSources
         stringData.disconnectedAdditionalTrustBundle = disconnectedAdditionalTrustBundle
         stringData.httpProxy = httpProxy
@@ -1216,7 +1217,7 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'clusterOSImage',
-            isHidden: ![Provider.openstack].includes(credentialsType as Provider),
+            isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
             type: 'Text',
             label: t('Cluster OS image'),
             placeholder: t('Enter your cluster OS image.'),

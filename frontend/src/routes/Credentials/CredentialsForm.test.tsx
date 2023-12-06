@@ -275,6 +275,7 @@ describe('add credentials page', () => {
         vsphereDiskType: 'eagerZeroedThick',
         vsphereFolder: '/datacenter/vm/folder',
         vsphereResourcePool: '/datacenter/host/cluster/Resources/resourcePool',
+        clusterOSImage: '',
         imageContentSources: '',
         disconnectedAdditionalTrustBundle: '',
       },

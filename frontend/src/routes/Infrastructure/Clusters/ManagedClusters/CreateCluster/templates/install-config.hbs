@@ -284,6 +284,10 @@ publish: Internal
     apiVIP: {{{apiVIP}}}    ##apiVIP
     ingressVIP: {{{ingressVIP}}}  ##ingressVIP
     network: '{{{networkName}}}' ##networkName
+    {{#if clusterOSImage}}
+    clusterOSImage: >-
+      {{{clusterOSImage}}}
+    {{/if}}
     {{#if_truthy vsphereDiskType}}
     diskType: '{{{vsphereDiskType}}}'
     {{/if_truthy}}
