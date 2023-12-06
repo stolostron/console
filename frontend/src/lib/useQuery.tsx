@@ -86,6 +86,7 @@ export function useQuery<T>(
         })
       return () => {
         requestResult.abort()
+        dataRef.current.requestResult = undefined
         if (dataRef.current.timeout) {
           clearTimeout(dataRef.current.timeout)
           dataRef.current.timeout = undefined
