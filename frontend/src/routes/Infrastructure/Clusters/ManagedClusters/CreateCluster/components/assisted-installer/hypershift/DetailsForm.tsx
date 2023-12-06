@@ -11,7 +11,7 @@ import {
   ConfigMapK8sResource,
   ClusterImageSetK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { set, get, isEqual, startCase, camelCase } from 'lodash'
+import { set, get, isEqual } from 'lodash'
 import { getValue } from '../../../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import {
@@ -22,8 +22,9 @@ import { getDefault, useClusterImages } from '../utils'
 import { Secret } from '../../../../../../../../resources'
 import { getExtensionAfter } from '../DetailsForm'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
-import { getClusterImageVersion } from './utils'
+import { getClusterImageVersion, getFieldLabels } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { FieldName } from '../types'
 
 type FormControl = {
   active: ClusterDetailsValues & {
@@ -71,6 +72,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
   const supportedVersionCM = getSupportedCM(configMaps as ConfigMapK8sResource[])
+  const fieldLabels = getFieldLabels(t)
 
   useEffect(() => {
     if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -120,7 +122,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           desc = getClusterImageVersion(get(control, `active.${key}`))
         }
         return {
-          term: startCase(camelCase(key)),
+          term: fieldLabels[key as FieldName],
           desc: desc,
           exception: get(control, `errors.${key}`),
         }
