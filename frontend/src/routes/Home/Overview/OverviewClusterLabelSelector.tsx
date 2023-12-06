@@ -23,7 +23,9 @@ export default function OverviewClusterLabelSelector(props: {
     for (const cluster of allClusters) {
       const labels = cluster.labels ?? {}
       // If a cluster does not have region label set then we need Other
-      !Object.keys(labels).includes('region') ? (needRegionOther = true) : undefined
+      if (!Object.keys(labels).includes('region')) {
+        needRegionOther = true
+      }
       for (const label in labels) {
         let values = labelValuesMap[label]
         if (!values) {
