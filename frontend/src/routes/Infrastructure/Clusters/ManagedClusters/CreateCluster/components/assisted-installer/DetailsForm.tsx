@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
 import { FormikProps } from 'formik'
-import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
+import { set, get, isEqual, debounce } from 'lodash'
 // eslint-disable-next-line
 import { TFunction } from 'react-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
@@ -28,6 +28,8 @@ import {
   labelsToArray,
 } from '@openshift-assisted/ui-lib/cim'
 import React from 'react'
+import { FieldName } from './types'
+import { getFieldLabels } from './hypershift/utils'
 
 type FormControl = {
   active: ClusterDetailsValues & {
@@ -125,6 +127,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const formRef = useRef<FormikProps<any>>(null)
   const { t } = useTranslation()
 
+  const fieldLabels = getFieldLabels(t)
+
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
   const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
@@ -203,7 +207,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           desc = getVersion(get(control, `active.${key}`))
         }
         return {
-          term: startCase(camelCase(key)),
+          term: fieldLabels[key as FieldName] ?? 'Error' + key,
           desc: desc,
           exception: get(control, `errors.${key}`),
         }
