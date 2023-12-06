@@ -126,7 +126,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [clusterManagementAddons])
 
   const clusterLabelsSearchFilter = useMemo(() => {
-    let filteredSelectedClusterLabels = { ...selectedClusterLabels }
+    const filteredSelectedClusterLabels = { ...selectedClusterLabels }
     if (selectedClusterLabels['region']) {
       filteredSelectedClusterLabels['region'] = selectedClusterLabels['region'].filter((value) => value !== 'Other')
     }
