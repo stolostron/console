@@ -33,17 +33,23 @@ export function getFilteredClusters(allClusters: Cluster[], selectedClusterLabel
     // if no label values are selected -> using all clusters
     return allClusters
   }
-  return allClusters.filter(
-    (cluster) =>
-      cluster.labels &&
-      Object.keys(cluster.labels).some((key) => {
+  return allClusters.filter((cluster) => {
+    if (cluster.labels) {
+      let labels = { ...cluster.labels }
+      if (!labels['region']) {
+        // region label not present in cluster's labels - adding region=Other
+        labels = { ...labels, region: 'Other' }
+      }
+      return Object.keys(labels).some((key) => {
         if (Object.keys(selectedClusterLabels).includes(key)) {
-          const clusterLabelValue = cluster.labels![key]
+          const clusterLabelValue = labels![key]
           return selectedClusterLabels[key].includes(clusterLabelValue)
         }
         return false
       })
-  )
+    }
+    return false
+  })
 }
 
 export function getNodeCount(managedClusterInfos: ManagedClusterInfo[], filteredClusterNames: string[]) {
