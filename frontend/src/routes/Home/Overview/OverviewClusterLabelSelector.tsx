@@ -6,7 +6,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
-export default function OverviewHeader(props: {
+export default function OverviewClusterLabelSelector(props: {
   selectedClusterLabels: Record<string, string[]>
   setSelectedClusterLabels: Dispatch<SetStateAction<Record<string, string[]>>>
 }) {
@@ -19,8 +19,13 @@ export default function OverviewHeader(props: {
 
   const allClusterLabels = useMemo(() => {
     const labelValuesMap: Record<string, string[]> = {}
+    let needRegionOther = false
     for (const cluster of allClusters) {
       const labels = cluster.labels ?? {}
+      // If a cluster does not have region label set then we need Other
+      if (!Object.keys(labels).includes('region')) {
+        needRegionOther = true
+      }
       for (const label in labels) {
         let values = labelValuesMap[label]
         if (!values) {
@@ -34,6 +39,10 @@ export default function OverviewHeader(props: {
           }
         }
       }
+    }
+    // Only add Other value for region if it is not included in cluster labels
+    if (needRegionOther) {
+      labelValuesMap['region'] = [...(labelValuesMap['region'] ?? []), 'Other']
     }
     return labelValuesMap
   }, [allClusters])
