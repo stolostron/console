@@ -1,4 +1,5 @@
-//https://github.com/patternfly/react-log-viewer/blob/main/packages/module/src/LogViewer/LogViewerSearch.tsx
+/* Copyright Contributors to the Open Cluster Management project */
+// Copyright (c) 2023 Red Hat, Inc.
 import { SearchInput, SearchInputProps } from '@patternfly/react-core'
 import { LogViewerContext, LogViewerToolbarContext } from '@patternfly/react-log-viewer'
 import React, { useContext, useEffect, useState } from 'react'
