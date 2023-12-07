@@ -266,8 +266,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
       const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
 
       const isSupported =
-        submarinerConfigProviders.includes(cluster.provider!) &&
-        (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)
+        (submarinerConfigProviders.includes(cluster.provider!) &&
+          (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)) ||
+        cluster.provider === Provider.hostinventory ||
+        cluster.provider == Provider.baremetal
       anyUnsupported ||= !isSupported
 
       if (isSupported) {
@@ -318,7 +320,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           }
 
           // configure secret if one doesn't exist
-          if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
+          if (
+            cluster.provider !== Provider.vmware &&
+            cluster.provider !== Provider.hostinventory &&
+            cluster.provider !== Provider.baremetal &&
+            providerSecretMap[cluster.displayName!] === null
+          ) {
             if (cluster.provider === Provider.aws) {
               secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]! || ''
               secret.stringData!['aws_secret_access_key'] = awsSecretAccessKeyIDs[cluster.displayName!]! || ''
@@ -345,7 +352,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             resources.push(secret)
           }
 
-          if (cluster.provider !== Provider.vmware) {
+          if (
+            cluster.provider !== Provider.vmware &&
+            cluster.provider !== Provider.hostinventory &&
+            cluster.provider !== Provider.baremetal
+          ) {
             // use existing secret name
             if (providerSecretMap[cluster.displayName!]) {
               submarinerConfig.spec.credentialsSecret = {
@@ -606,6 +617,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   if (matchedCluster.provider === Provider.vmware) {
                     return false
                   }
+                  if (
+                    matchedCluster.provider === Provider.baremetal ||
+                    matchedCluster.provider === Provider.hostinventory
+                  ) {
+                    return false
+                  }
                   if (matchedCluster.provider === Provider.ibm && matchedCluster.distribution?.isManagedOpenShift) {
                     return false
                   }
@@ -688,6 +705,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   isHidden:
                     providerSecretMap[clusterName] === null ||
                     cluster.provider === Provider.vmware ||
+                    cluster.provider === Provider.baremetal ||
+                    cluster.provider === Provider.hostinventory ||
                     cluster.distribution?.isManagedOpenShift,
                   isRequired:
                     [Provider.aws, Provider.gcp, Provider.azure].includes(cluster.provider!) &&
