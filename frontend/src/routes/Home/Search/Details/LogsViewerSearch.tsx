@@ -25,7 +25,7 @@ const searchForKeyword = (searchedInput: string, parsedData: string[], itemCount
   const searchResults: searchedKeyWordType[] = []
 
   const regex = new RegExp(searchedInput, 'ig')
-  parsedData.map((row, index) => {
+  parsedData.forEach((row, index) => {
     const rawRow = row.replace(
       new RegExp(`[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]`, 'g'),
       ''
