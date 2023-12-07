@@ -126,9 +126,13 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [clusterManagementAddons])
 
   const clusterLabelsSearchFilter = useMemo(() => {
+    const filteredSelectedClusterLabels = { ...selectedClusterLabels }
+    if (selectedClusterLabels['region']) {
+      filteredSelectedClusterLabels['region'] = selectedClusterLabels['region'].filter((value) => value !== 'Other')
+    }
     const labelStringArray: string[] = []
-    Object.keys(selectedClusterLabels).forEach((labelKey) => {
-      selectedClusterLabels[labelKey].forEach((label) => labelStringArray.push(`${labelKey}=${label}`))
+    Object.keys(filteredSelectedClusterLabels).forEach((labelKey) => {
+      filteredSelectedClusterLabels[labelKey].forEach((label) => labelStringArray.push(`${labelKey}=${label}`))
     })
     if (labelStringArray.length > 0) {
       return encodeURIComponent(`label:${labelStringArray.join(',')}`)
@@ -192,11 +196,15 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [allAddons, filteredClusterNames, t])
 
   const grafanaLinkClusterLabelCondition = useMemo(() => {
-    if (Object.keys(selectedClusterLabels).length > 0) {
+    const filteredSelectedClusterLabels = { ...selectedClusterLabels }
+    if (selectedClusterLabels['region']) {
+      filteredSelectedClusterLabels['region'] = selectedClusterLabels['region'].filter((value) => value !== 'Other')
+    }
+    if (Object.keys(filteredSelectedClusterLabels).length > 0) {
       const labels: string[] = []
-      Object.keys(selectedClusterLabels).forEach((key: string) =>
+      Object.keys(filteredSelectedClusterLabels).forEach((key: string) =>
         labels.push(
-          `${key.replaceAll(/[./-]+/g, '_')}=~%5C"${selectedClusterLabels[key]
+          `${key.replaceAll(/[./-]+/g, '_')}=~%5C"${filteredSelectedClusterLabels[key]
             .join('|')
             .replaceAll(/[./-]+/g, '_')}%5C"`
         )
