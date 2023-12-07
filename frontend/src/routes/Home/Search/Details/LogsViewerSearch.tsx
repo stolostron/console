@@ -3,10 +3,10 @@ import { SearchInput, SearchInputProps } from '@patternfly/react-core'
 import { LogViewerContext, LogViewerToolbarContext } from '@patternfly/react-log-viewer'
 import React, { useContext, useEffect, useState } from 'react'
 
-const NUMBER_INDEX_DELTA: number = 1
-const DEFAULT_INDEX: number = 0
-const DEFAULT_MATCH: number = 0
-const DEFAULT_FOCUS: number = -1
+const NUMBER_INDEX_DELTA = 1
+const DEFAULT_INDEX = 0
+const DEFAULT_MATCH = 0
+const DEFAULT_FOCUS = -1
 const DEFAULT_SEARCH_INDEX = 0
 
 interface searchedKeyWordType {
@@ -67,6 +67,7 @@ export const LogViewerSearch: React.FunctionComponent<LogViewerSearchProps> = ({
   const { parsedData } = useContext(LogViewerContext)
 
   const defaultRowInFocus = { rowIndex: DEFAULT_FOCUS, matchIndex: DEFAULT_MATCH }
+  const hasFoundResults = searchedWordIndexes.length > 0 && searchedWordIndexes[0]?.rowIndex !== -1
 
   /* Defaulting the first focused row that contain searched keywords */
   useEffect(() => {
@@ -75,12 +76,12 @@ export const LogViewerSearch: React.FunctionComponent<LogViewerSearchProps> = ({
     } else {
       setIndexAdjuster(0)
     }
-  }, [searchedWordIndexes])
+  }, [hasFoundResults, searchedWordIndexes])
 
   /* Updating searchedResults context state given changes in searched input */
   useEffect(() => {
     let foundKeywordIndexes: searchedKeyWordType[] = []
-    const adjustedSearchedInput = searchedInput.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+    const adjustedSearchedInput = searchedInput.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 
     if (adjustedSearchedInput !== '' && adjustedSearchedInput.length >= minSearchChars) {
       foundKeywordIndexes = searchForKeyword(adjustedSearchedInput, parsedData, itemCount || parsedData.length)
@@ -95,9 +96,8 @@ export const LogViewerSearch: React.FunctionComponent<LogViewerSearchProps> = ({
     if (!adjustedSearchedInput) {
       setRowInFocus(defaultRowInFocus)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchedInput])
-
-  const hasFoundResults = searchedWordIndexes.length > 0 && searchedWordIndexes[0]?.rowIndex !== -1
 
   /* Clearing out the search input */
   const handleClear = (): void => {
