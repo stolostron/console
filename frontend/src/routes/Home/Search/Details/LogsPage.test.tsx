@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../../atoms'
 import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
@@ -514,6 +514,25 @@ describe('LogsPage', () => {
   })
 
   it('should render logs toolbar & click wrap lines and raw buttons', async () => {
+    jest.mock('react', () => ({
+      useContext: jest.fn(),
+    }))
+    const useContextMock = jest.spyOn(React, 'useContext')
+    useContextMock.mockReturnValue({
+      searchedWordIndexes: [],
+      rowInFocus: {
+        rowIndex: 0,
+        matchIndex: 0,
+      },
+      searchedInput: '',
+      itemCount: 0,
+      currentSearchedItemCount: 0,
+      scrollToRow: () => {},
+      setRowInFocus: () => {},
+      setSearchedInput: () => {},
+      setSearchedWordIndexes: () => {},
+      setCurrentSearchedItemCount: () => {},
+    })
     window.open = jest.fn()
     document.write = jest.fn()
     const Toolbar = () => {
@@ -565,6 +584,25 @@ describe('LogsPage', () => {
   })
 
   it('should render logs toolbar in fullescreen mode', async () => {
+    jest.mock('react', () => ({
+      useContext: jest.fn(),
+    }))
+    const useContextMock = jest.spyOn(React, 'useContext')
+    useContextMock.mockReturnValue({
+      searchedWordIndexes: [],
+      rowInFocus: {
+        rowIndex: 0,
+        matchIndex: 0,
+      },
+      searchedInput: '',
+      itemCount: 0,
+      currentSearchedItemCount: 0,
+      scrollToRow: () => {},
+      setRowInFocus: () => {},
+      setSearchedInput: () => {},
+      setSearchedWordIndexes: () => {},
+      setCurrentSearchedItemCount: () => {},
+    })
     window.open = jest.fn()
     document.write = jest.fn()
     const Toolbar = () => {
