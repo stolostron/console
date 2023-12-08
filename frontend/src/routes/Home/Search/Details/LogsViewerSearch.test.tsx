@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2023 Red Hat, Inc.
-import { searchedKeyWordType } from '@patternfly/react-log-viewer/src/LogViewer/utils/utils'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React, { useState } from 'react'
@@ -16,11 +15,19 @@ describe('LogsViewerSearch', () => {
   it('should render logs viewer search & search for word test', async () => {
     const Search = () => {
       const [searchedInput, setSearchedInput] = useState<string>('')
-      const [rowInFocus, setRowInFocus] = useState<searchedKeyWordType>({
+      const [rowInFocus, setRowInFocus] = useState<{
+        rowIndex: number
+        matchIndex: number
+      }>({
         rowIndex: 0,
         matchIndex: 0,
       })
-      const [searchedWordIndexes, setSearchedWordIndexes] = useState<searchedKeyWordType[]>([])
+      const [searchedWordIndexes, setSearchedWordIndexes] = useState<
+        {
+          rowIndex: number
+          matchIndex: number
+        }[]
+      >([])
       const [currentSearchedItemCount, setCurrentSearchedItemCount] = useState<number>()
       jest.mock('react', () => ({
         useContext: jest.fn(),
