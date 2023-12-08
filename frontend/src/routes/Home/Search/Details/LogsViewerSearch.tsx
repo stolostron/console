@@ -22,7 +22,7 @@ export interface LogViewerSearchProps extends SearchInputProps {
   minSearchChars: number
 }
 
-const searchForKeyword = (searchedInput: string, parsedData: string[], itemCount: number) => {
+export const searchForKeyword = (searchedInput: string, parsedData: string[], itemCount: number) => {
   const searchResults: searchedKeyWordType[] = []
 
   const regex = new RegExp(searchedInput, 'ig')
@@ -142,16 +142,13 @@ export const LogViewerSearch: React.FunctionComponent<LogViewerSearchProps> = ({
           setSearchedInput(event)
         }
       }}
-      onNextClick={(event) => {
-        props.onNextClick && props.onNextClick(event)
+      onNextClick={() => {
         handleNextSearchItem()
       }}
-      onPreviousClick={(event) => {
-        props.onPreviousClick && props.onPreviousClick(event)
+      onPreviousClick={() => {
         handlePrevSearchItem()
       }}
-      onClear={(event) => {
-        props.onClear && props.onClear(event)
+      onClear={() => {
         handleClear()
       }}
     />
