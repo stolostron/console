@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
-import { LogViewer, LogViewerSearch } from '@patternfly/react-log-viewer'
+import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import screenfull from 'screenfull'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -21,6 +21,7 @@ import { DOC_BASE_PATH } from '../../../../lib/doc-util'
 import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../../ui-components'
+import { LogViewerSearch } from './LogsViewerSearch'
 
 const toolbarContainer = css({
   alignItems: 'stretch',
