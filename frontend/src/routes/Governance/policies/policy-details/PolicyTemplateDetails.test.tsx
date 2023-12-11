@@ -375,4 +375,92 @@ describe('Policy Template Details content', () => {
       `/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
   })
+
+  test('Should render correctly with relatedObject name is * when it is cluster scope', async () => {
+    const replaceRelatedObj = [
+      {
+        compliant: 'NonCompliant',
+        object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: '*' } },
+        reason: 'Resource found as expected',
+        cluster: 'test-cluster',
+      },
+    ]
+    getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
+    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyTemplateDetails
+            clusterName={'test-cluster'}
+            apiGroup={'policy.open-cluster-management.io'}
+            apiVersion={'v1'}
+            kind={'ConfigurationPolicy'}
+            templateName={'policy-set-with-1-placement-policy-1'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Wait for the get resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for template yaml to load correctly
+    await waitForText('Template yaml')
+
+    // wait for related resources table to load correctly
+    await waitForText('Related resources')
+    await waitForText('*')
+    await waitForText('v1')
+    const viewYamlLink = screen.getByText('View YAML')
+    expect(viewYamlLink.getAttribute('href')).toEqual(
+      `/multicloud/home/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1`
+    )
+  })
+
+  test('Should render correctly with relatedObject name is * when it is namespace scope', async () => {
+    const replaceRelatedObj = [
+      {
+        compliant: 'NonCompliant',
+        object: { apiVersion: 'networking.k8s.io/v1', kind: 'Ingress', metadata: { namespace: 'ohmyns', name: '*' } },
+        reason: 'Resource found as expected',
+        cluster: 'test-cluster',
+      },
+    ]
+    getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
+    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyTemplateDetails
+            clusterName={'test-cluster'}
+            apiGroup={'policy.open-cluster-management.io'}
+            apiVersion={'v1'}
+            kind={'ConfigurationPolicy'}
+            templateName={'policy-set-with-1-placement-policy-1'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Wait for the get resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for template yaml to load correctly
+    await waitForText('Template yaml')
+
+    // wait for related resources table to load correctly
+    await waitForText('Related resources')
+    await waitForText('*')
+    await waitForText('networking.k8s.io/v1')
+    const viewYamlLink = screen.getByText('View YAML')
+    expect(viewYamlLink.getAttribute('href')).toEqual(
+      `/multicloud/home/search/resources/yaml?cluster=test-cluster&kind=Ingress&apiversion=networking.k8s.io/v1&namespace=ohmyns`
+    )
+  })
 })

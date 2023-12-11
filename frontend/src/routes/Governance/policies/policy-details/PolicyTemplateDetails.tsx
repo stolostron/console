@@ -251,27 +251,17 @@ export function PolicyTemplateDetails(props: {
             return ''
           }
           if (cluster && kind && apiVersion && name) {
-            if (namespace !== '') {
-              return (
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`}
-                >
-                  {t('View YAML')}
-                </a>
-              )
-            } else {
-              return (
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}`}
-                >
-                  {t('View YAML')}
-                </a>
-              )
-            }
+            const nameArg = name != '*' ? `&name=${name}` : ''
+            const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+            return (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}${nameArg}${namespaceArg}`}
+              >
+                {t('View YAML')}
+              </a>
+            )
           }
           return ''
         },
