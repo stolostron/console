@@ -1913,6 +1913,7 @@
   "Number of clusters where the grouped Argo applications' resources are deployed.": "Number of clusters where the grouped Argo applications' resources are deployed.",
   "Number of nodes": "Number of nodes",
   "Number of resources grouped": "Number of resources grouped",
+  "Nutanix requires x86_64 release image. No other architecture is supported.": "Nutanix requires x86_64 release image. No other architecture is supported.",
   "NV-series": "NV-series",
   "Object storage": "Object storage",
   "of": "of",
