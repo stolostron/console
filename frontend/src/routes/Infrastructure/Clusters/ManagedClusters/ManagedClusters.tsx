@@ -13,7 +13,7 @@ import {
   TextVariants,
   Tooltip,
 } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
+import { fitContent, nowrap } from '@patternfly/react-table'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../components/BulkActionModal'
@@ -824,11 +824,6 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-function getDateTime(cluster: Cluster) {
-  const dateTimeCell = getDateTimeCell(cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-')
-  return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
-}
-
 export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
@@ -842,12 +837,12 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
       )
     },
     search: 'creationDate',
-    cell: (cluster) => (
-      <span style={{ whiteSpace: 'nowrap' }}>
-        <TextContent>
-          <Text component={TextVariants.small}>{getDateTime(cluster)}</Text>
-        </TextContent>
-      </span>
-    ),
+    cellTransforms: [nowrap],
+    cell: (cluster) => {
+      const dateTimeCell = getDateTimeCell(
+        cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-'
+      )
+      return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
+    },
   }
 }
