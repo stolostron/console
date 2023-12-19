@@ -64,7 +64,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
-  { kind: 'AppProject', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
@@ -126,7 +125,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'HostedCluster', apiVersion: 'hypershift.openshift.io/v1beta1' },
   { kind: 'NodePool', apiVersion: 'hypershift.openshift.io/v1beta1' },
   { kind: 'AgentMachine', apiVersion: 'capi-provider.agent-install.openshift.io/v1alpha1' },
-  { kind: 'CustomResourceDefinition', apiVersion: 'apiextensions.k8s.io/v1' },
   { kind: 'ConfigMap', apiVersion: 'v1', labelSelector: { 'hypershift.openshift.io/supported-versions': 'true' } },
 ]
 
