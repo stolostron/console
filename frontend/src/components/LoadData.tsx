@@ -45,8 +45,6 @@ import {
   ClusterVersionKind,
   ConfigMapApiVersion,
   ConfigMapKind,
-  CustomResourceDefinitionApiVersion,
-  CustomResourceDefinitionKind,
   DiscoveredClusterApiVersion,
   DiscoveredClusterKind,
   DiscoveryConfigApiVersion,
@@ -79,8 +77,6 @@ import {
   MulticlusterApplicationSetReportKind,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
-  MultiClusterHubApiVersion,
-  MultiClusterHubKind,
   NamespaceApiVersion,
   NamespaceKind,
   NMStateConfigApiVersion,
@@ -115,8 +111,6 @@ import {
   SubscriptionOperatorKind,
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
-  UserPreferenceApiVersion,
-  UserPreferenceKind,
 } from '../resources'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
@@ -127,7 +121,6 @@ import {
   ansibleJobState,
   applicationSetsState,
   applicationsState,
-  appProjectsState,
   argoApplicationsState,
   argoCDsState,
   bareMetalHostsState,
@@ -142,7 +135,6 @@ import {
   clusterProvisionsState,
   clusterVersionState,
   configMapsState,
-  customResourceDefinitionsState,
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
@@ -159,7 +151,6 @@ import {
   managedClustersState,
   multiclusterApplicationSetReportState,
   multiClusterEnginesState,
-  multiClusterHubState,
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
@@ -180,7 +171,6 @@ import {
   subscriptionReportsState,
   subscriptionsState,
   THROTTLE_EVENTS_DELAY,
-  userPreferencesState,
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
@@ -194,7 +184,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgents = useSetRecoilState(agentsState)
   const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
   const setAnsibleJobs = useSetRecoilState(ansibleJobState)
-  const setAppProjectsState = useSetRecoilState(appProjectsState)
   const setApplicationSetsState = useSetRecoilState(applicationSetsState)
   const setApplicationsState = useSetRecoilState(applicationsState)
   const setArgoApplicationsState = useSetRecoilState(argoApplicationsState)
@@ -211,7 +200,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setClusterPools = useSetRecoilState(clusterPoolsState)
   const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
   const setConfigMaps = useSetRecoilState(configMapsState)
-  const setCustomResourceDefinitionsState = useSetRecoilState(customResourceDefinitionsState)
   const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
   const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
   const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
@@ -225,7 +213,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
   const setManagedClusters = useSetRecoilState(managedClustersState)
   const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
-  const setMultiClusterHubs = useSetRecoilState(multiClusterHubState)
   const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
   const setNamespaces = useSetRecoilState(namespacesState)
   const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
@@ -244,7 +231,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
   const setSubscriptionReportsState = useSetRecoilState(subscriptionReportsState)
   const setStorageClassState = useSetRecoilState(storageClassState)
-  const setUserPreferencesState = useSetRecoilState(userPreferencesState)
   const setHostedClustersState = useSetRecoilState(hostedClustersState)
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
@@ -268,7 +254,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
     addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
-    addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
     addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
     addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
     addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
@@ -296,7 +281,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
-    addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
     addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(
       MulticlusterApplicationSetReportApiVersion,
@@ -313,18 +297,15 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SecretApiVersion, SecretKind, setSecrets)
     addSetter(StorageClassApiVersion, StorageClassKind, setStorageClassState)
     addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
-    addSetter(UserPreferenceApiVersion, UserPreferenceKind, setUserPreferencesState)
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    addSetter(CustomResourceDefinitionApiVersion, CustomResourceDefinitionKind, setCustomResourceDefinitionsState)
     return setters
   }, [
     setAgentClusterInstalls,
     setAgents,
     setAgentServiceConfigs,
     setAnsibleJobs,
-    setAppProjectsState,
     setApplicationSetsState,
     setApplicationsState,
     setArgoApplicationsState,
@@ -353,7 +334,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusterSetBindings,
     setManagedClusterSets,
     setManagedClusters,
-    setMultiClusterHubs,
     setMultiClusterEngines,
     setMulticlusterApplicationSetReportState,
     setNamespaces,
@@ -372,11 +352,9 @@ export function LoadData(props: { children?: ReactNode }) {
     setSubscriptionReportsState,
     setSubscriptionsState,
     setSubscriptionOperatorsState,
-    setUserPreferencesState,
     setHostedClustersState,
     setNodePoolsState,
     setAgentMachinesState,
-    setCustomResourceDefinitionsState,
   ])
 
   useEffect(() => {

@@ -31,7 +31,6 @@ import {
   ClusterPool,
   ClusterProvision,
   ConfigMap,
-  CustomResourceDefinition,
   DiscoveredCluster,
   DiscoveryConfig,
   GitOpsCluster,
@@ -45,7 +44,6 @@ import {
   ManagedClusterSetBinding,
   MulticlusterApplicationSetReport,
   MultiClusterEngine,
-  MultiClusterHub,
   Namespace,
   OCPAppResource,
   Placement,
@@ -61,7 +59,6 @@ import {
   Subscription,
   SubscriptionOperator,
   SubscriptionReport,
-  UserPreference,
 } from './resources'
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -78,7 +75,6 @@ export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResourc
 export const agentsState = AtomArray<AgentK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
-export const appProjectsState = AtomArray<IResource>()
 export const applicationSetsState = AtomArray<ApplicationSet>()
 export const applicationsState = AtomArray<Application>()
 export const argoApplicationsState = AtomArray<ArgoApplication>()
@@ -108,7 +104,6 @@ export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding
 export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
-export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const multiclusterApplicationSetReportState = AtomArray<MulticlusterApplicationSetReport>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
@@ -126,11 +121,9 @@ export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
-export const userPreferencesState = AtomArray<UserPreference>()
 export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
-export const customResourceDefinitionsState = AtomArray<CustomResourceDefinition>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
