@@ -245,42 +245,6 @@ function ClustersCard() {
               return (
                 <Fragment key={`${cluster.metadata.name}-card`}>
                   <span>{cluster.metadata.name}</span>
-                  {clusterViolationSummary.pending ? (
-                    <Tooltip
-                      content={t('policies.pending', {
-                        count: clusterViolationSummary.pending,
-                      })}
-                    >
-                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                        <Fragment>
-                          <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'pending')}>
-                            {clusterViolationSummary.pending}
-                          </Button>{' '}
-                          &nbsp;
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
-                        </Fragment>
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <span />
-                  )}
-                  {clusterViolationSummary.unknown ? (
-                    <Tooltip
-                      content={t('policies.unknown', {
-                        count: clusterViolationSummary.unknown,
-                      })}
-                    >
-                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                        <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'unknown')}>
-                          {clusterViolationSummary.unknown}
-                        </Button>{' '}
-                        &nbsp;
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <span />
-                  )}
                   {clusterViolationSummary.compliant ? (
                     <Tooltip
                       content={t('policies.noviolations', {
@@ -312,6 +276,42 @@ function ClustersCard() {
                         </Button>{' '}
                         &nbsp;
                         <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <span />
+                  )}
+                  {clusterViolationSummary.pending ? (
+                    <Tooltip
+                      content={t('policies.pending', {
+                        count: clusterViolationSummary.pending,
+                      })}
+                    >
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Fragment>
+                          <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'pending')}>
+                            {clusterViolationSummary.pending}
+                          </Button>{' '}
+                          &nbsp;
+                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                        </Fragment>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <span />
+                  )}
+                  {clusterViolationSummary.unknown ? (
+                    <Tooltip
+                      content={t('policies.unknown', {
+                        count: clusterViolationSummary.unknown,
+                      })}
+                    >
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'unknown')}>
+                          {clusterViolationSummary.unknown}
+                        </Button>{' '}
+                        &nbsp;
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
                       </span>
                     </Tooltip>
                   ) : (
