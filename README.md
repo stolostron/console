@@ -17,7 +17,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
--   [Node.js](https://nodejs.org) 18
+-   [Node.js](https://nodejs.org) 20
 -   NPM 8
 
 ## Active Release Branches
