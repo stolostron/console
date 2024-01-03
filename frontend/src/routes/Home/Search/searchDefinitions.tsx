@@ -570,9 +570,9 @@ function AddColumn(key: string, localizedColumnName: string) {
           return (
             <>
               {item?.cluster ?? '-'}
-              {item?.managedhub && (
+              {item?.managedHub && (
                 <TextContent>
-                  <Text component={TextVariants.small}>{item.managedhub}</Text>
+                  <Text component={TextVariants.small}>{item.managedHub}</Text>
                 </TextContent>
               )}
             </>
