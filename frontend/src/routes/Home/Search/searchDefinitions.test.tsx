@@ -312,7 +312,7 @@ test('Correctly returns all resource definitions', () => {
 test('Correctly returns resource with managedHub column', () => {
   const testItem = {
     cluster: 'testCluster',
-    managedhub: 'testManagedHub',
+    managedHub: 'testManagedHub',
     kind: 'Node',
     apiversion: 'v1',
     name: 'node.1',
