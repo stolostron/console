@@ -22,7 +22,7 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
             variant="info"
             noClose
             isInline
-            title={t('Find Kubernetes resources across all of your managed hubs and clusters')}
+            title={t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')}
           />
         )}
         <AcmPageHeader title={isGlobalHub ? t('Global search') : t('Search')} />
