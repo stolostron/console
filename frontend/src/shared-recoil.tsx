@@ -42,10 +42,12 @@ export function useRecoilState<T>(param: RecoilState<T>): [T, SetterOrUpdater<T>
   return useSharedRecoilState(param)
 }
 
-export function useRecoilCallback<Args extends readonly unknown[], Return>(
-  param: (interfce: CallbackInterface) => (...args: Args) => Return,
-  deps?: readonly unknown[] | undefined
-) {
+export function useRecoilValueGetter<T>(param: RecoilValue<T>): () => T {
   const { useRecoilCallback: useSharedRecoilCallback } = useSharedRecoil()
-  return useSharedRecoilCallback(param, deps)
+  return useSharedRecoilCallback<[], T>(
+    ({ snapshot }) =>
+      () =>
+        snapshot.getLoadable(param).contents,
+    []
+  )
 }

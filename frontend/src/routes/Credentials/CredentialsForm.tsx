@@ -11,7 +11,6 @@ import { LoadingPage } from '../../components/LoadingPage'
 import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
   enforceCloudsYaml,
   validateAnsibleHost,
@@ -40,10 +39,8 @@ import {
   ProviderConnection,
   ProviderConnectionStringData,
   Secret,
-  SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
-import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmEmptyState,
   AcmIcon,
@@ -56,6 +53,7 @@ import {
 } from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import { CredentialsType } from './CredentialsType'
+import { useProjects } from '../../hooks/useProjects'
 import schema from './schema.json'
 
 type ProviderConnectionOrCredentialsType =
@@ -63,32 +61,11 @@ type ProviderConnectionOrCredentialsType =
   | { providerConnection?: never; credentialsType: CredentialsType }
 
 export function CreateCredentialsFormPage(props: { credentialsType: CredentialsType }) {
-  const { namespacesState } = useSharedAtoms()
   const { t } = useTranslation()
 
   const { credentialsType } = props
 
-  const [error, setError] = useState<Error>()
-
-  // any recoil resources that constantly update because of a time stamp
-  const getNamespaces = useRecoilCallback(
-    ({ snapshot }) =>
-      () =>
-        snapshot.getPromise(namespacesState),
-    []
-  )
-
-  const [projects, setProjects] = useState<string[]>()
-  useEffect(() => {
-    getNamespaces()
-      .then(async (namespaces) => {
-        getAuthorizedNamespaces([await rbacCreate(SecretDefinition)], namespaces)
-          .then((namespaces: string[]) => setProjects(namespaces.sort()))
-          .catch(setError)
-      })
-      .catch(setError)
-    return undefined
-  }, [getNamespaces])
+  const { projects, error } = useProjects()
 
   if (error) return <ErrorPage error={error} />
 

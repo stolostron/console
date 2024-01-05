@@ -16,7 +16,7 @@ import { Link, useHistory, useLocation } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import { GetProjects } from '../../../../../components/GetProjects'
+import { useProjects } from '../../../../../hooks/useProjects'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -264,7 +264,7 @@ export function DiscoveryConfigPageContent(props: {
     }
   }
 
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   const onSubmit = async () => {
     alertContext.clearAlerts()

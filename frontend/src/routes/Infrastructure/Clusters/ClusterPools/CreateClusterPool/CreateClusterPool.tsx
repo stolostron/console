@@ -32,7 +32,7 @@ import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
-import { GetProjects } from '../../../../../components/GetProjects'
+import { useProjects } from '../../../../../hooks/useProjects'
 import { Secret } from '../../../../../resources'
 import getControlDataAWS from './controlData/ControlDataAWS'
 import getControlDataGCP from './controlData/ControlDataGCP'
@@ -121,7 +121,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
 
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   const onControlChange = useCallback(
     (control: any) => {

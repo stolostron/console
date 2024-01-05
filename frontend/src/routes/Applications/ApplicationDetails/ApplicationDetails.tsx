@@ -12,7 +12,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -29,7 +28,7 @@ import {
   ApplicationSetDefinition,
   ApplicationSetKind,
 } from '../../../resources'
-import { useRecoilCallback, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValueGetter, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmActionGroup,
   AcmAlert,
@@ -142,54 +141,46 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
 
   let modalWarnings: string
 
-  const getSnapshot = useRecoilCallback(
-    ({ snapshot }) =>
-      () =>
-        snapshot,
-    []
-  )
-  const stateMap = useMemo(
+  const applicationsGetter = useRecoilValueGetter(applicationsState)
+  const applicationSetsGetter = useRecoilValueGetter(applicationSetsState)
+  const argoApplicationsGetter = useRecoilValueGetter(argoApplicationsState)
+  const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
+  const channelsGetter = useRecoilValueGetter(channelsState)
+  const placementsGetter = useRecoilValueGetter(placementsState)
+  const placementRulesGetter = useRecoilValueGetter(placementRulesState)
+  const subscriptionsGetter = useRecoilValueGetter(subscriptionsState)
+  const subscriptionReportsGetter = useRecoilValueGetter(subscriptionReportsState)
+  const placementDecisionsGetter = useRecoilValueGetter(placementDecisionsState)
+  const multiclusterApplicationSetReportsGetter = useRecoilValueGetter(multiclusterApplicationSetReportState)
+
+  const getRecoilStates = useCallback(
     () => ({
-      applications: applicationsState,
-      applicationSets: applicationSetsState,
-      argoApplications: argoApplicationsState,
-      ansibleJob: ansibleJobState,
-      channels: channelsState,
-      placements: placementsState,
-      placementRules: placementRulesState,
-      subscriptions: subscriptionsState,
-      subscriptionReports: subscriptionReportsState,
-      placementDecisions: placementDecisionsState,
-      multiclusterApplicationSetReports: multiclusterApplicationSetReportState,
+      applications: applicationsGetter(),
+      applicationSets: applicationSetsGetter(),
+      argoApplications: argoApplicationsGetter(),
+      ansibleJob: ansibleJobGetter(),
+      channels: channelsGetter(),
+      placements: placementsGetter(),
+      placementRules: placementRulesGetter(),
+      subscriptions: subscriptionsGetter(),
+      subscriptionReports: subscriptionReportsGetter(),
+      placementDecisions: placementDecisionsGetter(),
+      multiclusterApplicationSetReports: multiclusterApplicationSetReportsGetter(),
     }),
     [
-      applicationsState,
-      applicationSetsState,
-      argoApplicationsState,
-      ansibleJobState,
-      channelsState,
-      placementDecisionsState,
-      placementsState,
-      placementRulesState,
-      subscriptionsState,
-      subscriptionReportsState,
-      multiclusterApplicationSetReportState,
+      ansibleJobGetter,
+      applicationSetsGetter,
+      applicationsGetter,
+      argoApplicationsGetter,
+      channelsGetter,
+      placementDecisionsGetter,
+      placementRulesGetter,
+      placementsGetter,
+      subscriptionReportsGetter,
+      subscriptionsGetter,
+      multiclusterApplicationSetReportsGetter,
     ]
   )
-
-  const getRecoilStates = useCallback(async () => {
-    const map: Record<string, any> = {}
-    const snapshot = getSnapshot()
-    const promises = Object.entries(stateMap).map(([key, state]) => {
-      const promise = snapshot.getPromise(state as any)
-      promise.then((data) => {
-        map[key] = data
-      })
-      return promise
-    })
-    await Promise.allSettled(promises)
-    return map
-  }, [getSnapshot, stateMap])
 
   const actions: any = [
     {
@@ -251,8 +242,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     actions.push({
       id: 'delete-application',
       text: t('Delete application'),
-      click: async () => {
-        const recoilStates = await getRecoilStates()
+      click: () => {
+        const recoilStates = getRecoilStates()
 
         const appChildResources =
           selectedApp.kind === ApplicationKind
@@ -367,7 +358,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const interval = setInterval(
       (function refresh() {
         ;(async () => {
-          const recoilStates = await getRecoilStates()
+          const recoilStates = getRecoilStates()
 
           // get application object from recoil states
           const application = await getApplication(
@@ -433,10 +424,9 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     activeChannel,
     apiVersion,
     cluster,
-    getSnapshot,
     match.params.name,
     match.params.namespace,
-    stateMap,
+    getRecoilStates,
   ])
 
   return (

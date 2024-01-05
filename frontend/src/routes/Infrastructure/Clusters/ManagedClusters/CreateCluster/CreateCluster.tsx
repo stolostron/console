@@ -44,7 +44,7 @@ import hiveTemplate from './templates/hive-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
 
 import jsyaml from 'js-yaml'
-import { GetProjects } from '../../../../../components/GetProjects'
+import { useProjects } from '../../../../../hooks/useProjects'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
@@ -109,7 +109,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const templateEditorRef = useRef<null>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-  const { projects } = GetProjects()
+
+  const { projects } = useProjects()
 
   // setup translation
   const { t } = useTranslation()

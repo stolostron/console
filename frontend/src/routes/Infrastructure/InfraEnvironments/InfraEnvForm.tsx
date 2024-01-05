@@ -28,7 +28,7 @@ import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } fr
 import './InfraEnvForm.css'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
 import { Provider } from '../../../ui-components'
-import { GetProjects } from '../../../components/GetProjects'
+import { useProjects } from '../../../hooks/useProjects'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { DOC_VERSION } from '../../../lib/doc-util'
 
@@ -72,7 +72,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const [credentialsUID, setCredentialsUID] = useState<string>()
   const { providerConnectionsValue } = useSharedSelectors()
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
   const { infraEnvironmentsState } = useSharedAtoms()
   const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
   const formRef = useRef<FormikProps<any>>(null)

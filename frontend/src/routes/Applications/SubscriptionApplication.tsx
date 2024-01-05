@@ -49,7 +49,7 @@ import otherTemplate from './CreateApplication/Subscription/templates/templateOt
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { CredentialsForm } from '../Credentials/CredentialsForm'
-import { GetProjects } from '../../components/GetProjects'
+import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 
 interface CreationStatus {
@@ -72,7 +72,7 @@ export default function CreateSubscriptionApplicationPage() {
   const [newSecret, setNewSecret] = useState<Secret>()
   const { secretsState } = useSharedAtoms()
   const [secrets] = useRecoilState(secretsState)
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   const [connectionControl, setConnectionControl] = useState<any>()
   const onControlChange = useCallback(

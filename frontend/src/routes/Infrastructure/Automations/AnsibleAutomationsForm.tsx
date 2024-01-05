@@ -19,7 +19,7 @@ import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { GetProjects } from '../../../components/GetProjects'
+import { useProjects } from '../../../hooks/useProjects'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { validateKubernetesDnsName } from '../../../lib/validation'
@@ -176,7 +176,7 @@ export function AnsibleAutomationsForm(props: {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   useEffect(() => {
     if (newSecret) {
