@@ -11,7 +11,7 @@ import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClusterContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 const getLoadingMsgI18nKey = (
   cluster: Cluster | undefined,
@@ -43,7 +43,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
   const { t } = useTranslation()
   const history = useHistory()
   const { configMapsState } = useSharedAtoms()
-  const [configMaps] = useRecoilState(configMapsState)
+  const configMaps = useRecoilValue(configMapsState)
   const isHybrid =
     props.cluster?.provider &&
     [Provider.hostinventory, Provider.nutanix].includes(props.cluster?.provider) &&

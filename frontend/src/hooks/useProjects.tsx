@@ -11,7 +11,7 @@ export function useProjects() {
   const [error, setError] = useState<Error>()
   const [projects, setProjects] = useState<string[]>([])
 
-  const getNamespaces = useRecoilValueGetter(namespacesState, [])
+  const getNamespaces = useRecoilValueGetter(namespacesState)
 
   useEffect(() => {
     rbacCreate(SecretDefinition).then((attributes) => {

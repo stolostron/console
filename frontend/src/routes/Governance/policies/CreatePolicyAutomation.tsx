@@ -4,7 +4,7 @@ import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutoma
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -41,8 +41,8 @@ export function CreatePolicyAutomation() {
   const { configMapsState, secretsState, usePolicies } = useSharedAtoms()
   const history = useHistory()
   const policies = usePolicies()
-  const [secrets] = useRecoilState(secretsState)
-  const [configMaps] = useRecoilState(configMapsState)
+  const secrets = useRecoilValue(secretsState)
+  const configMaps = useRecoilValue(configMapsState)
   const toast = useContext(AcmToastContext)
   const currentPolicy = useMemo(
     () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),

@@ -11,7 +11,7 @@ import {
 } from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -72,13 +72,13 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
 
-  const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
 
   const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
   const prevClusterSet = usePrevious(clusterSet)
 
   const clusters = useClusters(clusterSet)
-  const [clusterPools] = useRecoilState(clusterPoolsState)
+  const clusterPools = useRecoilValue(clusterPoolsState)
   const clusterSetClusterPools = clusterPools.filter(
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
   )

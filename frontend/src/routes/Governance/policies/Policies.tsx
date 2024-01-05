@@ -29,7 +29,7 @@ import {
 } from '../../../ui-components'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
@@ -91,11 +91,11 @@ export default function PoliciesPage() {
     subscriptionsState,
   } = useSharedAtoms()
   const policies = useAddRemediationPolicies()
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
-  const [policyAutomations] = useRecoilState(policyAutomationState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
+  const policyAutomations = useRecoilValue(policyAutomationState)
+  const namespaces = useRecoilValue(namespacesState)
   const { setDrawerContext } = useContext(AcmDrawerContext)
 
   const tableItems: PolicyTableItem[] = useMemo(() => {
@@ -115,7 +115,7 @@ export default function PoliciesPage() {
 
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
   const history = useHistory()
-  const [policySets] = useRecoilState(policySetsState)
+  const policySets = useRecoilValue(policySetsState)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
@@ -834,7 +834,7 @@ export function AddToPolicySetModal(
 ) {
   const { t } = useTranslation()
   const { policySetsState } = useSharedAtoms()
-  const [policySets] = useRecoilState(policySetsState)
+  const policySets = useRecoilValue(policySetsState)
   const namespace = useMemo(() => namespaceCheck(props.policyTableItems), [props.policyTableItems])
   const namespacedPolicySets = useMemo(
     () => policySets.filter((ps) => ps.metadata.namespace === namespace),
@@ -989,9 +989,9 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
   const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placementBindings = useRecoilValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
 

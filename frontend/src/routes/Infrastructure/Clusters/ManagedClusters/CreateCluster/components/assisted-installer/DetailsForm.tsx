@@ -11,7 +11,7 @@ import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret, ManagedClusterSet } from '../../../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 import { useClusterImages, getDefault } from './utils'
-import { useSharedAtoms, useRecoilState, useRecoilValue } from '../../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../../shared-recoil'
 
 import { getValue } from '../../../../../../../components/TemplateEditor'
 import { AcmKubernetesLabelsInput, AcmSelect } from '../../../../../../../ui-components'
@@ -121,7 +121,7 @@ export const getExtensionAfter = ({
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
   const { clusterDeploymentsState, clusterImageSetsState } = useSharedAtoms()
-  const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const formRef = useRef<FormikProps<any>>(null)
   const { t } = useTranslation()

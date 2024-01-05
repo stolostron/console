@@ -7,7 +7,7 @@ import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmDrawerContext, compareStrings } from '../../../ui-components'
 import {
   GovernanceCreatePolicyEmptyState,
@@ -23,7 +23,7 @@ export default function GovernanceOverview() {
   usePageVisitMetricHandler(Pages.governance)
   const { usePolicies, namespacesState } = useSharedAtoms()
   const policies = usePolicies()
-  const [namespaces] = useRecoilState(namespacesState)
+  const namespaces = useRecoilValue(namespacesState)
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
   const { t } = useTranslation()
@@ -211,7 +211,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
 function ClustersCard() {
   const { t } = useTranslation()
   const { usePolicies, managedClustersState } = useSharedAtoms()
-  const [clusters] = useRecoilState(managedClustersState)
+  const clusters = useRecoilValue(managedClustersState)
   const policies = usePolicies()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)

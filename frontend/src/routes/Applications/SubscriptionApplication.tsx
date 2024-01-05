@@ -17,7 +17,7 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
 import { getErrorInfo } from '../../components/ErrorPage'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -71,7 +71,7 @@ export default function CreateSubscriptionApplicationPage() {
   const [toggledControl, setToggledControl] = useState<any>()
   const [newSecret, setNewSecret] = useState<Secret>()
   const { secretsState } = useSharedAtoms()
-  const [secrets] = useRecoilState(secretsState)
+  const secrets = useRecoilValue(secretsState)
   const { projects } = useProjects()
 
   const [connectionControl, setConnectionControl] = useState<any>()
@@ -189,7 +189,7 @@ export function CreateSubscriptionApplication(
     placementsState,
   } = useSharedAtoms()
   const toastContext = useContext(AcmToastContext)
-  const [secrets] = useRecoilState(secretsState)
+  const secrets = useRecoilValue(secretsState)
   const providerConnections = secrets.map(unpackProviderConnection)
   const ansibleCredentials = providerConnections.filter(
     (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
@@ -380,12 +380,12 @@ export function CreateSubscriptionApplication(
   Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
   Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
   const [fetchControl, setFetchControl] = useState<any>(null)
-  const [applications] = useRecoilState(applicationsState)
-  const [ansibleJob] = useRecoilState(ansibleJobState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placements] = useRecoilState(placementsState)
+  const applications = useRecoilValue(applicationsState)
+  const ansibleJob = useRecoilValue(ansibleJobState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placements = useRecoilValue(placementsState)
   const location = useLocation()
   const editApplication = getEditApplication(location)
   const searchParams = useSearchParams()

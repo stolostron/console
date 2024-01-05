@@ -20,7 +20,7 @@ import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 export default function DiscoveredClustersPage() {
   return (
@@ -138,10 +138,10 @@ function EmptyStateAwaitingDiscoveredClusters() {
 
 export function DiscoveredClustersPageContent() {
   const { discoveredClusterState, discoveryConfigState, secretsState } = useSharedAtoms()
-  const [discoveredClusters] = useRecoilState(discoveredClusterState)
-  const [secrets] = useRecoilState(secretsState)
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const secrets = useRecoilValue(secretsState)
   const credentials = secrets.map(unpackProviderConnection)
-  const [discoveryConfigs] = useRecoilState(discoveryConfigState)
+  const discoveryConfigs = useRecoilValue(discoveryConfigState)
 
   const RHOCMCredentials: ProviderConnection[] = []
   credentials.forEach((credential) => {

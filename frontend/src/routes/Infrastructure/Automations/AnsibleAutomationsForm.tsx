@@ -40,7 +40,7 @@ import {
   ResourceErrorCode,
   Secret,
 } from '../../../resources'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,
   AcmChip,
@@ -123,7 +123,7 @@ export function AnsibleAutomationsForm(props: {
   const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
   const { settingsState } = useSharedAtoms()
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 

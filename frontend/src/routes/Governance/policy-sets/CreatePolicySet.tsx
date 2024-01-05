@@ -4,7 +4,7 @@ import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySet
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -47,12 +47,12 @@ export function CreatePolicySet() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const [namespaces] = useRecoilState(namespacesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
     [namespaces]

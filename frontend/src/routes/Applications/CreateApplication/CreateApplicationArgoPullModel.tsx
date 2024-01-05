@@ -6,7 +6,7 @@ import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
@@ -71,15 +71,15 @@ export function CreateApplicationArgoPullModel() {
     managedClusterSetBindingsState,
   } = useSharedAtoms()
   const history = useHistory()
-  const [applicationSets] = useRecoilState(applicationSetsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
   const toast = useContext(AcmToastContext)
-  const [placements] = useRecoilState(placementsState)
-  const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
-  const [channels] = useRecoilState(channelsState)
-  const [namespaces] = useRecoilState(namespacesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const placements = useRecoilValue(placementsState)
+  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
+  const channels = useRecoilValue(channelsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)

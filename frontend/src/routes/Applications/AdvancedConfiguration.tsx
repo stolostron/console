@@ -17,7 +17,7 @@ import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-comp
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -54,13 +54,13 @@ export default function AdvancedConfiguration() {
     subscriptionsState,
   } = useSharedAtoms()
 
-  const [applications] = useRecoilState(applicationsState)
-  const [channels] = useRecoilState(channelsState)
-  const [placementrules] = useRecoilState(placementRulesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const applications = useRecoilValue(applicationsState)
+  const channels = useRecoilValue(channelsState)
+  const placementrules = useRecoilValue(placementRulesState)
+  const placements = useRecoilValue(placementsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const namespaces = useRecoilValue(namespacesState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')

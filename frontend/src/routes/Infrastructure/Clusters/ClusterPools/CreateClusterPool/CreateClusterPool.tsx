@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useContext, useEffect, Fragment, useCallback } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import {
   AcmPage,
   AcmPageContent,
@@ -113,11 +113,11 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
   const { search } = useLocation()
   const { back, cancel } = useBackCancelNavigation()
   const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
-  const [namespaces] = useRecoilState(namespacesState)
-  const [secrets] = useRecoilState(secretsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const secrets = useRecoilValue(secretsState)
   const toastContext = useContext(AcmToastContext)
-  const [settings] = useRecoilState(settingsState)
-  const [clusterPools] = useRecoilState(clusterPoolsState)
+  const settings = useRecoilValue(settingsState)
+  const clusterPools = useRecoilValue(clusterPoolsState)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
 

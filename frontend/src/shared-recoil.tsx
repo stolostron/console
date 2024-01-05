@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { CallbackInterface, RecoilState, RecoilValue, SetterOrUpdater } from 'recoil'
+import { RecoilState, RecoilValue, SetterOrUpdater } from 'recoil'
 
 import { PluginContext } from './lib/PluginContext'
 import { useContext } from 'react'
@@ -35,11 +35,6 @@ export function useRecoilValue<T>(param: RecoilValue<T>): T {
 export function useSetRecoilState<T>(param: RecoilState<T>): SetterOrUpdater<T> {
   const { useSetRecoilState: useSharedSetRecoilState } = useSharedRecoil()
   return useSharedSetRecoilState(param)
-}
-
-export function useRecoilState<T>(param: RecoilState<T>): [T, SetterOrUpdater<T>] {
-  const { useRecoilState: useSharedRecoilState } = useSharedRecoil()
-  return useSharedRecoilState(param)
 }
 
 export function useRecoilValueGetter<T>(param: RecoilValue<T>): () => T {

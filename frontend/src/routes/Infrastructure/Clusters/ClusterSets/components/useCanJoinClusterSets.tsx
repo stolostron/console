@@ -3,12 +3,12 @@
 import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../resources'
 import { useEffect, useState } from 'react'
 import { canUser, checkAdminAccess } from '../../../../../lib/rbac-util'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 // returns a list of cluster sets that the user is authorized to attach managed clusters to
 export function useCanJoinClusterSets() {
   const { managedClusterSetsState } = useSharedAtoms()
-  const [managedClusterSets] = useRecoilState(managedClusterSetsState)
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const [canJoinClusterSets, setCanJoinClusterSets] = useState<ManagedClusterSet[] | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(true)
 

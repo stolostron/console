@@ -23,7 +23,7 @@ import { FormikProps } from 'formik'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
-import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 
 import './InfraEnvForm.css'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
@@ -74,7 +74,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
   const { projects } = useProjects()
   const { infraEnvironmentsState } = useSharedAtoms()
-  const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
+  const infraEnvironments = useRecoilValue(infraEnvironmentsState)
   const formRef = useRef<FormikProps<any>>(null)
 
   const providerConnections = allProviderConnections.filter((p) => {

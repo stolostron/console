@@ -25,7 +25,7 @@ import {
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -92,7 +92,7 @@ export function ClusterSetSubmarinerPageContent() {
   const { t } = useTranslation()
   const history = useHistory()
   const { submarinerConfigsState } = useSharedAtoms()
-  const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
+  const submarinerConfigs = useRecoilValue(submarinerConfigsState)
   const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
   const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterAddOn> | { open: false }>({

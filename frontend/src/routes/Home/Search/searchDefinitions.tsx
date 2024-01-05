@@ -12,7 +12,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLabels } from '../../../ui-components'
 
 export interface SearchDefinitions {
@@ -404,7 +404,7 @@ export function CreateDetailsLink(props: { item: any }) {
   const { item } = props
   const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
 
   if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
     return item.name

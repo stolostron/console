@@ -19,7 +19,7 @@ import {
   ProviderLongTextMap,
 } from '../../../../../ui-components'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { Divider, ExpandableSection, Stack, StackItem } from '@patternfly/react-core'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
@@ -73,8 +73,8 @@ export function CreateClusterCatalog() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const { clusterImageSetsState, secretsState } = useSharedAtoms()
-  const [secrets] = useRecoilState(secretsState)
-  const [clusterImageSets] = useRecoilState(clusterImageSetsState)
+  const secrets = useRecoilValue(secretsState)
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const [isAdditionalProvidersExpanded, setIsAdditionalProvidersExpanded] = useState(true)
 
   const onAdditionalProvidersToggle = (isExpanded: boolean) => {

@@ -17,7 +17,7 @@ import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -72,8 +72,8 @@ export function ClusterSetManageResourcesContent() {
   const clusters = useAllClusters()
   const { clusterCuratorsState, managedClusterSetsState, hostedClustersState } = useSharedAtoms()
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
-  const [clusterCurators] = useRecoilState(clusterCuratorsState)
-  const [hostedClusters] = useRecoilState(hostedClustersState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
 
   const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
   const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)

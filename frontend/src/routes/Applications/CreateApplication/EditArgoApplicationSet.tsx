@@ -5,7 +5,7 @@ import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -69,14 +69,14 @@ export function EditArgoApplicationSet() {
   const toast = useContext(AcmToastContext)
   const params: { namespace: string; name: string } = useParams()
   const { name } = params
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [placements] = useRecoilState(placementsState)
-  const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
-  const [channels] = useRecoilState(channelsState)
-  const [namespaces] = useRecoilState(namespacesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const placements = useRecoilValue(placementsState)
+  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
+  const channels = useRecoilValue(channelsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
   const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
