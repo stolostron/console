@@ -36,7 +36,7 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../uti
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
@@ -63,9 +63,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [agents] = useRecoilState(agentsState)
   const [agentMachines] = useRecoilState(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
-  const { waitForAll } = useSharedRecoil()
-  const [infraEnvs, hostedClusters] = useRecoilValue(waitForAll([infraEnvironmentsState, hostedClustersState]))
-  const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
 
   const { cluster } = props
 

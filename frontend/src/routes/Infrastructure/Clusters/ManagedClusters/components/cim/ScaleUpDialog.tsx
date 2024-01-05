@@ -6,7 +6,7 @@ import {
   onSaveAgent,
   onSetInstallationDiskId,
 } from '../../CreateCluster/components/assisted-installer/utils'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 import { IResource } from '../../../../../../resources'
 import { AgentK8sResource, ScaleUpModal } from '@openshift-assisted/ui-lib/cim'
 
@@ -18,8 +18,8 @@ type ScaleUpDialogProps = {
 
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
   const { agentsState, agentClusterInstallsState } = useSharedAtoms()
-  const { waitForAll } = useSharedRecoil()
-  const [agents, agentClusterInstalls] = useRecoilValue(waitForAll([agentsState, agentClusterInstallsState]))
+  const agents = useRecoilValue(agentsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
 
   const agentClusterInstall = agentClusterInstalls.find(

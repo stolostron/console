@@ -5,7 +5,8 @@ import { CallbackInterface, RecoilState, RecoilValue, SetterOrUpdater } from 're
 import { PluginContext } from './lib/PluginContext'
 import { useContext } from 'react'
 
-export function useSharedRecoil() {
+/* Do not export - wrapper functions should be used to track atom usage */
+function useSharedRecoil() {
   const { dataContext } = useContext(PluginContext)
   const { recoil } = useContext(dataContext)
 

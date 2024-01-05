@@ -11,7 +11,7 @@ import {
 } from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -66,13 +66,11 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
   const history = useHistory()
   const { t } = useTranslation()
   const { isSubmarinerAvailable } = useContext(PluginContext)
-  const { waitForAll } = useSharedRecoil()
   const { clusterDeploymentsState, clusterPoolsState, managedClusterAddonsState, managedClusterSetsState } =
     useSharedAtoms()
 
-  const [managedClusterSets, managedClusterAddons] = useRecoilValue(
-    waitForAll([managedClusterSetsState, managedClusterAddonsState])
-  )
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
 
   const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
 

@@ -9,7 +9,7 @@ import {
   managedClusterSetLabel,
   mapClusters,
 } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 
 // returns the clusters assigned to a ManagedClusterSet
 export function useClusters(
@@ -17,7 +17,6 @@ export function useClusters(
   clusterPool?: ClusterPool | undefined,
   isGlobalClusterSet?: boolean
 ) {
-  const { waitForAll } = useSharedRecoil()
   const {
     certificateSigningRequestsState,
     clusterClaimsState,
@@ -32,33 +31,17 @@ export function useClusters(
     nodePoolsState,
   } = useSharedAtoms()
 
-  const [
-    managedClusters,
-    clusterDeployments,
-    managedClusterInfos,
-    certificateSigningRequests,
-    managedClusterAddons,
-    clusterManagementAddons,
-    clusterClaims,
-    clusterCurators,
-    agentClusterInstalls,
-    hostedClusters,
-    nodePools,
-  ] = useRecoilValue(
-    waitForAll([
-      managedClustersState,
-      clusterDeploymentsState,
-      managedClusterInfosState,
-      certificateSigningRequestsState,
-      managedClusterAddonsState,
-      clusterManagementAddonsState,
-      clusterClaimsState,
-      clusterCuratorsState,
-      agentClusterInstallsState,
-      hostedClustersState,
-      nodePoolsState,
-    ])
-  )
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterClaims = useRecoilValue(clusterClaimsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const nodePools = useRecoilValue(nodePoolsState)
 
   let groupManagedClusters: ManagedCluster[] = []
   let groupClusterDeployments: ClusterDeployment[] = []

@@ -21,7 +21,7 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { useSharedAtoms, useSharedRecoil, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilState, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { getNodepoolStatus } from './NodePoolsTable'
@@ -63,8 +63,7 @@ export function DistributionField(props: {
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const [agents] = useRecoilState(agentsState)
   const [agentMachines] = useRecoilState(agentMachinesState)
-  const { waitForAll } = useSharedRecoil()
-  const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const agentClusterInstall = useAgentClusterInstall({
     name: props.cluster?.name,
     namespace: props.cluster?.namespace,

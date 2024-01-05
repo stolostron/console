@@ -3,18 +3,16 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useContext } from 'react'
 import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress'
 import { AcmExpandableCard } from '../../../../../ui-components'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const HypershiftClusterDetails = (props: { handleModalToggle: () => void }) => {
   const { t } = useTranslation()
   const { hostedCluster } = useContext(ClusterContext)
-  const { waitForAll } = useSharedRecoil()
-  const { agentMachinesState, clusterImageSetsState, configMapsState, nodePoolsState } = useSharedAtoms()
-  const [nodePools, clusterImageSets] = useRecoilValue(
-    waitForAll([nodePoolsState, clusterImageSetsState, agentMachinesState, configMapsState])
-  )
+  const { clusterImageSetsState, nodePoolsState } = useSharedAtoms()
+  const nodePools = useRecoilValue(nodePoolsState)
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
 
   const clusterNodePools = nodePools.filter(
     (np) =>
