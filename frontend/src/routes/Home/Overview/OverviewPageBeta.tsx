@@ -16,19 +16,16 @@ import {
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useMemo, useState } from 'react'
 import { Link, useRouteMatch } from 'react-router-dom'
-import {
-  GetArgoApplicationsHashSet,
-  GetDiscoveredOCPApps,
-  GetOpenShiftAppResourceMaps,
-} from '../../../components/GetDiscoveredOCPApps'
+import { GetDiscoveredOCPApps } from '../../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { Application, ApplicationSet, Cluster } from '../../../resources'
+import { ArgoApplication, Cluster } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
+import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
   CriticalRiskIcon,
@@ -39,8 +36,7 @@ import {
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   getAddonHealth,
-  getApplicationList,
-  getAppSets,
+  getAppCount,
   getClustersSummary,
   getClusterStatus,
   getComplianceData,
@@ -94,9 +90,9 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const policies = usePolicies()
   const allAddons = useClusterAddons()
-  const [apps] = useRecoilState(applicationsState)
+  const [applications] = useRecoilState(applicationsState)
   const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApps] = useRecoilState(argoApplicationsState)
+  const [argoApplications] = useRecoilState(argoApplicationsState)
   const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
   const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
   const [helmReleases] = useRecoilState(helmReleaseState)
@@ -108,6 +104,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(true)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
+  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   const grafanaRoute = useMemo(() => {
@@ -147,31 +144,48 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   )
   const filteredClusterNames = useMemo(() => filteredClusters.map((cluster) => cluster.name), [filteredClusters])
 
-  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, filteredClusters)
-  const filteredOCPApps: Record<string, any> = useMemo(
-    () => GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet),
-    [ocpApps, helmReleases, argoApplicationsHashSet]
+  const argoApps: ArgoApplication[] = useMemo(
+    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, allClusters),
+    [allClusters, argoApplications]
+  )
+  const discoveredArgoApps: ArgoApplication[] = useMemo(
+    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
+    [discoveredApplications]
+  )
+  const ocpAppResources: any[] = useMemo(
+    () => parseOcpAppResources(ocpApps, helmReleases, argoApplicationsHashSet),
+    [argoApplicationsHashSet, helmReleases, ocpApps]
   )
 
-  const appSets: ApplicationSet[] = useMemo(() => {
-    return getAppSets(applicationSets, placementDecisions, filteredClusterNames)
-  }, [applicationSets, placementDecisions, filteredClusterNames])
-
-  const applicationList: Application[] = useMemo(() => {
-    return getApplicationList(apps, argoApps, allClusters, placementDecisions, subscriptions, filteredClusterNames)
-  }, [apps, argoApps, allClusters, placementDecisions, subscriptions, filteredClusterNames])
+  const applicationCount = useMemo(() => {
+    return getAppCount(
+      applications,
+      applicationSets,
+      argoApps,
+      discoveredArgoApps,
+      ocpAppResources,
+      filteredClusterNames,
+      argoApplications,
+      allClusters,
+      placementDecisions,
+      subscriptions
+    )
+  }, [
+    applications,
+    applicationSets,
+    argoApps,
+    discoveredArgoApps,
+    ocpAppResources,
+    filteredClusterNames,
+    argoApplications,
+    allClusters,
+    placementDecisions,
+    subscriptions,
+  ])
 
   const clustersSummary = useMemo(() => {
-    return getClustersSummary(
-      filteredClusters,
-      filteredClusterNames,
-      managedClusterInfos,
-      applicationList,
-      appSets,
-      filteredOCPApps,
-      t
-    )
-  }, [applicationList, appSets, filteredClusters, filteredClusterNames, filteredOCPApps, managedClusterInfos, t])
+    return getClustersSummary(filteredClusters, filteredClusterNames, managedClusterInfos, applicationCount, t)
+  }, [applicationCount, filteredClusters, filteredClusterNames, managedClusterInfos, t])
 
   const {
     policyReportCriticalCount,

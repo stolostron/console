@@ -4,9 +4,6 @@ import { Cluster, ClusterStatus } from '../../../resources'
 import { Provider } from '../../../ui-components'
 import {
   getAddonHealth,
-  getApplicationCount,
-  getApplicationList,
-  getAppSets,
   getClustersSummary,
   getClusterStatus,
   getComplianceData,
@@ -17,13 +14,10 @@ import {
   parseOperatorMetric,
 } from './overviewDataFunctions'
 import {
-  appSets,
-  filteredOCPApps,
   managedClusterInfos,
   mockAlertMetrics,
   mockOperatorMetrics,
   parsedAddons,
-  placementDecisions,
   policies,
   policyReports,
 } from './sharedmocks'
@@ -127,21 +121,6 @@ test('Correctly returns getNodeCount', () => {
   expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns getAppSets', () => {
-  const result = getAppSets(appSets, placementDecisions, filteredClusterNames)
-  expect(result).toMatchSnapshot()
-})
-
-test('Correctly returns getApplicationList', () => {
-  const result = getApplicationList([], [], clusterData, placementDecisions, [], filteredClusterNames)
-  expect(result).toMatchSnapshot()
-})
-
-test('Correctly returns getApplicationCount', () => {
-  const result = getApplicationCount(filteredClusterNames, appSets, [], filteredOCPApps)
-  expect(result).toMatchSnapshot()
-})
-
 test('Correctly returns getPolicyReport', () => {
   const result = getPolicyReport(policyReports, clusterData)
   expect(result).toMatchSnapshot()
@@ -149,15 +128,7 @@ test('Correctly returns getPolicyReport', () => {
 
 test('Correctly returns getClustersSummary', () => {
   const t = i18next.t.bind(i18next)
-  const result = getClustersSummary(
-    clusterData,
-    filteredClusterNames,
-    managedClusterInfos,
-    [],
-    appSets,
-    filteredOCPApps,
-    t
-  )
+  const result = getClustersSummary(clusterData, filteredClusterNames, managedClusterInfos, 4, t)
   expect(result).toMatchSnapshot()
 })
 

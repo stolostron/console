@@ -65,67 +65,39 @@ export function getNodeCount(managedClusterInfos: ManagedClusterInfo[], filtered
   return count
 }
 
-export function getAppSets(
+export function getAppCount(
+  applications: Application[],
   applicationSets: ApplicationSet[],
-  placementDecisions: PlacementDecision[],
-  filteredClusterNames: string[]
-) {
-  const filteredAppSets = applicationSets.filter((appSet) => {
-    // Get the Placement name so we can find PlacementDecision
-    const placementName =
-      appSet.spec.generators?.[0].clusterDecisionResource?.labelSelector?.matchLabels?.[
-        'cluster.open-cluster-management.io/placement'
-      ] ?? ''
-    // filter for the correct PlacementDecision which lists the clusters that match the decision parameters.
-    const decision = placementDecisions.filter((decision) => {
-      const owner = decision.metadata.ownerReferences
-      return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
-    })[0]
-    // determine whether the matched decision has placed an appSet in the selected cluster.
-
-    const clusterMatch =
-      decision?.status?.decisions.findIndex((d) => filteredClusterNames.includes(d.clusterName)) ?? -1
-    return clusterMatch > -1
-  })
-  return filteredAppSets
-}
-
-export function getApplicationList(
-  apps: Application[],
   argoApps: ArgoApplication[],
+  discoveredApps: ArgoApplication[],
+  ocpAppResources: any[],
+  filteredClusterNames: string[],
+  argoApplications: ArgoApplication[],
   allClusters: Cluster[],
   placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[],
-  filteredClusterNames: string[]
+  subscriptions: Subscription[]
 ) {
-  const appList: Application[] = []
-  const localCluster = allClusters.find((cls) => cls.name === 'local-cluster')
-  apps.forEach((application) => {
-    const clusterList = getClusterList(
-      application,
-      argoApps,
-      placementDecisions,
-      subscriptions,
-      localCluster,
-      allClusters
-    )
-    if (clusterList.filter((cluster) => filteredClusterNames.includes(cluster))) {
-      appList.push(application)
-    }
-  })
-  return appList
-}
+  const apps = [...applications, ...applicationSets, ...argoApps, ...discoveredApps, ...ocpAppResources]
+  // If no cluster labels are selected we default to the filteredClusterNames containing all cluster names
+  if (allClusters.length > filteredClusterNames.length) {
+    // filter apps by clusters from label selection.
+    return apps.filter((app) => {
+      const localCluster = allClusters.find((cls) => cls.name === 'local-cluster')
+      const clusterList = getClusterList(
+        app,
+        argoApplications,
+        placementDecisions,
+        subscriptions,
+        localCluster,
+        allClusters
+      )
 
-export function getApplicationCount(
-  filteredClusterNames: string[],
-  appSets: ApplicationSet[],
-  applicationList: Application[],
-  filteredOCPApps: Record<string, any>
-) {
-  const ocpAppsOnSelectedCluster = Object.values(filteredOCPApps).filter((ocpApp) =>
-    filteredClusterNames.includes(ocpApp.cluster)
-  )
-  return [...ocpAppsOnSelectedCluster, ...applicationList, ...appSets].length
+      return filteredClusterNames.some((value) => {
+        return clusterList.includes(value)
+      })
+    }).length
+  }
+  return apps.length
 }
 
 export function getPolicyReport(policyReports: PolicyReport[], filteredClusters: Cluster[]) {
@@ -171,9 +143,7 @@ export function getClustersSummary(
   filteredClusters: Cluster[],
   filteredClusterNames: string[],
   managedClusterInfos: ManagedClusterInfo[],
-  applicationList: Application[],
-  appSets: ApplicationSet[],
-  filteredOCPApps: Record<string, any>,
+  applicationCount: number,
   t: TFunction<string, undefined>
 ) {
   const kubernetesTypes = new Set()
@@ -183,7 +153,6 @@ export function getClustersSummary(
     regions.add(curr.labels?.region ?? 'Other')
   })
   const nodeCount = getNodeCount(managedClusterInfos, filteredClusterNames)
-  const appsCount = getApplicationCount(filteredClusterNames, appSets, applicationList, filteredOCPApps)
 
   return [
     {
@@ -197,7 +166,7 @@ export function getClustersSummary(
       id: 'apps-count',
       title: t('Applications'),
       icon: undefined,
-      count: appsCount,
+      count: applicationCount,
       link: NavigationPath.applications, // *Apps table has cluster name filter - select the matches.
     },
     {
