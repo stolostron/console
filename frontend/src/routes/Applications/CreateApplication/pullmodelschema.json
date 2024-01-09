@@ -1,0 +1,128 @@
+[
+  {
+    "type": "ApplicationSet",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "const": "ApplicationSet" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
+            },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "generators": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "clusterDecisionResource": {
+                    "type": "object",
+                    "properties": {
+                      "configMapRef": { "const": "acm-placement" },
+                      "requeueAfterSeconds": { "type": "number" },
+                      "labelSelector": {
+                        "type": "object",
+                        "properties": {
+                          "matchLabels": {
+                            "type": "object",
+                            "properties": {
+                              "cluster.open-cluster-management.io/placement": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["cluster.open-cluster-management.io/placement"]
+                          }
+                        },
+                        "required": ["matchLabels"]
+                      }
+                    },
+                    "required": ["configMapRef", "labelSelector", "requeueAfterSeconds"]
+                  }
+                },
+                "required": ["clusterDecisionResource"]
+              }
+            },
+            "template": {
+              "type": "object",
+              "properties": {
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "annotations": {
+                      "type": "object",
+                      "properties": {
+                        "apps.open-cluster-management.io/ocm-managed-cluster": { "type": "string" },
+                        "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": { "type": "string" },
+                        "argocd.argoproj.io/skip-reconcile": { "type": "string" }
+                      },
+                      "required": [
+                        "apps.open-cluster-management.io/ocm-managed-cluster",
+                        "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace",
+                        "argocd.argoproj.io/skip-reconcile"
+                      ]
+                    },
+                    "labels": {
+                      "type": "object",
+                      "properties": {
+                        "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["name", "annotations"]
+                },
+                "spec": {
+                  "type": "object",
+                  "properties": {
+                    "project": { "type": "string" },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": { "type": "string" },
+                        "server": { "type": "string" }
+                      }
+                    },
+                    "sources": { "type": "array" }
+                  },
+                  "required": ["project", "destination"]
+                }
+              },
+              "required": ["metadata", "spec"]
+            }
+          },
+          "required": ["generators", "template"]
+        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "Placement",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": { "type": "string" },
+        "kind": { "type": "string", "const": "Placement" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": { "validateName": true },
+            "namespace": { "validateName": true }
+          },
+          "required": ["name", "namespace"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata"]
+    }
+  }
+]

@@ -89,12 +89,16 @@ export function EditArgoApplicationSet() {
     : moment.tz.names()
 
   const [existingResources, setExistingResources] = useState<IResource[]>()
+  const [pullModel, setPullModel] = useState<boolean>(false)
 
   useEffect(() => {
     const applicationSet = applicationSets.find(
       (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
     )
 
+    if (applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']) {
+      setPullModel(true)
+    }
     const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
     const sources = get(applicationSet, 'spec.template.spec.sources')?.map(
       (source: { path: string; chart: string }) => {
@@ -192,6 +196,7 @@ export function EditArgoApplicationSet() {
       }}
       timeZones={timeZones}
       resources={existingResources}
+      isPullModel={pullModel}
     />
   )
 }

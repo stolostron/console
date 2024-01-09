@@ -20,11 +20,11 @@ import {
   IResource,
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
-import schema from './schema.json'
+import schema from './pullmodelschema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 
-export default function CreateArgoApplicationSetPage() {
-  return <CreateApplicationArgo />
+export default function CreateArgoApplicationSetPullModelPage() {
+  return <CreateApplicationArgoPullModel />
 }
 
 export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
@@ -58,7 +58,7 @@ function getWizardSyncEditor() {
   return <WizardSyncEditor />
 }
 
-export function CreateApplicationArgo() {
+export function CreateApplicationArgoPullModel() {
   const { t } = useTranslation()
   const {
     channelsState,
@@ -105,7 +105,7 @@ export function CreateApplicationArgo() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - push model') },
+        { text: t('Create application set - pull model') },
       ]}
       clusters={managedClusters}
       clusterSets={clusterSets}
@@ -140,6 +140,7 @@ export function CreateApplicationArgo() {
         })
       }}
       timeZones={timeZones}
+      isPullModel={true}
     />
   )
 }

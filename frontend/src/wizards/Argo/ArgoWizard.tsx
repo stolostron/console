@@ -49,6 +49,7 @@ import { get } from 'lodash'
 import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
+import { AcmAlert } from '../../ui-components'
 
 export interface Channel {
   metadata?: {
@@ -139,6 +140,7 @@ export interface ArgoWizardProps {
   ) => Promise<unknown>
   resources?: IResource[]
   yamlEditor?: () => ReactNode
+  isPullModel?: boolean
 }
 
 function onlyUnique(value: any, index: any, self: string | any[]) {
@@ -146,7 +148,7 @@ function onlyUnique(value: any, index: any, self: string | any[]) {
 }
 
 export function ArgoWizard(props: ArgoWizardProps) {
-  const { resources } = props
+  const { resources, isPullModel = false } = props
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
@@ -278,53 +280,130 @@ export function ArgoWizard(props: ArgoWizardProps) {
     contentAriaLabel: t('Argo application content'),
   })
 
-  const defaultData = props.resources ?? [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'ApplicationSet',
-      metadata: { name: '', namespace: '' },
-      spec: {
-        generators: [
+  let defaultData
+
+  if (resources && resources.length > 0) {
+    defaultData = resources
+  } else {
+    defaultData = isPullModel
+      ? [
           {
-            clusterDecisionResource: {
-              configMapRef: 'acm-placement',
-              labelSelector: {
-                matchLabels: {
-                  'cluster.open-cluster-management.io/placement': '-placement',
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'ApplicationSet',
+            metadata: { name: '', namespace: '' },
+            spec: {
+              generators: [
+                {
+                  clusterDecisionResource: {
+                    configMapRef: 'acm-placement',
+                    labelSelector: {
+                      matchLabels: {
+                        'cluster.open-cluster-management.io/placement': '-placement',
+                      },
+                    },
+                    requeueAfterSeconds: 180,
+                  },
+                },
+              ],
+              template: {
+                metadata: {
+                  annotations: {
+                    'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                    'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                    'argocd.argoproj.io/skip-reconcile': 'true',
+                  },
+                  name: '-{{name}}',
+                  labels: {
+                    'velero.io/exclude-from-backup': 'true',
+                    'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+                  },
+                },
+                spec: {
+                  project: 'default',
+                  sources: [],
+                  destination: { namespace: '', server: '{{server}}' },
+                  syncPolicy: {
+                    automated: {
+                      selfHeal: true,
+                      prune: true,
+                    },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                  },
                 },
               },
-              requeueAfterSeconds: 180,
             },
           },
-        ],
-        template: {
-          metadata: {
-            name: '-{{name}}',
-            labels: {
-              'velero.io/exclude-from-backup': 'true',
+          {
+            ...PlacementType,
+            metadata: { name: '', namespace: '' },
+            spec: {
+              predicates: [
+                {
+                  // ArgoCD pull model doesn't support local-cluster
+                  requiredClusterSelector: {
+                    labelSelector: {
+                      matchExpressions: [
+                        {
+                          key: 'name',
+                          operator: 'NotIn',
+                          values: ['local-cluster'],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
             },
           },
-          spec: {
-            project: 'default',
-            sources: [],
-            destination: { namespace: '', server: '{{server}}' },
-            syncPolicy: {
-              automated: {
-                selfHeal: true,
-                prune: true,
+        ]
+      : [
+          {
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'ApplicationSet',
+            metadata: { name: '', namespace: '' },
+            spec: {
+              generators: [
+                {
+                  clusterDecisionResource: {
+                    configMapRef: 'acm-placement',
+                    labelSelector: {
+                      matchLabels: {
+                        'cluster.open-cluster-management.io/placement': '-placement',
+                      },
+                    },
+                    requeueAfterSeconds: 180,
+                  },
+                },
+              ],
+              template: {
+                metadata: {
+                  name: '-{{name}}',
+                  labels: {
+                    'velero.io/exclude-from-backup': 'true',
+                  },
+                },
+                spec: {
+                  project: 'default',
+                  sources: [],
+                  destination: { namespace: '', server: '{{server}}' },
+                  syncPolicy: {
+                    automated: {
+                      selfHeal: true,
+                      prune: true,
+                    },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                  },
+                },
               },
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
             },
           },
-        },
-      },
-    },
-    {
-      ...PlacementType,
-      metadata: { name: '', namespace: '' },
-      spec: {},
-    },
-  ]
+          {
+            ...PlacementType,
+            metadata: { name: '', namespace: '' },
+            spec: {},
+          },
+        ]
+  }
 
   return (
     <Fragment>
@@ -343,10 +422,18 @@ export function ArgoWizard(props: ArgoWizardProps) {
         id="application-set-wizard"
         wizardStrings={translatedWizardStrings}
         breadcrumb={props.breadcrumb}
-        title={props.resources ? t('Edit application set') : t('Create application set')}
+        title={
+          resources
+            ? isPullModel
+              ? t('Edit application set - pull model')
+              : t('Edit application set - push model')
+            : isPullModel
+            ? t('Create application set - pull model')
+            : t('Create application set - push model')
+        }
         yamlEditor={props.yamlEditor}
         defaultData={defaultData}
-        editMode={props.resources ? EditMode.Edit : EditMode.Create}
+        editMode={resources ? EditMode.Edit : EditMode.Create}
         onCancel={props.onCancel}
         onSubmit={props.onSubmit}
       >
@@ -372,6 +459,17 @@ export function ArgoWizard(props: ArgoWizardProps) {
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <GitOpsOperatorAlert showAlert={showAlert} />
+            {isPullModel && !resources && (
+              <AcmAlert
+                isInline
+                noClose
+                variant="info"
+                title={t('Operator required')}
+                message={t(
+                  'OpenShift GitOps Operator is required on the managed clusters to create ApplicationSets pull model type. Make sure OpenShift GitOps Operator is installed on all managed clusters you are targeting.'
+                )}
+              />
+            )}
             <Section label={t('General')}>
               <WizTextInput
                 path="metadata.name"
@@ -587,6 +685,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             clusterSets={filteredClusterSets}
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
+            isPullModel={isPullModel}
           />
         </Step>
       </WizardPage>
@@ -740,6 +839,7 @@ function ArgoWizardPlacementSection(props: {
   clusterSetBindings: IClusterSetBinding[]
   clusters: IResource[]
   createClusterSetCallback?: () => void
+  isPullModel?: boolean
 }) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
@@ -760,6 +860,7 @@ function ArgoWizardPlacementSection(props: {
       )
       .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
   const { update } = useData()
+  const { isPullModel = false } = props
   return (
     <Section label={t('Placement')}>
       {(editMode === EditMode.Create || !hasPlacement) && (
@@ -774,12 +875,38 @@ function ArgoWizardPlacementSection(props: {
                 isSelected={hasPlacement}
                 onClick={() => {
                   const newResources = resources.filter((resource) => resource.kind !== PlacementKind)
-                  newResources.push({
-                    apiVersion: PlacementApiVersion,
-                    kind: PlacementKind,
-                    metadata: { name: '', namespace: '' },
-                    spec: {},
-                  } as IResource)
+                  newResources.push(
+                    isPullModel
+                      ? ({
+                          apiVersion: PlacementApiVersion,
+                          kind: PlacementKind,
+                          metadata: { name: '', namespace: '' },
+                          spec: {
+                            predicates: [
+                              {
+                                // ArgoCD pull model doesn't support local-cluster
+                                requiredClusterSelector: {
+                                  labelSelector: {
+                                    matchExpressions: [
+                                      {
+                                        key: 'name',
+                                        operator: 'NotIn',
+                                        values: ['local-cluster'],
+                                      },
+                                    ],
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        } as IResource)
+                      : ({
+                          apiVersion: PlacementApiVersion,
+                          kind: PlacementKind,
+                          metadata: { name: '', namespace: '' },
+                          spec: {},
+                        } as IResource)
+                  )
                   update(newResources)
                 }}
               />

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { PageSection, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
@@ -985,9 +985,13 @@ export default function ApplicationsOverview() {
         tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
         id={'application-create'}
         onSelect={(id) => {
-          id === 'create-argo'
-            ? history.push(NavigationPath.createApplicationArgo)
-            : history.push(NavigationPath.createApplicationSubscription)
+          if (id === 'create-argo') {
+            history.push(NavigationPath.createApplicationArgo)
+          } else if (id === 'create-argo-pull-model') {
+            history.push(NavigationPath.createApplicationArgoPullModel)
+          } else {
+            history.push(NavigationPath.createApplicationSubscription)
+          }
         }}
         text={t('Create application')}
         dropdownItems={[
@@ -997,8 +1001,12 @@ export default function ApplicationsOverview() {
             text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
           },
           {
+            id: 'create-argo-pull-model',
+            text: t('ArgoCD ApplicationSet - Pull model'),
+          },
+          {
             id: 'create-argo',
-            text: t('Application set'),
+            text: t('ArgoCD ApplicationSet - Push model'),
           },
           {
             id: 'create-subscription',
@@ -1015,6 +1023,77 @@ export default function ApplicationsOverview() {
     [canCreateApplication, history, t]
   )
 
+  const compareAppTypesLink = useCallback(
+    (isEmptyState: boolean) => (
+      <Popover
+        headerContent="Compare application types"
+        bodyContent={
+          <>
+            <div>
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                <Text>{'ArgoCD ApplicationSet - Pull model'}</Text>
+              </span>
+              <span>
+                <Text>
+                  {
+                    'ApplicationSet applicaiton where ArgoCD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the applicaiton using the received applicaiton resource.'
+                  }
+                </Text>
+              </span>
+            </div>
+            <div style={{ paddingTop: '10px' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                <Text>{'ArgoCD ApplicationSet - Push model'}</Text>
+              </span>
+              <span>
+                <Text>
+                  {
+                    'ApplicationSet applicaiton where ArgoCD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
+                  }
+                </Text>
+              </span>
+            </div>
+            <div style={{ paddingTop: '10px' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                <Text>{'Subscription'}</Text>
+              </span>
+              <span>
+                <Text>
+                  {
+                    'Subscription applicaiton where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
+                  }
+                </Text>
+              </span>
+            </div>
+          </>
+        }
+        position="bottom"
+        hasAutoWidth
+      >
+        <Text
+          component={TextVariants.a}
+          isVisitedLink
+          style={
+            isEmptyState
+              ? {
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  paddingTop: '20px',
+                }
+              : {
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  paddingLeft: '20px',
+                }
+          }
+        >
+          {t('Compare application types')}
+        </Text>
+      </Popover>
+    ),
+    [t]
+  )
+
   return (
     <PageSection>
       <DeleteResourceModal {...modalProps} />
@@ -1027,7 +1106,12 @@ export default function ApplicationsOverview() {
         items={tableItems}
         filters={filters}
         initialFilters={cluster ? { ['cluster']: [cluster] } : undefined}
-        customTableAction={appCreationButton}
+        customTableAction={
+          <>
+            {appCreationButton}
+            {compareAppTypesLink(false)}
+          </>
+        }
         emptyState={
           <AcmEmptyState
             key="appOverviewEmptyState"
@@ -1043,6 +1127,7 @@ export default function ApplicationsOverview() {
             action={
               <>
                 {appCreationButton}
+                <div>{compareAppTypesLink(true)}</div>
                 <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
               </>
             }

@@ -51,8 +51,8 @@ import {
   SecretKind,
 } from '../../../resources'
 import { gitOpsOperators } from '../Application.sharedmocks'
-import CreateApplicationArgo from './CreateApplicationArgo'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
+import { CreateApplicationArgoPullModel } from './CreateApplicationArgoPullModel'
 
 const gitOpsCluster: GitOpsCluster = {
   apiVersion: GitOpsClusterApiVersion,
@@ -170,8 +170,16 @@ const argoAppSetGit: ApplicationSet = {
     ],
     template: {
       metadata: {
+        annotations: {
+          'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+          'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+          'argocd.argoproj.io/skip-reconcile': 'true',
+        },
         name: 'application-01-{{name}}',
-        labels: { 'velero.io/exclude-from-backup': 'true' },
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+        },
       },
       spec: {
         project: 'default',
@@ -222,8 +230,16 @@ const argoAppSetHelm: ApplicationSet = {
 
     template: {
       metadata: {
+        annotations: {
+          'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+          'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+          'argocd.argoproj.io/skip-reconcile': 'true',
+        },
         name: 'helm-application-01-{{name}}',
-        labels: { 'velero.io/exclude-from-backup': 'true' },
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+        },
       },
       spec: {
         project: 'default',
@@ -268,9 +284,25 @@ const placementGit: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'NotIn',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
+
 const placementHelm: Placement = {
   apiVersion: PlacementApiVersionBeta,
   kind: PlacementKind,
@@ -279,6 +311,21 @@ const placementHelm: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'NotIn',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
@@ -302,8 +349,8 @@ describe('Create Argo Application Set', () => {
           snapshot.set(subscriptionOperatorsState, gitOpsOperators)
         }}
       >
-        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
-          <Route component={() => <CreateApplicationArgo />} />
+        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>
+          <Route component={() => <CreateApplicationArgoPullModel />} />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -428,6 +475,6 @@ describe('Create Argo Application Set', () => {
     )
 
     await new Promise((resolve) => setTimeout(resolve, 500))
-    await waitForText('Edit application set - push model')
+    await waitForText('Edit application set - pull model')
   })
 })

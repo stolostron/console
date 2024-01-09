@@ -5,6 +5,7 @@ import ApplicationsDetailsPage from './ApplicationDetails/ApplicationDetails'
 import ApplicationsPage from './ApplicationsPage'
 import { CreateApplicationArgo } from './CreateApplication/CreateApplicationArgo'
 import { EditArgoApplicationSet } from './CreateApplication/EditArgoApplicationSet'
+import { CreateApplicationArgoPullModel } from './CreateApplication/CreateApplicationArgoPullModel'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 export default function Applications() {
@@ -12,6 +13,7 @@ export default function Applications() {
     <Switch>
       <Route path={NavigationPath.createApplicationArgo} component={CreateApplicationArgo} />
       <Route path={NavigationPath.editApplicationArgo} component={EditArgoApplicationSet} />
+      <Route path={NavigationPath.createApplicationArgoPullModel} component={CreateApplicationArgoPullModel} />
       <Route exact path={NavigationPath.createApplicationSubscription} component={CreateSubscriptionApplicationPage} />
       <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
       <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
