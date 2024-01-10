@@ -27,8 +27,10 @@ import {
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
   Channel,
+  Cluster,
   DiscoveredArgoApplicationDefinition,
   getApiVersionResourceGroup,
+  HelmRelease,
   IResource,
   OCPAppResource,
   Subscription,
@@ -231,6 +233,123 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
   }
 }
 
+export function parseArgoApplications(
+  argoApplications: ArgoApplication[],
+  setArgoApplicationsHashSet: (value: React.SetStateAction<Set<string>>) => void,
+  managedClusters: Cluster[]
+) {
+  return argoApplications.filter((argoApp) => {
+    const resources = argoApp.status ? argoApp.status.resources : undefined
+    const definedNamespace = get(resources, '[0].namespace')
+
+    // cache Argo app signature for filtering OCP apps later
+    setArgoApplicationsHashSet(
+      (prev) =>
+        new Set(
+          prev.add(
+            `${argoApp.metadata.name}-${
+              definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+            }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}`
+          )
+        )
+    )
+    const isChildOfAppset =
+      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+    if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
+      return true
+    }
+    return false
+  })
+}
+
+export function parseDiscoveredApplications(
+  discoveredApplications: ArgoApplication[],
+  setArgoApplicationsHashSet: (value: React.SetStateAction<Set<string>>) => void
+) {
+  const resultingTableItems: ArgoApplication[] = []
+
+  discoveredApplications.forEach((remoteArgoApp: any) => {
+    setArgoApplicationsHashSet(
+      (prev) =>
+        new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
+    )
+    if (!remoteArgoApp._hostingResource) {
+      // Skip apps created by Argo pull model
+      resultingTableItems.push({
+        apiVersion: ArgoApplicationApiVersion,
+        kind: ArgoApplicationKind,
+        metadata: {
+          name: remoteArgoApp.name,
+          namespace: remoteArgoApp.namespace,
+          creationTimestamp: remoteArgoApp.created,
+        },
+        spec: {
+          destination: {
+            namespace: remoteArgoApp.destinationNamespace,
+            name: remoteArgoApp.destinationName,
+            server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
+          },
+          source: {
+            path: remoteArgoApp.path,
+            repoURL: remoteArgoApp.repoURL,
+            targetRevision: remoteArgoApp.targetRevision,
+            chart: remoteArgoApp.chart,
+          },
+        },
+        status: {
+          cluster: remoteArgoApp.cluster,
+        },
+      } as ArgoApplication)
+    }
+  })
+
+  return resultingTableItems
+}
+
+export function parseOcpAppResources(
+  discoveredOCPAppResources: OCPAppResource[],
+  helmReleases: HelmRelease[],
+  argoApplicationsHashSet: Set<string>
+) {
+  const openShiftAppResourceMaps = GetOpenShiftAppResourceMaps(
+    discoveredOCPAppResources,
+    helmReleases,
+    argoApplicationsHashSet
+  )
+  const transformedData: any[] = []
+
+  Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+    let labelIdx
+    let i
+    for (i = 0; i < labelArr.length; i++) {
+      labelIdx = value.label?.indexOf(labelArr[i])
+      if (labelIdx > -1) {
+        break
+      }
+    }
+    labelIdx += labelArr[i].length
+
+    const semicolon = value.label?.indexOf(';', labelIdx)
+    const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+    const resourceName = value.name
+    transformedData.push({
+      apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
+      kind: value.kind,
+      label: value.label,
+      metadata: {
+        name: appLabel,
+        namespace: value.namespace,
+        creationTimestamp: value.created,
+      },
+      status: {
+        cluster: value.cluster,
+        resourceName,
+      },
+    } as OCPAppResource)
+  })
+  return transformedData
+}
+
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
@@ -358,147 +477,39 @@ export default function ApplicationsOverview() {
     [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
   )
 
-  // Combine all application types
-  const applicationTableItems = useMemo(
-    () => applications.map(generateTransformData),
-    [applications, generateTransformData]
+  const getArgoApplications = useMemo(
+    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, managedClusters),
+    [argoApplications, managedClusters]
   )
 
-  const applicationSetsTableItems = useMemo(
-    () => applicationSets.map(generateTransformData),
-    [applicationSets, generateTransformData]
+  const getDiscoveredApplications = useMemo(
+    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
+    [discoveredApplications, setArgoApplicationsHashSet]
   )
 
-  const argoApplicationTableItems = useMemo(
-    () =>
-      argoApplications
-        .filter((argoApp) => {
-          const resources = argoApp.status ? argoApp.status.resources : undefined
-          const definedNamespace = get(resources, '[0].namespace')
-
-          // cache Argo app signature for filtering OCP apps later
-          setArgoApplicationsHashSet(
-            (prev) =>
-              new Set(
-                prev.add(
-                  `${argoApp.metadata.name}-${
-                    definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
-                  }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}`
-                )
-              )
-          )
-          const isChildOfAppset =
-            argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-          if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
-            return true
-          }
-          return false
-        })
-        .map(generateTransformData),
-    [argoApplications, generateTransformData, managedClusters]
+  const getOcpAppResources = useMemo(
+    () => parseOcpAppResources(discoveredOCPAppResources, helmReleases, argoApplicationsHashSet),
+    [discoveredOCPAppResources, helmReleases, argoApplicationsHashSet]
   )
-
-  const discoveredApplicationsTableItems = useMemo(() => {
-    const resultingTableItems: any = []
-
-    discoveredApplications.forEach((remoteArgoApp: any) => {
-      setArgoApplicationsHashSet(
-        (prev) =>
-          new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
-      )
-      if (!remoteArgoApp._hostingResource) {
-        // Skip apps created by Argo pull model
-        resultingTableItems.push(
-          generateTransformData({
-            apiVersion: ArgoApplicationApiVersion,
-            kind: ArgoApplicationKind,
-            metadata: {
-              name: remoteArgoApp.name,
-              namespace: remoteArgoApp.namespace,
-              creationTimestamp: remoteArgoApp.created,
-            },
-            spec: {
-              destination: {
-                namespace: remoteArgoApp.destinationNamespace,
-                name: remoteArgoApp.destinationName,
-                server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
-              },
-              source: {
-                path: remoteArgoApp.path,
-                repoURL: remoteArgoApp.repoURL,
-                targetRevision: remoteArgoApp.targetRevision,
-                chart: remoteArgoApp.chart,
-              },
-            },
-            status: {
-              cluster: remoteArgoApp.cluster,
-            },
-          } as ArgoApplication)
-        )
-      }
-    })
-
-    return resultingTableItems
-  }, [discoveredApplications, generateTransformData])
-
-  const ocpAppResourceTableItems = useMemo(() => {
-    const openShiftAppResourceMaps = GetOpenShiftAppResourceMaps(
-      discoveredOCPAppResources,
-      helmReleases,
-      argoApplicationsHashSet
-    )
-    const transformedData: any[] = []
-
-    Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
-      let labelIdx
-      let i
-      for (i = 0; i < labelArr.length; i++) {
-        labelIdx = value.label?.indexOf(labelArr[i])
-        if (labelIdx > -1) {
-          break
-        }
-      }
-      labelIdx += labelArr[i].length
-
-      const semicolon = value.label?.indexOf(';', labelIdx)
-      const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
-      const resourceName = value.name
-      transformedData.push(
-        generateTransformData({
-          apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
-          kind: value.kind,
-          label: value.label,
-          metadata: {
-            name: appLabel,
-            namespace: value.namespace,
-            creationTimestamp: value.created,
-          },
-          status: {
-            cluster: value.cluster,
-            resourceName,
-          },
-        } as OCPAppResource)
-      )
-    })
-    return transformedData
-  }, [discoveredOCPAppResources, helmReleases, generateTransformData, argoApplicationsHashSet])
 
   const tableItems: IResource[] = useMemo(
     () => [
-      ...applicationTableItems,
-      ...applicationSetsTableItems,
-      ...argoApplicationTableItems,
-      ...discoveredApplicationsTableItems,
-      ...ocpAppResourceTableItems,
+      ...applications.map((app) => generateTransformData(app)),
+      ...applicationSets.map((app) => generateTransformData(app)),
+      ...getArgoApplications.map((app) => generateTransformData(app)),
+      ...getDiscoveredApplications.map((app) => generateTransformData(app)),
+      ...getOcpAppResources.map((app) => generateTransformData(app)),
     ],
     [
-      applicationSetsTableItems,
-      applicationTableItems,
-      argoApplicationTableItems,
-      discoveredApplicationsTableItems,
-      ocpAppResourceTableItems,
+      applications,
+      applicationSets,
+      getArgoApplications,
+      getDiscoveredApplications,
+      getOcpAppResources,
+      generateTransformData,
     ]
   )
+
   const keyFn = useCallback(
     (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
     []
