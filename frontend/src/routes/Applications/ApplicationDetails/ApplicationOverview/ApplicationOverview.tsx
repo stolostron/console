@@ -9,17 +9,7 @@ import {
   ListItems,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-  ButtonVariant,
-  Card,
-  CardBody,
-  Label,
-  PageSection,
-  Skeleton,
-  Spinner,
-  Text,
-  Tooltip,
-} from '@patternfly/react-core'
+import { ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Text, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import {
@@ -58,6 +48,7 @@ import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { useRecoilState } from '../../../../shared-recoil'
 import { PluginContext } from '../../../../lib/PluginContext'
+import LabelWithPopover from '../../components/LabelWithPopover'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltip = (t: TFunction) =>
@@ -93,6 +84,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   let isOCPApp = false
   let isFluxApp = false
   let isSubscription = false
+  let isPullModel = false
   let subsList = []
 
   useEffect(() => {
@@ -127,8 +119,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     isAppSet = applicationData.application?.isAppSet
     isOCPApp = applicationData.application?.isOCPApp
     isFluxApp = applicationData.application?.isFluxApp
-
     isSubscription = !isArgoApp && !isAppSet && !isOCPApp && !isFluxApp
+
+    if (isAppSet) {
+      if (
+        applicationData.application?.app?.spec?.tempalte?.metadata?.annotations?.[
+          'apps.open-cluster-management.io/ocm-managed-cluster'
+        ]
+      ) {
+        isPullModel = true
+      }
+    }
     const { name, namespace } = applicationData.application.metadata
     const applicationResource = applicationData.application.app
 
@@ -149,6 +150,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
       const cluster = applicationData.application?.app.cluster.name
       leftItems = [
         { key: t('Name'), value: name },
+        {
+          key: t('Type'),
+          value: <Fragment>{getApplicationType(isArgoApp, isAppSet, isOCPApp, isFluxApp, isPullModel, t)}</Fragment>,
+        },
         { key: t('Namespace'), value: namespace },
       ]
       rightItems = [
@@ -185,8 +190,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             <Fragment>
               <div className="app-name-container">
                 <div className="app-name">{name}</div>
-                {createArgoAppIcon(isArgoApp, isAppSet, t)}
               </div>
+            </Fragment>
+          ),
+        },
+        {
+          key: t('Type'),
+          value: (
+            <Fragment>
+              {getApplicationType(isArgoApp, isAppSet, isOCPApp, isFluxApp, isPullModel, t)}
+              <span style={{ paddingLeft: '10px' }} />
+              {createArgoAppIcon(isArgoApp, isAppSet, t)}
             </Fragment>
           ),
         },
@@ -252,6 +266,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
       })
       leftItems = [
         { key: t('Name'), value: name },
+        {
+          key: t('Type'),
+          value: <Fragment>{getApplicationType(isArgoApp, isAppSet, isOCPApp, isFluxApp, isPullModel, t)}</Fragment>,
+        },
         { key: t('Namespace'), value: namespace },
         {
           key: t('Clusters'),
@@ -590,7 +608,46 @@ function createSubsCards(
 }
 
 function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) {
-  return <Fragment>{isArgoApp || isAppSet ? <Label color="blue">{t('Argo')}</Label> : ''}</Fragment>
+  return (
+    <Fragment>
+      {isArgoApp || isAppSet ? (
+        <LabelWithPopover key="ArgoCD" labelContent={t('Argo')}>
+          <div style={{ padding: '1rem 4rem 1rem 1rem' }}>
+            {t(
+              'The OpenShift Gitops operator is required on the managed clusters to have an application set pull model type. Make sure the operator is installed on all managed clusters you are targeting.'
+            )}
+          </div>
+        </LabelWithPopover>
+      ) : (
+        <span />
+      )}
+    </Fragment>
+  )
+}
+
+function getApplicationType(
+  isArgoApp: boolean,
+  isAppSet: boolean,
+  isOCPApp: boolean,
+  isFluxApp: boolean,
+  isPullModel: boolean,
+  t: TFunction
+) {
+  if (isArgoApp) {
+    return t('ArgoCD')
+  } else if (isAppSet) {
+    if (isPullModel) {
+      return t('Application set - pull model')
+    } else {
+      return t('Application set - push model')
+    }
+  } else if (isOCPApp) {
+    return t('OpenShift')
+  } else if (isFluxApp) {
+    return t('Flux')
+  }
+
+  return t('Subscription') //default to subscription type
 }
 
 function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolean, isAppSet: boolean) {

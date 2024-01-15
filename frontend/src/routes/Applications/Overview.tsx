@@ -1079,7 +1079,7 @@ export default function ApplicationsOverview() {
           </>
         }
         position="bottom"
-        hasAutoWidth
+        maxWidth="850px"
       >
         <Text
           component={TextVariants.a}
