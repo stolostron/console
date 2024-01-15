@@ -23,8 +23,16 @@ type HostsFormProps = {
 }
 
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
-  const { nodePools, setNodePools, clusterName, releaseImage, infraEnvNamespace, setInfraEnvNamespace } =
-    React.useContext(HypershiftAgentContext)
+  const {
+    nodePools,
+    setNodePools,
+    clusterName,
+    releaseImage,
+    infraEnvNamespace,
+    setInfraEnvNamespace,
+    controllerAvailabilityPolicy,
+    setControllerAvailabilityPolicy,
+  } = React.useContext(HypershiftAgentContext)
   const { agentsState, clusterImageSetsState, infraEnvironmentsState, nodePoolsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
   const [agents, infraEnvironments, clusterImageSets, currentNodePools] = useRecoilValue(
@@ -41,6 +49,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       control.step.title.isComplete = false
       setNodePools(values.nodePools)
       setInfraEnvNamespace(values.agentNamespace)
+      setControllerAvailabilityPolicy(values.controllerAvailabilityPolicy)
       handleChange(control)
     }
     // eslint-disable-next-line
@@ -80,6 +89,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       initReleaseImage={initReleaseImage}
       initNodePools={nodePools}
       nodePools={currentNodePools}
+      controllerAvailabilityPolicy={controllerAvailabilityPolicy}
     />
   ) : (
     <LoadingState />
