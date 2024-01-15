@@ -2866,6 +2866,7 @@
   "type.ocp": "OpenShift Container Platform",
   "type.osd": "OpenShift Dedicated",
   "type.rosa": "Red Hat OpenShift Service on AWS",
+  "type.rosa.hcp": "Red Hat OpenShift Service on AWS Hosted Control Plane",
   "type.to.confirm": "以下に \"{{confirm}}\" と入力して確定します:",
   "Unable to communicate with the server because of a bad gateway.": "bad gateway のため、サーバーと通信できません。",
   "Unable to communicate with the server because of a network error.": "ネットワークエラーが原因でサーバーと通信できません。",
