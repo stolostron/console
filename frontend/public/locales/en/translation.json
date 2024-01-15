@@ -2903,6 +2903,7 @@
   "type.ocp": "OpenShift Container Platform",
   "type.osd": "OpenShift Dedicated",
   "type.rosa": "Red Hat OpenShift Service on AWS",
+  "type.rosa.hcp": "Red Hat OpenShift Service on AWS Hosted Control Plane",
   "type.to.confirm": "Confirm by typing \"{{confirm}}\" below:",
   "Unable to communicate with the server because of a bad gateway.": "Unable to communicate with the server because of a bad gateway.",
   "Unable to communicate with the server because of a network error.": "Unable to communicate with the server because of a network error.",

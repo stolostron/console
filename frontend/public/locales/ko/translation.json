@@ -2866,6 +2866,7 @@
   "type.ocp": "OpenShift Container Platform",
   "type.osd": "OpenShift Dedicated",
   "type.rosa": "Red Hat OpenShift Service on AWS",
+  "type.rosa.hcp": "Red Hat OpenShift Service on AWS Hosted Control Plane",
   "type.to.confirm": "아래에 \"{{confirm}}\"을 입력하여 확인합니다.",
   "Unable to communicate with the server because of a bad gateway.": "잘못된 게이트웨이로 인해 서버와 통신할 수 없습니다.",
   "Unable to communicate with the server because of a network error.": "네트워크 오류로 인해 서버와 통신할 수 없습니다.",
