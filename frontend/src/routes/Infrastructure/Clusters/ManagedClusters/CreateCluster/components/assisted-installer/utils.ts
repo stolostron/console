@@ -34,6 +34,7 @@ import {
   KlusterletAddonConfigKind,
   createResources,
   IResource,
+  ClusterCurator,
 } from '../../../../../../../resources'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
@@ -879,4 +880,37 @@ export const useProvisioningConfiguration = (): [K8sResourceCommon | null, boole
     return [null, true, null]
   }
   return [config, loaded || !!error, error]
+}
+
+export const onEditFinish = async (
+  agentClusterInstall: AgentClusterInstallK8sResource,
+  clusterCurator: ClusterCurator | undefined
+) => {
+  const res = await patchResource(agentClusterInstall as IResource, [
+    // effectively, the property gets deleted instead of holding "false" value by that change
+    {
+      op:
+        agentClusterInstall?.spec?.holdInstallation || agentClusterInstall?.spec?.holdInstallation === false
+          ? 'replace'
+          : 'add',
+      path: '/spec/holdInstallation',
+      value: false,
+    },
+  ]).promise
+
+  if (
+    clusterCurator &&
+    !clusterCurator.spec?.desiredCuration &&
+    (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length)
+  ) {
+    await patchResource(clusterCurator, [
+      {
+        op: 'add',
+        path: '/spec/desiredCuration',
+        value: 'install',
+      },
+    ]).promise
+  }
+
+  return res as AgentClusterInstallK8sResource
 }

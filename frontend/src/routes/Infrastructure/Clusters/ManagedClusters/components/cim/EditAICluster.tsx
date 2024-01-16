@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
 import {
   ACM_ENABLED_FEATURES,
-  AgentClusterInstallK8sResource,
   AgentK8sResource,
   BareMetalHostK8sResource,
   ClusterDeploymentDetailsValues,
@@ -42,6 +41,7 @@ import {
   importYaml,
   onSetInstallationDiskId,
   useProvisioningConfiguration,
+  onEditFinish,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -65,11 +65,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   const { t } = useTranslation()
   const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
   const history = useHistory()
-  const { agentsState, clusterImageSetsState, nmStateConfigsState } = useSharedAtoms()
+  const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState } = useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const { waitForAll } = useSharedRecoil()
-  const [clusterImageSets, agents, nmStateConfigs] = useRecoilValue(
-    waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState])
+  const [clusterImageSets, agents, nmStateConfigs, clusterCurators] = useRecoilValue(
+    waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState, clusterCuratorsState])
   )
   const aiConfigMap = useAssistedServiceConfigMap()
 
@@ -153,24 +153,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     !!agentClusterInstall,
   ])
 
-  const onFinish = async () => {
-    const res = await patchResource(agentClusterInstall as IResource, [
-      // effectively, the property gets deleted instead of holding "false" value by that change
-      {
-        op:
-          agentClusterInstall?.spec?.holdInstallation || agentClusterInstall?.spec?.holdInstallation === false
-            ? 'replace'
-            : 'add',
-        path: '/spec/holdInstallation',
-        value: false,
-      },
-    ]).promise
-
-    history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
-    return res as AgentClusterInstallK8sResource
-  }
-
   const isNutanix = agentClusterInstall?.spec?.platformType === 'Nutanix'
+
+  const clusterCurator = clusterCurators.find((c) => c.metadata?.namespace === namespace)
 
   return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
     <LoadingState />
@@ -246,7 +231,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 infraNMStates={infraNMStates}
                 getClusterDeploymentLink={getClusterDeploymentLink}
                 hostActions={hostActions}
-                onFinish={onFinish}
+                onFinish={async () => {
+                  const aci = await onEditFinish(agentClusterInstall, clusterCurator)
+                  history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
+                  return aci
+                }}
                 aiConfigMap={aiConfigMap}
                 infraEnv={infraEnv}
                 initialStep={(searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined}
