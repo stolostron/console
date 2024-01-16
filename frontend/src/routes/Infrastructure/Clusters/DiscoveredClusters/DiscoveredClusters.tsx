@@ -311,6 +311,10 @@ export function DiscoveredClustersTable(props: {
         return t('type.rosa')
       case 'ROSA':
         return t('type.rosa')
+      case 'MOA-HostedControlPlane':
+        return t('type.rosa.hcp')
+      case 'ROSA-HCP':
+        return t('type.rosa.hcp')
       case 'OCP-ASSISTEDINSTALL':
         return t('type.ocp')
       case 'OCP':
