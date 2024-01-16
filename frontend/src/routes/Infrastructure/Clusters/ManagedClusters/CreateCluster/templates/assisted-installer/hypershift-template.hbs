@@ -104,7 +104,13 @@ spec:
   {{#if this.manualHostSelect}}
   replicas: {{{this.selectedAgentIDs.length}}}
   {{else}}
+  {{#if this.autoscaling}}
+  autoScaling:
+    min: {{{this.autoscaling.minReplicas}}}
+    max: {{{this.autoscaling.maxReplicas}}}
+  {{else}}
   replicas: {{{this.count}}}
+  {{/if}}
   {{/if}}
   management:
     autoRepair: false
