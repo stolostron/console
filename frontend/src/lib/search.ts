@@ -72,6 +72,25 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
   })
 }
 
+export function queryRemoteArgoAppsForCluster(cluster: string): IRequestResult<ISearchResult> {
+  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+    operationName: 'searchResult',
+    variables: {
+      input: [
+        {
+          filters: [
+            { property: 'kind', values: ['Application'] },
+            { property: 'apigroup', values: ['argoproj.io'] },
+            { property: 'cluster', values: [cluster] },
+          ],
+          limit: 20000,
+        },
+      ],
+    },
+    query: searchFilterQuery,
+  })
+}
+
 export function queryOCPAppResources(): IRequestResult<ISearchResult> {
   return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
     operationName: 'searchResult',
@@ -82,6 +101,30 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
             {
               property: 'kind',
               values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+            },
+          ],
+          limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
+        },
+      ],
+    },
+    query: searchFilterQuery,
+  })
+}
+
+export function queryOCPAppResourcesForCluster(cluster: string): IRequestResult<ISearchResult> {
+  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+    operationName: 'searchResult',
+    variables: {
+      input: [
+        {
+          filters: [
+            {
+              property: 'kind',
+              values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+            },
+            {
+              property: 'cluster',
+              values: [cluster],
             },
           ],
           limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
@@ -113,4 +156,17 @@ export function querySearchDisabledManagedClusters(): IRequestResult<ISearchResu
 export function useSearchParams() {
   const { search } = useLocation()
   return useMemo(() => new URLSearchParams(search), [search])
+}
+
+// Used when need to maintain same number of hooks called
+export function queryEmpty(): IRequestResult<ISearchResult> {
+  const abortController = new AbortController()
+  return {
+    promise: Promise.resolve<ISearchResult>({
+      data: {
+        searchResult: [],
+      },
+    }),
+    abort: () => abortController.abort(),
+  }
 }

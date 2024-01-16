@@ -43,8 +43,8 @@ import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
 import {
-  mockSearchQueryArgoApps,
-  mockSearchQueryOCPApplications,
+  mockSearchQueryArgoAppsClusterOverview,
+  mockSearchQueryOCPApplicationsClusterOverview,
   mockSearchResponseArgoApps1,
   mockSearchResponseOCPApplications,
 } from '../../../../../Applications/Application.sharedmocks'
@@ -117,8 +117,8 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -164,8 +164,8 @@ describe('ClusterOverview with BM hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -213,8 +213,8 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -262,8 +262,8 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -311,8 +311,8 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -358,8 +358,8 @@ describe('ClusterOverview with regional hub cluster information', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -407,8 +407,8 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     mockRegionalHubCluster.isHostedCluster = true
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -667,8 +667,8 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
 
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
     nockIgnoreApiPaths()
     nockGet(getSecrets1.req, getSecrets1.req) // get 'secrets' in 'clusters' namespace
     nockGet(getSecrets2.req, getSecrets2.req)
