@@ -388,7 +388,9 @@ function getProvider(provider: string) {
       return Provider.openstack
     case 'kubevirt':
       return Provider.kubevirt
-    case 'ibmpowervs':
+    case 'libvirt' || 'ovirt':
+      return Provider.redhatvirtualization
+    case 'powervs':
       return Provider.ibmpowervs
     case Provider.other:
     default:
@@ -412,7 +414,9 @@ function searchCloudProvider(provider: string) {
       return [Provider.openstack, 'red hat openstack']
     case 'kubevirt':
       return [Provider.kubevirt, 'red hat openshift virtualization']
-    case 'ibmpowervs':
+    case 'libvirt' || 'ovirt':
+      return [Provider.redhatvirtualization, 'red hat virtualization']
+    case 'powervs':
       return [Provider.ibmpowervs, 'ibm power virtual server']
     case Provider.other:
     default:
