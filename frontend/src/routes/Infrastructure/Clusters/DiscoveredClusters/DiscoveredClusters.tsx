@@ -386,6 +386,10 @@ function getProvider(provider: string) {
       return Provider.baremetal
     case 'openstack':
       return Provider.openstack
+    case 'kubevirt':
+      return Provider.kubevirt
+    case 'ibmpowervs':
+      return Provider.ibmpowervs
     case Provider.other:
     default:
       return Provider.other
@@ -406,6 +410,10 @@ function searchCloudProvider(provider: string) {
       return [Provider.baremetal, 'bare metal']
     case 'openstack':
       return [Provider.openstack, 'red hat openstack']
+    case 'kubevirt':
+      return [Provider.kubevirt, 'red hat openshift virtualization']
+    case 'ibmpowervs':
+      return [Provider.ibmpowervs, 'ibm power virtual server']
     case Provider.other:
     default:
       return [Provider.other, provider]
