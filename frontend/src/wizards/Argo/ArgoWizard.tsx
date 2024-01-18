@@ -458,15 +458,15 @@ export function ArgoWizard(props: ArgoWizardProps) {
             suffix="-{{name}}"
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <GitOpsOperatorAlert showAlert={showAlert} />
-            {isPullModel && !resources && (
+            <GitOpsOperatorAlert showAlert={showAlert} isPullModel={isPullModel} />
+            {isPullModel && !resources && !showAlert && (
               <AcmAlert
                 isInline
                 noClose
                 variant="info"
                 title={t('Operator required')}
                 message={t(
-                  'OpenShift GitOps Operator is required on the managed clusters to create ApplicationSets pull model type. Make sure OpenShift GitOps Operator is installed on all managed clusters you are targeting.'
+                  'The OpenShift GitOps Operator is required on the managed clusters to create an application set pull model type. Make sure the operator is installed on all managed clusters you are targeting.'
                 )}
               />
             )}
