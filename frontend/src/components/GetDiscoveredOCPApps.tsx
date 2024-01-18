@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import { useEffect, useState } from 'react'
-import {
-  queryOCPAppResources,
-  queryRemoteArgoApps,
-  queryRemoteArgoAppsForCluster,
-  queryOCPAppResourcesForCluster,
-  queryEmpty,
-} from '../lib/search'
+import { queryOCPAppResources, queryRemoteArgoApps, queryEmpty } from '../lib/search'
 import { useQuery } from '../lib/useQuery'
 import { ArgoApplication, Cluster, HelmRelease, OCPAppResource } from '../resources'
 import { getArgoDestinationCluster } from '../routes/Applications/ApplicationDetails/ApplicationTopology/model/topologyArgo'
@@ -22,13 +16,13 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
   const queryRemoteArgoAppsFunc = cluster
     ? cluster == 'local-cluster'
       ? queryEmpty
-      : () => queryRemoteArgoAppsForCluster(cluster)
+      : () => queryRemoteArgoApps(cluster)
     : queryRemoteArgoApps
   const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc, undefined, {
     pollInterval: 15,
   })
 
-  const queryOCPAppResourcesFunc = cluster ? () => queryOCPAppResourcesForCluster(cluster) : queryOCPAppResources
+  const queryOCPAppResourcesFunc = cluster ? () => queryOCPAppResources(cluster) : queryOCPAppResources
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
