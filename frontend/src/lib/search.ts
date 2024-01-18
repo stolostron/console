@@ -53,17 +53,24 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
   })
 }
 
-export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
+export function queryRemoteArgoApps(cluster?: string): IRequestResult<ISearchResult> {
+  const filtersArr = [
+    { property: 'kind', values: ['Application'] },
+    { property: 'apigroup', values: ['argoproj.io'] },
+  ]
+
+  if (cluster) {
+    filtersArr.push({ property: 'cluster', values: [cluster] })
+  } else {
+    filtersArr.push({ property: 'cluster', values: ['!local-cluster'] })
+  }
+
   return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
     operationName: 'searchResult',
     variables: {
       input: [
         {
-          filters: [
-            { property: 'kind', values: ['Application'] },
-            { property: 'apigroup', values: ['argoproj.io'] },
-            { property: 'cluster', values: ['!local-cluster'] },
-          ],
+          filters: filtersArr,
           limit: 20000,
         },
       ],
@@ -72,61 +79,27 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
   })
 }
 
-export function queryRemoteArgoAppsForCluster(cluster: string): IRequestResult<ISearchResult> {
-  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables: {
-      input: [
-        {
-          filters: [
-            { property: 'kind', values: ['Application'] },
-            { property: 'apigroup', values: ['argoproj.io'] },
-            { property: 'cluster', values: [cluster] },
-          ],
-          limit: 20000,
-        },
-      ],
+export function queryOCPAppResources(cluster?: string): IRequestResult<ISearchResult> {
+  const filtersArr = [
+    {
+      property: 'kind',
+      values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
     },
-    query: searchFilterQuery,
-  })
-}
+  ]
 
-export function queryOCPAppResources(): IRequestResult<ISearchResult> {
+  if (cluster) {
+    filtersArr.push({
+      property: 'cluster',
+      values: [cluster],
+    })
+  }
+
   return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
     operationName: 'searchResult',
     variables: {
       input: [
         {
-          filters: [
-            {
-              property: 'kind',
-              values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
-            },
-          ],
-          limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
-        },
-      ],
-    },
-    query: searchFilterQuery,
-  })
-}
-
-export function queryOCPAppResourcesForCluster(cluster: string): IRequestResult<ISearchResult> {
-  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables: {
-      input: [
-        {
-          filters: [
-            {
-              property: 'kind',
-              values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
-            },
-            {
-              property: 'cluster',
-              values: [cluster],
-            },
-          ],
+          filters: filtersArr,
           limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
         },
       ],
