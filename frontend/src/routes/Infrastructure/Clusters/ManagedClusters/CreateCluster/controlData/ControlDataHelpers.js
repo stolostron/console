@@ -196,8 +196,8 @@ export const setAvailableConnections = (control, secrets) => {
   const perPostSection = control.groupControlData?.find(({ id }) => id === 'perPostSection')
   if (
     Array.isArray(control.providerId)
-      ? !control.providerId.includes('hostinventory')
-      : control.providerId !== 'hostinventory'
+      ? !control.providerId.some((provider) => ['hostinventory', 'nutanix'].includes(provider))
+      : !['hostinventory', 'nutanix'].includes(control.providerId)
   ) {
     // unset default ansible secret for subscription wizard as it's not required
     if (control.setActive && !control.active && !perPostSection) {
