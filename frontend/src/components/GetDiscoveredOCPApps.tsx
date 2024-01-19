@@ -18,9 +18,7 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
       ? queryEmpty
       : () => queryRemoteArgoApps(cluster)
     : queryRemoteArgoApps
-  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc, undefined, {
-    pollInterval: 15,
-  })
+  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc)
 
   const queryOCPAppResourcesFunc = cluster ? () => queryOCPAppResources(cluster) : queryOCPAppResources
   const {
@@ -28,7 +26,7 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
     loading: loadingOCPResources,
     startPolling: startPollingOCPResources,
     stopPolling: stopPollingOCPResources,
-  } = useQuery(queryOCPAppResourcesFunc, undefined, { pollInterval: 15 })
+  } = useQuery(queryOCPAppResourcesFunc)
 
   const [timedOut, setTimedOut] = useState<boolean>()
   const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)
