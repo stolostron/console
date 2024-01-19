@@ -71,7 +71,7 @@ const mockSearchQuery = {
       {
         keywords: [],
         filters: [
-          { property: 'kind', values: ['subscription'] },
+          { property: 'kind', values: ['Subscription'] },
           { property: 'name', values: ['subscription-0'] },
           { property: 'namespace', values: ['namespace-0'] },
         ],

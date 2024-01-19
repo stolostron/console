@@ -12,15 +12,15 @@ import {
 } from './search-helper'
 
 describe('convertStringToQuery', () => {
-  const string1 = 'kind:subscription name:test'
-  const string2 = 'kind:channel name:test'
-  const string3 = 'kind:placementrule name:test'
+  const string1 = 'kind:Subscription name:test'
+  const string2 = 'kind:Channel name:test'
+  const string3 = 'kind:PlacementRule name:test'
 
   const result1 = {
     filters: [
       {
         property: 'kind',
-        values: ['subscription'],
+        values: ['Subscription'],
       },
       {
         property: 'name',
@@ -28,24 +28,24 @@ describe('convertStringToQuery', () => {
       },
     ],
     keywords: [],
-    relatedKinds: ['placementrule', 'deployable', 'application', 'subscription', 'channel'],
+    relatedKinds: ['PlacementRule', 'Deployable', 'Application', 'Subscription', 'Channel'],
   }
 
   const result2 = {
     filters: [
-      { property: 'kind', values: ['channel'] },
+      { property: 'kind', values: ['Channel'] },
       { property: 'name', values: ['test'] },
     ],
     keywords: [],
-    relatedKinds: ['subscription'],
+    relatedKinds: ['Subscription'],
   }
   const result3 = {
     filters: [
-      { property: 'kind', values: ['placementrule'] },
+      { property: 'kind', values: ['PlacementRule'] },
       { property: 'name', values: ['test'] },
     ],
     keywords: [],
-    relatedKinds: ['subscription'],
+    relatedKinds: ['Subscription'],
   }
   it('convert string to query', () => {
     expect(convertStringToQuery(string1)).toEqual(result1)
