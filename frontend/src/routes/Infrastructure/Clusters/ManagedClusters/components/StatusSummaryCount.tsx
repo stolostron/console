@@ -44,9 +44,9 @@ export function StatusSummaryCount() {
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [subscriptions] = useRecoilState(subscriptionsState)
   const policies = usePolicies()
-
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
   const { cluster } = useContext(ClusterContext)
+
+  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length, cluster?.name)
   const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
@@ -133,8 +133,6 @@ export function StatusSummaryCount() {
     return tempApps
   }, [filteredOCPApps, cluster?.name])
 
-  const clusterDiscoveredArgoApps = discoveredApplications.filter((app) => app.cluster === cluster?.name)
-
   const appSets: ApplicationSet[] = useMemo(() => {
     const filteredAppSets = applicationSets.filter((appSet) => {
       // Get the Placement name so we can find PlacementDecision
@@ -156,8 +154,13 @@ export function StatusSummaryCount() {
   }, [applicationSets, placementDecisions, cluster?.name])
 
   const appsCount = useMemo(
-    () => [...applicationList, ...clusterDiscoveredArgoApps, ...clusterOcpApps, ...appSets, ...argoAppList].length,
-    [applicationList, argoAppList, clusterDiscoveredArgoApps, clusterOcpApps, appSets]
+    () =>
+      applicationList.length +
+      discoveredApplications.length +
+      clusterOcpApps.length +
+      appSets.length +
+      argoAppList.length,
+    [applicationList, argoAppList, discoveredApplications, clusterOcpApps, appSets]
   )
 
   const nodesCount = useMemo(() => (cluster?.nodes?.nodeList ?? []).length, [cluster])

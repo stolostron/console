@@ -469,6 +469,41 @@ export const mockSearchQueryArgoApps = {
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
+
+export const mockSearchQueryArgoAppsStatusSummaryCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          { property: 'kind', values: ['Application'] },
+          { property: 'apigroup', values: ['argoproj.io'] },
+          { property: 'cluster', values: ['test-cluster'] },
+        ],
+        limit: 20000,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const mockSearchQueryArgoAppsClusterOverview = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          { property: 'kind', values: ['Application'] },
+          { property: 'apigroup', values: ['argoproj.io'] },
+          { property: 'cluster', values: ['feng-hypershift-test'] },
+        ],
+        limit: 20000,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
 export const mockSearchResponseArgoApps = {
   data: {
     searchResult: [
@@ -543,6 +578,51 @@ export const mockSearchQueryOCPApplications = {
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
+
+export const mockSearchQueryOCPApplicationsStatusSummaryCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'cluster',
+            values: ['test-cluster'],
+          },
+        ],
+        limit: 20000,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const mockSearchQueryOCPApplicationsClusterOverview = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'cluster',
+            values: ['feng-hypershift-test'],
+          },
+        ],
+        limit: 20000,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
 export const mockSearchResponseOCPApplications = {
   data: {
     searchResult: [
