@@ -56,7 +56,7 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
         isNutanix,
       },
     },
-    ...automationControlData(t),
+    ...automationControlData(t, true),
     {
       id: 'reviewSave',
       type: 'review',

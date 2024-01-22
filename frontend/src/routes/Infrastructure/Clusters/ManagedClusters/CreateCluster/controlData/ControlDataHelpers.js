@@ -576,7 +576,7 @@ export const proxyControlData = (t) => {
   ]
 }
 
-export const onChangeAutomationTemplate = (control, controlData) => {
+export const onChangeAutomationTemplate = (control, controlData, isAI) => {
   const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
   const reconcilePause = getControlByID(controlData, 'reconcilePause')
   // TODO: include namespace in key
@@ -584,7 +584,7 @@ export const onChangeAutomationTemplate = (control, controlData) => {
   const curations = getControlByID(controlData, 'supportedCurations')?.active
   if (control.active && clusterCuratorTemplate) {
     const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
-    if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
+    if (!isAI && (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length)) {
       clusterCurator.spec.desiredCuration = 'install'
     }
     if (clusterCurator.spec?.install?.prehook?.length) {
@@ -625,7 +625,7 @@ const reverseClusterCuratorSpec = (control, templateObject) => {
   }
 }
 
-export const automationControlData = (t) => {
+export const automationControlData = (t, isAI) => {
   return [
     ///////////////////////  automation  /////////////////////////////////////
     {
@@ -649,7 +649,7 @@ export const automationControlData = (t) => {
       type: 'singleselect',
       tooltip: t('template.clusterCreate.tooltip'),
       placeholder: t('template.clusterCreate.select.placeholder'),
-      onSelect: onChangeAutomationTemplate,
+      onSelect: (control, controlData) => onChangeAutomationTemplate(control, controlData, isAI),
       validation: {
         required: false,
       },

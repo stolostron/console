@@ -55,7 +55,7 @@ export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterl
         isNutanix,
       },
     },
-    ...automationControlData(t),
+    ...automationControlData(t, true),
     {
       id: 'reviewSave',
       type: 'review',
