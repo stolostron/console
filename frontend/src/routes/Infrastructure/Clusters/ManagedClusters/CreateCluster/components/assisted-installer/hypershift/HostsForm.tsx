@@ -74,7 +74,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     {
       term: t('Hosts count'),
       desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
-        acc += nodePool.autoscaling?.maxReplicas || nodePool.count
+        acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
         return acc
       }, 0),
     },

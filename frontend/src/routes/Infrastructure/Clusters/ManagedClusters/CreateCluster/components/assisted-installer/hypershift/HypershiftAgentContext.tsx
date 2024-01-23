@@ -3,10 +3,15 @@ import { noop } from 'lodash'
 import React from 'react'
 
 export type NodePoolFormValue = {
-  name: string
   clusterName: string
   releaseImage: string
+  nodePoolName: string
   count: number
+  useAutoscaling: boolean
+  autoscaling: {
+    minReplicas: number
+    maxReplicas: number
+  }
   agentLabels: { key: string; value: string }[]
 }
 

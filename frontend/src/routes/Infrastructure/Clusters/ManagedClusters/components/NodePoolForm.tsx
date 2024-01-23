@@ -64,7 +64,7 @@ export function NodePoolForm(props: {
   const [imageOptions, setNodepoolImageOptions] = useState<OpenshiftVersionOptionType[]>()
   const [name, setName] = useState<string>()
   const [selectedImage, setSelectedImage] = useState<string>()
-  const [replicas, setReplicas] = useState<number>(props.nodepool ? props.nodepool.spec.replicas : 1)
+  const [replicas, setReplicas] = useState<number>(props.nodepool?.spec.replicas ? props.nodepool.spec.replicas : 1)
 
   // AWS specific properties
   const [awsInstanceProfile, setAwsInstanceProfile] = useState<string>()
