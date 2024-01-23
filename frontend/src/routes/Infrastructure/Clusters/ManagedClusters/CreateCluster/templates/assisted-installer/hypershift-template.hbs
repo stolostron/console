@@ -97,14 +97,14 @@ stringData:
 apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
-  name: '{{{this.name}}}'
+  name: '{{{this.nodePoolName}}}'
   namespace: '{{{this.clusterName}}}'
 spec:
   clusterName: '{{{this.clusterName}}}'
   {{#if this.manualHostSelect}}
   replicas: {{{this.selectedAgentIDs.length}}}
   {{else}}
-  {{#if this.autoscaling}}
+  {{#if this.useAutoscaling}}
   autoScaling:
     min: {{{this.autoscaling.minReplicas}}}
     max: {{{this.autoscaling.maxReplicas}}}

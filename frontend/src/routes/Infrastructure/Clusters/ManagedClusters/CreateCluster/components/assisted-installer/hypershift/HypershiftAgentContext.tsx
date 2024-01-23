@@ -7,6 +7,11 @@ export type NodePoolFormValue = {
   clusterName: string
   releaseImage: string
   count: number
+  useAutoscaling: boolean
+  autoScaling: {
+    minReplicas: number
+    maxReplicas: number
+  }
   agentLabels: { key: string; value: string }[]
 }
 
