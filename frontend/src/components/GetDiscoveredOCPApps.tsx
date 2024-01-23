@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { queryOCPAppResources, queryRemoteArgoApps, queryEmpty } from '../lib/search'
 import { useQuery } from '../lib/useQuery'
 import { ArgoApplication, Cluster, HelmRelease, OCPAppResource } from '../resources'
@@ -13,16 +13,18 @@ import { LoadingPage } from './LoadingPage'
 /* Copyright Contributors to the Open Cluster Management project */
 export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, cluster?: string) {
   const { discoveredApplicationsState, discoveredOCPAppResourcesState } = useSharedAtoms()
+  const queryRemoteArgoAppsForClusterFunc = useCallback(() => queryRemoteArgoApps(cluster), [cluster])
   const queryRemoteArgoAppsFunc = cluster
     ? cluster == 'local-cluster'
       ? queryEmpty
-      : () => queryRemoteArgoApps(cluster)
+      : queryRemoteArgoAppsForClusterFunc
     : queryRemoteArgoApps
   const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc, undefined, {
     pollInterval: 15,
   })
 
-  const queryOCPAppResourcesFunc = cluster ? () => queryOCPAppResources(cluster) : queryOCPAppResources
+  const queryOCPAppResourcesForClusterFunc = useCallback(() => queryOCPAppResources(cluster), [cluster])
+  const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResources
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
