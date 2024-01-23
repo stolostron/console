@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
-import { useEffect, useState } from 'react'
-import { queryOCPAppResources, queryRemoteArgoApps } from '../lib/search'
+import { useCallback, useEffect, useState } from 'react'
+import { queryOCPAppResources, queryRemoteArgoApps, queryEmpty } from '../lib/search'
 import { useQuery } from '../lib/useQuery'
 import { ArgoApplication, Cluster, HelmRelease, OCPAppResource } from '../resources'
 import { getArgoDestinationCluster } from '../routes/Applications/ApplicationDetails/ApplicationTopology/model/topologyArgo'
@@ -11,16 +11,24 @@ import { useSetRecoilState, useSharedAtoms } from '../shared-recoil'
 import { LoadingPage } from './LoadingPage'
 
 /* Copyright Contributors to the Open Cluster Management project */
-export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean) {
+export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, cluster?: string) {
   const { discoveredApplicationsState, discoveredOCPAppResourcesState } = useSharedAtoms()
-  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoApps)
+  const queryRemoteArgoAppsForClusterFunc = useCallback(() => queryRemoteArgoApps(cluster), [cluster])
+  const queryRemoteArgoAppsFunc = cluster
+    ? cluster == 'local-cluster'
+      ? queryEmpty
+      : queryRemoteArgoAppsForClusterFunc
+    : queryRemoteArgoApps
+  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc)
 
+  const queryOCPAppResourcesForClusterFunc = useCallback(() => queryOCPAppResources(cluster), [cluster])
+  const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResources
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
     startPolling: startPollingOCPResources,
     stopPolling: stopPollingOCPResources,
-  } = useQuery(queryOCPAppResources)
+  } = useQuery(queryOCPAppResourcesFunc)
 
   const [timedOut, setTimedOut] = useState<boolean>()
   const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)

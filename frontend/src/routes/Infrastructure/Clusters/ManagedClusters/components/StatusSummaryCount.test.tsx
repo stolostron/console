@@ -10,8 +10,8 @@ import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
 import {
-  mockSearchQueryArgoApps,
-  mockSearchQueryOCPApplications,
+  mockSearchQueryArgoAppsStatusSummaryCount,
+  mockSearchQueryOCPApplicationsStatusSummaryCount,
   mockSearchResponseArgoApps1,
   mockSearchResponseOCPApplications,
 } from '../../../../Applications/Application.sharedmocks'
@@ -258,8 +258,8 @@ const mockPolicies: Policy[] = [
 
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsStatusSummaryCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryArgoAppsStatusSummaryCount, mockSearchResponseArgoApps1)
   })
 
   const Component = () => (
