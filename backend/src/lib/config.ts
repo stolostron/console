@@ -45,7 +45,7 @@ export async function loadConfigSettings(): Promise<void> {
     for (const key in settings) {
       if (key.startsWith('LOG_')) {
         process.env[key] = settings[key]
-      } else if (key === 'globalSearchAPIEndpoint' || key === 'globalSearchFeatureFlag') {
+      } else if (key === 'searchApiEnpoint' || key === 'globalSearchFeatureFlag') {
         // 2.9 Federated search-api use will be restricted to user defined env variable.
         process.env[key] = settings[key]
       }
