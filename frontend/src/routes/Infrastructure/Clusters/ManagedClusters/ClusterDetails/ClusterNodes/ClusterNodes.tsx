@@ -9,7 +9,7 @@ import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { NodeInfo } from '../../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmInlineStatus,
@@ -106,13 +106,14 @@ export function NodesPoolsTable() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { isSearchAvailable } = useContext(PluginContext)
-  const { isGlobalHubState } = useSharedAtoms()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const [settings] = useRecoilState(settingsState)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
   function getSearchLink(node: NodeInfo) {
-    return !isGlobalHub && isSearchAvailable ? (
+    return !isGlobalHub && settings.globalSearchFeatureFlag !== 'enabled' && isSearchAvailable ? (
       <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
         {node.name}
       </Link>

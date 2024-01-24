@@ -12,7 +12,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLabels } from '../../../ui-components'
 
 export const getSearchDefinitions = (t: TFunction) => {
@@ -361,10 +361,11 @@ export const GetUrlSearchParam = (resource: any) => {
 
 export function CreateDetailsLink(props: { item: any }) {
   const { item } = props
-  const { isGlobalHubState } = useSharedAtoms()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const [settings] = useRecoilState(settingsState)
 
-  if (isGlobalHub) {
+  if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
     return item.name
   }
 
@@ -570,9 +571,9 @@ function AddColumn(key: string, localizedColumnName: string) {
           return (
             <>
               {item?.cluster ?? '-'}
-              {item?.managedhub && (
+              {item?.managedHub && (
                 <TextContent>
-                  <Text component={TextVariants.small}>{item.managedhub}</Text>
+                  <Text component={TextVariants.small}>{item.managedHub}</Text>
                 </TextContent>
               )}
             </>

@@ -36,7 +36,7 @@ export function PolicyTemplateDetails(props: {
 }) {
   const { t } = useTranslation()
   const { clusterName, apiGroup, apiVersion, kind, templateName } = props
-  const { managedClusterAddonsState, isGlobalHubState } = useSharedAtoms()
+  const { managedClusterAddonsState, isGlobalHubState, settingsState } = useSharedAtoms()
   const [template, setTemplate] = useState<any>()
   const [relatedObjects, setRelatedObjects] = useState<any>()
   const [templateError, setTemplateError] = useState<string>()
@@ -44,6 +44,7 @@ export function PolicyTemplateDetails(props: {
   const [editorHeight, setEditorHeight] = useState<number>(250)
   const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
   const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const [settings] = useRecoilState(settingsState)
 
   let templateClusterName = clusterName
   let templateNamespace = clusterName
@@ -244,7 +245,7 @@ export function PolicyTemplateDetails(props: {
             },
           } = item
           if (
-            isGlobalHub ||
+            (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') ||
             reason === 'Resource not found but should exist' ||
             reason === 'Resource not found as expected'
           ) {
@@ -267,7 +268,7 @@ export function PolicyTemplateDetails(props: {
         },
       },
     ],
-    [isGlobalHub, t]
+    [isGlobalHub, settings.globalSearchFeatureFlag, t]
   )
 
   if (templateError) {
