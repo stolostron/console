@@ -4,6 +4,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { isGlobalHubState, Settings, settingsState } from '../../../../atoms'
 import { Message } from '../search-sdk/search-sdk'
 import HeaderWithNotification from './HeaderWithNotification'
 
@@ -42,6 +43,25 @@ test('renders unknown message', () => {
     <RecoilRoot>
       <MemoryRouter>
         <HeaderWithNotification messages={newMessage} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('renders with Global Search alert & no message', () => {
+  const mockSettings: Settings = {
+    globalSearchFeatureFlag: 'enabled',
+  }
+  const emptyMessage: Message[] = []
+  const { baseElement } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+      }}
+    >
+      <MemoryRouter>
+        <HeaderWithNotification messages={emptyMessage} />
       </MemoryRouter>
     </RecoilRoot>
   )
