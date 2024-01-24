@@ -57,7 +57,7 @@
     "@patternfly/react-table": "4.90.3",
     "@patternfly/react-topology": "4.38.5",
     "@react-hook/resize-observer": "1.2.5",
-    "@redhat-cloud-services/rule-components": "^3.2.5",
+    "@redhat-cloud-services/rule-components": "^3.2.6",
     "@reduxjs/toolkit": "1.8.x",
     "@stolostron/react-data-view": "^1.13.0",
     "ajv": "8.11.0",
