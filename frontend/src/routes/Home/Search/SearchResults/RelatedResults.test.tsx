@@ -10,7 +10,7 @@ import { createBrowserHistory } from 'history'
 import { useState } from 'react'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { Settings, settingsState } from '../../../../atoms'
+import { isGlobalHubState, Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
@@ -155,5 +155,80 @@ describe('RelatedResults', () => {
 
     // Check to see if the selection was successful
     await waitFor(() => expect(secretTile).toHaveAttribute('aria-expanded', 'true'))
+  })
+
+  it('should render in GlobalHub context', async () => {
+    const mocks = [
+      {
+        request: {
+          query: SearchResultRelatedCountDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['Pod'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                related: [
+                  {
+                    kind: 'Cluster',
+                    count: 1,
+                    __typename: 'SearchRelatedResult',
+                  },
+                  {
+                    kind: 'Node',
+                    count: 6,
+                    __typename: 'SearchRelatedResult',
+                  },
+                  {
+                    kind: 'Secret',
+                    count: 203,
+                    __typename: 'SearchRelatedResult',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+    const mockGlobalHubSettings: Settings = {
+      globalSearchFeatureFlag: 'enabled',
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockGlobalHubSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <RelatedTiles />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
+    )
+    // Test the loading state while apollo query finishes
+    expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
+    // This wait pauses till apollo query is returning data
+    await wait()
+    // Test that the component has rendered correctly with data
+    const secretTile = screen.getByTestId('Secret-2')
+    await waitFor(() => expect(secretTile).toBeTruthy())
+    expect(secretTile).toHaveAttribute('aria-expanded', 'false')
   })
 })
