@@ -148,6 +148,7 @@ export interface Settings {
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
   awsPrivateWizardStep?: 'enabled' | 'disabled'
+  globalSearchFeatureFlag?: 'enabled' | 'disabled'
 }
 
 export interface WatchEvent {

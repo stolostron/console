@@ -4,20 +4,21 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
 import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
   const { t } = useTranslation()
-  const { isGlobalHubState } = useSharedAtoms()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const [settings] = useRecoilState(settingsState)
   const { messages } = props
 
   return (
     <div style={{ outline: 'none', display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{ flex: 1 }}>
-        {isGlobalHub && (
+        {isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' && (
           <AcmAlert
             variant="info"
             noClose
@@ -25,7 +26,9 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
             title={t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')}
           />
         )}
-        <AcmPageHeader title={isGlobalHub ? t('Global search') : t('Search')} />
+        <AcmPageHeader
+          title={isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' ? t('Global search') : t('Search')}
+        />
       </div>
 
       {messages.map((msg, index) => {
