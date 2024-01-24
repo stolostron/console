@@ -32,7 +32,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     const searchUrl = process.env.SEARCH_API_URL || searchService
     const endpoint =
       process.env.globalSearchFeatureFlag === 'enabled' && process.env.globalSearchAPIEndpoint
-        ? process.env.globalSearchAPIEndpoint
+        ? process.env.globalSearchAPIEndpoint || '/federated'
         : '/searchapi/graphql'
     const url = new URL(searchUrl + endpoint)
     headers.authorization = `Bearer ${token}`
