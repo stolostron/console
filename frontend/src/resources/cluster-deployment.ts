@@ -62,8 +62,8 @@ export interface ClusterDeployment {
       namespace: string
       poolName: string
     }
-    pullSecretRef: {
-      name: string
+    pullSecretRef?: {
+      name?: string
     }
     clusterInstallRef?: {
       group: string
