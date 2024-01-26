@@ -559,7 +559,7 @@ export function getHiveConfig(clusterDeployment?: ClusterDeployment, clusterClai
       kubeconfig: clusterDeployment?.spec?.clusterMetadata?.adminKubeconfigSecretRef?.name,
       kubeadmin: clusterDeployment?.spec?.clusterMetadata?.adminPasswordSecretRef?.name,
       installConfig: clusterDeployment?.spec?.provisioning?.installConfigSecretRef?.name,
-      pullSecret: clusterDeployment?.spec?.pullSecretRef.name,
+      pullSecret: clusterDeployment?.spec?.pullSecretRef?.name,
     },
     lifetime: clusterClaim?.spec?.lifetime,
   }
