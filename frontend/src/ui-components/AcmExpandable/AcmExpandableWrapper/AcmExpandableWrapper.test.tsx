@@ -9,6 +9,7 @@ import { AcmExpandableWrapper } from '../AcmExpandableWrapper/AcmExpandableWrapp
 describe('AcmExpandableWrapper', () => {
   const savedSearchWrapper = () => (
     <AcmExpandableWrapper
+      id={'testing-wrapper'}
       headerLabel={'Saved Searches'}
       expandable={true}
       withCount={true}
@@ -35,6 +36,7 @@ describe('AcmExpandableWrapper', () => {
 
   const collapsedSavedSearchWrapper = () => (
     <AcmExpandableWrapper
+      id={'testing-wrapper'}
       headerLabel={'Saved Searches'}
       expandable={true}
       withCount={true}
@@ -76,6 +78,7 @@ describe('AcmExpandableWrapper', () => {
 
   const suggestedSearchWrapper = () => (
     <AcmExpandableWrapper
+      id={'testing-wrapper'}
       headerLabel={'Suggested Searches'}
       expandable={false}
       withCount={false}
