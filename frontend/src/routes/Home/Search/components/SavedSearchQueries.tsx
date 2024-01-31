@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
-import { Fragment, useCallback, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
@@ -18,7 +18,7 @@ import { ShareSearchModal } from './Modals/ShareSearchModal'
 import { useSuggestedQueryTemplates } from './SuggestedQueryTemplates'
 
 export default function SavedSearchQueries(props: {
-  savedSearches: SavedSearch[]
+  savedSearches: SavedSearch[] | undefined
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   userPreference?: UserPreference
   setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
@@ -32,16 +32,21 @@ export default function SavedSearchQueries(props: {
   const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
   // combine the suggested queries and saved queries
-  const input = [
-    ...savedSearches.map((query) => convertStringToQuery(query.searchText, searchResultLimit)),
-    ...suggestedQueryTemplates.map((query: { searchText: string }) =>
-      convertStringToQuery(query.searchText, searchResultLimit)
-    ),
-  ]
+  const input = useMemo(
+    () => [
+      ...(savedSearches?.map((query) => convertStringToQuery(query.searchText, searchResultLimit)) ?? []),
+      ...suggestedQueryTemplates.map((query: { searchText: string }) =>
+        convertStringToQuery(query.searchText, searchResultLimit)
+      ),
+    ],
+    [savedSearches, suggestedQueryTemplates, searchResultLimit]
+  )
   const { data, error, loading } = useSearchResultCountQuery({
     variables: { input: input },
+    skip: savedSearches === undefined,
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
 
@@ -58,7 +63,7 @@ export default function SavedSearchQueries(props: {
   if (loading) {
     return (
       <PageSection>
-        <AcmExpandableWrapper withCount={false} expandable={false}>
+        <AcmExpandableWrapper id={'loading-wrapper'} withCount={false} expandable={false}>
           <AcmCountCard key={1} loading />
           <AcmCountCard key={2} loading />
           <AcmCountCard key={3} loading />
@@ -75,7 +80,7 @@ export default function SavedSearchQueries(props: {
             setSelectedSearch={setSelectedSearch}
             savedSearch={editSavedSearch}
             onClose={() => setEditSavedSearch(undefined)}
-            savedSearchQueries={savedSearches}
+            savedSearchQueries={savedSearches ?? []}
             userPreference={userPreference}
             setUserPreference={setUserPreference}
           />
@@ -89,8 +94,14 @@ export default function SavedSearchQueries(props: {
             setUserPreference={setUserPreference}
           />
         )}
-        {savedSearches.length > 0 && (
-          <AcmExpandableWrapper headerLabel={t('Saved searches')} withCount={false} expandable={true} minWidth={300}>
+        {savedSearches && savedSearches.length > 0 && (
+          <AcmExpandableWrapper
+            id={'saved-searches'}
+            headerLabel={t('Saved searches')}
+            withCount={false}
+            expandable={true}
+            minWidth={300}
+          >
             {savedSearches.map((savedSearch, index) => {
               const isErrorIndex = (error && error?.graphQLErrors.findIndex((error) => error.path?.[1] === index)) ?? -1
               return (
@@ -130,6 +141,7 @@ export default function SavedSearchQueries(props: {
           </AcmExpandableWrapper>
         )}
         <AcmExpandableWrapper
+          id={'suggested-search-templates'}
           headerLabel={t('Suggested search templates')}
           withCount={false}
           expandable={false}
@@ -153,7 +165,7 @@ export default function SavedSearchQueries(props: {
                 onCardClick={() => {
                   updateBrowserUrl(history, query.searchText)
                 }}
-                count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
+                count={data?.searchResult?.[(savedSearches?.length ?? 0) + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
                 countTitle={t('Results')}
                 onKeyPress={(KeyboardEvent: React.KeyboardEvent) => handleKeyPress(KeyboardEvent, query)}
               />

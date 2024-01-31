@@ -47,7 +47,12 @@ export const ExpandableSavedSearchWrapper = () => {
     )
   })
   return (
-    <AcmExpandableWrapper headerLabel={'Saved searches'} withCount={true} expandable={true}>
+    <AcmExpandableWrapper
+      id={'ExpandableSavedSearchWrapper'}
+      headerLabel={'Saved searches'}
+      withCount={true}
+      expandable={true}
+    >
       {renderAcmCountCards}
     </AcmExpandableWrapper>
   )
@@ -76,7 +81,12 @@ export const nonExpandableSuggestedSearchWrapper = () => {
     )
   })
   return (
-    <AcmExpandableWrapper headerLabel={'Suggested search templates'} withCount={false} expandable={false}>
+    <AcmExpandableWrapper
+      id={'nonExpandableSuggestedSearchWrapper'}
+      headerLabel={'Suggested search templates'}
+      withCount={false}
+      expandable={false}
+    >
       {renderAcmCountCards}
     </AcmExpandableWrapper>
   )
@@ -97,7 +107,7 @@ export const ExpandableRelatedResWrapper = () => {
     )
   })
   return (
-    <AcmExpandableWrapper withCount={false} expandable={true}>
+    <AcmExpandableWrapper id={'ExpandableRelatedResWrapper'} withCount={false} expandable={true}>
       {renderAcmTiles}
     </AcmExpandableWrapper>
   )
