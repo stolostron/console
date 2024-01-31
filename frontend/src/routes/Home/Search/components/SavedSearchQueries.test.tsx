@@ -112,6 +112,7 @@ describe('SavedSearchQueries Page', () => {
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SavedSearchQueries
+              isUserPreferenceLoading={false}
               savedSearches={[
                 {
                   description: 'testSavedQueryDesc1',
