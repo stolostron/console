@@ -5,7 +5,7 @@ import { render } from '@testing-library/react'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { isGlobalHubState } from '../../../atoms'
+import { isGlobalHubState, Settings, settingsState } from '../../../atoms'
 import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
@@ -177,6 +177,9 @@ test('Correctly returns CreateDetailsLink - Default', () => {
 })
 
 test('Correctly returns GlobalHub CreateDetailsLink - Default', () => {
+  const mockSettings: Settings = {
+    globalSearchFeatureFlag: 'enabled',
+  }
   const item = {
     name: 'testPodName',
     namespace: 'testPodNamespace',
@@ -185,7 +188,11 @@ test('Correctly returns GlobalHub CreateDetailsLink - Default', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot initializeState={(snapshot) => snapshot.set(isGlobalHubState, true)}>
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+      }}
+    >
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
@@ -312,7 +319,7 @@ test('Correctly returns all resource definitions', () => {
 test('Correctly returns resource with managedHub column', () => {
   const testItem = {
     cluster: 'testCluster',
-    managedhub: 'testManagedHub',
+    managedHub: 'testManagedHub',
     kind: 'Node',
     apiversion: 'v1',
     name: 'node.1',

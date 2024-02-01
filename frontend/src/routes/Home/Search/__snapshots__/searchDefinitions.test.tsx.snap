@@ -2057,7 +2057,7 @@ Array [
           "apiversion": "v1",
           "cluster": "testCluster",
           "kind": "Node",
-          "managedhub": "testManagedHub",
+          "managedHub": "testManagedHub",
           "name": "node.1",
         }
       }
