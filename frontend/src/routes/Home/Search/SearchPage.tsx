@@ -338,12 +338,13 @@ export default function SearchPage() {
   } = transformBrowserUrlToSearchString(window.location.search || '')
   usePageVisitMetricHandler(Pages.search)
   const { t } = useTranslation()
-  const savedSearches = t('Saved searches')
+  const savedSearchesText = t('Saved searches')
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
-  const [selectedSearch, setSelectedSearch] = useState(savedSearches)
+  const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
   const [queryMessages, setQueryMessages] = useState<any[]>([])
+  const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
 
   const { data, loading, error, refetch } = useSearchResultItemsQuery({
@@ -353,11 +354,14 @@ export default function SearchPage() {
   })
 
   useEffect(() => {
-    getUserPreference().then((resp) => setUserPreference(resp))
+    getUserPreference().then((resp) => {
+      setIsUserPreferenceLoading(false)
+      setUserPreference(resp)
+    })
   }, [])
 
   const userSavedSearches = useMemo(() => {
-    return userPreference?.spec?.savedSearches ?? undefined
+    return userPreference?.spec?.savedSearches ?? []
   }, [userPreference])
 
   useEffect(() => {
@@ -365,11 +369,11 @@ export default function SearchPage() {
       setSelectedSearch(t('Saved searches'))
     } else if (
       presetSearchQuery !== '' &&
-      userSavedSearches?.find((savedSearch) => savedSearch.searchText === presetSearchQuery)
+      userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)
     ) {
       // If you run a query already saved as a SavedSearch set the SavedSearch dropdown
       setSelectedSearch(
-        userSavedSearches?.find((savedSearch) => savedSearch.searchText === presetSearchQuery)?.name ??
+        userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)?.name ??
           t('Saved searches')
       )
     }
@@ -393,7 +397,7 @@ export default function SearchPage() {
           <RenderDropDownAndNewTab
             selectedSearch={selectedSearch}
             setSelectedSearch={setSelectedSearch}
-            savedSearchQueries={userSavedSearches ?? []}
+            savedSearchQueries={userSavedSearches}
           />
         </div>
       }
@@ -404,7 +408,7 @@ export default function SearchPage() {
           setSelectedSearch={setSelectedSearch}
           queryErrors={queryErrors}
           setQueryErrors={setQueryErrors}
-          savedSearchQueries={userSavedSearches ?? []}
+          savedSearchQueries={userSavedSearches}
           userPreference={userPreference}
           setUserPreference={setUserPreference}
           refetchSearch={refetch}
@@ -420,6 +424,7 @@ export default function SearchPage() {
             />
           ) : (
             <SavedSearchQueries
+              isUserPreferenceLoading={isUserPreferenceLoading}
               savedSearches={userSavedSearches}
               setSelectedSearch={setSelectedSearch}
               userPreference={userPreference}
