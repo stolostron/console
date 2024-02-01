@@ -1,23 +1,23 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs18-linux as dynamic-plugin
+FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
 RUN npm ci --no-optional --legacy-peer-deps
 RUN npm run build:plugin:mce
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs18-linux as backend
+FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
 WORKDIR /app/backend
 COPY ./backend .
 RUN npm ci --no-optional
 RUN npm run build
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs18-linux as production
+FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
-FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-18
+FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
