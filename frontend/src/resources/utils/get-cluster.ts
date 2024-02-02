@@ -36,6 +36,7 @@ import {
   checkForCondition,
   getConditionReason,
 } from './status-conditions'
+// import { getRoles } from '../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterNodes/ClusterNodes'
 
 export enum ClusterStatus {
   'pending' = 'pending',
@@ -718,13 +719,27 @@ export function getDistributionInfo(
   let ocp: OpenShiftDistributionInfo | undefined
   let displayVersion: string | undefined
 
+  const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+    (cc) => cc.name === 'product.open-cluster-management.io'
+  )?.value
+
+  let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+  switch (productClaim) {
+    case 'OpenShiftDedicated':
+    case 'ROSA':
+    case 'ARO':
+    case 'ROKS':
+      isManagedOpenShift = true
+      break
+  }
+
   if (managedCluster) {
     const k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
       (cc) => cc.name === 'kubeversion.open-cluster-management.io'
     )
     if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
     const versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
-    if (versionClaim) displayVersion = `OpenShift ${versionClaim.value}`
+    if (versionClaim) displayVersion = `${productClaim} ${versionClaim.value}`
   }
 
   if (managedClusterInfo) {
@@ -775,18 +790,28 @@ export function getDistributionInfo(
       failed: false,
     },
   }
-  const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
-    (cc) => cc.name === 'product.open-cluster-management.io'
-  )?.value
+  // For review = need to resolve issue with the import of getRoles() from ClusterNodes.tsx
+  function getRoles(node: NodeInfo): string[] {
+    const roles: string[] = []
+    const nodeRolePrefix = 'node-role.kubernetes.io/'
+    const index = nodeRolePrefix.length
+    if (node.labels) {
+      Object.keys(node.labels!).forEach((label) => {
+        if (label.startsWith(nodeRolePrefix)) {
+          roles.push(label.substring(index))
+        }
+      })
+    }
+    return roles
+  }
 
-  let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-  switch (productClaim) {
-    case 'OpenShiftDedicated':
-    case 'ROSA':
-    case 'ARO':
-    case 'ROKS':
-      isManagedOpenShift = true
-      break
+  const isUpgradeable = () => {
+    const { nodeList } = getNodes(managedClusterInfo)
+    const roleList = nodeList && nodeList.map((node: NodeInfo) => getRoles(node))
+    const hasControlPlane = roleList.filter((str) => {
+      return str.indexOf('control-plane') > -1
+    })
+    return hasControlPlane.length > 1
   }
 
   const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
@@ -894,7 +919,7 @@ export function getDistributionInfo(
       upgradeInfo.availableUpdates &&
       upgradeInfo.availableUpdates.length > 0 &&
       !upgradeInfo.upgradeFailed &&
-      !isManagedOpenShift &&
+      (!isManagedOpenShift || isUpgradeable()) &&
       !upgradeInfo.isUpgrading &&
       curatorIsIdle
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
@@ -903,7 +928,7 @@ export function getDistributionInfo(
     const isReadySelectChannels =
       upgradeInfo.availableChannels &&
       upgradeInfo.availableChannels.length > 0 &&
-      !isManagedOpenShift &&
+      (!isManagedOpenShift || isUpgradeable()) &&
       !upgradeInfo.isSelectingChannel &&
       curatorIsIdle
     upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
