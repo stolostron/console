@@ -149,6 +149,9 @@ export interface Settings {
   singleNodeOpenshift?: 'enabled' | 'disabled'
   awsPrivateWizardStep?: 'enabled' | 'disabled'
   globalSearchFeatureFlag?: 'enabled' | 'disabled'
+
+  APP_ARGO_SEARCH_RESULT_LIMIT?: string
+  APP_OCP_SEARCH_RESULT_LIMIT?: string
 }
 
 export interface WatchEvent {
@@ -192,4 +195,14 @@ export function useSearchResultLimit() {
 export function useSearchAutocompleteLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
+}
+
+export function useAppArgoSearchResultLimit() {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => parseInt(settings.APP_ARGO_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+}
+
+export function useAppOCPSearchResultLimit() {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
