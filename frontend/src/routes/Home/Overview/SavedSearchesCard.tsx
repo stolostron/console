@@ -41,7 +41,9 @@ const CardHeader = () => {
   )
 }
 
-export default function SavedSearchesCard(props: { isUserPreferenceLoading: boolean; savedSearches: SavedSearch[] }) {
+export default function SavedSearchesCard(
+  props: Readonly<{ isUserPreferenceLoading: boolean; savedSearches: SavedSearch[] }>
+) {
   const { isUserPreferenceLoading, savedSearches } = props
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
@@ -118,6 +120,7 @@ export default function SavedSearchesCard(props: { isUserPreferenceLoading: bool
         <CardBody>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto auto', columnGap: 16 }}>
             {savedSearches.map((savedSearch: SavedSearch, index: number) => {
+              const resultCount = data?.searchResult?.[index]?.count ?? 0
               return (
                 <Fragment key={savedSearch.id}>
                   <div
@@ -134,14 +137,14 @@ export default function SavedSearchesCard(props: { isUserPreferenceLoading: bool
                       </TextContent>
                     )}
                   </div>
-                  {data?.searchResult?.[index]?.count ?? 0 > 0 ? (
+                  {resultCount > 0 ? (
                     <Link
                       style={{ display: 'flex' }}
                       to={`${NavigationPath.search}?filters={"textsearch":${encodeURIComponent(
                         JSON.stringify(savedSearch.searchText)
                       )}}`}
                     >
-                      {data?.searchResult?.[index]?.count ?? 0}
+                      {resultCount}
                     </Link>
                   ) : (
                     0
