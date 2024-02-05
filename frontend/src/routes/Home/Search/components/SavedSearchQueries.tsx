@@ -18,12 +18,13 @@ import { ShareSearchModal } from './Modals/ShareSearchModal'
 import { useSuggestedQueryTemplates } from './SuggestedQueryTemplates'
 
 export default function SavedSearchQueries(props: {
-  savedSearches: SavedSearch[] | undefined
+  isUserPreferenceLoading: boolean
+  savedSearches: SavedSearch[]
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   userPreference?: UserPreference
   setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
 }) {
-  const { savedSearches, setSelectedSearch, userPreference, setUserPreference } = props
+  const { isUserPreferenceLoading, savedSearches, setSelectedSearch, userPreference, setUserPreference } = props
   const { t } = useTranslation()
   const history = useHistory()
   const { useSearchResultLimit } = useSharedAtoms()
@@ -37,7 +38,7 @@ export default function SavedSearchQueries(props: {
   // combine the suggested queries and saved queries
   const input = useMemo(
     () => [
-      ...(savedSearches?.map((query) => convertStringToQuery(query.searchText, searchResultLimit)) ?? []),
+      ...savedSearches.map((query) => convertStringToQuery(query.searchText, searchResultLimit)),
       ...suggestedQueryTemplates.map((query: { searchText: string }) =>
         convertStringToQuery(query.searchText, searchResultLimit)
       ),
@@ -46,7 +47,7 @@ export default function SavedSearchQueries(props: {
   )
   const { data, error, loading } = useSearchResultCountQuery({
     variables: { input: input },
-    skip: savedSearches === undefined,
+    skip: isUserPreferenceLoading, // avoid unnecessary query until we have saved search array
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
 
@@ -80,7 +81,7 @@ export default function SavedSearchQueries(props: {
             setSelectedSearch={setSelectedSearch}
             savedSearch={editSavedSearch}
             onClose={() => setEditSavedSearch(undefined)}
-            savedSearchQueries={savedSearches ?? []}
+            savedSearchQueries={savedSearches}
             userPreference={userPreference}
             setUserPreference={setUserPreference}
           />
@@ -94,7 +95,7 @@ export default function SavedSearchQueries(props: {
             setUserPreference={setUserPreference}
           />
         )}
-        {savedSearches && savedSearches.length > 0 && (
+        {savedSearches.length > 0 && (
           <AcmExpandableWrapper
             id={'saved-searches'}
             headerLabel={t('Saved searches')}
@@ -165,7 +166,7 @@ export default function SavedSearchQueries(props: {
                 onCardClick={() => {
                   updateBrowserUrl(history, query.searchText)
                 }}
-                count={data?.searchResult?.[(savedSearches?.length ?? 0) + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
+                count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
                 countTitle={t('Results')}
                 onKeyPress={(KeyboardEvent: React.KeyboardEvent) => handleKeyPress(KeyboardEvent, query)}
               />
