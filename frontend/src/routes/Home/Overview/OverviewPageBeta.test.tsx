@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
@@ -18,10 +19,13 @@ import {
   placementDecisionsState,
   policiesState,
   policyreportState,
+  Settings,
+  settingsState,
   subscriptionsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockPostRequest, nockRequest, nockSearch } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
+import { UserPreference } from '../../../resources'
 import {
   mockApplications,
   mockArgoApplications,
@@ -30,6 +34,7 @@ import {
   mockSearchResponseArgoApps,
   mockSearchResponseOCPApplications,
 } from '../../Applications/Application.sharedmocks'
+import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPageBeta from './OverviewPageBeta'
 import {
   appSets,
@@ -45,6 +50,60 @@ import {
   policyReports,
 } from './sharedmocks'
 
+const mockSettings: Settings = {
+  SEARCH_RESULT_LIMIT: '1000',
+}
+
+const mockUserPreference: UserPreference = {
+  apiVersion: 'console.open-cluster-management.io/v1',
+  kind: 'UserPreference',
+  metadata: {
+    name: 'kube-admin',
+  },
+  spec: {
+    savedSearches: [
+      {
+        description: 'testSavedQueryDesc1',
+        id: '1609811592984',
+        name: 'All pods',
+        searchText: 'kind:Pod',
+      },
+    ],
+  },
+}
+
+const savedSearchesMock = [
+  {
+    request: {
+      query: SearchResultCountDocument,
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              {
+                property: 'kind',
+                values: ['Pod'],
+              },
+            ],
+            limit: 1000,
+          },
+        ],
+      },
+    },
+    result: {
+      data: {
+        searchResult: [
+          {
+            count: 10,
+            __typename: 'SearchResult',
+          },
+        ],
+      },
+    },
+  },
+]
+
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
@@ -55,6 +114,7 @@ it('should render overview page with expected data', async () => {
     '/observability/query?query=cluster_operator_conditions',
     mockOperatorMetrics
   )
+  const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
 
   const { getAllByText, getByText } = render(
     <RecoilRoot
@@ -74,18 +134,30 @@ it('should render overview page with expected data', async () => {
         snapshot.set(discoveredApplicationsState, [])
         snapshot.set(helmReleaseState, [])
         snapshot.set(subscriptionsState, [])
+        snapshot.set(settingsState, mockSettings)
       }}
     >
       <Router history={createBrowserHistory()}>
-        <OverviewPageBeta selectedClusterLabels={{}} />
+        <MockedProvider mocks={savedSearchesMock}>
+          <OverviewPageBeta selectedClusterLabels={{}} />
+        </MockedProvider>
       </Router>
     </RecoilRoot>
   )
 
   // Wait for prometheus nocks to finish
-  await waitForNocks([metricNock, mockAlertMetricsNock, mockOperatorMetricsNock])
+  await waitForNocks([metricNock, mockAlertMetricsNock, mockOperatorMetricsNock, getUserPreferenceNock])
 
   // Test that the component has rendered correctly
   await waitFor(() => expect(getAllByText(/powered by insights/i)).toHaveLength(2))
   await waitFor(() => expect(getByText(/cluster health/i)).toBeTruthy())
+
+  // Check saved search card header strings
+  await waitFor(() => expect(getByText('Saved searches')).toBeTruthy())
+  await waitFor(() => expect(getByText('Manage')).toBeTruthy())
+
+  // check saved search card name & desc
+  await waitFor(() => expect(getByText('All pods')).toBeTruthy())
+  await waitFor(() => expect(getByText('testSavedQueryDesc1')).toBeTruthy())
+  await waitFor(() => expect(getByText('10')).toBeTruthy())
 })
