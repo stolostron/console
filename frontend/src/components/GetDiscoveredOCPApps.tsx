@@ -12,8 +12,17 @@ import { LoadingPage } from './LoadingPage'
 
 /* Copyright Contributors to the Open Cluster Management project */
 export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, cluster?: string) {
-  const { discoveredApplicationsState, discoveredOCPAppResourcesState } = useSharedAtoms()
-  const queryRemoteArgoAppsForClusterFunc = useCallback(() => queryRemoteArgoApps(cluster), [cluster])
+  const {
+    discoveredApplicationsState,
+    discoveredOCPAppResourcesState,
+    useAppArgoSearchResultLimit,
+    useAppOCPSearchResultLimit,
+  } = useSharedAtoms()
+  const argoSearcgResultLimit = useAppArgoSearchResultLimit()
+  const queryRemoteArgoAppsForClusterFunc = useCallback(
+    () => queryRemoteArgoApps(argoSearcgResultLimit, cluster),
+    [argoSearcgResultLimit, cluster]
+  )
   const queryRemoteArgoAppsFunc = cluster
     ? cluster == 'local-cluster'
       ? queryEmpty
@@ -23,7 +32,11 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
     pollInterval: 15,
   })
 
-  const queryOCPAppResourcesForClusterFunc = useCallback(() => queryOCPAppResources(cluster), [cluster])
+  const ocpSearchResultLimit = useAppOCPSearchResultLimit()
+  const queryOCPAppResourcesForClusterFunc = useCallback(
+    () => queryOCPAppResources(ocpSearchResultLimit, cluster),
+    [ocpSearchResultLimit, cluster]
+  )
   const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResources
   const {
     data: dataOCPResources,
