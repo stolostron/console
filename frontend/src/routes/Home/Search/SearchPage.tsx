@@ -357,7 +357,7 @@ export default function SearchPage() {
   }, [])
 
   const userSavedSearches = useMemo(() => {
-    return userPreference?.spec?.savedSearches ?? []
+    return userPreference?.spec?.savedSearches ?? undefined
   }, [userPreference])
 
   useEffect(() => {
@@ -365,11 +365,11 @@ export default function SearchPage() {
       setSelectedSearch(t('Saved searches'))
     } else if (
       presetSearchQuery !== '' &&
-      userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)
+      userSavedSearches?.find((savedSearch) => savedSearch.searchText === presetSearchQuery)
     ) {
       // If you run a query already saved as a SavedSearch set the SavedSearch dropdown
       setSelectedSearch(
-        userSavedSearches.find((savedSearch) => savedSearch.searchText === presetSearchQuery)?.name ??
+        userSavedSearches?.find((savedSearch) => savedSearch.searchText === presetSearchQuery)?.name ??
           t('Saved searches')
       )
     }
@@ -393,7 +393,7 @@ export default function SearchPage() {
           <RenderDropDownAndNewTab
             selectedSearch={selectedSearch}
             setSelectedSearch={setSelectedSearch}
-            savedSearchQueries={userSavedSearches}
+            savedSearchQueries={userSavedSearches ?? []}
           />
         </div>
       }
@@ -404,7 +404,7 @@ export default function SearchPage() {
           setSelectedSearch={setSelectedSearch}
           queryErrors={queryErrors}
           setQueryErrors={setQueryErrors}
-          savedSearchQueries={userSavedSearches}
+          savedSearchQueries={userSavedSearches ?? []}
           userPreference={userPreference}
           setUserPreference={setUserPreference}
           refetchSearch={refetch}
