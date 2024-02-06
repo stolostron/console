@@ -18,16 +18,17 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
     useAppArgoSearchResultLimit,
     useAppOCPSearchResultLimit,
   } = useSharedAtoms()
-  const argoSearcgResultLimit = useAppArgoSearchResultLimit()
+  const argoSearchResultLimit = useAppArgoSearchResultLimit()
   const queryRemoteArgoAppsForClusterFunc = useCallback(
-    () => queryRemoteArgoApps(argoSearcgResultLimit, cluster),
-    [argoSearcgResultLimit, cluster]
+    () => queryRemoteArgoApps(argoSearchResultLimit, cluster),
+    [argoSearchResultLimit, cluster]
   )
+  const queryRemoteArgoAppsCB = useCallback(() => queryRemoteArgoApps(argoSearchResultLimit), [argoSearchResultLimit])
   const queryRemoteArgoAppsFunc = cluster
     ? cluster == 'local-cluster'
       ? queryEmpty
       : queryRemoteArgoAppsForClusterFunc
-    : queryRemoteArgoApps
+    : queryRemoteArgoAppsCB
   const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc, undefined, {
     pollInterval: 15,
   })
@@ -37,7 +38,8 @@ export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, clus
     () => queryOCPAppResources(ocpSearchResultLimit, cluster),
     [ocpSearchResultLimit, cluster]
   )
-  const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResources
+  const queryOCPAppResourcesCB = useCallback(() => queryOCPAppResources(ocpSearchResultLimit), [ocpSearchResultLimit])
+  const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResourcesCB
   const {
     data: dataOCPResources,
     loading: loadingOCPResources,
