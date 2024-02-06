@@ -712,7 +712,7 @@ export const getControlDataAZR = (
     {
       id: 'networkStep',
       type: 'step',
-      title: 'Networking',
+      title: t('Networking'),
     },
     ...networkingControlData(t),
     ...proxyControlData(t),

@@ -38,7 +38,11 @@ export interface NodePool extends IResource {
     release: {
       image: string
     }
-    replicas: number
+    replicas?: number
+    autoscaling?: {
+      min: number
+      max: number
+    }
   }
   status?: {
     conditions?: {

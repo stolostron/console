@@ -19,7 +19,7 @@ import {
   AgentK8sResource,
   InfraEnvK8sResource,
   AGENT_LOCATION_LABEL_KEY,
-  getAgentStatus,
+  getAgentStatusKey,
   isCIMConfigured,
   isStorageConfigured,
   CimConfigurationModal,
@@ -289,10 +289,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     const infraAgents = agents.filter((a) =>
       isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
     )
-    const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
+    const errorAgents = infraAgents.filter((a) => getAgentStatusKey(a) === 'error')
     const warningAgents = infraAgents.filter((a) =>
       ['pending-for-input', 'insufficient', 'insufficient-unbound', 'disconnected-unbound', 'disconnected'].includes(
-        getAgentStatus(a).status.key
+        getAgentStatusKey(a)
       )
     )
 

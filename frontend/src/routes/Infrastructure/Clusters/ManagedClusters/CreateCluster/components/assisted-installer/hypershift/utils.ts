@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getVersionFromReleaseImage } from '@openshift-assisted/ui-lib/cim'
+import { TFunction } from 'i18next'
+import { FieldName } from '../types'
 
 export const getClusterImageSet = (clusterImageSets: any[], versionName = '') =>
   clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
@@ -21,3 +23,12 @@ export const getDefaultNetworkType = (
   }
   return 'OVNKubernetes'
 }
+
+export const getFieldLabels = (t: TFunction): Partial<{ [K in FieldName]: string }> => ({
+  name: t('Name'),
+  baseDnsDomain: t('Base DNS domain'),
+  releaseImage: t('cluster.create.ocp.image'),
+  pullSecret: t('Pull secret'),
+  openshiftVersion: t('OpenShift version'),
+  cpuArchitecture: t('CPU architecture'),
+})
