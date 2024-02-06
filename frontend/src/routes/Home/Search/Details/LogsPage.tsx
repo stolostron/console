@@ -372,14 +372,9 @@ export default function LogsPage(props: {
           setIsLoadingLogs(false)
         })
         .catch((err) => {
-          const managedCluster = managedClusters.find(
-            (mc: ManagedCluster) => /* istanbul ignore next */ mc.metadata?.name === cluster
-          )
-          const labels = managedCluster?.metadata?.labels ?? {}
-          const vendor = labels['vendor'] ?? ''
-          if (err.code === 400 && vendor.toLowerCase() !== 'openshift') {
+          if (err.code === 400) {
             setLogsError(
-              `Non-OpenShift Container Platform clusters require LoadBalancer to be enabled to retrieve logs. Follow the steps here to complete LoadBalancer setup: ${DOC_BASE_PATH}/release_notes/red-hat-advanced-cluster-management-for-kubernetes-release-notes#non-ocp-logs`
+              `RHACM requires cluster-proxy and managed-serviceaccount add-Ons to retrieve logs from 2.10. Please check if these add-Ons are enabled on Hub cluster firstly.`
             )
           } else {
             setLogsError(err.message)
