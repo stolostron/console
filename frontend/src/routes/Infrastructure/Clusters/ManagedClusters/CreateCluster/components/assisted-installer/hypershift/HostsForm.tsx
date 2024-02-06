@@ -5,6 +5,7 @@ import { FormikProps } from 'formik'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 
 type FormControl = {
   active: any // CIM.HostsFormValues
@@ -23,8 +24,16 @@ type HostsFormProps = {
 }
 
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
-  const { nodePools, setNodePools, clusterName, releaseImage, infraEnvNamespace, setInfraEnvNamespace } =
-    React.useContext(HypershiftAgentContext)
+  const {
+    nodePools,
+    setNodePools,
+    clusterName,
+    releaseImage,
+    infraEnvNamespace,
+    setInfraEnvNamespace,
+    controllerAvailabilityPolicy,
+    setControllerAvailabilityPolicy,
+  } = React.useContext(HypershiftAgentContext)
   const { agentsState, clusterImageSetsState, infraEnvironmentsState, nodePoolsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
   const [agents, infraEnvironments, clusterImageSets, currentNodePools] = useRecoilValue(
@@ -32,6 +41,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
   )
 
   const formRef = React.useRef<FormikProps<any>>(null)
+  const { t } = useTranslation()
 
   const initReleaseImage = getClusterImageSet(clusterImageSets, releaseImage)?.spec?.releaseImage
 
@@ -41,6 +51,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       control.step.title.isComplete = false
       setNodePools(values.nodePools)
       setInfraEnvNamespace(values.agentNamespace)
+      setControllerAvailabilityPolicy(values.controllerAvailabilityPolicy)
       handleChange(control)
     }
     // eslint-disable-next-line
@@ -53,17 +64,17 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
 
   control.summary = () => [
     {
-      term: 'Hosts namespace',
+      term: t('Hosts namespace'),
       desc: control.active.agentNamespace,
     },
     {
-      term: 'Node pools',
+      term: t('Node pools'),
       desc: control.active.nodePools.length,
     },
     {
-      term: 'Hosts count',
+      term: t('Hosts count'),
       desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
-        acc += nodePool.count
+        acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
         return acc
       }, 0),
     },
@@ -80,6 +91,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       initReleaseImage={initReleaseImage}
       initNodePools={nodePools}
       nodePools={currentNodePools}
+      controllerAvailabilityPolicy={controllerAvailabilityPolicy}
     />
   ) : (
     <LoadingState />

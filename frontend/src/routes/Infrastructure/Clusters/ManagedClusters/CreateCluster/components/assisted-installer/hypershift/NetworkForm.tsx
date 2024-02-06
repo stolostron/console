@@ -10,6 +10,7 @@ import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../
 import { getTemplateValue } from '../utils'
 import { defaultHostPrefix, defaultPodCIDR, defaultServiceCIDR } from './constants'
 import { getClusterImageVersion, getDefaultNetworkType } from './utils'
+import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 
 type FormControl = {
   active: any
@@ -77,6 +78,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
     waitForAll([agentsState, infrastructuresState, clusterImageSetsState])
   )
 
+  const { t } = useTranslation()
   const formRef = React.useRef<FormikProps<any>>(null)
 
   const onValuesChanged = React.useCallback((values: NetworkFormValues) => {
@@ -107,11 +109,11 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
   control.summary = () => {
     const summary = [
       {
-        term: 'Machine CIDR',
+        term: t('creation.ocp.machine.cidr'),
         desc: control.active.machineCIDR,
       },
       {
-        term: 'SSH public key',
+        term: t('SSH public key'),
         desc: control.active.sshPublicKey,
       },
     ]
@@ -120,15 +122,15 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
       summary.push(
         ...[
           {
-            term: 'Cluster network CIDR',
+            term: t('creation.ocp.cluster.network'),
             desc: control.active.clusterNetworkCidr,
           },
           {
-            term: 'Cluster network host prefix',
+            term: t('Cluster network host prefix'),
             desc: control.active.clusterNetworkHostPrefix,
           },
           {
-            term: 'Service network CIDR',
+            term: t('Service network CIDR'),
             desc: control.active.serviceNetworkCidr,
           },
         ]

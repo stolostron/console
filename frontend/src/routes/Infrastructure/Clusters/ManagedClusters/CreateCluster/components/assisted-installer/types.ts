@@ -6,3 +6,11 @@ export type ModalProps = {
   nmState?: NMStateK8sResource
   secret?: SecretK8sResource
 }
+
+export type FieldName =
+  | 'name'
+  | 'baseDnsDomain'
+  | 'releaseImage'
+  | 'pullSecret'
+  | 'openshiftVersion'
+  | 'cpuArchitecture'
