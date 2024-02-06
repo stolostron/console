@@ -560,7 +560,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
           <Divider />
           <CardTitle>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              {t('My view')}
+              {t('Your view')}
               <Button
                 onClick={() => setIsCustomizationSectionOpen(!isCustomizationSectionOpen)}
                 icon={isCustomizationSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
