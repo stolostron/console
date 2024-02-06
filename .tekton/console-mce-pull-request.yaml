@@ -41,8 +41,6 @@ spec:
         name: show-sbom
     - name: show-summary
       params:
-      - name: pipelinerun-name
-        value: $(context.pipelineRun.name)
       - name: git-url
         value: $(tasks.clone-repository.results.url)?rev=$(tasks.clone-repository.results.commit)
       - name: image-url
@@ -124,10 +122,6 @@ spec:
         value: $(params.rebuild)
       - name: skip-checks
         value: $(params.skip-checks)
-      - name: pipelinerun-name
-        value: $(context.pipelineRun.name)
-      - name: pipelinerun-uid
-        value: $(context.pipelineRun.uid)
       taskRef:
         bundle: quay.io/redhat-appstudio-tekton-catalog/task-init:0.2@sha256:3d8f01fa59596a998d30dc700fcf7377f09d60008337290eebaeaf604512ce2b
         name: init
@@ -177,8 +171,6 @@ spec:
         value: $(params.dockerfile)
       - name: CONTEXT
         value: $(params.path-context)
-      - name: DOCKER_AUTH
-        value: $(tasks.init.results.container-registry-secret)
       - name: HERMETIC
         value: $(params.hermetic)
       - name: PREFETCH_INPUT
@@ -204,8 +196,6 @@ spec:
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: IMAGE_DIGEST
         value: $(tasks.build-container.results.IMAGE_DIGEST)
-      - name: DOCKER_AUTH
-        value: $(tasks.init.results.container-registry-secret)
       runAfter:
       - build-container
       taskRef:
@@ -268,8 +258,6 @@ spec:
         value: $(tasks.build-container.results.IMAGE_DIGEST)
       - name: image-url
         value: $(tasks.build-container.results.IMAGE_URL)
-      - name: docker-auth
-        value: $(tasks.init.results.container-registry-secret)
       runAfter:
       - build-container
       taskRef:
@@ -307,8 +295,6 @@ spec:
         value: $(tasks.build-container.results.IMAGE_DIGEST)
       - name: image-url
         value: $(tasks.build-container.results.IMAGE_URL)
-      - name: docker-auth
-        value: $(tasks.init.results.container-registry-secret)
       runAfter:
       - build-container
       taskRef:
