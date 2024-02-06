@@ -41,6 +41,8 @@ spec:
         name: show-sbom
     - name: show-summary
       params:
+      - name: pipelinerun-name
+        value: $(context.pipelineRun.name)
       - name: git-url
         value: $(tasks.clone-repository.results.url)?rev=$(tasks.clone-repository.results.commit)
       - name: image-url
