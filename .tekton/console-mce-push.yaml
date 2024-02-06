@@ -170,6 +170,8 @@ spec:
         value: $(params.dockerfile)
       - name: CONTEXT
         value: $(params.path-context)
+      - name: DOCKER_AUTH
+        value: $(tasks.init.results.container-registry-secret)
       - name: HERMETIC
         value: $(params.hermetic)
       - name: PREFETCH_INPUT
@@ -195,6 +197,8 @@ spec:
         value: $(tasks.build-container.results.IMAGE_URL)
       - name: IMAGE_DIGEST
         value: $(tasks.build-container.results.IMAGE_DIGEST)
+      - name: DOCKER_AUTH
+        value: $(tasks.init.results.container-registry-secret)
       runAfter:
       - build-container
       taskRef:
