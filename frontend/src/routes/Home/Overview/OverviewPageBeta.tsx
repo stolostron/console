@@ -14,7 +14,7 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useRouteMatch } from 'react-router-dom'
 import { GetDiscoveredOCPApps } from '../../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
@@ -22,7 +22,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { ArgoApplication, Cluster } from '../../../resources'
+import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
@@ -45,6 +45,7 @@ import {
   parseAlertsMetric,
   parseOperatorMetric,
 } from './overviewDataFunctions'
+import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
 
 function renderSummaryLoading() {
@@ -103,8 +104,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(true)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
+  const [isCustomizationSectionOpen, setIsCustomizationSectionOpen] = useState<boolean>(true)
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
   const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+  const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
+  const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
 
   const grafanaRoute = useMemo(() => {
@@ -267,6 +271,17 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   } = useMemo(() => {
     return parseAlertsMetric(alertsResult, filteredClusterNames, t)
   }, [alertsResult, filteredClusterNames, t])
+
+  useEffect(() => {
+    getUserPreference().then((resp) => {
+      setIsUserPreferenceLoading(false)
+      setUserPreference(resp)
+    })
+  }, [])
+
+  const userSavedSearches = useMemo(() => {
+    return userPreference?.spec?.savedSearches ?? []
+  }, [userPreference])
 
   return (
     <AcmScrollable>
@@ -537,6 +552,32 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     loading={!clusterAddonData}
                     data={clusterAddonData}
                     colorScale={colorThemes.criticalLowUnknownSuccess}
+                  />
+                </GalleryItem>
+              </Gallery>
+            </CardBody>
+          )}
+          <Divider />
+          <CardTitle>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {t('Your view')}
+              <Button
+                onClick={() => setIsCustomizationSectionOpen(!isCustomizationSectionOpen)}
+                icon={isCustomizationSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
+                variant={'plain'}
+              />
+            </div>
+          </CardTitle>
+          {isCustomizationSectionOpen && (
+            <CardBody isFilled={false}>
+              <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
+                <GalleryItem
+                  key={'cluster-recommendations-card'}
+                  style={{ flex: 1, minWidth: '375px', maxWidth: '50%' }}
+                >
+                  <SavedSearchesCard
+                    isUserPreferenceLoading={isUserPreferenceLoading}
+                    savedSearches={userSavedSearches}
                   />
                 </GalleryItem>
               </Gallery>
