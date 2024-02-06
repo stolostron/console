@@ -5,6 +5,7 @@ import { FormikProps } from 'formik'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 
 type FormControl = {
   active: any // CIM.HostsFormValues
@@ -40,6 +41,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
   )
 
   const formRef = React.useRef<FormikProps<any>>(null)
+  const { t } = useTranslation()
 
   const initReleaseImage = getClusterImageSet(clusterImageSets, releaseImage)?.spec?.releaseImage
 
@@ -62,15 +64,15 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
 
   control.summary = () => [
     {
-      term: 'Hosts namespace',
+      term: t('Hosts namespace'),
       desc: control.active.agentNamespace,
     },
     {
-      term: 'Node pools',
+      term: t('Node pools'),
       desc: control.active.nodePools.length,
     },
     {
-      term: 'Hosts count',
+      term: t('Hosts count'),
       desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
         acc += nodePool.count
         return acc
