@@ -374,7 +374,7 @@ export default function LogsPage(props: {
         .catch((err) => {
           if (err.code === 400) {
             setLogsError(
-              `RHACM requires cluster-proxy and managed-serviceaccount add-Ons to retrieve logs from 2.10. Please check if these add-Ons are enabled on Hub cluster firstly.`
+              `Red Hat Advanced Cluster Management requires `cluster-proxy-addon` and the `managed-serviceaccount` add-on to retrieve logs from 2.10. Make sure that these add-ons are enabled on the hub cluster.`
             )
           } else {
             setLogsError(err.message)
