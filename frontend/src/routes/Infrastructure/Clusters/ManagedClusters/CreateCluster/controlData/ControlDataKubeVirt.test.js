@@ -4,6 +4,7 @@
 
 import i18next from 'i18next'
 import { Warning } from '../Warning'
+import { setAvailableStorageClasses } from './ControlDataHelpers'
 import { getControlDataKubeVirt, setKubeVirtSecrets } from './ControlDataKubeVirt'
 
 const t = i18next.t.bind(i18next)
@@ -82,5 +83,61 @@ describe('Cluster creation control data for KubeVirt', () => {
     }
     setKubeVirtSecrets(emptyControl)
     expect(emptyControl).toMatchSnapshot()
+  })
+  it('Correctly sets available storage classes', () => {
+    const control = {
+      controlId: 'storageClassName',
+      isLoading: false,
+      isLoaded: true,
+      hasReplacements: true,
+      availableMap: {
+        'gp3-csi': {
+          replacements: {
+            storageClassName: 'gp3-csi',
+          },
+        },
+      },
+      available: [],
+    }
+    const result = {
+      loading: false,
+      data: [
+        {
+          metadata: {
+            name: 'storageclass1',
+          },
+          provisioner: 'test.com',
+          parameters: {
+            encrypted: 'true',
+            type: 'sc1',
+          },
+          reclaimPolicy: 'Delete',
+          allowVolumeExpansion: true,
+          volumeBindingMode: 'WaitForFirstConsumer',
+          apiVersion: 'storage.k8s.io/v1',
+          kind: 'StorageClass',
+        },
+        {
+          metadata: {
+            name: 'storageclass2',
+            annotations: {
+              'storageclass.kubernetes.io/is-default-class': 'true',
+            },
+          },
+          provisioner: 'test.com',
+          parameters: {
+            encrypted: 'true',
+            type: 'sc2',
+          },
+          reclaimPolicy: 'Delete',
+          allowVolumeExpansion: true,
+          volumeBindingMode: 'WaitForFirstConsumer',
+          apiVersion: 'storage.k8s.io/v1',
+          kind: 'StorageClass',
+        },
+      ],
+    }
+    setAvailableStorageClasses(control, result)
+    expect(control).toMatchSnapshot()
   })
 })

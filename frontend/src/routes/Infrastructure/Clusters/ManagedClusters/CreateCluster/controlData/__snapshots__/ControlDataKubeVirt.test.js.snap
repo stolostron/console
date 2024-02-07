@@ -33,6 +33,31 @@ Object {
 }
 `;
 
+exports[`Cluster creation control data for KubeVirt Correctly sets available storage classes 1`] = `
+Object {
+  "available": Array [
+    "storageclass2",
+  ],
+  "availableMap": Object {
+    "gp3-csi": Object {
+      "replacements": Object {
+        "storageClassName": "gp3-csi",
+      },
+    },
+    "storageclass2": Object {
+      "replacements": Object {
+        "storageClassName": "storageclass2",
+      },
+    },
+  },
+  "controlId": "storageClassName",
+  "hasReplacements": true,
+  "isLoaded": true,
+  "isLoading": false,
+  "noHandlebarReplacements": true,
+}
+`;
+
 exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
 Array [
   Object {
