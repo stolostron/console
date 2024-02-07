@@ -14,11 +14,10 @@ import {
 } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
-import { Dispatch, MutableRefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import screenfull from 'screenfull'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { DOC_BASE_PATH } from '../../../../lib/doc-util'
-import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { fetchRetry, getBackendUrl } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../../ui-components'
 import { LogViewerSearch } from './LogsViewerSearch'
@@ -297,7 +296,7 @@ export default function LogsPage(props: {
   const { t } = useTranslation()
   const [isLoadingLogs, setIsLoadingLogs] = useState<boolean>(false)
   const [logs, setLogs] = useState<string>('')
-  const [logsError, setLogsError] = useState<string>()
+  const [logsError, setLogsError] = useState<ReactNode>()
   const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
 
   const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(false)
@@ -373,9 +372,7 @@ export default function LogsPage(props: {
         })
         .catch((err) => {
           if (err.code === 400) {
-            setLogsError(
-              `Red Hat Advanced Cluster Management requires `cluster-proxy-addon` and the `managed-serviceaccount` add-on to retrieve logs from 2.10. Make sure that these add-ons are enabled on the hub cluster.`
-            )
+            setLogsError(<Trans i18nKey="acm.logs.error" components={{ code: <code /> }} />)
           } else {
             setLogsError(err.message)
           }
