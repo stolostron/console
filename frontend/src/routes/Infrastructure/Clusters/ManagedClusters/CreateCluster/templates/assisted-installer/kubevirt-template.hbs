@@ -1,0 +1,160 @@
+---
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+metadata:
+  name: '{{{clusterName}}}'
+  namespace: '{{{clusterName}}}'
+  labels:
+  {{#if clusterSet}}
+    "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
+  {{/if}}
+spec:
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+          {{#if storageClassName}}
+          storageClassName: {{{storageClassName}}}
+          {{/if}}
+        type: PersistentVolume
+    managementType: Managed
+  release:
+    image: {{{releaseImage}}}
+  pullSecret:
+    name: pullsecret-cluster-{{{clusterName}}}
+  sshKey:
+    name: sshkey-cluster-{{{clusterName}}}
+  networking:
+    clusterNetwork:
+      - cidr: 10.132.0.0/14
+    serviceNetwork:
+      - cidr: 172.31.0.0/16
+    networkType: OVNKubernetes
+  platform:
+    type: KubeVirt
+    kubevirt:
+      baseDomainPassthrough: true
+  infraID: '{{{clusterName}}}'
+  services:
+  - service: OAuthServer
+    servicePublishingStrategy:
+      type: Route
+  - service: OIDC
+    servicePublishingStrategy:
+      type: Route
+  - service: Konnectivity
+    servicePublishingStrategy:
+      type: Route
+  - service: Ignition
+    servicePublishingStrategy:
+      type: Route
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pullsecret-cluster-{{{clusterName}}}
+  namespace: {{{clusterName}}}
+data:
+  '.dockerconfigjson': {{{pullSecret}}}
+type: kubernetes.io/dockerconfigjson
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sshkey-cluster-{{{clusterName}}}
+  namespace: '{{{clusterName}}}'
+stringData:
+  id_rsa.pub: {{{ssh-publickey}}}
+
+{{#each nodepools}}
+---
+apiVersion: hypershift.openshift.io/v1beta1
+kind: NodePool
+metadata:
+  name: '{{{this.nodePoolName}}}'
+  namespace: '{{{@root.clusterName}}}'
+spec:
+  arch: amd64
+  clusterName: '{{{@root.clusterName}}}'
+  replicas: {{{this.nodePoolReplica}}}
+  management:
+    {{#if this.nodePoolAutoRepair}}
+    autoRepair: {{{this.nodePoolAutoRepair}}}
+    {{else}}
+    autoRepair: false
+    {{/if}}
+    upgradeType: Replace
+  platform:
+    type: KubeVirt
+    kubevirt:
+      compute:
+        cores: {{{this.nodePoolCoreCount}}}
+        memory: {{{this.nodePoolMemory}}}Gi
+      rootVolume:
+        type: Persistent
+        persistent:
+          size: {{{rootVolumeSize}}}Gi
+          {{#if this.rootVolumeAccessMode}}
+          accessModes:
+            - {{{this.rootVolumeAccessMode}}}
+          {{/if}}
+          {{#if this.rootVolumeStorageClass}}
+          storageClass: {{{this.rootVolumeStorageClass}}}
+          {{/if}}
+          {{#if this.rootVolumeVolMode}}
+          volumeMode: {{{this.rootVolumeVolMode}}}
+          {{/if}}
+  release:
+    image: {{{@root.releaseImage}}}
+
+{{/each}}
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  annotations:
+    import.open-cluster-management.io/hosting-cluster-name: local-cluster 
+    import.open-cluster-management.io/klusterlet-deploy-mode: Hosted
+    open-cluster-management/created-via: hypershift
+  labels:
+    cloud: BareMetal
+    vendor: OpenShift
+    name: '{{{clusterName}}}'
+    {{#if clusterSet}}
+    cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
+    {{/if}}
+    {{#each additionalLabels}}
+    {{{key}}}: '{{{value}}}'
+    {{/each}}
+  name: '{{{clusterName}}}'
+spec:
+  hubAcceptsClient: true
+
+{{#if includeKlusterletAddonConfig}}
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: '{{{clusterName}}}'
+  namespace: '{{{clusterName}}}'
+spec:
+  clusterName: '{{{clusterName}}}'
+  clusterNamespace: '{{{clusterName}}}'
+  clusterLabels:
+    cloud: BareMetal
+    vendor: OpenShift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+{{/if}}
+---

@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import { PageSection, Modal, ModalVariant } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
+import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { generatePath, useHistory } from 'react-router-dom'
@@ -23,43 +23,47 @@ import {
   IResource,
   ProviderConnection,
   Secret,
+  SubscriptionOperator,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
-import endpointTemplate from './templates/endpoints.hbs'
-import clusterCuratorTemplate from './templates/cluster-curator.hbs'
-import hiveTemplate from './templates/hive-template.hbs'
-import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
-import cimTemplate from './templates/assisted-installer/cim-template.hbs'
-import aiTemplate from './templates/assisted-installer/ai-template.hbs'
-import nutanixCimTemplate from './templates/assisted-installer/nutanix-cim-template.hbs'
-import nutanixAiTemplate from './templates/assisted-installer/nutanix-ai-template.hbs'
-import { Warning, WarningContext, WarningContextType } from './Warning'
 import {
   HypershiftAgentContext,
   useHypershiftContextValues,
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
+import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
+import aiTemplate from './templates/assisted-installer/ai-template.hbs'
+import cimTemplate from './templates/assisted-installer/cim-template.hbs'
+import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
+import kubevirtTemplate from './templates/assisted-installer/kubevirt-template.hbs'
+import nutanixAiTemplate from './templates/assisted-installer/nutanix-ai-template.hbs'
+import nutanixCimTemplate from './templates/assisted-installer/nutanix-cim-template.hbs'
+import clusterCuratorTemplate from './templates/cluster-curator.hbs'
+import endpointTemplate from './templates/endpoints.hbs'
+import hiveTemplate from './templates/hive-template.hbs'
+import { Warning, WarningContext, WarningContextType } from './Warning'
 
-import './style.css'
-import getControlDataAWS from './controlData/ControlDataAWS'
-import getControlDataGCP from './controlData/ControlDataGCP'
-import getControlDataAZR from './controlData/ControlDataAZR'
-import getControlDataVMW from './controlData/ControlDataVMW'
-import getControlDataOST from './controlData/ControlDataOST'
-import getControlDataRHV from './controlData/ControlDataRHV'
-import getControlDataHypershift from './controlData/ControlDataHypershift'
-import getControlDataCIM from './controlData/ControlDataCIM'
-import getControlDataAI from './controlData/ControlDataAI'
-import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import jsyaml from 'js-yaml'
 import { GetProjects } from '../../../../../components/GetProjects'
-import { useSharedAtoms, useRecoilState, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
+import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
   ClusterInfrastructureType,
-  HostInventoryInfrastructureType,
   getCredentialsTypeForClusterInfrastructureType,
+  HostInventoryInfrastructureType,
 } from '../ClusterInfrastructureType'
-import jsyaml from 'js-yaml'
+import { useAllClusters } from '../components/useAllClusters'
+import getControlDataAI from './controlData/ControlDataAI'
+import getControlDataAWS from './controlData/ControlDataAWS'
+import getControlDataAZR from './controlData/ControlDataAZR'
+import getControlDataCIM from './controlData/ControlDataCIM'
+import getControlDataGCP from './controlData/ControlDataGCP'
+import getControlDataHypershift from './controlData/ControlDataHypershift'
+import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
+import getControlDataOST from './controlData/ControlDataOST'
+import getControlDataRHV from './controlData/ControlDataRHV'
+import getControlDataVMW from './controlData/ControlDataVMW'
+import './style.css'
 
 interface CreationStatus {
   status: string
@@ -83,8 +87,15 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const { infrastructureType } = props
   const history = useHistory()
   const { back, cancel } = useBackCancelNavigation()
-  const { agentClusterInstallsState, infraEnvironmentsState, managedClustersState, secretsState, settingsState } =
-    useSharedAtoms()
+  const allClusters = useAllClusters(true)
+  const {
+    agentClusterInstallsState,
+    infraEnvironmentsState,
+    managedClustersState,
+    secretsState,
+    settingsState,
+    subscriptionOperatorsState,
+  } = useSharedAtoms()
   const {
     ansibleCredentialsValue,
     clusterCuratorSupportedCurationsValue,
@@ -98,7 +109,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const templateEditorRef = useRef<null>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-
   const { projects } = GetProjects()
 
   // setup translation
@@ -109,6 +119,10 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       to: path,
     }
   }
+  const controlPlaneBreadCrumbKubeVirt = generateBreadCrumb(
+    'OpenShift Virtualization',
+    NavigationPath.createKubeVirtControlPlane
+  )
   const controlPlaneBreadCrumbBM = generateBreadCrumb('Host Inventory', NavigationPath.createBMControlPlane)
   const controlPlaneBreadCrumbNutanix = generateBreadCrumb('Nutanix', NavigationPath.createCluster)
   const controlPlaneBreadCrumbAWS = generateBreadCrumb('AWS', NavigationPath.createAWSControlPlane)
@@ -119,6 +133,16 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const managedClusters = useRecoilValue(managedClustersState)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
+
+  const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+  const isKubevirtEnabled = useMemo(() => {
+    return (
+      subscriptionOperators.findIndex(
+        (operator: SubscriptionOperator) => operator.metadata.name === 'kubevirt-hyperconverged'
+      ) > -1
+    )
+  }, [subscriptionOperators])
+
   const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
   const onControlChange = useCallback(
     (control: any) => {
@@ -127,9 +151,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           control.setActive(newSecret.metadata.name)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
+      } else if (control.id === 'kubevirt-operator-alert') {
+        control.hidden = isKubevirtEnabled
       }
     },
-    [providerConnections, setSelectedConnection, newSecret]
+    [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled]
   )
   const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
   const [infraEnvs] = useRecoilState(infraEnvironmentsState)
@@ -161,6 +187,16 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       <div id={Portals.createBtn} />
     </div>
   )
+
+  // If KubeVirt operator is installed/uninstalled toggle the Alert via control data
+  const [kubeVirtOperatorControl, setKubeVirtOperatorControl] = useState<any>()
+  useEffect(() => {
+    if (kubeVirtOperatorControl) {
+      onControlChange(kubeVirtOperatorControl)
+    }
+  }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange])
+
+  const localCluster = useMemo(() => allClusters.find((cls) => cls.name === 'local-cluster'), [allClusters])
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -302,6 +338,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           control.active = true
         }
         break
+      case 'kubevirt-operator-alert':
+        setKubeVirtOperatorControl(control)
+        break
       case 'reviewSave':
         control.mutation = () => {
           return new Promise((resolve) => {
@@ -310,8 +349,10 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
               if (resourceJSON) {
                 const { createResources } = resourceJSON
                 const map = keyBy(createResources, 'kind')
-                const clusterName = get(map, 'ClusterDeployment.metadata.name')
-                const clusterNamespace = get(map, 'ClusterDeployment.metadata.namespace')
+                const clusterName =
+                  get(map, 'ClusterDeployment.metadata.name') || get(map, 'HostedCluster.metadata.name')
+                const clusterNamespace =
+                  get(map, 'ClusterDeployment.metadata.namespace') || get(map, 'HostedCluster.metadata.name')
                 const isAssistedFlow = map.InfraEnv
                 createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved')).then(
                   (status) => {
@@ -447,6 +488,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       template = Handlebars.compile(aiTemplate)
       controlData = getControlDataAI(t, handleModalToggle, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
+      break
+    case Provider.kubevirt:
+      template = Handlebars.compile(kubevirtTemplate)
+      controlData = getControlDataKubeVirt(t, handleModalToggle, <Warning />, isACMAvailable, localCluster)
+      breadcrumbs.push(controlPlaneBreadCrumbKubeVirt)
       break
   }
 

@@ -4,8 +4,8 @@ import { LocationDescriptor } from 'history'
 import { useContext, useMemo } from 'react'
 import { generatePath } from 'react-router'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Cluster } from './resources'
 import { LostChangesContext } from './components/LostChanges'
+import { Cluster } from './resources'
 
 export const UNKNOWN_NAMESPACE = '~managed-cluster'
 
@@ -52,6 +52,7 @@ export enum NavigationPath {
   createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
   createCluster = '/multicloud/infrastructure/clusters/create',
   createAWSCLI = '/multicloud/infrastructure/clusters/create/aws/cli',
+  createKubeVirt = '/multicloud/infrastructure/clusters/create/kubevirt',
   createKubeVirtCLI = '/multicloud/infrastructure/clusters/create/kubevirt/cli',
   editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
   clusterDetails = '/multicloud/infrastructure/clusters/details/:namespace/:name',

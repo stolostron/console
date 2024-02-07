@@ -2,11 +2,11 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateKubeVirtControlPlane } from './CreateKubeVirtControlPlane'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
-import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
 import {
   mockManagedClusterAddOn,
   mockMultiClusterEngine,
@@ -37,13 +37,13 @@ describe('CreateKubeVirtControlPlane', () => {
   }
 
   test('Hosted should be enabled when hypershift is enabled', async () => {
-    const { getByTestId } = render(<Component />)
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+    const { getAllByTestId } = render(<Component />)
+    expect(isCardEnabled(getAllByTestId('hosted')[1])).toBe(true)
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {
-    const { getByTestId } = render(<Component enableHypershift={false} />)
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
-    await clickByTestId('hosted')
+    const { getAllByTestId } = render(<Component enableHypershift={false} />)
+    expect(isCardEnabled(getAllByTestId('hosted')[1])).toBe(false)
+    await clickByTestId('hosted', 1)
   })
 })
