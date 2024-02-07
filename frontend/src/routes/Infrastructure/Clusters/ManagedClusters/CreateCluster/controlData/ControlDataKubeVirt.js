@@ -44,7 +44,7 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-export const setKubeVirtSecrets = (control, _) => {
+export const setKubeVirtSecrets = (control) => {
   const { active, availableMap = {}, available } = control
   const replacements = get(availableMap[active], 'replacements')
   const activePullSecret = replacements?.pullSecret ?? ''
