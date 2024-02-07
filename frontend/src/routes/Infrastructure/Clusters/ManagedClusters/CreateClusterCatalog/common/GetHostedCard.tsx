@@ -10,7 +10,7 @@ import {
 import { TFunction } from 'react-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 
-function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean): ICatalogCard {
+function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean, isCLI: boolean): ICatalogCard {
   return {
     id: 'hosted',
     title: t('Hosted'),
@@ -43,12 +43,14 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
         {t('View documentation')} <ExternalLinkAltIcon />
       </a>
     ),
-    badgeList: [
-      {
-        badge: t('CLI-based'),
-        badgeColor: CatalogColor.purple,
-      },
-    ],
+    badgeList: isCLI
+      ? [
+          {
+            badge: t('CLI-based'),
+            badgeColor: CatalogColor.purple,
+          },
+        ]
+      : [],
   }
 }
 export default GetHostedCard

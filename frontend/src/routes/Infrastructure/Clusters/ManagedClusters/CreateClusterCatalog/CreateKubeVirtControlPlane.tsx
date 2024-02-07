@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo } from 'react'
+import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
+import { Provider } from '../../../../../ui-components'
+import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import GetHostedCard from './common/GetHostedCard'
-import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 
 export function CreateKubeVirtControlPlane() {
   const [t] = useTranslation()
@@ -14,7 +16,10 @@ export function CreateKubeVirtControlPlane() {
   const isHypershiftEnabled = useIsHypershiftEnabled()
 
   const cards = useMemo(() => {
-    const newCards: ICatalogCard[] = [GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI), t, isHypershiftEnabled)]
+    const newCards: ICatalogCard[] = [
+      GetHostedCard(nextStep(getTypedCreateClusterPath(Provider.kubevirt)), t, isHypershiftEnabled, false),
+      GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI), t, isHypershiftEnabled, true),
+    ]
     return newCards
   }, [nextStep, t, isHypershiftEnabled])
 

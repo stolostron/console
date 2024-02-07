@@ -1,27 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React from 'react'
-import PropTypes from 'prop-types'
 import { Alert, Button } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import classNames from 'classnames'
+import PropTypes from 'prop-types'
+import React from 'react'
+import '../css/control-panel.css'
 import ControlPanelAccordion from './ControlPanelAccordion'
-import ControlPanelTextInput from './ControlPanelTextInput'
-import ControlPanelComboBox from './ControlPanelComboBox'
-import ControlPanelTextArea from './ControlPanelTextArea'
-import ControlPanelNumber from './ControlPanelNumber'
-import ControlPanelCheckbox from './ControlPanelCheckbox'
-import ControlPanelSingleSelect from './ControlPanelSingleSelect'
-import ControlPanelTreeSelect from './ControlPanelTreeSelect'
-import ControlPanelMultiSelect from './ControlPanelMultiSelect'
+import ControlPanelBoolean from './ControlPanelBoolean'
 import ControlPanelCards from './ControlPanelCards'
+import ControlPanelCheckbox from './ControlPanelCheckbox'
+import ControlPanelComboBox from './ControlPanelComboBox'
 import ControlPanelLabels from './ControlPanelLabels'
+import ControlPanelMultiSelect from './ControlPanelMultiSelect'
+import ControlPanelNumber from './ControlPanelNumber'
+import ControlPanelPrompt from './ControlPanelPrompt'
+import ControlPanelSingleSelect from './ControlPanelSingleSelect'
+import ControlPanelSkeleton from './ControlPanelSkeleton'
+import ControlPanelTextArea from './ControlPanelTextArea'
+import ControlPanelTextInput from './ControlPanelTextInput'
+import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import ControlPanelValues from './ControlPanelValues'
 import ControlPanelWizard from './ControlPanelWizard'
-import ControlPanelPrompt from './ControlPanelPrompt'
-import ControlPanelSkeleton from './ControlPanelSkeleton'
-import '../css/control-panel.css'
 
 class ControlPanel extends React.Component {
   static propTypes = {
@@ -538,6 +539,17 @@ class ControlPanel extends React.Component {
       case 'values':
         return (
           <ControlPanelValues
+            key={controlId}
+            controlId={controlId}
+            control={control}
+            controlData={controlData}
+            handleChange={this.handleControlChange.bind(this, control)}
+            i18n={i18n}
+          />
+        )
+      case 'boolean':
+        return (
+          <ControlPanelBoolean
             key={controlId}
             controlId={controlId}
             control={control}

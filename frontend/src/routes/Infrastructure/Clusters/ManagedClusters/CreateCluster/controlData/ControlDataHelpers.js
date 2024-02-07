@@ -1,26 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  getValue,
-  getCIDRValidator,
-  getNumericValidator,
-  VALIDATE_BASE_DNS_NAME_REQUIRED,
-  VALID_DNS_LABEL,
-  getURLValidator,
-  getNoProxyValidator,
-  getSourcePath,
-} from '../../../../../../components/TemplateEditor'
-import { getControlByID } from '../../../../../../lib/temptifly-utils'
-import { listClusterImageSets } from '../../../../../../resources'
-import { unpackProviderConnection } from '../../../../../../resources'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
-import { TemplateSummaryControl, TemplateLinkOutControl } from '../../../../../../components/TemplateSummaryModal'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
-import { AcmAlert } from '../../../../../../ui-components'
+import {
+  getCIDRValidator,
+  getNoProxyValidator,
+  getNumericValidator,
+  getSourcePath,
+  getURLValidator,
+  getValue,
+  VALIDATE_BASE_DNS_NAME_REQUIRED,
+  VALID_DNS_LABEL,
+} from '../../../../../../components/TemplateEditor'
+import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util.tsx'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
+import { NavigationPath } from '../../../../../../NavigationPath'
+import { listClusterImageSets, listStorageClasses, unpackProviderConnection } from '../../../../../../resources'
+import { AcmAlert } from '../../../../../../ui-components'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -39,6 +38,17 @@ export const LOAD_OCP_IMAGES = (provider, t) => {
     loadingDesc: t('creation.ocp.cloud.loading.ocp.images'),
     setAvailable: setAvailableOCPImages.bind(null, provider),
     setAvailableMap: setAvailableOCPMap.bind(null),
+  }
+}
+
+export const LOAD_ETCD_CLASSES = (t) => {
+  return {
+    query: () => {
+      return listStorageClasses().promise
+    },
+    emptyDesc: t('No etcd storage classes. Enter an etcd storage classes name.'),
+    loadingDesc: t('Loading etcd storage classes...'),
+    setAvailable: setAvailableStorageClasses.bind(null),
   }
 }
 
@@ -112,6 +122,12 @@ export const setAvailableOCPImages = (provider, control, result) => {
                 return
               }
               break
+            case 'kubevirt':
+              if (!versionGreater(releaseImage, 4, 13)) {
+                // Has to be 4.14 or greater
+                return
+              }
+              break
             default:
               break
           }
@@ -148,6 +164,46 @@ export const setAvailableOCPMap = (control) => {
             releaseImage: active,
           },
         }
+  }
+}
+
+export const setAvailableStorageClasses = (control, result) => {
+  const { loading } = result
+  const { data } = result
+  const storageclasses = data
+  control.isLoading = false
+  const error = storageclasses ? null : result.error
+  if (!control.available) {
+    control.available = []
+    control.availableMap = {}
+  }
+  if (control.available.length === 0 && (error || storageclasses)) {
+    if (error) {
+      control.hasReplacements = true
+      control.noHandlebarReplacements = true
+      control.isFailed = true
+    } else if (storageclasses) {
+      control.isLoaded = true
+      control.hasReplacements = true
+      control.noHandlebarReplacements = true
+      storageclasses.forEach((item) => {
+        const {
+          metadata: { name, annotations },
+        } = item
+        const defaultClassAnnotation = annotations?.['storageclass.kubernetes.io/is-default-class']
+        if (defaultClassAnnotation) {
+          control.available.push(name)
+          control.availableMap[name] = {
+            replacements: {
+              storageClassName: name,
+            },
+          }
+        }
+      })
+      control.available.reverse()
+    }
+  } else {
+    control.isLoading = loading
   }
 }
 
@@ -196,8 +252,8 @@ export const setAvailableConnections = (control, secrets) => {
   const perPostSection = control.groupControlData?.find(({ id }) => id === 'perPostSection')
   if (
     Array.isArray(control.providerId)
-      ? !control.providerId.some((provider) => ['hostinventory', 'nutanix'].includes(provider))
-      : !['hostinventory', 'nutanix'].includes(control.providerId)
+      ? !control.providerId.some((provider) => ['hostinventory', 'nutanix', 'kubevirt'].includes(provider))
+      : !['hostinventory', 'nutanix', 'kubevirt'].includes(control.providerId)
   ) {
     // unset default ansible secret for subscription wizard as it's not required
     if (control.setActive && !control.active && !perPostSection) {
@@ -335,6 +391,17 @@ export const onImageChange = (control, controlData) => {
 
 export const reverseImageSet = (control, templateObject) => {
   const active = _.get(templateObject, getSourcePath('ClusterDeployment[0].spec.provisioning.imageSetRef.name'))
+  if (active && !control.active) {
+    control.active = active.$v
+  }
+  return control
+}
+
+export const reverseStorageClass = (control, templateObject) => {
+  const active = _.get(
+    templateObject,
+    getSourcePath('HostedCluster[0].spec.etcd.managed.storage.persistentVolume.storageClassName')
+  )
   if (active && !control.active) {
     control.active = active.$v
   }

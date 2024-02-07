@@ -1,24 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import YAML from 'yaml'
-import {
-  AcmEmptyState,
-  AcmIcon,
-  AcmPage,
-  AcmPageHeader,
-  AcmToastContext,
-  Provider,
-  ProviderIconMap,
-  ProviderLongTextMap,
-} from '../../ui-components'
-import _, { noop, get } from 'lodash'
+import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useRouteMatch, ExtractRouteParams } from 'react-router'
-import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
+import { ExtractRouteParams, useHistory, useRouteMatch } from 'react-router'
+import YAML from 'yaml'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
+import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
@@ -53,10 +43,20 @@ import {
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
-import schema from './schema.json'
-import { CredentialsType } from './CredentialsType'
+import { useRecoilCallback, useSharedAtoms } from '../../shared-recoil'
+import {
+  AcmEmptyState,
+  AcmIcon,
+  AcmPage,
+  AcmPageHeader,
+  AcmToastContext,
+  Provider,
+  ProviderIconMap,
+  ProviderLongTextMap,
+} from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
-import { LostChangesContext } from '../../components/LostChanges'
+import { CredentialsType } from './CredentialsType'
+import schema from './schema.json'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -479,6 +479,10 @@ export function CredentialsForm(
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
         break
+      case Provider.kubevirt:
+        stringData.pullSecret = pullSecret
+        stringData['ssh-publickey'] = sshPublickey
+        break
     }
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
       stringData.pullSecret += '\n'
@@ -489,7 +493,7 @@ export function CredentialsForm(
     if (
       stringData?.['ssh-publickey'] &&
       !stringData['ssh-publickey'].endsWith('\n') &&
-      ![Provider.hostinventory, Provider.nutanix].includes(credentialsType as Provider)
+      ![Provider.hostinventory, Provider.nutanix, Provider.kubevirt].includes(credentialsType as Provider)
     ) {
       stringData['ssh-publickey'] += '\n'
     }
@@ -1426,6 +1430,7 @@ export function CredentialsForm(
               Provider.redhatvirtualization,
               Provider.hybrid,
               Provider.hostinventory,
+              Provider.kubevirt,
               Provider.nutanix,
             ].includes(credentialsType as Provider),
             type: 'TextArea',
@@ -1471,6 +1476,7 @@ export function CredentialsForm(
               Provider.vmware,
               Provider.hybrid,
               Provider.hostinventory,
+              Provider.kubevirt,
               Provider.nutanix,
             ].includes(credentialsType as Provider),
             type: 'TextArea',
@@ -1483,9 +1489,11 @@ export function CredentialsForm(
               validatePublicSshKey(
                 value,
                 t,
-                ![Provider.hybrid, Provider.hostinventory, Provider.nutanix].includes(credentialsType as Provider)
+                ![Provider.hybrid, Provider.hostinventory, Provider.nutanix, Provider.kubevirt].includes(
+                  credentialsType as Provider
+                )
               ),
-            isRequired: ![Provider.hybrid, Provider.hostinventory, Provider.nutanix].includes(
+            isRequired: ![Provider.hybrid, Provider.hostinventory, Provider.nutanix, Provider.kubevirt].includes(
               credentialsType as Provider
             ),
             isSecret: true,
