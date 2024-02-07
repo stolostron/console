@@ -45,11 +45,6 @@ describe('CreateCredentialsPage', () => {
     await clickByTestId('openstack')
   })
 
-  test('can select rhv', async () => {
-    render(<Component />)
-    await clickByTestId('rhv')
-  })
-
   test('can select vsphere', async () => {
     render(<Component />)
     await clickByTestId('vsphere')
@@ -60,6 +55,11 @@ describe('CreateCredentialsPage', () => {
     await clickByTestId('hostinventory')
   })
 
+  test('can select kubevirt', async () => {
+    render(<Component />)
+    await clickByTestId('kubevirt')
+  })
+
   test('can select ansible', async () => {
     render(<Component />)
     await clickByTestId('ansible')
@@ -68,6 +68,13 @@ describe('CreateCredentialsPage', () => {
   test('can select redhatcloud', async () => {
     render(<Component />)
     await clickByTestId('redhatcloud')
+  })
+
+  test('can select rhv - located in page 2', async () => {
+    render(<Component />)
+    // screen.logTestingPlaygroundURL()
+    userEvent.click(screen.getByRole('button', { name: /go to next page/i }))
+    await clickByTestId('rhv')
   })
 
   test('can click cancel', async () => {
