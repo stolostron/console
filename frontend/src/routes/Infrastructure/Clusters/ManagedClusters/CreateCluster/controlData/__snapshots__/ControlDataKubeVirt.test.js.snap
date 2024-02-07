@@ -1,5 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Cluster creation control data for KubeVirt Correctly returns setKubeVirtSecrets with pull secret & ssh key 1`] = `
+Object {
+  "active": "kube-virt-cred-test",
+  "available": Array [
+    "kube-virt-cred-test",
+  ],
+  "availableMap": Object {
+    "kube-virt-cred-test": Object {
+      "replacements": Object {
+        "pullSecret": "cHVsbFNlY3JldERhdGE=",
+        "ssh-publickey": "ssh-publickey TESTING johndoe@email.com",
+      },
+    },
+  },
+}
+`;
+
+exports[`Cluster creation control data for KubeVirt Correctly returns setKubeVirtSecrets without pull secret & ssh key 1`] = `
+Object {
+  "available": Array [
+    "kube-virt-cred-test",
+  ],
+  "availableMap": Object {
+    "kube-virt-cred-test": Object {
+      "replacements": Object {
+        "pullSecret": "pullSecretData",
+        "ssh-publickey": "ssh-publickey TESTING johndoe@email.com",
+      },
+    },
+  },
+}
+`;
+
 exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
 Array [
   Object {
