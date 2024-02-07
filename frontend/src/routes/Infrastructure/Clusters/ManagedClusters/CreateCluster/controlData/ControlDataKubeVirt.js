@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import _ from 'lodash'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
@@ -44,7 +43,7 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-const setKubeVirtSecrets = (control, controlData) => {
+const setKubeVirtSecrets = (control, _) => {
   const { active, availableMap = {}, available } = control
   const replacements = _.get(availableMap[active], 'replacements')
   const activePullSecret = replacements?.pullSecret ?? ''

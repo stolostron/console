@@ -47,9 +47,9 @@ describe('Cluster creation control data for KubeVirt', () => {
   }
 
   it('generates correctly', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, true, true)).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, true, {})).toMatchSnapshot()
   })
   it('generates correctly for MCE', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, false, false)).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, false, localCluster)).toMatchSnapshot()
   })
 })

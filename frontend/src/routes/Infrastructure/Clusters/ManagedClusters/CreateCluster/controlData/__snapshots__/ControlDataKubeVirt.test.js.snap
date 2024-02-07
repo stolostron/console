@@ -173,7 +173,7 @@ Array [
         "id": "nodePoolName",
         "name": "Node pool name",
         "placeholder": "Enter node pool name",
-        "tooltip": "The unique name of your NodePool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
+        "tooltip": "The unique name of your node pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
         "type": "text",
         "validation": Object {
           "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
@@ -197,14 +197,14 @@ Array [
         "id": "nodePoolCoreCount",
         "initial": "2",
         "name": "Core",
-        "tooltip": "number of cores assigned to each worker node VM",
+        "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
       },
       Object {
         "id": "nodePoolMemory",
         "initial": "8",
         "name": "Memory (GiB)",
-        "tooltip": "memory assigned to each worker node VM",
+        "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
       },
       Object {
@@ -329,7 +329,7 @@ Array [
         </span>
         <AcmButton
           component="a"
-          href=""
+          href="https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com/operatorhub/all-namespaces?keyword=Openshift+Virtualization"
           icon={
             <ExternalLinkAltIcon
               color="currentColor"
@@ -453,7 +453,7 @@ Array [
         "id": "nodePoolName",
         "name": "Node pool name",
         "placeholder": "Enter node pool name",
-        "tooltip": "The unique name of your NodePool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
+        "tooltip": "The unique name of your node pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
         "type": "text",
         "validation": Object {
           "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
@@ -477,14 +477,14 @@ Array [
         "id": "nodePoolCoreCount",
         "initial": "2",
         "name": "Core",
-        "tooltip": "number of cores assigned to each worker node VM",
+        "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
       },
       Object {
         "id": "nodePoolMemory",
         "initial": "8",
         "name": "Memory (GiB)",
-        "tooltip": "memory assigned to each worker node VM",
+        "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
       },
       Object {

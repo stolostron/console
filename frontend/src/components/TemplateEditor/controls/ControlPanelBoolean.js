@@ -25,7 +25,7 @@ class ControlPanelBoolean extends React.Component {
 
   render() {
     const { controlId, control, controlData, handleChange, i18n } = this.props
-    const { name, active, type, tip, isTrue } = control
+    const { tip, isTrue } = control
 
     const onChange = () => {
       control.isTrue = !isTrue
@@ -44,7 +44,7 @@ class ControlPanelBoolean extends React.Component {
             <div style={{ display: 'flex' }}>
               <div style={{ marginRight: '40px' }}>
                 <Radio
-                  aria-label={'true'}
+                  aria-label={`${controlId}-true`}
                   id={`${controlId}-true`}
                   label={'True'}
                   isChecked={isTrue}
@@ -55,7 +55,7 @@ class ControlPanelBoolean extends React.Component {
               </div>
               <div>
                 <Radio
-                  aria-label={'false'}
+                  aria-label={`${controlId}-false`}
                   id={`${controlId}-false`}
                   label={'False'}
                   isChecked={!isTrue}
