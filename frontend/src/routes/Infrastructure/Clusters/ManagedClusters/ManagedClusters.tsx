@@ -34,7 +34,9 @@ import {
   ClusterStatus,
   getAddonStatusLabel,
   getClusterStatusLabel,
+  getRoles,
   ManagedClusterDefinition,
+  NodeInfo,
   patchResource,
   ResourceErrorCode,
 } from '../../../../resources'
@@ -702,6 +704,15 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
   return {
     header: t('table.controlplane'),
     cell: (cluster) => {
+      const clusterHasControlPlane = () => {
+        const nodeList = cluster.nodes?.nodeList
+        const roleList = nodeList && nodeList.map((node: NodeInfo) => getRoles(node))
+        const hasControlPlane = roleList?.filter((str) => {
+          return str.indexOf('control-plane') > -1
+        })
+        return hasControlPlane ? hasControlPlane.length > 0 : false
+      }
+
       if (cluster.name === 'local-cluster') {
         return t('Hub')
       }
@@ -711,7 +722,11 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
         }
         return t('Hub')
       }
-      if (cluster.isHostedCluster || cluster.isHypershift) {
+      if (
+        cluster.isHostedCluster ||
+        cluster.isHypershift ||
+        (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
+      ) {
         return t('Hosted')
       } else {
         return t('Standalone')

@@ -724,7 +724,7 @@ export function getDistributionInfo(
     const hasControlPlane = roleList.filter((str) => {
       return str.indexOf('control-plane') > -1
     })
-    return hasControlPlane.length > 1
+    return hasControlPlane.length > 0
   }
 
   const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
