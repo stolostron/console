@@ -637,9 +637,9 @@ function getApplicationType(
     return t('ArgoCD')
   } else if (isAppSet) {
     if (isPullModel) {
-      return t('Application set - pull model')
+      return t('Application set - Pull model')
     } else {
-      return t('Application set - push model')
+      return t('Application set - Push model')
     }
   } else if (isOCPApp) {
     return t('OpenShift')

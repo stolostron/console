@@ -475,6 +475,6 @@ describe('Create Argo Application Set', () => {
     )
 
     await new Promise((resolve) => setTimeout(resolve, 500))
-    await waitForText('Edit application set - pull model')
+    await waitForText('Edit application set - Pull model')
   })
 })
