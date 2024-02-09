@@ -11,7 +11,7 @@ import {
   AcmSubmit,
 } from '../../../../../../../ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import { TFunction } from 'react-i18next'
 
@@ -64,6 +64,26 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
         t('machinePool.modal.scale.enable-autoscale.message')
     */
 
+  const positiveValidation = useCallback(
+    (count: number) => {
+      if (count < 0) return t('machinePool.modal.scale.validation.positive')
+      return undefined
+    },
+    [t]
+  )
+
+  const maxReplicasValidation = useCallback(
+    (count: number) => {
+      if (count < minReplicas) return t('Maximum replicas must be greater than or equal to to minimum replicas.')
+      // We only need to enforce machineSetCount as minimum for maxReplicas
+      // until https://issues.redhat.com/browse/HIVE-2415 is fixed
+      if (count < machineSetCount) return t('machinePool.modal.scale.validation.maxReplicas', { machineSetCount })
+      if (count < 0) return t('machinePool.modal.scale.validation.positive')
+      return undefined
+    },
+    [machineSetCount, minReplicas, t]
+  )
+
   return (
     <AcmModal
       variant={ModalVariant.medium}
@@ -95,10 +115,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                   onChange={(event) => setReplicas(Number((event.target as HTMLInputElement).value))}
                   onMinus={() => setReplicas(replicas - 1)}
                   onPlus={() => setReplicas(replicas + 1)}
-                  validation={(count: number) => {
-                    if (count < 0) return t('machinePool.modal.scale.validation.positive')
-                    return undefined
-                  }}
+                  validation={positiveValidation}
                 />
               ) : (
                 <>
@@ -106,29 +123,25 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                     required
                     label={t('machinePool.modal.scale.minReplicas.label')}
                     id="scale-min"
-                    min={machineSetCount}
+                    min={0}
                     value={minReplicas}
                     onChange={(event) => setMinReplicas(Number((event.target as HTMLInputElement).value))}
                     onMinus={() => setMinReplicas(minReplicas - 1)}
                     onPlus={() => setMinReplicas(minReplicas + 1)}
-                    validation={(count: number) => {
-                      if (count < 0) return t('machinePool.modal.scale.validation.positive')
-                      return undefined
-                    }}
+                    validation={positiveValidation}
                   />
                   <AcmNumberInput
                     required
                     label={t('machinePool.modal.scale.maxReplicas.label')}
                     id="scale-max"
-                    min={props.machinePool?.status?.machineSets?.length}
+                    // We only need to enforce machineSetCount as minimum for maxReplicas
+                    // until https://issues.redhat.com/browse/HIVE-2415 is fixed
+                    min={Math.max(0, minReplicas, machineSetCount)}
                     value={maxReplicas}
                     onChange={(event) => setMaxReplicas(Number((event.target as HTMLInputElement).value))}
                     onMinus={() => setMaxReplicas(maxReplicas - 1)}
                     onPlus={() => setMaxReplicas(maxReplicas + 1)}
-                    validation={(count: number) => {
-                      if (count < 0) return t('machinePool.modal.scale.validation.positive')
-                      return undefined
-                    }}
+                    validation={maxReplicasValidation}
                   />
                 </>
               )}
