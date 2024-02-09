@@ -8,7 +8,7 @@ import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { NodeInfo } from '../../../../../../resources'
+import { NodeInfo, getRoles } from '../../../../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
@@ -42,20 +42,6 @@ function getLabelSortFn(label: string | string[]) {
     return aValue.localeCompare(bValue)
   }
   return labelSortFn
-}
-
-function getRoles(node: NodeInfo): string[] {
-  const roles: string[] = []
-  const nodeRolePrefix = 'node-role.kubernetes.io/'
-  const index = nodeRolePrefix.length
-  if (node.labels) {
-    Object.keys(node.labels!).forEach((label) => {
-      if (label.startsWith(nodeRolePrefix)) {
-        roles.push(label.substring(index))
-      }
-    })
-  }
-  return roles
 }
 
 function rolesCellFn(node: NodeInfo): ReactNode {
