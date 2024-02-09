@@ -425,10 +425,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
         title={
           resources
             ? isPullModel
-              ? t('Edit application set - pull model')
+              ? t('Edit application set - Pull model')
               : t('Edit application set - push model')
             : isPullModel
-            ? t('Create application set - pull model')
+            ? t('Create application set - Pull model')
             : t('Create application set - push model')
         }
         yamlEditor={props.yamlEditor}

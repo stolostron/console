@@ -1013,11 +1013,11 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-argo-pull-model',
-            text: t('ArgoCD ApplicationSet - Pull model'),
+            text: t('Argo CD ApplicationSet - Pull model'),
           },
           {
             id: 'create-argo',
-            text: t('ArgoCD ApplicationSet - Push model'),
+            text: t('Argo CD ApplicationSet - Push model'),
           },
           {
             id: 'create-subscription',
@@ -1042,24 +1042,24 @@ export default function ApplicationsOverview() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{'ArgoCD ApplicationSet - Pull model'}</Text>
+                <Text>{'Argo CD ApplicationSet - Pull model'}</Text>
               </span>
               <span>
                 <Text>
                   {
-                    'ApplicationSet applicaiton where ArgoCD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the applicaiton using the received applicaiton resource.'
+                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
                   }
                 </Text>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{'ArgoCD ApplicationSet - Push model'}</Text>
+                <Text>{'Argo CD ApplicationSet - Push model'}</Text>
               </span>
               <span>
                 <Text>
                   {
-                    'ApplicationSet applicaiton where ArgoCD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
+                    'ApplicationSet application where Argo CD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
                   }
                 </Text>
               </span>
@@ -1071,7 +1071,7 @@ export default function ApplicationsOverview() {
               <span>
                 <Text>
                   {
-                    'Subscription applicaiton where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
+                    'Subscription application where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
                   }
                 </Text>
               </span>

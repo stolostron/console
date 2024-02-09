@@ -105,7 +105,7 @@ export function CreateApplicationArgoPullModel() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - pull model') },
+        { text: t('Create application set - Pull model') },
       ]}
       clusters={managedClusters}
       clusterSets={clusterSets}
