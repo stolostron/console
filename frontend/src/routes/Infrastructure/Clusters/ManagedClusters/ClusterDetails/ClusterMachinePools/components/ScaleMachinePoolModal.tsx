@@ -74,7 +74,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
 
   const maxReplicasValidation = useCallback(
     (count: number) => {
-      if (count < minReplicas) return t('Maximum replicas must be greater than or equal to to minimum replicas.')
+      if (count < minReplicas) return t('Maximum replicas must be greater than or equal to minimum replicas.')
       // We only need to enforce machineSetCount as minimum for maxReplicas
       // until https://issues.redhat.com/browse/HIVE-2415 is fixed
       if (count < machineSetCount) return t('machinePool.modal.scale.validation.maxReplicas', { machineSetCount })
