@@ -194,9 +194,7 @@ export function MachinePoolsTable() {
         if (machinePool.spec?.autoscaling) {
           actions = actions.filter((action) => action.id !== 'scaleMachinePool')
           actions = actions.filter((action) => action.id !== 'enableAutoscale')
-        }
-
-        if (machinePool.spec?.replicas) {
+        } else {
           actions = actions.filter((action) => action.id !== 'disableAutoscale')
           actions = actions.filter((action) => action.id !== 'editAutoscale')
         }
