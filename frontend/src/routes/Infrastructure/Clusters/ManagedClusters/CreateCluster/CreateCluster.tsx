@@ -149,6 +149,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       if (control.id === 'connection') {
         if (newSecret && control.setActive) {
           control.setActive(newSecret.metadata.name)
+          setNewSecret(undefined) // override with the new secret once
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
