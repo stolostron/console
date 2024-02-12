@@ -81,3 +81,17 @@ export interface ManagedClusterInfo extends IResource {
     }
   }
 }
+
+export function getRoles(node: NodeInfo): string[] {
+  const roles: string[] = []
+  const nodeRolePrefix = 'node-role.kubernetes.io/'
+  const index = nodeRolePrefix.length
+  if (node.labels) {
+    Object.keys(node.labels).forEach((label) => {
+      if (label.startsWith(nodeRolePrefix)) {
+        roles.push(label.substring(index))
+      }
+    })
+  }
+  return roles
+}

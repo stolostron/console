@@ -17,7 +17,7 @@ import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator, isAutomationTemplate } from '../cluster-curator'
 import { ClusterDeployment } from '../cluster-deployment'
 import { ManagedCluster } from '../managed-cluster'
-import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../managed-cluster-info'
+import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo, getRoles } from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { getLatest } from './utils'
 import { AddonStatus, mapAddons } from './get-addons'
@@ -718,20 +718,50 @@ export function getDistributionInfo(
   let ocp: OpenShiftDistributionInfo | undefined
   let displayVersion: string | undefined
 
+  const isManagedOpenShiftUpgradeable = () => {
+    const { nodeList } = getNodes(managedClusterInfo)
+    const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
+    const hasControlPlane = roleList.filter((str) => {
+      return str.indexOf('control-plane') > -1
+    })
+    return hasControlPlane.length > 0
+  }
+
+  const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
+    (cc) => cc.name === 'product.open-cluster-management.io'
+  )?.value
+
+  let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
+  let distributionValue = 'OpenShift'
+  switch (productClaim) {
+    case 'OpenShiftDedicated':
+      distributionValue = 'OSD'
+      isManagedOpenShift = true
+      break
+    case 'ROSA':
+      distributionValue = isManagedOpenShiftUpgradeable() ? 'ROSA Classic' : 'ROSA'
+      isManagedOpenShift = true
+      break
+    case 'ARO':
+    case 'ROKS':
+      isManagedOpenShift = true
+      break
+  }
+
   if (managedCluster) {
     const k8sVersionClaim = managedCluster.status?.clusterClaims?.find(
       (cc) => cc.name === 'kubeversion.open-cluster-management.io'
     )
     if (k8sVersionClaim) k8sVersion = k8sVersionClaim.value
     const versionClaim = managedCluster.status?.clusterClaims?.find((cc) => cc.name === 'version.openshift.io')
-    if (versionClaim) displayVersion = `OpenShift ${versionClaim.value}`
+    if (versionClaim) displayVersion = `${distributionValue} ${versionClaim.value}`
   }
 
   if (managedClusterInfo) {
     k8sVersion = managedClusterInfo.status?.version
     ocp = managedClusterInfo.status?.distributionInfo?.ocp
     if (displayVersion === undefined) {
-      displayVersion = ocp?.version ? `OpenShift ${ocp.version}` : k8sVersion
+      displayVersion = ocp?.version ? `${distributionValue} ${ocp.version}` : k8sVersion
     }
   }
 
@@ -774,19 +804,6 @@ export function getDistributionInfo(
       success: false,
       failed: false,
     },
-  }
-  const productClaim: string | undefined = managedCluster?.status?.clusterClaims?.find(
-    (cc) => cc.name === 'product.open-cluster-management.io'
-  )?.value
-
-  let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
-  switch (productClaim) {
-    case 'OpenShiftDedicated':
-    case 'ROSA':
-    case 'ARO':
-    case 'ROKS':
-      isManagedOpenShift = true
-      break
   }
 
   const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
@@ -894,7 +911,7 @@ export function getDistributionInfo(
       upgradeInfo.availableUpdates &&
       upgradeInfo.availableUpdates.length > 0 &&
       !upgradeInfo.upgradeFailed &&
-      !isManagedOpenShift &&
+      (!isManagedOpenShift || isManagedOpenShiftUpgradeable()) &&
       !upgradeInfo.isUpgrading &&
       curatorIsIdle
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
@@ -903,7 +920,7 @@ export function getDistributionInfo(
     const isReadySelectChannels =
       upgradeInfo.availableChannels &&
       upgradeInfo.availableChannels.length > 0 &&
-      !isManagedOpenShift &&
+      (!isManagedOpenShift || isManagedOpenShiftUpgradeable()) &&
       !upgradeInfo.isSelectingChannel &&
       curatorIsIdle
     upgradeInfo.isReadySelectChannels = !!isReadySelectChannels
