@@ -133,7 +133,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'cache-first',
   })
 
   const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
@@ -346,6 +346,7 @@ export default function SearchPage() {
   const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
+  const [userSavedSearches, setUserSavedSearches] = useState<SavedSearch[]>([])
 
   const { data, loading, error, refetch } = useSearchResultItemsQuery({
     skip: presetSearchQuery === '',
@@ -355,14 +356,11 @@ export default function SearchPage() {
 
   useEffect(() => {
     getUserPreference().then((resp) => {
-      setIsUserPreferenceLoading(false)
       setUserPreference(resp)
+      setUserSavedSearches(resp?.spec?.savedSearches ?? [])
+      setIsUserPreferenceLoading(false)
     })
   }, [])
-
-  const userSavedSearches = useMemo(() => {
-    return userPreference?.spec?.savedSearches ?? []
-  }, [userPreference])
 
   useEffect(() => {
     if (presetSearchQuery === '') {
