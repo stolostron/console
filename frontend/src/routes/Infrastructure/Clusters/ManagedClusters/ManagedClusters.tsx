@@ -706,7 +706,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster) => {
       const clusterHasControlPlane = () => {
         const nodeList = cluster.nodes?.nodeList
-        const roleList = nodeList && nodeList.map((node: NodeInfo) => getRoles(node))
+        const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
         const hasControlPlane = roleList?.filter((str) => {
           return str.indexOf('control-plane') > -1
         })
