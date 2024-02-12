@@ -814,7 +814,7 @@ export const mockMachinePoolAuto: MachinePool = {
     },
     autoscaling: {
       minReplicas: 1,
-      maxReplicas: 3,
+      maxReplicas: 6,
     },
   },
   status: {
