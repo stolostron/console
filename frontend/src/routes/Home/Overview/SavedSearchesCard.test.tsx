@@ -98,7 +98,6 @@ describe('SavedSearchesCard', () => {
         </Router>
       </RecoilRoot>
     )
-    screen.logTestingPlaygroundURL()
 
     // Check header strings
     await waitFor(() => expect(getByText('Personalize this view')).toBeTruthy())
