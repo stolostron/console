@@ -6,6 +6,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
+import { deleteResource } from '../../../../../resources/utils/resource-request'
 import { useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmModal } from '../../../../../ui-components'
 import { convertStringToQuery } from '../../search-helper'
@@ -77,137 +78,161 @@ export const DeleteResourceModal = (props: any) => {
     return () => canDeleteResource.abort()
   }, [apiGroup, resource])
 
-  function deleteResourceFn() {
-    fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
-      .then(async (actionResponse) => {
-        if (actionResponse.actionDone === 'ActionDone') {
-          if (relatedResource) {
-            searchClient
-              .query({
-                query: SearchResultRelatedItemsDocument,
-                variables: {
-                  input: [
-                    {
-                      ...convertStringToQuery(currentQuery, searchResultLimit),
-                      relatedKinds: [resource.kind],
-                    },
-                  ],
+  function updateSearchResults() {
+    if (relatedResource) {
+      searchClient
+        .query({
+          query: SearchResultRelatedItemsDocument,
+          variables: {
+            input: [
+              {
+                ...convertStringToQuery(currentQuery, searchResultLimit),
+                relatedKinds: [resource.kind],
+              },
+            ],
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then((res) => {
+          searchClient.writeQuery({
+            query: SearchResultRelatedItemsDocument,
+            variables: {
+              input: [
+                {
+                  ...convertStringToQuery(currentQuery, searchResultLimit),
+                  relatedKinds: [resource.kind],
                 },
-                fetchPolicy: 'cache-first',
-              })
-              .then((res) => {
-                searchClient.writeQuery({
-                  query: SearchResultRelatedItemsDocument,
-                  variables: {
-                    input: [
-                      {
-                        ...convertStringToQuery(currentQuery, searchResultLimit),
-                        relatedKinds: [resource.kind],
-                      },
-                    ],
-                  },
-                  data: {
-                    searchResult: [
-                      {
-                        __typename: 'SearchResult',
-                        related: res.data.searchResult[0].related.map((item: any) => {
-                          if (item.kind === resource.kind) {
-                            return {
-                              items: item.items.filter((i: any) => {
-                                return (
-                                  i.cluster !== resource.cluster ||
-                                  i.namespace !== resource.namespace ||
-                                  i.kind !== resource.kind ||
-                                  i.name !== resource.name
-                                )
-                              }),
-                              kind: item.kind,
-                            }
-                          }
-                          return item
+              ],
+            },
+            data: {
+              searchResult: [
+                {
+                  __typename: 'SearchResult',
+                  related: res.data.searchResult[0].related.map((item: any) => {
+                    if (item.kind === resource.kind) {
+                      return {
+                        items: item.items.filter((i: any) => {
+                          return (
+                            i.cluster !== resource.cluster ||
+                            i.namespace !== resource.namespace ||
+                            i.kind !== resource.kind ||
+                            i.name !== resource.name
+                          )
                         }),
-                      },
-                    ],
+                        kind: item.kind,
+                      }
+                    }
+                    return item
+                  }),
+                },
+              ],
+            },
+          })
+        })
+      searchClient
+        .query({
+          query: SearchResultRelatedCountDocument,
+          variables: {
+            input: [convertStringToQuery(currentQuery, searchResultLimit)],
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then((res) => {
+          if (res.data) {
+            searchClient.writeQuery({
+              query: SearchResultRelatedCountDocument,
+              variables: {
+                input: [convertStringToQuery(currentQuery, searchResultLimit)],
+              },
+              data: {
+                searchResult: [
+                  {
+                    __typename: 'SearchResult',
+                    related: res.data.searchResult[0].related
+                      // eslint-disable-next-line array-callback-return
+                      .map((item: any) => {
+                        if (item.kind === resource.kind) {
+                          if (item.count > 1) {
+                            return { ...item, count: item.count - 1 }
+                          }
+                        } else {
+                          return item
+                        }
+                      })
+                      .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
                   },
-                })
-              })
-            searchClient
-              .query({
-                query: SearchResultRelatedCountDocument,
-                variables: {
-                  input: [convertStringToQuery(currentQuery, searchResultLimit)],
-                },
-                fetchPolicy: 'cache-first',
-              })
-              .then((res) => {
-                if (res.data) {
-                  searchClient.writeQuery({
-                    query: SearchResultRelatedCountDocument,
-                    variables: {
-                      input: [convertStringToQuery(currentQuery, searchResultLimit)],
-                    },
-                    data: {
-                      searchResult: [
-                        {
-                          __typename: 'SearchResult',
-                          related: res.data.searchResult[0].related
-                            // eslint-disable-next-line array-callback-return
-                            .map((item: any) => {
-                              if (item.kind === resource.kind) {
-                                if (item.count > 1) {
-                                  return { ...item, count: item.count - 1 }
-                                }
-                              } else {
-                                return item
-                              }
-                            })
-                            .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
-                        },
-                      ],
-                    },
-                  })
-                }
-              })
-          } else {
-            searchClient
-              .query({
-                query: SearchResultItemsDocument,
-                variables: {
-                  input: [convertStringToQuery(currentQuery, searchResultLimit)],
-                },
-                fetchPolicy: 'cache-first',
-              })
-              .then((res) => {
-                if (res.data) {
-                  // Remove deleted resource from search query results - this removes the resource from UI
-                  searchClient.writeQuery({
-                    query: SearchResultItemsDocument,
-                    variables: {
-                      input: [convertStringToQuery(currentQuery, searchResultLimit)],
-                    },
-                    data: {
-                      searchResult: [
-                        {
-                          __typename: 'SearchResult',
-                          items: res.data.searchResult[0].items.filter((item: any) => {
-                            return item._uid !== resource._uid
-                          }),
-                        },
-                      ],
-                    },
-                  })
-                }
-              })
+                ],
+              },
+            })
           }
+        })
+    } else {
+      searchClient
+        .query({
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [convertStringToQuery(currentQuery, searchResultLimit)],
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then((res) => {
+          if (res.data) {
+            // Remove deleted resource from search query results - this removes the resource from UI
+            searchClient.writeQuery({
+              query: SearchResultItemsDocument,
+              variables: {
+                input: [convertStringToQuery(currentQuery, searchResultLimit)],
+              },
+              data: {
+                searchResult: [
+                  {
+                    __typename: 'SearchResult',
+                    items: res.data.searchResult[0].items.filter((item: any) => {
+                      return item._uid !== resource._uid
+                    }),
+                  },
+                ],
+              },
+            })
+          }
+        })
+    }
+  }
+
+  function deleteResourceFn() {
+    if (resource.cluster === 'local-cluster') {
+      const { kind, name, namespace } = resource
+      deleteResource({
+        apiVersion: apiGroup,
+        kind: kind,
+        metadata: {
+          name: name,
+          namespace: namespace,
+        },
+      })
+        .promise.then(() => {
+          updateSearchResults()
           close()
-        } else {
-          setDeleteResourceError(actionResponse.message)
-        }
-      })
-      .catch((err) => {
-        console.error('Error deleting resource: ', err)
-        setDeleteResourceError(err)
-      })
+        })
+        .catch((err) => {
+          console.error('Error updating resource: ', err)
+          setDeleteResourceError(err.message)
+        })
+    } else {
+      fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
+        .then(async (actionResponse) => {
+          if (actionResponse.actionDone === 'ActionDone') {
+            updateSearchResults()
+            close()
+          } else {
+            setDeleteResourceError(actionResponse.message)
+          }
+        })
+        .catch((err) => {
+          console.error('Error deleting resource: ', err)
+          setDeleteResourceError(err)
+        })
+    }
   }
 
   return (

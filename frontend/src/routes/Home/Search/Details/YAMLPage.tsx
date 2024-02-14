@@ -10,8 +10,8 @@ import { useHistory, useLocation } from 'react-router-dom'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
-import { fireManagedClusterAction, fireManagedClusterView } from '../../../../resources'
-import { getResource } from '../../../../resources/utils/resource-request'
+import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../../resources'
+import { getResource, replaceResource } from '../../../../resources/utils/resource-request'
 import { AcmLoadingPage } from '../../../../ui-components'
 
 const headerContainer = css({
@@ -88,19 +88,31 @@ function updateResource(
   setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
   setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
-  fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
-    .then((actionResponse) => {
-      if (actionResponse.actionDone === 'ActionDone') {
+  if (cluster === 'local-cluster') {
+    replaceResource(jsYaml.load(resourceYaml) as IResource)
+      .promise.then(() => {
         loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
         setUpdateSuccess(true)
-      } else {
-        setUpdateError(actionResponse.message)
-      }
-    })
-    .catch((err) => {
-      console.error('Error updating resource: ', err)
-      setUpdateError(err)
-    })
+      })
+      .catch((err) => {
+        console.error('Error updating resource: ', err)
+        setUpdateError(err.message)
+      })
+  } else {
+    fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
+      .then((actionResponse) => {
+        if (actionResponse.actionDone === 'ActionDone') {
+          loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
+          setUpdateSuccess(true)
+        } else {
+          setUpdateError(actionResponse.message)
+        }
+      })
+      .catch((err) => {
+        console.error('Error updating resource: ', err)
+        setUpdateError(err)
+      })
+  }
 }
 
 /* istanbul ignore next */
