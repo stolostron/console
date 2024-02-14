@@ -487,7 +487,7 @@ function deleteResource(resource: IResource) {
   const existing = cache[uid]
   if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-  ServerSideEvents.pushEvent({
+  const deletedID = ServerSideEvents.pushEvent({
     data: {
       type: 'DELETED',
       object: {
@@ -497,6 +497,8 @@ function deleteResource(resource: IResource) {
       },
     },
   })
+  // after deletion has been broadcast to current clients, no need to retain
+  ServerSideEvents.removeEvent(deletedID)
 
   delete cache[uid]
 }
