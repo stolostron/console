@@ -55,7 +55,7 @@ export default function SavedSearchesCard(
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
 
-  if (loading) {
+  if (isUserPreferenceLoading || loading) {
     return (
       <div>
         <Card isRounded>

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { MockedProvider } from '@apollo/client/testing'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -98,7 +98,6 @@ describe('SavedSearchesCard', () => {
         </Router>
       </RecoilRoot>
     )
-    screen.logTestingPlaygroundURL()
 
     // Check header strings
     await waitFor(() => expect(getByText('Personalize this view')).toBeTruthy())

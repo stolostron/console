@@ -346,7 +346,6 @@ export default function SearchPage() {
   const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  const [userSavedSearches, setUserSavedSearches] = useState<SavedSearch[]>([])
 
   const { data, loading, error, refetch } = useSearchResultItemsQuery({
     skip: presetSearchQuery === '',
@@ -357,10 +356,13 @@ export default function SearchPage() {
   useEffect(() => {
     getUserPreference().then((resp) => {
       setUserPreference(resp)
-      setUserSavedSearches(resp?.spec?.savedSearches ?? [])
       setIsUserPreferenceLoading(false)
     })
   }, [])
+
+  const userSavedSearches = useMemo(() => {
+    return userPreference?.spec?.savedSearches ?? []
+  }, [userPreference])
 
   useEffect(() => {
     if (presetSearchQuery === '') {
