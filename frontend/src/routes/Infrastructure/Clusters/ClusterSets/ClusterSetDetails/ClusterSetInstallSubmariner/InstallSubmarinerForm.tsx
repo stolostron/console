@@ -269,7 +269,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         (submarinerConfigProviders.includes(cluster.provider!) &&
           (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)) ||
         cluster.provider === Provider.hostinventory ||
-        cluster.provider == Provider.baremetal
+        cluster.provider == Provider.baremetal ||
+        cluster.provider == Provider.ibmpower
       anyUnsupported ||= !isSupported
 
       if (isSupported) {
@@ -324,6 +325,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             cluster.provider !== Provider.vmware &&
             cluster.provider !== Provider.hostinventory &&
             cluster.provider !== Provider.baremetal &&
+            cluster.provider !== Provider.ibmpower &&
             providerSecretMap[cluster.displayName!] === null
           ) {
             if (cluster.provider === Provider.aws) {
@@ -355,7 +357,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           if (
             cluster.provider !== Provider.vmware &&
             cluster.provider !== Provider.hostinventory &&
-            cluster.provider !== Provider.baremetal
+            cluster.provider !== Provider.baremetal &&
+            cluster.provider !== Provider.ibmpower
           ) {
             // use existing secret name
             if (providerSecretMap[cluster.displayName!]) {
@@ -619,7 +622,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   }
                   if (
                     matchedCluster.provider === Provider.baremetal ||
-                    matchedCluster.provider === Provider.hostinventory
+                    matchedCluster.provider === Provider.hostinventory ||
+                    matchedCluster.provider === Provider.ibmpower
                   ) {
                     return false
                   }
