@@ -180,15 +180,21 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       npColumns.push(
         {
           header: t('Root volume'),
-          sort: 'spec.platform.kubevirt.rootVolume',
-          search: 'spec.platform.kubevirt.rootVolume',
-          cell: 'spec.platform.kubevirt.rootVolume',
+          sort: 'spec.platform.kubevirt.rootVolume.persistent.size',
+          search: 'spec.platform.kubevirt.rootVolume.persistent.size',
+          cell: 'spec.platform.kubevirt.rootVolume.persistent.size',
         },
         {
-          header: t('Compute'),
-          sort: 'spec.platform.kubevirt.compute',
-          search: 'spec.platform.kubevirt.compute',
-          cell: 'spec.platform.kubevirt.compute',
+          header: t('Compute core'),
+          sort: 'spec.platform.kubevirt.compute.cores',
+          search: 'spec.platform.kubevirt.compute.cores',
+          cell: 'spec.platform.kubevirt.compute.cores',
+        },
+        {
+          header: t('Compute memory'),
+          sort: 'spec.platform.kubevirt.compute.memory',
+          search: 'spec.platform.kubevirt.compute.memory',
+          cell: 'spec.platform.kubevirt.compute.memory',
         }
       )
     }
