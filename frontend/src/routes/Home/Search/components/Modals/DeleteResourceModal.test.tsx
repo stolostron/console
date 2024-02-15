@@ -2,50 +2,34 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../../lib/test-util'
-import { DeleteResourceModal } from './DeleteResourceModal'
+import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
+import { deleteResource } from '../../../../../resources/utils/resource-request'
+import { deleteResourceFn, DeleteResourceModal } from './DeleteResourceModal'
+
+jest.mock('../../../../../lib/rbac-util', () => ({
+  canUser: jest.fn(() => ({
+    promise: Promise.resolve({ status: { allowed: true } }),
+    abort: jest.fn(),
+  })),
+}))
+
+jest.mock('../../../../../resources/utils/resource-request', () => ({
+  getBackendUrl: jest.fn(() => ''),
+  getResource: jest.fn(() => ({ promise: Promise.resolve() })),
+  createResource: jest.fn(() => ({ promise: Promise.resolve() })),
+  deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
+}))
+
+jest.mock('../../../../../resources/managedclusteraction', () => ({
+  fireManagedClusterAction: jest.fn(() => Promise.resolve({ actionDone: 'ActionDone' })),
+}))
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
-}
-
-const getMCAResponse = {
-  apiVersion: 'action.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterAction',
-  metadata: {
-    name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
-    namespace: 'local-cluster',
-  },
-  spec: {
-    cluster: {
-      name: 'local-cluster',
-    },
-    type: 'Action',
-    scope: {
-      resourceType: 'pod',
-      namespace: 'testNamespace',
-    },
-    actionType: 'Delete',
-    kube: {
-      resource: 'pod',
-      name: 'testPod',
-      namespace: 'testNamespace',
-    },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Action is done.',
-        reason: 'ActionDone',
-        status: 'done',
-        type: 'Completed',
-      },
-    ],
-  },
 }
 
 const mockSearchQuery = {
@@ -57,7 +41,7 @@ const mockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['pod'],
+            values: ['Pod'],
           },
         ],
         limit: 1000,
@@ -79,7 +63,7 @@ const mockSearchResponse = {
             container: 'installer',
             created: '2021-01-04T14:53:52Z',
             hostIP: '10.0.128.203',
-            kind: 'pod',
+            kind: 'Pod',
             name: 'testPod',
             namespace: 'testNamespace',
             podIP: '10.129.0.40',
@@ -96,14 +80,9 @@ const mockSearchResponse = {
 }
 
 describe('DeleteResourceModal', () => {
-  beforeEach(() => {
+  it('should render component with props', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-  })
-
-  it('should call the delete resource mutation with a successful response', async () => {
-    const getSuccessfulActionNock = nockGet(getMCAResponse)
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
 
     render(
       <RecoilRoot
@@ -113,11 +92,11 @@ describe('DeleteResourceModal', () => {
       >
         <DeleteResourceModal
           open={true}
-          currentQuery={'kind:pod'}
+          currentQuery={'kind:Pod'}
           resource={{
             name: 'testPod',
             namespace: 'testNamespace',
-            kind: 'pod',
+            kind: 'Pod',
             apiversion: 'v1',
             cluster: 'local-cluster',
             _hubClusterResource: 'true',
@@ -128,23 +107,93 @@ describe('DeleteResourceModal', () => {
     )
 
     await act(async () => {
-      // find the button and simulate a click
-      const submitButton = screen.getByText('Delete')
-      expect(submitButton).toBeTruthy()
-      expect(submitButton).not.toBeDisabled()
-      userEvent.click(submitButton)
-
-      // // Wait for delete resource requesets to finish, Mimic the polling requests
-      // await waitForNocks([getSuccessfulActionNock, nockCreateMcaDeleteAction, nockDeleteReq])
-
-      // update the apollo cache
-      await waitFor(() => expect(search.isDone()).toBeTruthy())
-
       await wait() // Test that the component has rendered correctly
-
       await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
     })
-    // Wait for delete resource requesets to finish, Mimic the polling requests
-    await waitForNocks([getSuccessfulActionNock])
+  })
+
+  it('should call the delete resource mutation with a successful response for local-cluster resource', async () => {
+    const search = nockSearch(mockSearchQuery, mockSearchResponse)
+    const mockSetDeleteResourceError = jest.fn()
+    const mockOnCloseModal = jest.fn()
+    deleteResourceFn(
+      {
+        name: 'testPod',
+        namespace: 'testNamespace',
+        kind: 'Pod',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        _hubClusterResource: 'true',
+      },
+      'v1',
+      false,
+      'kind:Pod',
+      1000,
+      mockSetDeleteResourceError,
+      mockOnCloseModal
+    )
+
+    // Assert that deleteResource is called with the correct parameters
+    expect(deleteResource).toHaveBeenCalledWith({
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: {
+        name: 'testPod',
+        namespace: 'testNamespace',
+      },
+    })
+
+    // Simulate the promise resolution of deleteResource
+    await Promise.resolve()
+
+    await waitForNocks([search])
+
+    expect(mockOnCloseModal).toHaveBeenCalled()
+  })
+
+  it('should call the delete resource mutation with a successful response for managed cluster resource', async () => {
+    const search = nockSearch(mockSearchQuery, mockSearchResponse)
+    const mockSetDeleteResourceError = jest.fn()
+    const mockOnCloseModal = jest.fn()
+    deleteResourceFn(
+      {
+        name: 'testPod',
+        namespace: 'testNamespace',
+        kind: 'Pod',
+        apiversion: 'v1',
+        cluster: 'test-cluster',
+        _hubClusterResource: 'true',
+      },
+      'v1',
+      false,
+      'kind:Pod',
+      1000,
+      mockSetDeleteResourceError,
+      mockOnCloseModal
+    )
+
+    // Assert that deleteResource is called with the correct parameters
+    expect(fireManagedClusterAction).toHaveBeenCalledWith(
+      'Delete',
+      'test-cluster',
+      'Pod',
+      'v1',
+      'testPod',
+      'testNamespace'
+    )
+
+    // Simulate the promise resolution of fireManagedClusterAction
+    await Promise.resolve({ actionDone: 'ActionDone' })
+
+    await waitForNocks([search])
+
+    // Assert that updateSearchResults and onCloseModal are called
+    // expect(updateSearchResults).toHaveBeenCalledWith(
+    //   mockResource,
+    //   mockRelatedResource,
+    //   mockCurrentQuery,
+    //   mockSearchResultLimit
+    // )
+    expect(mockOnCloseModal).toHaveBeenCalled()
   })
 })
