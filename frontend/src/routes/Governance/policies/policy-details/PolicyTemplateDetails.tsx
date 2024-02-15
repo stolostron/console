@@ -138,6 +138,10 @@ export function PolicyTemplateDetails(props: {
     details = template?.status?.compliancyDetails
   } else if (template?.status?.violations) {
     details = template?.status?.violations
+  } else if (template?.status?.conditions) {
+    // Find the "Compliant" condition from the list of conditions
+    const cond = template.status.conditions.find((c: any) => c.type === 'Compliant')
+    details = cond?.message || '-'
   }
 
   const descriptionItems = [

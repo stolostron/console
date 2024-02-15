@@ -376,6 +376,237 @@ describe('Policy Template Details content', () => {
     )
   })
 
+  test('Should render Policy Template Details Page content correctly with OperatorPolicy content', async () => {
+    const getResourceRequest = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: '49652c0ab8ad9bcdcf2eeb21707b98245bd81c03',
+        namespace: 'local-cluster',
+        labels: { viewName: '49652c0ab8ad9bcdcf2eeb21707b98245bd81c03' },
+      },
+      spec: {
+        scope: {
+          name: 'oppol-no-group',
+          namespace: 'local-cluster',
+          resource: 'operatorpolicy.v1beta1.policy.open-cluster-management.io',
+        },
+      },
+    }
+
+    const getResourceResponse = JSON.parse(JSON.stringify(getResourceRequest))
+    getResourceResponse.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'policy.open-cluster-management.io/v1beta1',
+        kind: 'OperatorPolicy',
+        metadata: {
+          labels: {
+            'cluster-name': 'local-cluster',
+            'cluster-namespace': 'local-cluster',
+            'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+            'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+            'policy.open-cluster-management.io/policy': 'open-cluster-management-global-set.jk-quay-test',
+          },
+          name: 'oppol-no-group',
+          namespace: 'local-cluster',
+        },
+        spec: {
+          complianceType: 'musthave',
+          remediationAction: 'enforce',
+          severity: 'medium',
+          subscription: {
+            channel: 'stable-3.8',
+            installPlanApproval: 'Automatic',
+            name: 'quay-operator',
+            namespace: 'operator-policy-testns',
+            source: 'redhat-operators',
+            sourceNamespace: 'openshift-marketplace',
+            startingCSV: 'quay-operator.v3.8.1',
+          },
+        },
+        status: {
+          compliant: 'Compliant',
+          conditions: [
+            {
+              message: 'CatalogSource was found',
+              reason: 'CatalogSourcesFound',
+              status: 'False',
+              type: 'CatalogSourcesUnhealthy',
+            },
+            {
+              message: 'ClusterServiceVersion - install strategy completed with no errors',
+              reason: 'InstallSucceeded',
+              status: 'True',
+              type: 'ClusterServiceVersionCompliant',
+            },
+            {
+              message:
+                'Compliant; the OperatorGroup matches what is required by the policy, the Subscription matches what is required by the policy, no InstallPlans requiring approval were found, ClusterServiceVersion - install strategy completed with no errors, All operator Deployments have their minimum availability, CatalogSource was found',
+              reason: 'Compliant',
+              status: 'True',
+              type: 'Compliant',
+            },
+            {
+              message: 'All operator Deployments have their minimum availability',
+              reason: 'DeploymentsAvailable',
+              status: 'True',
+              type: 'DeploymentCompliant',
+            },
+            {
+              message: 'no InstallPlans requiring approval were found',
+              reason: 'NoInstallPlansRequiringApproval',
+              status: 'True',
+              type: 'InstallPlanCompliant',
+            },
+            {
+              message: 'the OperatorGroup matches what is required by the policy',
+              reason: 'OperatorGroupMatches',
+              status: 'True',
+              type: 'OperatorGroupCompliant',
+            },
+            {
+              message: 'the Subscription matches what is required by the policy',
+              reason: 'SubscriptionMatches',
+              status: 'True',
+              type: 'SubscriptionCompliant',
+            },
+          ],
+          relatedObjects: [
+            {
+              compliant: 'Compliant',
+              object: {
+                apiVersion: 'operators.coreos.com/v1alpha1',
+                kind: 'CatalogSource',
+                metadata: {
+                  name: 'redhat-operators',
+                  namespace: 'openshift-marketplace',
+                },
+              },
+              reason: 'Resource found as expected',
+            },
+            {
+              compliant: 'Compliant',
+              object: {
+                apiVersion: 'operators.coreos.com/v1alpha1',
+                kind: 'ClusterServiceVersion',
+                metadata: {
+                  name: 'quay-operator.v3.8.15',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'InstallSucceeded',
+            },
+            {
+              compliant: 'Compliant',
+              object: {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                metadata: {
+                  name: 'quay-operator.v3.8.15',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'Deployment Available',
+            },
+            {
+              object: {
+                apiVersion: 'operators.coreos.com/v1alpha1',
+                kind: 'InstallPlan',
+                metadata: {
+                  name: 'install-4ftch',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'The InstallPlan is Complete',
+            },
+            {
+              object: {
+                apiVersion: 'operators.coreos.com/v1alpha1',
+                kind: 'InstallPlan',
+                metadata: {
+                  name: 'install-w7zpm',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'The InstallPlan is Complete',
+            },
+            {
+              compliant: 'Compliant',
+              object: {
+                apiVersion: 'operators.coreos.com/v1',
+                kind: 'OperatorGroup',
+                metadata: {
+                  name: 'operator-policy-testns-k5pvq',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'Resource found as expected',
+            },
+            {
+              compliant: 'Compliant',
+              object: {
+                apiVersion: 'operators.coreos.com/v1alpha1',
+                kind: 'Subscription',
+                metadata: {
+                  name: 'quay-operator',
+                  namespace: 'operator-policy-testns',
+                },
+              },
+              reason: 'Resource found as expected',
+            },
+          ],
+        },
+      },
+    }
+
+    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyTemplateDetails
+            clusterName={'local-cluster'}
+            apiGroup={'policy.open-cluster-management.io'}
+            apiVersion={'v1beta1'}
+            kind={'OperatorPolicy'}
+            templateName={'oppol-no-group'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for the get resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // Verify the template description section
+    await waitForText('Template details')
+    await waitForText('oppol-no-group')
+    await waitForText('OperatorPolicy')
+    screen.getByText(
+      /Compliant; the OperatorGroup matches what is required by the policy, the Subscription matches what is required by the policy, no InstallPlans requiring approval were found, ClusterServiceVersion - install strategy completed with no errors, All operator Deployments have their minimum availability, CatalogSource was found/i
+    )
+
+    const row = screen.getByRole('row', {
+      name: /Deployment Available/i,
+    })
+    const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
+    expect(viewYamlLink.getAttribute('href')).toEqual(
+      `/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=Deployment&apiversion=apps/v1&name=quay-operator.v3.8.15&namespace=operator-policy-testns`
+    )
+  })
+
   test('Should render correctly with relatedObject name is * when it is cluster scope', async () => {
     const replaceRelatedObj = [
       {
