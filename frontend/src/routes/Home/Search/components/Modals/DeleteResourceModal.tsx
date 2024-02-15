@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
@@ -31,6 +31,171 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
   resource: undefined,
   currentQuery: '',
   relatedResource: false,
+}
+
+function updateSearchResults(resource: any, relatedResource: boolean, currentQuery: string, searchResultLimit: number) {
+  if (relatedResource) {
+    searchClient
+      .query({
+        query: SearchResultRelatedItemsDocument,
+        variables: {
+          input: [
+            {
+              ...convertStringToQuery(currentQuery, searchResultLimit),
+              relatedKinds: [resource.kind],
+            },
+          ],
+        },
+        fetchPolicy: 'cache-first',
+      })
+      .then((res) => {
+        searchClient.writeQuery({
+          query: SearchResultRelatedItemsDocument,
+          variables: {
+            input: [
+              {
+                ...convertStringToQuery(currentQuery, searchResultLimit),
+                relatedKinds: [resource.kind],
+              },
+            ],
+          },
+          data: {
+            searchResult: [
+              {
+                __typename: 'SearchResult',
+                related: res.data.searchResult[0].related.map((item: any) => {
+                  if (item.kind === resource.kind) {
+                    return {
+                      items: item.items.filter((i: any) => {
+                        return (
+                          i.cluster !== resource.cluster ||
+                          i.namespace !== resource.namespace ||
+                          i.kind !== resource.kind ||
+                          i.name !== resource.name
+                        )
+                      }),
+                      kind: item.kind,
+                    }
+                  }
+                  return item
+                }),
+              },
+            ],
+          },
+        })
+      })
+    searchClient
+      .query({
+        query: SearchResultRelatedCountDocument,
+        variables: {
+          input: [convertStringToQuery(currentQuery, searchResultLimit)],
+        },
+        fetchPolicy: 'cache-first',
+      })
+      .then((res) => {
+        if (res.data) {
+          searchClient.writeQuery({
+            query: SearchResultRelatedCountDocument,
+            variables: {
+              input: [convertStringToQuery(currentQuery, searchResultLimit)],
+            },
+            data: {
+              searchResult: [
+                {
+                  __typename: 'SearchResult',
+                  related: res.data.searchResult[0].related
+                    // eslint-disable-next-line array-callback-return
+                    .map((item: any) => {
+                      if (item.kind === resource.kind) {
+                        if (item.count > 1) {
+                          return { ...item, count: item.count - 1 }
+                        }
+                      } else {
+                        return item
+                      }
+                    })
+                    .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
+                },
+              ],
+            },
+          })
+        }
+      })
+  } else {
+    searchClient
+      .query({
+        query: SearchResultItemsDocument,
+        variables: {
+          input: [convertStringToQuery(currentQuery, searchResultLimit)],
+        },
+        fetchPolicy: 'cache-first',
+      })
+      .then((res) => {
+        if (res.data) {
+          // Remove deleted resource from search query results - this removes the resource from UI
+          searchClient.writeQuery({
+            query: SearchResultItemsDocument,
+            variables: {
+              input: [convertStringToQuery(currentQuery, searchResultLimit)],
+            },
+            data: {
+              searchResult: [
+                {
+                  __typename: 'SearchResult',
+                  items: res.data.searchResult[0].items.filter((item: any) => {
+                    return item._uid !== resource._uid
+                  }),
+                },
+              ],
+            },
+          })
+        }
+      })
+  }
+}
+
+export function deleteResourceFn(
+  resource: any,
+  apiGroup: string,
+  relatedResource: boolean,
+  currentQuery: string,
+  searchResultLimit: number,
+  setDeleteResourceError: Dispatch<SetStateAction<undefined>>,
+  onCloseModal: () => void
+) {
+  if (resource.cluster === 'local-cluster') {
+    const { kind, name, namespace } = resource
+    deleteResource({
+      apiVersion: apiGroup,
+      kind: kind,
+      metadata: {
+        name: name,
+        namespace: namespace,
+      },
+    })
+      .promise.then(() => {
+        updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+        onCloseModal()
+      })
+      .catch((err) => {
+        console.error('Error updating resource: ', err)
+        setDeleteResourceError(err.message)
+      })
+  } else {
+    fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
+      .then(async (actionResponse) => {
+        if (actionResponse.actionDone === 'ActionDone') {
+          updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+          onCloseModal()
+        } else {
+          setDeleteResourceError(actionResponse.message)
+        }
+      })
+      .catch((err) => {
+        console.error('Error deleting resource: ', err)
+        setDeleteResourceError(err)
+      })
+  }
 }
 
 export const DeleteResourceModal = (props: any) => {
@@ -78,169 +243,12 @@ export const DeleteResourceModal = (props: any) => {
     return () => canDeleteResource.abort()
   }, [apiGroup, resource])
 
-  function updateSearchResults() {
-    if (relatedResource) {
-      searchClient
-        .query({
-          query: SearchResultRelatedItemsDocument,
-          variables: {
-            input: [
-              {
-                ...convertStringToQuery(currentQuery, searchResultLimit),
-                relatedKinds: [resource.kind],
-              },
-            ],
-          },
-          fetchPolicy: 'cache-first',
-        })
-        .then((res) => {
-          searchClient.writeQuery({
-            query: SearchResultRelatedItemsDocument,
-            variables: {
-              input: [
-                {
-                  ...convertStringToQuery(currentQuery, searchResultLimit),
-                  relatedKinds: [resource.kind],
-                },
-              ],
-            },
-            data: {
-              searchResult: [
-                {
-                  __typename: 'SearchResult',
-                  related: res.data.searchResult[0].related.map((item: any) => {
-                    if (item.kind === resource.kind) {
-                      return {
-                        items: item.items.filter((i: any) => {
-                          return (
-                            i.cluster !== resource.cluster ||
-                            i.namespace !== resource.namespace ||
-                            i.kind !== resource.kind ||
-                            i.name !== resource.name
-                          )
-                        }),
-                        kind: item.kind,
-                      }
-                    }
-                    return item
-                  }),
-                },
-              ],
-            },
-          })
-        })
-      searchClient
-        .query({
-          query: SearchResultRelatedCountDocument,
-          variables: {
-            input: [convertStringToQuery(currentQuery, searchResultLimit)],
-          },
-          fetchPolicy: 'cache-first',
-        })
-        .then((res) => {
-          if (res.data) {
-            searchClient.writeQuery({
-              query: SearchResultRelatedCountDocument,
-              variables: {
-                input: [convertStringToQuery(currentQuery, searchResultLimit)],
-              },
-              data: {
-                searchResult: [
-                  {
-                    __typename: 'SearchResult',
-                    related: res.data.searchResult[0].related
-                      // eslint-disable-next-line array-callback-return
-                      .map((item: any) => {
-                        if (item.kind === resource.kind) {
-                          if (item.count > 1) {
-                            return { ...item, count: item.count - 1 }
-                          }
-                        } else {
-                          return item
-                        }
-                      })
-                      .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
-                  },
-                ],
-              },
-            })
-          }
-        })
-    } else {
-      searchClient
-        .query({
-          query: SearchResultItemsDocument,
-          variables: {
-            input: [convertStringToQuery(currentQuery, searchResultLimit)],
-          },
-          fetchPolicy: 'cache-first',
-        })
-        .then((res) => {
-          if (res.data) {
-            // Remove deleted resource from search query results - this removes the resource from UI
-            searchClient.writeQuery({
-              query: SearchResultItemsDocument,
-              variables: {
-                input: [convertStringToQuery(currentQuery, searchResultLimit)],
-              },
-              data: {
-                searchResult: [
-                  {
-                    __typename: 'SearchResult',
-                    items: res.data.searchResult[0].items.filter((item: any) => {
-                      return item._uid !== resource._uid
-                    }),
-                  },
-                ],
-              },
-            })
-          }
-        })
-    }
-  }
-
-  function deleteResourceFn() {
-    if (resource.cluster === 'local-cluster') {
-      const { kind, name, namespace } = resource
-      deleteResource({
-        apiVersion: apiGroup,
-        kind: kind,
-        metadata: {
-          name: name,
-          namespace: namespace,
-        },
-      })
-        .promise.then(() => {
-          updateSearchResults()
-          close()
-        })
-        .catch((err) => {
-          console.error('Error updating resource: ', err)
-          setDeleteResourceError(err.message)
-        })
-    } else {
-      fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
-        .then(async (actionResponse) => {
-          if (actionResponse.actionDone === 'ActionDone') {
-            updateSearchResults()
-            close()
-          } else {
-            setDeleteResourceError(actionResponse.message)
-          }
-        })
-        .catch((err) => {
-          console.error('Error deleting resource: ', err)
-          setDeleteResourceError(err)
-        })
-    }
-  }
-
   return (
     <Fragment>
       <AcmModal
+        id={'remove-resource-modal'}
         variant={ModalVariant.medium}
         isOpen={open}
-        // TODO - Handle interpolation
         title={t('Delete {{resourceKind}}?', { resourceKind: resource?.kind })}
         titleIconVariant={'warning'}
         onClose={close}
@@ -249,7 +257,17 @@ export const DeleteResourceModal = (props: any) => {
             isDisabled={loadingAccessRequest || !canDelete}
             key="confirm"
             variant={ButtonVariant.danger}
-            onClick={() => deleteResourceFn()}
+            onClick={() =>
+              deleteResourceFn(
+                resource,
+                apiGroup,
+                relatedResource,
+                currentQuery,
+                searchResultLimit,
+                setDeleteResourceError,
+                close
+              )
+            }
           >
             {t('Delete')}
           </AcmButton>,
@@ -273,7 +291,6 @@ export const DeleteResourceModal = (props: any) => {
           />
         ) : null}
         <div style={{ paddingTop: '1rem' }}>
-          {/* TODO - Handle interpolation */}
           {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
         </div>
       </AcmModal>
