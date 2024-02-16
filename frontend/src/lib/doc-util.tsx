@@ -11,9 +11,6 @@ export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_a
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://access.redhat.com/documentation/en-us/openshift_container_platform'
 
-export const DOC_CREATE_HOSTED_CLUSTER = `${DOC_BASE_PATH}/clusters/index#create-hosted-aws`
-export const DOC_CREATE_KUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
-
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CREATE_CONNECTION: `${DOC_BASE_PATH}/clusters/index#credentials`,
@@ -32,10 +29,11 @@ export const DOC_LINKS = {
   CREATE_CONNECTION_PROXY_GCP: `${DOC_BASE_PATH}/clusters/index#proxy-google`,
   CREATE_CONNECTION_PROXY_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#proxy-openstack`,
   CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/clusters/index#proxy-virtualization`,
-  CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/index#creating-a-cluster`,
+  CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/index#create-intro`,
+  CREATE_CLUSTER_HOSTED_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-deploy-cluster-aws`,
   CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/index#creating-a-cluster-on-premises`,
   CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/clusters/index#create-a-cluster-prereq`,
-  IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/index#importing-a-target-managed-cluster-to-the-hub-cluster`,
+  IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/index#import-intro`,
   CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/index#managedclustersets-intro`,
   GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/clusters/index#managedclustersets_global`,
   CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/index#managing-cluster-pools`,
@@ -55,9 +53,9 @@ export const DOC_LINKS = {
   HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
   HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-aws`,
   HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
-  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-enable-feature-aws`,
+  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#enable-or-disable-hosted-control-planes`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
-  GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-config`,
+  GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-overview`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
   RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/html/release_notes/ocp-4-13-release-notes#ocp-4-13-rhv-deprecations`,
