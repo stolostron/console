@@ -4,6 +4,7 @@ import {
   Cluster,
   ClusterCuratorDefinition,
   ClusterDeploymentDefinition,
+  ClusterImageSet,
   ClusterStatus,
   KlusterletAddonConfig,
   KlusterletAddonConfigApiVersion,
@@ -14,7 +15,7 @@ import {
   ManagedClusterKind,
   SecretDefinition,
 } from '../../../../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
@@ -30,6 +31,8 @@ import {
 } from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { clusterImageSetsState } from '../../../../../atoms'
+import userEvent from '@testing-library/user-event'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -73,6 +76,217 @@ const mockCluster: Cluster = {
   isRegionalHubCluster: false,
 }
 
+const mockHostedCluster: Cluster = {
+  name: 'test-hosted-cluster',
+  displayName: 'test-hosted-cluster',
+  namespace: 'test-hosted-cluster',
+  uid: 'test-hosted-cluster-uid',
+  status: ClusterStatus.ready,
+  provider: undefined,
+  distribution: {
+    k8sVersion: '1.19',
+    ocp: {
+      version: '4.13.6',
+      availableUpdates: [],
+      desiredVersion: '4.13.6',
+      upgradeFailed: false,
+    },
+    displayVersion: '4.13.6',
+    isManagedOpenShift: false,
+  },
+  hasAutomationTemplate: true,
+  labels: undefined,
+  nodes: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hive: {
+    isHibernatable: false,
+    clusterPool: undefined,
+    secrets: {
+      installConfig: undefined,
+    },
+  },
+  isHive: false,
+  isManaged: true,
+  isCurator: true,
+  isHostedCluster: true,
+  isSNOCluster: false,
+  owner: {},
+  kubeadmin: undefined,
+  kubeconfig: undefined,
+  isHypershift: true,
+  isRegionalHubCluster: false,
+  hypershift: {
+    agent: false,
+    nodePools: [
+      {
+        apiVersion: 'hypershift.openshift.io/v1beta1',
+        kind: 'NodePool',
+        metadata: {
+          annotations: {
+            'hypershift.openshift.io/nodePoolCurrentConfig': 'bf1449e8',
+            'hypershift.openshift.io/nodePoolCurrentConfigVersion': '49cc0546',
+            'hypershift.openshift.io/nodePoolPlatformMachineTemplate': 'feng-hyper-test34-us-east-2a-4584a61d',
+          },
+          creationTimestamp: '2024-02-15T21:29:16Z',
+          finalizers: ['hypershift.openshift.io/finalizer'],
+          generation: 1,
+          labels: {
+            'hypershift.openshift.io/auto-created-for-infra': 'feng-hyper-test34-5l9jf',
+          },
+          name: 'feng-hyper-test34-us-east-2a',
+          namespace: 'clusters',
+          ownerReferences: [
+            {
+              apiVersion: 'hypershift.openshift.io/v1beta1',
+              kind: 'HostedCluster',
+              name: 'feng-hyper-test34',
+              uid: '731868a9-fa3e-47d1-beaf-264c7832c9a3',
+            },
+          ],
+          resourceVersion: '242847',
+          uid: 'a0f47066-d752-418e-8638-c4b223b591e0',
+        },
+        spec: {
+          clusterName: 'feng-hyper-test34',
+          management: {
+            autoRepair: false,
+            replace: {
+              rollingUpdate: {
+                maxSurge: 1,
+                maxUnavailable: 0,
+              },
+              strategy: 'RollingUpdate',
+            },
+            upgradeType: 'Replace',
+          },
+          platform: {
+            aws: {
+              instanceProfile: 'feng-hyper-test34-5l9jf-worker',
+              instanceType: 'm5.large',
+              rootVolume: {
+                size: 120,
+                type: 'gp3',
+              },
+              securityGroups: [
+                {
+                  id: 'sg-08a8df9d0b14054f9',
+                },
+              ],
+              subnet: {
+                id: 'subnet-0fa05ef93202a9e1d',
+              },
+            },
+            type: 'AWS',
+          },
+          release: {
+            image: 'quay.io/openshift-release-dev/ocp-release:4.13.6-multi',
+          },
+          replicas: 1,
+        },
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: '2024-02-15T21:32:27Z',
+              message: 'Using release image: quay.io/openshift-release-dev/ocp-release:4.13.6-multi',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'ValidReleaseImage',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:32:27Z',
+              message: 'Bootstrap AMI is "ami-085c2a9af03474b5a"',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'ValidPlatformImage',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:32:27Z',
+              message: 'NodePool has a security group',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'AWSSecurityGroupAvailable',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:33:15Z',
+              message: 'Payload generated successfully',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'ValidGeneratedPayload',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:32:27Z',
+              message: 'Reconciliation active on resource',
+              observedGeneration: 1,
+              reason: 'ReconciliationActive',
+              status: 'True',
+              type: 'ReconciliationActive',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:32:48Z',
+              message: 'All is well',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'AllMachinesReady',
+            },
+            {
+              lastTransitionTime: '2024-02-15T21:38:09Z',
+              message: 'All is well',
+              observedGeneration: 1,
+              reason: 'AsExpected',
+              status: 'True',
+              type: 'AllNodesHealthy',
+            },
+          ],
+          replicas: 1,
+          version: '4.13.6',
+        },
+      },
+    ],
+    secretNames: ['feng-hyper-test34-ssh-key', 'feng-hyper-test34-pull-secret'],
+    hostingNamespace: 'clusters',
+    isUpgrading: false,
+    upgradePercentage: '',
+  },
+}
+
+const clusterImageSets: ClusterImageSet[] = [
+  {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterImageSet',
+    metadata: {
+      name: 'img4.13.8-multi-appsub',
+    },
+    spec: {
+      releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.13.8-multi',
+    },
+  },
+  {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterImageSet',
+    metadata: {
+      name: 'img4.13.9-multi-appsub',
+    },
+    spec: {
+      releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.13.9-multi',
+    },
+  },
+  {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterImageSet',
+    metadata: {
+      name: 'img4.13.10-multi-appsub',
+    },
+    spec: {
+      releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.13.10-multi',
+    },
+  },
+]
 function rbacPatchManagedCluster() {
   return rbacPatch(ManagedClusterDefinition, undefined, mockCluster.name)
 }
@@ -263,5 +477,30 @@ describe('ClusterActionDropdown', () => {
     ]
     await clickByLabel('Actions')
     await waitForNocks(rbacNocks)
+  })
+})
+
+describe('ClusterActionDropdown hostedcluster', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(clusterImageSetsState, clusterImageSets)
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.clusterDetails]}>
+          <ClusterActionDropdown cluster={mockHostedCluster} isKebab={false} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('Actions', true)
+  })
+  test('render with hostedcluster', async () => {
+    expect(screen.getByRole('button')).toBeTruthy()
+    userEvent.click(screen.getByRole('button'))
+    expect(screen.getByText('Upgrade cluster')).toBeTruthy()
   })
 })
