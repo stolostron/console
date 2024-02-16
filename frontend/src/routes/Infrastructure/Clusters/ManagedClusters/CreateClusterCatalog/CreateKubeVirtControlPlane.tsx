@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { PageHeader } from '@stolostron/react-data-view'
 import { useMemo } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -15,13 +15,10 @@ export function CreateKubeVirtControlPlane() {
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const isHypershiftEnabled = useIsHypershiftEnabled()
 
-  const cards = useMemo(() => {
-    const newCards: ICatalogCard[] = [
-      GetHostedCard(nextStep(getTypedCreateClusterPath(Provider.kubevirt)), t, isHypershiftEnabled, false),
-      GetHostedCard(nextStep(NavigationPath.createKubeVirtCLI), t, isHypershiftEnabled, true),
-    ]
-    return newCards
-  }, [nextStep, t, isHypershiftEnabled])
+  const cards = useMemo(
+    () => [GetHostedCard(nextStep(getTypedCreateClusterPath(Provider.kubevirt)), t, isHypershiftEnabled)],
+    [nextStep, t, isHypershiftEnabled]
+  )
 
   return (
     <GetControlPlane

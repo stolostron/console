@@ -8,14 +8,13 @@ import { ClustersPage } from './ClustersPage'
 import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
-import { CreateClusterPage } from './ManagedClusters/CreateClusterPage'
-import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
-import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
-import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
-import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
+import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
+import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
+import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import { CreateKubeVirtControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateKubeVirtControlPlane'
-import { HypershiftKubeVirtCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftKubeVirtCLI'
+import { CreateClusterPage } from './ManagedClusters/CreateClusterPage'
+import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 
 export default function Clusters() {
   return (
@@ -24,7 +23,6 @@ export default function Clusters() {
       <Route exact path={NavigationPath.createAWSControlPlane} component={CreateAWSControlPlane} />
       <Route exact path={NavigationPath.createKubeVirtControlPlane} component={CreateKubeVirtControlPlane} />
       <Route exact path={NavigationPath.createAWSCLI} component={HypershiftAWSCLI} />
-      <Route exact path={NavigationPath.createKubeVirtCLI} component={HypershiftKubeVirtCLI} />
 
       <Route exact path={NavigationPath.createDiscoverHost} component={CreateDiscoverHost} />
       <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />

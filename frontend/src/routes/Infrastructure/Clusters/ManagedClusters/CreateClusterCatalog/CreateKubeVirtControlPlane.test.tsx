@@ -37,13 +37,13 @@ describe('CreateKubeVirtControlPlane', () => {
   }
 
   test('Hosted should be enabled when hypershift is enabled', async () => {
-    const { getAllByTestId } = render(<Component />)
-    expect(isCardEnabled(getAllByTestId('hosted')[1])).toBe(true)
+    const { getByTestId } = render(<Component />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {
-    const { getAllByTestId } = render(<Component enableHypershift={false} />)
-    expect(isCardEnabled(getAllByTestId('hosted')[1])).toBe(false)
-    await clickByTestId('hosted', 1)
+    const { getByTestId } = render(<Component enableHypershift={false} />)
+    expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
+    await clickByTestId('hosted')
   })
 })

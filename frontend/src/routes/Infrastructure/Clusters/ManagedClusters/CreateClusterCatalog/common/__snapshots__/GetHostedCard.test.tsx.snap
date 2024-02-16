@@ -1,53 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`GetHostedCard Return card data - Hypershift disabled, non-CLI based 1`] = `
-Object {
-  "alertContent": <a
-    href="https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.10/html-single/clusters/index#hosted-enable-feature-aws"
-    rel="noopener noreferrer"
-    target="_blank"
-  >
-    View documentation
-     
-    <ExternalLinkAltIcon
-      color="currentColor"
-      noVerticalAlign={false}
-      size="sm"
-    />
-  </a>,
-  "alertTitle": "Hosted control plane operator must be enabled in order to continue",
-  "alertVariant": "info",
-  "badgeList": Array [],
-  "id": "hosted",
-  "items": Array [
-    Object {
-      "description": "Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.",
-      "type": "description",
-    },
-    Object {
-      "icon": <CheckIcon
-        color="var(--pf-global--success-color--100)"
-        noVerticalAlign={false}
-        size="sm"
-      />,
-      "items": Array [
-        Object {
-          "text": "Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.",
-        },
-        Object {
-          "text": "Quickly provisions clusters.",
-        },
-      ],
-      "title": "",
-      "type": "list",
-    },
-  ],
-  "onClick": undefined,
-  "title": "Hosted",
-}
-`;
-
-exports[`GetHostedCard Return card data - Hypershift enabled, CLI based 1`] = `
+exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
 Object {
   "alertContent": <a
     href="https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.10/html-single/clusters/index#hosted-enable-feature-aws"
@@ -64,12 +17,6 @@ Object {
   </a>,
   "alertTitle": undefined,
   "alertVariant": "info",
-  "badgeList": Array [
-    Object {
-      "badge": "CLI-based",
-      "badgeColor": "purple",
-    },
-  ],
   "id": "hosted",
   "items": Array [
     Object {
