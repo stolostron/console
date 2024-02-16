@@ -98,7 +98,7 @@ hcp create cluster aws \\
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
-          <ViewDocumentationLink doclink={DOC_CREATE_HOSTED_CLUSTER} />
+          <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_HOSTED_AWS} />
         </Fragment>
       ),
     },

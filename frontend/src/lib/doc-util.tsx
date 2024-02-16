@@ -11,9 +11,6 @@ export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_a
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://access.redhat.com/documentation/en-us/openshift_container_platform'
 
-export const DOC_CREATE_HOSTED_CLUSTER = `${DOC_BASE_PATH}/clusters/index#create-hosted-aws`
-export const DOC_CREATE_KUBEVIRT_CLUSTER = `${DOC_BASE_PATH}/clusters/index#creating-a-hosted-cluster-kubevirt`
-
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CREATE_CONNECTION: `${DOC_BASE_PATH}/clusters/index#credentials`,
@@ -32,7 +29,8 @@ export const DOC_LINKS = {
   CREATE_CONNECTION_PROXY_GCP: `${DOC_BASE_PATH}/clusters/index#proxy-google`,
   CREATE_CONNECTION_PROXY_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#proxy-openstack`,
   CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/clusters/index#proxy-virtualization`,
-  CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/index#azure_creating-your-cluster-with-the-console`,
+  CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/index#create-intro`,
+  CREATE_CLUSTER_HOSTED_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-deploy-cluster-aws`,
   CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/index#creating-a-cluster-on-premises`,
   CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/clusters/index#create-a-cluster-prereq`,
   IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/index#import-intro`,
