@@ -55,7 +55,7 @@ export const DOC_LINKS = {
   HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
   HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-aws`,
   HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
-  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#hosting-service-cluster-configure-aws`,
+  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#enable-or-disable-hosted-control-planes`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-overview`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
