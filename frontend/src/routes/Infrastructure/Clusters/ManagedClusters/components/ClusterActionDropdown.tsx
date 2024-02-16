@@ -21,6 +21,7 @@ import {
   HostedClusterDefinition,
   IRequestResult,
   ManagedClusterDefinition,
+  NodePool,
   patchResource,
   ResourceErrorCode,
   SecretDefinition,
@@ -35,9 +36,11 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../uti
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
+import { getNodepoolStatus } from './NodePoolsTable'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -51,15 +54,86 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [showUpdateAutomationModal, setShowUpdateAutomationModal] = useState<boolean>(false)
   const [showRemoveAutomationModal, setShowRemoveAutomationModal] = useState<boolean>(false)
   const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
+  const [showHypershiftUpgradeModal, setShowHypershiftUpgradeModal] = useState<boolean>(false)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
+  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState, clusterImageSetsState } =
+    useSharedAtoms()
+  const [agents] = useRecoilState(agentsState)
+  const [agentMachines] = useRecoilState(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const { waitForAll } = useSharedRecoil()
-  const { hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
   const [infraEnvs, hostedClusters] = useRecoilValue(waitForAll([infraEnvironmentsState, hostedClustersState]))
+  const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
 
   const { cluster } = props
+
+  const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
+    const currentVersionParts = currentVersion.split('.')
+    const newVersionParts = newVersion.split('.')
+
+    if (newVersionParts[0] !== currentVersionParts[0]) {
+      return false
+    }
+
+    if (newVersionParts[0] === currentVersionParts[0] && Number(newVersionParts[1]) > Number(currentVersionParts[1])) {
+      return true
+    }
+
+    if (
+      newVersionParts[0] === currentVersionParts[0] &&
+      Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
+      Number(newVersionParts[2]) > Number(currentVersionParts[2])
+    ) {
+      return true
+    }
+
+    return false
+  }
+
+  const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
+    if (!(cluster?.isHypershift || cluster?.isHostedCluster)) {
+      return {}
+    }
+    const updates: any = {}
+    clusterImageSets.forEach((cis) => {
+      if (cis.spec?.releaseImage.includes('multi')) {
+        const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
+        if (
+          releaseImageVersion &&
+          isUpdateVersionAcceptable(cluster?.distribution?.ocp?.version || '', releaseImageVersion)
+        ) {
+          updates[releaseImageVersion] = cis.spec?.releaseImage
+        }
+      }
+    })
+
+    return updates
+  }, [clusterImageSets, cluster?.distribution?.ocp?.version, cluster?.isHostedCluster, cluster?.isHypershift])
+
+  const isHypershiftUpdateAvailable: boolean = useMemo(() => {
+    //if managed cluster page - cluster, cluster curator and hosted cluster
+    let updateAvailable = false
+    if (cluster?.hypershift?.nodePools && cluster?.hypershift?.nodePools.length > 0) {
+      for (let i = 0; i < cluster?.hypershift?.nodePools.length; i++) {
+        if (
+          getNodepoolStatus(cluster?.hypershift?.nodePools[i]) == 'Ready' &&
+          (cluster?.hypershift?.nodePools[i].status?.version || '') < (cluster.distribution?.ocp?.version || '')
+        ) {
+          updateAvailable = true
+          break
+        }
+      }
+    }
+
+    //if no nodepool has updates, still check if hcp has updates
+    if (!updateAvailable) {
+      return Object.keys(hypershiftAvailableUpdates).length > 0
+    }
+
+    return updateAvailable
+  }, [cluster?.distribution?.ocp?.version, cluster?.hypershift?.nodePools, hypershiftAvailableUpdates])
 
   const modalColumns = useMemo(
     () => [
@@ -192,7 +266,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
           id: ClusterAction.Upgrade,
           text: t('managed.upgrade'),
-          click: () => setShowUpgradeModal(true),
+          click: () => (cluster.isHostedCluster ? setShowHypershiftUpgradeModal(true) : setShowUpgradeModal(true)),
           isAriaDisabled: true,
           rbac: [
             rbacPatch(ClusterCuratorDefinition, cluster.namespace),
@@ -424,7 +498,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           isAriaDisabled: true,
           rbac: destroyRbac,
         },
-      ].filter((action) => clusterSupportsAction(cluster, action.id)),
+      ].filter((action) => clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable)),
     [
       cluster,
       destroyRbac,
@@ -436,6 +510,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
       hostedClusters,
       toastContext,
       importTemplate,
+      isHypershiftUpdateAvailable,
     ]
   )
 
@@ -485,6 +560,20 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         isOpen={!!scaleUpModalOpen}
         clusterName={scaleUpModalOpen}
         closeDialog={() => setScaleUpModalOpen(undefined)}
+      />
+      <HypershiftUpgradeModal
+        controlPlane={cluster}
+        nodepools={cluster.hypershift?.nodePools as NodePool[]}
+        open={showHypershiftUpgradeModal}
+        close={() => setShowHypershiftUpgradeModal(!showHypershiftUpgradeModal)}
+        agents={agents}
+        agentMachines={agentMachines}
+        hostedCluster={
+          hostedClusters.find(
+            (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
+          ) as HostedClusterK8sResource
+        }
+        availableUpdates={hypershiftAvailableUpdates}
       />
     </>
   )

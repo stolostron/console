@@ -48,16 +48,22 @@ export function clusterDestroyable(cluster: Cluster) {
   return false
 }
 
-export function clusterSupportsAction(cluster: Cluster, clusterAction: ClusterAction): boolean {
+export function clusterSupportsAction(
+  cluster: Cluster,
+  clusterAction: ClusterAction,
+  isHypershiftUpdatesReady?: boolean
+): boolean {
+  if (!isHypershiftUpdatesReady) {
+    isHypershiftUpdatesReady = false
+  }
   switch (clusterAction) {
     case ClusterAction.EditLabels:
       return cluster.isManaged && cluster.status !== ClusterStatus.detaching
     case ClusterAction.Upgrade:
       return (
         !!cluster.name &&
-        !cluster.isHostedCluster &&
         cluster.status === ClusterStatus.ready &&
-        !!cluster.distribution?.upgradeInfo?.isReadyUpdates
+        (!!cluster.distribution?.upgradeInfo?.isReadyUpdates || (cluster.isHostedCluster && isHypershiftUpdatesReady))
       )
     case ClusterAction.SelectChannel:
       return (
