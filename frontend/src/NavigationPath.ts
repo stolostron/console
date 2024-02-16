@@ -53,7 +53,6 @@ export enum NavigationPath {
   createCluster = '/multicloud/infrastructure/clusters/create',
   createAWSCLI = '/multicloud/infrastructure/clusters/create/aws/cli',
   createKubeVirt = '/multicloud/infrastructure/clusters/create/kubevirt',
-  createKubeVirtCLI = '/multicloud/infrastructure/clusters/create/kubevirt/cli',
   editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
   clusterDetails = '/multicloud/infrastructure/clusters/details/:namespace/:name',
   clusterOverview = '/multicloud/infrastructure/clusters/details/:namespace/:name/overview',

@@ -1,16 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import {
-  CatalogCardItemType,
-  CatalogColor,
-  getPatternflyColor,
-  ICatalogCard,
-  PatternFlyColor,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, getPatternflyColor, ICatalogCard, PatternFlyColor } from '@stolostron/react-data-view'
 import { TFunction } from 'react-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 
-function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean, isCLI: boolean): ICatalogCard {
+function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean): ICatalogCard {
   return {
     id: 'hosted',
     title: t('Hosted'),
@@ -43,14 +37,6 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
         {t('View documentation')} <ExternalLinkAltIcon />
       </a>
     ),
-    badgeList: isCLI
-      ? [
-          {
-            badge: t('CLI-based'),
-            badgeColor: CatalogColor.purple,
-          },
-        ]
-      : [],
   }
 }
 export default GetHostedCard
