@@ -8,7 +8,7 @@ import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { NodeInfo, getRoles } from '../../../../../../resources'
+import { getRoles, NodeInfo } from '../../../../../../resources'
 import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
@@ -99,12 +99,17 @@ export function NodesPoolsTable() {
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
   function getSearchLink(node: NodeInfo) {
-    return !isGlobalHub && settings.globalSearchFeatureFlag !== 'enabled' && isSearchAvailable ? (
+    // if globalHub & global search are enabled OR search is unavailable - return the Node name text
+    if (
+      (isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled') ||
+      !isSearchAvailable
+    ) {
+      return node.name
+    }
+    return (
       <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
         {node.name}
       </Link>
-    ) : (
-      node.name
     )
   }
 

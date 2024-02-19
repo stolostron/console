@@ -84,9 +84,9 @@ function RenderAccordionItem(props: {
           columns={_.get(searchDefinitions, `[${kindAndGroup}].columns`, searchDefinitions['genericresource'].columns)}
           keyFn={(item: any) => item._uid.toString()}
           rowActions={
-            !isGlobalHub && settings.globalSearchFeatureFlag !== 'enabled'
-              ? GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)
-              : undefined
+            isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
+              ? undefined
+              : GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)
           }
         />
       )

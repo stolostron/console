@@ -68,9 +68,9 @@ export function RenderItemContent(props: {
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
       rowActions={
-        !isGlobalHub && settings.globalSearchFeatureFlag !== 'enabled'
-          ? GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t)
-          : undefined
+        isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
+          ? undefined
+          : GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t)
       }
     />
   )
