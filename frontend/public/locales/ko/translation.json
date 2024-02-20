@@ -389,7 +389,7 @@
   "Add namespace": "네임스페이스 추가",
   "Add new hosts": "새 호스트 추가",
   "Add node pool": "노드 풀 추가",
-  "Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.": "노드 풀 추가는 AWS에서만 지원됩니다. HyperShift CLI를 사용하여 노드 풀을 추가합니다.",
+  "Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.": "노드 풀 추가는 AWS에서만 지원됩니다. hcp CLI를 사용하여 노드 풀을 추가합니다.",
   "Add placement": "배치 추가",
   "Add placement binding": "배치 바인딩 추가",
   "Add placement rule": "배치 규칙 추가",
