@@ -133,7 +133,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
 
 export type AcmKubernetesLabelsInputProps = {
   value: Record<string, string> | undefined
-  onChange: (labels: Record<string, string> | undefined) => void
+  onChange: (labels: Record<string, string> | undefined, inputKey: string) => void
 } & Omit<AcmLabelsInputProps<string>, 'values' | 'addLabel' | 'removeLabel' | 'getLabelKey' | 'getLabelContent'>
 
 function getKubernetesLabelKey(value: [string, string]) {
@@ -172,7 +172,8 @@ export function AcmKubernetesLabelsInput(props: AcmKubernetesLabelsInputProps) {
               return value as Record<string, string>
             },
             { ...value }
-          )
+          ),
+        input.split(',')[0].split('=')[0]
       )
     },
     [value, onChange]
@@ -182,7 +183,7 @@ export function AcmKubernetesLabelsInput(props: AcmKubernetesLabelsInputProps) {
     (key: string) => {
       const newLabels: Record<string, string> = { ...value }
       delete newLabels[key]
-      onChange(newLabels)
+      onChange(newLabels, key)
     },
     [value, onChange]
   )
