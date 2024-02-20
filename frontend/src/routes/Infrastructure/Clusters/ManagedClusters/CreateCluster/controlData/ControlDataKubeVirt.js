@@ -226,6 +226,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolCoreCount',
           type: 'number',
           initial: '2',
+          min: 1,
         },
         {
           name: t('creation.ocp.memoryGB'),
@@ -233,6 +234,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolMemory',
           type: 'number',
           initial: '8',
+          min: 1,
         },
         {
           name: t('Auto repair'),

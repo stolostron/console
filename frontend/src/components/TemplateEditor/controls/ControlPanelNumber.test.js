@@ -1,27 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React from 'react'
-import ControlPanelNumber from './ControlPanelNumber'
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import ControlPanelNumber from './ControlPanelNumber'
 
 import i18n from 'i18next'
 
 const t = i18n.t.bind(i18n)
-
-export const control = {
-  name: 'creation.app.name',
-  tooltip: 'tooltip.creation.app.name',
-  controlData: [],
-  id: 'name',
-  type: 'number',
-  initial: '3',
-}
 const fn = jest.fn()
 
 describe('ControlPanelNumber component', () => {
+  afterEach(cleanup)
   it('renders as expected', () => {
+    const control = {
+      name: 'creation.app.name',
+      tooltip: 'tooltip.creation.app.name',
+      controlData: [],
+      id: 'name',
+      type: 'number',
+      initial: '3',
+    }
     const Component = () => {
       return <ControlPanelNumber key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
     }
@@ -38,5 +37,27 @@ describe('ControlPanelNumber component', () => {
     expect(asFragment()).toMatchSnapshot()
     userEvent.click(getByTestId('down-controlId'))
     expect(control.active).toBe('0')
+  })
+  it('renders as expected with min int value', () => {
+    const control = {
+      name: 'creation.app.name',
+      tooltip: 'tooltip.creation.app.name',
+      controlData: [],
+      id: 'name-min',
+      type: 'number',
+      initial: '3',
+      min: 1,
+    }
+    const Component = () => {
+      return <ControlPanelNumber key={'key'} control={control} controlId={'controlId-min'} handleChange={fn} i18n={t} />
+    }
+    const { getByTestId, asFragment, rerender } = render(<Component />)
+
+    userEvent.type(getByTestId('controlId-min'), '2')
+    expect(control.active).toBe('2')
+    userEvent.click(getByTestId('down-controlId-min'))
+    expect(control.active).toBe('1')
+    userEvent.click(getByTestId('down-controlId-min'))
+    expect(control.active).toBe('1')
   })
 })
