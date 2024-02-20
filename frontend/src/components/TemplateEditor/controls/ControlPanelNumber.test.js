@@ -51,7 +51,7 @@ describe('ControlPanelNumber component', () => {
     const Component = () => {
       return <ControlPanelNumber key={'key'} control={control} controlId={'controlId-min'} handleChange={fn} i18n={t} />
     }
-    const { getByTestId, asFragment, rerender } = render(<Component />)
+    const { getByTestId } = render(<Component />)
 
     userEvent.type(getByTestId('controlId-min'), '2')
     expect(control.active).toBe('2')
