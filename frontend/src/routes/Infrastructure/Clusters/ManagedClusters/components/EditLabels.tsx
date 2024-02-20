@@ -16,44 +16,18 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
   const { t } = useTranslation()
-  const [labels, setLabels] = useState<Record<string, string>>({})
-  const [modifiedLabelKeys, setModifiedLabelKeys] = useState<string[]>([])
+  const [labels, setLabels] = useState<Record<string, string>>({ ...props.resource?.metadata?.labels })
+  const isOpen = props.resource !== undefined
 
   useLayoutEffect(() => {
-    /* istanbul ignore next */
-    // TODO: review best way to handle re-renders due to reference changes in props.resource?.metadata?.labels
-    // adding JSON.stringify to dependency array results in:
-    /*
-      34:6  warning  React Hook useLayoutEffect has a missing dependency: 'props.resource?.metadata?.labels'. 
-              Either include it or remove the dependency array       react-hooks/exhaustive-deps
-      34:7  warning  React Hook useLayoutEffect has a complex expression in the dependency array. 
-              Extract it to a separate variable so it can be statically checked
-     */
-    const updatedBackendLabels: Record<string, string> = { ...props.resource?.metadata?.labels } ?? {}
-    let newLabels = { ...labels }
-
-    // modify backend copy to avoid overwriting current changes
-    modifiedLabelKeys.forEach((key) => {
-      if (updatedBackendLabels[key]) {
-        delete updatedBackendLabels[key]
-      }
-    })
-
-    // remove labels from modal copy that were deleted from the backend, and are not being modified
-    if (labels) {
-      for (const key in labels) {
-        if (!updatedBackendLabels[key] && !modifiedLabelKeys.includes(key)) {
-          delete newLabels[key]
-        }
-      }
+    if (isOpen) {
+      const labels = props.resource?.metadata?.labels ?? {}
+      setLabels({ ...labels })
     }
-    newLabels = { ...updatedBackendLabels, ...newLabels }
-
-    // check if new changes are different from current state
-    if (JSON.stringify(labels) !== JSON.stringify(newLabels)) {
-      setLabels({ ...newLabels })
-    }
-  }, [props.resource?.metadata?.labels, modifiedLabelKeys, labels])
+    // update when the modal transitions from closed to open (with new data)
+    // but ignore label changes after modal is open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   return (
     <AcmModal
@@ -73,12 +47,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                 resourceName: props.displayName ?? props.resource?.metadata?.name,
               })}
               value={labels}
-              onChange={(labels, inputKey) => {
-                setLabels(labels!)
-                if (!modifiedLabelKeys.includes(inputKey)) {
-                  setModifiedLabelKeys([...modifiedLabelKeys, inputKey])
-                }
-              }}
+              onChange={(labels) => setLabels(labels!)}
               placeholder={t('labels.edit.placeholder')}
             />
             <AcmAlertGroup isInline canClose />
