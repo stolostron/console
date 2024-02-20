@@ -71,6 +71,11 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       desc: control.active.agentNamespace,
     },
     {
+      term: t('Controller availability policy'),
+      desc:
+        control.active.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
+    },
+    {
       term: t('Node pools'),
       desc: control.active.nodePools.length,
     },
