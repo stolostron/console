@@ -99,7 +99,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
 
   const addNodePoolStatusMessage = useMemo(() => {
     if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {
-      return t('Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.')
+      return t('Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.')
     }
     if (cluster?.hypershift?.isUpgrading) {
       return t('Node pools cannot be added during hosted cluster upgrade.')

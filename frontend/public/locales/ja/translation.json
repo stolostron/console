@@ -389,7 +389,7 @@
   "Add namespace": "namespace の追加",
   "Add new hosts": "新規ホストの追加",
   "Add node pool": "ノードプールの追加",
-  "Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.": "ノードプールの追加は、AWS でのみサポートされています。HyperShift CLI を使用して、追加のノードプールを追加します。",
+  "Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.": "ノードプールの追加は、AWS hcp CLI を使用して、追加のノードプールを追加します。",
   "Add placement": "配置の追加",
   "Add placement binding": "配置バインディングの追加",
   "Add placement rule": "配置ルールの追加",

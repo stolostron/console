@@ -389,7 +389,7 @@
   "Add namespace": "添加命名空间",
   "Add new hosts": "添加新主机",
   "Add node pool": "添加节点池",
-  "Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.": "仅 AWS 支持添加节点池。使用 HyperShift CLI 添加额外节点池。",
+  "Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.": "仅 AWS 支持添加节点池。使用 hcp CLI 添加额外节点池。",
   "Add placement": "添加放置",
   "Add placement binding": "添加放置绑定",
   "Add placement rule": "添加放置规则",

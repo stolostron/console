@@ -397,7 +397,7 @@
   "Add namespace": "Add namespace",
   "Add new hosts": "Add new hosts",
   "Add node pool": "Add node pool",
-  "Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.": "Add node pool is only supported for AWS. Use the HyperShift CLI to add additional node pools.",
+  "Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.": "Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.",
   "Add placement": "Add placement",
   "Add placement binding": "Add placement binding",
   "Add placement rule": "Add placement rule",
