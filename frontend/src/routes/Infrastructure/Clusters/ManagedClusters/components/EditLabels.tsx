@@ -16,13 +16,18 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
   const { t } = useTranslation()
-  const [labels, setLabels] = useState<Record<string, string>>({})
+  const [labels, setLabels] = useState<Record<string, string>>({ ...props.resource?.metadata?.labels })
+  const isOpen = props.resource !== undefined
 
   useLayoutEffect(() => {
-    /* istanbul ignore next */
-    const labels = props.resource?.metadata?.labels ?? {}
-    setLabels({ ...labels })
-  }, [props.resource?.metadata?.labels])
+    if (isOpen) {
+      const labels = props.resource?.metadata?.labels ?? {}
+      setLabels({ ...labels })
+    }
+    // update when the modal transitions from closed to open (with new data)
+    // but ignore label changes after modal is open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   return (
     <AcmModal
