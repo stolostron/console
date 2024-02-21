@@ -2,13 +2,35 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
+import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../src/atoms'
+import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { SavedSearch } from '../../../resources'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import SavedSearchesCard from './SavedSearchesCard'
+
+jest.mock('../../../resources', () => ({
+  listResources: jest.fn(() => ({
+    promise: Promise.resolve([
+      {
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: '2024-02-21T19:34:39Z',
+              message: 'Check status of deployment: search-api',
+              reason: 'NoPodsFound',
+              status: 'False',
+              type: 'Ready--search-api',
+            },
+          ],
+        },
+      },
+    ]),
+  })),
+}))
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
@@ -83,6 +105,49 @@ const mocks = [
   },
 ]
 
+const errorMock = [
+  {
+    request: {
+      query: SearchResultCountDocument,
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              {
+                property: 'kind',
+                values: ['Pod'],
+              },
+            ],
+            limit: 1000,
+          },
+          {
+            keywords: [],
+            filters: [
+              {
+                property: 'label',
+                values: ['app=search'],
+              },
+              {
+                property: 'kind',
+                values: ['Pod'],
+              },
+              {
+                property: 'namespace',
+                values: ['open-cluster-management'],
+              },
+            ],
+            limit: 1000,
+          },
+        ],
+      },
+    },
+    result: {
+      errors: [new GraphQLError('Error getting overview data')],
+    },
+  },
+]
+
 describe('SavedSearchesCard', () => {
   test('Renders valid SavedSearchesCard with no saved searches', async () => {
     const { getByText } = render(
@@ -136,5 +201,27 @@ describe('SavedSearchesCard', () => {
     // Wait for and verify the saved search count query
     await waitFor(() => expect(getByText('10')).toBeTruthy())
     await waitFor(() => expect(getByText('2')).toBeTruthy())
+  })
+
+  test('Renders erro correctly when search is disabled', async () => {
+    nockIgnoreApiPaths()
+    const { getByText } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={errorMock}>
+            <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
+    )
+
+    // Check header strings
+    await waitFor(() => expect(getByText('Saved searches')).toBeTruthy())
+    await waitFor(() => expect(getByText('This view is disabled with the current configuration.')).toBeTruthy())
+    await waitFor(() => expect(getByText('Enable the search service to see this view.')).toBeTruthy())
   })
 })
