@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React from 'react'
 import PropTypes from 'prop-types'
+import React from 'react'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 
 class ControlPanelNumber extends React.Component {
@@ -24,16 +24,18 @@ class ControlPanelNumber extends React.Component {
 
   render() {
     const { controlId, control, controlData, handleChange, i18n } = this.props
-    const { exception } = control
+    const { exception, min } = control
 
     const onSet = (value) => {
-      control.active = value.toString()
-      handleChange()
+      if ((min && value >= min) || !min) {
+        control.active = value.toString()
+        handleChange()
+      }
     }
 
     const onChange = (inc) => {
       const value = parseInt(control.active, 10) + inc
-      if (value >= 0) {
+      if ((min && value >= min) || (!min && value >= 0)) {
         control.active = value.toString()
         handleChange()
       }

@@ -254,6 +254,7 @@ Array [
       Object {
         "id": "nodePoolCoreCount",
         "initial": "2",
+        "min": 1,
         "name": "Core",
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
@@ -261,6 +262,7 @@ Array [
       Object {
         "id": "nodePoolMemory",
         "initial": "8",
+        "min": 1,
         "name": "Memory (GiB)",
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
@@ -534,6 +536,7 @@ Array [
       Object {
         "id": "nodePoolCoreCount",
         "initial": "2",
+        "min": 1,
         "name": "Core",
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
@@ -541,6 +544,7 @@ Array [
       Object {
         "id": "nodePoolMemory",
         "initial": "8",
+        "min": 1,
         "name": "Memory (GiB)",
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
