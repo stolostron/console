@@ -3,7 +3,7 @@ apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
   name: '{{{clusterName}}}'
-  namespace: '{{{clusterName}}}'
+  namespace: 'clusters'
   labels:
   {{#if clusterSet}}
     "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
@@ -55,7 +55,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: pullsecret-cluster-{{{clusterName}}}
-  namespace: {{{clusterName}}}
+  namespace: clusters
 data:
   '.dockerconfigjson': {{{pullSecret}}}
 type: kubernetes.io/dockerconfigjson
@@ -65,7 +65,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: sshkey-cluster-{{{clusterName}}}
-  namespace: '{{{clusterName}}}'
+  namespace: 'clusters'
 stringData:
   id_rsa.pub: {{{ssh-publickey}}}
 
@@ -75,7 +75,7 @@ apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
   name: '{{{this.nodePoolName}}}'
-  namespace: '{{{@root.clusterName}}}'
+  namespace: 'clusters'
 spec:
   arch: amd64
   clusterName: '{{{@root.clusterName}}}'
