@@ -49,7 +49,7 @@ import {
 } from '../../../../../ui-components'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 
-const discoveryVersions = ['4.12', '4.13', '4.14', '4.15']
+const discoveryVersions = ['4.13', '4.14', '4.15', '4.16']
 
 export default function DiscoveryConfigPage() {
   const { t } = useTranslation()
