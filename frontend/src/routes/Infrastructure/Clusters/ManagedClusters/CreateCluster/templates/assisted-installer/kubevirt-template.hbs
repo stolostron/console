@@ -70,7 +70,7 @@ kind: Secret
 metadata:
   name: sshkey-cluster-{{{clusterName}}}
   namespace: 'clusters'
-stringData:
+data:
   id_rsa.pub: {{{ssh-publickey}}}
 
 {{#each nodepools}}

@@ -23,13 +23,13 @@ import {
   IResource,
   ProviderConnection,
   Secret,
-  SubscriptionOperator,
+  SubscriptionOperator
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import {
   HypershiftAgentContext,
-  useHypershiftContextValues,
+  useHypershiftContextValues
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
 import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
@@ -50,7 +50,7 @@ import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
   ClusterInfrastructureType,
   getCredentialsTypeForClusterInfrastructureType,
-  HostInventoryInfrastructureType,
+  HostInventoryInfrastructureType
 } from '../ClusterInfrastructureType'
 import { useAllClusters } from '../components/useAllClusters'
 import getControlDataAI from './controlData/ControlDataAI'
@@ -148,7 +148,18 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     (control: any) => {
       if (control.id === 'connection') {
         if (newSecret && control.setActive) {
-          control.setActive(newSecret.metadata.name)
+          const secretName = newSecret?.metadata.name ?? ''
+          if (control.providerId === 'kubevirt') {
+            // preset replacement fields to get around delayed control state from setAvailableConnections
+            control.availableMap[secretName] = {
+              replacements: {
+                pullSecret: newSecret.data?.pullSecret ?? '',
+                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
+                encoded: true,
+              },
+            }
+          }
+          control.setActive(secretName)
           setNewSecret(undefined) // override with the new secret once
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))

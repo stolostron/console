@@ -61,6 +61,7 @@ describe('Cluster creation control data for KubeVirt', () => {
           replacements: {
             pullSecret: 'pullSecretData',
             'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
+            encoded: false
           },
         },
       },
@@ -76,6 +77,7 @@ describe('Cluster creation control data for KubeVirt', () => {
           replacements: {
             pullSecret: 'cHVsbFNlY3JldERhdGE=',
             'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
+            encoded: true
           },
         },
       },
