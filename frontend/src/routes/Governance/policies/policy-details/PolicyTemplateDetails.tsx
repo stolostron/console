@@ -255,8 +255,8 @@ export function PolicyTemplateDetails(props: {
           ) {
             return ''
           }
-          if (cluster && kind && apiVersion && name) {
-            const nameArg = name != '*' ? `&name=${name}` : ''
+          if (cluster && kind && apiVersion && (name && name != '*' && name != '-')) {
+            const nameArg = `&name=${name}`
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
             return (
               <a
