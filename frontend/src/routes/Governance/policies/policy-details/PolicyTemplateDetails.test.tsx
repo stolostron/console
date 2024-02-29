@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { waitForNocks, waitForText } from '../../../../lib/test-util'
+import { waitForNocks, waitForText, waitForNotText } from '../../../../lib/test-util'
 import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 
@@ -607,11 +607,11 @@ describe('Policy Template Details content', () => {
     )
   })
 
-  test('Should render correctly with relatedObject name is * when it is cluster scope', async () => {
+  test('Should render correctly with relatedObject name is - when it is cluster scope', async () => {
     const replaceRelatedObj = [
       {
         compliant: 'NonCompliant',
-        object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: '*' } },
+        object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: '-' } },
         reason: 'Resource found as expected',
         cluster: 'test-cluster',
       },
@@ -643,19 +643,17 @@ describe('Policy Template Details content', () => {
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
-    await waitForText('*')
+    // Both namespace and name
+    await waitForText('-', true)
     await waitForText('v1')
-    const viewYamlLink = screen.getByText('View YAML')
-    expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/home/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1`
-    )
+    await waitForNotText('View YAML')
   })
 
-  test('Should render correctly with relatedObject name is * when it is namespace scope', async () => {
+  test('Should render correctly with relatedObject name is - when it is namespace scope', async () => {
     const replaceRelatedObj = [
       {
         compliant: 'NonCompliant',
-        object: { apiVersion: 'networking.k8s.io/v1', kind: 'Ingress', metadata: { namespace: 'ohmyns', name: '*' } },
+        object: { apiVersion: 'networking.k8s.io/v1', kind: 'Ingress', metadata: { namespace: 'ohmyns', name: '-' } },
         reason: 'Resource found as expected',
         cluster: 'test-cluster',
       },
@@ -687,11 +685,8 @@ describe('Policy Template Details content', () => {
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
-    await waitForText('*')
+    await waitForText('-')
     await waitForText('networking.k8s.io/v1')
-    const viewYamlLink = screen.getByText('View YAML')
-    expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/home/search/resources/yaml?cluster=test-cluster&kind=Ingress&apiversion=networking.k8s.io/v1&namespace=ohmyns`
-    )
+    await waitForNotText('View YAML')
   })
 })
