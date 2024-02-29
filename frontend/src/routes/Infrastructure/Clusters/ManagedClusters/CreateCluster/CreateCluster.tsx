@@ -23,13 +23,13 @@ import {
   IResource,
   ProviderConnection,
   Secret,
-  SubscriptionOperator
+  SubscriptionOperator,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import {
   HypershiftAgentContext,
-  useHypershiftContextValues
+  useHypershiftContextValues,
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
 import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
@@ -50,7 +50,7 @@ import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
   ClusterInfrastructureType,
   getCredentialsTypeForClusterInfrastructureType,
-  HostInventoryInfrastructureType
+  HostInventoryInfrastructureType,
 } from '../ClusterInfrastructureType'
 import { useAllClusters } from '../components/useAllClusters'
 import getControlDataAI from './controlData/ControlDataAI'

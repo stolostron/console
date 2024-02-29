@@ -14,7 +14,7 @@ import {
   numberedControlNameFunction,
   onImageChange,
   reverseImageSet,
-  reverseStorageClass
+  reverseStorageClass,
 } from './ControlDataHelpers'
 
 const operatorAlert = (localCluster, t) => {
@@ -45,7 +45,7 @@ const operatorAlert = (localCluster, t) => {
 }
 
 export const setKubeVirtSecrets = (control) => {
-  const { active, availableMap = {}, available } = control
+  const { active, availableMap = {} } = control
   const replacements = get(availableMap[active], 'replacements')
   const activePullSecret = replacements?.pullSecret ?? ''
   const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
