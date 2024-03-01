@@ -255,14 +255,13 @@ export function PolicyTemplateDetails(props: {
           ) {
             return ''
           }
-          if (cluster && kind && apiVersion && name) {
-            const nameArg = name != '*' ? `&name=${name}` : ''
+          if (cluster && kind && apiVersion && name && name != '-') {
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
             return (
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}${nameArg}${namespaceArg}`}
+                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
               >
                 {t('View YAML')}
               </a>
