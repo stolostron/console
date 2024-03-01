@@ -1206,25 +1206,5 @@ describe('CreateCluster KubeVirt', () => {
     // skip Automation to the Review and Save step
     await clickByText('Next')
     await waitForText('Infrastructure provider credential')
-
-    // Let's save it
-    // const createNocks = [
-    //   nockCreate(mockClusterProject, mockClusterProjectResponse),
-    //   nockCreate(mockClusterDeploymentAI as IResource),
-    //   nockCreate(mockManagedClusterAI),
-    //   nockCreate(mockAgentClusterInstall as IResource),
-    //   nockCreate(mockPullSecretAI),
-    //   nockCreate(mockKlusterletAddonConfigAI),
-    // ]
-
-    // await clickByText('Save')
-
-    // // make sure creating
-    // await waitForNocks(createNocks)
-
-    // next step (Hosts selection) is tested in the HostsForm.test
-
-    // screen.debug(undefined, -1)
   })
-  // 2 * 60 * 1000
 })
