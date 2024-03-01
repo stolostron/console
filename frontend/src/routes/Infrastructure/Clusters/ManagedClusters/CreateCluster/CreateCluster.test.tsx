@@ -1,5 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { render, screen } from '@testing-library/react'
+import { Scope } from 'nock/types'
+import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import {
+  clusterCuratorsState,
+  managedClusterInfosState,
+  managedClusterSetsState,
+  managedClustersState,
+  secretsState,
+  settingsState,
+  subscriptionOperatorsState,
+} from '../../../../../atoms'
+import {
+  nockCreate,
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+  nockIgnoreRBAC,
+  nockList,
+} from '../../../../../lib/nock-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
+import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import {
+  clickByPlaceholderText,
+  clickByRole,
+  clickByTestId,
+  clickByText,
+  ocpApi,
+  pasteByTestId,
+  typeByPlaceholderText,
+  typeByTestId,
+  typeByText,
+  waitForNocks,
+  waitForNotText,
+  waitForText,
+} from '../../../../../lib/test-util'
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -13,6 +51,8 @@ import {
   MachinePoolKind,
   ManagedCluster,
   ManagedClusterApiVersion,
+  ManagedClusterInfoApiVersion,
+  ManagedClusterInfoKind,
   ManagedClusterKind,
   Project,
   ProjectApiVersion,
@@ -28,52 +68,16 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../../../resources'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
+import { CLUSTER_INFRA_TYPE_PARAM } from '../ClusterInfrastructureType'
+import { CreateClusterPage } from '../CreateClusterPage'
 import {
-  clusterCuratorsState,
-  managedClusterSetsState,
-  managedClustersState,
-  secretsState,
-  settingsState,
-  subscriptionOperatorsState,
-} from '../../../../../atoms'
-import {
-  nockCreate,
-  nockIgnoreApiPaths,
-  nockIgnoreOperatorCheck,
-  nockIgnoreRBAC,
-  nockList,
-} from '../../../../../lib/nock-util'
-import {
-  clickByPlaceholderText,
-  clickByRole,
-  clickByTestId,
-  clickByText,
-  typeByPlaceholderText,
-  typeByTestId,
-  typeByText,
-  waitForNocks,
-  waitForNotText,
-  waitForText,
-  ocpApi,
-  pasteByTestId,
-} from '../../../../../lib/test-util'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { Scope } from 'nock/types'
-import {
-  clusterName,
   baseDomain,
+  clusterImageSet,
+  clusterName,
   mockAgentClusterInstall,
   mockClusterDeploymentAI,
-  clusterImageSet,
   mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
-import { PluginContext } from '../../../../../lib/PluginContext'
-import { CreateClusterPage } from '../CreateClusterPage'
-import { PluginDataContext } from '../../../../../lib/PluginDataContext'
-import { CLUSTER_INFRA_TYPE_PARAM } from '../ClusterInfrastructureType'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -1060,4 +1064,167 @@ describe('CreateCluster on premise', () => {
     },
     2 * 60 * 1000
   )
+})
+
+describe('CreateCluster KubeVirt', () => {
+  const Component = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [
+            {
+              apiVersion: ProviderConnectionApiVersion,
+              kind: ProviderConnectionKind,
+              metadata: {
+                name: 'connectionKubeVirt',
+                namespace: clusterName,
+                labels: {
+                  'cluster.open-cluster-management.io/type': 'kubevirt',
+                },
+              },
+              stringData: {
+                pullSecret: '{"pullSecret":"secret"}',
+                'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+              },
+              type: 'kubernetes.io/dockerconfigjson',
+            } as Secret,
+          ])
+          snapshot.set(clusterCuratorsState, mockClusterCurators)
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Route path={NavigationPath.createCluster}>
+            <CreateClusterPage />
+          </Route>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+
+  test('can create KubeVirt cluster', async () => {
+    const clusterImageSet415: ClusterImageSetK8sResource = {
+      apiVersion: ClusterImageSetApiVersion,
+      kind: ClusterImageSetKind,
+      metadata: {
+        name: 'ocp-release415',
+      },
+      spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+      },
+    }
+    const storageClass = {
+      kind: 'StorageClass',
+      apiVersion: 'storage.k8s.io/v1',
+      metadata: {
+        name: 'gp3-csi',
+        annotations: {
+          'storageclass.kubernetes.io/is-default-class': 'true',
+        },
+      },
+      provisioner: 'ebs.csi.aws.com',
+      parameters: {
+        encrypted: 'true',
+        type: 'gp3',
+      },
+      reclaimPolicy: 'Delete',
+      allowVolumeExpansion: true,
+      volumeBindingMode: 'WaitForFirstConsumer',
+    }
+    const initialNocks: Scope[] = [
+      nockList(clusterImageSet415 as IResource, [clusterImageSet415] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component />)
+
+    // wait for tables/combos to fill in
+    await waitForNocks(initialNocks)
+    // check integration of AI in the left-side navigation
+    await waitForText('Cluster details', true)
+    // await waitForText('Review and save')
+    await waitForText('Node pools')
+    await waitForText('Review and create')
+
+    // fill-in Cluster details
+    await typeByTestId('clusterName', clusterName)
+
+    // await waitForText('OpenShift 4.8.15') // single value of combobox // todo
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByText('OpenShift 4.15.0')
+
+    await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+
+    await clickByPlaceholderText('Select a credential')
+    await clickByText('connectionKubeVirt')
+
+    // transition to Automation
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await clickByText('Next')
+    // The test is flaky here
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await waitForText('Automation template')
+    await clickByTestId('nodePoolName')
+    await typeByTestId('nodePoolName', 'testPool')
+
+    // skip Automation to the Review and Save step
+    await clickByText('Next')
+    await waitForText('Infrastructure provider credential')
+
+    // Let's save it
+    // const createNocks = [
+    //   nockCreate(mockClusterProject, mockClusterProjectResponse),
+    //   nockCreate(mockClusterDeploymentAI as IResource),
+    //   nockCreate(mockManagedClusterAI),
+    //   nockCreate(mockAgentClusterInstall as IResource),
+    //   nockCreate(mockPullSecretAI),
+    //   nockCreate(mockKlusterletAddonConfigAI),
+    // ]
+
+    // await clickByText('Save')
+
+    // // make sure creating
+    // await waitForNocks(createNocks)
+
+    // next step (Hosts selection) is tested in the HostsForm.test
+
+    // screen.debug(undefined, -1)
+  })
+  // 2 * 60 * 1000
 })
