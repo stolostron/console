@@ -1,6 +1,6 @@
 {
   "name": "mce",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "displayName": "multicluster engine for Kubernetes",
   "description": "Integrates multicluster engine for Kubernetes functionality into the OpenShift Container Platform web console",
   "exposedModules": {
