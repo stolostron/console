@@ -59,7 +59,7 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
-import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
+import { getControlDataKubeVirt, setKubeVirtSecrets } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataRHV from './controlData/ControlDataRHV'
 import getControlDataVMW from './controlData/ControlDataVMW'
@@ -148,8 +148,22 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     (control: any) => {
       if (control.id === 'connection') {
         if (newSecret && control.setActive) {
-          control.setActive(newSecret.metadata.name)
+          const secretName = newSecret?.metadata.name ?? ''
+          if (control.providerId === 'kubevirt') {
+            // preset replacement fields to get around delayed control state from setAvailableConnections
+            control.availableMap[secretName] = {
+              replacements: {
+                pullSecret: newSecret.data?.pullSecret ?? '',
+                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
+                encoded: true,
+              },
+            }
+          }
+          control.setActive(secretName)
           setNewSecret(undefined) // override with the new secret once
+        }
+        if (!newSecret && control.providerId === 'kubevirt') {
+          setKubeVirtSecrets(control)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {

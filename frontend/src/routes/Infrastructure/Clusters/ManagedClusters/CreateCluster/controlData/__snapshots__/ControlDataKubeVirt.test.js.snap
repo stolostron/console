@@ -9,8 +9,9 @@ Object {
   "availableMap": Object {
     "kube-virt-cred-test": Object {
       "replacements": Object {
+        "encoded": true,
         "pullSecret": "cHVsbFNlY3JldERhdGE=",
-        "ssh-publickey": "ssh-publickey TESTING johndoe@email.com",
+        "ssh-publickey": "c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t",
       },
     },
   },
@@ -25,7 +26,8 @@ Object {
   "availableMap": Object {
     "kube-virt-cred-test": Object {
       "replacements": Object {
-        "pullSecret": "pullSecretData",
+        "encoded": true,
+        "pullSecret": "cHVsbFNlY3JldERhdGE=",
         "ssh-publickey": "ssh-publickey TESTING johndoe@email.com",
       },
     },
@@ -133,6 +135,7 @@ Array [
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
+    "hasReplacements": true,
     "id": "connection",
     "name": "Infrastructure provider credential",
     "onSelect": [Function],
@@ -415,6 +418,7 @@ Array [
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
+    "hasReplacements": true,
     "id": "connection",
     "name": "Infrastructure provider credential",
     "onSelect": [Function],

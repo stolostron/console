@@ -45,30 +45,20 @@ const operatorAlert = (localCluster, t) => {
 }
 
 export const setKubeVirtSecrets = (control) => {
-  const { active, availableMap = {}, available } = control
+  const { active, availableMap = {} } = control
   const replacements = get(availableMap[active], 'replacements')
   const activePullSecret = replacements?.pullSecret ?? ''
   const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
+  const isEncoded = replacements?.encoded && replacements?.encoded === true
 
-  if (active) {
+  if (active && !isEncoded && activePullSecret !== '') {
     control.availableMap[active] = {
       replacements: {
         pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
-        'ssh-publickey': activeSSHKey,
+        'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
+        encoded: true,
       },
     }
-  } else {
-    // No Credential active -> reset availableMaps to reset the encodings
-    available.forEach((cred) => {
-      const encodedPullSecret = control.availableMap[cred].replacements.pullSecret
-      const publicKey = control.availableMap[cred].replacements['ssh-publickey']
-      control.availableMap[cred] = {
-        replacements: {
-          pullSecret: Buffer.from(encodedPullSecret, 'base64').toString('ascii'),
-          'ssh-publickey': publicKey,
-        },
-      }
-    })
   }
 }
 
@@ -120,6 +110,7 @@ export const getControlDataKubeVirt = (
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
       onSelect: setKubeVirtSecrets,
+      hasReplacements: true,
     },
     {
       name: t('creation.ocp.name'),
