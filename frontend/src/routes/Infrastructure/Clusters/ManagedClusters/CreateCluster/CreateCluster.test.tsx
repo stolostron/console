@@ -686,7 +686,7 @@ describe('CreateCluster AWS', () => {
     nockIgnoreOperatorCheck()
   })
 
-  test.skip('can create AWS cluster without ansible template', async () => {
+  test('can create AWS cluster without ansible template', async () => {
     window.scrollBy = () => {}
 
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
@@ -761,7 +761,7 @@ describe('CreateCluster AWS', () => {
     await waitForNocks(createNocks)
   })
 
-  test.skip('can create AWS cluster with ansible template', async () => {
+  test('can create AWS cluster with ansible template', async () => {
     window.scrollBy = () => {}
 
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
@@ -831,7 +831,7 @@ describe('CreateCluster AWS', () => {
     await waitForNocks(createNocks)
   })
 
-  test.skip('can create AWS cluster with private configuration', async () => {
+  test('can create AWS cluster with private configuration', async () => {
     window.scrollBy = () => {}
 
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
@@ -901,7 +901,7 @@ describe('CreateCluster AWS', () => {
     await waitForNocks(createNocks)
   })
 
-  test.skip('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
+  test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
     window.scrollBy = () => {}
 
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
@@ -998,7 +998,7 @@ describe('CreateCluster on premise', () => {
     nockIgnoreOperatorCheck()
   })
 
-  test.skip(
+  test(
     'can create On Premise cluster',
     async () => {
       const initialNocks: Scope[] = [nockList(clusterImageSet as IResource, mockClusterImageSet as IResource[])]
