@@ -157,7 +157,6 @@ describe('ClusterDestroy', () => {
           <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
         </RecoilRoot>
       )
-      screen.logTestingPlaygroundURL()
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
       expect(screen.queryByText('ai:Download Installation Logs')).not.toBeInTheDocument()
     })
@@ -180,7 +179,6 @@ describe('ClusterDestroy', () => {
           </RecoilRoot>
         </ClusterContext.Provider>
       )
-      screen.logTestingPlaygroundURL()
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
       expect(screen.queryByText('ai:Download Installation Logs')).toBeInTheDocument()
     })
