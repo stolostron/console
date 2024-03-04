@@ -72,7 +72,6 @@ describe('CreateCredentialsPage', () => {
 
   test('can select rhv - located in page 2', async () => {
     render(<Component />)
-    // screen.logTestingPlaygroundURL()
     userEvent.click(screen.getByRole('button', { name: /go to next page/i }))
     await clickByTestId('rhv')
   })
