@@ -18,6 +18,8 @@ export type NodePoolFormValue = {
 export type HypershiftAgentContextType = {
   controllerAvailabilityPolicy: string
   setControllerAvailabilityPolicy: (policy: string) => void
+  infrastructureAvailabilityPolicy: string
+  setInfrastructureAvailabilityPolicy: (policy: string) => void
   nodePools?: NodePoolFormValue[]
   setNodePools: (nodePools: any) => void
   isAdvancedNetworking: boolean
@@ -35,6 +37,8 @@ export type HypershiftAgentContextType = {
 export const HypershiftAgentContext = React.createContext<HypershiftAgentContextType>({
   controllerAvailabilityPolicy: '',
   setControllerAvailabilityPolicy: noop,
+  infrastructureAvailabilityPolicy: '',
+  setInfrastructureAvailabilityPolicy: noop,
   nodePools: [],
   setNodePools: noop,
   isAdvancedNetworking: false,
@@ -57,10 +61,13 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
   const [infraEnvNamespace, setInfraEnvNamespace] = React.useState('')
   const [sshPublicKey, setSshPublicKey] = React.useState('')
   const [controllerAvailabilityPolicy, setControllerAvailabilityPolicy] = React.useState('')
+  const [infrastructureAvailabilityPolicy, setInfrastructureAvailabilityPolicy] = React.useState('')
 
   return {
     controllerAvailabilityPolicy,
     setControllerAvailabilityPolicy,
+    infrastructureAvailabilityPolicy,
+    setInfrastructureAvailabilityPolicy,
     nodePools,
     setNodePools,
     isAdvancedNetworking,
