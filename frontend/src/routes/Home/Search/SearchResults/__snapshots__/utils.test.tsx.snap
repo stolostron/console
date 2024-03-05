@@ -5,17 +5,17 @@ Array [
   Object {
     "click": [Function],
     "id": "view-application",
-    "title": "View application",
+    "title": "View Application",
   },
   Object {
     "click": [Function],
     "id": "view-application-topology",
-    "title": "View application topology",
+    "title": "View Application topology",
   },
   Object {
     "click": [Function],
     "id": "edit",
-    "title": "Edit application",
+    "title": "Edit Application",
   },
   Object {
     "click": [Function],
@@ -25,7 +25,7 @@ Array [
   Object {
     "click": [Function],
     "id": "delete",
-    "title": "Delete application",
+    "title": "Delete Application",
   },
 ]
 `;
@@ -37,7 +37,7 @@ Array [
   Object {
     "click": [Function],
     "id": "edit",
-    "title": "Edit pod",
+    "title": "Edit Pod",
   },
   Object {
     "click": [Function],
@@ -47,7 +47,7 @@ Array [
   Object {
     "click": [Function],
     "id": "delete",
-    "title": "Delete pod",
+    "title": "Delete Pod",
   },
 ]
 `;

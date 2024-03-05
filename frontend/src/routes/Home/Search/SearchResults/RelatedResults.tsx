@@ -70,7 +70,7 @@ export function RenderItemContent(props: {
       rowActions={
         isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
           ? undefined
-          : GetRowActions(relatedKind.toLowerCase(), currentQuery, true, setDeleteResource, t)
+          : GetRowActions(relatedKind, currentQuery, true, setDeleteResource, t)
       }
     />
   )
