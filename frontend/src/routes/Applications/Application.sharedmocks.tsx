@@ -452,7 +452,7 @@ export const mockSearchQueryArgoAppsClusterOverview = {
           { property: 'apigroup', values: ['argoproj.io'] },
           { property: 'cluster', values: ['feng-hypershift-test'] },
         ],
-        limit: 20000,
+        limit: 1000,
       },
     ],
   },
