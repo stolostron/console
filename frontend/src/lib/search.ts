@@ -53,7 +53,7 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
   })
 }
 
-export function queryRemoteArgoApps(cluster?: string): IRequestResult<ISearchResult> {
+export function queryRemoteArgoApps(searchLimit?: number, cluster?: string): IRequestResult<ISearchResult> {
   const filtersArr = [
     { property: 'kind', values: ['Application'] },
     { property: 'apigroup', values: ['argoproj.io'] },
@@ -71,7 +71,7 @@ export function queryRemoteArgoApps(cluster?: string): IRequestResult<ISearchRes
       input: [
         {
           filters: filtersArr,
-          limit: 20000,
+          limit: searchLimit || 1000,
         },
       ],
     },
@@ -79,7 +79,7 @@ export function queryRemoteArgoApps(cluster?: string): IRequestResult<ISearchRes
   })
 }
 
-export function queryOCPAppResources(cluster?: string): IRequestResult<ISearchResult> {
+export function queryOCPAppResources(searchLimit?: number, cluster?: string): IRequestResult<ISearchResult> {
   const filtersArr = [
     {
       property: 'kind',
@@ -100,7 +100,7 @@ export function queryOCPAppResources(cluster?: string): IRequestResult<ISearchRe
       input: [
         {
           filters: filtersArr,
-          limit: 20000, // search said not to use unlimited results so use this for now until pagination is available
+          limit: searchLimit || 1000, // search said not to use unlimited results so use this for now until pagination is available
         },
       ],
     },
