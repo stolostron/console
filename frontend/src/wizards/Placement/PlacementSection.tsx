@@ -210,7 +210,10 @@ export function PlacementSection(props: {
   return (
     <Section
       label={t('Placement')}
-      // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
+      description={t(
+        'Use Placement resources to select clusters from the cluster sets that you have bound to the ' +
+          'resource namespace. An empty Placement returns all available clusters from all bound cluster sets.'
+      )}
       autohide={false}
     >
       {usesPlacementRule && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
@@ -248,7 +251,7 @@ export function PlacementSection(props: {
               clusters={props.clusters}
               createClusterSetCallback={props.createClusterSetCallback}
               alertTitle={t(
-                'ClusterSets failed to load. Check the ManagedClusterSetBinding resource to verify your selected namespace.'
+                'ClusterSets failed to load. Verify that there is at least one ClusterSet bound to your selected namespace.'
               )}
               alertContent={
                 <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
