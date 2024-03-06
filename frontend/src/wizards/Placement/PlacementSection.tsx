@@ -20,7 +20,13 @@ import {
 import { IResource } from '../common/resources/IResource'
 import PlacementRuleDeprecationAlert from '../../components/PlacementRuleDeprecationAlert'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
-import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
+import {
+  IPlacement,
+  PlacementApiGroup,
+  PlacementApiVersion,
+  PlacementKind,
+  PlacementSpec,
+} from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
 import { IPlacementRule, PlacementRuleApiGroup, PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { Placement, Placements } from './Placement'
@@ -38,6 +44,7 @@ export function PlacementSection(props: {
   existingClusterSets: IResource[]
   existingClusterSetBindings: IClusterSetBinding[]
   clusters: IResource[]
+  defaultPlacementSpec?: PlacementSpec
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
@@ -217,6 +224,7 @@ export function PlacementSection(props: {
           allowNoPlacement={props.allowNoPlacement}
           withoutOnlineClusterCondition={props.withoutOnlineClusterCondition}
           usesPlacementRule={usesPlacementRule}
+          defaultPlacementSpec={props.defaultPlacementSpec}
         />
       )}
       {placementCount === 1 && (
@@ -305,6 +313,7 @@ export function PlacementSelector(props: {
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
   usesPlacementRule?: boolean
+  defaultPlacementSpec?: PlacementSpec
 }) {
   const resources = useItem() as IResource[]
   const { placementCount, placementRuleCount, placementBindingCount, bindingSubjectKind } = props
@@ -349,7 +358,7 @@ export function PlacementSelector(props: {
                   apiVersion: PlacementApiVersion,
                   kind: PlacementKind,
                   metadata: { name: placementName, namespace },
-                  spec: {},
+                  spec: props.defaultPlacementSpec ?? {},
                 } as IResource)
               }
 

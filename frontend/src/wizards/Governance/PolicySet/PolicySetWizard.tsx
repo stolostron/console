@@ -22,7 +22,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../common/resources/IResource'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
 import { PlacementBindingKind, PlacementBindingType } from '../../common/resources/IPlacementBinding'
-import { PlacementApiGroup, PlacementKind, PlacementType } from '../../common/resources/IPlacement'
+import { PlacementApiGroup, PlacementKind, PlacementType, PlacementSpec } from '../../common/resources/IPlacement'
 import { PolicyApiVersion, PolicyKind } from '../../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../../common/resources/IPolicySet'
 import { validateKubernetesResourceName } from '../../../lib/validation'
@@ -76,6 +76,19 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
     return virtualPolicies
   }, [policySet, props.policies])
 
+  const defaultPlacementSpec = {
+    tolerations: [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
+  } as PlacementSpec
+
   const translatedWizardStrings = useWizardStrings({
     stepsAriaLabel: t('Policy set steps'),
     contentAriaLabel: t('Policy set content'),
@@ -100,7 +113,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
           {
             ...PlacementType,
             metadata: { name: '', namespace: '' },
-            spec: {},
+            spec: defaultPlacementSpec,
           },
           {
             ...PlacementBindingType,
@@ -173,6 +186,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
           existingPlacements={props.placements}
           existingPlacementRules={props.placementRules}
           clusters={props.clusters}
+          defaultPlacementSpec={defaultPlacementSpec}
           withoutOnlineClusterCondition
         />
       </Step>

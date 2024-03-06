@@ -182,6 +182,18 @@ export function PolicyWizard(props: {
           bindingSubjectKind={PolicyKind}
           bindingSubjectApiGroup={PolicyApiGroup}
           clusters={props.clusters}
+          defaultPlacementSpec={{
+            tolerations: [
+              {
+                key: 'cluster.open-cluster-management.io/unreachable',
+                operator: 'Exists',
+              },
+              {
+                key: 'cluster.open-cluster-management.io/unavailable',
+                operator: 'Exists',
+              },
+            ],
+          }}
           allowNoPlacement
           withoutOnlineClusterCondition
         />
