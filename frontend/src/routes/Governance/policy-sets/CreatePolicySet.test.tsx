@@ -91,6 +91,16 @@ describe('Create Policy Page', () => {
             },
           },
         ],
+        tolerations: [
+          {
+            key: 'cluster.open-cluster-management.io/unreachable',
+            operator: 'Exists',
+          },
+          {
+            key: 'cluster.open-cluster-management.io/unavailable',
+            operator: 'Exists',
+          },
+        ],
       },
     }
 
