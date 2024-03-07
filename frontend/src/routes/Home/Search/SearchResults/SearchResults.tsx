@@ -86,7 +86,7 @@ function RenderAccordionItem(props: {
           rowActions={
             isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
               ? undefined
-              : GetRowActions(kind.toLowerCase(), currentQuery, false, setDeleteResource, t)
+              : GetRowActions(kind, currentQuery, false, setDeleteResource, t)
           }
         />
       )

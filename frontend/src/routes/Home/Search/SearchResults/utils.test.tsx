@@ -14,7 +14,7 @@ jest.mock('react-router-dom', () => ({
 const t = i18next.t.bind(i18next)
 
 test('Correctly return row Actions', () => {
-  const res = GetRowActions('pod', 'kind:Pod', false, () => {}, t)
+  const res = GetRowActions('Pod', 'kind:Pod', false, () => {}, t)
   res[0].click({ kind: 'Pod' }) // edit resource
   res[1].click({ kind: 'Pod' }) // view related resources
   res[2].click({ kind: 'Pod' }) // delete resource
@@ -22,12 +22,12 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const res = GetRowActions('cluster', 'kind:Cluster', false, () => {}, t)
+  const res = GetRowActions('Cluster', 'kind:Cluster', false, () => {}, t)
   expect(res).toMatchSnapshot()
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const res = GetRowActions('application', 'kind:Application', false, () => {}, t)
+  const res = GetRowActions('Application', 'kind:Application', false, () => {}, t)
   res[0].click({
     apigroup: 'app.k8s.io',
     kind: 'Application',

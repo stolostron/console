@@ -14,7 +14,7 @@ export interface ISearchResult {
 }
 
 export function GetRowActions(
-  kind: string,
+  resourceKind: string,
   currentQuery: string,
   relatedResource: boolean,
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
@@ -24,7 +24,7 @@ export function GetRowActions(
 
   const viewApplication = {
     id: 'view-application',
-    title: t('View application'),
+    title: t('View Application'),
     click: (item: any) => {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
@@ -58,7 +58,7 @@ export function GetRowActions(
   }
   const viewAppTopology = {
     id: 'view-application-topology',
-    title: t('View application topology'),
+    title: t('View Application topology'),
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
       return history.push({
@@ -73,7 +73,7 @@ export function GetRowActions(
   }
   const editButton = {
     id: 'edit',
-    title: t('Edit {{resourceKind}}', { resourceKind: kind }),
+    title: t('Edit {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
       return history.push({
@@ -103,7 +103,7 @@ export function GetRowActions(
   }
   const deleteButton = {
     id: 'delete',
-    title: t('Delete {{resourceKind}}', { resourceKind: kind }),
+    title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
       setDeleteResource({
         open: true,
@@ -115,9 +115,13 @@ export function GetRowActions(
     },
   }
 
-  if (kind === 'cluster' || kind === 'release' || kind === 'policyreport') {
+  if (
+    resourceKind.toLowerCase() === 'cluster' ||
+    resourceKind.toLowerCase() === 'release' ||
+    resourceKind.toLowerCase() === 'policyreport'
+  ) {
     return []
-  } else if (kind === 'application') {
+  } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   }
   return [editButton, viewRelatedButton, deleteButton]
