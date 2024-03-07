@@ -16,38 +16,47 @@ If a ManagedCluster is selected and added into the PlacementDecisions, other com
 */
 export type IPlacement = IResource & {
   metadata?: { name?: string; namespace?: string }
-  spec?: {
-    /** 
-        ClusterSets represent the ManagedClusterSets from which theManagedClusters are selected. If the slice is empty,
-        ManagedClusters will be selected from the ManagedClusterSets bound to the placement namespace, otherwise 
-        ManagedClusters will be selected from the intersection of this slice and the ManagedClusterSets bound to the placement namespace.
-         */
-    clusterSets?: string[]
+  spec?: PlacementSpec
+}
 
-    /**
-            NumberOfClusters represents the desired number of
-            ManagedClusters to be selected which meet the placement
-            requirements. 1) If not specified, all ManagedClusters which
-            meet the placement requirements (including ClusterSets,   
-            and Predicates) will be selected; 2) Otherwise if the nubmer
-            of ManagedClusters meet the placement requirements is larger
-            than    NumberOfClusters, a random subset with desired
-            number of ManagedClusters will be selected; 3) If the nubmer
-            of ManagedClusters meet the placement requirements is equal
-            to NumberOfClusters,    all of them will be selected; 4) If
-            the nubmer of ManagedClusters meet the placement
-            requirements is less than NumberOfClusters,    all of them
-            will be selected, and the status of condition
-            `PlacementConditionSatisfied` will be    set to false;
-        */
-    numberOfClusters?: number
+export interface PlacementSpec {
+  /** 
+      ClusterSets represent the ManagedClusterSets from which theManagedClusters are selected. If the slice is empty,
+      ManagedClusters will be selected from the ManagedClusterSets bound to the placement namespace, otherwise 
+      ManagedClusters will be selected from the intersection of this slice and the ManagedClusterSets bound to the placement namespace.
+       */
+  clusterSets?: string[]
 
-    /**
-        Predicates represent a slice of predicates to select ManagedClusters.
-        The predicates are ORed.
-         */
-    predicates?: Predicate[]
-  }
+  /**
+          NumberOfClusters represents the desired number of
+          ManagedClusters to be selected which meet the placement
+          requirements. 1) If not specified, all ManagedClusters which
+          meet the placement requirements (including ClusterSets,   
+          and Predicates) will be selected; 2) Otherwise if the nubmer
+          of ManagedClusters meet the placement requirements is larger
+          than    NumberOfClusters, a random subset with desired
+          number of ManagedClusters will be selected; 3) If the nubmer
+          of ManagedClusters meet the placement requirements is equal
+          to NumberOfClusters,    all of them will be selected; 4) If
+          the nubmer of ManagedClusters meet the placement
+          requirements is less than NumberOfClusters,    all of them
+          will be selected, and the status of condition
+          `PlacementConditionSatisfied` will be    set to false;
+      */
+  numberOfClusters?: number
+
+  /**
+      Predicates represent a slice of predicates to select ManagedClusters.
+      The predicates are ORed.
+       */
+  predicates?: Predicate[]
+
+  /**
+      Tolerations are applied to placements, and allow (but do not require) the
+      managed clusters with certain taints to be selected by placements with
+      matching tolerations.
+       */
+  tolerations?: Toleration[]
 }
 
 export interface Predicate {
@@ -63,4 +72,12 @@ export interface Predicate {
       matchExpressions?: IExpression[]
     }
   }
+}
+
+export interface Toleration {
+  key: string
+  operator?: 'Equal' | 'Exists'
+  value?: string
+  tolerationSeconds?: number
+  effect?: 'NoSelect' | 'PreferNoSelect' | 'NoSelectIfNew'
 }
