@@ -82,6 +82,9 @@ A number of the core NPM package dependencies are published from other repositor
 
     This will start the frontend and the backend in parallel. (It may take up to 30 seconds for the UI to appear)
 
+    **NOTE:** If a port conflict appears with port `4000`, you can override it by exporting `BACKEND_PORT` with a 
+    new value like `4001` and re-running the setup and start commands
+
 ## Running as an OpenShift console plugin-in
 
 See [Dynamic Plugins - Development](frontend/PLUGIN.md#development)

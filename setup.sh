@@ -5,7 +5,7 @@
 
 echo > ./backend/.env
 
-echo PORT=4000 >> ./backend/.env
+echo PORT="${BACKEND_PORT:-4000}" >> ./backend/.env
 echo NODE_ENV=development >> ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`

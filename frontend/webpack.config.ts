@@ -167,7 +167,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/username',
         '/multicloud/userpreference',
         '/multicloud/version',
-      ].map((backendPath) => ({ path: backendPath, target: 'https://localhost:4000', secure: false })),
+      ].map((backendPath) => ({ path: backendPath, target: `https://localhost:${process.env.BACKEND_PORT ?? 4000}`, secure: false })),
       open: openBrowser,
       historyApiFallback: true,
       compress: true,
