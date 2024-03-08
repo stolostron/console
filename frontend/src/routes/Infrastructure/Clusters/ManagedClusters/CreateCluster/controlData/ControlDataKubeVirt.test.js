@@ -75,7 +75,7 @@ describe('Cluster creation control data for KubeVirt', () => {
       availableMap: {
         'kube-virt-cred-test': {
           replacements: {
-            pullSecret: 'cHVsbFNlY3JldERhdGE=',
+            pullSecret: 'cHVsbFNlY3JldERhdGE=', // notsecret
             'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
             encoded: true,
           },

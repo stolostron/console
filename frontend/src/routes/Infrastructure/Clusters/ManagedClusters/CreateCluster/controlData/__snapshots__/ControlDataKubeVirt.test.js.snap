@@ -10,7 +10,7 @@ Object {
     "kube-virt-cred-test": Object {
       "replacements": Object {
         "encoded": true,
-        "pullSecret": "cHVsbFNlY3JldERhdGE=",
+        "pullSecret": "cHVsbFNlY3JldERhdGE=", // notsecret
         "ssh-publickey": "c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t",
       },
     },
@@ -27,7 +27,7 @@ Object {
     "kube-virt-cred-test": Object {
       "replacements": Object {
         "encoded": true,
-        "pullSecret": "cHVsbFNlY3JldERhdGE=",
+        "pullSecret": "cHVsbFNlY3JldERhdGE=", // notsecret
         "ssh-publickey": "ssh-publickey TESTING johndoe@email.com",
       },
     },
