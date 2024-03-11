@@ -61,22 +61,24 @@ describe('Cluster creation control data for KubeVirt', () => {
           replacements: {
             pullSecret: 'pullSecretData',
             'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
-            encoded: false,
           },
         },
       },
       available: ['kube-virt-cred-test'],
     }
     setKubeVirtSecrets(control)
-    expect(control).toMatchSnapshot()
+    expect(control.availableMap['kube-virt-cred-test'].replacements.pullSecret).toEqual('cHVsbFNlY3JldERhdGE=') // notsecret
+    expect(control.availableMap['kube-virt-cred-test'].replacements['ssh-publickey']).toEqual(
+      'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t' // notsecret
+    )
   })
   it('Correctly returns setKubeVirtSecrets without pull secret & ssh key', () => {
     const emptyControl = {
       availableMap: {
         'kube-virt-cred-test': {
           replacements: {
-            pullSecret: 'cHVsbFNlY3JldERhdGE=',
-            'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
+            pullSecret: 'cHVsbFNlY3JldERhdGE=', // notsecret
+            'ssh-publickey': 'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t', // notsecret
             encoded: true,
           },
         },
@@ -84,7 +86,10 @@ describe('Cluster creation control data for KubeVirt', () => {
       available: ['kube-virt-cred-test'],
     }
     setKubeVirtSecrets(emptyControl)
-    expect(emptyControl).toMatchSnapshot()
+    expect(emptyControl.availableMap['kube-virt-cred-test'].replacements.pullSecret).toEqual('cHVsbFNlY3JldERhdGE=') // notsecret
+    expect(emptyControl.availableMap['kube-virt-cred-test'].replacements['ssh-publickey']).toEqual(
+      'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t' // notsecret
+    )
   })
   it('Correctly sets available storage classes', () => {
     const control = {
