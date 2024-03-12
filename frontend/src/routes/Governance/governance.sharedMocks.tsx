@@ -200,10 +200,6 @@ const policy1: Policy = {
           spec: {
             remediationAction: 'inform',
             severity: 'low',
-            namespaceSelector: {
-              exclude: ['kube-*'],
-              include: ['default'],
-            },
             'object-templates': [
               {
                 complianceType: 'musthave',
@@ -299,10 +295,6 @@ export const policy3: Policy = {
           spec: {
             remediationAction: 'inform',
             severity: 'low',
-            namespaceSelector: {
-              exclude: ['kube-*'],
-              include: ['default'],
-            },
             'object-templates': [
               {
                 complianceType: 'musthave',

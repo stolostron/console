@@ -47,7 +47,7 @@ describe('PolicySetWizard wizard', () => {
     expect(placementName).toEqual('test-policy-placement')
 
     screen.getByText(/select the cluster sets/i).click()
-    expect(screen.getByRole('button', { name: /create cluster set/i })).not.toBeNull()
+    expect(screen.getByRole('button', { name: /Add cluster set/i })).not.toBeNull()
 
     expect(screen.getByRole('checkbox', { name: /cluster-set-01/i })).not.toBeNull()
   })

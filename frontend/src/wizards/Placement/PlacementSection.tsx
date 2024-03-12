@@ -20,7 +20,13 @@ import {
 import { IResource } from '../common/resources/IResource'
 import PlacementRuleDeprecationAlert from '../../components/PlacementRuleDeprecationAlert'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
-import { IPlacement, PlacementApiGroup, PlacementApiVersion, PlacementKind } from '../common/resources/IPlacement'
+import {
+  IPlacement,
+  PlacementApiGroup,
+  PlacementApiVersion,
+  PlacementKind,
+  PlacementSpec,
+} from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
 import { IPlacementRule, PlacementRuleApiGroup, PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { Placement, Placements } from './Placement'
@@ -38,6 +44,7 @@ export function PlacementSection(props: {
   existingClusterSets: IResource[]
   existingClusterSetBindings: IClusterSetBinding[]
   clusters: IResource[]
+  defaultPlacementSpec?: PlacementSpec
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
@@ -203,7 +210,10 @@ export function PlacementSection(props: {
   return (
     <Section
       label={t('Placement')}
-      // description="Placement selects clusters from the cluster sets which have bindings to the resource namespace."
+      description={t(
+        'Use Placement resources to select clusters from the cluster sets that you have bound to the ' +
+          'resource namespace. An empty Placement returns all available clusters from all bound cluster sets.'
+      )}
       autohide={false}
     >
       {usesPlacementRule && <PlacementRuleDeprecationAlert></PlacementRuleDeprecationAlert>}
@@ -217,6 +227,7 @@ export function PlacementSection(props: {
           allowNoPlacement={props.allowNoPlacement}
           withoutOnlineClusterCondition={props.withoutOnlineClusterCondition}
           usesPlacementRule={usesPlacementRule}
+          defaultPlacementSpec={props.defaultPlacementSpec}
         />
       )}
       {placementCount === 1 && (
@@ -240,7 +251,7 @@ export function PlacementSection(props: {
               clusters={props.clusters}
               createClusterSetCallback={props.createClusterSetCallback}
               alertTitle={t(
-                'ClusterSets failed to load. Check the ManagedClusterSetBinding resource to verify your selected namespace.'
+                'ClusterSets failed to load. Verify that there is at least one ClusterSet bound to your selected namespace.'
               )}
               alertContent={
                 <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
@@ -305,6 +316,7 @@ export function PlacementSelector(props: {
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
   usesPlacementRule?: boolean
+  defaultPlacementSpec?: PlacementSpec
 }) {
   const resources = useItem() as IResource[]
   const { placementCount, placementRuleCount, placementBindingCount, bindingSubjectKind } = props
@@ -349,7 +361,7 @@ export function PlacementSelector(props: {
                   apiVersion: PlacementApiVersion,
                   kind: PlacementKind,
                   metadata: { name: placementName, namespace },
-                  spec: {},
+                  spec: props.defaultPlacementSpec ?? {},
                 } as IResource)
               }
 
