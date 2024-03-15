@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import crypto from 'crypto'
 import _ from 'lodash'
-import { createResource, deleteResource, getResource } from './utils/resource-request'
+import { ResourceError, createResource, deleteResource, getResource } from './utils/resource-request'
 import { getGroupFromApiVersion } from './utils/utils'
 
 export const ManagedClusterViewApiVersion = 'view.open-cluster-management.io/v1beta1'
@@ -65,6 +65,10 @@ function deleteManagedClusterView(metadata: { name: string; namespace: string })
     apiVersion: ManagedClusterViewApiVersion,
     kind: ManagedClusterViewKind,
     metadata,
+  }).promise.catch((err) => {
+    if (!(err instanceof ResourceError && err.reason === 'NotFound')) {
+      throw err
+    }
   })
 }
 
@@ -141,6 +145,13 @@ export async function fireManagedClusterView(
     return createResource<ManagedClusterView>(body)
       .promise.then(async () => {
         return pollManagedClusterView(viewName, clusterName)
+      })
+      .catch(async (err) => {
+        if (err instanceof ResourceError && err.reason === 'AlreadyExists') {
+          return pollManagedClusterView(viewName, clusterName)
+        } else {
+          throw err
+        }
       })
       .catch((err) => {
         console.error(err)
