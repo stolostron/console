@@ -60,6 +60,8 @@ export const globalTypes = {
         { value: 'zh', title: 'Chinese (simplified)' },
         { value: 'ja', title: 'Japanese' },
         { value: 'ko', title: 'Korean' },
+        { value: 'fr', title: 'French' },
+        { value: 'es', title: 'Spanish' },
       ],
       showName: true,
     },
