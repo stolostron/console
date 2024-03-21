@@ -40,7 +40,7 @@
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "@kubernetes/client-node": "^1.0.0-rc2",
+    "@kubernetes/client-node": "^1.0.0-rc4",
     "@mui/material": "^5.11.1",
     "@octokit/rest": "19.0.3",
     "@octokit/types": "6.40.0",
