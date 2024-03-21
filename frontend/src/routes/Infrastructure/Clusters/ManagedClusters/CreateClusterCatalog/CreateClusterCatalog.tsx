@@ -7,7 +7,7 @@ import {
   ICatalogCard,
   ItemView,
 } from '@stolostron/react-data-view'
-import { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
@@ -21,8 +21,39 @@ import {
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
-import { Divider, ExpandableSection } from '@patternfly/react-core'
+import { Divider, ExpandableSection, Stack, StackItem } from '@patternfly/react-core'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
+import { ClusterImageSet } from '../../../../../resources'
+import { TFunction } from 'i18next'
+
+const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], arch: string) =>
+  clusterImageSets.filter((cis) => cis.spec?.releaseImage.endsWith(arch) && cis.metadata.labels?.visible === 'true')
+
+const clusterImageSetsRequired = (
+  clusterImageSets: ClusterImageSet[],
+  t: TFunction,
+  children?: React.ReactNode
+): {
+  alertTitle: ICatalogCard['alertTitle']
+  alertVariant: ICatalogCard['alertVariant']
+  alertContent: ICatalogCard['alertContent']
+} => ({
+  alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
+  alertVariant: 'info',
+  alertContent: (
+    <Stack hasGutter>
+      <StackItem>
+        <>
+          {t(
+            'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
+          )}
+        </>
+        <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_PREREQ} />
+      </StackItem>
+      {children && <StackItem>{children}</StackItem>}
+    </Stack>
+  ),
+})
 
 type CardProvider = Provider & (ClusterInfrastructureType | Provider.hostinventory | Provider.nutanix)
 type CardData = {
@@ -131,7 +162,7 @@ export function CreateClusterCatalog() {
       } else if (provider === Provider.hostinventory) {
         return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
       } else if (provider === Provider.nutanix) {
-        return clusterImageSets.length
+        return hasClusterImageSetWithArch(clusterImageSets, 'x86_64').length
           ? nextStep({
               pathname: NavigationPath.createDiscoverHost,
               search: 'nutanix=true',
@@ -164,33 +195,38 @@ export function CreateClusterCatalog() {
         labels,
         onClick: getOnClickAction(provider),
       }
-      if (provider === Provider.hostinventory) {
-        card = {
-          ...card,
-          title: t('Host inventory'),
-          alertTitle: clusterImageSets.length ? undefined : t('OpenShift release images unavailable'),
-          alertVariant: 'info',
-          alertContent: (
-            <>
-              {t(
-                'No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.'
-              )}
-              <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CLUSTER_PREREQ} />
-            </>
-          ),
-        }
-      } else if (provider === Provider.redhatvirtualization) {
-        card = {
-          ...card,
-          alertTitle: t('Deprecated host platform'),
-          alertVariant: 'info',
-          alertContent: (
-            <>
-              {t('Red Hat Virtualization is deprecated for OpenShift 4.13.')}
-              <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
-            </>
-          ),
-        }
+
+      switch (provider) {
+        case Provider.hostinventory:
+          card = {
+            ...card,
+            title: t('Host inventory'),
+            ...clusterImageSetsRequired(clusterImageSets, t),
+          }
+          break
+        case Provider.nutanix:
+          card = {
+            ...card,
+            ...clusterImageSetsRequired(
+              hasClusterImageSetWithArch(clusterImageSets, 'x86_64'),
+              t,
+              <>{t('Nutanix requires x86_64 release image. No other architecture is supported.')}</>
+            ),
+          }
+          break
+        case Provider.redhatvirtualization:
+          card = {
+            ...card,
+            alertTitle: t('Deprecated host platform'),
+            alertVariant: 'info',
+            alertContent: (
+              <>
+                {t('Red Hat Virtualization is deprecated for OpenShift 4.13.')}
+                <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
+              </>
+            ),
+          }
+          break
       }
       return card
     }
@@ -209,7 +245,7 @@ export function CreateClusterCatalog() {
     })
 
     return { cardsWithCreds, cardsWithOutCreds }
-  }, [getCredentialLabels, clusterImageSets.length, t, cardsData, getOnClickAction])
+  }, [getCredentialLabels, clusterImageSets, t, cardsData, getOnClickAction])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
