@@ -123,7 +123,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     if (isAppSet) {
       if (
-        applicationData.application?.app?.spec?.tempalte?.metadata?.annotations?.[
+        applicationData.application?.app?.spec?.template?.metadata?.annotations?.[
           'apps.open-cluster-management.io/ocm-managed-cluster'
         ]
       ) {
