@@ -15,7 +15,7 @@ export const ReleaseNotesLink = (props: { version?: string }) => {
 
   return (
     <a
-      href={`${OCP_DOC_BASE_PATH}/${x}.${y}/release_notes/ocp-${x}-${y}-release-notes.html#ocp-${x}-${y}-${z}`}
+      href={`${OCP_DOC_BASE_PATH}/${x}.${y}/html/release_notes/ocp-${x}-${y}-release-notes.html#ocp-${x}-${y}-${z}`}
       target="_blank"
       rel="noreferrer"
       style={{ display: 'block', marginTop: '6px' }}
