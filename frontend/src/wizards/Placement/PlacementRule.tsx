@@ -56,6 +56,7 @@ export function PlacementRule(props: { clusters: IResource[]; hideName?: boolean
           id="name"
           path="metadata.name"
           label={t('Name')}
+          placeholder={t('Enter the name')}
           required
           readonly={placementRule.metadata?.uid !== undefined}
           helperText={t(
