@@ -95,6 +95,7 @@ export function Placement(props: {
           id="name"
           path="metadata.name"
           label={t('Name')}
+          placeholder={t('Enter the name')}
           required
           readonly={placement.metadata?.uid !== undefined}
           helperText={t(
