@@ -1037,42 +1037,42 @@ export default function ApplicationsOverview() {
   const compareAppTypesLink = useCallback(
     (isEmptyState: boolean) => (
       <Popover
-        headerContent="Compare application types"
+        headerContent={t('Compare application types')}
         bodyContent={
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{'Argo CD ApplicationSet - Pull model'}</Text>
+                <Text>{t('Argo CD ApplicationSet - Pull model')}</Text>
               </span>
               <span>
                 <Text>
-                  {
+                  {t(
                     'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
-                  }
+                  )}
                 </Text>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{'Argo CD ApplicationSet - Push model'}</Text>
+                <Text>{t('Argo CD ApplicationSet - Push model')}</Text>
               </span>
               <span>
                 <Text>
-                  {
+                  {t(
                     'ApplicationSet application where Argo CD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
-                  }
+                  )}
                 </Text>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{'Subscription'}</Text>
+                <Text>{t('Subscription')}</Text>
               </span>
               <span>
                 <Text>
-                  {
+                  {t(
                     'Subscription application where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
-                  }
+                  )}
                 </Text>
               </span>
             </div>
