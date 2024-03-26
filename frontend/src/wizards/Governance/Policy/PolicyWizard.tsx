@@ -1,6 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Alert, Button, Stack, Text, TextContent, Title } from '@patternfly/react-core'
+import {
+  Alert,
+  Button,
+  Stack,
+  Text,
+  TextContent,
+  Title,
+  FormFieldGroupHeader,
+  Form,
+  FormFieldGroupExpandable,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { klona } from 'klona/json'
@@ -253,6 +263,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
   const selectorPath = 'objectDefinition.spec.namespaceSelector'
   const selectorMatchLabels = `${selectorPath}.matchLabels`
   const { t } = useTranslation()
+
   return (
     <Section
       label={t('Templates')}
@@ -389,6 +400,79 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             path="objectDefinition.spec.maxClusterRoleBindingUsers"
             label={t('Limit cluster role bindings')}
             required
+          />
+        </WizHidden>
+
+        {/* OperatorPolicy */}
+        <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'OperatorPolicy'}>
+          <div>
+            <Title headingLevel="h6">{t('Operator policy')}</Title>
+            <Text component="small">{t('An Operator policy creates operators on managed clusters.')}</Text>
+          </div>
+
+          <WizTextInput
+            path="objectDefinition.metadata.name"
+            label={t('Name')}
+            required
+            helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
+            validation={validateKubernetesResourceName}
+          />
+          <Form>
+            <FormFieldGroupExpandable
+              isExpanded
+              header={
+                <FormFieldGroupHeader titleText={{ text: 'Operator Subscription', id: 'form-field-group-sub' }} />
+              }
+            >
+              <WizTextInput
+                path="objectDefinition.spec.subscription.name"
+                label={t('Name')}
+                labelHelp={t(
+                  'operatorPolicy.subscription.labelHelper',
+                  'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
+                )}
+                required
+                validation={validateKubernetesResourceName}
+              />
+              <WizTextInput
+                path="objectDefinition.spec.subscription.namespace"
+                label={t('Namespace')}
+                labelHelp={t('The operator is installed in this namespace.')}
+              />
+              <WizTextInput path="objectDefinition.spec.subscription.channel" label={t('Channel')} required />
+              <WizRadioGroup
+                path="objectDefinition.spec.subscription.installPlanApproval"
+                label={t('Install Plan Approval')}
+              >
+                <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
+                <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
+              </WizRadioGroup>
+              <WizTextInput path="objectDefinition.spec.subscription.source" label={t('Source')} required />
+              <WizTextInput
+                path="objectDefinition.spec.subscription.sourceNamespace"
+                label={t('Source Namespace')}
+                required
+              />
+              <WizTextInput
+                path="objectDefinition.spec.subscription.startingCSV"
+                label={t('Starting CSV')}
+                placeholder={t('Enter the ClusterServiceVersion')}
+                labelHelp={t(
+                  'operatorPolicy.startingCsv.labelHelper',
+                  `If you want to install a particular version of your Operator, specify the startingCSV property.`
+                )}
+              />
+            </FormFieldGroupExpandable>
+          </Form>
+          <WizStringsInput
+            id="operator-policy-versions"
+            path={`objectDefinition.spec.versions`}
+            label={t('Allowed Cluster Service Versions')}
+            placeholder={t('Add versions')}
+            labelHelp={t(
+              'operatorpolicy.version.labelHelper',
+              `Versions is a list of non-empty strings that specify which installed versions are compliant when set to 'inform' mode, and which installPlans are approved when you set the parameter to 'enforce' mode.`
+            )}
           />
         </WizHidden>
 
