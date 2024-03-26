@@ -24,6 +24,7 @@ import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serveHandler } from './routes/serve'
+import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 
@@ -63,6 +64,7 @@ router.get('/username', username)
 router.all('/userpreference', userpreference)
 router.all('/metrics', metrics)
 router.get('/globalhub', globalHub)
+router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

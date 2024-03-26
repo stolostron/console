@@ -4,7 +4,7 @@ import { Agent } from 'https'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
 
-const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_ACCEPT_ENCODING } =
+const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
   constants
 
 const agent = new Agent({ rejectUnauthorized: false })
@@ -22,12 +22,18 @@ export interface PostResponse<T> {
   body?: T
 }
 
-export function jsonPost<T = unknown>(url: string, body: unknown, token?: string): Promise<PostResponse<T>> {
+export function jsonPost<T = unknown>(
+  url: string,
+  body: unknown,
+  token?: string,
+  userAgent?: string
+): Promise<PostResponse<T>> {
   const headers: HeadersInit = {
     [HTTP2_HEADER_ACCEPT]: 'application/json',
     [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
   }
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
+  if (userAgent) headers[HTTP2_HEADER_USER_AGENT] = userAgent
   return fetchRetry(url, { method: 'POST', headers, agent, body: JSON.stringify(body), compress: true }).then(
     async (response) => {
       const result = {
