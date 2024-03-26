@@ -8,6 +8,14 @@ import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
 
+interface Credential {
+  auths: {
+    'cloud.openshift.com': {
+      auth: string
+    }
+  }
+}
+
 interface Secret extends IResource {
   data?: {
     [key: string]: string
@@ -26,11 +34,11 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
     try {
       // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
       const secretPath = process.env.CLUSTER_API_URL + '/api/v1/namespaces/openshift-config/secrets'
-      const crcToken = await jsonRequest(secretPath, serviceAccountToken)
+      const crcToken: string = await jsonRequest(secretPath, serviceAccountToken)
         .then((response: ResourceList<Secret>) => {
           const pullSecret = response.items.find((secret) => secret.metadata.name === 'pull-secret')
           const dockerconfigjson = pullSecret.data['.dockerconfigjson'] ?? ''
-          const decodedToken = JSON.parse(Buffer.from(dockerconfigjson, 'base64').toString('ascii'))
+          const decodedToken = JSON.parse(Buffer.from(dockerconfigjson, 'base64').toString('ascii')) as Credential
           return decodedToken?.auths?.['cloud.openshift.com']?.auth ?? ''
         })
         .catch((err: Error): undefined => {
@@ -53,7 +61,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
         const insightsPath = 'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
 
         // create array of clusterIds with length of 100
-        const clusterIds = body.clusterIds.reduce((resultArray, item, index) => {
+        const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
           const chunkIndex = Math.floor(index / 2)
           if (!resultArray[chunkIndex]) {
             resultArray[chunkIndex] = [] // start a new chunk
@@ -64,17 +72,13 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent)
-            .then((response: any) => {
-              return response
-            })
-            .catch((err: Error): undefined => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return undefined
-            })
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent).catch((err: Error): undefined => {
+            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+            return undefined
+          })
         })
 
-        Promise.all(reqs).then((results) => {
+        await Promise.all(reqs).then((results) => {
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(results))
         })
