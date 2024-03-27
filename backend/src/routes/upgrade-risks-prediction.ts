@@ -62,7 +62,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // create array of clusterIds with length of 100
         const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
-          const chunkIndex = Math.floor(index / 2)
+          const chunkIndex = Math.floor(index / 100)
           if (!resultArray[chunkIndex]) {
             resultArray[chunkIndex] = [] // start a new chunk
           }
