@@ -11,9 +11,9 @@ import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -119,11 +119,6 @@ const definitions: IWatchOptions[] = [
   // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
   { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
-  {
-    kind: 'Secret',
-    apiVersion: 'v1',
-    fieldSelector: { 'metadata.name': 'pull-secret', 'metadata.namespace': 'openshift-config' },
-  },
   { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
   { kind: 'HostedCluster', apiVersion: 'hypershift.openshift.io/v1beta1' },
   { kind: 'NodePool', apiVersion: 'hypershift.openshift.io/v1beta1' },
