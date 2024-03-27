@@ -2,13 +2,13 @@
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
-import { useContext, useMemo } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, PolicyKind, reconcileResources } from '../../../resources'
+import { IResource, Policy, PolicyKind, reconcileResources } from '../../../resources'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 
@@ -63,6 +63,25 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
     [namespaces]
   )
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const [createdPolicy, setCreatedPolicy] = useState<IResource>()
+  // Before move to PolicyDetailPage,
+  // Wait until "policies" are updated
+  useEffect(() => {
+    if (createdPolicy) {
+      const found = policies.find(
+        (policy: Policy) =>
+          policy.metadata.namespace === createdPolicy.metadata?.namespace &&
+          policy.metadata.name === createdPolicy.metadata?.name
+      )
+
+      found &&
+        history.push(
+          NavigationPath.policyDetails
+            .replace(':namespace', createdPolicy.metadata?.namespace ?? '')
+            .replace(':name', createdPolicy.metadata?.name ?? '')
+        )
+    }
+  }, [policies, createdPolicy, history])
 
   return (
     <PolicyWizard
@@ -88,16 +107,17 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
           if (policy) {
             toast.addAlert({
               title: t('Policy created'),
-              message: t('{{name}} was successfully created.', { name: policy.metadata?.name }),
+              message: t('{{name}} was successfully created.', {
+                name: policy.metadata?.name,
+              }),
               type: 'success',
               autoClose: true,
             })
             submitForm()
-            history.push(
-              NavigationPath.policyDetails
-                .replace(':namespace', policy.metadata?.namespace ?? '')
-                .replace(':name', policy.metadata?.name ?? '')
-            )
+
+            return new Promise(() => {
+              setCreatedPolicy(policy)
+            })
           }
         })
       }}
