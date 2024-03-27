@@ -14,6 +14,7 @@ import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
+import { WatchEvent, ServerSideEventData, purgeEvents, throttleEvents } from '../lib/eventUtils'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -24,18 +25,6 @@ export async function events(req: Http2ServerRequest, res: Http2ServerResponse):
     ServerSideEvents.handleRequest(token, req, res)
   }
 }
-
-interface WatchEvent {
-  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
-  object: IResource
-}
-
-export interface SettingsEvent {
-  type: 'SETTINGS'
-  settings: Record<string, string>
-}
-
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 let requests: { cancel: () => void }[] = []
 
@@ -132,6 +121,7 @@ export function startWatching(): void {
   for (const definition of definitions) {
     void listAndWatch(definition)
   }
+  // thrashEvents(cacheResource)
 }
 
 interface IWatchOptions {
@@ -284,8 +274,10 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             pruneResource(watchEvent.object)
             switch (watchEvent.type) {
               case 'ADDED':
-              case 'MODIFIED':
                 cacheResource(watchEvent.object)
+                break
+              case 'MODIFIED':
+                throttleEvents(watchEvent.object, cacheResource)
                 break
               case 'DELETED':
                 deleteResource(watchEvent.object)
@@ -452,6 +444,8 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
 
   return url
 }
+
+setInterval(() => purgeEvents(cacheResource), 5000)
 
 function cacheResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
