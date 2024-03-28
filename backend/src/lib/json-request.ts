@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants } from 'http2'
 import { Agent } from 'https'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
 
@@ -27,7 +28,7 @@ export function jsonPost<T = unknown>(
   body: unknown,
   token?: string,
   userAgent?: string,
-  proxyAgent?: any
+  proxyAgent?: HttpsProxyAgent<string>
 ): Promise<PostResponse<T>> {
   const headers: HeadersInit = {
     [HTTP2_HEADER_ACCEPT]: 'application/json',
