@@ -1,153 +1,154 @@
 {
-    "name": "backend",
-    "version": "0.0.1",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "start": "NODE_ENV=development nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only' src/lib/main.ts | pino-zen -r msg=6 -d fields -d labels -d apiVersion -e error",
-        "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
-        "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
-        "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
-        "tsc": "tsc --noEmit",
-        "clean": "rm -rf coverage build",
-        "check": "npm run prettier && npm run lint && npm run tsc",
-        "check:fix": "npm run prettier:fix && npm run lint:fix && npm run tsc",
-        "test": "npm run jest --",
-        "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
-        "lint": "eslint src test --ext .ts --max-warnings=0",
-        "lint:fix": "eslint src test --ext .ts --fix",
-        "prettier": "prettier --check src test",
-        "prettier:fix": "prettier --write src test",
-        "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
+  "name": "backend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "NODE_ENV=development nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only' src/lib/main.ts | pino-zen -r msg=6 -d fields -d labels -d apiVersion -e error",
+    "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
+    "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
+    "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
+    "tsc": "tsc --noEmit",
+    "clean": "rm -rf coverage build",
+    "check": "npm run prettier && npm run lint && npm run tsc",
+    "check:fix": "npm run prettier:fix && npm run lint:fix && npm run tsc",
+    "test": "npm run jest --",
+    "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
+    "lint": "eslint src test --ext .ts --max-warnings=0",
+    "lint:fix": "eslint src test --ext .ts --fix",
+    "prettier": "prettier --check src test",
+    "prettier:fix": "prettier --write src test",
+    "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
+  },
+  "dependencies": {
+    "abort-controller": "3.0.0",
+    "dotenv": "16.0.1",
+    "event-stream": "4.0.1",
+    "find-my-way": "5.6.0",
+    "get-value": "3.0.1",
+    "got": "^12.5.3",
+    "https-proxy-agent": "^7.0.4",
+    "node-fetch": "2.6.7",
+    "pino": "7.11.0",
+    "pluralize": "8.0.0",
+    "prom-client": "^14.2.0",
+    "raw-body": "2.5.1"
+  },
+  "devDependencies": {
+    "@types/eslint": "8.4.5",
+    "@types/event-stream": "4.0.0",
+    "@types/get-value": "3.0.2",
+    "@types/jest": "27.5.2",
+    "@types/node": "^18.15.3",
+    "@types/node-fetch": "2.6.2",
+    "@types/pino": "7.0.4",
+    "@types/pluralize": "0.0.29",
+    "@types/prettier": "2.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.2",
+    "@typescript-eslint/parser": "^5.59.2",
+    "concurrently": "7.2.2",
+    "eslint": "8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "jest": "^27.5.1",
+    "jest-sonar-reporter": "^2.0.0",
+    "nock": "13.2.8",
+    "nodemon": "^2.0.19",
+    "pino-zen": "2.0.7",
+    "prettier": "2.7.1",
+    "rollup": "2.77.0",
+    "ts-jest": "^27.1.5",
+    "ts-node": "10.9.1",
+    "typescript": "^4.9.5"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  },
+  "jest": {
+    "preset": "ts-jest/presets/default-esm",
+    "globals": {
+      "ts-jest": {
+        "useESM": true
+      }
     },
-    "dependencies": {
-        "abort-controller": "3.0.0",
-        "dotenv": "16.0.1",
-        "event-stream": "4.0.1",
-        "find-my-way": "5.6.0",
-        "get-value": "3.0.1",
-        "got": "^12.5.3",
-        "node-fetch": "2.6.7",
-        "pino": "7.11.0",
-        "pluralize": "8.0.0",
-        "prom-client": "^14.2.0",
-        "raw-body": "2.5.1"
+    "setupFiles": [
+      "<rootDir>/test/jest-setup.ts"
+    ],
+    "moduleNameMapper": {
+      "(\\.{1,2}/.*)\\.js$": "$1"
     },
-    "devDependencies": {
-        "@types/eslint": "8.4.5",
-        "@types/event-stream": "4.0.0",
-        "@types/get-value": "3.0.2",
-        "@types/jest": "27.5.2",
-        "@types/node": "^18.15.3",
-        "@types/node-fetch": "2.6.2",
-        "@types/pino": "7.0.4",
-        "@types/pluralize": "0.0.29",
-        "@types/prettier": "2.6.3",
-        "@typescript-eslint/eslint-plugin": "^5.59.2",
-        "@typescript-eslint/parser": "^5.59.2",
-        "concurrently": "7.2.2",
-        "eslint": "8.20.0",
-        "eslint-config-prettier": "^8.5.0",
-        "eslint-plugin-prettier": "^4.2.1",
-        "jest": "^27.5.1",
-        "jest-sonar-reporter": "^2.0.0",
-        "nock": "13.2.8",
-        "nodemon": "^2.0.19",
-        "pino-zen": "2.0.7",
-        "prettier": "2.7.1",
-        "rollup": "2.77.0",
-        "ts-jest": "^27.1.5",
-        "ts-node": "10.9.1",
-        "typescript": "^4.9.5"
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "branches": 0,
+        "functions": 0,
+        "lines": 0,
+        "statements": 0
+      }
     },
-    "prettier": {
-        "printWidth": 120,
-        "tabWidth": 2,
-        "semi": false,
-        "singleQuote": true
+    "coverageReporters": [
+      "text-summary",
+      "html",
+      "lcov"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!**/node_modules/**"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "watchPathIgnorePatterns": [
+      "coverage"
+    ]
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "sourceType": "module",
+      "project": [
+        "./tsconfig.json",
+        "./test/tsconfig.json"
+      ]
     },
-    "jest": {
-        "preset": "ts-jest/presets/default-esm",
-        "globals": {
-            "ts-jest": {
-                "useESM": true
-            }
-        },
-        "setupFiles": [
-            "<rootDir>/test/jest-setup.ts"
-        ],
-        "moduleNameMapper": {
-            "(\\.{1,2}/.*)\\.js$": "$1"
-        },
-        "testEnvironment": "node",
-        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-        "collectCoverage": true,
-        "coverageThreshold": {
-            "global": {
-                "branches": 0,
-                "functions": 0,
-                "lines": 0,
-                "statements": 0
-            }
-        },
-        "coverageReporters": [
-            "text-summary",
-            "html",
-            "lcov"
-        ],
-        "collectCoverageFrom": [
-            "src/**/*.ts",
-            "!**/node_modules/**"
-        ],
-        "moduleFileExtensions": [
-            "ts",
-            "tsx",
-            "js",
-            "jsx",
-            "json",
-            "node"
-        ],
-        "watchPathIgnorePatterns": [
-            "coverage"
-        ]
-    },
-    "eslintConfig": {
-        "parser": "@typescript-eslint/parser",
-        "parserOptions": {
-            "ecmaVersion": 2018,
-            "sourceType": "module",
-            "project": [
-                "./tsconfig.json",
-                "./test/tsconfig.json"
-            ]
-        },
-        "extends": [
-            "eslint:recommended",
-            "plugin:@typescript-eslint/eslint-recommended",
-            "plugin:@typescript-eslint/recommended",
-            "plugin:@typescript-eslint/recommended-requiring-type-checking",
-            "prettier"
-        ],
-        "plugins": [
-            "prettier"
-        ],
-        "rules": {
-            "prettier/prettier": "error",
-            "@typescript-eslint/no-non-null-assertion": "off",
-            "@typescript-eslint/no-use-before-define": "off",
-            "@typescript-eslint/no-unused-vars": "off",
-            "@typescript-eslint/no-floating-promises": [
-                "error",
-                {
-                    "ignoreVoid": true
-                }
-            ],
-            "@typescript-eslint/no-misused-promises": [
-                "error",
-                {
-                    "checksVoidReturn": false
-                }
-            ]
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking",
+      "prettier"
+    ],
+    "plugins": [
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-use-before-define": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        {
+          "ignoreVoid": true
         }
+      ],
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          "checksVoidReturn": false
+        }
+      ]
     }
+  }
 }
