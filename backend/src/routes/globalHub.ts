@@ -7,21 +7,7 @@ import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-
-interface ResourceList {
-  apiversion: string
-  kind: string
-  metadata?: {
-    name: string
-    namespace?: string
-    resourceVersion?: string
-    managedFields?: unknown
-    selfLink?: string
-    uid?: string
-    labels?: Record<string, string>
-  }
-  items: IResource[]
-}
+import { ResourceList } from '../resources/resource-list'
 
 export async function globalHub(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -31,7 +17,7 @@ export async function globalHub(req: Http2ServerRequest, res: Http2ServerRespons
     try {
       const path = process.env.CLUSTER_API_URL + '/apis/apiextensions.k8s.io/v1/customresourcedefinitions'
       const getResponse = await jsonRequest(path, serviceAccountToken)
-        .then((response: ResourceList) => {
+        .then((response: ResourceList<IResource>) => {
           const mcgh = response.items.find(
             (crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io'
           )
