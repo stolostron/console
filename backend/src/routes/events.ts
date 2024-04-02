@@ -11,9 +11,9 @@ import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from '../lib/serviceAccountToken'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
