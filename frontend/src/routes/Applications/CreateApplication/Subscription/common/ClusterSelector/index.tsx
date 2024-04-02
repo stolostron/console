@@ -13,6 +13,8 @@ import {
   ButtonVariant,
   SelectOption,
   SelectVariant,
+  Flex,
+  FlexItem,
 } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
@@ -244,72 +246,78 @@ const ClusterSelector = (props: {
       control.active &&
       control.active.clusterLabelsList.map((item) => {
         const { id, labelName, labelValue, validValue, operatorValue } = item
-        const label = id === 0 ? i18n('clusterSelector.label.field.ui') : ''
         const value = labelName === '' ? '' : labelName
         const operator = operatorValue === '' ? '' : operatorValue
-        const matchLabel = id === 0 ? i18n('clusterSelector.value.field.ui') : ''
         const matchLabelValue = labelValue === '' ? '' : labelValue
 
         if (validValue || id === 0) {
           return (
             <Fragment key={id}>
               <div className="matching-labels-container" style={{ display: 'flex', marginBottom: '20px' }}>
-                <div className="matching-labels-input" style={{ maxWidth: '45%', marginRight: '10px' }}>
-                  <AcmSelect
-                    id={`labelName-${id}-${controlId}`}
-                    label={label}
-                    value={value}
-                    isRequired
-                    placeholder={i18n('Select the label')}
-                    onChange={(label) => {
-                      handleChange(label!, 'labelName', id)
-                    }}
-                  >
-                    {Object.keys(labelValuesMap)?.map((option) => (
-                      <SelectOption key={option} value={option}>
-                        {option}
-                      </SelectOption>
-                    ))}
-                  </AcmSelect>
+                <div className="matching-labels-input" style={{ marginRight: '10px' }}>
+                  <Flex>
+                    <FlexItem>
+                      <AcmSelect
+                        id={`labelName-${id}-${controlId}`}
+                        label={i18n('clusterSelector.label.field.ui')}
+                        value={value}
+                        isRequired
+                        placeholder={i18n('Select the label')}
+                        onChange={(label) => {
+                          handleChange(label!, 'labelName', id)
+                        }}
+                      >
+                        {Object.keys(labelValuesMap)?.map((option) => (
+                          <SelectOption key={option} value={option}>
+                            {option}
+                          </SelectOption>
+                        ))}
+                      </AcmSelect>
+                    </FlexItem>
 
-                  <AcmSelect
-                    id={`operator-${id}-${controlId}`}
-                    label={i18n('Operator')}
-                    value={operator}
-                    isRequired
-                    onChange={(operator) => {
-                      handleChange(operator!, 'operatorValue', id)
-                      switch (operator) {
-                        case 'Exists':
-                        case 'DoesNotExist':
-                          setHideValue(true)
-                          break
-                      }
-                    }}
-                  >
-                    {operatorOptions.map((option) => (
-                      <SelectOption key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectOption>
-                    ))}
-                  </AcmSelect>
+                    <FlexItem>
+                      <AcmSelect
+                        id={`operator-${id}-${controlId}`}
+                        label={i18n('Operator')}
+                        value={operator}
+                        isRequired
+                        onChange={(operator) => {
+                          handleChange(operator!, 'operatorValue', id)
+                          switch (operator) {
+                            case 'Exists':
+                            case 'DoesNotExist':
+                              setHideValue(true)
+                              break
+                          }
+                        }}
+                      >
+                        {operatorOptions.map((option) => (
+                          <SelectOption key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectOption>
+                        ))}
+                      </AcmSelect>
+                    </FlexItem>
 
-                  {!hideValue && (
-                    <AcmMultiSelect
-                      id={`labelValue-${id}-${controlId}`}
-                      label={matchLabel}
-                      value={matchLabelValue}
-                      placeholder={i18n('Select the values')}
-                      onChange={(value) => handleChange(value!, 'labelValue', id)}
-                      isRequired
-                    >
-                      {labelValuesMap[labelName]?.map((value: any) => (
-                        <SelectOption key={value} value={value}>
-                          {value}
-                        </SelectOption>
-                      ))}
-                    </AcmMultiSelect>
-                  )}
+                    <FlexItem>
+                      {!hideValue && (
+                        <AcmMultiSelect
+                          id={`labelValue-${id}-${controlId}`}
+                          label={i18n('clusterSelector.value.field.ui')}
+                          value={matchLabelValue}
+                          placeholder={i18n('Select the values')}
+                          onChange={(value) => handleChange(value!, 'labelValue', id)}
+                          isRequired
+                        >
+                          {labelValuesMap[labelName]?.map((value: any) => (
+                            <SelectOption key={value} value={value}>
+                              {value}
+                            </SelectOption>
+                          ))}
+                        </AcmMultiSelect>
+                      )}
+                    </FlexItem>
+                  </Flex>
                 </div>
 
                 {id !== 0 ? ( // Option to remove added labels
