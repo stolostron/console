@@ -166,6 +166,24 @@ Object {
 }
 `;
 
+exports[`Correctly returns parseUpgradeRiskPredictions with no predictions 1`] = `
+Object {
+  "criticalUpdateCount": 0,
+  "infoUpdateCount": 0,
+  "percentOfClustersWithRisk": 0,
+  "warningUpdateCount": 0,
+}
+`;
+
+exports[`Correctly returns parseUpgradeRiskPredictions with predictions 1`] = `
+Object {
+  "criticalUpdateCount": 1,
+  "infoUpdateCount": 1,
+  "percentOfClustersWithRisk": 50,
+  "warningUpdateCount": 1,
+}
+`;
+
 exports[`Correctly returns parseAlertsMetric 1`] = `
 Object {
   "alertSeverity": Object {

@@ -12,7 +12,10 @@ describe('SummaryCard', () => {
       <BrowserRouter>
         <SummaryCard
           title={'Cluster recommendations'}
-          summaryTotalHeader={'1 cluster affected'}
+          summaryTotalHeader={{
+            num: '0',
+            text: '1 cluster affected',
+          }}
           summaryData={[
             { icon: undefined, label: 'Critical', count: 10 },
             { icon: undefined, label: 'Important', count: 11 },
@@ -39,6 +42,10 @@ describe('SummaryCard', () => {
       <BrowserRouter>
         <SummaryCard
           title={'Cluster recommendations'}
+          summaryTotalHeader={{
+            num: '0',
+            text: '1 cluster affected',
+          }}
           summaryData={[
             { icon: <CriticalRiskIcon />, label: 'Critical', count: 5 },
             { icon: undefined, label: 'Important', count: 0 },

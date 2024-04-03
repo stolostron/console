@@ -383,6 +383,12 @@ export function nockIgnoreApiPaths() {
     .reply(200, mockApiPathList)
 }
 
+export function nockUpgradeRiskRequest(pathname: string, body: object, response: object, statusCode = 200) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .post(pathname, JSON.stringify(body))
+    .reply(statusCode, response)
+}
+
 export function nockIgnoreOperatorCheck(noAnsible?: boolean) {
   return nocked(process.env.JEST_DEFAULT_HOST as string)
     .persist()

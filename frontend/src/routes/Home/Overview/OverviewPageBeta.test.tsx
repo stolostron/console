@@ -23,9 +23,15 @@ import {
   settingsState,
   subscriptionsState,
 } from '../../../atoms'
-import { nockIgnoreApiPaths, nockPostRequest, nockRequest, nockSearch } from '../../../lib/nock-util'
+import {
+  nockIgnoreApiPaths,
+  nockPostRequest,
+  nockRequest,
+  nockSearch,
+  nockUpgradeRiskRequest,
+} from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
-import { UserPreference } from '../../../resources'
+import { ManagedClusterInfo, UserPreference } from '../../../resources'
 import {
   mockApplications,
   mockArgoApplications,
@@ -72,6 +78,27 @@ const mockUserPreference: UserPreference = {
   },
 }
 
+const mockUpgradeRisksPredictions: any = [
+  {
+    statusCode: 200,
+    body: {
+      predictions: [
+        {
+          cluster_id: '1234-abcd',
+          prediction_status: 'ok',
+          upgrade_recommended: true,
+          upgrade_risks_predictors: {
+            alerts: [],
+            operator_conditions: [],
+          },
+          last_checked_at: '2024-03-27T14:35:06.238290+00:00',
+        },
+      ],
+      status: 'ok',
+    },
+  },
+]
+
 const savedSearchesMock = [
   {
     request: {
@@ -115,6 +142,11 @@ it('should render overview page with expected data', async () => {
     mockOperatorMetrics
   )
   const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
+  const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+    '/upgrade-risks-prediction',
+    { clusterIds: ['1234-abcd'] },
+    mockUpgradeRisksPredictions
+  )
 
   const { getAllByText, getByText } = render(
     <RecoilRoot
@@ -123,7 +155,30 @@ it('should render overview page with expected data', async () => {
         snapshot.set(applicationSetsState, appSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
-        snapshot.set(managedClusterInfosState, managedClusterInfos)
+        snapshot.set(managedClusterInfosState, [
+          ...managedClusterInfos,
+          {
+            apiVersion: 'internal.open-cluster-management.io/v1beta1',
+            kind: 'ManagedClusterInfo',
+            metadata: {
+              labels: {
+                cloud: 'Amazon',
+                env: 'dev',
+                name: 'managed-2',
+                vendor: 'OpenShift',
+                clusterID: '1234-abcd',
+              },
+              name: 'managed-2',
+              namespace: 'managed-2',
+            },
+            status: {
+              cloudVendor: 'Amazon',
+              kubeVendor: 'OpenShift',
+              loggingPort: { name: 'https', port: 443, protocol: 'TCP' },
+              version: 'v1.26.5+7d22122',
+            },
+          } as ManagedClusterInfo,
+        ])
         snapshot.set(policiesState, policies)
         snapshot.set(policyreportState, policyReports)
         snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
@@ -146,10 +201,16 @@ it('should render overview page with expected data', async () => {
   )
 
   // Wait for prometheus nocks to finish
-  await waitForNocks([metricNock, mockAlertMetricsNock, mockOperatorMetricsNock, getUserPreferenceNock])
+  await waitForNocks([
+    metricNock,
+    mockAlertMetricsNock,
+    mockOperatorMetricsNock,
+    getUserPreferenceNock,
+    getUpgradeRisksPredictionsNock,
+  ])
 
   // Test that the component has rendered correctly
-  await waitFor(() => expect(getAllByText(/powered by insights/i)).toHaveLength(2))
+  await waitFor(() => expect(getAllByText(/powered by insights/i)).toHaveLength(3))
   await waitFor(() => expect(getByText(/cluster health/i)).toBeTruthy())
 
   // Check saved search card header strings

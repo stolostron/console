@@ -157,4 +157,5 @@ export const colorThemes = {
   criticalLowSuccess: [criticalColorClass, moderateColorClass, successColorClass],
   criticalImportantModerateLow: [criticalColorClass, importantColorClass, moderateColorClass, lowColorClass],
   criticalLowUnknownSuccess: [criticalColorClass, lowColorClass, unknownColorClass, successColorClass],
+  criticalSuccessUnknown: [criticalColorClass, successColorClass, unknownColorClass],
 }
