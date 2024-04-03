@@ -139,6 +139,50 @@ export function getPolicyReport(policyReports: PolicyReport[], filteredClusters:
   }
 }
 
+export function parseUpgradeRiskPredictions(upgradeRiskPredictions: any) {
+  let criticalUpdateCount = 0
+  let warningUpdateCount = 0
+  let infoUpdateCount = 0
+  let percentOfClustersWithRisk = 0
+  let totalClusters = 0
+  let clustersWithRiskPredictors = 0
+
+  if (upgradeRiskPredictions.length > 0) {
+    upgradeRiskPredictions.forEach((cluster: any) => {
+      totalClusters++
+      if (
+        cluster.upgrade_risks_predictors &&
+        cluster.upgrade_risks_predictors.alerts &&
+        cluster.upgrade_risks_predictors.alerts.length > 0
+      ) {
+        clustersWithRiskPredictors++
+        cluster.upgrade_risks_predictors.alerts.forEach((alert: any) => {
+          switch (alert.severity) {
+            case 'critical':
+              criticalUpdateCount++
+              break
+            case 'warning':
+              warningUpdateCount++
+              break
+            case 'info':
+              infoUpdateCount++
+              break
+          }
+        })
+      }
+    })
+  }
+  if (totalClusters > 0) {
+    percentOfClustersWithRisk = parseFloat(((clustersWithRiskPredictors / totalClusters) * 100).toFixed(1))
+  }
+  return {
+    criticalUpdateCount,
+    warningUpdateCount,
+    infoUpdateCount,
+    percentOfClustersWithRisk,
+  }
+}
+
 export function getClustersSummary(
   filteredClusters: Cluster[],
   filteredClusterNames: string[],

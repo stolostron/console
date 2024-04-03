@@ -3,6 +3,7 @@ import {
   Card,
   CardBody,
   CardTitle,
+  Divider,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
@@ -33,7 +34,10 @@ function getLink(type: 'link' | 'button', path: string, count: number) {
 
 export default function SummaryCard(props: {
   title: string
-  summaryTotalHeader?: string
+  summaryTotalHeader: {
+    num: string // percentage or count
+    text: string
+  }
   loading?: boolean
   error?: string
   summaryData: {
@@ -67,8 +71,12 @@ export default function SummaryCard(props: {
       <CardBody isFilled={false}>
         {!error ? (
           <div>
-            {summaryTotalHeader ?? <br />}
-            <div style={{ display: 'flex', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 'normal' }}>
+              <span style={{ fontSize: '24px', fontWeight: '500' }}>{summaryTotalHeader.num}</span>
+              <span>{summaryTotalHeader.text}</span>
+            </div>
+            <Divider style={{ margin: '1rem 0' }} />
+            <div style={{ display: 'flex' }}>
               {summaryData.map((summary) => (
                 <div key={`sevrating-${title}-${summary.label}`} style={{ width: 'auto', marginRight: '1.5rem' }}>
                   <div style={{ display: 'flex' }}>

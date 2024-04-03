@@ -12,6 +12,7 @@ import {
   getPolicyReport,
   parseAlertsMetric,
   parseOperatorMetric,
+  parseUpgradeRiskPredictions,
 } from './overviewDataFunctions'
 import {
   managedClusterInfos,
@@ -123,6 +124,69 @@ test('Correctly returns getNodeCount', () => {
 
 test('Correctly returns getPolicyReport', () => {
   const result = getPolicyReport(policyReports, clusterData)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns parseUpgradeRiskPredictions with no predictions', () => {
+  const result = parseUpgradeRiskPredictions([])
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns parseUpgradeRiskPredictions with predictions', () => {
+  const result = parseUpgradeRiskPredictions([
+    {
+      cluster_id: 'test-cluster-id-1',
+      prediction_status: 'ok',
+      upgrade_recommended: true,
+      upgrade_risks_predictors: {
+        alerts: [],
+        operator_conditions: [],
+      },
+      last_checked_at: '2024-03-27T14:00:19.137279+00:00',
+    },
+    {
+      cluster_id: 'test-cluster-id-2',
+      upgrade_recommended: false,
+      upgrade_risks_predictors: {
+        alerts: [
+          {
+            name: 'ClusterOperatorDown',
+            namespace: 'openshift-cluster-version',
+            severity: 'critical',
+            url: 'https://console-openshift-console.com/testing',
+          },
+          {
+            name: 'NodeClockNotSynchronising',
+            namespace: 'openshift-monitoring',
+            severity: 'warning',
+            url: 'https://console-openshift-console.com/testing',
+          },
+        ],
+        operator_conditions: [],
+      },
+      last_checked_at: '2024-03-27T14:00:19.137279+00:00',
+    },
+    {
+      cluster_id: 'test-cluster-id-3',
+      prediction_status: 'No data for the cluster',
+    },
+    {
+      cluster_id: 'test-cluster-id-4',
+      upgrade_recommended: false,
+      upgrade_risks_predictors: {
+        alerts: [
+          {
+            name: 'ClusterOperatorDown',
+            namespace: 'openshift-cluster-version',
+            severity: 'info',
+            url: 'https://console-openshift-console.com/testing',
+          },
+        ],
+        operator_conditions: [],
+      },
+      last_checked_at: '2024-03-27T14:00:19.137279+00:00',
+    },
+  ])
   expect(result).toMatchSnapshot()
 })
 

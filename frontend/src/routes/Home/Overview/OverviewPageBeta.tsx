@@ -20,6 +20,7 @@ import { GetDiscoveredOCPApps } from '../../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
+import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predictions'
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
 import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
@@ -44,6 +45,7 @@ import {
   getPolicyReport,
   parseAlertsMetric,
   parseOperatorMetric,
+  parseUpgradeRiskPredictions,
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
@@ -107,6 +109,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [isCustomizationSectionOpen, setIsCustomizationSectionOpen] = useState<boolean>(true)
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
   const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+  const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
   GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
@@ -200,6 +203,32 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   } = useMemo(() => {
     return getPolicyReport(policyReports, filteredClusters)
   }, [filteredClusters, policyReports])
+
+  const managedClusterIds = useMemo(() => {
+    const ids: string[] = []
+    allClusters.forEach((cluster) => {
+      if (cluster.labels?.clusterID) {
+        ids.push(cluster.labels?.clusterID)
+      }
+    })
+    return ids
+  }, [allClusters])
+
+  useEffect(() => {
+    if (managedClusterIds.length > 0) {
+      getUpgradeRiskPredictions(managedClusterIds).then((res) => setUpgradeRiskPredictions(res))
+    }
+  }, [managedClusterIds])
+
+  const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, percentOfClustersWithRisk } = useMemo(() => {
+    const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
+      if (curr.body && curr.body.predictions) {
+        return [...acc, ...curr.body.predictions]
+      }
+      return acc
+    }, [])
+    return parseUpgradeRiskPredictions(reducedUpgradeRiskPredictions)
+  }, [upgradeRiskPredictions])
 
   const clusterStatusData = useMemo(() => {
     return getClusterStatus(filteredClusters, clusterLabelsSearchFilter, t)
@@ -379,9 +408,10 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Cluster recommendations')}
-                    summaryTotalHeader={`${clustersWithIssuesCount} ${
-                      clustersWithIssuesCount > 1 ? 'clusters' : 'cluster'
-                    } affected`}
+                    summaryTotalHeader={{
+                      num: `${clustersWithIssuesCount}`,
+                      text: clustersWithIssuesCount !== 1 ? 'clusters affected' : 'cluster affected',
+                    }}
                     summaryData={[
                       { icon: <CriticalRiskIcon />, label: 'Critical', count: policyReportCriticalCount },
                       { icon: <ImportantRiskIcon />, label: 'Important', count: policyReportImportantCount },
@@ -403,14 +433,40 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     insights
                   />
                 </GalleryItem>
+                <GalleryItem key={'upgrade-risk-prediction-card'} style={{ flex: 1, minWidth: '375px' }}>
+                  <SummaryCard
+                    title={t('Update risk predictions')}
+                    summaryTotalHeader={{
+                      num: `${percentOfClustersWithRisk}%`,
+                      text: 'of clusters need to be reviewed before updating',
+                    }}
+                    summaryData={[
+                      { icon: <CriticalRiskIcon />, label: t('Critical'), count: criticalUpdateCount },
+                      { icon: <ModerateRiskIcon />, label: t('Warning'), count: warningUpdateCount },
+                      { icon: <LowRiskIcon />, label: t('Info'), count: infoUpdateCount },
+                    ].map((sevRating) => {
+                      return {
+                        label: sevRating.label,
+                        count: sevRating.count,
+                        link: {
+                          type: 'link',
+                          path: NavigationPath.managedClusters, // Any way to navigate to clusters table with context of risk severity?
+                        },
+                        icon: sevRating.icon,
+                      }
+                    })}
+                    insights
+                  />
+                </GalleryItem>
                 {isObservabilityInstalled && (
                   <>
                     <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
                       <SummaryCard
                         title={t('Alerts')}
-                        summaryTotalHeader={`${clustersAffectedAlerts.length} ${
-                          clustersAffectedAlerts.length > 1 ? 'clusters' : 'cluster'
-                        } affected`}
+                        summaryTotalHeader={{
+                          num: `${clustersAffectedAlerts.length}`,
+                          text: clustersAffectedAlerts.length !== 1 ? 'clusters affected' : 'cluster affected',
+                        }}
                         loading={alertsLoading}
                         error={alertsError as string}
                         summaryData={Object.keys(alertSeverity).map((sev: string) => {
@@ -433,9 +489,10 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     <GalleryItem key={'failing-operators-card'} style={{ flex: 1, minWidth: '375px' }}>
                       <SummaryCard
                         title={t('Failing operators')}
-                        summaryTotalHeader={`${clustersAffectedOperator.length} ${
-                          clustersAffectedOperator.length > 1 ? 'clusters' : 'cluster'
-                        } affected`}
+                        summaryTotalHeader={{
+                          num: `${clustersAffectedOperator.length}`,
+                          text: clustersAffectedOperator.length !== 1 ? 'clusters affected' : 'cluster affected',
+                        }}
                         loading={operatorLoading}
                         error={operatorError as string}
                         summaryData={[
