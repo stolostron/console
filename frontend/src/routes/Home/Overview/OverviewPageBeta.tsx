@@ -413,10 +413,10 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                       text: clustersWithIssuesCount !== 1 ? 'clusters affected' : 'cluster affected',
                     }}
                     summaryData={[
-                      { icon: <CriticalRiskIcon />, label: 'Critical', count: policyReportCriticalCount },
-                      { icon: <ImportantRiskIcon />, label: 'Important', count: policyReportImportantCount },
-                      { icon: <ModerateRiskIcon />, label: 'Moderate', count: policyReportModerateCount },
-                      { icon: <LowRiskIcon />, label: 'Low', count: policyReportLowCount },
+                      { icon: <CriticalRiskIcon />, label: t('Critical'), count: policyReportCriticalCount },
+                      { icon: <ImportantRiskIcon />, label: t('Important'), count: policyReportImportantCount },
+                      { icon: <ModerateRiskIcon />, label: t('Moderate'), count: policyReportModerateCount },
+                      { icon: <LowRiskIcon />, label: t('Low'), count: policyReportLowCount },
                     ].map((sevRating) => {
                       return {
                         label: sevRating.label,
