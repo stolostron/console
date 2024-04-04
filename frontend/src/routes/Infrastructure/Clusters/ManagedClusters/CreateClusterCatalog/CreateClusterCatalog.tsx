@@ -26,8 +26,15 @@ import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { ClusterImageSet } from '../../../../../resources'
 import { TFunction } from 'i18next'
 
-const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], arch: string) =>
-  clusterImageSets.filter((cis) => cis.spec?.releaseImage.endsWith(arch) && cis.metadata.labels?.visible === 'true')
+const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], architectures: string[]) =>
+  clusterImageSets.filter((cis) => {
+    if (cis.metadata.labels?.visible !== 'true') {
+      return false
+    }
+    return architectures.some(
+      (arch) => cis.spec?.releaseImage.endsWith(arch) || cis.metadata.labels?.architecture === arch
+    )
+  })
 
 const clusterImageSetsRequired = (
   clusterImageSets: ClusterImageSet[],
@@ -162,7 +169,7 @@ export function CreateClusterCatalog() {
       } else if (provider === Provider.hostinventory) {
         return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
       } else if (provider === Provider.nutanix) {
-        return hasClusterImageSetWithArch(clusterImageSets, 'x86_64').length
+        return hasClusterImageSetWithArch(clusterImageSets, ['x86_64', 'x86-64']).length
           ? nextStep({
               pathname: NavigationPath.createDiscoverHost,
               search: 'nutanix=true',
@@ -208,7 +215,7 @@ export function CreateClusterCatalog() {
           card = {
             ...card,
             ...clusterImageSetsRequired(
-              hasClusterImageSetWithArch(clusterImageSets, 'x86_64'),
+              hasClusterImageSetWithArch(clusterImageSets, ['x86_64', 'x86-64']),
               t,
               <>{t('Nutanix requires x86_64 release image. No other architecture is supported.')}</>
             ),
