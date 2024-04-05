@@ -15,6 +15,7 @@ import policylimitmemory from './stable/SC-System-and-Communications-Protection/
 import policypsp from './stable/SC-System-and-Communications-Protection/policy-psp.yaml'
 import policyscc from './stable/SC-System-and-Communications-Protection/policy-scc.yaml'
 import policyimagemanifestvuln from './stable/SI-System-and-Information-Integrity/policy-imagemanifestvuln.yaml'
+import operatorpolicygeneralinstall from './stable/CM-Configuration-Management/operator-policy-general-install.yaml'
 
 function getExamplePolicy(yaml: string) {
   const resources = YAML.parseAllDocuments(yaml).map((doc) => doc.toJSON())
@@ -65,6 +66,7 @@ export const Specifications: {
   getPolicySpecification('No privileged pods', policypsp),
   getPolicySpecification('Restricted Security Context Constraints', policyscc),
   getPolicySpecification('Detect image vulnerabilities', policyimagemanifestvuln),
+  getPolicySpecification('Install an operator', operatorpolicygeneralinstall),
 ].sort((a, b) => {
   if (a.name < b.name) {
     return -1
