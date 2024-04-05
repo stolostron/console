@@ -2386,6 +2386,7 @@
   "Starting CSV": "Starting CSV",
   "Status": "Status",
   "Status icon legend": "Status icon legend",
+  "Status of resources within the topology.": "Status of resources within the topology.",
   "Status represents the subscription selection within Resource topology.": "Status represents the subscription selection within Resource topology.",
   "status.creating": "Creating",
   "status.creating.message": "The cluster creation is in progress.",
