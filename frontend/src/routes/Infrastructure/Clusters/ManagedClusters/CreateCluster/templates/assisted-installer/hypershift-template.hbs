@@ -45,6 +45,9 @@ spec:
   {{#if hypershift-hosts.infrastructureAvailabilityPolicy}}
   infrastructureAvailabilityPolicy: {{{hypershift-hosts.infrastructureAvailabilityPolicy}}}
   {{/if}}
+  {{#if hypershift-hosts.olmCatalogPlacement}}
+  olmCatalogPlacement: {{{hypershift-hosts.olmCatalogPlacement}}}
+  {{/if}}
   platform:
     type: Agent
     agent:

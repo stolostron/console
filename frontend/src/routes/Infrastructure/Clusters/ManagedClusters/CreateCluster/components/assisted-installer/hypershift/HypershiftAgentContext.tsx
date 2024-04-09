@@ -20,6 +20,8 @@ export type HypershiftAgentContextType = {
   setControllerAvailabilityPolicy: (policy: string) => void
   infrastructureAvailabilityPolicy: string
   setInfrastructureAvailabilityPolicy: (policy: string) => void
+  olmCatalogPlacement: string
+  setOlmCatalogPlacement: (placement: string) => void
   nodePools?: NodePoolFormValue[]
   setNodePools: (nodePools: any) => void
   isAdvancedNetworking: boolean
@@ -39,6 +41,8 @@ export const HypershiftAgentContext = React.createContext<HypershiftAgentContext
   setControllerAvailabilityPolicy: noop,
   infrastructureAvailabilityPolicy: '',
   setInfrastructureAvailabilityPolicy: noop,
+  olmCatalogPlacement: '',
+  setOlmCatalogPlacement: noop,
   nodePools: [],
   setNodePools: noop,
   isAdvancedNetworking: false,
@@ -62,12 +66,15 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
   const [sshPublicKey, setSshPublicKey] = React.useState('')
   const [controllerAvailabilityPolicy, setControllerAvailabilityPolicy] = React.useState('')
   const [infrastructureAvailabilityPolicy, setInfrastructureAvailabilityPolicy] = React.useState('')
+  const [olmCatalogPlacement, setOlmCatalogPlacement] = React.useState('')
 
   return {
     controllerAvailabilityPolicy,
     setControllerAvailabilityPolicy,
     infrastructureAvailabilityPolicy,
     setInfrastructureAvailabilityPolicy,
+    olmCatalogPlacement,
+    setOlmCatalogPlacement,
     nodePools,
     setNodePools,
     isAdvancedNetworking,
