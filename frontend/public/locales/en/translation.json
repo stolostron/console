@@ -1595,6 +1595,7 @@
   "infraEnvCount": "{{count}} infrastructure environment",
   "infraEnvCount_plural": "{{count}} infrastructure environments",
   "Infrastructure": "Infrastructure",
+  "Infrastructure availability policy": "Infrastructure availability policy",
   "Infrastructure provider credentials": "Infrastructure provider credentials",
   "Insights data": "Insights data",
   "install": "Install",
