@@ -35,6 +35,8 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     setControllerAvailabilityPolicy,
     infrastructureAvailabilityPolicy,
     setInfrastructureAvailabilityPolicy,
+    olmCatalogPlacement,
+    setOlmCatalogPlacement,
   } = React.useContext(HypershiftAgentContext)
   const { agentsState, clusterImageSetsState, infraEnvironmentsState, nodePoolsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
@@ -55,6 +57,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       setInfraEnvNamespace(values.agentNamespace)
       setControllerAvailabilityPolicy(values.controllerAvailabilityPolicy)
       setInfrastructureAvailabilityPolicy(values.infrastructureAvailabilityPolicy)
+      setOlmCatalogPlacement(values.olmCatalogPlacement)
       handleChange(control)
     }
     // eslint-disable-next-line
@@ -65,6 +68,8 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     return formRef?.current?.errors
   }
 
+  console.log(control.active)
+
   control.summary = () => [
     {
       term: t('Hosts namespace'),
@@ -74,6 +79,10 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       term: t('Controller availability policy'),
       desc:
         control.active.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
+    },
+    {
+      term: t('OLM catalog placement'),
+      desc: control.active.olmCatalogPlacement === 'management' ? t('Management') : t('Guest'),
     },
     {
       term: t('Node pools'),
@@ -101,6 +110,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       nodePools={currentNodePools}
       controllerAvailabilityPolicy={controllerAvailabilityPolicy}
       infrastructureAvailabilityPolicy={infrastructureAvailabilityPolicy}
+      olmCatalogPlacement={olmCatalogPlacement}
     />
   ) : (
     <LoadingState />
