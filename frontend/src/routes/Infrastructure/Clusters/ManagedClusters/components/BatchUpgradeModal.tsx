@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { SelectOption, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { SelectOption, Skeleton, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
+import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { getUpgradeRiskPredictions } from '../../../../../lib/get-upgrade-risk-predictions'
 import {
   Cluster,
   ClusterCurator,
@@ -16,11 +17,11 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmAlert, AcmButton, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
+import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
-import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
-import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -65,9 +66,12 @@ export function BatchUpgradeModal(props: {
   open: boolean
   clusters: Cluster[] | undefined
 }): JSX.Element {
+  const { close, open, clusters } = props
   const { t } = useTranslation()
   const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
   const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
+  const [upgradeRiskPredictionsLoading, setUpgradeRiskPredictionsLoading] = useState<boolean>(true)
+  const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
 
   const { clusterCuratorsState } = useSharedAtoms()
   const clusterCurators = useRecoilValue(clusterCuratorsState)
@@ -99,14 +103,39 @@ export function BatchUpgradeModal(props: {
 
   useEffect(() => {
     // set up latest if not selected
-    const newUpgradeableClusters = props.clusters && props.clusters.filter(isUpgradeable)
+    const newUpgradeableClusters = clusters && clusters.filter(isUpgradeable)
     setSelectVersions((s) => setLatestVersions(newUpgradeableClusters, s))
     setUpgradeableClusters(newUpgradeableClusters || [])
-  }, [props.clusters, props.open])
+  }, [clusters, open])
+
+  const managedClusterIds = useMemo(() => {
+    const ids: string[] = []
+    clusters?.forEach((cluster) => {
+      if (cluster.labels?.clusterID) {
+        ids.push(cluster.labels?.clusterID)
+      }
+    })
+    return ids
+  }, [clusters])
+
+  useEffect(() => {
+    if (open && managedClusterIds.length > 0) {
+      getUpgradeRiskPredictions(managedClusterIds).then((res) => {
+        const reducedUpgradeRiskPredictions = res.reduce((acc: any[], curr: any) => {
+          if (curr.body && curr.body.predictions) {
+            return [...acc, ...curr.body.predictions]
+          }
+          return acc
+        }, [])
+        setUpgradeRiskPredictions(reducedUpgradeRiskPredictions)
+        setUpgradeRiskPredictionsLoading(false)
+      })
+    }
+  }, [managedClusterIds, open])
 
   return (
     <BulkActionModal<Cluster>
-      open={props.open}
+      open={open}
       title={t('bulk.title.upgrade')}
       action={t('upgrade.submit')}
       processing={t('upgrade.submit.processing')}
@@ -119,7 +148,7 @@ export function BatchUpgradeModal(props: {
       }
       close={() => {
         setSelectVersions({})
-        props.close()
+        close()
       }}
       description={description}
       columns={[
@@ -136,6 +165,34 @@ export function BatchUpgradeModal(props: {
               )}
             </>
           ),
+        },
+        {
+          header: t('Update risks'),
+          tooltip: t('Cluster update risks are only collected for OpenShift Container Platform clusters.'),
+          cell: (item: Cluster) => {
+            if (upgradeRiskPredictionsLoading) {
+              return <Skeleton width={'50%'} />
+            }
+            const clusterID = item.labels?.clusterID
+            const predictions = upgradeRiskPredictions.find(
+              (clusterPredictions) => clusterPredictions.cluster_id === clusterID
+            )
+            if (predictions?.upgrade_risks_predictors?.alerts.length > 0) {
+              return (
+                <AcmButton
+                  variant={'link'}
+                  component={TextVariants.a}
+                  href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
+                  target="_blank"
+                  style={{ padding: 0, fontSize: '14px' }}
+                >
+                  {t('upgrade.table.update.risk.link', [predictions?.upgrade_risks_predictors?.alerts.length])}
+                </AcmButton>
+              )
+            }
+            // Update is currently only available for OCP clusters. Don't need to handle case where predictions aren't available for a non-OCP cluster.
+            return t('No risks found')
+          },
         },
         {
           header: t('upgrade.table.currentversion'),
