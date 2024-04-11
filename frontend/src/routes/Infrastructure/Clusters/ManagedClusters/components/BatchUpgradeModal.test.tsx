@@ -446,7 +446,6 @@ describe('BatchUpgradeModal', () => {
     expect(queryByText('cluster-1-ready1')).toBeFalsy()
   })
   it('should open modal with cluster upgrade risks present', async () => {
-    let isClosed = false
     const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
       '/upgrade-risks-prediction',
       { clusterIds: ['1234-abcd'] },
@@ -454,13 +453,7 @@ describe('BatchUpgradeModal', () => {
     )
     const { getByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={[mockClusterWithUpgrade]}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <BatchUpgradeModal clusters={[mockClusterWithUpgrade]} open={true} close={() => {}} />
       </RecoilRoot>
     )
     // Wait for prometheus nocks to finish
