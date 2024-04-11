@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { SelectOption, Skeleton, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
@@ -187,6 +188,7 @@ export function BatchUpgradeModal(props: {
                   style={{ padding: 0, fontSize: '14px' }}
                 >
                   {t('upgrade.table.update.risk.link', [predictions?.upgrade_risks_predictors?.alerts.length])}
+                  <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
                 </AcmButton>
               )
             }
