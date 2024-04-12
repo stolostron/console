@@ -16,6 +16,7 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { AcmButton } from '../../../ui-components'
@@ -34,6 +35,7 @@ function getLink(type: 'link' | 'button', path: string, count: number) {
 
 export default function SummaryCard(props: {
   title: string
+  titlePopover?: ReactNode
   summaryTotalHeader: {
     num: string // percentage or count
     text: string
@@ -51,7 +53,7 @@ export default function SummaryCard(props: {
   }[]
   insights?: boolean
 }) {
-  const { title, insights, summaryData, summaryTotalHeader, loading, error } = props
+  const { title, titlePopover, insights, summaryData, summaryTotalHeader, loading, error } = props
   const { t } = useTranslation()
 
   return (
@@ -59,7 +61,10 @@ export default function SummaryCard(props: {
       <CardTitle>
         {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {title}
+            <div>
+              {title}
+              {titlePopover}
+            </div>
             {insights && (
               <Label color={'orange'} style={{ fontWeight: 400 }} isCompact>
                 {t('Powered by Insights')}

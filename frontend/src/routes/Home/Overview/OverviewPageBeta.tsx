@@ -436,6 +436,24 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 <GalleryItem key={'upgrade-risk-prediction-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Update risk predictions')}
+                    titlePopover={
+                      <Popover
+                        bodyContent={t(
+                          'Cluster update risks are only collected for OpenShift Container Platform clusters.'
+                        )}
+                      >
+                        <Button
+                          variant="plain"
+                          style={{
+                            padding: 0,
+                            marginLeft: '8px',
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          <HelpIcon />
+                        </Button>
+                      </Popover>
+                    }
                     summaryTotalHeader={{
                       num: `${percentOfClustersWithRisk}%`,
                       text: 'of clusters need to be reviewed before updating',
