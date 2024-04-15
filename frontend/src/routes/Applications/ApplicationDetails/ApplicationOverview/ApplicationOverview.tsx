@@ -51,10 +51,9 @@ import { PluginContext } from '../../../../lib/PluginContext'
 import LabelWithPopover from '../../components/LabelWithPopover'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
-const clusterResourceStatusTooltip = (t: TFunction) =>
+const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
-let leftItems: ListItems[] = []
-let rightItems: ListItems[] | undefined = undefined
+const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resources within the topology.')
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
   const { applicationData } = props
@@ -86,6 +85,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   let isSubscription = false
   let isPullModel = false
   let subsList = []
+  let leftItems: ListItems[] = []
+  let rightItems: ListItems[] | undefined = undefined
 
   useEffect(() => {
     if (namespaces.length) {
@@ -165,7 +166,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
@@ -234,7 +235,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
@@ -283,7 +284,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipSubscription(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
