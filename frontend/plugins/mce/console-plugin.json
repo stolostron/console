@@ -13,6 +13,6 @@
     "credentials": "../../src/routes/Credentials/CredentialsPlugin.tsx"
   },
   "dependencies": {
-    "@console/pluginAPI": "*"
+    "@console/pluginAPI": ">=4.14.0"
   }
 }

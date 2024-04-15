@@ -69,7 +69,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       ],
     },
     plugins: [
-      new ConsoleRemotePlugin(),
+      new ConsoleRemotePlugin({ validateSharedModules: false }),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
