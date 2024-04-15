@@ -270,7 +270,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)) ||
         cluster.provider === Provider.hostinventory ||
         cluster.provider == Provider.baremetal ||
-        cluster.provider == Provider.ibmpower
+        cluster.provider == Provider.ibmpower ||
+        cluster.provider == Provider.ibmz
       anyUnsupported ||= !isSupported
 
       if (isSupported) {
@@ -326,6 +327,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             cluster.provider !== Provider.hostinventory &&
             cluster.provider !== Provider.baremetal &&
             cluster.provider !== Provider.ibmpower &&
+            cluster.provider !== Provider.ibmz &&
             providerSecretMap[cluster.displayName!] === null
           ) {
             if (cluster.provider === Provider.aws) {
@@ -358,7 +360,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             cluster.provider !== Provider.vmware &&
             cluster.provider !== Provider.hostinventory &&
             cluster.provider !== Provider.baremetal &&
-            cluster.provider !== Provider.ibmpower
+            cluster.provider !== Provider.ibmpower &&
+            cluster.provider !== Provider.ibmz
           ) {
             // use existing secret name
             if (providerSecretMap[cluster.displayName!]) {
@@ -623,7 +626,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   if (
                     matchedCluster.provider === Provider.baremetal ||
                     matchedCluster.provider === Provider.hostinventory ||
-                    matchedCluster.provider === Provider.ibmpower
+                    matchedCluster.provider === Provider.ibmpower ||
+                    matchedCluster.provider === Provider.ibmz
                   ) {
                     return false
                   }
