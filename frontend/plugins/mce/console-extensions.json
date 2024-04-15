@@ -7,6 +7,13 @@
         }
     },
     {
+        "type": "acm.shared-context",
+        "properties": {
+            "id": "mce-data-context",
+            "context": { "$codeRef": "context.PluginDataContext" }
+        }
+    },
+    {
         "type": "console.perspective",
         "properties": {
             "id": "acm",
