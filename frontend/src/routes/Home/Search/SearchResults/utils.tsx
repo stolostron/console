@@ -143,7 +143,7 @@ export function generateSearchResultExport(
   })
 
   const searchResultItems: ISearchResult[] = searchResultData?.searchResult?.[0]?.items || []
-  let columns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
+  const columns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
 
   // Variable to store the final csv data
   const csv_data: string[] = [`${columns.join(',')}`]
@@ -160,9 +160,9 @@ export function generateSearchResultExport(
 
   // Create download
   const CSVFile = new Blob([csv_string], { type: 'text/csv' })
-  let temp_link = document.createElement('a')
+  const temp_link = document.createElement('a')
   temp_link.download = `search_result_${Date.now()}.csv`
-  let url = window.URL.createObjectURL(CSVFile)
+  const url = window.URL.createObjectURL(CSVFile)
   temp_link.href = url
   // This link should not be displayed
   temp_link.style.display = 'none'
