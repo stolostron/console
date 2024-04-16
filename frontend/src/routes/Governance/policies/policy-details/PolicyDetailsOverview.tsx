@@ -63,6 +63,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
   const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
+    govData.clusterRisks.critical +
     govData.clusterRisks.high +
     govData.clusterRisks.medium +
     govData.clusterRisks.low +
