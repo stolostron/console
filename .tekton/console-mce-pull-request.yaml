@@ -37,7 +37,7 @@ spec:
       - name: IMAGE_URL
         value: $(tasks.build-container.results.IMAGE_URL)
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-show-sbom:0.1@sha256:d315a26426ca275df69c6e92243a52502e37779cc26280649e553e7b9dc056a9
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-show-sbom:0.1@sha256:1f90faefa39c2e4965793c1d8321e7d5d99a6c941276a9094a4e0d483a598fca
         name: show-sbom
     - name: show-summary
       params:
@@ -185,7 +185,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:87051d52885b40c7c5e0b7502c6e5b652f5032dac5d6548408fb4c01341258cc
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:ecfacc7dccf732aeea2a6dece746e7daeb7e43036c1b9e2831c433f0a98898d4
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
