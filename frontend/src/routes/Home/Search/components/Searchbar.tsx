@@ -2,6 +2,9 @@
 import {
   Button,
   Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownToggle,
   Menu,
   MenuContent,
   MenuItem,
@@ -11,16 +14,19 @@ import {
   TextInputGroupMain,
   TextInputGroupUtilities,
 } from '@patternfly/react-core'
+import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton, AcmChip, AcmChipGroup } from '../../../../ui-components'
+import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext } from '../../../../ui-components'
 import { operators } from '../search-helper'
+import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
+import { generateSearchResultExport } from '../SearchResults/utils'
 import { transformBrowserUrlToSearchString } from '../urlQuery'
 
 type SearchbarTag = {
@@ -44,6 +50,7 @@ type SearchbarProps = {
   toggleInfoModal: () => void
   updateBrowserUrl: (history: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
+  searchResultData: SearchResultItemsQuery | undefined
   refetchSearch: any
 }
 
@@ -79,14 +86,17 @@ export function Searchbar(props: SearchbarProps) {
     updateBrowserUrl,
     queryString,
     savedSearchQueries,
+    searchResultData,
     refetchSearch,
   } = props
   const history = useHistory()
+  const toast = useContext(AcmToastContext)
   const [inputValue, setInputValue] = useState('')
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<React.ReactElement[]>([])
   const [currentQuery, setCurrentQuery] = useState(queryString)
   const [searchbarTags, setSearchbarTags] = useState<SearchbarTag[]>(convertStringToTags(currentQuery))
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
   const { useSavedSearchLimit } = useSharedAtoms()
   const savedSearchLimit = useSavedSearchLimit()
 
@@ -418,13 +428,10 @@ export function Searchbar(props: SearchbarProps) {
             </Button>
           </TextInputGroupUtilities>
         )}
-        <Divider isVertical />
-        <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
-          <HelpIcon color={'var(--pf-global--active-color--100)'} />
-        </Button>
-        <Divider isVertical />
-        <AcmButton
+        <Divider orientation={{ default: 'vertical' }} />
+        <Button
           id="inputDropdownButton1"
+          isInline
           variant="plain"
           onClick={() => {
             // If run search is pressed but the query hasn't changed - we are refetching
@@ -437,9 +444,13 @@ export function Searchbar(props: SearchbarProps) {
           }}
           isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
         >
-          {t('Run search')}
-        </AcmButton>
-        <Divider isVertical />
+          <ArrowRightIcon />
+        </Button>
+        <Divider orientation={{ default: 'vertical' }} />
+        <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
+          <HelpIcon color={'var(--pf-global--active-color--100)'} />
+        </Button>
+        <Divider orientation={{ default: 'vertical' }} />
         <AcmButton
           onClick={() =>
             setSaveSearch({
@@ -455,6 +466,40 @@ export function Searchbar(props: SearchbarProps) {
         >
           {t('Save search')}
         </AcmButton>
+        <Divider orientation={{ default: 'vertical' }} />
+        <Dropdown
+          onSelect={(event) => {
+            event?.stopPropagation()
+            setIsExportMenuOpen(false)
+          }}
+          className="export-dropdownMenu"
+          toggle={
+            <DropdownToggle
+              toggleIndicator={null}
+              onToggle={(value, event) => {
+                event.stopPropagation()
+                setIsExportMenuOpen(value)
+              }}
+              aria-label="export-search-result"
+              id="export-search-result"
+            >
+              <ExportIcon />
+            </DropdownToggle>
+          }
+          isOpen={isExportMenuOpen}
+          isPlain
+          dropdownItems={[
+            <DropdownItem
+              style={{ width: '10rem' }}
+              key={'item.text'}
+              onClick={() => generateSearchResultExport(searchResultData, toast, t)}
+              isDisabled={window.location.search === ''}
+            >
+              {t('Export as CSV')}
+            </DropdownItem>,
+          ]}
+          position={'right'}
+        />
       </TextInputGroup>
     </div>
   )
