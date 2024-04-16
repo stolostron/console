@@ -40,6 +40,10 @@ import {
   hasInformOnlyPolicies,
   getPlacementBindingsForResource,
   getPlacementsForResource,
+  getSource,
+  PolicySetList, 
+  resolveExternalStatus,
+  resolveSource 
 } from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
@@ -56,7 +60,6 @@ import {
   replaceResource,
 } from '../../../resources'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
-import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -406,7 +409,7 @@ export default function PoliciesPage() {
         id: 'add-to-set',
         title: t('policy.table.actions.addToPolicySet'),
         click: (item) => {
-          setModal(<AddToPolicySetModal policyTableItems={...item} onClose={() => setModal(undefined)} />)
+          setModal(<AddToPolicySetModal policyTableItems={[...item]} onClose={() => setModal(undefined)} />)
         },
         tooltip: t('Add to policy set'),
         isDisabled: !canPatchPolicy,
@@ -621,7 +624,7 @@ export default function PoliciesPage() {
     () => [
       {
         id: 'violations',
-        label: 'Cluster violations',
+        label: 'Cluster compliance',
         options: [
           {
             label: t('Without violations'),
@@ -722,7 +725,7 @@ export default function PoliciesPage() {
           { label: t('Inform/Enforce/InformOnly'), value: 'inform/enforce/informOnly' },
         ],
         tableFilterFn: (selectedValues, item) => {
-          const policyRemediation = item.policy.remediationResult?.replace(' (overridden)', '') || ''
+          const policyRemediation = item.policy.remediationResult?.replace(' (overridden)', '') ?? ''
           return selectedValues.includes(policyRemediation)
         },
       },
@@ -857,7 +860,7 @@ function usePolicyViolationsColumn(
 ): IAcmTableColumn<PolicyTableItem> {
   const { t } = useTranslation()
   return {
-    header: t('Cluster violations'),
+    header: t('Cluster compliance'),
     cell: (item) => {
       const clusterViolationSummary = policyClusterViolationSummaryMap[item.policy.metadata.uid ?? '']
       if (

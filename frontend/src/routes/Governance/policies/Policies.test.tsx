@@ -58,7 +58,7 @@ describe('Policies Page', () => {
     await waitForText(mockPolicy[0].metadata.name!)
 
     // Sorting
-    screen.getByRole('button', { name: 'Cluster violations' }).click()
+    screen.getByRole('button', { name: 'Cluster compliance' }).click()
     screen.getByRole('button', { name: 'Namespace' }).click()
     screen.getByRole('button', { name: 'Name' }).click()
 
@@ -86,7 +86,7 @@ describe('Policies Page', () => {
     await waitForText('Name')
     await waitForText('Namespace')
     await waitForText('Remediation')
-    await waitForText('Cluster violations')
+    await waitForText('Cluster compliance')
     await waitForText('Source')
     await waitForText('Policy set')
     expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
@@ -136,7 +136,7 @@ describe('Policies Page', () => {
         '/multicloud/governance/policy-sets?search%3D%7B%22name%22%3A%5B%22policy-set-with-1-placement%22%5D%2C%22namespace%22%3A%5B%22test%22%5D%7D'
       )
     )
-    // Verify the Cluster violation column has the correct link to policy details page
+    // Verify the Cluster compliance column has the correct link to policy details page
     await waitFor(() =>
       // need to use index [1] because the name column is also an "a" element
       expect(container.querySelectorAll('a')[2]).toHaveAttribute(
