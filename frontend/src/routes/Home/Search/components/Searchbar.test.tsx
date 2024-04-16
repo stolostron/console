@@ -94,6 +94,7 @@ export const BlankSearchbar = () => {
                 searchText: 'kind:Pod',
               },
             ]}
+            searchResultData={undefined}
             refetchSearch={() => {}}
           />
         </MockedProvider>
@@ -134,6 +135,7 @@ const LoadingSearchbar = () => (
               searchText: 'kind:Pod',
             },
           ]}
+          searchResultData={undefined}
           refetchSearch={() => {}}
         />
       </MockedProvider>
@@ -188,6 +190,35 @@ const PrefilledSearchbar = () => (
               searchText: 'kind:Pod',
             },
           ]}
+          searchResultData={{
+            searchResult: [
+              {
+                items: [
+                  {
+                    _hubClusterResource: 'true',
+                    _ownerUID: 'local-cluster/1234-abcd',
+                    _uid: 'local-cluster/1234-abcd',
+                    apiversion: 'v1',
+                    cluster: 'local-cluster',
+                    container: 'search-postgres',
+                    created: '2024-04-15T14:23:59Z',
+                    hostIP: '10.0.68.86',
+                    image: 'quay.io/image',
+                    kind: 'Pod',
+                    kind_plural: 'pods',
+                    label:
+                      'app=search; component=search-v2-operator; name=search-postgres; pod-template-hash=d7778bcb6',
+                    name: 'name1',
+                    namespace: 'open-cluster-management',
+                    podIP: '10.129.0.116',
+                    restarts: '0',
+                    startedAt: '2024-04-15T14:23:59Z',
+                    status: 'Running',
+                  },
+                ],
+              },
+            ],
+          }}
           refetchSearch={() => {}}
         />
       </MockedProvider>
@@ -231,7 +262,7 @@ describe('Searchbar tests', () => {
 
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
 
-    userEvent.click(screen.getByText('Run search'))
+    userEvent.click(screen.getByTestId('run-search-button'))
   })
 
   it('Searchbar should render correctly and add a search via typing', async () => {

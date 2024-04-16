@@ -368,7 +368,7 @@ export function Searchbar(props: SearchbarProps) {
 
   /** apply focus to the run search button */
   const focusRunSearchButton = () => {
-    const runSearchButton = document.querySelector('#inputDropdownButton1') as HTMLButtonElement
+    const runSearchButton = document.querySelector('#run-search-button') as HTMLButtonElement
     runSearchButton?.focus()
   }
 
@@ -430,7 +430,7 @@ export function Searchbar(props: SearchbarProps) {
         )}
         <Divider orientation={{ default: 'vertical' }} />
         <Button
-          id="inputDropdownButton1"
+          id="run-search-button"
           isInline
           variant="plain"
           onClick={() => {
