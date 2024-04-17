@@ -6,6 +6,7 @@ import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
 import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
+import { TFunction } from 'i18next'
 
 type FormControl = {
   active: any // CIM.HostsFormValues
@@ -23,6 +24,41 @@ type HostsFormProps = {
   handleChange: (control: FormControl) => void
 }
 
+export const getControlSummary = (activeControl: FormControl['active'], t: TFunction) => () =>
+  [
+    {
+      term: t('Hosts namespace'),
+      desc: activeControl.agentNamespace,
+    },
+    {
+      term: t('Controller availability policy'),
+      desc:
+        activeControl.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
+    },
+    {
+      term: t('Infrastructure availability policy'),
+      desc:
+        activeControl.infrastructureAvailabilityPolicy === 'HighlyAvailable'
+          ? t('Highly available')
+          : t('Single replica'),
+    },
+    {
+      term: t('OLM catalog placement'),
+      desc: activeControl.olmCatalogPlacement === 'management' ? t('Management') : t('Guest'),
+    },
+    {
+      term: t('Node pools'),
+      desc: activeControl.nodePools.length,
+    },
+    {
+      term: t('Hosts count'),
+      desc: activeControl.nodePools.reduce((acc: number, nodePool: any) => {
+        acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
+        return acc
+      }, 0),
+    },
+  ]
+
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
   const {
     nodePools,
@@ -35,6 +71,8 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     setControllerAvailabilityPolicy,
     infrastructureAvailabilityPolicy,
     setInfrastructureAvailabilityPolicy,
+    olmCatalogPlacement,
+    setOlmCatalogPlacement,
   } = React.useContext(HypershiftAgentContext)
   const { agentsState, clusterImageSetsState, infraEnvironmentsState, nodePoolsState } = useSharedAtoms()
   const { waitForAll } = useSharedRecoil()
@@ -55,6 +93,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       setInfraEnvNamespace(values.agentNamespace)
       setControllerAvailabilityPolicy(values.controllerAvailabilityPolicy)
       setInfrastructureAvailabilityPolicy(values.infrastructureAvailabilityPolicy)
+      setOlmCatalogPlacement(values.olmCatalogPlacement)
       handleChange(control)
     }
     // eslint-disable-next-line
@@ -65,28 +104,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     return formRef?.current?.errors
   }
 
-  control.summary = () => [
-    {
-      term: t('Hosts namespace'),
-      desc: control.active.agentNamespace,
-    },
-    {
-      term: t('Controller availability policy'),
-      desc:
-        control.active.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
-    },
-    {
-      term: t('Node pools'),
-      desc: control.active.nodePools.length,
-    },
-    {
-      term: t('Hosts count'),
-      desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
-        acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
-        return acc
-      }, 0),
-    },
-  ]
+  control.summary = getControlSummary(control.active, t)
 
   return agents ? (
     <HostedClusterHostsStep
@@ -101,6 +119,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
       nodePools={currentNodePools}
       controllerAvailabilityPolicy={controllerAvailabilityPolicy}
       infrastructureAvailabilityPolicy={infrastructureAvailabilityPolicy}
+      olmCatalogPlacement={olmCatalogPlacement}
     />
   ) : (
     <LoadingState />
