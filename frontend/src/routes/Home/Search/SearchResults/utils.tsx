@@ -3,7 +3,9 @@ import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
 import { generatePath, useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import { IAlertContext } from '../../../../ui-components'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
+import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { GetUrlSearchParam } from '../searchDefinitions'
 
 export interface ISearchResult {
@@ -125,4 +127,53 @@ export function GetRowActions(
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   }
   return [editButton, viewRelatedButton, deleteButton]
+}
+
+// Triggers csv file export for search results using the default headers:
+// name, namespace, kind, cluster, created_at, label, _uid
+export function generateSearchResultExport(
+  searchResultData: SearchResultItemsQuery | undefined,
+  toastContext: IAlertContext,
+  t: TFunction<string, undefined>
+) {
+  toastContext.addAlert({
+    title: t('Generating data. Download may take a moment to start.'),
+    type: 'info',
+    autoClose: true,
+  })
+
+  const searchResultItems: ISearchResult[] = searchResultData?.searchResult?.[0]?.items || []
+  const columns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
+
+  // Variable to store the final csv data
+  const csv_data: string[] = [`${columns.join(',')}`]
+  searchResultItems.forEach((item: any) => {
+    const csv_row: string[] = []
+    columns.forEach((column: string) => {
+      csv_row.push(item[column] ?? '-')
+    })
+    // Combine each column value with comma
+    csv_data.push(csv_row.join(','))
+  })
+  // Combine each row data with new line character
+  const csv_string = csv_data.join('\n')
+
+  // Create download
+  const CSVFile = new Blob([csv_string], { type: 'text/csv' })
+  const temp_link = document.createElement('a')
+  temp_link.download = `search_result_${Date.now()}.csv`
+  const url = window.URL.createObjectURL(CSVFile)
+  temp_link.href = url
+  // This link should not be displayed
+  temp_link.style.display = 'none'
+  document.body.appendChild(temp_link)
+  // Automatically click the link to trigger download
+  temp_link.click()
+  document.body.removeChild(temp_link)
+
+  toastContext.addAlert({
+    title: t('Export successful'),
+    type: 'success',
+    autoClose: true,
+  })
 }
