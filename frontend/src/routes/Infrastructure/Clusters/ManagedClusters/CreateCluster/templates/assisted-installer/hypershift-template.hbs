@@ -42,6 +42,12 @@ spec:
   {{#if hypershift-hosts.controllerAvailabilityPolicy}}
   controllerAvailabilityPolicy: {{{hypershift-hosts.controllerAvailabilityPolicy}}}
   {{/if}}
+  {{#if hypershift-hosts.infrastructureAvailabilityPolicy}}
+  infrastructureAvailabilityPolicy: {{{hypershift-hosts.infrastructureAvailabilityPolicy}}}
+  {{/if}}
+  {{#if hypershift-hosts.olmCatalogPlacement}}
+  olmCatalogPlacement: {{{hypershift-hosts.olmCatalogPlacement}}}
+  {{/if}}
   platform:
     type: Agent
     agent:
