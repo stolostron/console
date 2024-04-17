@@ -1924,7 +1924,7 @@ Array [
 ]
 `;
 
-exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.operators.coreos.io 1`] = `
+exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.operators.coreos.com 1`] = `
 Array [
   Object {
     "cell": <CreateDetailsLink
