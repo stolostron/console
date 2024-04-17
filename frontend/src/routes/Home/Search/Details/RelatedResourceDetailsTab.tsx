@@ -91,7 +91,7 @@ export default function RelatedResourceDetailsTab(props: {
           emptyState={undefined} // table only shown for kinds with related resources
           columns={_.get(
             searchDefinitions,
-            `[${kind.toLowerCase()}].columns`,
+            `['${kind.toLowerCase()}'].columns`,
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}

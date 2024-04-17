@@ -1,6 +1,7 @@
 // Copyright (c) 2023 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import i18next from 'i18next'
+import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, GetRowActions } from './utils'
 
 const mockHistoryPush = jest.fn()
@@ -45,7 +46,7 @@ test('Correctly return empty row Actions for Application', () => {
   expect(res).toMatchSnapshot()
 })
 
-test('generateSearchResultExport - Correctly generates and triggers csv download', () => {
+test('generateSearchResultExport - Correctly generates and triggers csv download for single resource kind', () => {
   const toastContextMock: any = {
     addAlert: jest.fn(),
   }
@@ -57,24 +58,69 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
       {
         items: [
           {
-            _hubClusterResource: 'true',
-            _ownerUID: 'local-cluster/1234-abcd',
-            _uid: 'local-cluster/1234-abcd',
-            apiversion: 'v1',
+            apigroup: 'operators.coreos.com',
+            apiversion: 'v1alpha1',
+            channel: 'release-2.11',
             cluster: 'local-cluster',
-            container: 'search-postgres',
-            created: '2024-04-15T14:23:59Z',
-            hostIP: '10.0.68.86',
-            image: 'quay.io/image',
-            kind: 'Pod',
-            kind_plural: 'pods',
-            label: 'app=search; component=search-v2-operator; name=search-postgres; pod-template-hash=d7778bcb6',
-            name: 'search-postgres-d7778bcb6-bf7xq',
+            created: '2024-04-15T14:20:26Z',
+            installplan: 'advanced-cluster-management.v2.11.0',
+            kind: 'Subscription',
+            kind_plural: 'subscriptions',
+            label: 'operators.coreos.com/advanced-cluster-management.open-cluster-management=',
+            name: 'acm-operator-subscription',
             namespace: 'open-cluster-management',
-            podIP: '10.129.0.116',
-            restarts: '0',
-            startedAt: '2024-04-15T14:23:59Z',
-            status: 'Running',
+            package: 'advanced-cluster-management',
+            phase: 'AtLatestKnown',
+            source: 'acm-custom-registry',
+          },
+        ],
+        __typename: 'SearchResult',
+      },
+    ],
+  }
+
+  const searchDefinitions = getSearchDefinitions((key) => key)
+  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
+
+  expect(toastContextMock.addAlert).toHaveBeenCalledWith({
+    title: 'Generating data. Download may take a moment to start.',
+    type: 'info',
+    autoClose: true,
+  })
+  expect(window.URL.createObjectURL).toHaveBeenCalledTimes(1)
+  expect(toastContextMock.addAlert).toHaveBeenCalledWith({
+    title: 'Export successful',
+    type: 'success',
+    autoClose: true,
+  })
+})
+
+test('generateSearchResultExport - Correctly generates and triggers csv download for multi resource kind', () => {
+  const toastContextMock: any = {
+    addAlert: jest.fn(),
+  }
+  const t = (key: string) => key
+  window.URL.createObjectURL = jest.fn()
+
+  const searchResultDataMock = {
+    searchResult: [
+      {
+        items: [
+          {
+            apigroup: 'operators.coreos.com',
+            apiversion: 'v1alpha1',
+            channel: 'release-2.11',
+            cluster: 'local-cluster',
+            created: '2024-04-15T14:20:26Z',
+            installplan: 'advanced-cluster-management.v2.11.0',
+            kind: 'Subscription',
+            kind_plural: 'subscriptions',
+            label: 'operators.coreos.com/advanced-cluster-management.open-cluster-management=',
+            name: 'acm-operator-subscription',
+            namespace: 'open-cluster-management',
+            package: 'advanced-cluster-management',
+            phase: 'AtLatestKnown',
+            source: 'acm-custom-registry',
           },
           {
             _hubClusterResource: 'true',
@@ -121,7 +167,8 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
     ],
   }
 
-  generateSearchResultExport(searchResultDataMock, toastContextMock, t)
+  const searchDefinitions = getSearchDefinitions((key) => key)
+  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
     title: 'Generating data. Download may take a moment to start.',
