@@ -7,6 +7,7 @@ import {
   placementRulesState,
   placementsState,
   policiesState,
+  policyAutomationState,
   policySetsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
@@ -19,6 +20,8 @@ import {
   mockPolicySets,
   mockPendingPolicy,
   mockPolicyBinding,
+  mockPolicyAutomation,
+  mockOrderPolicy,
 } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
@@ -58,7 +61,7 @@ describe('Policies Page', () => {
     await waitForText(mockPolicy[0].metadata.name!)
 
     // Sorting
-    screen.getByRole('button', { name: 'Cluster violations' }).click()
+    screen.getByRole('button', { name: 'Cluster compliance' }).click()
     screen.getByRole('button', { name: 'Namespace' }).click()
     screen.getByRole('button', { name: 'Name' }).click()
 
@@ -86,7 +89,7 @@ describe('Policies Page', () => {
     await waitForText('Name')
     await waitForText('Namespace')
     await waitForText('Remediation')
-    await waitForText('Cluster violations')
+    await waitForText('Cluster compliance')
     await waitForText('Source')
     await waitForText('Policy set')
     expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
@@ -98,7 +101,8 @@ describe('Policies Page', () => {
     await waitForText('Manage columns')
     screen.getByTestId('checkbox-status').click()
     screen.getByRole('button', { name: /save/i }).click()
-    screen.getByRole('columnheader', { name: /Status/ })
+
+    expect(screen.getByRole('columnheader', { name: /Status/ })).toBeInTheDocument()
 
     screen.getByRole('button', { name: /columns-management/i }).click()
     await waitForText('Manage columns')
@@ -109,6 +113,96 @@ describe('Policies Page', () => {
 
     // Verify that the Status column is no longer present
     expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
+  })
+
+  test('Should sort Policy automation correctly', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockOrderPolicy)
+          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+        }}
+      >
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Add the automation column
+    screen.getByRole('button', { name: /columns-management/i }).click()
+    await waitForText('Manage columns')
+    screen.getByTestId('checkbox-automation').click()
+    screen.getByRole('button', { name: /save/i }).click()
+    expect(screen.getByRole('columnheader', { name: /Automation/i })).toBeInTheDocument()
+    screen.getByRole('button', { name: 'Automation' }).click()
+
+    expect(screen.getByRole('columnheader', { name: /Automation/i })).toHaveAttribute('aria-sort', 'ascending')
+
+    // 'policy-set-with-1-placement-policy'
+    const automationName = screen.getByRole('button', {
+      name: mockPolicyAutomation.metadata.name,
+    })
+    const configure = screen.getByRole('link', {
+      name: /configure/i,
+    })
+
+    // 'configure' comes before 'automationName'
+    expect(configure.compareDocumentPosition(automationName)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+
+  test('Should sort Policy status correctly', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockOrderPolicy)
+          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+        }}
+      >
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Add the status column
+    screen.getByRole('button', { name: /columns-management/i }).click()
+    await waitForText('Manage columns')
+    screen.getByTestId('checkbox-status').click()
+    screen.getByRole('button', { name: /save/i }).click()
+    expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument()
+    screen.getByRole('button', { name: /Status/i }).click()
+
+    expect(screen.getByRole('columnheader', { name: /Status/i })).toHaveAttribute('aria-sort', 'ascending')
+
+    const enabled = screen.getByText('Enabled')
+    const disabled = screen.getByText('Disabled')
+
+    // 'disabled' comes before 'enabled'
+    expect(disabled.compareDocumentPosition(enabled)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+
+  test('Should sort Policy source correctly', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockOrderPolicy)
+          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+        }}
+      >
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    expect(screen.getByRole('columnheader', { name: /Source/i })).toBeInTheDocument()
+    screen.getByRole('button', { name: /Source/i }).click()
+
+    expect(screen.getByRole('columnheader', { name: /Source/i })).toHaveAttribute('aria-sort', 'ascending')
+
+    const local = screen.getByText('Local')
+    const me = screen.getByText('Managed externally')
+
+    // 'Local' comes before 'Managed externally'
+    expect(local.compareDocumentPosition(me)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 
   test('Should have correct links to PolicySet & Policy detail results pages', async () => {
@@ -136,7 +230,7 @@ describe('Policies Page', () => {
         '/multicloud/governance/policy-sets?search%3D%7B%22name%22%3A%5B%22policy-set-with-1-placement%22%5D%2C%22namespace%22%3A%5B%22test%22%5D%7D'
       )
     )
-    // Verify the Cluster violation column has the correct link to policy details page
+    // Verify the Cluster compliance column has the correct link to policy details page
     await waitFor(() =>
       // need to use index [1] because the name column is also an "a" element
       expect(container.querySelectorAll('a')[2]).toHaveAttribute(
@@ -146,7 +240,7 @@ describe('Policies Page', () => {
     )
   })
 
-  test('should show enforce fitler without (overridden)', async () => {
+  test('should show enforce filter without (overridden)', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
