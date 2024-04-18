@@ -81,7 +81,11 @@ function RenderAccordionItem(props: {
         <AcmTable
           items={items}
           emptyState={undefined} // table only shown for kinds with results
-          columns={_.get(searchDefinitions, `[${kindAndGroup}].columns`, searchDefinitions['genericresource'].columns)}
+          columns={_.get(
+            searchDefinitions,
+            `['${kindAndGroup}'].columns`,
+            searchDefinitions['genericresource'].columns
+          )}
           keyFn={(item: any) => item._uid.toString()}
           rowActions={
             isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'

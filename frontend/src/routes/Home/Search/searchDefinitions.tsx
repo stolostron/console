@@ -15,7 +15,48 @@ import { NavigationPath } from '../../../NavigationPath'
 import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLabels } from '../../../ui-components'
 
-export const getSearchDefinitions = (t: TFunction) => {
+export interface SearchDefinitions {
+  (t: TFunction): ResourceDefinitions
+}
+export interface ResourceDefinitions {
+  application: Record<'columns', SearchColumnDefinition[]>
+  cluster: Record<'columns', SearchColumnDefinition[]>
+  clusteroperator: Record<'columns', SearchColumnDefinition[]>
+  clusterserviceversion: Record<'columns', SearchColumnDefinition[]>
+  channel: Record<'columns', SearchColumnDefinition[]>
+  cronjob: Record<'columns', SearchColumnDefinition[]>
+  daemonset: Record<'columns', SearchColumnDefinition[]>
+  deployable: Record<'columns', SearchColumnDefinition[]>
+  deployment: Record<'columns', SearchColumnDefinition[]>
+  genericresource: Record<'columns', SearchColumnDefinition[]>
+  helmrelease: Record<'columns', SearchColumnDefinition[]>
+  job: Record<'columns', SearchColumnDefinition[]>
+  namespace: Record<'columns', SearchColumnDefinition[]>
+  node: Record<'columns', SearchColumnDefinition[]>
+  persistentvolume: Record<'columns', SearchColumnDefinition[]>
+  persistentvolumeclaim: Record<'columns', SearchColumnDefinition[]>
+  placementbinding: Record<'columns', SearchColumnDefinition[]>
+  placementpolicy: Record<'columns', SearchColumnDefinition[]>
+  placementrule: Record<'columns', SearchColumnDefinition[]>
+  pod: Record<'columns', SearchColumnDefinition[]>
+  policy: Record<'columns', SearchColumnDefinition[]>
+  policyreport: Record<'columns', SearchColumnDefinition[]>
+  release: Record<'columns', SearchColumnDefinition[]>
+  replicaset: Record<'columns', SearchColumnDefinition[]>
+  secret: Record<'columns', SearchColumnDefinition[]>
+  service: Record<'columns', SearchColumnDefinition[]>
+  statefulset: Record<'columns', SearchColumnDefinition[]>
+  'subscription.apps.open-cluster-management.io': Record<'columns', SearchColumnDefinition[]>
+  'subscription.operators.coreos.com': Record<'columns', SearchColumnDefinition[]>
+}
+
+export interface SearchColumnDefinition {
+  header: string
+  sort?: string
+  cell: string | ((item: any) => JSX.Element | '-') | ((item: any) => string)
+}
+
+export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
   return {
     application: {
       columns: [
@@ -314,7 +355,7 @@ export const getSearchDefinitions = (t: TFunction) => {
         AddColumn('timeWindow', t('Time window')),
       ]),
     },
-    'subscription.operators.coreos.io': {
+    'subscription.operators.coreos.com': {
       columns: AddDefaultColumns(t, [
         AddColumn('package', t('Package')),
         AddColumn('source', t('Source')),
@@ -537,7 +578,7 @@ function AddDefaultColumns(t: TFunction, customColumns: any[]) {
   ]
 }
 
-function AddColumn(key: string, localizedColumnName: string) {
+function AddColumn(key: string, localizedColumnName: string): SearchColumnDefinition {
   switch (key) {
     case 'name':
       return {

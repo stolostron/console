@@ -26,6 +26,7 @@ import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext } from '../../../../ui-components'
 import { operators } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
+import { useSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
 import { transformBrowserUrlToSearchString } from '../urlQuery'
 
@@ -90,6 +91,7 @@ export function Searchbar(props: SearchbarProps) {
     refetchSearch,
   } = props
   const history = useHistory()
+  const searchDefinitions = useSearchDefinitions()
   const toast = useContext(AcmToastContext)
   const [inputValue, setInputValue] = useState('')
   const [menuIsOpen, setMenuIsOpen] = useState(false)
@@ -492,7 +494,7 @@ export function Searchbar(props: SearchbarProps) {
             <DropdownItem
               style={{ width: '10rem' }}
               key={'item.text'}
-              onClick={() => generateSearchResultExport(searchResultData, toast, t)}
+              onClick={() => generateSearchResultExport(searchResultData, searchDefinitions, toast, t)}
               isDisabled={window.location.search === ''}
             >
               {t('Export as CSV')}

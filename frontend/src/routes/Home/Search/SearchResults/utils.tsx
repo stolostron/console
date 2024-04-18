@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { get } from 'lodash'
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
 import { generatePath, useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
-import { IAlertContext } from '../../../../ui-components'
+import { compareStrings, IAlertContext } from '../../../../ui-components'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
-import { GetUrlSearchParam } from '../searchDefinitions'
+import { GetUrlSearchParam, SearchColumnDefinition } from '../searchDefinitions'
 
 export interface ISearchResult {
   kind: string
   apiversion: string
+  name: string
   apigroup?: string
   __type: string
 }
@@ -129,10 +131,9 @@ export function GetRowActions(
   return [editButton, viewRelatedButton, deleteButton]
 }
 
-// Triggers csv file export for search results using the default headers:
-// name, namespace, kind, cluster, created_at, label, _uid
 export function generateSearchResultExport(
   searchResultData: SearchResultItemsQuery | undefined,
+  searchDefinitions: any,
   toastContext: IAlertContext,
   t: TFunction<string, undefined>
 ) {
@@ -143,17 +144,67 @@ export function generateSearchResultExport(
   })
 
   const searchResultItems: ISearchResult[] = searchResultData?.searchResult?.[0]?.items || []
-  const columns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
+  const kindSearchResultItems: Record<string, ISearchResult[]> = {}
+  for (const searchResultItem of searchResultItems) {
+    const apiGroup = searchResultItem?.apigroup
+    const groupAndKind = apiGroup ? `${searchResultItem.kind}.${apiGroup}` : searchResultItem.kind
+    const existing = kindSearchResultItems[groupAndKind]
+    if (!existing) {
+      kindSearchResultItems[groupAndKind] = [searchResultItem]
+    } else {
+      kindSearchResultItems[groupAndKind].push(searchResultItem)
+    }
+  }
+  // Sort kinds alphabetically by kind then apigroup if same kind
+  const kinds = Object.keys(kindSearchResultItems).sort((a, b) => {
+    const strCompareRes = compareStrings(kindSearchResultItems[a][0].kind, kindSearchResultItems[b][0].kind)
+    const getApiGroup = (type: string) =>
+      kindSearchResultItems[type][0]?.apigroup
+        ? `${kindSearchResultItems[type][0]?.apigroup}/${kindSearchResultItems[type][0]?.apiversion}`
+        : ''
+    return strCompareRes !== 0 ? strCompareRes : compareStrings(getApiGroup(a), getApiGroup(b))
+  })
+
+  // Sort resources alphabetically by name
+  kinds.forEach((kind: string) => {
+    kindSearchResultItems[kind] = kindSearchResultItems[kind].sort((a, b) => {
+      return compareStrings(a.name, b.name)
+    })
+  })
+
+  const defaulColumns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
+  let columns: SearchColumnDefinition[] = defaulColumns.map((defaultCol: string) => {
+    return {
+      header: defaultCol,
+      sort: defaultCol,
+      cell: defaultCol,
+    }
+  })
+
+  // If only 1 resource kind -> use column headers from searchDefinitions
+  if (kinds.length === 1) {
+    const kindAndGroup =
+      kinds[0].split('.')[0].toLowerCase() === 'subscription'
+        ? `subscription.${searchResultItems[0].apigroup}`
+        : kinds[0].split('.')[0].toLowerCase()
+    columns = get(searchDefinitions, `['${kindAndGroup}'].columns`, searchDefinitions['genericresource'].columns)
+    // Filter column definitions that do NOT contain sort field. Sort is the only way to confidently get resource fields
+    columns = columns.filter((col: SearchColumnDefinition) => {
+      return col.sort ? true : false
+    })
+  }
 
   // Variable to store the final csv data
-  const csv_data: string[] = [`${columns.join(',')}`]
-  searchResultItems.forEach((item: any) => {
-    const csv_row: string[] = []
-    columns.forEach((column: string) => {
-      csv_row.push(item[column] ?? '-')
+  const csv_data: string[] = [`${columns.map((col) => col.sort).join(',')}`]
+  kinds.forEach((kind: string) => {
+    kindSearchResultItems[kind].forEach((item: any) => {
+      const csv_row: string[] = []
+      columns.forEach((column: SearchColumnDefinition) => {
+        csv_row.push(item[column.sort!] ?? '-') // Columns without a sort are filtered above
+      })
+      // Combine each column value with comma
+      csv_data.push(csv_row.join(','))
     })
-    // Combine each column value with comma
-    csv_data.push(csv_row.join(','))
   })
   // Combine each row data with new line character
   const csv_string = csv_data.join('\n')

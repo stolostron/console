@@ -42,7 +42,7 @@ export function RenderItemContent(props: {
   const searchDefinitions = useSearchDefinitions()
   const colDefs = _.get(
     searchDefinitions,
-    `[${relatedKind.toLowerCase()}].columns`,
+    `['${relatedKind.toLowerCase()}'].columns`,
     searchDefinitions['genericresource'].columns
   )
   const relatedResultItems = useMemo(() => data?.searchResult?.[0]?.related?.[0]?.items || [], [data])
