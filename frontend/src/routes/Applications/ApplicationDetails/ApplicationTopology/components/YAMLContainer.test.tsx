@@ -753,89 +753,6 @@ describe('YAML Container test', () => {
                       apiVersion: 'addon.open-cluster-management.io/v1alpha1',
                       kind: 'ManagedClusterAddOn',
                       metadata: {
-                        creationTimestamp: '2023-04-07T21:42:33Z',
-                        generation: 1,
-                        name: 'iam-policy-controller',
-                        namespace: 'local-cluster',
-                        ownerReferences: [
-                          {
-                            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                            blockOwnerDeletion: true,
-                            controller: true,
-                            kind: 'ClusterManagementAddOn',
-                            name: 'iam-policy-controller',
-                            uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                          },
-                        ],
-                        resourceVersion: '4779387',
-                        uid: '74728049-6956-446e-bf98-551afbaaf79e',
-                      },
-                      spec: {
-                        installNamespace: 'open-cluster-management-agent-addon',
-                      },
-                      status: {
-                        addOnConfiguration: {},
-                        addOnMeta: {},
-                        conditions: [
-                          {
-                            lastTransitionTime: '2023-04-18T13:58:06Z',
-                            message: 'manifests of addon are applied successfully',
-                            reason: 'AddonManifestApplied',
-                            status: 'True',
-                            type: 'ManifestApplied',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-07T21:42:37Z',
-                            message: 'Registration of the addon agent is configured',
-                            reason: 'RegistrationConfigured',
-                            status: 'True',
-                            type: 'RegistrationApplied',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-07T21:42:46Z',
-                            message:
-                              'client certificate rotated starting from 2023-04-07 21:37:43 +0000 UTC to 2023-05-07 20:48:59 +0000 UTC',
-                            reason: 'ClientCertificateUpdated',
-                            status: 'True',
-                            type: 'ClusterCertificateRotated',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-19T14:28:42Z',
-                            message: 'iam-policy-controller add-on is available.',
-                            reason: 'ManagedClusterAddOnLeaseUpdated',
-                            status: 'True',
-                            type: 'Available',
-                          },
-                        ],
-                        healthCheck: {
-                          mode: 'Lease',
-                        },
-                        registrations: [
-                          {
-                            signerName: 'kubernetes.io/kube-apiserver-client',
-                            subject: {
-                              groups: [
-                                'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller',
-                                'system:open-cluster-management:addon:iam-policy-controller',
-                                'system:authenticated',
-                              ],
-                              user: 'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller:agent:iam-policy-controller',
-                            },
-                          },
-                        ],
-                        relatedObjects: [
-                          {
-                            group: 'addon.open-cluster-management.io',
-                            name: 'iam-policy-controller',
-                            resource: 'clustermanagementaddons',
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                      kind: 'ManagedClusterAddOn',
-                      metadata: {
                         creationTimestamp: '2023-04-07T21:42:28Z',
                         generation: 1,
                         name: 'work-manager',
@@ -1034,7 +951,6 @@ describe('YAML Container test', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'local-cluster': 'true',
                   name: 'local-cluster',
@@ -1425,89 +1341,6 @@ describe('YAML Container test', () => {
                           {
                             group: 'addon.open-cluster-management.io',
                             name: 'cluster-proxy',
-                            resource: 'clustermanagementaddons',
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                      kind: 'ManagedClusterAddOn',
-                      metadata: {
-                        creationTimestamp: '2023-04-20T18:15:51Z',
-                        generation: 1,
-                        name: 'iam-policy-controller',
-                        namespace: 'feng-kind',
-                        ownerReferences: [
-                          {
-                            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                            blockOwnerDeletion: true,
-                            controller: true,
-                            kind: 'ClusterManagementAddOn',
-                            name: 'iam-policy-controller',
-                            uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                          },
-                        ],
-                        resourceVersion: '5893899',
-                        uid: 'eee712f1-632d-4e11-a403-95c0bfd565ee',
-                      },
-                      spec: {
-                        installNamespace: 'open-cluster-management-agent-addon',
-                      },
-                      status: {
-                        addOnConfiguration: {},
-                        addOnMeta: {},
-                        conditions: [
-                          {
-                            lastTransitionTime: '2023-04-20T18:19:02Z',
-                            message: 'manifests of addon are applied successfully',
-                            reason: 'AddonManifestApplied',
-                            status: 'True',
-                            type: 'ManifestApplied',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-20T18:15:54Z',
-                            message: 'Registration of the addon agent is configured',
-                            reason: 'RegistrationConfigured',
-                            status: 'True',
-                            type: 'RegistrationApplied',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-20T18:18:45Z',
-                            message:
-                              'client certificate rotated starting from 2023-04-20 18:13:41 +0000 UTC to 2023-05-07 20:48:59 +0000 UTC',
-                            reason: 'ClientCertificateUpdated',
-                            status: 'True',
-                            type: 'ClusterCertificateRotated',
-                          },
-                          {
-                            lastTransitionTime: '2023-04-20T18:19:20Z',
-                            message: 'iam-policy-controller add-on is available.',
-                            reason: 'ManagedClusterAddOnLeaseUpdated',
-                            status: 'True',
-                            type: 'Available',
-                          },
-                        ],
-                        healthCheck: {
-                          mode: 'Lease',
-                        },
-                        registrations: [
-                          {
-                            signerName: 'kubernetes.io/kube-apiserver-client',
-                            subject: {
-                              groups: [
-                                'system:open-cluster-management:cluster:feng-kind:addon:iam-policy-controller',
-                                'system:open-cluster-management:addon:iam-policy-controller',
-                                'system:authenticated',
-                              ],
-                              user: 'system:open-cluster-management:cluster:feng-kind:addon:iam-policy-controller:agent:iam-policy-controller',
-                            },
-                          },
-                        ],
-                        relatedObjects: [
-                          {
-                            group: 'addon.open-cluster-management.io',
-                            name: 'iam-policy-controller',
                             resource: 'clustermanagementaddons',
                           },
                         ],
@@ -1948,7 +1781,6 @@ describe('YAML Container test', () => {
                   'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-search-collector': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   name: 'feng-kind',
@@ -2005,7 +1837,7 @@ describe('YAML Container test', () => {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__feng-kind',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'feng-kind',
                 consoleURL: '',
@@ -2015,7 +1847,7 @@ describe('YAML Container test', () => {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.20.2',
                 label:
-                  'cloud=Other; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-kind; vendor=Other',
+                  'cloud=Other; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-kind; vendor=Other',
                 memory: '3065628Ki',
                 name: 'feng-kind',
                 nodes: '1',
@@ -2028,7 +1860,7 @@ describe('YAML Container test', () => {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -2039,7 +1871,7 @@ describe('YAML Container test', () => {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604408Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -2060,7 +1892,7 @@ describe('YAML Container test', () => {
             _hubClusterResource: 'true',
             _uid: 'cluster__feng-kind',
             addon:
-              'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+              'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
             apigroup: 'internal.open-cluster-management.io',
             cluster: 'feng-kind',
             consoleURL: '',
@@ -2070,7 +1902,7 @@ describe('YAML Container test', () => {
             kind_plural: 'managedclusterinfos',
             kubernetesVersion: 'v1.20.2',
             label:
-              'cloud=Other; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-kind; vendor=Other',
+              'cloud=Other; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-kind; vendor=Other',
             memory: '3065628Ki',
             name: 'feng-kind',
             nodes: '1',
@@ -2083,7 +1915,7 @@ describe('YAML Container test', () => {
             _hubClusterResource: 'true',
             _uid: 'cluster__local-cluster',
             addon:
-              'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+              'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
             apigroup: 'internal.open-cluster-management.io',
             cluster: 'local-cluster',
             consoleURL:
@@ -2094,7 +1926,7 @@ describe('YAML Container test', () => {
             kind_plural: 'managedclusterinfos',
             kubernetesVersion: 'v1.25.7+eab9cc9',
             label:
-              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
             memory: '96604408Ki',
             name: 'local-cluster',
             nodes: '6',

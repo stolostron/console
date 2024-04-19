@@ -119,7 +119,7 @@ const mockSearchResponse = {
                 memory: '97683300Ki',
                 _rbac: 'local-cluster_internal.open-cluster-management.io_managedclusterinfos',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=c5f0b499-3a45-4280-bb80-b1547a948fe3; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=unreachable; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; installer.name=multiclusterhub; installer.namespace=open-cluster-management; local-cluster=true; name=local-cluster; openshiftVersion=4.10.20; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=c5f0b499-3a45-4280-bb80-b1547a948fe3; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=unreachable; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; installer.name=multiclusterhub; installer.namespace=open-cluster-management; local-cluster=true; name=local-cluster; openshiftVersion=4.10.20; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 name: 'local-cluster',
                 cpu: 24,
                 created: '2022-08-03T17:50:15Z',
@@ -132,7 +132,7 @@ const mockSearchResponse = {
                 kind: 'cluster',
                 kubernetesVersion: 'v1.23.5+3afdacb',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; iam-policy-controller=true; policy-controller=true; search-collector=false',
+                  'application-manager=true; cert-policy-controller=true; policy-controller=true; search-collector=false',
                 consoleURL: 'https://console-openshift-console.apps.app-aws-410-hub-fpgwc.dev06.red-chesterfield.com',
                 nodes: 3,
                 status: 'OK',

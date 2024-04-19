@@ -746,61 +746,6 @@ const mockManagedClusterAddons: ManagedClusterAddOn[] = [
     apiVersion: 'addon.open-cluster-management.io/v1alpha1',
     kind: 'ManagedClusterAddOn',
     metadata: {
-      creationTimestamp: '2023-02-08T14:59:17Z',
-      name: 'iam-policy-controller',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
-          name: 'iam-policy-controller',
-          uid: '0dd13de6-fad1-4f7d-a6b4-fefe88d91277',
-        },
-      ],
-      resourceVersion: '1725602',
-      uid: 'cb662f2f-e2ab-4ed4-9652-59c950575d0d',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
-        },
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
-        },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 12:58:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'iam-policy-controller add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Available',
-        },
-      ],
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
       creationTimestamp: '2023-02-08T14:58:32Z',
       name: 'work-manager',
       namespace: 'local-cluster',
@@ -961,26 +906,6 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
       addOnMeta: {
         description: 'Distributes policies and collects policy evaluation results.',
         displayName: 'Governance Policy Framework Addon',
-      },
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ClusterManagementAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:59:02Z',
-      labels: {
-        'installer.name': 'multiclusterhub',
-        'installer.namespace': 'open-cluster-management',
-      },
-      name: 'iam-policy-controller',
-      resourceVersion: '33490',
-      uid: '0dd13de6-fad1-4f7d-a6b4-fefe88d91277',
-    },
-    spec: {
-      addOnMeta: {
-        description: 'Monitors identity controls based on distributed policies.',
-        displayName: 'IAM Policy Addon',
       },
     },
   },

@@ -2696,7 +2696,7 @@ describe('getPulseStatusForArgoApp resources green', () => {
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed1',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed1',
           consoleURL:
@@ -2707,7 +2707,7 @@ describe('getPulseStatusForArgoApp resources green', () => {
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32442884Ki',
           name: 'feng-managed1',
           nodes: '1',
@@ -2720,7 +2720,7 @@ describe('getPulseStatusForArgoApp resources green', () => {
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed2',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed2',
           consoleURL:
@@ -2731,7 +2731,7 @@ describe('getPulseStatusForArgoApp resources green', () => {
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32098820Ki',
           name: 'feng-managed2',
           nodes: '1',
@@ -2957,7 +2957,7 @@ describe('getPulseStatusForArgoApp resources yellow', () => {
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed1',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed1',
           consoleURL:
@@ -2968,7 +2968,7 @@ describe('getPulseStatusForArgoApp resources yellow', () => {
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32442884Ki',
           name: 'feng-managed1',
           nodes: '1',
@@ -2981,7 +2981,7 @@ describe('getPulseStatusForArgoApp resources yellow', () => {
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed2',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed2',
           consoleURL:
@@ -2992,7 +2992,7 @@ describe('getPulseStatusForArgoApp resources yellow', () => {
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32098820Ki',
           name: 'feng-managed2',
           nodes: '1',
@@ -3218,7 +3218,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed1',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed1',
           consoleURL:
@@ -3229,7 +3229,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32442884Ki',
           name: 'feng-managed1',
           nodes: '1',
@@ -3242,7 +3242,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed2',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed2',
           consoleURL:
@@ -3253,7 +3253,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32098820Ki',
           name: 'feng-managed2',
           nodes: '1',
@@ -3464,7 +3464,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed1',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed1',
           consoleURL:
@@ -3475,7 +3475,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=3291865e-b2ff-41bf-b859-a8827ace8309; env=dev; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed1; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32442884Ki',
           name: 'feng-managed1',
           nodes: '1',
@@ -3488,7 +3488,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
           _hubClusterResource: 'true',
           _uid: 'cluster__feng-managed2',
           addon:
-            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+            'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
           apigroup: 'internal.open-cluster-management.io',
           cluster: 'feng-managed2',
           consoleURL:
@@ -3499,7 +3499,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
           kind_plural: 'managedclusterinfos',
           kubernetesVersion: 'v1.25.8+27e744f',
           label:
-            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+            'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=8a935b8f-0388-4635-a5c1-574ec70a37f6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=unreachable; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-managed2; openshiftVersion=4.12.14; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
           memory: '32098820Ki',
           name: 'feng-managed2',
           nodes: '1',

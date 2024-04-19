@@ -542,7 +542,6 @@ const parentObject = {
               'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
               'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
               'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-              'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
               'feature.open-cluster-management.io/addon-work-manager': 'available',
               'installer.name': 'multiclusterhub',
               'installer.namespace': 'open-cluster-management',
@@ -1186,7 +1185,6 @@ const parentObjectRC = {
               'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
               'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
               'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-              'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
               'feature.open-cluster-management.io/addon-work-manager': 'available',
               'installer.name': 'multiclusterhub',
               'installer.namespace': 'open-cluster-management',
@@ -1730,7 +1728,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -2439,7 +2436,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -3148,7 +3144,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -3858,7 +3853,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -4545,7 +4539,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -5231,7 +5224,6 @@ describe('createReplicaChild', () => {
                   'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                   'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                  'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                   'feature.open-cluster-management.io/addon-work-manager': 'available',
                   'installer.name': 'multiclusterhub',
                   'installer.namespace': 'open-cluster-management',
@@ -6749,89 +6741,6 @@ describe('getSubscriptionTopology', () => {
             metadata: {
               creationTimestamp: '2023-04-24T21:16:35Z',
               generation: 1,
-              name: 'iam-policy-controller',
-              namespace: 'feng-managed',
-              ownerReferences: [
-                {
-                  apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                  blockOwnerDeletion: true,
-                  controller: true,
-                  kind: 'ClusterManagementAddOn',
-                  name: 'iam-policy-controller',
-                  uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                },
-              ],
-              resourceVersion: '15068131',
-              uid: '6367ebb9-6586-4774-861e-b77e58e230d8',
-            },
-            spec: {
-              installNamespace: 'open-cluster-management-agent-addon',
-            },
-            status: {
-              addOnConfiguration: {},
-              addOnMeta: {},
-              conditions: [
-                {
-                  lastTransitionTime: '2023-04-28T05:04:58Z',
-                  message: 'manifests of addon are applied successfully',
-                  reason: 'AddonManifestApplied',
-                  status: 'True',
-                  type: 'ManifestApplied',
-                },
-                {
-                  lastTransitionTime: '2023-04-24T21:16:36Z',
-                  message: 'Registration of the addon agent is configured',
-                  reason: 'RegistrationConfigured',
-                  status: 'True',
-                  type: 'RegistrationApplied',
-                },
-                {
-                  lastTransitionTime: '2023-04-24T21:18:39Z',
-                  message:
-                    'client certificate rotated starting from 2023-04-24 21:13:35 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                  reason: 'ClientCertificateUpdated',
-                  status: 'True',
-                  type: 'ClusterCertificateRotated',
-                },
-                {
-                  lastTransitionTime: '2023-05-01T13:37:41Z',
-                  message: 'iam-policy-controller add-on is available.',
-                  reason: 'ManagedClusterAddOnLeaseUpdated',
-                  status: 'True',
-                  type: 'Available',
-                },
-              ],
-              healthCheck: {
-                mode: 'Lease',
-              },
-              registrations: [
-                {
-                  signerName: 'kubernetes.io/kube-apiserver-client',
-                  subject: {
-                    groups: [
-                      'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller',
-                      'system:open-cluster-management:addon:iam-policy-controller',
-                      'system:authenticated',
-                    ],
-                    user: 'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller:agent:iam-policy-controller',
-                  },
-                },
-              ],
-              relatedObjects: [
-                {
-                  group: 'addon.open-cluster-management.io',
-                  name: 'iam-policy-controller',
-                  resource: 'clustermanagementaddons',
-                },
-              ],
-            },
-          },
-          {
-            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-            kind: 'ManagedClusterAddOn',
-            metadata: {
-              creationTimestamp: '2023-04-24T21:16:35Z',
-              generation: 1,
               name: 'search-collector',
               namespace: 'feng-managed',
               ownerReferences: [
@@ -7016,7 +6925,6 @@ describe('getSubscriptionTopology', () => {
         'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
         'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-search-collector': 'available',
         'feature.open-cluster-management.io/addon-work-manager': 'available',
         name: 'feng-managed',
@@ -7699,89 +7607,6 @@ describe('getSubscriptionTopology', () => {
             apiVersion: 'addon.open-cluster-management.io/v1alpha1',
             kind: 'ManagedClusterAddOn',
             metadata: {
-              creationTimestamp: '2023-04-07T21:42:33Z',
-              generation: 1,
-              name: 'iam-policy-controller',
-              namespace: 'local-cluster',
-              ownerReferences: [
-                {
-                  apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                  blockOwnerDeletion: true,
-                  controller: true,
-                  kind: 'ClusterManagementAddOn',
-                  name: 'iam-policy-controller',
-                  uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                },
-              ],
-              resourceVersion: '15064601',
-              uid: '74728049-6956-446e-bf98-551afbaaf79e',
-            },
-            spec: {
-              installNamespace: 'open-cluster-management-agent-addon',
-            },
-            status: {
-              addOnConfiguration: {},
-              addOnMeta: {},
-              conditions: [
-                {
-                  lastTransitionTime: '2023-04-18T13:58:06Z',
-                  message: 'manifests of addon are applied successfully',
-                  reason: 'AddonManifestApplied',
-                  status: 'True',
-                  type: 'ManifestApplied',
-                },
-                {
-                  lastTransitionTime: '2023-04-07T21:42:37Z',
-                  message: 'Registration of the addon agent is configured',
-                  reason: 'RegistrationConfigured',
-                  status: 'True',
-                  type: 'RegistrationApplied',
-                },
-                {
-                  lastTransitionTime: '2023-04-07T21:42:46Z',
-                  message:
-                    'client certificate rotated starting from 2023-05-01 13:30:22 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                  reason: 'ClientCertificateUpdated',
-                  status: 'True',
-                  type: 'ClusterCertificateRotated',
-                },
-                {
-                  lastTransitionTime: '2023-05-01T13:34:15Z',
-                  message: 'iam-policy-controller add-on is available.',
-                  reason: 'ManagedClusterAddOnLeaseUpdated',
-                  status: 'True',
-                  type: 'Available',
-                },
-              ],
-              healthCheck: {
-                mode: 'Lease',
-              },
-              registrations: [
-                {
-                  signerName: 'kubernetes.io/kube-apiserver-client',
-                  subject: {
-                    groups: [
-                      'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller',
-                      'system:open-cluster-management:addon:iam-policy-controller',
-                      'system:authenticated',
-                    ],
-                    user: 'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller:agent:iam-policy-controller',
-                  },
-                },
-              ],
-              relatedObjects: [
-                {
-                  group: 'addon.open-cluster-management.io',
-                  name: 'iam-policy-controller',
-                  resource: 'clustermanagementaddons',
-                },
-              ],
-            },
-          },
-          {
-            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-            kind: 'ManagedClusterAddOn',
-            metadata: {
               creationTimestamp: '2023-04-07T21:42:28Z',
               generation: 1,
               name: 'work-manager',
@@ -7877,7 +7702,6 @@ describe('getSubscriptionTopology', () => {
         'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
         'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-work-manager': 'available',
         'local-cluster': 'true',
         name: 'local-cluster',
@@ -9341,89 +9165,6 @@ describe('getSubscriptionTopology', () => {
                     metadata: {
                       creationTimestamp: '2023-04-24T21:16:35Z',
                       generation: 1,
-                      name: 'iam-policy-controller',
-                      namespace: 'feng-managed',
-                      ownerReferences: [
-                        {
-                          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                          blockOwnerDeletion: true,
-                          controller: true,
-                          kind: 'ClusterManagementAddOn',
-                          name: 'iam-policy-controller',
-                          uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                        },
-                      ],
-                      resourceVersion: '15068131',
-                      uid: '6367ebb9-6586-4774-861e-b77e58e230d8',
-                    },
-                    spec: {
-                      installNamespace: 'open-cluster-management-agent-addon',
-                    },
-                    status: {
-                      addOnConfiguration: {},
-                      addOnMeta: {},
-                      conditions: [
-                        {
-                          lastTransitionTime: '2023-04-28T05:04:58Z',
-                          message: 'manifests of addon are applied successfully',
-                          reason: 'AddonManifestApplied',
-                          status: 'True',
-                          type: 'ManifestApplied',
-                        },
-                        {
-                          lastTransitionTime: '2023-04-24T21:16:36Z',
-                          message: 'Registration of the addon agent is configured',
-                          reason: 'RegistrationConfigured',
-                          status: 'True',
-                          type: 'RegistrationApplied',
-                        },
-                        {
-                          lastTransitionTime: '2023-04-24T21:18:39Z',
-                          message:
-                            'client certificate rotated starting from 2023-04-24 21:13:35 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                          reason: 'ClientCertificateUpdated',
-                          status: 'True',
-                          type: 'ClusterCertificateRotated',
-                        },
-                        {
-                          lastTransitionTime: '2023-05-01T13:37:41Z',
-                          message: 'iam-policy-controller add-on is available.',
-                          reason: 'ManagedClusterAddOnLeaseUpdated',
-                          status: 'True',
-                          type: 'Available',
-                        },
-                      ],
-                      healthCheck: {
-                        mode: 'Lease',
-                      },
-                      registrations: [
-                        {
-                          signerName: 'kubernetes.io/kube-apiserver-client',
-                          subject: {
-                            groups: [
-                              'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller',
-                              'system:open-cluster-management:addon:iam-policy-controller',
-                              'system:authenticated',
-                            ],
-                            user: 'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller:agent:iam-policy-controller',
-                          },
-                        },
-                      ],
-                      relatedObjects: [
-                        {
-                          group: 'addon.open-cluster-management.io',
-                          name: 'iam-policy-controller',
-                          resource: 'clustermanagementaddons',
-                        },
-                      ],
-                    },
-                  },
-                  {
-                    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                    kind: 'ManagedClusterAddOn',
-                    metadata: {
-                      creationTimestamp: '2023-04-24T21:16:35Z',
-                      generation: 1,
                       name: 'search-collector',
                       namespace: 'feng-managed',
                       ownerReferences: [
@@ -9707,7 +9448,6 @@ describe('getSubscriptionTopology', () => {
                 'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
                 'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                 'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                 'feature.open-cluster-management.io/addon-search-collector': 'available',
                 'feature.open-cluster-management.io/addon-work-manager': 'available',
                 name: 'feng-managed',
@@ -10286,89 +10026,6 @@ describe('getSubscriptionTopology', () => {
                     apiVersion: 'addon.open-cluster-management.io/v1alpha1',
                     kind: 'ManagedClusterAddOn',
                     metadata: {
-                      creationTimestamp: '2023-04-07T21:42:33Z',
-                      generation: 1,
-                      name: 'iam-policy-controller',
-                      namespace: 'local-cluster',
-                      ownerReferences: [
-                        {
-                          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                          blockOwnerDeletion: true,
-                          controller: true,
-                          kind: 'ClusterManagementAddOn',
-                          name: 'iam-policy-controller',
-                          uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                        },
-                      ],
-                      resourceVersion: '15064601',
-                      uid: '74728049-6956-446e-bf98-551afbaaf79e',
-                    },
-                    spec: {
-                      installNamespace: 'open-cluster-management-agent-addon',
-                    },
-                    status: {
-                      addOnConfiguration: {},
-                      addOnMeta: {},
-                      conditions: [
-                        {
-                          lastTransitionTime: '2023-04-18T13:58:06Z',
-                          message: 'manifests of addon are applied successfully',
-                          reason: 'AddonManifestApplied',
-                          status: 'True',
-                          type: 'ManifestApplied',
-                        },
-                        {
-                          lastTransitionTime: '2023-04-07T21:42:37Z',
-                          message: 'Registration of the addon agent is configured',
-                          reason: 'RegistrationConfigured',
-                          status: 'True',
-                          type: 'RegistrationApplied',
-                        },
-                        {
-                          lastTransitionTime: '2023-04-07T21:42:46Z',
-                          message:
-                            'client certificate rotated starting from 2023-05-01 13:30:22 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                          reason: 'ClientCertificateUpdated',
-                          status: 'True',
-                          type: 'ClusterCertificateRotated',
-                        },
-                        {
-                          lastTransitionTime: '2023-05-01T13:34:15Z',
-                          message: 'iam-policy-controller add-on is available.',
-                          reason: 'ManagedClusterAddOnLeaseUpdated',
-                          status: 'True',
-                          type: 'Available',
-                        },
-                      ],
-                      healthCheck: {
-                        mode: 'Lease',
-                      },
-                      registrations: [
-                        {
-                          signerName: 'kubernetes.io/kube-apiserver-client',
-                          subject: {
-                            groups: [
-                              'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller',
-                              'system:open-cluster-management:addon:iam-policy-controller',
-                              'system:authenticated',
-                            ],
-                            user: 'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller:agent:iam-policy-controller',
-                          },
-                        },
-                      ],
-                      relatedObjects: [
-                        {
-                          group: 'addon.open-cluster-management.io',
-                          name: 'iam-policy-controller',
-                          resource: 'clustermanagementaddons',
-                        },
-                      ],
-                    },
-                  },
-                  {
-                    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                    kind: 'ManagedClusterAddOn',
-                    metadata: {
                       creationTimestamp: '2023-04-07T21:42:28Z',
                       generation: 1,
                       name: 'work-manager',
@@ -10569,7 +10226,6 @@ describe('getSubscriptionTopology', () => {
                 'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                 'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                 'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                 'feature.open-cluster-management.io/addon-work-manager': 'available',
                 'local-cluster': 'true',
                 name: 'local-cluster',
@@ -11435,89 +11091,6 @@ describe('getSubscriptionTopology', () => {
                         metadata: {
                           creationTimestamp: '2023-04-24T21:16:35Z',
                           generation: 1,
-                          name: 'iam-policy-controller',
-                          namespace: 'feng-managed',
-                          ownerReferences: [
-                            {
-                              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                              blockOwnerDeletion: true,
-                              controller: true,
-                              kind: 'ClusterManagementAddOn',
-                              name: 'iam-policy-controller',
-                              uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                            },
-                          ],
-                          resourceVersion: '15068131',
-                          uid: '6367ebb9-6586-4774-861e-b77e58e230d8',
-                        },
-                        spec: {
-                          installNamespace: 'open-cluster-management-agent-addon',
-                        },
-                        status: {
-                          addOnConfiguration: {},
-                          addOnMeta: {},
-                          conditions: [
-                            {
-                              lastTransitionTime: '2023-04-28T05:04:58Z',
-                              message: 'manifests of addon are applied successfully',
-                              reason: 'AddonManifestApplied',
-                              status: 'True',
-                              type: 'ManifestApplied',
-                            },
-                            {
-                              lastTransitionTime: '2023-04-24T21:16:36Z',
-                              message: 'Registration of the addon agent is configured',
-                              reason: 'RegistrationConfigured',
-                              status: 'True',
-                              type: 'RegistrationApplied',
-                            },
-                            {
-                              lastTransitionTime: '2023-04-24T21:18:39Z',
-                              message:
-                                'client certificate rotated starting from 2023-04-24 21:13:35 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                              reason: 'ClientCertificateUpdated',
-                              status: 'True',
-                              type: 'ClusterCertificateRotated',
-                            },
-                            {
-                              lastTransitionTime: '2023-05-01T13:37:41Z',
-                              message: 'iam-policy-controller add-on is available.',
-                              reason: 'ManagedClusterAddOnLeaseUpdated',
-                              status: 'True',
-                              type: 'Available',
-                            },
-                          ],
-                          healthCheck: {
-                            mode: 'Lease',
-                          },
-                          registrations: [
-                            {
-                              signerName: 'kubernetes.io/kube-apiserver-client',
-                              subject: {
-                                groups: [
-                                  'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller',
-                                  'system:open-cluster-management:addon:iam-policy-controller',
-                                  'system:authenticated',
-                                ],
-                                user: 'system:open-cluster-management:cluster:feng-managed:addon:iam-policy-controller:agent:iam-policy-controller',
-                              },
-                            },
-                          ],
-                          relatedObjects: [
-                            {
-                              group: 'addon.open-cluster-management.io',
-                              name: 'iam-policy-controller',
-                              resource: 'clustermanagementaddons',
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                        kind: 'ManagedClusterAddOn',
-                        metadata: {
-                          creationTimestamp: '2023-04-24T21:16:35Z',
-                          generation: 1,
                           name: 'search-collector',
                           namespace: 'feng-managed',
                           ownerReferences: [
@@ -11801,7 +11374,6 @@ describe('getSubscriptionTopology', () => {
                     'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
                     'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                     'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-                    'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                     'feature.open-cluster-management.io/addon-search-collector': 'available',
                     'feature.open-cluster-management.io/addon-work-manager': 'available',
                     name: 'feng-managed',
@@ -12380,89 +11952,6 @@ describe('getSubscriptionTopology', () => {
                         apiVersion: 'addon.open-cluster-management.io/v1alpha1',
                         kind: 'ManagedClusterAddOn',
                         metadata: {
-                          creationTimestamp: '2023-04-07T21:42:33Z',
-                          generation: 1,
-                          name: 'iam-policy-controller',
-                          namespace: 'local-cluster',
-                          ownerReferences: [
-                            {
-                              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                              blockOwnerDeletion: true,
-                              controller: true,
-                              kind: 'ClusterManagementAddOn',
-                              name: 'iam-policy-controller',
-                              uid: 'e39d7cdc-0278-4ccd-be58-ab07c58e95e4',
-                            },
-                          ],
-                          resourceVersion: '15064601',
-                          uid: '74728049-6956-446e-bf98-551afbaaf79e',
-                        },
-                        spec: {
-                          installNamespace: 'open-cluster-management-agent-addon',
-                        },
-                        status: {
-                          addOnConfiguration: {},
-                          addOnMeta: {},
-                          conditions: [
-                            {
-                              lastTransitionTime: '2023-04-18T13:58:06Z',
-                              message: 'manifests of addon are applied successfully',
-                              reason: 'AddonManifestApplied',
-                              status: 'True',
-                              type: 'ManifestApplied',
-                            },
-                            {
-                              lastTransitionTime: '2023-04-07T21:42:37Z',
-                              message: 'Registration of the addon agent is configured',
-                              reason: 'RegistrationConfigured',
-                              status: 'True',
-                              type: 'RegistrationApplied',
-                            },
-                            {
-                              lastTransitionTime: '2023-04-07T21:42:46Z',
-                              message:
-                                'client certificate rotated starting from 2023-05-01 13:30:22 +0000 UTC to 2023-05-24 13:19:24 +0000 UTC',
-                              reason: 'ClientCertificateUpdated',
-                              status: 'True',
-                              type: 'ClusterCertificateRotated',
-                            },
-                            {
-                              lastTransitionTime: '2023-05-01T13:34:15Z',
-                              message: 'iam-policy-controller add-on is available.',
-                              reason: 'ManagedClusterAddOnLeaseUpdated',
-                              status: 'True',
-                              type: 'Available',
-                            },
-                          ],
-                          healthCheck: {
-                            mode: 'Lease',
-                          },
-                          registrations: [
-                            {
-                              signerName: 'kubernetes.io/kube-apiserver-client',
-                              subject: {
-                                groups: [
-                                  'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller',
-                                  'system:open-cluster-management:addon:iam-policy-controller',
-                                  'system:authenticated',
-                                ],
-                                user: 'system:open-cluster-management:cluster:local-cluster:addon:iam-policy-controller:agent:iam-policy-controller',
-                              },
-                            },
-                          ],
-                          relatedObjects: [
-                            {
-                              group: 'addon.open-cluster-management.io',
-                              name: 'iam-policy-controller',
-                              resource: 'clustermanagementaddons',
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                        kind: 'ManagedClusterAddOn',
-                        metadata: {
                           creationTimestamp: '2023-04-07T21:42:28Z',
                           generation: 1,
                           name: 'work-manager',
@@ -12663,7 +12152,6 @@ describe('getSubscriptionTopology', () => {
                     'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
                     'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
                     'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-                    'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
                     'feature.open-cluster-management.io/addon-work-manager': 'available',
                     'local-cluster': 'true',
                     name: 'local-cluster',
