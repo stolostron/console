@@ -8,6 +8,8 @@ import { createRoot } from 'react-dom/client'
 import 'regenerator-runtime/runtime'
 import App from './App'
 import '@patternfly/patternfly/patternfly-charts-theme-dark.css'
+import { BrowserRouter } from 'react-router-dom'
+import { CompatRouter } from 'react-router-dom-v5-compat'
 
 const container = document.getElementById('root')
 const root = createRoot(container!)
@@ -15,7 +17,11 @@ const root = createRoot(container!)
 root.render(
   <StrictMode>
     <Suspense fallback={<Fragment />}>
-      <App />
+      <BrowserRouter>
+        <CompatRouter>
+          <App />
+        </CompatRouter>
+      </BrowserRouter>
     </Suspense>
   </StrictMode>
 )

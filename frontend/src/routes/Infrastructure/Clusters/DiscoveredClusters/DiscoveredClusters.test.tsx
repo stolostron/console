@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths } from '../../../../lib/nock-util'
@@ -82,8 +82,10 @@ describe('DiscoveredClusters', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
-          <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
-          <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+          <Routes>
+            <Route path={NavigationPath.createDiscovery} element={<DiscoveryConfigPage />} />
+            <Route path={NavigationPath.discoveredClusters} element={<DiscoveredClustersPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

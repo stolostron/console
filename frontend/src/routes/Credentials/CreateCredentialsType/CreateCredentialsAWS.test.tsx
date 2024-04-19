@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { clickByTestId } from '../../../lib/test-util'
@@ -16,9 +16,9 @@ describe('CreateCredentialsAWS', () => {
     return (
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.addAWSType]}>
-          <Route path={NavigationPath.addAWSType}>
-            <CreateCredentialsAWS />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.addAWSType} element={<CreateCredentialsAWS />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

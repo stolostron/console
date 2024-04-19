@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, Route, Routes, useParams, useNavigate } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -26,16 +26,16 @@ export function PolicyDetailsPage() {
   const location = useLocation()
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = useAddRemediationPolicies()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const [modal, setModal] = useState<ReactNode | undefined>()
 
-  const params = useParams<{ namespace: string; name: string }>()
-  const policyNamespace = params.namespace
-  const policyName = params.name
+  const params = useParams()
+  const policyNamespace = params.namespace || ''
+  const policyName = params.name || ''
 
   const isResultsTab = location.pathname.endsWith('/results')
 
@@ -66,7 +66,7 @@ export function PolicyDetailsPage() {
       <ErrorPage
         error={new ResourceError(ResourceErrorCode.NotFound)}
         actions={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.policies)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.policies)}>
             {t('Back to policies')}
           </AcmButton>
         }
@@ -116,10 +116,10 @@ export function PolicyDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
-          <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
-          <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
-        </Switch>
+        <Routes>
+          <Route path="/" element={<PolicyDetailsOverview policy={selectedPolicy} />} />
+          <Route path="/results" element={<PolicyDetailsResults policy={selectedPolicy} />} />
+        </Routes>
       </Suspense>
     </AcmPage>
   )

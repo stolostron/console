@@ -3,10 +3,9 @@ import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
 import { saveAs } from 'file-saver'
-import { History } from 'history'
 import jsYaml from 'js-yaml'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -122,10 +121,10 @@ function updateResource(
 }
 
 /* istanbul ignore next */
-function onCancel(history: History<unknown>) {
+function onCancel(navigate: any) {
   // OCP returns to previous page
   // We could instead revert any changes and remain on the page || if no changes then go back to previous page?
-  history.goBack()
+  navigate(-1)
 }
 
 /* istanbul ignore next */
@@ -174,7 +173,7 @@ export function EditorActionBar(props: {
     setResourceVersion,
   } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [updateSuccess, setUpdateSuccess] = useState<boolean>(false)
   const [updateError, setUpdateError] = useState<string>('')
 
@@ -259,7 +258,7 @@ export function EditorActionBar(props: {
             </Button>
           </ActionListItem>
           <ActionListItem>
-            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(history)}>
+            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(navigate)}>
               {t('Cancel')}
             </Button>
           </ActionListItem>

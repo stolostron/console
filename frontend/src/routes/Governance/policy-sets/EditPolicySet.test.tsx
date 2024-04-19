@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   managedClusterSetBindingsState,
@@ -47,9 +47,9 @@ function EditPolicySetTest() {
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Switch>
-          <Route path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.editPolicySet} element={<EditPolicySet />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

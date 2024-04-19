@@ -16,7 +16,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
@@ -55,11 +55,11 @@ function EmptyStateNoCRHCredentials() {
 
 function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const onSelect = (credential: string) => {
     sessionStorage.setItem('DiscoveryCredential', credential)
-    history.push(NavigationPath.createDiscovery)
+    navigate(NavigationPath.createDiscovery)
   }
 
   const action =
@@ -182,7 +182,7 @@ export function DiscoveredClustersTable(props: {
   discoveryConfigs?: DiscoveryConfig[]
 }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const emptyState = useMemo(() => {
     if (!props.credentials || !props.discoveredClusters || !props.discoveryConfigs) {
@@ -345,13 +345,13 @@ export function DiscoveredClustersTable(props: {
                 sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
                 sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
                 sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
-                history.push(createBackCancelLocation(NavigationPath.importCluster))
+                navigate(createBackCancelLocation(NavigationPath.importCluster))
               },
             },
           ]
         : []
     },
-    [history, t]
+    [navigate, t]
   )
 
   return (
@@ -365,13 +365,13 @@ export function DiscoveredClustersTable(props: {
           {
             id: 'configureDiscovery',
             title: t('discovery.configureDiscovery'),
-            click: () => history.push(NavigationPath.configureDiscovery),
+            click: () => navigate(NavigationPath.configureDiscovery),
             variant: ButtonVariant.primary,
           },
           {
             id: 'addDiscovery',
             title: t('discovery.addDiscovery'),
-            click: () => history.push(NavigationPath.createDiscovery),
+            click: () => navigate(NavigationPath.createDiscovery),
             variant: ButtonVariant.secondary,
           },
         ]}

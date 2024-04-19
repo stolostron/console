@@ -445,67 +445,69 @@ const getResource = (url: any, reqBody: any) => {
     if (isLocalhost && !(url.endsWith('apiPaths') || url.endsWith('operatorCheck'))) {
       url = url.split('?')[0] // strip any queries
       const [, rest] = url.split('/api') //assume they're all api calls
-      const parts = rest.split('/')
-      isList = parts.shift().endsWith('s') // was '/apis' or 'apiPaths' or anything plural
-      let version // one or two part version?
-      if (parts[0].startsWith('v')) {
-        version = parts.shift()
-      } else if (parts[1].startsWith('v')) {
-        version = `${parts.shift()}/${parts.shift()}`
-      }
-      const [kind1, name1, kind2, name2] = parts
-      if (!reqBody) {
-        if (kind1 === 'namespaces') {
-          reqBody = {
-            apiVersion: version,
-            kind: `${kind2}`,
-            metadata: {
-              namespace: name1,
-              name: name2,
-            },
-          }
-          inlineComment = `'${kind2}' in '${name1}' namespace`
-        } else {
-          reqBody = {
-            apiVersion: version,
-            kind: `${kind1}`,
-          }
-          inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
+      if (rest) {
+        const parts = rest.split('/')
+        isList = parts.shift().endsWith('s') // was '/apis' or 'apiPaths' or anything plural
+        let version // one or two part version?
+        if (parts[0].startsWith('v')) {
+          version = parts.shift()
+        } else if (parts[1].startsWith('v')) {
+          version = `${parts.shift()}/${parts.shift()}`
         }
-      } else {
-        if (typeof reqBody === 'string') {
-          reqBody = JSON.parse(reqBody)
-        }
-        if (Array.isArray(reqBody)) {
-          resource = {
-            apiVersion: version,
-            kind: `${kind2}`,
-            metadata: {
-              namespace: name1,
-              name: name2,
-            },
-          }
+        const [kind1, name1, kind2, name2] = parts
+        if (!reqBody) {
           if (kind1 === 'namespaces') {
+            reqBody = {
+              apiVersion: version,
+              kind: `${kind2}`,
+              metadata: {
+                namespace: name1,
+                name: name2,
+              },
+            }
             inlineComment = `'${kind2}' in '${name1}' namespace`
           } else {
+            reqBody = {
+              apiVersion: version,
+              kind: `${kind1}`,
+            }
             inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
           }
         } else {
-          const _kind = reqBody?.kind
-          const _name = reqBody?.metadata?.name
-          const _namespace = reqBody?.metadata?.namespace
-          if (_namespace) {
-            if (_name) {
-              inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+          if (typeof reqBody === 'string') {
+            reqBody = JSON.parse(reqBody)
+          }
+          if (Array.isArray(reqBody)) {
+            resource = {
+              apiVersion: version,
+              kind: `${kind2}`,
+              metadata: {
+                namespace: name1,
+                name: name2,
+              },
+            }
+            if (kind1 === 'namespaces') {
+              inlineComment = `'${kind2}' in '${name1}' namespace`
             } else {
-              inlineComment = `'${_kind}' in '${_namespace}' namespace`
+              inlineComment = `'${kind1 === 'projects' ? 'namespaces' : kind1}'`
             }
           } else {
-            inlineComment = `'${_kind}'`
+            const _kind = reqBody?.kind
+            const _name = reqBody?.metadata?.name
+            const _namespace = reqBody?.metadata?.namespace
+            if (_namespace) {
+              if (_name) {
+                inlineComment = `'${_name}' ${_kind} in '${_namespace}' namespace`
+              } else {
+                inlineComment = `'${_kind}' in '${_namespace}' namespace`
+              }
+            } else {
+              inlineComment = `'${_kind}'`
+            }
           }
         }
+        kind = kind2 || kind1
       }
-      kind = kind2 || kind1
     } else {
       uri = url
       try {

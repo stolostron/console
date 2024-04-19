@@ -16,7 +16,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
 import { getErrorInfo } from '../../components/ErrorPage'
@@ -177,7 +177,7 @@ export function CreateSubscriptionApplication(
   setConnectionControl: Dispatch<SetStateAction<undefined>>,
   onControlChange: (control: any) => void
 ) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const {
     ansibleJobState,
@@ -219,7 +219,7 @@ export function CreateSubscriptionApplication(
             type: 'success',
             autoClose: true,
           })
-          history.push(
+          navigate(
             NavigationPath.applicationOverview
               .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
               .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
@@ -347,9 +347,9 @@ export function CreateSubscriptionApplication(
 
   const redirectRoute = () => {
     if (searchParams.get('context') === 'applications') {
-      history.push(NavigationPath.applications)
+      navigate(NavigationPath.applications)
     } else {
-      history.push(
+      navigate(
         NavigationPath.applicationOverview
           .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
           .replace(':name', editApplication?.selectedAppName ?? '')

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../ClusterInfrastructureType'

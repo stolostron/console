@@ -2,7 +2,7 @@
 
 import { get } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
@@ -45,7 +45,7 @@ export function StatusSummaryCount() {
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
-  const { push } = useHistory()
+  const navigate = useNavigate()
 
   const {
     policyReport,
@@ -181,7 +181,7 @@ export function StatusSummaryCount() {
           {
             id: 'nodes',
             count: nodesCount,
-            countClick: () => (cluster ? push(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
+            countClick: () => (cluster ? navigate(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
             title: t('summary.nodes'),
             description: (
               <Trans
@@ -198,7 +198,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'applications',
                   count: appsCount,
-                  countClick: () => push(NavigationPath.applications + `?cluster=${cluster?.name}`),
+                  countClick: () => navigate(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
                 },
               ]
@@ -208,7 +208,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'violations',
                   count: policyViolationCount ?? 0,
-                  countClick: () => push(NavigationPath.policies + '?violations=with-violations'),
+                  countClick: () => navigate(NavigationPath.policies + '?violations=with-violations'),
                   title: t('summary.violations'),
                   isDanger: true,
                 },

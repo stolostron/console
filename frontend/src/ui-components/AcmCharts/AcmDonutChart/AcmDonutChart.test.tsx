@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
 import { axe } from 'jest-axe'
-
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { AcmDonutChart } from './AcmDonutChart'
+
+const history = createMemoryHistory()
 
 const complianceData = [
   { key: 'Compliant', value: 1, isPrimary: true, link: '/linkToCompiantResources' },
@@ -24,7 +25,7 @@ const podData = [
 describe('AcmDonutChart', () => {
   test('renders', () => {
     const { getByRole, getByTestId } = render(
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <AcmDonutChart
           title="Cluster compliance"
           description="Overview of policy compliance status"
@@ -38,7 +39,7 @@ describe('AcmDonutChart', () => {
 
   test('renders skeleton', () => {
     const { queryByText } = render(
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <AcmDonutChart loading={true} title="Cluster compliance" description="Policy compliance" data={[]} />
       </Router>
     )
@@ -47,7 +48,7 @@ describe('AcmDonutChart', () => {
 
   test('renders with zero values state', () => {
     const { queryByRole, getByText } = render(
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <AcmDonutChart title="Some title" description="Some description" data={zeroData} />
       </Router>
     )
@@ -59,7 +60,7 @@ describe('AcmDonutChart', () => {
 
   test('has zero accessibility defects', async () => {
     const { container } = render(
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <AcmDonutChart title="Pods" description="Overview of pod count and status" data={podData} />
       </Router>
     )
@@ -68,7 +69,7 @@ describe('AcmDonutChart', () => {
 
   test('alternate donut title text', async () => {
     const { queryByText } = render(
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <AcmDonutChart
           title="Pods"
           description="Overview of pod count and status"

@@ -9,7 +9,7 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { generatePath, useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
@@ -84,7 +84,7 @@ const wizardBody = css({
 
 export default function CreateCluster(props: { infrastructureType: ClusterInfrastructureType }) {
   const { infrastructureType } = props
-  const history = useHistory()
+  const navigate = useNavigate()
   const { back, cancel } = useBackCancelNavigation()
   const allClusters = useAllClusters(true)
   const {
@@ -297,7 +297,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           const namespace = cluster?.metadata?.namespace
           if (!noRedirect && clusterName && namespace) {
             setTimeout(() => {
-              history.push(
+              navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: clusterName,
                   namespace,
@@ -380,7 +380,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                         })
                         resolve(status)
                         setCreationStatus(undefined)
-                        history.push(
+                        navigate(
                           `${NavigationPath.editCluster
                             .replace(':namespace', clusterNamespace as string)
                             .replace(':name', clusterName as string)}?${params.toString()}`

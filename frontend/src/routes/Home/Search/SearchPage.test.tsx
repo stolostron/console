@@ -6,12 +6,12 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../../atoms'
 import { nockPostRequest, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
+import { createMemoryHistory } from 'history'
 import { ConfigMap } from '../../../resources'
 import { UserPreference } from '../../../resources/userpreference'
 import {
@@ -95,7 +95,7 @@ describe('SearchPage', () => {
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
           </MockedProvider>
@@ -153,7 +153,7 @@ describe('SearchPage', () => {
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
           </MockedProvider>
@@ -218,7 +218,7 @@ describe('SearchPage', () => {
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
           </MockedProvider>
@@ -295,7 +295,7 @@ describe('SearchPage', () => {
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
           </MockedProvider>
@@ -326,7 +326,7 @@ describe('SearchPage', () => {
     // Validate message when managed clusters are disabled. We don't have translation in this context.
     await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
   })
-
+  const history = createMemoryHistory()
   it('should render SearchPage with predefined query', async () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - ts has issue with deleting location as it is not an optional property. Ignoring as it is immediately readded.
@@ -417,7 +417,7 @@ describe('SearchPage', () => {
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
           </MockedProvider>

@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
@@ -31,6 +31,18 @@ const mockNMStateConfigInfraEnv = cloneDeep(mockNMStateConfig)
 mockNMStateConfigInfraEnv.metadata.name = infraEnvName
 mockNMStateConfigInfraEnv.metadata.namespace = infraEnvName
 
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useParams: () => {
+      return { name: infraEnvName, namespace: infraEnvName }
+    },
+    useNavigate: () => jest.fn(),
+  }
+})
+
 const Component = () => {
   return (
     <RecoilRoot
@@ -40,15 +52,9 @@ const Component = () => {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
-        <Route
-          component={(props: any) => {
-            const newProps = { ...props }
-            newProps.match = props.match || { params: {} }
-            newProps.match.params.name = infraEnvName
-            newProps.match.params.namespace = infraEnvName
-            return <InfraEnvironmentDetailsPage {...newProps} />
-          }}
-        />
+        <Routes>
+          <Route path={NavigationPath.infraEnvironmentDetails + '/*'} element={<InfraEnvironmentDetailsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -59,6 +65,9 @@ describe('Infrastructure Environment Details page', () => {
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
     render(<Component />)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
+
     await waitForText('ai:Infrastructure environment details')
     await waitForNocks(initialNocks)
 

@@ -13,7 +13,7 @@ import {
   AcmTable,
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
@@ -74,7 +74,7 @@ function AnsibleJobTemplateTable() {
   useEffect(() => {
     checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
   }, [namespaces])
-  const history = useHistory()
+  const navigate = useNavigate()
 
   // Set table
   return (
@@ -153,7 +153,7 @@ function AnsibleJobTemplateTable() {
                   isAriaDisabled: true,
                   rbac: [rbacPatch(curator)],
                   click: (curator: ClusterCurator) => {
-                    history.push(
+                    navigate(
                       NavigationPath.editAnsibleAutomation
                         .replace(':namespace', curator.metadata.namespace!)
                         .replace(':name', curator.metadata.name!)
@@ -231,7 +231,7 @@ function AnsibleJobTemplateTable() {
             id: 'add',
             title: t('template.create'),
             click: () => {
-              history.push(NavigationPath.addAnsibleAutomation)
+              navigate(NavigationPath.addAnsibleAutomation)
             },
             variant: ButtonVariant.primary,
           },

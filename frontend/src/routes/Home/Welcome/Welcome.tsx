@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardTitle, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { NavigationPath } from '../../../NavigationPath'
 import OverviewIcon from './graphics/welcome-card-1-icon.svg'

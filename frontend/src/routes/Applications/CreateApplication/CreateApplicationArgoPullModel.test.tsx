@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -330,6 +330,17 @@ const placementHelm: Placement = {
   },
 }
 
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useParams: () => {
+      return { name: argoAppSetGit?.metadata.name, namespace: argoAppSetGit?.metadata.namespace }
+    },
+  }
+})
+
 describe('Create Argo Application Set', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
@@ -350,7 +361,9 @@ describe('Create Argo Application Set', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>
-          <Route component={() => <CreateApplicationArgoPullModel />} />
+          <Routes>
+            <Route path={NavigationPath.createApplicationArgoPullModel} element={<CreateApplicationArgoPullModel />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -461,15 +474,9 @@ describe('Create Argo Application Set', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
-          <Route
-            component={(props: any) => {
-              const newProps = { ...props }
-              newProps.match = props.match || { params: {} }
-              newProps.match.params.name = argoAppSetGit?.metadata.name
-              newProps.match.params.namespace = argoAppSetGit?.metadata.namespace
-              return <EditArgoApplicationSet {...newProps} />
-            }}
-          />
+          <Routes>
+            <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

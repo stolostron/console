@@ -14,7 +14,7 @@ import {
   Text,
   TextVariants,
 } from '@patternfly/react-core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 
 const cardBody = css({ borderTop: '1px solid rgba(0,0,0,0.1)' })
 const divider = css({ marginBottom: '6px' })

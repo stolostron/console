@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
-import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, useLocation, Routes, Route } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -88,15 +88,12 @@ export function ClustersPage() {
     >
       <PageContext.Provider value={{ actions, setActions }}>
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.managedClusters} component={ManagedClusters} />
-            <Route exact path={NavigationPath.clusterSets} component={ClusterSetsPage} />
-            <Route exact path={NavigationPath.clusterPools} component={ClusterPoolsPage} />
-            <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
-            <Route path="*">
-              <Redirect to={NavigationPath.managedClusters} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/" element={<ManagedClusters />} />
+            <Route path="/sets" element={<ClusterSetsPage />} />
+            <Route path="/pools" element={<ClusterPoolsPage />} />
+            <Route path="/discovered" element={<DiscoveredClustersPage />} />
+          </Routes>
         </Suspense>
       </PageContext.Provider>
     </AcmPage>

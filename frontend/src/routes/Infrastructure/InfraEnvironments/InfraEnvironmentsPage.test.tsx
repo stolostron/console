@@ -7,7 +7,7 @@ import {
   InfraEnvK8sResource,
   SecretK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
@@ -122,9 +122,9 @@ const Component = () => {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
-        <Route path={NavigationPath.infraEnvironments}>
-          <InfraEnvironmentsPage />
-        </Route>
+        <Routes>
+          <Route path={NavigationPath.infraEnvironments} element={<InfraEnvironmentsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

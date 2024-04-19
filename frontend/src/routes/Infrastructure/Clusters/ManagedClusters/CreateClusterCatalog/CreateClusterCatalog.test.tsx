@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { clickByTestId } from '../../../../../lib/test-util'
@@ -31,9 +31,9 @@ describe('CreateClusterCatalog', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-          <Route path={NavigationPath.createCluster}>
-            <CreateClusterCatalog />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterCatalog />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

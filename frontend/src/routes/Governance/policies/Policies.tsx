@@ -28,7 +28,7 @@ import {
   ITableFilter,
 } from '../../../ui-components'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -104,7 +104,7 @@ export default function PoliciesPage() {
   }, [policies, helmReleases, channels, subscriptions, t])
 
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
-  const history = useHistory()
+  const navigate = useNavigate()
   const policySets = useRecoilValue(policySetsState)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
@@ -647,7 +647,7 @@ export default function PoliciesPage() {
             variant: ButtonVariant.primary,
             id: 'create',
             title: t('Create policy'),
-            click: () => history.push(NavigationPath.createPolicy),
+            click: () => navigate(NavigationPath.createPolicy),
           },
         ]}
         showColumManagement
@@ -678,7 +678,7 @@ export default function PoliciesPage() {
                                     const path = NavigationPath.editPolicy
                                       .replace(':namespace', item.policy.metadata.namespace!)
                                       .replace(':name', item.policy.metadata.name!)
-                                    history.push(path + '?context=policies')
+                                    navigate(path + '?context=policies')
                                   }}
                                 >
                                   {t('Add')}

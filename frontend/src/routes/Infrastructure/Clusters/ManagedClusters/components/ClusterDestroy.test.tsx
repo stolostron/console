@@ -2,7 +2,7 @@
 
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { ClusterDestroy } from './ClusterDestroy'
@@ -123,7 +123,9 @@ describe('ClusterDestroy', () => {
   test('renders the destroying state', async () => {
     render(
       <RecoilRoot>
-        <ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />
+        <MemoryRouter>
+          <ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     expect(screen.getByText('test-cluster is being destroyed')).toBeInTheDocument()
@@ -132,7 +134,9 @@ describe('ClusterDestroy', () => {
   test('renders the detaching state', async () => {
     render(
       <RecoilRoot>
-        <ClusterDestroy isLoading={true} cluster={mockDetachCluster} />
+        <MemoryRouter>
+          <ClusterDestroy isLoading={true} cluster={mockDetachCluster} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     expect(screen.getByText('is being detached')).toBeInTheDocument()
@@ -154,7 +158,9 @@ describe('ClusterDestroy', () => {
     test('renders the destroying state without logs btn', async () => {
       render(
         <RecoilRoot>
-          <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+          <MemoryRouter>
+            <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+          </MemoryRouter>
         </RecoilRoot>
       )
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
@@ -175,7 +181,9 @@ describe('ClusterDestroy', () => {
           }}
         >
           <RecoilRoot>
-            <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+            <MemoryRouter>
+              <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+            </MemoryRouter>
           </RecoilRoot>
         </ClusterContext.Provider>
       )

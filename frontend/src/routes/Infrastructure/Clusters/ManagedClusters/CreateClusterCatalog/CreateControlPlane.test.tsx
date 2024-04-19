@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -42,9 +42,9 @@ describe('CreateControlPlane', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createBMControlPlane]}>
-          <Route path={NavigationPath.createBMControlPlane}>
-            <CreateControlPlane />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createBMControlPlane} element={<CreateControlPlane />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

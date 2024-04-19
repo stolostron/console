@@ -16,7 +16,7 @@ import {
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',

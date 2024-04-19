@@ -3,7 +3,7 @@
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'

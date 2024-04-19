@@ -9,7 +9,7 @@ import {
   AddHostDropdown,
 } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Link, Routes, Route, useLocation, useNavigate, Navigate, useParams } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -27,12 +27,12 @@ import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 
-type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
-
-const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = ({ match }) => {
+const InfraEnvironmentDetailsPage: React.FC = () => {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
+  const { name = '', namespace = '' } = useParams()
+  const match = { params: { name, namespace } }
 
   const { agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState } = useSharedAtoms()
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
@@ -71,7 +71,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => history.push(NavigationPath.infraEnvironments)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.infraEnvironments)}>
               {t('button.backToInfraEnvs')}
             </AcmButton>
           }
@@ -143,27 +143,35 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         }
       >
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.infraEnvironmentOverview}>
-              <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
-            </Route>
-            <Route exact path={NavigationPath.infraEnvironmentHosts}>
-              <HostsTab
-                agentClusterInstalls={agentClusterInstalls}
-                infraEnv={infraEnv}
-                infraAgents={infraAgents}
-                bareMetalHosts={infraBMHs}
-                infraNMStates={infraNMStates}
-              />
-            </Route>
-            <Route exact path={NavigationPath.infraEnvironmentDetails}>
-              <Redirect
-                to={NavigationPath.infraEnvironmentOverview
-                  .replace(':namespace', match.params.namespace)
-                  .replace(':name', match.params.name)}
-              />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              path="/overview"
+              element={<DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />}
+            />
+            <Route
+              path="/hosts"
+              element={
+                <HostsTab
+                  agentClusterInstalls={agentClusterInstalls}
+                  infraEnv={infraEnv}
+                  infraAgents={infraAgents}
+                  bareMetalHosts={infraBMHs}
+                  infraNMStates={infraNMStates}
+                />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to={NavigationPath.infraEnvironmentOverview
+                    .replace(':namespace', match.params.namespace)
+                    .replace(':name', match.params.name)}
+                  replace
+                />
+              }
+            />
+          </Routes>
         </Suspense>
       </AcmPage>
     </>
