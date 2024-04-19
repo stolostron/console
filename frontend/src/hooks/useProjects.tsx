@@ -16,7 +16,10 @@ export function useProjects() {
   useEffect(() => {
     rbacCreate(SecretDefinition).then((attributes) => {
       getAuthorizedNamespaces([attributes], getNamespaces())
-        .then((namespaces: string[]) => setProjects(namespaces.sort()))
+        .then((namespaces: string[]) => {
+          namespaces.sort((a, b) => a.localeCompare(b))
+          setProjects(namespaces)
+        })
         .catch(setError)
     })
   }, [getNamespaces])
