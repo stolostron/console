@@ -10,7 +10,7 @@ import {
   useRef,
   Dispatch,
 } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Modal, ModalVariant, Button } from '@patternfly/react-core'
 import { Location, UnregisterCallback } from 'history'
 import isEqual from 'lodash/isEqual'
@@ -82,7 +82,7 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
   const [dirty, setDirty] = useState(false)
   const [nestedDirty, setNestedDirty] = useState(false)
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
 
   const historyUnblockRef = useRef<UnregisterCallback>()
@@ -96,15 +96,15 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
 
   useEffect(() => {
     if (dirty || nestedDirty) {
-      historyUnblockRef.current = history.block((location) => {
-        setIsOpen(true)
-        setLocation(location)
-        return false
-      })
+      // historyUnblockRef.current = history.block((location) => {
+      //   setIsOpen(true)
+      //   setLocation(location)
+      //   return false
+      // })
       addEventListener('beforeunload', beforeUnloadListener, { capture: true })
     }
     return unblock
-  }, [dirty, nestedDirty, history, unblock])
+  }, [dirty, nestedDirty, unblock])
 
   const submitForm = useCallback(() => {
     unblock()
@@ -142,11 +142,11 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
     close()
     if (location) {
       unblock()
-      history.push(location)
+      navigate(location)
     } else if (callback) {
       callback()
     }
-  }, [callback, close, location, history, unblock])
+  }, [callback, close, location, navigate, unblock])
 
   return (
     <LostChangesContext.Provider value={lostChangesContext}>

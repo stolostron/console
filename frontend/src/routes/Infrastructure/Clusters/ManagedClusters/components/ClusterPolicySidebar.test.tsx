@@ -6,7 +6,7 @@ import { configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { ConfigMap, PolicyReport } from '../../../../../resources'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 const mockPolicyReports: PolicyReport = {
   apiVersion: 'wgpolicyk8s.io/v1alpha2',

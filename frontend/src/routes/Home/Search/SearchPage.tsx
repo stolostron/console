@@ -16,7 +16,7 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -134,7 +134,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
     refetchSearch,
   } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
@@ -276,7 +276,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         currentQueryCallback={(newQuery) => {
           setCurrentSearch(newQuery)
           if (newQuery === '') {
-            updateBrowserUrl(history, newQuery)
+            updateBrowserUrl(navigate, newQuery)
           }
           if (newQuery !== currentSearch) {
             setSelectedSearch(t('Saved searches'))
@@ -306,20 +306,20 @@ interface SavedSearchDropdownProps {
 function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
   const { selectedSearch, setSelectedSearch, savedSearchQueries } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const SelectQuery = useCallback(
     (id: string) => {
       if (id === 'savedSearchesID') {
-        updateBrowserUrl(history, '')
+        updateBrowserUrl(navigate, '')
         setSelectedSearch(t('Saved searches'))
       } else {
         const selectedQuery = savedSearchQueries.filter((query) => query.id === id)
-        updateBrowserUrl(history, selectedQuery[0].searchText || '')
+        updateBrowserUrl(navigate, selectedQuery[0].searchText || '')
         setSelectedSearch(selectedQuery[0].name || '')
       }
     },
-    [history, savedSearchQueries, setSelectedSearch, t]
+    [navigate, savedSearchQueries, setSelectedSearch, t]
   )
 
   function SavedSearchDropdown(props: Readonly<SavedSearchDropdownProps>) {

@@ -29,7 +29,7 @@ import {
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'

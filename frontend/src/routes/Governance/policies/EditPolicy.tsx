@@ -2,7 +2,7 @@
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -46,9 +46,9 @@ function getWizardSyncEditor() {
 export function EditPolicy() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name: string } = useParams()
-  const { name } = params
-  const history = useHistory()
+  const params = useParams()
+  const { name = '' } = params
+  const navigate = useNavigate()
   const {
     channelsState,
     helmReleaseState,
@@ -90,7 +90,7 @@ export function EditPolicy() {
       (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
     )
     if (policy === undefined) {
-      history.push(NavigationPath.policies)
+      navigate(NavigationPath.policies)
       return
     }
     const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
@@ -141,9 +141,9 @@ export function EditPolicy() {
             })
             submitForm()
             if (searchParams.get('context') === 'policies') {
-              history.push(NavigationPath.policies)
+              navigate(NavigationPath.policies)
             } else {
-              history.push(
+              navigate(
                 NavigationPath.policyDetails
                   .replace(':namespace', policy.metadata?.namespace ?? '')
                   .replace(':name', policy.metadata?.name ?? '')
@@ -155,17 +155,17 @@ export function EditPolicy() {
       onCancel={() => {
         cancelForm()
         if (searchParams.get('context') === 'policies') {
-          history.push(NavigationPath.policies)
+          navigate(NavigationPath.policies)
         } else {
           const policy = existingResources.find((resource) => resource.kind === PolicyKind)
           if (policy) {
-            history.push(
+            navigate(
               NavigationPath.policyDetails
                 .replace(':namespace', policy.metadata?.namespace ?? '')
                 .replace(':name', policy.metadata?.name ?? '')
             )
           } else {
-            history.push(NavigationPath.policies)
+            navigate(NavigationPath.policies)
           }
         }
       }}

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policyAutomationState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockAnsibleTower, nockIgnoreApiPaths, nockIgnoreRBAC /*nockPatch*/, nockPatch } from '../../../lib/nock-util'
@@ -33,10 +33,9 @@ function EditPolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Route
-          path={NavigationPath.editPolicyAutomation}
-          component={(props: any) => <EditPolicyAutomation {...props} />}
-        />
+        <Routes>
+          <Route path={NavigationPath.editPolicyAutomation} element={<EditPolicyAutomation />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

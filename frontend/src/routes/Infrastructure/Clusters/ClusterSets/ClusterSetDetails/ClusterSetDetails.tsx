@@ -10,7 +10,7 @@ import {
   AcmSecondaryNavItem,
 } from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
@@ -61,10 +61,12 @@ export const ClusterSetContext = createContext<{
   clusterRoleBindings: undefined,
 })
 
-export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
+export default function ClusterSetDetailsPage() {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
+  const { id = '' } = useParams()
+  const match = { params: { id } }
   const { isSubmarinerAvailable } = useContext(PluginContext)
   const { clusterDeploymentsState, clusterPoolsState, managedClusterAddonsState, managedClusterSetsState } =
     useSharedAtoms()
@@ -132,12 +134,12 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
           />
         }
         loadingPrimaryAction={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
             {t('button.backToClusterSets')}
           </AcmButton>
         }
         primaryAction={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
             {t('button.backToClusterSets')}
           </AcmButton>
         }
@@ -151,7 +153,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
               {t('button.backToClusterSets')}
             </AcmButton>
           }
@@ -173,109 +175,90 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
       }}
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
-          {!isGlobalClusterSet(clusterSet) && (
-            <Route exact path={NavigationPath.clusterSetManage}>
-              <ClusterSetManageResourcesPage />
-            </Route>
-          )}
-          {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
-            <Route exact path={NavigationPath.clusterSetSubmarinerInstall}>
-              <InstallSubmarinerFormPage />
-            </Route>
-          )}
-          <AcmPage
-            hasDrawer
-            header={
-              <AcmPageHeader
-                breadcrumb={[
-                  { text: t('clusterSets'), to: NavigationPath.clusterSets },
-                  { text: match.params.id, to: '' },
-                ]}
-                title={match.params.id}
-                actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
-                navigation={
-                  <AcmSecondaryNav>
+        <AcmPage
+          hasDrawer
+          header={
+            <AcmPageHeader
+              breadcrumb={[
+                { text: t('clusterSets'), to: NavigationPath.clusterSets },
+                { text: match.params.id, to: '' },
+              ]}
+              title={match.params.id}
+              actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
+              navigation={
+                <AcmSecondaryNav>
+                  <AcmSecondaryNavItem
+                    isActive={location.pathname === NavigationPath.clusterSetOverview.replace(':id', match.params.id)}
+                  >
+                    <Link to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}>
+                      {t('tab.overview')}
+                    </Link>
+                  </AcmSecondaryNavItem>
+                  {isSubmarinerAvailable && !isGlobalClusterSet(clusterSet) && (
                     <AcmSecondaryNavItem
-                      isActive={location.pathname === NavigationPath.clusterSetOverview.replace(':id', match.params.id)}
+                      isActive={
+                        location.pathname === NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
+                      }
                     >
-                      <Link to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}>
-                        {t('tab.overview')}
+                      <Link to={NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)}>
+                        {t('tab.submariner')}
                       </Link>
                     </AcmSecondaryNavItem>
-                    {isSubmarinerAvailable && !isGlobalClusterSet(clusterSet) && (
-                      <AcmSecondaryNavItem
-                        isActive={
-                          location.pathname === NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
-                        }
-                      >
-                        <Link to={NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)}>
-                          {t('tab.submariner')}
-                        </Link>
-                      </AcmSecondaryNavItem>
-                    )}
-                    {!isGlobalClusterSet(clusterSet) && (
-                      <AcmSecondaryNavItem
-                        isActive={
-                          location.pathname === NavigationPath.clusterSetClusters.replace(':id', match.params.id)
-                        }
-                      >
-                        <Link to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}>
-                          {t('tab.clusters')}
-                        </Link>
-                      </AcmSecondaryNavItem>
-                    )}
-                    {!isGlobalClusterSet(clusterSet) && (
-                      <AcmSecondaryNavItem
-                        isActive={
-                          location.pathname === NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
-                        }
-                      >
-                        <Link to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)}>
-                          {t('tab.clusterPools')}
-                        </Link>
-                      </AcmSecondaryNavItem>
-                    )}
+                  )}
+                  {!isGlobalClusterSet(clusterSet) && (
                     <AcmSecondaryNavItem
-                      isActive={location.pathname === NavigationPath.clusterSetAccess.replace(':id', match.params.id)}
+                      isActive={location.pathname === NavigationPath.clusterSetClusters.replace(':id', match.params.id)}
                     >
-                      <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
-                        {t('tab.userManagement')}
+                      <Link to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}>
+                        {t('tab.clusters')}
                       </Link>
                     </AcmSecondaryNavItem>
-                  </AcmSecondaryNav>
-                }
-              />
-            }
-          >
-            <Switch>
-              <Route exact path={NavigationPath.clusterSetOverview}>
-                <ClusterSetOverviewPageContent />
-              </Route>
-              {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
-                <Route exact path={NavigationPath.clusterSetSubmariner}>
-                  <ClusterSetSubmarinerPageContent />
-                </Route>
-              )}
-              {!isGlobalClusterSet(clusterSet) && (
-                <Route exact path={NavigationPath.clusterSetClusters}>
-                  <ClusterSetClustersPageContent />
-                </Route>
-              )}
-              {!isGlobalClusterSet(clusterSet) && (
-                <Route exact path={NavigationPath.clusterSetClusterPools}>
-                  <ClusterSetClusterPoolsPageContent />
-                </Route>
-              )}
-              <Route exact path={NavigationPath.clusterSetAccess}>
-                <ClusterSetAccessManagement />
-              </Route>
-              <Route path="*">
-                <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
-              </Route>
-            </Switch>
-          </AcmPage>
-        </Switch>
+                  )}
+                  {!isGlobalClusterSet(clusterSet) && (
+                    <AcmSecondaryNavItem
+                      isActive={
+                        location.pathname === NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)
+                      }
+                    >
+                      <Link to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id)}>
+                        {t('tab.clusterPools')}
+                      </Link>
+                    </AcmSecondaryNavItem>
+                  )}
+                  <AcmSecondaryNavItem
+                    isActive={location.pathname === NavigationPath.clusterSetAccess.replace(':id', match.params.id)}
+                  >
+                    <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
+                      {t('tab.userManagement')}
+                    </Link>
+                  </AcmSecondaryNavItem>
+                </AcmSecondaryNav>
+              }
+            />
+          }
+        >
+          <Routes>
+            <Route path="/overview" element={<ClusterSetOverviewPageContent />} />
+            {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
+              <Route path="/submariner" element={<ClusterSetSubmarinerPageContent />} />
+            )}
+            {!isGlobalClusterSet(clusterSet) && <Route path="/clusters" element={<ClusterSetClustersPageContent />} />}
+            {!isGlobalClusterSet(clusterSet) && (
+              <Route path="/cluster-pools" element={<ClusterSetClusterPoolsPageContent />} />
+            )}
+            <Route path="/access" element={<ClusterSetAccessManagement />} />
+            <Route
+              path="*"
+              element={<Navigate to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} replace />}
+            />
+            {!isGlobalClusterSet(clusterSet) && (
+              <Route path="/manage-resources" element={<ClusterSetManageResourcesPage />} />
+            )}
+            {!isGlobalClusterSet(clusterSet) && isSubmarinerAvailable && (
+              <Route path="/install-submariner" element={<InstallSubmarinerFormPage />} />
+            )}
+          </Routes>
+        </AcmPage>
       </Suspense>
     </ClusterSetContext.Provider>
   )

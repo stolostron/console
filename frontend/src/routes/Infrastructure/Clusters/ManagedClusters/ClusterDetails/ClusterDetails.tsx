@@ -9,7 +9,7 @@ import {
   InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -65,15 +65,11 @@ export const ClusterContext = createContext<{
   readonly selectedHostedCluster?: HostedClusterK8sResource
 }>({})
 
-export default function ClusterDetailsPage({
-  match: {
-    params: { name, namespace },
-  },
-}: RouteComponentProps<{ namespace: string; name: string }>) {
+export default function ClusterDetailsPage() {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
-
+  const { name = '', namespace = '' } = useParams()
   const {
     agentClusterInstallsState,
     agentsState,
@@ -186,11 +182,7 @@ export default function ClusterDetailsPage({
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => history.push(NavigationPath.clusters)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.clusters)} style={{ marginRight: '10px' }}>
               {t('button.backToClusters')}
             </AcmButton>
           }
@@ -325,28 +317,24 @@ export default function ClusterDetailsPage({
         }
       >
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.clusterOverview}>
-              <ClusterOverviewPageContent
-                canGetSecret={canGetSecret}
-                selectedHostedClusterResource={selectedHostedClusterResource}
-              />
-            </Route>
-            <Route exact path={NavigationPath.clusterNodes}>
-              <NodePoolsPageContent />
-            </Route>
-            {showMachinePoolTab && (
-              <Route exact path={NavigationPath.clusterMachinePools}>
-                <MachinePoolsPageContent />
-              </Route>
-            )}
-            <Route exact path={NavigationPath.clusterSettings}>
-              <ClustersSettingsPageContent />
-            </Route>
-            <Route exact path={NavigationPath.clusterDetails}>
-              <Redirect to={getClusterNavPath(NavigationPath.clusterOverview, cluster)} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              path="/overview"
+              element={
+                <ClusterOverviewPageContent
+                  canGetSecret={canGetSecret}
+                  selectedHostedClusterResource={selectedHostedClusterResource}
+                />
+              }
+            />
+            <Route path="/nodes" element={<NodePoolsPageContent />} />
+            {showMachinePoolTab && <Route path="/machinepools" element={<MachinePoolsPageContent />} />}
+            <Route path="settings" element={<ClustersSettingsPageContent />} />
+            <Route
+              path="*"
+              element={<Navigate to={getClusterNavPath(NavigationPath.clusterOverview, cluster)} replace />}
+            />
+          </Routes>
         </Suspense>
       </AcmPage>
     </ClusterContext.Provider>

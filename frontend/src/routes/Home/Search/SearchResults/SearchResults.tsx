@@ -39,6 +39,7 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { GetRowActions, ISearchResult } from './utils'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -87,6 +88,8 @@ function RenderAccordionItem(props: {
   const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
   const kindString = kind.split('.').pop() ?? ''
 
+  const navigate = useNavigate()
+
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
       const kindAndGroup =
@@ -109,12 +112,13 @@ function RenderAccordionItem(props: {
             setDeleteResource,
             setDeleteExternalResource,
             clusters,
+            navigate,
             t
           )}
         />
       )
     },
-    [currentQuery, setDeleteResource, searchDefinitions, clusters, setDeleteExternalResource, t]
+    [searchDefinitions, currentQuery, setDeleteResource, setDeleteExternalResource, clusters, navigate, t]
   )
 
   return (

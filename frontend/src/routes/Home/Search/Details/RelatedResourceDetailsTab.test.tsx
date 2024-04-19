@@ -3,13 +3,13 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { SearchResultRelatedItemsDocument } from '../search-sdk/search-sdk'
 import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
-
+const history = createMemoryHistory()
 describe('RelatedResourceDetailsTab', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
@@ -116,7 +116,7 @@ describe('RelatedResourceDetailsTab', () => {
     ]
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNs} />
           </MockedProvider>
@@ -191,7 +191,7 @@ describe('RelatedResourceDetailsTab', () => {
     ]
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNonNs} />
           </MockedProvider>

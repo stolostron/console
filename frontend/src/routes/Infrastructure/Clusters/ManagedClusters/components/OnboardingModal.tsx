@@ -2,7 +2,7 @@
 
 import { Card, CardBody, Grid, GridItem, ModalVariant, Text } from '@patternfly/react-core'
 import { useContext, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmExpandableSection, AcmModal } from '../../../../../ui-components'
 import MainIcon from './OnboardingModalIcon.svg'

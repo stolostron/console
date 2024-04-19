@@ -3,7 +3,7 @@ import { AcmButton, AcmDropdown } from '../../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { canUser } from '../../../../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
@@ -11,7 +11,7 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
   useEffect(() => {
@@ -58,10 +58,10 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
     const onSelect = (id: string) => {
       switch (id) {
         case 'create-cluster':
-          history.push(createBackCancelLocation(NavigationPath.createCluster))
+          navigate(createBackCancelLocation(NavigationPath.createCluster))
           break
         case 'import-cluster':
-          history.push(createBackCancelLocation(NavigationPath.importCluster))
+          navigate(createBackCancelLocation(NavigationPath.importCluster))
           break
       }
     }

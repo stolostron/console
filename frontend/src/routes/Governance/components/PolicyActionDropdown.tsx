@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -17,7 +17,7 @@ export function PolicyActionDropdown(props: {
   isKebab: boolean
 }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
@@ -239,7 +239,7 @@ export function PolicyActionDropdown(props: {
           if (props.isKebab) {
             path += '?context=policies'
           }
-          history.push(path)
+          navigate(path)
         },
         rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
       },
@@ -256,10 +256,10 @@ export function PolicyActionDropdown(props: {
     [
       bulkModalRemediationColumns,
       bulkModalStatusColumns,
-      history,
       item.policy.metadata.name,
       item.policy.metadata.namespace,
       item.policy.spec.disabled,
+      navigate,
       policyRemediationAction,
       props.isKebab,
       setModal,

@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import cloneDeep from 'lodash/cloneDeep'
@@ -1281,9 +1281,9 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
         }),
       ]}
     >
-      <Switch>
-        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-      </Switch>
+      <Routes>
+        <Route path={NavigationPath.clusterDetails + '/*'} element={<ClusterDetails />} />
+      </Routes>
     </MemoryRouter>
   </RecoilRoot>
 )
@@ -1407,6 +1407,7 @@ describe('ClusterDetails', () => {
 describe('ClusterDetails - different name to namespace', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths() //ignore /apiPaths
     render(<Component clusterDeployment={mockClusterDeploymentDiffNs} />)
   })
 
@@ -1526,9 +1527,9 @@ describe('ClusterDetails with not found', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-          <Switch>
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-          </Switch>
+          <Routes>
+            <Route path={NavigationPath.clusterDetails} element={<ClusterDetails />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -1564,9 +1565,9 @@ describe('ClusterDetails with not found', () => {
             }),
           ]}
         >
-          <Switch>
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-          </Switch>
+          <Routes>
+            <Route path={NavigationPath.clusterDetails + '/*'} element={<ClusterDetails />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

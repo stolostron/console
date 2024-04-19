@@ -6,7 +6,7 @@ import { set, get, isEqual, debounce } from 'lodash'
 // eslint-disable-next-line
 import { TFunction } from 'react-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret, ManagedClusterSet } from '../../../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'

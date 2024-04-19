@@ -15,7 +15,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Link, useLocation, Routes, Route, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -100,8 +100,11 @@ function searchError(completeError: ApolloError | undefined, t: TFunction) {
   }
 }
 
-export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
+export default function ApplicationDetailsPage() {
   const location = useLocation()
+  const { name = '', namespace = '' } = useParams()
+  const match = { params: { name, namespace } }
+
   const { t } = useTranslation()
   const {
     ansibleJobState,
@@ -132,7 +135,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
   const { acmExtensions } = useContext(PluginContext)
 
   const lastRefreshRef = useRef<any>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
   const isAppSet = applicationData?.application?.isAppSet
   const isOCPApp = applicationData?.application?.isOCPApp
@@ -209,7 +212,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                   apiversion: apiversion as string,
                 },
               })
-          history.push(searchLink)
+          navigate(searchLink)
         }
       },
     },
@@ -222,13 +225,13 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       text: t('Edit application'),
       click: () => {
         if (isAppSet) {
-          history.push(
+          navigate(
             NavigationPath.editApplicationArgo
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)
           )
         } else {
-          history.push(
+          navigate(
             NavigationPath.editApplicationSubscription
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)
@@ -510,30 +513,35 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
           <DeleteResourceModal {...modalProps} />
           {pluginModal}
           <Suspense fallback={<Fragment />}>
-            <Switch>
-              <Route exact path={NavigationPath.applicationOverview}>
-                <ApplicationOverviewPageContent applicationData={applicationData} />
-              </Route>
-              <Route exact path={NavigationPath.applicationTopology}>
-                <ApplicationTopologyPageContent
-                  applicationData={applicationData}
-                  channelControl={{
-                    allChannels,
-                    activeChannel,
-                    setActiveChannel,
-                  }}
-                />
-              </Route>
-              <Route exact path={NavigationPath.applicationDetails}>
-                <Redirect
-                  to={
-                    NavigationPath.applicationOverview
-                      .replace(namespaceString, match.params.namespace)
-                      .replace(nameString, match.params.name) + location.search
-                  }
-                />
-              </Route>
-            </Switch>
+            <Routes>
+              <Route path="/overview" element={<ApplicationOverviewPageContent applicationData={applicationData} />} />
+              <Route
+                path="/topology"
+                element={
+                  <ApplicationTopologyPageContent
+                    applicationData={applicationData}
+                    channelControl={{
+                      allChannels,
+                      activeChannel,
+                      setActiveChannel,
+                    }}
+                  />
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={
+                      NavigationPath.applicationOverview
+                        .replace(namespaceString, match.params.namespace)
+                        .replace(nameString, match.params.name) + location.search
+                    }
+                    replace
+                  />
+                }
+              />
+            </Routes>
           </Suspense>
         </Fragment>
       )}

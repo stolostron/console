@@ -5,7 +5,7 @@ import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { Fragment, ReactNode, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
 import { ApplicationKind, ApplicationSetKind, IResource, PlacementApiVersionBeta } from '../../../resources'
@@ -32,7 +32,7 @@ export interface IDeleteResourceModalProps {
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
   const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
   const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
-  const history = useHistory()
+  const navigate = useNavigate()
 
   if (props.open === false) {
     return <></>
@@ -51,7 +51,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     setRemoveAppSetResource(false)
     props.close()
     if (props.redirect) {
-      history.push(props.redirect)
+      navigate(props.redirect)
     }
 
     if (props.resource.kind === ApplicationKind) {

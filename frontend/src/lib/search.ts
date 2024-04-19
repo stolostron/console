@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import { getBackendUrl, IRequestResult, ArgoApplication, OCPAppResource, postRequest } from '../resources'
 import { flatten, uniqBy } from 'lodash'
 

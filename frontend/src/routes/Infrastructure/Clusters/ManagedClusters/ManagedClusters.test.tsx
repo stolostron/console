@@ -3,7 +3,7 @@
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,

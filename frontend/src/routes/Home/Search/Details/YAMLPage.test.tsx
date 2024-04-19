@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { createMemoryHistory } from 'history'
+import { Router } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import YAMLPage, { EditorActionBar, EditorHeaderBar } from './YAMLPage'
@@ -21,9 +21,10 @@ beforeEach(async () => {
 
 describe('YAMLPage', () => {
   it('Renders YAML page header correctly', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <EditorHeaderBar cluster={'local-cluster'} namespace={'test-namespace'} />
         </Router>
       </RecoilRoot>
@@ -35,9 +36,10 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML page header correctly for non-namespaced resource', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <EditorHeaderBar cluster={'local-cluster'} namespace={''} />
         </Router>
       </RecoilRoot>
@@ -49,9 +51,10 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML page action bar correctly', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <EditorActionBar
             cluster={'local-cluster'}
             kind={'Pod'}
@@ -75,9 +78,10 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page with error', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <YAMLPage
             resource={null}
             loading={false}
@@ -98,9 +102,10 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page in loading state', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <YAMLPage
             resource={null}
             loading={true}
@@ -120,8 +125,8 @@ describe('YAMLPage', () => {
     await waitFor(() => expect(screen.queryByText('Loading')).toBeTruthy())
   })
 
-  jest.mock('react-router-dom', () => {
-    const originalModule = jest.requireActual('react-router-dom')
+  jest.mock('react-router-dom-v5-compat', () => {
+    const originalModule = jest.requireActual('react-router-dom-v5-compat')
     return {
       __esModule: true,
       ...originalModule,
@@ -137,9 +142,10 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page correctly', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <YAMLPage
             resource={{
               kind: 'Pod',
@@ -176,9 +182,10 @@ describe('YAMLPage', () => {
   })
   global.URL.createObjectURL = jest.fn()
   it('Renders YAML Page correctly & downloads yaml', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <YAMLPage
             resource={{
               kind: 'Pod',

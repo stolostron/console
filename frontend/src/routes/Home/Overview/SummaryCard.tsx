@@ -16,8 +16,8 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { Link } from 'react-router-dom-v5-compat'
 import { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { AcmButton } from '../../../ui-components'
 

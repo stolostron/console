@@ -931,7 +931,6 @@ exports[`NetworkForm it renders 1`] = `
       />
     </div>
   </form>
-   
 </div>
 `;
 

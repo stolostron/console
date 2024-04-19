@@ -3,7 +3,7 @@
 import { LocationDescriptor } from 'history'
 import { useContext, useMemo } from 'react'
 import { generatePath } from 'react-router'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources'
 
@@ -160,8 +160,8 @@ export function useBackCancelNavigation(): {
   back: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
   cancel: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
 } {
-  const history = useHistory<BackCancelState>()
-  const { state } = useLocation<BackCancelState>()
+  const navigate = useNavigate()
+  const { state } = useLocation()
   const { cancelForm } = useContext(LostChangesContext)
 
   return useMemo(
@@ -171,25 +171,24 @@ export function useBackCancelNavigation(): {
           maxBackSteps: state?.maxBackSteps ? state.maxBackSteps + 1 : 1, // when starting at an intermediate step, back can navigate to this point
           cancelSteps: state?.cancelSteps ? state.cancelSteps + 1 : 0, // when starting at an intermediate step, cancel should go to default
         }
-        history.push(
-          typeof newLocation === 'string'
-            ? { pathname: newLocation, state: newState }
-            : {
-                ...newLocation,
-                state: {
-                  ...(state ? state : {}),
-                  ...(newLocation.state ? newLocation.state : {}),
-                  ...newState,
-                },
-              }
-        )
+        if (typeof newLocation === 'string') {
+          navigate(newLocation, { state: newState })
+        } else {
+          navigate((newLocation.pathname || '') + newLocation.search, {
+            state: {
+              ...(state ? state : {}),
+              ...(newLocation.state ? newLocation.state : {}),
+              ...newState,
+            },
+          })
+        }
       },
       back: (defaultLocation) => () => {
         cancelForm()
         if (state?.maxBackSteps) {
-          history.goBack()
+          navigate(-1)
         } else {
-          history.push(defaultLocation)
+          navigate(defaultLocation)
         }
       },
       cancel: (defaultLocation) => () => {
@@ -197,10 +196,10 @@ export function useBackCancelNavigation(): {
         if (state?.cancelSteps) {
           history.go(-state.cancelSteps)
         } else {
-          history.push(defaultLocation)
+          navigate(defaultLocation)
         }
       },
     }),
-    [cancelForm, history, state]
+    [cancelForm, navigate, state]
   )
 }

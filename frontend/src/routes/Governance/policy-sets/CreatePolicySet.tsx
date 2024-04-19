@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -37,7 +37,7 @@ function getWizardSyncEditor() {
 export function CreatePolicySet() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const {
     managedClusterSetBindingsState,
     managedClusterSetsState,
@@ -85,12 +85,12 @@ export function CreatePolicySet() {
             })
           }
           submitForm()
-          history.push(NavigationPath.policySets)
+          navigate(NavigationPath.policySets)
         })
       }}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.policySets)
+        navigate(NavigationPath.policySets)
       }}
     />
   )

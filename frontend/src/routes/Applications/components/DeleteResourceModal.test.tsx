@@ -9,11 +9,14 @@ import {
   ApplicationSetKind,
   IResource,
 } from '../../../resources'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
+const history = createMemoryHistory()
 
 describe('DeleteResourceModal', () => {
   it('should render delete ACM app no related resources', () => {
@@ -27,22 +30,24 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('Permanently delete Application acmapp?')).toBeTruthy()
@@ -82,22 +87,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('Permanently delete Application acmapp2?')).toBeTruthy()
@@ -149,22 +156,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={shared}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={shared}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('This application uses the following shared resources, which are not removable:')).toBeTruthy()
@@ -209,22 +218,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('This subscription deploys the following resources, which will be removed:')).toBeTruthy()
@@ -246,22 +257,24 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
@@ -280,22 +293,24 @@ describe('DeleteResourceModal', () => {
     const appSetPlacement = 'appset2-placement'
     const appSetApps = ['appset2-local-cluster']
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement={appSetPlacement}
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={appSetApps}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement={appSetPlacement}
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={appSetApps}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset2?')).toBeTruthy()
@@ -322,22 +337,24 @@ describe('DeleteResourceModal', () => {
     const appSetApps = ['appset3-local-cluster']
     const appSetsSharingPlacement = ['appset4']
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement={appSetPlacement}
-        appSetsSharingPlacement={appSetsSharingPlacement}
-        appKind={resource.kind}
-        appSetApps={appSetApps}
-        close={() => void {}}
-        t={t}
-      />
+      <Router location={history.location} navigator={history}>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement={appSetPlacement}
+          appSetsSharingPlacement={appSetsSharingPlacement}
+          appKind={resource.kind}
+          appSetApps={appSetApps}
+          close={() => void {}}
+          t={t}
+        />
+      </Router>
     )
 
     expect(

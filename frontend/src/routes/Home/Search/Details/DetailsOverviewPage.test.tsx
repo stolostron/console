@@ -2,8 +2,8 @@
 // Copyright (c) 2022 Red Hat, Inc.
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { createMemoryHistory } from 'history'
+import { Router } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import DetailsOverviewPage, {
@@ -20,9 +20,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return ResourceSearchLink', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <ResourceSearchLink
             cluster={'test-cluster'}
             apiversion={'v1/beta1'}
@@ -39,9 +40,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return empty LablesGroup', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <LablesGroup labels={{}} />
         </Router>
       </RecoilRoot>
@@ -52,9 +54,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return LablesGroup', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <LablesGroup labels={{ test: 'test1', region: 'east' }} />
         </Router>
       </RecoilRoot>
@@ -66,9 +69,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return empty OwnerReferences', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <OwnerReferences namespace={'test-ns'} cluster={'test-cluster'} />
         </Router>
       </RecoilRoot>
@@ -79,9 +83,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return OwnerReferences', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <OwnerReferences
             ownerReferences={[
               {
@@ -102,9 +107,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return empty ResourceConditions', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <ResourceConditions conditions={[]} />
         </Router>
       </RecoilRoot>
@@ -115,9 +121,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return ResourceConditions', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <ResourceConditions
             conditions={[
               {
@@ -146,9 +153,10 @@ describe('DetailsOverviewPage', () => {
 
   // Full page tests
   it('Should correctly return DetailsOverviewPage in loading state', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <DetailsOverviewPage
             cluster={'test-cluster'}
             resource={{
@@ -172,9 +180,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return DetailsOverviewPage with errors', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <DetailsOverviewPage
             cluster={'test-cluster'}
             resource={{
@@ -198,9 +207,10 @@ describe('DetailsOverviewPage', () => {
   })
 
   it('Should correctly return DetailsOverviewPage', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <DetailsOverviewPage
             cluster={'local-cluster'}
             resource={

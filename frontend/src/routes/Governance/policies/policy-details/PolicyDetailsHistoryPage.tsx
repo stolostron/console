@@ -2,7 +2,7 @@
 
 import { AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense } from 'react'
-import { Route, Switch, useParams } from 'react-router-dom'
+import { useParams, Route, Routes } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
@@ -10,17 +10,11 @@ import { PolicyDetailsHistory } from './PolicyDetailsHistory'
 export function PolicyDetailsHistoryPage() {
   const { t } = useTranslation()
 
-  const urlParams = useParams<{ namespace: string; name: string; clusterName: string; templateName: string }>()
-  const policyNamespace = urlParams.namespace
-  const policyName = urlParams.name
-  const clusterName = urlParams.clusterName
-  const templateName = urlParams.templateName
-
-  const historyUrl = NavigationPath.policyDetailsHistory
-    .replace(':namespace', policyNamespace)
-    .replace(':name', policyName)
-    .replace(':clusterName', clusterName)
-    .replace(':templateName', templateName)
+  const urlParams = useParams()
+  const policyNamespace = urlParams.namespace || ''
+  const policyName = urlParams.name || ''
+  const clusterName = urlParams.clusterName || ''
+  const templateName = urlParams.templateName || ''
 
   return (
     <AcmPage
@@ -43,20 +37,19 @@ export function PolicyDetailsHistoryPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
+        <Routes>
           <Route
-            exact
-            path={historyUrl}
-            render={() => (
+            path="/"
+            element={
               <PolicyDetailsHistory
                 policyName={policyName}
                 policyNamespace={policyNamespace}
                 clusterName={clusterName}
                 templateName={templateName}
               />
-            )}
+            }
           />
-        </Switch>
+        </Routes>
       </Suspense>
     </AcmPage>
   )

@@ -2,7 +2,7 @@
 
 import { Alert, AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '../../../../../ui-components'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { createContext, useContext } from 'react'
 
 export type WarningContextType =

@@ -14,7 +14,7 @@ import {
   mockMachinePoolManual,
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {

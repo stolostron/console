@@ -15,7 +15,7 @@ import {
 } from '../../ui-components'
 import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
@@ -77,7 +77,7 @@ export function CredentialsTable(props: {
   secrets?: Secret[]
 }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
@@ -224,7 +224,7 @@ export function CredentialsTable(props: {
                   text: t('Edit credential'),
                   isAriaDisabled: true,
                   click: (secret: Secret) => {
-                    history.push(
+                    navigate(
                       NavigationPath.editCredentials
                         .replace(':namespace', secret.metadata.namespace!)
                         .replace(':name', secret.metadata.name!)
@@ -288,7 +288,7 @@ export function CredentialsTable(props: {
             id: 'add',
             title: t('Add credential'),
             click: () => {
-              history.push(createBackCancelLocation(NavigationPath.addCredentials))
+              navigate(createBackCancelLocation(NavigationPath.addCredentials))
             },
             variant: ButtonVariant.primary,
             isDisabled: !canAddCredential,

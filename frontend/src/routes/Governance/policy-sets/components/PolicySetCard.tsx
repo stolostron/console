@@ -24,7 +24,7 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -45,7 +45,7 @@ export default function PolicySetCard(props: {
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ReactNode | undefined>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
 
   function onClick(cardId: string) {
@@ -131,7 +131,7 @@ export default function PolicySetCard(props: {
                   tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
                   key="edit"
                   onClick={() => {
-                    history.push(
+                    navigate(
                       NavigationPath.editPolicySet
                         .replace(':namespace', policySet.metadata.namespace)
                         .replace(':name', policySet.metadata.name)

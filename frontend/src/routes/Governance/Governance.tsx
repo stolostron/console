@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { NavigationPath } from '../../NavigationPath'
+import { Route, Routes } from 'react-router-dom-v5-compat'
 import GovernancePage from './GovernancePage'
 import { CreatePolicy } from './policies/CreatePolicy'
 import { CreatePolicyAutomation } from './policies/CreatePolicyAutomation'
@@ -14,20 +13,23 @@ import { EditPolicySet } from './policy-sets/EditPolicySet'
 
 export default function Governance() {
   return (
-    <Switch>
-      <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
-      <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
-      <Route exact path={NavigationPath.createPolicyAutomation} render={() => <CreatePolicyAutomation />} />
-      <Route exact path={NavigationPath.editPolicyAutomation} render={() => <EditPolicyAutomation />} />
-      <Route path={NavigationPath.policyTemplateDetails} component={PolicyTemplateDetailsPage} />
-      <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
-      <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
-      <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
-      <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-      <Route path={NavigationPath.governance} component={GovernancePage} />
-      <Route path="*">
-        <Redirect to={NavigationPath.governance} />
-      </Route>
-    </Switch>
+    <Routes>
+      <Route path="/policies/create" element={<CreatePolicy />} />
+      <Route path="/policies/edit/:namespace/:name" element={<EditPolicy />} />
+      <Route path="/policyautomation/create/:namespace/:name" element={<CreatePolicyAutomation />} />
+      <Route path="/policyautomation/edit/:namespace/:name" element={<EditPolicyAutomation />} />
+      <Route
+        path="/policies/details/:namespace/:name/template/:clusterName/:apiGroup/:apiVersion/:kind/:templateName"
+        element={<PolicyTemplateDetailsPage />}
+      />
+      <Route
+        path="/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history"
+        element={<PolicyDetailsHistoryPage />}
+      />
+      <Route path="/policies/details/:namespace/:name/*" element={<PolicyDetailsPage />} />
+      <Route path="/policy-sets/create" element={<CreatePolicySet />} />
+      <Route path="/policy-sets/edit/:namespace/:name" element={<EditPolicySet />} />
+      <Route path="/*" element={<GovernancePage />} />
+    </Routes>
   )
 }

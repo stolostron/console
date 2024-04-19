@@ -4,12 +4,13 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createBrowserHistory } from 'history'
 import { useMemo, useState } from 'react'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import { updateBrowserUrl } from '../urlQuery'
 import { convertStringToTags, DropdownSuggestionsProps, Searchbar } from './Searchbar'
+const history = createMemoryHistory()
 
 export const BlankSearchbar = () => {
   const [currentQuery, setCurrentQuery] = useState('')
@@ -87,7 +88,7 @@ export const BlankSearchbar = () => {
 
   return (
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={[]}>
           <Searchbar
             queryString={''}
@@ -118,7 +119,7 @@ export const BlankSearchbar = () => {
 
 const LoadingSearchbar = () => (
   <RecoilRoot>
-    <Router history={createBrowserHistory()}>
+    <Router location={history.location} navigator={history}>
       <MockedProvider mocks={[]}>
         <Searchbar
           queryString={''}
@@ -158,7 +159,7 @@ const LoadingSearchbar = () => (
 
 const PrefilledSearchbar = () => (
   <RecoilRoot>
-    <Router history={createBrowserHistory()}>
+    <Router location={history.location} navigator={history}>
       <MockedProvider mocks={[]}>
         <Searchbar
           queryString={'kind:Pod name:name1'}

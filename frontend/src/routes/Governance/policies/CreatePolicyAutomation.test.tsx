@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -39,10 +39,9 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Route
-          path={NavigationPath.createPolicyAutomation}
-          component={(props: any) => <CreatePolicyAutomation {...props} />}
-        />
+        <Routes>
+          <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
