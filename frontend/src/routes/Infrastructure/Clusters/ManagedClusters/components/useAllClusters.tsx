@@ -2,14 +2,13 @@
 
 import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
-import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 /**
  * Hook to retrieve aggregated list of all clusters
  * @param excludeUnclaimed Excludes unclaimed clusters in cluster pools (or claimed clusters for which the user can not see the claim)
  */
 export function useAllClusters(excludeUnclaimed?: boolean) {
-  const { waitForAll } = useSharedRecoil()
   const {
     managedClustersState,
     clusterDeploymentsState,
@@ -23,33 +22,19 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
     hostedClustersState,
     nodePoolsState,
   } = useSharedAtoms()
-  const [
-    managedClusters,
-    clusterDeployments,
-    managedClusterInfos,
-    certificateSigningRequests,
-    managedClusterAddons,
-    clusterManagementAddOns,
-    clusterClaims,
-    clusterCurators,
-    agentClusterInstalls,
-    hostedClusters,
-    nodePools,
-  ] = useRecoilValue(
-    waitForAll([
-      managedClustersState,
-      clusterDeploymentsState,
-      managedClusterInfosState,
-      certificateSigningRequestsState,
-      managedClusterAddonsState,
-      clusterManagementAddonsState,
-      clusterClaimsState,
-      clusterCuratorsState,
-      agentClusterInstallsState,
-      hostedClustersState,
-      nodePoolsState,
-    ])
-  )
+
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
+  const clusterClaims = useRecoilValue(clusterClaimsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const nodePools = useRecoilValue(nodePoolsState)
+
   const clusters = useMemo(
     () =>
       mapClusters(

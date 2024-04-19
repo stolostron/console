@@ -18,7 +18,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmEmptyState, AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
@@ -41,8 +41,8 @@ export function AutomationDetailsSidebar(props: {
   const { t } = useTranslation()
   const history = useHistory()
   const { ansibleJobState, secretsState } = useSharedAtoms()
-  const [ansibleJobs] = useRecoilState(ansibleJobState)
-  const [secrets] = useRecoilState(secretsState)
+  const ansibleJobs = useRecoilValue(ansibleJobState)
+  const secrets = useRecoilValue(secretsState)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
     govData.clusterRisks.high +

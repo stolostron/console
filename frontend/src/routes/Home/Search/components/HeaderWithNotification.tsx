@@ -4,7 +4,7 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
 import { Message } from '../search-sdk/search-sdk'
 
@@ -12,7 +12,7 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
   const { t } = useTranslation()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
   const { messages } = props
 
   return (

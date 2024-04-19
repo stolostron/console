@@ -2,10 +2,9 @@
 
 import { useMemo } from 'react'
 import { Addon, mapAddons } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 
 export function useClusterAddons(clusterName?: string) {
-  const { waitForAll } = useSharedRecoil()
   const {
     clusterDeploymentsState,
     managedClustersState,
@@ -15,23 +14,12 @@ export function useClusterAddons(clusterName?: string) {
     clusterManagementAddonsState,
   } = useSharedAtoms()
 
-  const [
-    clusterDeployments,
-    managedClusters,
-    managedClusterInfos,
-    hostedClusters,
-    managedClusterAddons,
-    clusterManagementAddons,
-  ] = useRecoilValue(
-    waitForAll([
-      clusterDeploymentsState,
-      managedClustersState,
-      managedClusterInfosState,
-      hostedClustersState,
-      managedClusterAddonsState,
-      clusterManagementAddonsState,
-    ])
-  )
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
 
   const addons = useMemo(() => {
     let uniqueClusterNames

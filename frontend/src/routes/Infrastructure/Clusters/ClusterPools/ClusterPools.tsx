@@ -28,7 +28,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
@@ -60,9 +60,8 @@ export default function ClusterPoolsPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => alertContext.clearAlerts, [])
-  const { waitForAll } = useSharedRecoil()
-  const { clusterImageSetsState, clusterPoolsState } = useSharedAtoms()
-  const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
+  const { clusterPoolsState } = useSharedAtoms()
+  const clusterPools = useRecoilValue(clusterPoolsState)
   const clusters = useAllClusters()
 
   /* t('preview.clusterPools') */
@@ -171,10 +170,9 @@ export function ClusterPoolsTable(props: {
   tableActionButtons?: IAcmTableButtonAction[]
 }) {
   const { clusters } = props
-  const { waitForAll } = useSharedRecoil()
   const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
-  const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
-  const [clusterClaims] = useRecoilValue(waitForAll([clusterClaimsState]))
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const clusterClaims = useRecoilValue(clusterClaimsState)
 
   const { clusterPools } = props
   const { t } = useTranslation()

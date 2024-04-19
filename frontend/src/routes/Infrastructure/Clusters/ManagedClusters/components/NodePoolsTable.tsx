@@ -13,7 +13,7 @@ import { DistributionField } from './DistributionField'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 
 import { NodePoolTableWidthContext } from './HypershiftClusterInstallProgress'
@@ -56,7 +56,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
   const [canDeleteNodepool, setCanDeleteNodepool] = useState<boolean>(false)
   const [canPatchNodepool, setCanPatchNodepool] = useState<boolean>(false)
   const { namespacesState } = useSharedAtoms()
-  const [namespaces] = useRecoilState(namespacesState)
+  const namespaces = useRecoilValue(namespacesState)
 
   const renderNodepoolStatus = useCallback(
     (nodepool: NodePool) => {

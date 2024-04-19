@@ -5,7 +5,7 @@ import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../..
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -53,13 +53,13 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     policyAutomationState,
     policySetsState,
   } = useSharedAtoms()
-  const [placements] = useRecoilState(placementsState)
-  const [policySets] = useRecoilState(policySetsState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [policyAutomations] = useRecoilState(policyAutomationState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const placements = useRecoilValue(placementsState)
+  const policySets = useRecoilValue(policySetsState)
+  const placementBindings = useRecoilValue(placementBindingsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const policyAutomations = useRecoilValue(policyAutomationState)
+  const namespaces = useRecoilValue(namespacesState)
   const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =

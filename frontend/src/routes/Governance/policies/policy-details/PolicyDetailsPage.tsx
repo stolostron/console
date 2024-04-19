@@ -8,7 +8,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, ResourceError, ResourceErrorCode } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmActionGroup,
   AcmButton,
@@ -27,9 +27,9 @@ export function PolicyDetailsPage() {
   const { channelsState, helmReleaseState, subscriptionsState, usePolicies } = useSharedAtoms()
   const history = useHistory()
   const policies = usePolicies()
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
 
   const params = useParams<{ namespace: string; name: string }>()
   const policyNamespace = params.namespace

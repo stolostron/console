@@ -40,7 +40,7 @@ import {
   patchResource,
   ResourceErrorCode,
 } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlertContext,
   AcmEmptyState,
@@ -167,7 +167,7 @@ export default function ManagedClusters() {
 
 const PageActions = () => {
   const { clusterManagementAddonsState } = useSharedAtoms()
-  const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const addons = clusterManagementAddons.filter(
     (cma) => cma.metadata.annotations?.[addonTextKey] && cma.metadata.annotations?.[addonPathKey]
   )
@@ -194,9 +194,9 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterApiURL')
   }, [])
   const { clusterCuratorsState, hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
-  const [clusterCurators] = useRecoilState(clusterCuratorsState)
-  const [hostedClusters] = useRecoilState(hostedClustersState)
-  const [infraEnvs] = useRecoilState(infraEnvironmentsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const infraEnvs = useRecoilValue(infraEnvironmentsState)
 
   const { t } = useTranslation()
   const presets = transformBrowserUrlToFilterPresets(window.location.search)

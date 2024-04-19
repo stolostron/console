@@ -19,7 +19,7 @@ import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { GetProjects } from '../../../components/GetProjects'
+import { useProjects } from '../../../hooks/useProjects'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { validateKubernetesDnsName } from '../../../lib/validation'
@@ -40,7 +40,7 @@ import {
   ResourceErrorCode,
   Secret,
 } from '../../../resources'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,
   AcmChip,
@@ -123,7 +123,7 @@ export function AnsibleAutomationsForm(props: {
   const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
   const { settingsState } = useSharedAtoms()
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
@@ -176,7 +176,7 @@ export function AnsibleAutomationsForm(props: {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   useEffect(() => {
     if (newSecret) {

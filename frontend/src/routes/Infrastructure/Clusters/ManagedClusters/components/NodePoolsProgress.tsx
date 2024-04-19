@@ -23,7 +23,7 @@ import { AddNodePoolModal } from './AddNodePoolModal'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
 import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
-import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { onToggle } from '../utils/utils'
 
 export type NodePoolStatus = {
@@ -90,7 +90,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
   )
   const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
   const { namespacesState } = useSharedAtoms()
-  const [namespaces] = useRecoilState(namespacesState)
+  const namespaces = useRecoilValue(namespacesState)
   const nodepoolList = nodePools.map((nodePool) => nodePool.metadata?.name) as string[]
 
   useEffect(() => {

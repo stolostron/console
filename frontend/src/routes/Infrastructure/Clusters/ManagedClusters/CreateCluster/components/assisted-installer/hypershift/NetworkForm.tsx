@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { getTemplateValue } from '../utils'
 import { defaultHostPrefix, defaultPodCIDR, defaultServiceCIDR } from './constants'
 import { getClusterImageVersion, getDefaultNetworkType } from './utils'
@@ -72,11 +72,10 @@ export const getDefaultNetworkFormValues = (
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templateYAML }) => {
   const { isAdvancedNetworking, setIsAdvancedNetworking, releaseImage, sshPublicKey } =
     React.useContext(HypershiftAgentContext)
-  const { waitForAll } = useSharedRecoil()
   const { agentsState, infrastructuresState, clusterImageSetsState } = useSharedAtoms()
-  const [agents, infrastructures, clusterImageSets] = useRecoilValue(
-    waitForAll([agentsState, infrastructuresState, clusterImageSetsState])
-  )
+  const agents = useRecoilValue(agentsState)
+  const infrastructures = useRecoilValue(infrastructuresState)
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
 
   const { t } = useTranslation()
   const formRef = React.useRef<FormikProps<any>>(null)

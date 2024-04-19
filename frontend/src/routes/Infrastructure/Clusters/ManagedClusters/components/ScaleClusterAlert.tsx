@@ -5,7 +5,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { getReadyReplicas } from '../../../../../resources'
 import { Button } from '@patternfly/react-core'
 
@@ -13,7 +13,7 @@ export function ScaleClusterAlert() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { machinePoolsState } = useSharedAtoms()
-  const [machinePoolState] = useRecoilState(machinePoolsState)
+  const machinePoolState = useRecoilValue(machinePoolsState)
   const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
 
   const totalDesiredReplicas = machinePools.reduce((sum, mp) => sum + (mp.status?.replicas || 0), 0)

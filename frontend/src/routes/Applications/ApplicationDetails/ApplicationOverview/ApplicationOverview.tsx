@@ -11,7 +11,7 @@ import {
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Text, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   getClusterCount,
   getClusterCountField,
@@ -46,8 +46,7 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { generatePath, Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
-import { useRecoilState } from '../../../../shared-recoil'
-import { PluginContext } from '../../../../lib/PluginContext'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
@@ -60,15 +59,14 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   const { t } = useTranslation()
   const localClusterStr = 'local-cluster'
 
-  const { dataContext } = useContext(PluginContext)
-  const { atoms } = useContext(dataContext)
-  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } = atoms
+  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } =
+    useSharedAtoms()
 
-  const [argoApplications] = useRecoilState(argoApplicationsState)
-  const [channels] = useRecoilState(channelsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const channels = useRecoilValue(channelsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const namespaces = useRecoilValue(namespacesState)
 
   const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)

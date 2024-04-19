@@ -6,7 +6,7 @@
 4. In `frontend` use the resources by
 
     ```
-    const [namespaces] = useRecoilState(namespacesState)
+    const namespaces = useRecoilValue(namespacesState)
     ```
 
 # Update console chart or backplane operator

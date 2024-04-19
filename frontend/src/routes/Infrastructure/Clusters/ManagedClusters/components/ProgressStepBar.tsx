@@ -13,7 +13,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { getFailedCuratorJobName } from '../../../../../resources/utils/status-conditions'
 
@@ -21,9 +21,9 @@ export function ProgressStepBar() {
   const { t } = useTranslation()
   const { cluster, clusterDeployment } = useContext(ClusterContext)
   const { ansibleJobState, clusterCuratorsState, configMapsState } = useSharedAtoms()
-  const [curators] = useRecoilState(clusterCuratorsState)
-  const [ansibleJobs] = useRecoilState(ansibleJobState)
-  const [configMaps] = useRecoilState(configMapsState)
+  const curators = useRecoilValue(clusterCuratorsState)
+  const ansibleJobs = useRecoilValue(ansibleJobState)
+  const configMaps = useRecoilValue(configMapsState)
   const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
   const curator = curators.find(
     (curator) => curator.metadata.name === cluster?.name && curator.metadata.namespace == cluster?.namespace

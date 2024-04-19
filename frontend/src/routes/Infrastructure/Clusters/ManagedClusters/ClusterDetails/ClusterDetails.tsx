@@ -29,7 +29,7 @@ import {
   ResourceErrorCode,
   SecretDefinition,
 } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import {
   AcmActionGroup,
   AcmButton,
@@ -74,7 +74,6 @@ export default function ClusterDetailsPage({
   const history = useHistory()
   const { t } = useTranslation()
 
-  const { waitForAll } = useSharedRecoil()
   const {
     agentClusterInstallsState,
     agentsState,
@@ -90,37 +89,19 @@ export default function ClusterDetailsPage({
     managedClustersState,
     nodePoolsState,
   } = useSharedAtoms()
-  const [
-    managedClusters,
-    clusterDeployments,
-    managedClusterInfos,
-    certificateSigningRequests,
-    managedClusterAddons,
-    clusterManagementAddons,
-    clusterClaims,
-    clusterCurators,
-    agentClusterInstalls,
-    agents,
-    infraEnvs,
-    hostedClusters,
-    nodePools,
-  ] = useRecoilValue(
-    waitForAll([
-      managedClustersState,
-      clusterDeploymentsState,
-      managedClusterInfosState,
-      certificateSigningRequestsState,
-      managedClusterAddonsState,
-      clusterManagementAddonsState,
-      clusterClaimsState,
-      clusterCuratorsState,
-      agentClusterInstallsState,
-      agentsState,
-      infraEnvironmentsState,
-      hostedClustersState,
-      nodePoolsState,
-    ])
-  )
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterClaims = useRecoilValue(clusterClaimsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const agents = useRecoilValue(agentsState)
+  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const nodePools = useRecoilValue(nodePoolsState)
 
   const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
   const clusterDeployment = clusterDeployments.find(

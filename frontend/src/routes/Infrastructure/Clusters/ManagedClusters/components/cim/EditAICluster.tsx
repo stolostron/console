@@ -48,7 +48,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates } from '../../../../InfraEnvironments/utils'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
@@ -67,10 +67,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
   const history = useHistory()
   const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState } = useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
-  const { waitForAll } = useSharedRecoil()
-  const [clusterImageSets, agents, nmStateConfigs, clusterCurators] = useRecoilValue(
-    waitForAll([clusterImageSetsState, agentsState, nmStateConfigsState, clusterCuratorsState])
-  )
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const agents = useRecoilValue(agentsState)
+  const nmStateConfigs = useRecoilValue(nmStateConfigsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
   const aiConfigMap = useAssistedServiceConfigMap()
 
   const clusterDeployment = useClusterDeployment({ name, namespace })

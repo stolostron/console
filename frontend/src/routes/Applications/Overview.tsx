@@ -66,6 +66,7 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -354,10 +355,6 @@ export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
   const { cluster } = getResourceParams()
-
-  const { dataContext } = useContext(PluginContext)
-  const { recoil, atoms } = useContext(dataContext)
-  const { useRecoilState } = recoil
   const {
     applicationSetsState,
     applicationsState,
@@ -371,21 +368,21 @@ export default function ApplicationsOverview() {
     placementsState,
     placementDecisionsState,
     subscriptionsState,
-  } = atoms
+  } = useSharedAtoms()
 
-  const [applications] = useRecoilState(applicationsState)
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApplications] = useRecoilState(argoApplicationsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [namespaces] = useRecoilState(namespacesState)
-  const [helmReleases] = useRecoilState(helmReleaseState)
+  const applications = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placements = useRecoilValue(placementsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const helmReleases = useRecoilValue(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+  const discoveredOCPAppResources = useRecoilValue(discoveredOCPAppResourcesState)
 
   const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
@@ -394,7 +391,7 @@ export default function ApplicationsOverview() {
   })
   const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
-  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 

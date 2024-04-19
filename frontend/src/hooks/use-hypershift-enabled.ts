@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useEffect } from 'react'
-import { useRecoilState, useSharedAtoms } from '../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
 
 export const useIsHypershiftEnabled = () => {
   const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
   const { managedClusterAddonsState, multiClusterEnginesState } = useSharedAtoms()
-  const [managedClusterAddOns] = useRecoilState(managedClusterAddonsState)
-  const [[multiClusterEngine]] = useRecoilState(multiClusterEnginesState)
+  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
+  const [multiClusterEngine] = useRecoilValue(multiClusterEnginesState)
   const hypershiftAddon = managedClusterAddOns.find(
     (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
   )

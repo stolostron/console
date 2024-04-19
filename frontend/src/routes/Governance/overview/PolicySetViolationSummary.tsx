@@ -2,7 +2,7 @@
 import { Card } from '@patternfly/react-core'
 import { AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useMemo } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 
@@ -23,7 +23,7 @@ export function PolicySetViolationsCard() {
 
 function usePolicySetViolations() {
   const { policySetsState } = useSharedAtoms()
-  const [policySets] = useRecoilState(policySetsState)
+  const policySets = useRecoilValue(policySetsState)
   const violations = useMemo(() => {
     let compliant = 0
     let noncompliant = 0

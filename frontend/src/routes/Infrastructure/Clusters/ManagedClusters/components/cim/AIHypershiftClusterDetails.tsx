@@ -10,16 +10,15 @@ import {
 import { createResource, deleteResource, getResource, IResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { launchToOCP } from '../../../../../../lib/ocp-utils'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 
 const AIHypershiftClusterDetails: React.FC = () => {
   const { hostedCluster, agents } = useContext(ClusterContext)
-  const { waitForAll } = useSharedRecoil()
 
   const { agentMachinesState, configMapsState, nodePoolsState } = useSharedAtoms()
-  const [nodePools, agentMachines, configMaps] = useRecoilValue(
-    waitForAll([nodePoolsState, agentMachinesState, configMapsState])
-  )
+  const nodePools = useRecoilValue(nodePoolsState)
+  const agentMachines = useRecoilValue(agentMachinesState)
+  const configMaps = useRecoilValue(configMapsState)
 
   const clusterNodePools = nodePools.filter(
     (np) =>
