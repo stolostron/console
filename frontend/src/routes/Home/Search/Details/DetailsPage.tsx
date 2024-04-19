@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, Routes, Route, useLocation } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -161,49 +161,62 @@ export default function DetailsPage() {
         />
       }
     >
-      <Switch>
-        <Route exact path={NavigationPath.resources}>
-          <DetailsOverviewPage
-            cluster={cluster}
-            loading={!resource && resourceError === ''}
-            error={resourceError}
-            resource={resource}
-            name={name}
-          />
-        </Route>
-        <Route exact path={NavigationPath.resourceYAML}>
-          <YAMLPage
-            resource={resource}
-            loading={!resource && resourceError === ''}
-            error={resourceError}
-            name={name}
-            namespace={namespace}
-            cluster={cluster}
-            kind={kind}
-            apiversion={apiversion}
-            setResourceVersion={setResourceVersion}
-          />
-        </Route>
-        <Route exact path={NavigationPath.resourceRelated}>
-          <RelatedResourceDetailsTab
-            cluster={cluster}
-            resource={resource}
-            resourceLoading={!resource && resourceError === ''}
-          />
-        </Route>
-        {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
-          <Route path={NavigationPath.resourceLogs}>
-            <LogsPage
+      <Routes>
+        <Route
+          path="/yaml"
+          element={
+            <YAMLPage
               resource={resource}
-              resourceError={resourceError}
-              containers={containers}
-              cluster={cluster}
+              loading={!resource && resourceError === ''}
+              error={resourceError}
+              name={name}
               namespace={namespace}
+              cluster={cluster}
+              kind={kind}
+              apiversion={apiversion}
+              setResourceVersion={setResourceVersion}
+            />
+          }
+        />
+        <Route
+          path="/related"
+          element={
+            <RelatedResourceDetailsTab
+              cluster={cluster}
+              resource={resource}
+              resourceLoading={!resource && resourceError === ''}
+            />
+          }
+        />
+
+        {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
+          <Route
+            path="/logs"
+            element={
+              <LogsPage
+                resource={resource}
+                resourceError={resourceError}
+                containers={containers}
+                cluster={cluster}
+                namespace={namespace}
+                name={name}
+              />
+            }
+          />
+        )}
+        <Route
+          path="/"
+          element={
+            <DetailsOverviewPage
+              cluster={cluster}
+              loading={!resource && resourceError === ''}
+              error={resourceError}
+              resource={resource}
               name={name}
             />
-          </Route>
-        )}
-      </Switch>
+          }
+        />
+      </Routes>
     </AcmPage>
   )
 }

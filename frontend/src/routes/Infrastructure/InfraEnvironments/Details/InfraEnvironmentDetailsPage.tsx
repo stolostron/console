@@ -9,7 +9,8 @@ import {
   AddHostDropdown,
 } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { Redirect, RouteComponentProps, useHistory } from 'react-router-dom'
+import { Link, Routes, Route, useLocation } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -143,11 +144,11 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         }
       >
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.infraEnvironmentOverview}>
+          <Routes>
+            <Route path={NavigationPath.infraEnvironmentOverview}>
               <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
             </Route>
-            <Route exact path={NavigationPath.infraEnvironmentHosts}>
+            <Route path={NavigationPath.infraEnvironmentHosts}>
               <HostsTab
                 agentClusterInstalls={agentClusterInstalls}
                 infraEnv={infraEnv}
@@ -156,14 +157,14 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 infraNMStates={infraNMStates}
               />
             </Route>
-            <Route exact path={NavigationPath.infraEnvironmentDetails}>
+            <Route path={NavigationPath.infraEnvironmentDetails}>
               <Redirect
                 to={NavigationPath.infraEnvironmentOverview
                   .replace(':namespace', match.params.namespace)
                   .replace(':name', match.params.name)}
               />
             </Route>
-          </Switch>
+          </Routes>
         </Suspense>
       </AcmPage>
     </>

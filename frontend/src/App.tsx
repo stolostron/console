@@ -18,7 +18,8 @@ import {
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { Redirect, RouteComponentProps, Switch } from 'react-router-dom'
+import { CompatRoute, Link, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'
@@ -228,39 +229,37 @@ export default function App() {
 
   return (
     <PluginDataContextProvider value={pluginDataContextValue}>
-      <BrowserRouter>
-        <Page
-          header={<AppHeader />}
-          sidebar={<AppSidebar routes={routes} />}
-          isManagedSidebar
-          defaultManagedSidebarIsOpen={true}
-          style={{ height: '100vh' }}
-        >
-          <LoadPluginData>
-            <AcmToastProvider>
-              <AcmToastGroup />
-              <AcmTablePaginationContextProvider localStorageKey="clusters">
-                <Suspense fallback={<LoadingPage />}>
-                  <Switch>
-                    {routes.map((route) =>
-                      route.type === 'group' ? (
-                        route.routes.map((route) => (
-                          <Route key={route.title} path={route.route} component={route.component} />
-                        ))
-                      ) : (
-                        <Route key={route.title} path={route.route} component={route.component} />
-                      )
-                    )}
-                    <Route path="*">
-                      <Redirect to={NavigationPath.welcome} />
-                    </Route>
-                  </Switch>
-                </Suspense>
-              </AcmTablePaginationContextProvider>
-            </AcmToastProvider>
-          </LoadPluginData>
-        </Page>
-      </BrowserRouter>
+      <Page
+        header={<AppHeader />}
+        sidebar={<AppSidebar routes={routes} />}
+        isManagedSidebar
+        defaultManagedSidebarIsOpen={true}
+        style={{ height: '100vh' }}
+      >
+        <LoadPluginData>
+          <AcmToastProvider>
+            <AcmToastGroup />
+            <AcmTablePaginationContextProvider localStorageKey="clusters">
+              <Suspense fallback={<LoadingPage />}>
+                <Switch>
+                  {routes.map((route) =>
+                    route.type === 'group' ? (
+                      route.routes.map((route) => (
+                        <CompatRoute key={route.title} path={route.route} component={route.component} />
+                      ))
+                    ) : (
+                      <CompatRoute key={route.title} path={route.route} component={route.component} />
+                    )
+                  )}
+                  <CompatRoute exact path="*">
+                    <Redirect to={NavigationPath.welcome} />
+                  </CompatRoute>
+                </Switch>
+              </Suspense>
+            </AcmTablePaginationContextProvider>
+          </AcmToastProvider>
+        </LoadPluginData>
+      </Page>
     </PluginDataContextProvider>
   )
 }

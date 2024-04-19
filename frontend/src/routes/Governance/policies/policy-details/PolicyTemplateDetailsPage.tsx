@@ -2,7 +2,8 @@
 
 import { AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense } from 'react'
-import { Route, Switch, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
@@ -57,11 +58,10 @@ export function PolicyTemplateDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
+        <Routes>
           <Route
-            exact
             path={templateDetailsUrl}
-            render={() => (
+            element={
               <PolicyTemplateDetails
                 clusterName={clusterName}
                 apiGroup={apiGroup}
@@ -69,9 +69,9 @@ export function PolicyTemplateDetailsPage() {
                 kind={kind}
                 templateName={templateName}
               />
-            )}
+            }
           />
-        </Switch>
+        </Routes>
       </Suspense>
     </AcmPage>
   )

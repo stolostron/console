@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { NavigationPath } from '../../NavigationPath'
+import { Route, Routes } from 'react-router-dom-v5-compat'
 import ApplicationsDetailsPage from './ApplicationDetails/ApplicationDetails'
 import ApplicationsPage from './ApplicationsPage'
 import { CreateApplicationArgo } from './CreateApplication/CreateApplicationArgo'
@@ -10,17 +9,14 @@ import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 export default function Applications() {
   return (
-    <Switch>
-      <Route path={NavigationPath.createApplicationArgo} component={CreateApplicationArgo} />
-      <Route path={NavigationPath.editApplicationArgo} component={EditArgoApplicationSet} />
-      <Route path={NavigationPath.createApplicationArgoPullModel} component={CreateApplicationArgoPullModel} />
-      <Route exact path={NavigationPath.createApplicationSubscription} component={CreateSubscriptionApplicationPage} />
-      <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
-      <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
-      <Route path={NavigationPath.applications} component={ApplicationsPage} />
-      <Route path="*">
-        <Redirect to={NavigationPath.applications} />
-      </Route>
-    </Switch>
+    <Routes>
+      <Route path="/create/argo" element={<CreateApplicationArgo />} />
+      <Route path="/edit/argo/:namespace/:name" element={<EditArgoApplicationSet />} />
+      <Route path="/create/argopullmodel" element={<CreateApplicationArgoPullModel />} />
+      <Route path="/create/subscription" element={<CreateSubscriptionApplicationPage />} />
+      <Route path="/edit/subscription/:namespace/:name" element={<CreateSubscriptionApplicationPage />} />
+      <Route path="/details/:namespace/:name" element={<ApplicationsDetailsPage />} />
+      <Route path="/*" element={<ApplicationsPage />} />
+    </Routes>
   )
 }

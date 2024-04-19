@@ -16,7 +16,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { Link, useLocation, Routes, Route, Navigate, useParams } from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -101,8 +102,11 @@ function searchError(completeError: ApolloError | undefined, t: TFunction) {
   }
 }
 
-export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
+export default function ApplicationDetailsPage() {
   const location = useLocation()
+  const { name = '', namespace = '' } = useParams()
+  const match = { params: { name, namespace } }
+
   const { t } = useTranslation()
   const {
     ansibleJobState,
@@ -520,30 +524,35 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
           <DeleteResourceModal {...modalProps} />
           {pluginModal}
           <Suspense fallback={<Fragment />}>
-            <Switch>
-              <Route exact path={NavigationPath.applicationOverview}>
-                <ApplicationOverviewPageContent applicationData={applicationData} />
-              </Route>
-              <Route exact path={NavigationPath.applicationTopology}>
-                <ApplicationTopologyPageContent
-                  applicationData={applicationData}
-                  channelControl={{
-                    allChannels,
-                    activeChannel,
-                    setActiveChannel,
-                  }}
-                />
-              </Route>
-              <Route exact path={NavigationPath.applicationDetails}>
-                <Redirect
+            <Routes>
+              <Route
+                path="/:namespace/:name/overview"
+                element={<ApplicationOverviewPageContent applicationData={applicationData} />}
+              />
+              <Route
+                path="/details/:namespace/:name/topology"
+                element={
+                  <ApplicationTopologyPageContent
+                    applicationData={applicationData}
+                    channelControl={{
+                      allChannels,
+                      activeChannel,
+                      setActiveChannel,
+                    }}
+                  />
+                }
+              />
+              {/* <Route path="/:namespace/:name/*">
+                <Navigate
                   to={
                     NavigationPath.applicationOverview
+                      .replace('/multicloud/applications/details', '')6
                       .replace(namespaceString, match.params.namespace)
                       .replace(nameString, match.params.name) + location.search
                   }
                 />
-              </Route>
-            </Switch>
+              </Route> */}
+            </Routes>
           </Suspense>
         </Fragment>
       )}

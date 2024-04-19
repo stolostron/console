@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { Link, useLocation, Route, Routes, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -123,10 +124,10 @@ export function PolicyDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
-          <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
-          <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
-        </Switch>
+        <Routes>
+          <Route path={detailsUrl} element={<PolicyDetailsOverview policy={selectedPolicy} />} />
+          <Route path={resultsUrl} element={<PolicyDetailsResults policy={selectedPolicy} />} />
+        </Routes>
       </Suspense>
     </AcmPage>
   )
