@@ -11,7 +11,7 @@
     "governance": "../../src/routes/Governance/GovernancePlugin.tsx"
   },
   "dependencies": {
-    "@console/pluginAPI": "*",
+    "@console/pluginAPI": ">=4.13.0",
     "mce": ">=2.6"
   }
 }

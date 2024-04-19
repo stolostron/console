@@ -25,6 +25,7 @@ process.env.MODE = 'plugin'
 if (!process.env.DEBUG_PRINT_LIMIT) {
   process.env.DEBUG_PRINT_LIMIT = '0'
 }
+window.SERVER_FLAGS = { basePath: '/' }
 
 JestFetchMock.enableMocks()
 fetchMock.dontMock()

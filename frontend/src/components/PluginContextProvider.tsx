@@ -1,22 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  isContextProvider,
-  isHrefNavItem,
-  useResolvedExtensions,
-  UseK8sWatchResource,
-} from '@openshift-console/dynamic-plugin-sdk'
+import { isHrefNavItem, useResolvedExtensions, UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useMemo, useEffect, useState } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
 
-// import { isSharedContext, SharedContext } from '../lib/SharedContext'
-import { /*PluginData,*/ usePluginDataContextValue } from '../lib/PluginDataContext'
-// import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import { isSharedContext, SharedContext } from '../lib/SharedContext'
+import { PluginData } from '../lib/PluginDataContext'
+import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
-// const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
-//     isSharedContext(e) && e.properties.id === 'mce-data-context'
+const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
+  isSharedContext(e) && e.properties.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
   const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
@@ -24,10 +19,8 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   })
   const [hrefs] = useResolvedExtensions(isHrefNavItem)
 
-  const [contextProviders] = useResolvedExtensions(isContextProvider)
-  const contextProvider = contextProviders?.find((e) => {
-    return e.pluginName === 'mce'
-  })
+  const [pluginDataContexts, extensionsReady] = useResolvedExtensions(isPluginDataContext)
+  const pluginDataContext = extensionsReady && pluginDataContexts.length && pluginDataContexts[0]
 
   const [isOverviewAvailable, isApplicationsAvailable, isGovernanceAvailable, isSearchAvailable] = useMemo(() => {
     const hrefAvailable = (id: string) =>
@@ -62,7 +55,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
 
   const acmExtensions = useAcmExtension()
 
-  return contextProvider ? (
+  return pluginDataContext ? (
     <PluginContext.Provider
       value={{
         isACMAvailable,
@@ -71,7 +64,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         isGovernanceAvailable,
         isSearchAvailable,
         isSubmarinerAvailable,
-        dataContext: (contextProvider.properties.useValueHook as typeof usePluginDataContextValue).context,
+        dataContext: pluginDataContext.properties.context,
         acmExtensions,
         ocpApi,
       }}
