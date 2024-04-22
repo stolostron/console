@@ -2,7 +2,8 @@
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom-v5-compat'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -46,8 +47,8 @@ function getWizardSyncEditor() {
 export function EditPolicy() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name: string } = useParams()
-  const { name } = params
+  const params = useParams()
+  const { name = '' } = params
   const history = useHistory()
   const {
     channelsState,

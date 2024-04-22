@@ -3,7 +3,8 @@
 import { LocationDescriptor } from 'history'
 import { useContext, useMemo } from 'react'
 import { generatePath } from 'react-router'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources'
 

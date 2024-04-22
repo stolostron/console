@@ -13,7 +13,8 @@ import {
   SelectVariant,
 } from '@patternfly/react-core'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
-import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
@@ -57,15 +58,14 @@ import get from 'lodash/get'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 
-export default function AnsibleAutomationsFormPage({
-  match,
-}: RouteComponentProps<{ namespace: string; name: string }>) {
-  const { name, namespace } = match.params
+export default function AnsibleAutomationsFormPage() {
+  const params = useParams()
+  const { name = '', namespace = '' } = params
 
   let isEditing = false
   let isViewing = false
   if (name !== undefined) {
-    isEditing = match.path.endsWith(NavigationPath.editAnsibleAutomation)
+    isEditing = params['*']?.startsWith('edit') || false
     isViewing = !isEditing
   }
 

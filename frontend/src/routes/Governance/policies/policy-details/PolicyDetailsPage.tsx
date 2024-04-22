@@ -32,9 +32,9 @@ export function PolicyDetailsPage() {
   const [subscriptions] = useRecoilState(subscriptionsState)
   const [channels] = useRecoilState(channelsState)
 
-  const params = useParams<{ namespace: string; name: string }>()
-  const policyNamespace = params.namespace
-  const policyName = params.name
+  const params = useParams()
+  const policyNamespace = params.namespace || ''
+  const policyName = params.name || ''
 
   const isResultsTab = location.pathname.endsWith('/results')
 
@@ -125,8 +125,8 @@ export function PolicyDetailsPage() {
     >
       <Suspense fallback={<Fragment />}>
         <Routes>
-          <Route path={detailsUrl} element={<PolicyDetailsOverview policy={selectedPolicy} />} />
-          <Route path={resultsUrl} element={<PolicyDetailsResults policy={selectedPolicy} />} />
+          <Route path="/" element={<PolicyDetailsOverview policy={selectedPolicy} />} />
+          <Route path="/results" element={<PolicyDetailsResults policy={selectedPolicy} />} />
         </Routes>
       </Suspense>
     </AcmPage>

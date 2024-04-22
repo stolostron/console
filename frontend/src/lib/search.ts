@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
+
 import { getBackendUrl, IRequestResult, postRequest } from '../resources'
 
 export const apiSearchUrl = '/proxy/search'

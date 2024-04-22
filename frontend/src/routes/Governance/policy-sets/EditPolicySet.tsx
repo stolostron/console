@@ -2,7 +2,8 @@
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom-v5-compat'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -41,7 +42,7 @@ export function EditPolicySet() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
   const params = useParams<{ namespace: string; name: string }>()
-  const { name } = params
+  const { name = '' } = params
   const history = useHistory()
   const {
     managedClusterSetBindingsState,

@@ -12,7 +12,8 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'

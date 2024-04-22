@@ -2,7 +2,9 @@
 import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ExtractRouteParams, useHistory, useRouteMatch } from 'react-router'
+import { useHistory } from 'react-router'
+import { useParams } from 'react-router-dom-v5-compat'
+
 import YAML from 'yaml'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
@@ -113,13 +115,10 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
 }
 
 export function ViewEditCredentialsFormPage() {
-  const {
-    path,
-    params: { name, namespace },
-  } = useRouteMatch<ExtractRouteParams<NavigationPath.editCredentials | NavigationPath.viewCredentials, string>>()
-
-  const isEditing = path === NavigationPath.editCredentials
-  const isViewing = path === NavigationPath.viewCredentials
+  const params = useParams()
+  const { name = '', namespace = '' } = params
+  const isEditing = params['*']?.startsWith('edit') || false
+  const isViewing = params['*']?.startsWith('details') || false
 
   const [error, setError] = useState<Error>()
 

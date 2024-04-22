@@ -17,7 +17,7 @@ import {
   useState,
 } from 'react'
 import { useHistory } from 'react-router-dom'
-import { Link, useLocation, Routes, Route, Navigate, useParams } from 'react-router-dom-v5-compat'
+import { Link, useLocation, Routes, Route, useParams, Navigate } from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -525,12 +525,9 @@ export default function ApplicationDetailsPage() {
           {pluginModal}
           <Suspense fallback={<Fragment />}>
             <Routes>
+              <Route path="/overview" element={<ApplicationOverviewPageContent applicationData={applicationData} />} />
               <Route
-                path="/:namespace/:name/overview"
-                element={<ApplicationOverviewPageContent applicationData={applicationData} />}
-              />
-              <Route
-                path="/details/:namespace/:name/topology"
+                path="/topology"
                 element={
                   <ApplicationTopologyPageContent
                     applicationData={applicationData}
@@ -542,16 +539,19 @@ export default function ApplicationDetailsPage() {
                   />
                 }
               />
-              {/* <Route path="/:namespace/:name/*">
-                <Navigate
-                  to={
-                    NavigationPath.applicationOverview
-                      .replace('/multicloud/applications/details', '')6
-                      .replace(namespaceString, match.params.namespace)
-                      .replace(nameString, match.params.name) + location.search
-                  }
-                />
-              </Route> */}
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={
+                      NavigationPath.applicationOverview
+                        .replace(namespaceString, match.params.namespace)
+                        .replace(nameString, match.params.name) + location.search
+                    }
+                    replace
+                  />
+                }
+              />
             </Routes>
           </Suspense>
         </Fragment>

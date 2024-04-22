@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Route, Routes } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../NavigationPath'
 import GovernancePage from './GovernancePage'
 import { CreatePolicy } from './policies/CreatePolicy'
 import { CreatePolicyAutomation } from './policies/CreatePolicyAutomation'
@@ -17,13 +16,19 @@ export default function Governance() {
     <Routes>
       <Route path="/policies/create" element={<CreatePolicy />} />
       <Route path="/policies/edit/:namespace/:name" element={<EditPolicy />} />
-      <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation />} />
-      <Route path={NavigationPath.editPolicyAutomation} element={<EditPolicyAutomation />} />
-      <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
-      <Route path={NavigationPath.policyDetailsHistory} element={<PolicyDetailsHistoryPage />} />
-      <Route path="/policies/details/:namespace/:name" element={<PolicyDetailsPage />} />
+      <Route path="/policyautomation/create/:namespace/:name" element={<CreatePolicyAutomation />} />
+      <Route path="/policyautomation/edit/:namespace/:name" element={<EditPolicyAutomation />} />
+      <Route
+        path="/policies/details/:namespace/:name/template/:clusterName/:apiGroup/:apiVersion/:kind/:templateName"
+        element={<PolicyTemplateDetailsPage />}
+      />
+      <Route
+        path="/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history"
+        element={<PolicyDetailsHistoryPage />}
+      />
+      <Route path="/policies/details/:namespace/:name/*" element={<PolicyDetailsPage />} />
       <Route path="/policy-sets/create" element={<CreatePolicySet />} />
-      <Route path={NavigationPath.editPolicySet} element={<EditPolicySet />} />
+      <Route path="/policy-sets/edit/:namespace/:name" element={<EditPolicySet />} />
       <Route path="/*" element={<GovernancePage />} />
     </Routes>
   )

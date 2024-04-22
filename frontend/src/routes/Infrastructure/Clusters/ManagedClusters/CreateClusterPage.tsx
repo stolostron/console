@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import CreateCluster from './CreateCluster/CreateCluster'
 import { CLUSTER_INFRA_TYPE_PARAM, isClusterInfrastructureType } from './ClusterInfrastructureType'
 import { CreateClusterCatalog } from './CreateClusterCatalog/CreateClusterCatalog'

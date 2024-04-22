@@ -15,7 +15,7 @@ export default function Applications() {
       <Route path="/create/argopullmodel" element={<CreateApplicationArgoPullModel />} />
       <Route path="/create/subscription" element={<CreateSubscriptionApplicationPage />} />
       <Route path="/edit/subscription/:namespace/:name" element={<CreateSubscriptionApplicationPage />} />
-      <Route path="/details/:namespace/:name" element={<ApplicationsDetailsPage />} />
+      <Route path="/details/:namespace/:name/*" element={<ApplicationsDetailsPage />} />
       <Route path="/*" element={<ApplicationsPage />} />
     </Routes>
   )

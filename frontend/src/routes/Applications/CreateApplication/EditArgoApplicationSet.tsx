@@ -4,7 +4,8 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
+import { useParams } from 'react-router-dom-v5-compat'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -67,8 +68,8 @@ export function EditArgoApplicationSet() {
   const history = useHistory()
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
-  const params: { namespace: string; name: string } = useParams()
-  const { name } = params
+  const params: { namespace?: string; name?: string } = useParams()
+  const { name = '' } = params
   const [applicationSets] = useRecoilState(applicationSetsState)
   const [placements] = useRecoilState(placementsState)
   const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
