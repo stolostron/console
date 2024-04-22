@@ -6,11 +6,14 @@ import * as atoms from '../atoms'
 import * as recoil from 'recoil'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as selectors from '../selectors'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import * as reactQuery from '@tanstack/react-query'
 
 export type PluginData = {
   recoil: typeof recoil
   atoms: typeof atoms
   selectors: typeof selectors
+  reactQuery: typeof reactQuery
   loaded: boolean
   startLoading: boolean
   setLoaded: Dispatch<SetStateAction<boolean>>
@@ -21,6 +24,7 @@ export const defaultContext = {
   recoil,
   atoms,
   selectors,
+  reactQuery,
   loaded: false,
   startLoading: false,
   setLoaded: () => {},
@@ -38,6 +42,7 @@ export const usePluginDataContextValue = () => {
       recoil,
       atoms,
       selectors,
+      reactQuery,
       loaded,
       startLoading,
       setLoaded,

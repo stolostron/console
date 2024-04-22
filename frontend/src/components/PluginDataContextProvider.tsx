@@ -4,6 +4,7 @@ import { LoadData } from './LoadData'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { RecoilRoot } from 'recoil'
 import { PluginData, PluginDataContext } from '../lib/PluginDataContext'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
