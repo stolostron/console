@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import policylimitclusteradmin from './stable/AC-Access-Control/policy-limitclusteradmin.yaml'
 import policyrole from './stable/AC-Access-Control/policy-role.yaml'
 import policyrolebinding from './stable/AC-Access-Control/policy-rolebinding.yaml'
 import policycomplianceoperatorinstall from './stable/CA-Security-Assessment-and-Authorization/policy-compliance-operator-install.yaml'
@@ -48,7 +47,6 @@ export const Specifications: {
   controls: string
   policyTemplates: object[]
 }[] = [
-  getPolicySpecification('Limit cluster admin roles', policylimitclusteradmin),
   getPolicySpecification('Role must follow defined permissions', policyrole),
   getPolicySpecification('Role binding must exist', policyrolebinding),
   getPolicySpecification('Install the Compliance operator', policycomplianceoperatorinstall),

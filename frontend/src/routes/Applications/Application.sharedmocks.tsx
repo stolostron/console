@@ -436,7 +436,7 @@ const mockSearchDisabledCluster = {
   ManagedClusterImportSucceeded: 'True',
   ManagedClusterJoined: 'True',
   addon:
-    'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+    'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
   apigroup: 'internal.open-cluster-management.io',
   cluster: 'magchen-vm',
   consoleURL: 'https://console-openshift-console.apps.magchen-vm.dev06.red-chesterfield.com',
@@ -446,7 +446,7 @@ const mockSearchDisabledCluster = {
   kind_plural: 'managedclusterinfos',
   kubernetesVersion: 'v1.25.4+a34b9e9',
   label:
-    'cloud=vSphere; cluster.open-cluster-management.io/clusterset=default; clusterID=3a52b073-29b1-4b01-8679-7a1e3dc2345b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; name=magchen-vm; openshiftVersion=4.12.2; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
+    'cloud=vSphere; cluster.open-cluster-management.io/clusterset=default; clusterID=3a52b073-29b1-4b01-8679-7a1e3dc2345b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-work-manager=available; name=magchen-vm; openshiftVersion=4.12.2; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; vendor=OpenShift',
   memory: '97962348Ki',
   name: 'magchen-vm',
   nodes: '6',

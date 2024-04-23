@@ -833,20 +833,6 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     apiVersion: 'addon.open-cluster-management.io/v1alpha1',
     kind: 'ClusterManagementAddOn',
     metadata: {
-      name: 'iam-policy-controller',
-    },
-    spec: {
-      addOnConfiguration: { crName: '', crdName: 'klusterletaddonconfigs.agent.open-cluster-management.io' },
-      addOnMeta: {
-        description: 'Monitors identity controls based on distributed policies.',
-        displayName: 'IAM Policy Controller',
-      },
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ClusterManagementAddOn',
-    metadata: {
       name: 'policy-controller',
     },
     spec: {
@@ -921,9 +907,6 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
       enabled: true,
     },
     certPolicyController: {
-      enabled: true,
-    },
-    iamPolicyController: {
       enabled: true,
     },
   },

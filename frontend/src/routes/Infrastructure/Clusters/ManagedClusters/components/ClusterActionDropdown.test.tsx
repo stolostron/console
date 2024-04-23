@@ -394,7 +394,6 @@ describe('ClusterActionDropdown', () => {
         policyController: { enabled: true },
         searchCollector: { enabled: true },
         certPolicyController: { enabled: true },
-        iamPolicyController: { enabled: true },
       },
     }
     const createMcNock = nockCreate(mockCreateManagedCluster, mockCreateManagedCluster)

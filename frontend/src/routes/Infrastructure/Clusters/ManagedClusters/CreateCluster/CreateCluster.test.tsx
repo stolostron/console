@@ -416,9 +416,6 @@ const mockKlusterletAddonConfigAI = {
     certPolicyController: {
       enabled: true,
     },
-    iamPolicyController: {
-      enabled: true,
-    },
   },
 }
 
@@ -623,9 +620,6 @@ const mockKlusterletAddonSecretAws = {
       enabled: true,
     },
     certPolicyController: {
-      enabled: true,
-    },
-    iamPolicyController: {
       enabled: true,
     },
   },

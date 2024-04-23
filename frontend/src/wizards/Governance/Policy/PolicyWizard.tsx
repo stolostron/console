@@ -33,7 +33,6 @@ import {
   WizHidden,
   WizItemSelector,
   WizKeyValue,
-  WizNumberInput,
   WizRadioGroup,
   WizSingleSelect,
   WizStringsInput,
@@ -381,26 +380,6 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
           />
           <WizTextInput path="objectDefinition.spec.minimumDuration" label={t('Minimum duration')} required />
-        </WizHidden>
-
-        {/* IamPolicy */}
-        <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'IamPolicy'}>
-          <div>
-            <Title headingLevel="h6">{t('IAM Policy')}</Title>
-          </div>
-
-          <WizTextInput
-            path="objectDefinition.metadata.name"
-            label={t('Name')}
-            required
-            helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
-            validation={validateKubernetesResourceName}
-          />
-          <WizNumberInput
-            path="objectDefinition.spec.maxClusterRoleBindingUsers"
-            label={t('Limit cluster role bindings')}
-            required
-          />
         </WizHidden>
 
         {/* OperatorPolicy */}

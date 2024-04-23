@@ -564,26 +564,6 @@ const props = {
             apiVersion: 'addon.open-cluster-management.io/v1alpha1',
             kind: 'ManagedClusterAddOn',
             metadata: {
-              name: 'iam-policy-controller',
-              namespace: 'local-cluster',
-              ownerReferences: [
-                {
-                  apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-                  blockOwnerDeletion: true,
-                  controller: true,
-                  kind: 'ClusterManagementAddOn',
-                  name: 'iam-policy-controller',
-                },
-              ],
-            },
-            spec: {
-              installNamespace: 'open-cluster-management-agent-addon',
-            },
-          },
-          {
-            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-            kind: 'ManagedClusterAddOn',
-            metadata: {
               name: 'work-manager',
               namespace: 'local-cluster',
               ownerReferences: [
@@ -615,7 +595,6 @@ const props = {
         'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
         'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-        'feature.open-cluster-management.io/addon-iam-policy-controller': 'available',
         'feature.open-cluster-management.io/addon-work-manager': 'available',
         'local-cluster': 'true',
         name: 'local-cluster',
