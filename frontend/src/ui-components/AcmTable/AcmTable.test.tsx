@@ -10,6 +10,7 @@ import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
 import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
+import { MemoryRouter } from 'react-router-dom'
 const axe = configureAxe({
   rules: {
     'scope-attr-valid': { enabled: false },
@@ -58,189 +59,193 @@ describe('AcmTable', () => {
     } = props
     const [items, setItems] = useState<IExampleData[]>(testItems)
     return (
-      <AcmTable<IExampleData>
-        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
-        items={items}
-        columns={[
-          {
-            header: 'First Name',
-            sort: 'firstName',
-            cell: 'firstName',
-            search: useSearch ? 'firstName' : undefined,
-          },
-          {
-            header: 'Last Name',
-            sort: 'last_name',
-            cell: 'last_name',
-          },
-          {
-            header: 'EMail',
-            cell: 'email',
-            search: useSearch ? 'email' : undefined,
-          },
-          {
-            header: 'Gender',
-            sort: 'gender',
-            cell: (item) => item.gender,
-            search: useSearch ? 'gender' : undefined,
-          },
-          {
-            header: 'IP Address',
-            sort: sortFunction,
-            cell: 'ip_address',
-            search: useSearch ? (item) => item['ip_address'] : undefined,
-          },
-          {
-            header: 'UID',
-            sort: 'uid',
-            cell: 'uid',
-            search: useSearch ? 'uid' : undefined,
-            tooltip: 'Tooltip Example',
-            transforms: props.transforms ? [fitContent] : undefined,
-          },
-        ]}
-        keyFn={(item: IExampleData) => item.uid.toString()}
-        tableActionButtons={
-          useTableActions
-            ? [
-                {
-                  id: 'primary-table-button',
-                  title: 'Primary action',
-                  click: () => primaryTableActionFunction(),
-                  isDisabled: false,
-                  variant: ButtonVariant.primary,
-                },
-                {
-                  id: 'secondary-table-button',
-                  title: 'Secondary action',
-                  click: () => secondaryTableActionFunction(),
-                  variant: ButtonVariant.secondary,
-                },
-              ]
-            : undefined
-        }
-        tableActions={
-          useTableActions
-            ? [
-                {
-                  id: 'status-group',
-                  title: 'Status',
-                  actions: [
-                    {
-                      id: 'status-1',
-                      title: 'Status 1',
-                      click: () => null,
-                      variant: 'dropdown-action',
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          items={items}
+          columns={[
+            {
+              header: 'First Name',
+              sort: 'firstName',
+              cell: 'firstName',
+              search: useSearch ? 'firstName' : undefined,
+            },
+            {
+              header: 'Last Name',
+              sort: 'last_name',
+              cell: 'last_name',
+            },
+            {
+              header: 'EMail',
+              cell: 'email',
+              search: useSearch ? 'email' : undefined,
+            },
+            {
+              header: 'Gender',
+              sort: 'gender',
+              cell: (item) => item.gender,
+              search: useSearch ? 'gender' : undefined,
+            },
+            {
+              header: 'IP Address',
+              sort: sortFunction,
+              cell: 'ip_address',
+              search: useSearch ? (item) => item['ip_address'] : undefined,
+            },
+            {
+              header: 'UID',
+              sort: 'uid',
+              cell: 'uid',
+              search: useSearch ? 'uid' : undefined,
+              tooltip: 'Tooltip Example',
+              transforms: props.transforms ? [fitContent] : undefined,
+            },
+          ]}
+          keyFn={(item: IExampleData) => item.uid.toString()}
+          tableActionButtons={
+            useTableActions
+              ? [
+                  {
+                    id: 'primary-table-button',
+                    title: 'Primary action',
+                    click: () => primaryTableActionFunction(),
+                    isDisabled: false,
+                    variant: ButtonVariant.primary,
+                  },
+                  {
+                    id: 'secondary-table-button',
+                    title: 'Secondary action',
+                    click: () => secondaryTableActionFunction(),
+                    variant: ButtonVariant.secondary,
+                  },
+                ]
+              : undefined
+          }
+          tableActions={
+            useTableActions
+              ? [
+                  {
+                    id: 'status-group',
+                    title: 'Status',
+                    actions: [
+                      {
+                        id: 'status-1',
+                        title: 'Status 1',
+                        click: () => null,
+                        variant: 'dropdown-action',
+                      },
+                      {
+                        id: 'status-2',
+                        title: 'Status 2',
+                        click: () => null,
+                        variant: 'dropdown-action',
+                      },
+                    ],
+                    variant: 'action-group',
+                  },
+                  {
+                    id: 'separator-1',
+                    variant: 'action-seperator',
+                  },
+                  {
+                    id: 'delete',
+                    title: 'Delete',
+                    click: (it: IExampleData[]) => {
+                      setItems(
+                        items ? items.filter((i: { uid: number }) => !it.find((item) => item.uid === i.uid)) : []
+                      )
+                      bulkDeleteAction(it)
                     },
-                    {
-                      id: 'status-2',
-                      title: 'Status 2',
-                      click: () => null,
-                      variant: 'dropdown-action',
+                    variant: 'bulk-action',
+                  },
+                ]
+              : undefined
+          }
+          rowActions={
+            useRowActions
+              ? [
+                  {
+                    id: 'delete',
+                    title: 'Delete item',
+                    click: (item: IExampleData) => {
+                      deleteAction(item)
+                      setItems(items.filter((i) => i.uid !== item.uid))
                     },
-                  ],
-                  variant: 'action-group',
-                },
-                {
-                  id: 'separator-1',
-                  variant: 'action-seperator',
-                },
-                {
-                  id: 'delete',
-                  title: 'Delete',
-                  click: (it: IExampleData[]) => {
-                    setItems(items ? items.filter((i: { uid: number }) => !it.find((item) => item.uid === i.uid)) : [])
-                    bulkDeleteAction(it)
                   },
-                  variant: 'bulk-action',
-                },
-              ]
-            : undefined
-        }
-        rowActions={
-          useRowActions
-            ? [
-                {
-                  id: 'delete',
-                  title: 'Delete item',
-                  click: (item: IExampleData) => {
-                    deleteAction(item)
-                    setItems(items.filter((i) => i.uid !== item.uid))
+                  {
+                    id: 'deletedisabled',
+                    title: 'Disabled delete item',
+                    isDisabled: true,
+                    tooltip: 'This button is disabled',
+                    click: (item: IExampleData) => {
+                      deleteAction(item)
+                      setItems(items.filter((i) => i.uid !== item.uid))
+                    },
                   },
-                },
-                {
-                  id: 'deletedisabled',
-                  title: 'Disabled delete item',
-                  isDisabled: true,
-                  tooltip: 'This button is disabled',
-                  click: (item: IExampleData) => {
-                    deleteAction(item)
-                    setItems(items.filter((i) => i.uid !== item.uid))
+                  {
+                    id: 'deletetooltipped',
+                    title: 'Tooltipped delete item',
+                    isDisabled: false,
+                    tooltip: 'This button is not disabled',
+                    click: (item: IExampleData) => {
+                      deleteAction(item)
+                      setItems(items.filter((i) => i.uid !== item.uid))
+                    },
                   },
-                },
-                {
-                  id: 'deletetooltipped',
-                  title: 'Tooltipped delete item',
-                  isDisabled: false,
-                  tooltip: 'This button is not disabled',
-                  click: (item: IExampleData) => {
-                    deleteAction(item)
-                    setItems(items.filter((i) => i.uid !== item.uid))
+                  {
+                    id: 'disablednotooltip',
+                    title: 'Disabled item',
+                    isDisabled: true,
+                    click: (item: IExampleData) => {
+                      deleteAction(item)
+                      setItems(items.filter((i) => i.uid !== item.uid))
+                    },
                   },
-                },
-                {
-                  id: 'disablednotooltip',
-                  title: 'Disabled item',
-                  isDisabled: true,
-                  click: (item: IExampleData) => {
-                    deleteAction(item)
-                    setItems(items.filter((i) => i.uid !== item.uid))
+                ]
+              : undefined
+          }
+          extraToolbarControls={
+            useExtraToolbarControls ? (
+              <ToggleGroup>
+                <ToggleGroupItem isSelected={true} text="View 1" />
+                <ToggleGroupItem text="View 2" />
+              </ToggleGroup>
+            ) : undefined
+          }
+          customTableAction={
+            useCustomTableAction ? (
+              <AcmDropdown
+                isDisabled={false}
+                tooltip="Disabled"
+                id="create"
+                onSelect={() => null}
+                text="Create"
+                dropdownItems={[
+                  {
+                    id: 'action1',
+                    text: 'Action 1',
+                    tooltip: 'Disabled',
+                    href: '/action1',
+                    tooltipPosition: TooltipPosition.right,
                   },
-                },
-              ]
-            : undefined
-        }
-        extraToolbarControls={
-          useExtraToolbarControls ? (
-            <ToggleGroup>
-              <ToggleGroupItem isSelected={true} text="View 1" />
-              <ToggleGroupItem text="View 2" />
-            </ToggleGroup>
-          ) : undefined
-        }
-        customTableAction={
-          useCustomTableAction ? (
-            <AcmDropdown
-              isDisabled={false}
-              tooltip="Disabled"
-              id="create"
-              onSelect={() => null}
-              text="Create"
-              dropdownItems={[
-                {
-                  id: 'action1',
-                  text: 'Action 1',
-                  tooltip: 'Disabled',
-                  href: '/action1',
-                  tooltipPosition: TooltipPosition.right,
-                },
-                {
-                  id: 'action2',
-                  text: 'Action 2',
-                  tooltip: 'Disabled',
-                  href: '/action1',
-                  tooltipPosition: TooltipPosition.right,
-                },
-              ]}
-              isKebab={false}
-              isPlain={true}
-              isPrimary={true}
-              tooltipPosition={TooltipPosition.right}
-            />
-          ) : undefined
-        }
-        {...props}
-      />
+                  {
+                    id: 'action2',
+                    text: 'Action 2',
+                    tooltip: 'Disabled',
+                    href: '/action1',
+                    tooltipPosition: TooltipPosition.right,
+                  },
+                ]}
+                isKebab={false}
+                isPlain={true}
+                isPrimary={true}
+                tooltipPosition={TooltipPosition.right}
+              />
+            ) : undefined
+          }
+          {...props}
+        />
+      </MemoryRouter>
     )
   }
   test('renders', () => {
@@ -289,59 +294,61 @@ describe('AcmTable', () => {
       }
     }
     const { container } = render(
-      <AcmTable<IExampleData>
-        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
-        showToolbar={false}
-        items={exampleData.slice(0, 10)}
-        addSubRows={(item: IExampleData) => {
-          if (item.uid === 1) {
-            return [
-              {
-                cells: [
-                  {
-                    title: <div id="expanded">{item.uid}</div>,
-                  },
-                ],
-              },
-            ]
-          } else {
-            return undefined
-          }
-        }}
-        columns={[
-          {
-            header: 'First Name',
-            sort: 'firstName',
-            cell: 'firstName',
-          },
-          {
-            header: 'Last Name',
-            sort: 'last_name',
-            cell: 'last_name',
-          },
-          {
-            header: 'EMail',
-            cell: 'email',
-          },
-          {
-            header: 'Gender',
-            sort: 'gender',
-            cell: (item) => item.gender,
-          },
-          {
-            header: 'IP Address',
-            sort: sortFunction,
-            cell: 'ip_address',
-          },
-          {
-            header: 'UID',
-            sort: 'uid',
-            cell: 'uid',
-          },
-        ]}
-        keyFn={(item: IExampleData) => item.uid.toString()}
-        rowActionResolver={tableActionResolver}
-      />
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          showToolbar={false}
+          items={exampleData.slice(0, 10)}
+          addSubRows={(item: IExampleData) => {
+            if (item.uid === 1) {
+              return [
+                {
+                  cells: [
+                    {
+                      title: <div id="expanded">{item.uid}</div>,
+                    },
+                  ],
+                },
+              ]
+            } else {
+              return undefined
+            }
+          }}
+          columns={[
+            {
+              header: 'First Name',
+              sort: 'firstName',
+              cell: 'firstName',
+            },
+            {
+              header: 'Last Name',
+              sort: 'last_name',
+              cell: 'last_name',
+            },
+            {
+              header: 'EMail',
+              cell: 'email',
+            },
+            {
+              header: 'Gender',
+              sort: 'gender',
+              cell: (item) => item.gender,
+            },
+            {
+              header: 'IP Address',
+              sort: sortFunction,
+              cell: 'ip_address',
+            },
+            {
+              header: 'UID',
+              sort: 'uid',
+              cell: 'uid',
+            },
+          ]}
+          keyFn={(item: IExampleData) => item.uid.toString()}
+          rowActionResolver={tableActionResolver}
+        />
+      </MemoryRouter>
     )
     expect(container.querySelector('table')).toBeInTheDocument()
     expect(container.querySelector('table .pf-c-dropdown__toggle')).toBeInTheDocument()
@@ -727,76 +734,78 @@ describe('AcmTable', () => {
   test('renders a table with expandable rows', () => {
     const expandedDeleteAction = jest.fn()
     const { getAllByLabelText, getByRole, getByTestId, getByText } = render(
-      <AcmTable<IExampleData>
-        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
-        showToolbar={false}
-        items={exampleData.slice(0, 10)}
-        addSubRows={(item: IExampleData) => {
-          if (item.uid === 1) {
-            return [
-              {
-                cells: [
-                  {
-                    title: <div id="expanded">{item.uid}</div>,
-                  },
-                ],
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          showToolbar={false}
+          items={exampleData.slice(0, 10)}
+          addSubRows={(item: IExampleData) => {
+            if (item.uid === 1) {
+              return [
+                {
+                  cells: [
+                    {
+                      title: <div id="expanded">{item.uid}</div>,
+                    },
+                  ],
+                },
+              ]
+            } else {
+              return undefined
+            }
+          }}
+          columns={[
+            {
+              header: 'First Name',
+              sort: 'firstName',
+              cell: 'firstName',
+            },
+            {
+              header: 'Last Name',
+              sort: 'last_name',
+              cell: 'last_name',
+            },
+            {
+              header: 'EMail',
+              cell: 'email',
+            },
+            {
+              header: 'Gender',
+              sort: 'gender',
+              cell: (item) => item.gender,
+            },
+            {
+              header: 'IP Address',
+              sort: sortFunction,
+              cell: 'ip_address',
+            },
+            {
+              header: 'UID',
+              sort: 'uid',
+              cell: 'uid',
+            },
+          ]}
+          keyFn={(item: IExampleData) => item.uid.toString()}
+          rowActions={[
+            {
+              id: 'delete',
+              title: 'Delete item',
+              click: () => {
+                expandedDeleteAction()
               },
-            ]
-          } else {
-            return undefined
-          }
-        }}
-        columns={[
-          {
-            header: 'First Name',
-            sort: 'firstName',
-            cell: 'firstName',
-          },
-          {
-            header: 'Last Name',
-            sort: 'last_name',
-            cell: 'last_name',
-          },
-          {
-            header: 'EMail',
-            cell: 'email',
-          },
-          {
-            header: 'Gender',
-            sort: 'gender',
-            cell: (item) => item.gender,
-          },
-          {
-            header: 'IP Address',
-            sort: sortFunction,
-            cell: 'ip_address',
-          },
-          {
-            header: 'UID',
-            sort: 'uid',
-            cell: 'uid',
-          },
-        ]}
-        keyFn={(item: IExampleData) => item.uid.toString()}
-        rowActions={[
-          {
-            id: 'delete',
-            title: 'Delete item',
-            click: () => {
-              expandedDeleteAction()
             },
-          },
-          {
-            id: 'deleteTT',
-            title: 'Delete item tooltip',
-            tooltip: 'delete',
-            click: () => {
-              expandedDeleteAction()
+            {
+              id: 'deleteTT',
+              title: 'Delete item tooltip',
+              tooltip: 'delete',
+              click: () => {
+                expandedDeleteAction()
+              },
             },
-          },
-        ]}
-        fuseThreshold={0}
-      />
+          ]}
+          fuseThreshold={0}
+        />
+      </MemoryRouter>
     )
     userEvent.click(getByTestId('expandable-toggle0'))
     expect(getByTestId('expanded')).toBeInTheDocument()

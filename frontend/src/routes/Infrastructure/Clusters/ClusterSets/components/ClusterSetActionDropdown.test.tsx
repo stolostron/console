@@ -22,6 +22,7 @@ import {
   waitForText,
 } from '../../../../../lib/test-util'
 import { ClusterSetActionDropdown } from './ClusterSetActionDropdown'
+import { MemoryRouter } from 'react-router-dom'
 
 const firstNamespace: Namespace = {
   apiVersion: NamespaceApiVersion,
@@ -382,7 +383,9 @@ const Component = () => (
       snapshot.set(managedClusterSetBindingsState, [firstNamespaceBinding])
     }}
   >
-    <ClusterSetActionDropdown managedClusterSet={mockManagedClusterSet} isKebab={false} />
+    <MemoryRouter>
+      <ClusterSetActionDropdown managedClusterSet={mockManagedClusterSet} isKebab={false} />
+    </MemoryRouter>
   </RecoilRoot>
 )
 

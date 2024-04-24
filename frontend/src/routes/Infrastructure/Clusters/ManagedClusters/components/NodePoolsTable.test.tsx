@@ -16,6 +16,7 @@ import {
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { MemoryRouter } from 'react-router-dom'
 
 const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
@@ -788,15 +789,17 @@ describe('NodePoolsTable', () => {
           snapshot.set(namespacesState, mockNamespaces)
         }}
       >
-        <ClusterContext.Provider
-          value={{
-            hostedCluster: mockHostedCluster0,
-            cluster: undefined,
-            addons: undefined,
-          }}
-        >
-          <NodePoolsTable nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider
+            value={{
+              hostedCluster: mockHostedCluster0,
+              cluster: undefined,
+              addons: undefined,
+            }}
+          >
+            <NodePoolsTable nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -875,15 +878,17 @@ describe('NodePoolsTable no status', () => {
     nockIgnoreApiPaths()
     render(
       <RecoilRoot>
-        <ClusterContext.Provider
-          value={{
-            hostedCluster: mockHostedCluster0,
-            cluster: undefined,
-            addons: undefined,
-          }}
-        >
-          <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider
+            value={{
+              hostedCluster: mockHostedCluster0,
+              cluster: undefined,
+              addons: undefined,
+            }}
+          >
+            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -945,15 +950,17 @@ describe('NodePoolsTable no conditions', () => {
     nockIgnoreApiPaths()
     render(
       <RecoilRoot>
-        <ClusterContext.Provider
-          value={{
-            hostedCluster: mockHostedCluster0,
-            cluster: undefined,
-            addons: undefined,
-          }}
-        >
-          <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider
+            value={{
+              hostedCluster: mockHostedCluster0,
+              cluster: undefined,
+              addons: undefined,
+            }}
+          >
+            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -1083,15 +1090,17 @@ describe('NodePoolsTable - Azure', () => {
     nockIgnoreApiPaths()
     render(
       <RecoilRoot>
-        <ClusterContext.Provider
-          value={{
-            hostedCluster: mockHostedCluster1,
-            cluster: undefined,
-            addons: undefined,
-          }}
-        >
-          <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider
+            value={{
+              hostedCluster: mockHostedCluster1,
+              cluster: undefined,
+              addons: undefined,
+            }}
+          >
+            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -1145,15 +1154,17 @@ describe('NodePoolsTable - PowerVS', () => {
     nockIgnoreApiPaths()
     render(
       <RecoilRoot>
-        <ClusterContext.Provider
-          value={{
-            hostedCluster: mockHostedCluster2,
-            cluster: undefined,
-            addons: undefined,
-          }}
-        >
-          <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider
+            value={{
+              hostedCluster: mockHostedCluster2,
+              cluster: undefined,
+              addons: undefined,
+            }}
+          >
+            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })

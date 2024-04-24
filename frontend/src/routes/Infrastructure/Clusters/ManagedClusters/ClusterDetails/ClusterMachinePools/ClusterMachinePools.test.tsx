@@ -14,6 +14,7 @@ import {
   mockMachinePoolManual,
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
+import { MemoryRouter } from 'react-router-dom'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {
@@ -25,9 +26,11 @@ describe('ClusterMachinePools', () => {
           snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto, mockMachinePoolOther])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <MachinePoolsPageContent />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+            <MachinePoolsPageContent />
+          </ClusterContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
