@@ -12,8 +12,7 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link, useLocation } from 'react-router-dom-v5-compat'
+import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
@@ -151,7 +150,7 @@ export function DiscoveryConfigPageContent(props: {
   })
   const alertContext = useContext(AcmAlertContext)
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
   const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
   const [credentials, setCredentials] = useState<Secret[]>([])
@@ -225,7 +224,7 @@ export function DiscoveryConfigPageContent(props: {
                 type: 'success',
                 autoClose: true,
               })
-              history.push(NavigationPath.discoveredClusters)
+              navigate(NavigationPath.discoveredClusters)
             } else {
               throw Error('Error retrieving discoveryconfigs')
             }
@@ -281,7 +280,7 @@ export function DiscoveryConfigPageContent(props: {
           type: 'success',
           autoClose: true,
         })
-        history.push(NavigationPath.discoveredClusters)
+        navigate(NavigationPath.discoveredClusters)
       } else {
         await replaceDiscoveryConfig(discoveryConfig).promise
         toastContext.addAlert({
@@ -292,7 +291,7 @@ export function DiscoveryConfigPageContent(props: {
           type: 'success',
           autoClose: true,
         })
-        history.push(NavigationPath.discoveredClusters)
+        navigate(NavigationPath.discoveredClusters)
       }
     } catch (err) {
       toastContext.clearAlerts()

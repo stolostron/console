@@ -15,8 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../components/BulkActionModal'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -114,7 +113,7 @@ export default function ManagedClusters() {
 
   usePageContext(clusters.length > 0, PageActions, OnBoardingModalLink)
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
   useEffect(() => {
     const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
@@ -136,7 +135,7 @@ export default function ManagedClusters() {
                 {
                   id: 'createCluster',
                   title: t('managed.createCluster'),
-                  click: () => history.push(createBackCancelLocation(NavigationPath.createCluster)),
+                  click: () => navigate(createBackCancelLocation(NavigationPath.createCluster)),
                   isDisabled: !canCreateCluster,
                   tooltip: t('rbac.unauthorized'),
                   variant: ButtonVariant.primary,
@@ -144,7 +143,7 @@ export default function ManagedClusters() {
                 {
                   id: 'importCluster',
                   title: t('managed.importCluster'),
-                  click: () => history.push(createBackCancelLocation(NavigationPath.importCluster)),
+                  click: () => navigate(createBackCancelLocation(NavigationPath.importCluster)),
                   isDisabled: !canCreateCluster,
                   tooltip: t('rbac.unauthorized'),
                   variant: ButtonVariant.secondary,

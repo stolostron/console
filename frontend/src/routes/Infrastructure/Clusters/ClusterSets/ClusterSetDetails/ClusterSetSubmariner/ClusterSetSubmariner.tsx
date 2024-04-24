@@ -24,8 +24,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
@@ -91,7 +90,7 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 
 export function ClusterSetSubmarinerPageContent() {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { submarinerConfigsState } = useSharedAtoms()
   const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
   const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
@@ -363,7 +362,7 @@ export function ClusterSetSubmarinerPageContent() {
                   id: 'install-submariner',
                   title: t('managed.clusterSets.submariner.addons.install'),
                   click: () =>
-                    history.push(NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)),
+                    navigate(NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)),
                   variant: ButtonVariant.primary,
                   isDisabled: !canInstallSubmarinerAddons,
                 },

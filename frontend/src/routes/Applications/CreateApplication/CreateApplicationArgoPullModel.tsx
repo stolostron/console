@@ -5,7 +5,7 @@ import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -70,7 +70,7 @@ export function CreateApplicationArgoPullModel() {
     managedClusterSetsState,
     managedClusterSetBindingsState,
   } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [applicationSets] = useRecoilState(applicationSetsState)
   const toast = useContext(AcmToastContext)
   const [placements] = useRecoilState(placementsState)
@@ -116,7 +116,7 @@ export function CreateApplicationArgoPullModel() {
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.applications)
+        navigate(NavigationPath.applications)
       }}
       onSubmit={(data) => {
         const resources = data as IResource[]
@@ -132,7 +132,7 @@ export function CreateApplicationArgoPullModel() {
           }
           submitForm()
 
-          history.push(
+          navigate(
             NavigationPath.applicationOverview
               .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
               .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString

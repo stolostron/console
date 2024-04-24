@@ -18,8 +18,7 @@ import {
 import { GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -221,7 +220,7 @@ export default function DetailsOverviewPage(props: {
 }) {
   const { cluster, resource, loading, error, name } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
 
   const { labelsLineNumber, annotationsLineNumber, tolerationsLineNumber } = useMemo(() => {
@@ -285,7 +284,7 @@ export default function DetailsOverviewPage(props: {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              history.push(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -294,7 +293,7 @@ export default function DetailsOverviewPage(props: {
         )
       }
     }
-  }, [cluster, resource, history])
+  }, [cluster, resource, navigate])
 
   const nodeSelectorLink = useMemo(() => {
     if (resource) {
@@ -314,7 +313,7 @@ export default function DetailsOverviewPage(props: {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              history.push(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -323,7 +322,7 @@ export default function DetailsOverviewPage(props: {
         )
       }
     }
-  }, [cluster, resource, history])
+  }, [cluster, resource, navigate])
 
   if (error) {
     return (
@@ -373,7 +372,7 @@ export default function DetailsOverviewPage(props: {
                       type="button"
                       isInline
                       onClick={() => {
-                        history.push(
+                        navigate(
                           `${NavigationPath.resources}?cluster=${cluster}&kind=Namespace&apiversion=v1&name=${resource.metadata?.namespace}`
                         )
                       }}

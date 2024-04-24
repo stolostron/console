@@ -2,8 +2,7 @@
 import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
 
 import YAML from 'yaml'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -164,7 +163,7 @@ export function CredentialsForm(
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { back, cancel } = useBackCancelNavigation()
 
   // Details
@@ -1522,7 +1521,7 @@ export function CredentialsForm(
             autoClose: true,
           })
           submitForm()
-          history.push(NavigationPath.credentials)
+          navigate(NavigationPath.credentials)
         })
       } else {
         return createResource(credentialData as IResource).promise.then((resource) => {
@@ -1541,7 +1540,7 @@ export function CredentialsForm(
           if (handleModalToggle) {
             handleModalToggle()
           } else {
-            history.push(NavigationPath.credentials)
+            navigate(NavigationPath.credentials)
           }
         })
       }
@@ -1594,7 +1593,7 @@ export function CredentialsForm(
       }
       edit={() => {
         if (providerConnection) {
-          history.push(
+          navigate(
             NavigationPath.editCredentials
               .replace(':namespace', providerConnection.metadata.namespace!)
               .replace(':name', providerConnection.metadata.name!)

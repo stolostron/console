@@ -3,8 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -40,7 +39,7 @@ export function CreatePolicyAutomation() {
   const params = useParams<{ namespace: string; name: string }>()
   const { name = '', namespace = '' } = params
   const { configMapsState, secretsState, usePolicies } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = usePolicies()
   const [secrets] = useRecoilState(secretsState)
   const [configMaps] = useRecoilState(configMapsState)
@@ -94,7 +93,7 @@ export function CreatePolicyAutomation() {
       }}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.policies)
+        navigate(NavigationPath.policies)
       }}
       onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t)}
       getAnsibleJobsCallback={async (credential: any) => {

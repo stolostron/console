@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, Suspense, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link, useLocation, Route, Routes, useParams } from 'react-router-dom-v5-compat'
+import { Link, useLocation, Route, Routes, useParams, useNavigate } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -26,7 +25,7 @@ export function PolicyDetailsPage() {
   const location = useLocation()
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState, usePolicies } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = usePolicies()
   const [helmReleases] = useRecoilState(helmReleaseState)
   const [subscriptions] = useRecoilState(subscriptionsState)
@@ -59,7 +58,7 @@ export function PolicyDetailsPage() {
         id: 'edit-policy',
         text: t('Edit policy'),
         click: () =>
-          history.push(NavigationPath.editPolicy.replace(':namespace', policyNamespace).replace(':name', policyName)),
+          navigate(NavigationPath.editPolicy.replace(':namespace', policyNamespace).replace(':name', policyName)),
         isAriaDisabled: true,
         rbac: [
           selectedPolicy &&
@@ -67,7 +66,7 @@ export function PolicyDetailsPage() {
         ],
       },
     ],
-    [selectedPolicy, policyNamespace, policyName, history, t]
+    [selectedPolicy, policyNamespace, policyName, navigate, t]
   )
 
   if (!selectedPolicy) {
@@ -75,7 +74,7 @@ export function PolicyDetailsPage() {
       <ErrorPage
         error={new ResourceError(ResourceErrorCode.NotFound)}
         actions={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.policies)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.policies)}>
             {t('Back to policies')}
           </AcmButton>
         }

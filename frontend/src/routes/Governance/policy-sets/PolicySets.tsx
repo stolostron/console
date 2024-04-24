@@ -9,7 +9,7 @@ import {
   ToolbarItem,
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'rreact-router-dom-v5-compat'
+import { Link } from 'react-router-dom-v5-compat'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { usePaginationTitles } from '../../../lib/paginationStrings'

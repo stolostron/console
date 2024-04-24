@@ -12,7 +12,7 @@ import {
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
@@ -39,7 +39,7 @@ export function AutomationDetailsSidebar(props: {
 }) {
   const { policyAutomationMatch, policy, onClose } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { ansibleJobState, secretsState } = useSharedAtoms()
   const [ansibleJobs] = useRecoilState(ansibleJobState)
   const [secrets] = useRecoilState(secretsState)
@@ -234,7 +234,7 @@ export function AutomationDetailsSidebar(props: {
         <Button
           variant="primary"
           onClick={() =>
-            history.push(
+            navigate(
               NavigationPath.editPolicyAutomation
                 .replace(':namespace', policy.metadata.namespace as string)
                 .replace(':name', policy.metadata.name as string)

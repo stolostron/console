@@ -13,8 +13,7 @@ import {
   SelectVariant,
 } from '@patternfly/react-core'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
@@ -127,7 +126,7 @@ export function AnsibleAutomationsForm(props: {
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
     jobs: ClusterCuratorAnsibleJob[]
@@ -726,13 +725,13 @@ export function AnsibleAutomationsForm(props: {
         return replaceResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           submitForm()
-          history.push(NavigationPath.ansibleAutomations)
+          navigate(NavigationPath.ansibleAutomations)
         })
       } else {
         return createResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           submitForm()
-          history.push(NavigationPath.ansibleAutomations)
+          navigate(NavigationPath.ansibleAutomations)
         })
       }
     },
@@ -740,7 +739,7 @@ export function AnsibleAutomationsForm(props: {
     submittingText: isEditing ? t('saving') : t('adding'),
     cancel: () => {
       cancelForm()
-      history.push(NavigationPath.ansibleAutomations)
+      navigate(NavigationPath.ansibleAutomations)
     },
     stateToSyncs,
     stateToData,

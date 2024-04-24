@@ -16,8 +16,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link, useLocation, Routes, Route, useParams, Navigate } from 'react-router-dom-v5-compat'
+import { Link, useLocation, Routes, Route, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -137,7 +136,7 @@ export default function ApplicationDetailsPage() {
   const { acmExtensions } = useContext(PluginContext)
 
   const lastRefreshRef = useRef<any>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
   const isAppSet = applicationData?.application?.isAppSet
   const isOCPApp = applicationData?.application?.isOCPApp
@@ -222,7 +221,7 @@ export default function ApplicationDetailsPage() {
                   apiversion: apiversion as string,
                 },
               })
-          history.push(searchLink)
+          navigate(searchLink)
         }
       },
     },
@@ -235,13 +234,13 @@ export default function ApplicationDetailsPage() {
       text: t('Edit application'),
       click: () => {
         if (isAppSet) {
-          history.push(
+          navigate(
             NavigationPath.editApplicationArgo
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)
           )
         } else {
-          history.push(
+          navigate(
             NavigationPath.editApplicationSubscription
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)

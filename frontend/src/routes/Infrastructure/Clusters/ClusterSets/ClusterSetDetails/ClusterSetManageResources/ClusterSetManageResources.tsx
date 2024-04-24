@@ -16,7 +16,7 @@ import {
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
@@ -64,7 +64,7 @@ export function ClusterSetManageResourcesPage() {
 
 export function ClusterSetManageResourcesContent() {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { clusterSet, clusterDeployments } = useContext(ClusterSetContext)
   const deploymentDictionary = new Map<string | undefined, ClusterDeployment>()
   clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
@@ -177,7 +177,7 @@ export function ClusterSetManageResourcesContent() {
               title={t('createClusterSet.form.section.clusters.emptyTitle')}
               message={t('createClusterSet.form.section.clusters.emptyMessage')}
               action={
-                <AcmButton onClick={() => history.push(NavigationPath.clusterSets)} role="link">
+                <AcmButton onClick={() => navigate(NavigationPath.clusterSets)} role="link">
                   {t('managedClusterSet.form.emptyStateButton')}
                 </AcmButton>
               }
@@ -193,7 +193,7 @@ export function ClusterSetManageResourcesContent() {
             </AcmButton>
             <AcmButton
               variant="link"
-              onClick={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
+              onClick={() => navigate(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
             >
               {t('cancel')}
             </AcmButton>
@@ -207,7 +207,7 @@ export function ClusterSetManageResourcesContent() {
           action={t('save')}
           processing={t('saving')}
           onCancel={() => setShowConfirmModal(false)}
-          close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
+          close={() => navigate(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
           isValidError={errorIsNot([ResourceErrorCode.NotFound])}
           items={[...removedResources, ...selectedResources]}
           emptyState={

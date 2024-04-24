@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -46,7 +46,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
     usePolicies,
   } = useSharedAtoms()
   const toast = useContext(AcmToastContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = usePolicies()
   const [namespaces] = useRecoilState(namespacesState)
   const [placements] = useRecoilState(placementsState)
@@ -75,13 +75,13 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       )
 
       found &&
-        history.push(
+        navigate(
           NavigationPath.policyDetails
             .replace(':namespace', createdPolicy.metadata?.namespace ?? '')
             .replace(':name', createdPolicy.metadata?.name ?? '')
         )
     }
-  }, [policies, createdPolicy, history])
+  }, [policies, createdPolicy, navigate])
 
   return (
     <PolicyWizard
@@ -98,7 +98,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.policies)
+        navigate(NavigationPath.policies)
       }}
       onSubmit={(data) => {
         const resources = data as IResource[]

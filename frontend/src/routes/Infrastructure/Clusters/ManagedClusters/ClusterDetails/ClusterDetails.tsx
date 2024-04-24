@@ -9,8 +9,7 @@ import {
   InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom-v5-compat'
+import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -68,7 +67,7 @@ export const ClusterContext = createContext<{
 
 export default function ClusterDetailsPage() {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { name = '', namespace = '' } = useParams()
   const { waitForAll } = useSharedRecoil()
@@ -202,11 +201,7 @@ export default function ClusterDetailsPage() {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => history.push(NavigationPath.clusters)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.clusters)} style={{ marginRight: '10px' }}>
               {t('button.backToClusters')}
             </AcmButton>
           }

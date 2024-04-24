@@ -27,7 +27,7 @@ import {
   StatusType,
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
@@ -55,7 +55,7 @@ import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './compone
 
 export default function ClusterPoolsPage() {
   const alertContext = useContext(AcmAlertContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,7 +120,7 @@ export default function ClusterPoolsPage() {
                 {
                   id: 'createClusterPool',
                   title: t('managed.createClusterPool'),
-                  click: () => history.push(createBackCancelLocation(NavigationPath.createClusterPool)),
+                  click: () => navigate(createBackCancelLocation(NavigationPath.createClusterPool)),
                   variant: ButtonVariant.primary,
                 },
               ]}
@@ -136,7 +136,7 @@ export default function ClusterPoolsPage() {
                     <div>
                       <AcmButton
                         role="link"
-                        onClick={() => history.push(createBackCancelLocation(NavigationPath.createClusterPool))}
+                        onClick={() => navigate(createBackCancelLocation(NavigationPath.createClusterPool))}
                       >
                         {t('managed.createClusterPool')}
                       </AcmButton>

@@ -10,8 +10,7 @@ import {
   AcmSecondaryNavItem,
 } from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { Link, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom-v5-compat'
+import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
@@ -64,7 +63,7 @@ export const ClusterSetContext = createContext<{
 
 export default function ClusterSetDetailsPage() {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { id = '' } = useParams()
   const match = { params: { id } }
@@ -137,12 +136,12 @@ export default function ClusterSetDetailsPage() {
           />
         }
         loadingPrimaryAction={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
             {t('button.backToClusterSets')}
           </AcmButton>
         }
         primaryAction={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
             {t('button.backToClusterSets')}
           </AcmButton>
         }
@@ -156,7 +155,7 @@ export default function ClusterSetDetailsPage() {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.clusterSets)}>
               {t('button.backToClusterSets')}
             </AcmButton>
           }
