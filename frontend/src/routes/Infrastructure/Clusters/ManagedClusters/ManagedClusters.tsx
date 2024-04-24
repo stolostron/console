@@ -21,7 +21,6 @@ import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metr
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
 import {
   addonPathKey,
@@ -85,7 +84,7 @@ export default function ManagedClusters() {
   const alertContext = useContext(AcmAlertContext)
   const clusters = useAllClusters(true)
 
-  const onBoardingModalID = `${window.location.href}/clusteronboardingmodal`
+  const onBoardingModalID = 'clusteronboardingmodal'
   const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
     localStorage.getItem(onBoardingModalID)
       ? localStorage.getItem(onBoardingModalID) === 'show'
@@ -199,7 +198,6 @@ export function ClustersTable(props: {
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
 
   const { t } = useTranslation()
-  const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
   const [updateAutomationTemplates, setUpdateAutomationTemplates] = useState<Array<Cluster> | undefined>()
   const [removeAutomationTemplates, setRemoveAutomationTemplates] = useState<Array<Cluster> | undefined>()
@@ -592,7 +590,6 @@ export function ClustersTable(props: {
         tableActions={tableActions}
         rowActions={rowActions}
         emptyState={props.emptyState}
-        initialFilters={presets.initialFilters.addons ? { 'add-ons': presets.initialFilters.addons } : undefined}
         filters={filters}
         id="managedClusters"
       />

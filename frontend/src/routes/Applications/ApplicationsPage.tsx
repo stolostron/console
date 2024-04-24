@@ -16,11 +16,11 @@ export default function ApplicationsPage() {
   const applicationsMatch = useRouteMatch()
   const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
   const appTableFilter: any = window.localStorage.getItem('acm-table-filter.applicationTable') || '{}'
-  const appTableFilterItems = JSON.parse(appTableFilter)['table-filter-type-acm-application-label'] || []
+  const appTableFilterItems = JSON.parse(appTableFilter)['type'] || []
   const waitForSearch =
-    appTableFilterItems.includes('openshiftapps') ||
+    appTableFilterItems.includes('openshift') ||
     appTableFilterItems.includes('openshift-default') ||
-    appTableFilterItems.includes('fluxapps') ||
+    appTableFilterItems.includes('flux') ||
     !appTableFilterItems.length
 
   GetDiscoveredOCPApps(applicationsMatch.isExact, waitForSearch)

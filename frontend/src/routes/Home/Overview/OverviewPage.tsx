@@ -563,7 +563,7 @@ export default function OverviewPage() {
   }, [cloudLabelFilter, offline, ready, t])
 
   function buildClusterAddonLinks(addonType: string): string {
-    return `${NavigationPath.managedClusters}?addons=${addonType}`
+    return `${NavigationPath.managedClusters}?add-ons=${addonType}`
   }
 
   const clusterAddonData = useMemo(() => {
