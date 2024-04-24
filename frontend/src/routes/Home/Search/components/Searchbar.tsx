@@ -90,6 +90,7 @@ export function Searchbar(props: SearchbarProps) {
     searchResultData,
     refetchSearch,
   } = props
+  const [t] = useTranslation()
   const history = useHistory()
   const searchDefinitions = useSearchDefinitions()
   const toast = useContext(AcmToastContext)
@@ -160,35 +161,53 @@ export function Searchbar(props: SearchbarProps) {
     setInputValue('')
   }
 
-  const [t] = useTranslation()
+  const handleMarkText = (name: string, input: string) => {
+    const preIndex = name.toLowerCase().indexOf(input.toLowerCase())
+    const pre = name.substring(0, preIndex)
+    const markText = name.substring(preIndex, preIndex + input.length)
+    const mark = (
+      <mark
+        style={{
+          color: 'var(--pf-global--link--Color)',
+          textDecoration: 'underline',
+          background: 'none',
+          fontWeight: 600,
+        }}
+      >
+        {markText}
+      </mark>
+    )
+    const post = name.substring(pre.length + input.length)
+
+    return (
+      <p>
+        {pre}
+        {mark}
+        {post}
+      </p>
+    )
+  }
+
+  // ^ - start of string
+  // [a-z0-9-_./:()=+]* - 1 or more of: any char a-z, 0-9 & special chars: -_./:()=+
+  const handlePartialRegex = (replacedSpecialChars: string) =>
+    new RegExp(`^${replacedSpecialChars.replaceAll('*', '[a-z0-9-_./:=+]*')}`)
+
   useEffect(() => {
     const parsedInputValue = stripOperators(inputValue)
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
+      if (parsedInputValue.includes('*')) {
+        const replacedSpecialChars = parsedInputValue.replace(/[\/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const regex = handlePartialRegex(replacedSpecialChars)
+        const regexMatch = currentValue.name.toLowerCase().match(regex)?.[0] ?? ''
+        if (regexMatch === '') {
+          // If match is null -> return item without marks
+          return currentValue.name
+        }
+        return handleMarkText(currentValue.name, regexMatch)
+      }
       if (inputValue !== '' && currentValue.name.toLowerCase().includes(parsedInputValue.toLowerCase())) {
-        const preIndex = currentValue.name.toLowerCase().indexOf(parsedInputValue.toLowerCase())
-        const pre = currentValue.name.substring(0, preIndex)
-        const markText = currentValue.name.substring(preIndex, preIndex + parsedInputValue.length)
-        const mark = (
-          <mark
-            style={{
-              color: 'var(--pf-global--link--Color)',
-              textDecoration: 'underline',
-              background: 'none',
-              fontWeight: 600,
-            }}
-          >
-            {markText}
-          </mark>
-        )
-        const post = currentValue.name.substring(pre.length + parsedInputValue.length)
-
-        return (
-          <p>
-            {pre}
-            {mark}
-            {post}
-          </p>
-        )
+        return handleMarkText(currentValue.name, parsedInputValue)
       }
       return currentValue.name
     }
@@ -201,14 +220,24 @@ export function Searchbar(props: SearchbarProps) {
       </MenuItem>
     )
 
+    //todo - include a debounce
     let filteredMenuItems = []
     /** in the menu only show items that include the text in the input */
     filteredMenuItems = suggestions
-      .filter(
-        (item, index) =>
+      .filter((item, index) => {
+        if (parsedInputValue.includes('*')) {
+          const replacedSpecialChars = parsedInputValue.replace(/[\/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const regex = handlePartialRegex(replacedSpecialChars)
+          return (
+            index !== 0 && // filter the headerItem suggestion
+            (!inputValue || item.name.toLowerCase().match(regex))
+          )
+        }
+        return (
           index !== 0 && // filter the headerItem suggestion
           (!inputValue || item.name.toLowerCase().includes(parsedInputValue.toLowerCase()))
-      )
+        )
+      })
       .map((currentValue) => (
         <MenuItem
           isDisabled={currentValue.disabled}
