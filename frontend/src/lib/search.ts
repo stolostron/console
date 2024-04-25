@@ -2,15 +2,26 @@
 
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { getBackendUrl, IRequestResult, postRequest } from '../resources'
+import { getBackendUrl, IRequestResult, ArgoApplication, OCPAppResource, postRequest } from '../resources'
+import { flatten, uniqBy } from 'lodash'
 
 export const apiSearchUrl = '/proxy/search'
-export const searchFilterQuery =
+const searchFilterQuery =
   'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}'
+const searchFilterQueryCount =
+  'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}'
+const searchMatchAndFilterQuery =
+  'query searchResult($byNameInput: [SearchInput], $byNamespaceInput: [SearchInput])  {\n  searchResultByName: search(input: $byNameInput) {\n    items\n  }\n  searchResultByNamespace: search(input: $byNamespaceInput) {\n    items\n  }\n}'
+const searchMatchAndFilterQueryCount =
+  'query searchResult($byNameInput: [SearchInput], $byNamespaceInput: [SearchInput])  {\n  searchResultByName: search(input: $byNameInput) {\n    count\n  }\n  searchResultByNamespace: search(input: $byNamespaceInput) {\n    count\n  }\n}'
+const searchMatchWithClusterAndFilterQuery =
+  'query searchResult($byNameInput: [SearchInput], $byNamespaceInput: [SearchInput], $byClusterInput: [SearchInput])  {\n  searchResultByName: search(input: $byNameInput) {\n    items\n  }\n  searchResultByNamespace: search(input: $byNamespaceInput) {\n    items\n  }\n  searchResultByCluster: search(input: $byClusterInput) {\n    items\n  }\n}'
+const searchMatchWithClusterAndFilterQueryCount =
+  'query searchResult($byNameInput: [SearchInput], $byNamespaceInput: [SearchInput], $byClusterInput: [SearchInput])  {\n  searchResultByName: search(input: $byNameInput) {\n    count\n  }\n  searchResultByNamespace: search(input: $byNamespaceInput) {\n    count\n  }\n  searchResultByCluster: search(input: $byClusterInput) {\n    count\n  }\n}'
 
 export type ISearchResult = {
   data: {
-    searchResult: {
+    [searchResult: string]: {
       items?: any
       count?: number
       related?: {
@@ -24,7 +35,7 @@ export type ISearchResult = {
 export type SearchQuery = {
   operationName: string
   variables: {
-    input: {
+    [input: string]: {
       filters: { property: string; values: string[] | string }[]
       relatedKinds?: string[]
       limit?: number
@@ -53,58 +64,237 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
   })
 }
 
-export function queryRemoteArgoApps(searchLimit?: number, cluster?: string): IRequestResult<ISearchResult> {
+function getRemoteArgoFilters({
+  cluster,
+  clusters = [],
+  name,
+  namespace,
+}: Pick<DiscoveredAppsParams, 'clusters'> & {
+  cluster?: DiscoveredAppsParams['search']
+  name?: DiscoveredAppsParams['search']
+  namespace?: DiscoveredAppsParams['search']
+}) {
+  const clustersFilter = { property: 'cluster', values: [] as string[] }
   const filtersArr = [
     { property: 'kind', values: ['Application'] },
     { property: 'apigroup', values: ['argoproj.io'] },
+    clustersFilter,
+    ...(name ? [{ property: 'name', values: [`*${name}*`] }] : []),
+    ...(namespace ? [{ property: 'destinationNamespace', values: [`*${namespace}*`] }] : []),
   ]
 
-  if (cluster) {
-    filtersArr.push({ property: 'cluster', values: [cluster] })
+  if (clusters.length) {
+    clustersFilter.values = clustersFilter.values.concat(clusters)
+  } else if (cluster) {
+    clustersFilter.values.push(`*${cluster}*`)
   } else {
-    filtersArr.push({ property: 'cluster', values: ['!local-cluster'] })
+    clustersFilter.values.push('!local-cluster')
   }
 
-  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables: {
-      input: [
+  return filtersArr
+}
+
+export async function queryRemoteArgoApps(params: DiscoveredAppsParams): Promise<ArgoApplication[]>
+export async function queryRemoteArgoApps(params: DiscoveredAppsParams & { countOnly: true }): Promise<number>
+export async function queryRemoteArgoApps(
+  params: DiscoveredAppsParams & { countOnly?: true }
+): Promise<ArgoApplication[] | number> {
+  const { clusters = [], search, searchLimit, countOnly = false } = params
+
+  let variables: SearchQuery['variables']
+  let query: string
+
+  const limitObject = countOnly ? {} : { limit: searchLimit }
+
+  if (search) {
+    variables = {
+      byNameInput: [
         {
-          filters: filtersArr,
-          limit: searchLimit || 1000,
+          filters: getRemoteArgoFilters({ clusters, name: search }),
+          ...limitObject,
         },
       ],
-    },
-    query: searchFilterQuery,
+      byNamespaceInput: [
+        {
+          filters: getRemoteArgoFilters({ clusters, namespace: search }),
+          ...limitObject,
+        },
+      ],
+      ...(clusters.length
+        ? {}
+        : {
+            byClusterInput: [
+              {
+                filters: getRemoteArgoFilters({ cluster: search }),
+                ...limitObject,
+              },
+            ],
+          }),
+    }
+    if (clusters.length) {
+      query = countOnly ? searchMatchAndFilterQueryCount : searchMatchAndFilterQuery
+    } else {
+      query = countOnly ? searchMatchWithClusterAndFilterQueryCount : searchMatchWithClusterAndFilterQuery
+    }
+  } else {
+    variables = {
+      input: [
+        {
+          filters: getRemoteArgoFilters({ clusters }),
+          ...limitObject,
+        },
+      ],
+    }
+    query = countOnly ? searchFilterQueryCount : searchFilterQuery
+  }
+
+  const { promise } = postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+    operationName: 'searchResult',
+    variables,
+    query,
+  })
+  return promise.then((result) => {
+    if (countOnly) {
+      return Math.max(...Object.values(result.data).map((value) => value?.[0]?.count || 0))
+    } else {
+      return uniqBy(
+        flatten(Object.values(result.data).map((value) => value?.[0]?.items || [])),
+        (item) => item._uid
+      ) as ArgoApplication[]
+    }
   })
 }
 
-export function queryOCPAppResources(searchLimit?: number, cluster?: string): IRequestResult<ISearchResult> {
+export type DiscoveredAppsParams = {
+  clusters?: string[]
+  types?: string[]
+  search?: string
+  searchLimit?: number
+}
+
+function getOCPAppResourceLabelValues({
+  types = [],
+  name,
+}: Pick<DiscoveredAppsParams, 'types'> & { name?: DiscoveredAppsParams['search'] }) {
+  const allTypes = types.length === 0
+  const searchString = name ? `*${name}*` : '*'
+  const convertToLabelSearch = (label: string) => `${label}=${searchString}`
+  return [
+    ...(allTypes || types.includes('openshift') || types.includes('openshift-default')
+      ? ['app', 'app.kubernetes.io/part-of'].map(convertToLabelSearch)
+      : []),
+    ...(allTypes || types.includes('flux')
+      ? ['kustomize.toolkit.fluxcd.io/name', 'helm.toolkit.fluxcd.io/name'].map(convertToLabelSearch)
+      : []),
+  ]
+}
+
+function getOCPAppResourceFilters({
+  cluster,
+  clusters = [],
+  name,
+  namespace,
+  types = [],
+}: Pick<DiscoveredAppsParams, 'clusters' | 'types'> & {
+  cluster?: DiscoveredAppsParams['search']
+  name?: DiscoveredAppsParams['search']
+  namespace?: DiscoveredAppsParams['search']
+}) {
   const filtersArr = [
     {
       property: 'kind',
       values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
     },
+    {
+      property: 'label',
+      values: getOCPAppResourceLabelValues({ types, name }),
+    },
+    ...(namespace ? [{ property: 'namespace', values: [`*${namespace}*`] }] : []),
   ]
 
-  if (cluster) {
+  if (clusters.length) {
     filtersArr.push({
       property: 'cluster',
-      values: [cluster],
+      values: clusters,
+    })
+  } else if (cluster) {
+    filtersArr.push({
+      property: 'cluster',
+      values: [`*${cluster}*`],
     })
   }
 
-  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables: {
-      input: [
+  return filtersArr
+}
+
+export async function queryOCPAppResources(params: DiscoveredAppsParams): Promise<OCPAppResource[]>
+export async function queryOCPAppResources(params: DiscoveredAppsParams & { countOnly: true }): Promise<number>
+export async function queryOCPAppResources(
+  params: DiscoveredAppsParams & { countOnly?: true }
+): Promise<OCPAppResource[] | number> {
+  const { clusters = [], types = [], search, searchLimit, countOnly = false } = params
+
+  let variables: SearchQuery['variables']
+  let query: string
+
+  const limitObject = countOnly ? {} : { limit: searchLimit }
+
+  if (search) {
+    variables = {
+      byNameInput: [
         {
-          filters: filtersArr,
-          limit: searchLimit || 1000, // search said not to use unlimited results so use this for now until pagination is available
+          filters: getOCPAppResourceFilters({ clusters, types, name: search }),
+          ...limitObject,
         },
       ],
-    },
-    query: searchFilterQuery,
+      byNamespaceInput: [
+        {
+          filters: getOCPAppResourceFilters({ clusters, types, namespace: search }),
+          ...limitObject,
+        },
+      ],
+      ...(clusters.length
+        ? {}
+        : {
+            byClusterInput: [
+              {
+                filters: getOCPAppResourceFilters({ types, cluster: search }),
+                ...limitObject,
+              },
+            ],
+          }),
+    }
+    if (clusters.length) {
+      query = countOnly ? searchMatchAndFilterQueryCount : searchMatchAndFilterQuery
+    } else {
+      query = countOnly ? searchMatchWithClusterAndFilterQueryCount : searchMatchWithClusterAndFilterQuery
+    }
+  } else {
+    variables = {
+      input: [
+        {
+          filters: getOCPAppResourceFilters({ clusters, types }),
+          ...limitObject,
+        },
+      ],
+    }
+    query = countOnly ? searchFilterQueryCount : searchFilterQuery
+  }
+
+  const { promise } = postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+    operationName: 'searchResult',
+    variables,
+    query,
+  })
+  return promise.then((result) => {
+    if (countOnly) {
+      return Math.max(...Object.values(result.data).map((value) => value?.[0]?.count || 0))
+    } else {
+      return uniqBy(
+        flatten(Object.values(result.data).map((value) => value?.[0]?.items || [])),
+        (item) => item._uid
+      ) as OCPAppResource[]
+    }
   })
 }
 
@@ -129,17 +319,4 @@ export function querySearchDisabledManagedClusters(): IRequestResult<ISearchResu
 export function useSearchParams() {
   const { search } = useLocation()
   return useMemo(() => new URLSearchParams(search), [search])
-}
-
-// Used when need to maintain same number of hooks called
-export function queryEmpty(): IRequestResult<ISearchResult> {
-  const abortController = new AbortController()
-  return {
-    promise: Promise.resolve<ISearchResult>({
-      data: {
-        searchResult: [],
-      },
-    }),
-    abort: () => abortController.abort(),
-  }
 }

@@ -3,13 +3,8 @@
 import { PageSection, Stack } from '@patternfly/react-core'
 import { get, isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouteMatch } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import {
-  GetArgoApplicationsHashSet,
-  GetDiscoveredOCPApps,
-  GetOpenShiftAppResourceMaps,
-} from '../../../components/GetDiscoveredOCPApps'
+import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -43,6 +38,7 @@ import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/comp
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../Search/search-sdk/search-sdk'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 
 function getClusterSummary(
   clusters: Cluster[],
@@ -189,14 +185,11 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 
 export default function OverviewPage() {
   usePageVisitMetricHandler(Pages.overview)
-  const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {
     applicationsState,
     applicationSetsState,
     argoApplicationsState,
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
     helmReleaseState,
     managedClusterInfosState,
     placementDecisionsState,
@@ -209,9 +202,7 @@ export default function OverviewPage() {
   const apps = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApps = useRecoilValue(argoApplicationsState)
-  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
   const helmReleases = useRecoilValue(helmReleaseState)
-  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
@@ -232,7 +223,8 @@ export default function OverviewPage() {
     },
     providers: [],
   })
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+  const { data: ocpApps = [] } = useDiscoveredOCPApps()
+  const { data: discoveredApplications = [] } = useDiscoveredArgoApps()
 
   const clusters = useAllClusters(true)
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)

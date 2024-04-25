@@ -2,12 +2,8 @@
 
 import { get } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
-import { useHistory, useRouteMatch } from 'react-router-dom'
-import {
-  GetArgoApplicationsHashSet,
-  GetDiscoveredOCPApps,
-  GetOpenShiftAppResourceMaps,
-} from '../../../../../components/GetDiscoveredOCPApps'
+import { useHistory } from 'react-router-dom'
+import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
@@ -19,34 +15,32 @@ import { localClusterStr } from '../../../../Applications/Overview'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { useAllClusters } from './useAllClusters'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../../../hooks/application-queries'
 
 export function StatusSummaryCount() {
   const {
     applicationsState,
     applicationSetsState,
     argoApplicationsState,
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
     helmReleaseState,
     placementDecisionsState,
     policyreportState,
     subscriptionsState,
     usePolicies,
   } = useSharedAtoms()
-  const applicationsMatch = useRouteMatch()
   const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApps = useRecoilValue(argoApplicationsState)
-  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
   const helmReleases = useRecoilValue(helmReleaseState)
   const policyReports = useRecoilValue(policyreportState)
-  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const policies = usePolicies()
   const { cluster } = useContext(ClusterContext)
 
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length, cluster?.name)
+  const clustersFilter = cluster ? [cluster.name] : []
+  const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter })
+  const { data: discoveredApplications = [] } = useDiscoveredArgoApps({ clusters: clustersFilter })
   const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()

@@ -13,6 +13,7 @@ import {
   EmptyStateIcon,
   PageSection,
   Pagination,
+  PaginationProps,
   PaginationVariant,
   PerPageOptions,
   SearchInput,
@@ -56,7 +57,6 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
-import hash from 'object-hash'
 import {
   createContext,
   FormEvent,
@@ -203,7 +203,11 @@ interface ITableItem<T> {
 }
 
 type FilterOptionValueT = string
-type TableFilterOption<FilterOptionValueT> = { label: ReactNode; value: FilterOptionValueT }
+type TableFilterOption<FilterOptionValueT> = {
+  label: ReactNode
+  value: FilterOptionValueT
+  indeterminateCount?: boolean
+}
 export type TableFilterFn<T> = (selectedValues: string[], item: T) => boolean
 /**
  * Interface defining required params for table filtering property "filterItems"
@@ -401,7 +405,7 @@ function OuiaIdRowWrapper(props: RowWrapperProps) {
   return <RowWrapper {...props} ouiaId={get(props, 'row.props.key')} />
 }
 
-const SEARCH_DEBOUNCE_TIME = 500
+export const SEARCH_DEBOUNCE_TIME = 500
 
 const DEFAULT_ITEMS_PER_PAGE = 10
 
@@ -447,6 +451,7 @@ export type AcmTableProps<T> = {
   rowActions?: IAcmRowAction<T>[]
   rowActionResolver?: (item: T) => IAcmRowAction<T>[]
   extraToolbarControls?: ReactNode
+  additionalToolbarItems?: ReactNode
   emptyState: ReactNode
   onSelect?: (items: T[]) => void
   initialPage?: number
@@ -469,6 +474,8 @@ export type AcmTableProps<T> = {
   filters?: ITableFilter<T>[]
   id?: string
   showColumManagement?: boolean
+  nonZeroCount?: boolean
+  indeterminateCount?: boolean
 }
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
@@ -482,11 +489,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     rowActions = [],
     rowActionResolver,
     customTableAction,
+    additionalToolbarItems,
     filters = [],
     gridBreakPoint,
     initialSelectedItems,
     onSelect: propsOnSelect,
     showColumManagement,
+    nonZeroCount,
+    indeterminateCount,
   } = props
 
   const defaultSort = {
@@ -1034,15 +1044,32 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     [parseRowAction, resolveTableItem, rowActionResolver]
   )
 
-  const filtersHash = useMemo(() => hash(filters), [filters])
-
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
-  const hasItems = items && items.length > 0 && filtered
+  const hasItems = (items && items.length > 0 && filtered) || nonZeroCount || indeterminateCount
   const showToolbar = props.showToolbar !== false ? hasItems : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
   const translatedPaginationTitles = usePaginationTitles()
+
+  const commonPaginationProps: Partial<Omit<PaginationProps, 'ref'>> = {
+    titles: translatedPaginationTitles,
+    itemCount: !indeterminateCount ? itemCount : undefined,
+    toggleTemplate: indeterminateCount
+      ? ({ firstIndex, lastIndex }) => (
+          <>
+            <b>
+              {firstIndex} - {lastIndex}
+            </b>{' '}
+            {translatedPaginationTitles.ofWord} <b>{itemCount}+</b>
+          </>
+        )
+      : undefined,
+    perPage: perPage,
+    page: page,
+    onSetPage: (_event, page) => setPage(page),
+    onPerPageSelect: (_event, perPage) => updatePerPage(perPage),
+  }
 
   return (
     <Fragment>
@@ -1058,7 +1085,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       {showToolbar && (
         <Toolbar
           clearFiltersButtonText={t('Clear all filters')}
-          key={filtersHash} // reset state if filters change
           clearAllFilters={clearSearchAndFilters}
           collapseListedFiltersBreakpoint={'lg'}
           inset={{ default: 'insetMd', xl: 'insetLg' }}
@@ -1127,26 +1153,17 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
+            {customTableAction && <ToolbarItem>{customTableAction}</ToolbarItem>}
             {showColumManagement && (
               <AcmManageColumn<T>
                 {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
             )}
-            {customTableAction}
+            {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
-                <Pagination
-                  titles={translatedPaginationTitles}
-                  itemCount={itemCount}
-                  perPage={perPage}
-                  page={page}
-                  variant={PaginationVariant.top}
-                  onSetPage={(_event, page) => setPage(page)}
-                  onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                  aria-label={t('Pagination top')}
-                  isCompact
-                />
+                <Pagination {...commonPaginationProps} aria-label={t('Pagination top')} isCompact />
               </ToolbarItem>
             )}
           </ToolbarContent>
@@ -1161,7 +1178,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             </Title>
           </EmptyState>
         </PageSection>
-      ) : items.length === 0 ? (
+      ) : !hasItems ? (
         props.emptyState && (
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
             {props.emptyState}
@@ -1232,13 +1249,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           )}
           {(!props.autoHidePagination || filtered.length > perPage) && (
             <Pagination
-              titles={translatedPaginationTitles}
-              itemCount={itemCount}
-              perPage={perPage}
-              page={page}
+              {...commonPaginationProps}
               variant={PaginationVariant.bottom}
-              onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
-              onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
               aria-label={t('Pagination bottom')}
             />
           )}
@@ -1304,6 +1316,7 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
         /* istanbul ignore next */
         if (
           filter.showEmptyOptions ||
+          option.indeterminateCount ||
           (count !== undefined && count > 0) ||
           // if option is selected, it may be impacting results, so always show it even if options with 0 matches are being filtered
           selections.find((selection) => selection.filterId === filter.id && selection.value === option.value)
@@ -1331,6 +1344,7 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
                 {option.option.label}
                 <Badge className={filterOptionBadge} key={key} isRead>
                   {option.count}
+                  {option.option.indeterminateCount ? '+' : ''}
                 </Badge>
               </div>
             </SelectOption>

@@ -10,8 +10,6 @@ import {
   applicationsState,
   argoApplicationsState,
   clusterManagementAddonsState,
-  discoveredApplicationsState,
-  discoveredOCPAppResourcesState,
   helmReleaseState,
   managedClusterAddonsState,
   managedClusterInfosState,
@@ -50,7 +48,6 @@ import {
   mockClusterManagementAddons,
   mockManagedClusterAddons,
   mockOperatorMetrics,
-  ocpApps,
   placementDecisions,
   policies,
   policyReports,
@@ -184,9 +181,7 @@ it('should render overview page with expected data', async () => {
         snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
         snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
         snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(discoveredOCPAppResourcesState, ocpApps)
         snapshot.set(argoApplicationsState, [])
-        snapshot.set(discoveredApplicationsState, [])
         snapshot.set(helmReleaseState, [])
         snapshot.set(subscriptionsState, [])
         snapshot.set(settingsState, mockSettings)
