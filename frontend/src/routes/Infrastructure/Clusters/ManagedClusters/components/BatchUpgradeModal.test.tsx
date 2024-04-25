@@ -8,6 +8,7 @@ import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } fro
 import { waitForNocks } from '../../../../../lib/test-util'
 import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { MemoryRouter } from 'react-router-dom'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',
@@ -337,7 +338,9 @@ describe('BatchUpgradeModal', () => {
   it('should only show upgradeable ones, and select latest version as default', () => {
     const { queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     expect(queryByText('cluster-0-no-available')).toBeFalsy()
@@ -355,13 +358,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -383,13 +388,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -411,13 +418,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     userEvent.click(getByText('Cancel'))
@@ -427,7 +436,9 @@ describe('BatchUpgradeModal', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -453,7 +464,9 @@ describe('BatchUpgradeModal', () => {
     )
     const { getByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal clusters={[mockClusterWithUpgrade]} open={true} close={() => {}} />
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={[mockClusterWithUpgrade]} open={true} close={() => {}} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Wait for prometheus nocks to finish

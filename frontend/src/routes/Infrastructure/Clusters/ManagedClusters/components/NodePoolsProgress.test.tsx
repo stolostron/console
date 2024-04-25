@@ -9,6 +9,7 @@ import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './Node
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
 import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { MemoryRouter } from 'react-router-dom'
 
 const t = (string: string) => {
   return string
@@ -396,7 +397,9 @@ describe('NodePoolsProgress', () => {
     nockIgnoreApiPaths()
     render(
       <RecoilRoot>
-        <NodePoolsProgress nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
+        <MemoryRouter>
+          <NodePoolsProgress nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
+        </MemoryRouter>
       </RecoilRoot>
     )
   })

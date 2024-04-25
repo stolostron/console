@@ -43,7 +43,6 @@ import {
   resolveSource,
 } from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
-import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   patchResource,
@@ -81,7 +80,6 @@ export interface PolicyTableItem {
 export default function PoliciesPage() {
   const { t } = useTranslation()
   const unauthorizedMessage = t('rbac.unauthorized')
-  const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const {
     channelsState,
     helmReleaseState,
@@ -648,9 +646,6 @@ export default function PoliciesPage() {
         items={tableItems}
         emptyState={undefined} // only shown when tableItems.length > 0
         tableActions={tableActions}
-        initialFilters={
-          presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
-        }
         filters={filters}
         tableActionButtons={[
           {

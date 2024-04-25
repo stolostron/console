@@ -6,6 +6,7 @@ import { configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { ConfigMap, PolicyReport } from '../../../../../resources'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
+import { MemoryRouter } from 'react-router-dom'
 
 const mockPolicyReports: PolicyReport = {
   apiVersion: 'wgpolicyk8s.io/v1alpha2',
@@ -104,7 +105,9 @@ const mockConfigmap: ConfigMap[] = [
 describe('ClusterPolicySidebar', () => {
   const Component = () => (
     <RecoilRoot initializeState={(snapshot) => snapshot.set(configMapsState, mockConfigmap)}>
-      <ClusterPolicySidebar data={mockPolicyReports} />
+      <MemoryRouter>
+        <ClusterPolicySidebar data={mockPolicyReports} />
+      </MemoryRouter>
     </RecoilRoot>
   )
   test('renders', async () => {

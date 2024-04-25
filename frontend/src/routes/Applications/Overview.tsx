@@ -43,7 +43,6 @@ import {
   IAcmRowAction,
   IAcmTableColumn,
 } from '../../ui-components'
-import { getResourceParams } from '../Home/Search/Details/DetailsPage'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
@@ -89,7 +88,7 @@ const labelArr: string[] = [
   'app.kubernetes.io/part-of=',
 ]
 
-const filterId = 'table-filter-type-acm-application-label'
+const filterId = 'type'
 
 type IApplicationResource = IResource | OCPAppResource
 
@@ -354,7 +353,6 @@ export function parseOcpAppResources(
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
-  const { cluster } = getResourceParams()
   const {
     applicationSetsState,
     applicationsState,
@@ -699,24 +697,24 @@ export default function ApplicationsOverview() {
         options: [
           {
             label: t('Application set'),
-            value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
+            value: 'appset',
           },
           {
             label: t('Argo CD'),
-            value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
+            value: 'argo',
           },
           {
             label: t('Flux'),
-            value: 'fluxapps',
+            value: 'flux',
           },
           {
             label: 'OpenShift',
-            value: 'openshiftapps',
+            value: 'openshift',
           },
           { label: t('Default OpenShift'), value: 'openshift-default' },
           {
             label: t('Subscription'),
-            value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+            value: 'subscription',
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
@@ -724,7 +722,7 @@ export default function ApplicationsOverview() {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
               switch (value) {
-                case 'openshiftapps':
+                case 'openshift':
                   return (
                     !isFlux &&
                     !item.metadata?.namespace?.startsWith('openshift-') &&
@@ -735,11 +733,19 @@ export default function ApplicationsOverview() {
                     !isFlux &&
                     (item.metadata?.namespace?.startsWith('openshift-') || item.metadata?.namespace === 'openshift')
                   )
-                case 'fluxapps':
+                case 'flux':
                   return isFlux
               }
             } else {
-              return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
+              switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
+                case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
+                  return selectedValues.includes('appset')
+                case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
+                  return selectedValues.includes('argo')
+                case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
+                  return selectedValues.includes('subscription')
+              }
+              return false
             }
           })
         },
@@ -1113,7 +1119,6 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        initialFilters={cluster ? { ['cluster']: [cluster] } : undefined}
         customTableAction={
           <>
             {appCreationButton}

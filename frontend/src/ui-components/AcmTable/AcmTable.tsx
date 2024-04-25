@@ -75,6 +75,8 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
+import { useHistory, useLocation } from 'react-router-dom'
+import { ParsedQuery, parse, stringify } from 'query-string'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -219,6 +221,153 @@ export interface ITableFilter<T> {
   showEmptyOptions?: boolean
 }
 
+export type FilterSelections = {
+  [filter: string]: string[]
+}
+
+function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: FilterSelections | ParsedQuery<string>) {
+  const validSelections: FilterSelections = {}
+  let removedOptions = false
+  Object.keys(selections).forEach((key) => {
+    const filter = filters.find((filter) => filter.id === key)
+    if (filter) {
+      const filterValue = selections[key]
+      if (filterValue) {
+        // Normalize to array
+        let filterValues: (string | null)[] = []
+        if (Array.isArray(filterValue)) {
+          filterValues = filterValue
+        } else if (typeof filterValue === 'string') {
+          filterValues = [filterValue]
+        }
+
+        // Filter out invalid options
+        validSelections[key] = filterValues.filter((fv) => {
+          const matchedOption = filter.options.find(({ value }) => value === fv)
+          if (!matchedOption) {
+            removedOptions = true
+          }
+          return matchedOption
+        }) as string[]
+      }
+    }
+  })
+  return { validSelections, removedOptions }
+}
+
+export function useTableFilterSelections<T>({ id, filters }: { id?: string; filters: ITableFilter<T>[] }) {
+  const tableFilterLocalStorageKey = id ? `acm-table-filter.${id}` : undefined
+
+  const { search, ...location } = useLocation()
+  const { replace } = useHistory()
+
+  const queryParams = useMemo(() => {
+    return parse(search, { arrayFormat: 'comma' })
+  }, [search])
+
+  const filteredQueryParams = useMemo(() => {
+    const filteredQueryParams: ParsedQuery<string> = {}
+    Object.keys(queryParams).forEach((key) => {
+      const filter = filters.find((filter) => filter.id === key)
+      if (!filter) {
+        filteredQueryParams[key] = queryParams[key]
+      }
+    })
+    return filteredQueryParams
+  }, [filters, queryParams])
+
+  const updateFilters = useCallback(
+    (newFilters: FilterSelections, saveFilters: boolean = true) => {
+      const updatedParams = { ...filteredQueryParams, ...newFilters }
+      const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
+      replace({ ...location, search: updatedSearch })
+      if (saveFilters && tableFilterLocalStorageKey) {
+        setLocalStorage(tableFilterLocalStorageKey, newFilters)
+      }
+    },
+    [filteredQueryParams, replace, location, tableFilterLocalStorageKey]
+  )
+
+  const filterSelections = useMemo(() => {
+    // Load filter selections from query params and validate
+    const { validSelections, removedOptions } = getValidFilterSelections(filters, queryParams)
+    if (Object.keys(validSelections).length) {
+      if (removedOptions) {
+        updateFilters(validSelections, false)
+      }
+      return validSelections
+    } else if (tableFilterLocalStorageKey) {
+      // if no query param filters, check local storage
+      const { validSelections } = getValidFilterSelections(filters, getLocalStorage(tableFilterLocalStorageKey, {}))
+      if (Object.keys(validSelections).length) {
+        updateFilters(validSelections, false)
+      }
+      return validSelections
+    }
+    return {}
+  }, [filters, tableFilterLocalStorageKey, queryParams, updateFilters])
+
+  const addFilterValue = useCallback(
+    (key: string, value: string) => {
+      const newFilter = { [key]: [value] }
+      const { validSelections } = getValidFilterSelections(filters, newFilter)
+      if (validSelections[key]?.length) {
+        const newFilters = { ...filterSelections, [key]: [...(filterSelections[key] || []), value] }
+        updateFilters(newFilters)
+      }
+    },
+    [filterSelections, filters, updateFilters]
+  )
+
+  const removeFilterValue = useCallback(
+    (key: string, value: string) => {
+      if (filterSelections[key]?.includes(value)) {
+        const newFilters = { ...filterSelections, [key]: filterSelections[key].filter((fv) => fv !== value) }
+        if (newFilters[key].length === 0) {
+          delete newFilters[key]
+        }
+        updateFilters(newFilters)
+      }
+    },
+    [filterSelections, updateFilters]
+  )
+
+  const removeFilter = useCallback(
+    (key: string) => {
+      if (filterSelections[key]) {
+        const newFilters = { ...filterSelections }
+        delete newFilters[key]
+        updateFilters(newFilters)
+      }
+    },
+    [filterSelections, updateFilters]
+  )
+
+  const clearFilters = useCallback(() => {
+    updateFilters({})
+  }, [updateFilters])
+
+  return { filterSelections, addFilterValue, removeFilterValue, removeFilter, clearFilters }
+}
+
+function setLocalStorage(key: string | undefined, value: any) {
+  try {
+    window.localStorage.setItem(key as string, JSON.stringify(value))
+  } catch (e) {
+    // catch possible errors
+  }
+}
+
+function getLocalStorage(key: string | undefined, initialValue: {}) {
+  try {
+    const value = window.localStorage.getItem(key as string)
+    return value ? JSON.parse(value) : initialValue
+  } catch (e) {
+    // if error, return initial value
+    return initialValue
+  }
+}
+
 type FilterSelectOptionObject = SelectOptionObject & {
   filterId: string
   value: FilterOptionValueT
@@ -317,7 +466,6 @@ export type AcmTableProps<T> = {
   autoHidePagination?: boolean
   noBorders?: boolean
   fuseThreshold?: number
-  initialFilters?: { [key: string]: string[] }
   filters?: ITableFilter<T>[]
   id?: string
   showColumManagement?: boolean
@@ -348,31 +496,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
 
-  function setLocalStorage(key: string | undefined, value: any) {
-    try {
-      window.localStorage.setItem(key as string, JSON.stringify(value))
-    } catch (e) {
-      // catch possible errors
-    }
-  }
-
-  function getLocalStorage(key: string | undefined, initialValue: {}) {
-    try {
-      const value = window.localStorage.getItem(key as string)
-      return value ? JSON.parse(value) : initialValue
-    } catch (e) {
-      // if error, return initial value
-      return initialValue
-    }
-  }
-
   const { t } = useTranslation()
-
-  // localStorage filter
-  const cachedPrefixId = id && `acm-table-filter.${id}`
-  const [cache, setCache] = useState(() => getLocalStorage(cachedPrefixId, {}))
-  // initialFilters takes precedence
-  const initialFilters = props.initialFilters || cache || {}
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -397,7 +521,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [disabled, setDisabled] = useState<{ [uid: string]: boolean }>({})
   const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [expanded, setExpanded] = useState<{ [uid: string]: boolean }>({})
-  const [toolbarFilterIds, setToolbarFilterIds] = useState<{ [key: string]: string[] }>(initialFilters)
   const [internalSearch, setInternalSearch] = useState(search)
 
   // Dynamic gridBreakPoint
@@ -407,6 +530,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [tableDiv, setTableDiv] = useState<HTMLDivElement | null>(null)
   const outerDivRef = useCallback((elem: HTMLDivElement | null) => setOuterDiv(elem), [])
   const tableDivRef = useCallback((elem: HTMLDivElement | null) => setTableDiv(elem), [])
+
+  const { filterSelections, clearFilters } = useTableFilterSelections({ id, filters })
 
   //Column management
   const requiredColIds = useMemo(
@@ -467,10 +592,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   useEffect(() => {
     localStorage.setItem(id + 'SavedColOrder', JSON.stringify(colOrderIds))
   }, [colOrderIds, id])
-
-  useEffect(() => {
-    setLocalStorage(cachedPrefixId, cache)
-  }, [cache, cachedPrefixId])
 
   /* istanbul ignore next */
   const updateBreakpoint = useCallback(
@@ -579,15 +700,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     /* istanbul ignore if */
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
-    if (filters.length && Object.keys(toolbarFilterIds).length) {
-      const filterCategories = Object.keys(toolbarFilterIds)
+    if (filters.length && Object.keys(filterSelections).length) {
+      const filterCategories = Object.keys(filterSelections)
       filteredItems = items.filter((item: T) => {
         let isFilterMatch = true
         // Item must match 1 filter of each category
         filterCategories.forEach((filter: string) => {
           const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
           /* istanbul ignore next */
-          const isMatch = filterItem?.tableFilterFn(toolbarFilterIds[filter], item) ?? true
+          const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
           if (!isMatch) {
             isFilterMatch = false
           }
@@ -615,7 +736,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return tableItem
     })
     return { tableItems, totalCount: tableItems.length }
-  }, [items, selectedSortedCols, addSubRows, keyFn, filters, toolbarFilterIds])
+  }, [items, selectedSortedCols, addSubRows, keyFn, filters, filterSelections])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -765,15 +886,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [setSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
 
-  const clearFilters = useCallback(() => setToolbarFilterIds({}), [setToolbarFilterIds])
-
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
     clearFilters()
-    if (cachedPrefixId) {
-      setCache({})
-    }
-  }, [clearSearch, clearFilters, cachedPrefixId])
+  }, [clearSearch, clearFilters])
 
   const updateSearch = useCallback(
     (input: any) => {
@@ -996,16 +1112,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     />
                   </ToolbarItem>
                 )}
-                {hasFilter && (
-                  <TableColumnFilters
-                    filters={filters}
-                    items={items}
-                    toolbarFilterIds={toolbarFilterIds}
-                    setToolbarFilterIds={setToolbarFilterIds}
-                    cachedPrefixId={cachedPrefixId}
-                    setLocalStorage={setLocalStorage}
-                  />
-                )}
+                {hasFilter && <TableColumnFilters id={id} filters={filters} items={items} />}
               </ToolbarGroup>
             )}
             {props.tableActionButtons && props.tableActionButtons.length > 0 && (
@@ -1138,83 +1245,50 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   )
 }
 
-function TableColumnFilters<T>(props: {
-  filters: ITableFilter<T>[]
-  toolbarFilterIds: { [key: string]: string[] }
-  setToolbarFilterIds: React.Dispatch<
-    React.SetStateAction<{
-      [key: string]: string[]
-    }>
-  >
-  items?: T[]
-  cachedPrefixId?: string
-  setLocalStorage?: any
-}) {
+function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFilter<T>[]; items?: T[] }>) {
   const [isOpen, setIsOpen] = useState(false)
-  const { filters, toolbarFilterIds, setToolbarFilterIds, items, cachedPrefixId, setLocalStorage } = props
+  const { id, filters, items } = props
+  const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
+    id,
+    filters,
+  })
   const { t } = useTranslation()
 
   const onFilterSelect = useCallback(
     (selection: FilterSelectOptionObject) => {
       const { filterId, value } = selection
-
-      setToolbarFilterIds((toolbarFilterIds) => {
-        const selectedFilterValues = toolbarFilterIds[filterId]
-        /* istanbul ignore next */
-        const isCurrentlySelected = selectedFilterValues?.includes(value)
-        const updatedFilters = { ...toolbarFilterIds }
-        if (isCurrentlySelected) {
-          if (selectedFilterValues.length === 1) {
-            delete updatedFilters[filterId]
-          } else {
-            updatedFilters[filterId] = updatedFilters[filterId].filter((filterValue) => filterValue !== value)
-          }
-        } else {
-          updatedFilters[filterId] = [...(updatedFilters[filterId] ?? []), value]
-        }
-        if (setLocalStorage && cachedPrefixId) {
-          setLocalStorage(cachedPrefixId, updatedFilters)
-        }
-        return updatedFilters
-      })
+      if (filterSelections[filterId]?.includes(value)) {
+        removeFilterValue(filterId, value)
+      } else {
+        addFilterValue(filterId, value)
+      }
     },
-    [cachedPrefixId, setLocalStorage, setToolbarFilterIds]
+    [addFilterValue, filterSelections, removeFilterValue]
   )
 
   const onDelete = useCallback(
-    (filter: string, id: ToolbarChip) => {
-      setToolbarFilterIds((toolbarFilterIds) => {
-        const updatedFilters = { ...toolbarFilterIds }
-        if (updatedFilters[filter].length === 1) {
-          delete updatedFilters[filter]
-        } else {
-          updatedFilters[filter] = updatedFilters[filter].filter((f: string) => f !== id.key)
-        }
-
-        if (setLocalStorage && cachedPrefixId) {
-          setLocalStorage(cachedPrefixId, updatedFilters)
-        }
-        return updatedFilters
-      })
+    (filter: string, chip: ToolbarChip) => {
+      removeFilterValue(filter, chip.key)
     },
-    [cachedPrefixId, setLocalStorage, setToolbarFilterIds]
+    [removeFilterValue]
   )
 
   const onDeleteGroup = useCallback(
     (filter: string) => {
-      setToolbarFilterIds((toolbarFilterIds) => {
-        const updatedFilters = { ...toolbarFilterIds }
-        delete updatedFilters[filter]
-        if (setLocalStorage && cachedPrefixId) {
-          setLocalStorage(cachedPrefixId, updatedFilters)
-        }
-        return updatedFilters
-      })
+      removeFilter(filter)
     },
-    [cachedPrefixId, setLocalStorage, setToolbarFilterIds]
+    [removeFilter]
   )
 
-  const FilterSelectGroups = useMemo(() => {
+  const selections = useMemo(() => {
+    return Object.keys(filterSelections).reduce(
+      (acc: FilterSelectOptionObject[], filterId: string) =>
+        acc.concat(filterSelections[filterId].map((value) => createFilterSelectOptionObject(filterId, value))),
+      []
+    )
+  }, [filterSelections])
+
+  const filterSelectGroups = useMemo(() => {
     const validFilters: {
       filter: ITableFilter<T>
       options: { option: TableFilterOption<string>; count: number }[]
@@ -1225,12 +1299,13 @@ function TableColumnFilters<T>(props: {
         /* istanbul ignore next */
         const count = items?.filter((item) => filter.tableFilterFn([option.value], item)).length
         /* istanbul ignore next */
-        if (filter.showEmptyOptions) {
+        if (
+          filter.showEmptyOptions ||
+          (count !== undefined && count > 0) ||
+          // if option is selected, it may be impacting results, so always show it even if options with 0 matches are being filtered
+          selections.find((selection) => selection.filterId === filter.id && selection.value === option.value)
+        ) {
           options.push({ option, count: count ?? 0 })
-        } else {
-          if (count !== undefined && count > 0) {
-            options.push({ option, count })
-          }
         }
       }
       /* istanbul ignore else */
@@ -1260,15 +1335,7 @@ function TableColumnFilters<T>(props: {
         })}
       </SelectGroup>
     ))
-  }, [filters, items])
-
-  const selections = useMemo(() => {
-    return Object.keys(toolbarFilterIds).reduce(
-      (acc: FilterSelectOptionObject[], filterId: string) =>
-        acc.concat(toolbarFilterIds[filterId].map((value) => createFilterSelectOptionObject(filterId, value))),
-      []
-    )
-  }, [toolbarFilterIds])
+  }, [filters, items, selections])
 
   return (
     <ToolbarItem>
@@ -1278,7 +1345,7 @@ function TableColumnFilters<T>(props: {
             key={'acm-table-filter-key'}
             chips={current.options
               .filter((option: TableFilterOption<string>) => {
-                const currentCategorySelected = toolbarFilterIds[current.id] ?? []
+                const currentCategorySelected = filterSelections[current.id] ?? []
                 return currentCategorySelected.includes(option.value)
               })
               .map<ToolbarChip>((option: TableFilterOption<string>) => {
@@ -1314,7 +1381,7 @@ function TableColumnFilters<T>(props: {
           }
           noResultsFoundText={t('No results found')}
         >
-          {FilterSelectGroups}
+          {filterSelectGroups}
         </Select>
       )}
     </ToolbarItem>
