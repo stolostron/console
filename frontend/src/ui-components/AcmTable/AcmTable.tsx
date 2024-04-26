@@ -75,7 +75,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 
 type SortFn<T> = (a: T, b: T) => number
@@ -259,7 +259,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
   const tableFilterLocalStorageKey = id ? `acm-table-filter.${id}` : undefined
 
   const { search, ...location } = useLocation()
-  const { replace } = useHistory()
+  const navigate = useNavigate()
 
   const queryParams = useMemo(() => {
     return parse(search, { arrayFormat: 'comma' })
@@ -280,12 +280,12 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     (newFilters: FilterSelections, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
-      replace({ ...location, search: updatedSearch })
+      navigate(location.pathname + updatedSearch, { replace: true })
       if (saveFilters && tableFilterLocalStorageKey) {
         setLocalStorage(tableFilterLocalStorageKey, newFilters)
       }
     },
-    [filteredQueryParams, replace, location, tableFilterLocalStorageKey]
+    [filteredQueryParams, location, tableFilterLocalStorageKey, navigate]
   )
 
   const filterSelections = useMemo(() => {

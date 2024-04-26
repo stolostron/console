@@ -3,7 +3,7 @@
 import { PolicyAutomation, PolicySet } from '../../../resources'
 import { PolicyTableItem } from './Policies'
 import { NavigationPath } from '../../../NavigationPath'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { t } from 'i18next'
 import { PolicySetList } from '../common/util'
 import moment from 'moment'
@@ -15,13 +15,11 @@ import { ButtonVariant } from '@patternfly/react-core'
 export function handleNameCell(item: PolicyTableItem) {
   return (
     <Link
-      to={{
-        pathname: NavigationPath.policyDetails
-          .replace(':namespace', item.policy.metadata.namespace as string)
-          .replace(':name', item.policy.metadata.name as string),
-        state: {
-          from: NavigationPath.policies,
-        },
+      to={NavigationPath.policyDetails
+        .replace(':namespace', item.policy.metadata.namespace as string)
+        .replace(':name', item.policy.metadata.name as string)}
+      state={{
+        from: NavigationPath.policies,
       }}
     >
       {item.policy.metadata.name}

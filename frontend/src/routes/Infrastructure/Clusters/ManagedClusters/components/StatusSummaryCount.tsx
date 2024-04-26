@@ -34,7 +34,7 @@ export function StatusSummaryCount() {
     usePolicies,
   } = useSharedAtoms()
   const applicationsMatch = useMatch(NavigationPath.clusters + '/*')
-  const applicationsMatchExact = !!applicationsMatch?.params['*']
+  const applicationsMatchExact = applicationsMatch?.params['*'] === ''
   const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApps = useRecoilValue(argoApplicationsState)

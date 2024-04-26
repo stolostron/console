@@ -3,7 +3,7 @@
 import { PageSection, Stack } from '@patternfly/react-core'
 import { get, isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouteMatch } from 'react-router-dom'
+import { useMatch } from 'react-router-dom-v5-compat'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import {
   GetArgoApplicationsHashSet,
@@ -189,7 +189,8 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 
 export default function OverviewPage() {
   usePageVisitMetricHandler(Pages.overview)
-  const applicationsMatch = useRouteMatch()
+  const applicationsMatch = useMatch(NavigationPath.applications + '/*')
+  const applicationsMatchExact = applicationsMatch?.params['*'] === ''
   const { t } = useTranslation()
   const {
     applicationsState,
@@ -232,7 +233,7 @@ export default function OverviewPage() {
     },
     providers: [],
   })
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+  GetDiscoveredOCPApps(applicationsMatchExact, !ocpApps.length && !discoveredApplications.length)
 
   const clusters = useAllClusters(true)
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)

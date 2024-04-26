@@ -174,7 +174,7 @@ export function useBackCancelNavigation(): {
         if (typeof newLocation === 'string') {
           navigate(newLocation, { state: newState })
         } else {
-          navigate(newLocation.pathname || '', {
+          navigate((newLocation.pathname || '') + newLocation.search, {
             state: {
               ...(state ? state : {}),
               ...(newLocation.state ? newLocation.state : {}),

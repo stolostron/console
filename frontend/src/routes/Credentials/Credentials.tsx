@@ -9,7 +9,7 @@ export default function Credentials() {
   return (
     <Routes>
       <Route path="/create/aws/type" element={<CreateCredentialsAWS />} />
-      <Route path="/create" element={<CreateCredentialsPage />} />
+      <Route path="/create/*" element={<CreateCredentialsPage />} />
       <Route path="/edit/:namespace/:name" element={<ViewEditCredentialsFormPage />} />
       <Route path="/details/:namespace/:name" element={<ViewEditCredentialsFormPage />} />
       <Route path="/" element={<CredentialsPage />} />

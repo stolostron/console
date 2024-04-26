@@ -15,8 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
-import { useRouteMatch } from 'react-router-dom'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, useMatch } from 'react-router-dom-v5-compat'
 import { GetDiscoveredOCPApps } from '../../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -75,7 +74,8 @@ function renderSummaryLoading() {
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
   usePageVisitMetricHandler(Pages.overviewFleet)
-  const applicationsMatch = useRouteMatch()
+  const applicationsMatch = useMatch(NavigationPath.applications + '/*')
+  const applicationsMatchExact = applicationsMatch?.params['*'] === ''
   const { t } = useTranslation()
   const {
     applicationsState,
@@ -113,7 +113,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+  GetDiscoveredOCPApps(applicationsMatchExact, !ocpApps.length && !discoveredApplications.length)
 
   const grafanaRoute = useMemo(() => {
     const obsAddOn = clusterManagementAddons.filter(
