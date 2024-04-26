@@ -4,7 +4,7 @@ import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -48,12 +48,12 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   const toast = useContext(AcmToastContext)
   const navigate = useNavigate()
   const policies = usePolicies()
-  const [namespaces] = useRecoilState(namespacesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () =>
       namespaces

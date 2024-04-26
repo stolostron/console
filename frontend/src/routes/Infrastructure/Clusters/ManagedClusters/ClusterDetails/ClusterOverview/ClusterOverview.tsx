@@ -51,7 +51,7 @@ import HypershiftKubeAPI from './HypershiftKubeAPI'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
-import { GetProjects } from '../../../../../../components/GetProjects'
+import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
 
 function getAIClusterProperties(
@@ -81,7 +81,7 @@ export function ClusterOverviewPageContent(props: {
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   const renderControlPlaneType = () => {
     if (cluster?.name === 'local-cluster') {

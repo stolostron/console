@@ -4,7 +4,7 @@ import { CodeBlock, CodeBlockCode, Modal, ModalVariant, Page, Text, TextVariants
 import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
-import { GetProjects } from '../../../../../../../../components/GetProjects'
+import { useProjects } from '../../../../../../../../hooks/useProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
@@ -25,7 +25,7 @@ export function HypershiftAWSCLI() {
 
   const [isModalOpenAws, setIsModalOpenAws] = useState(false)
   const [isModalOpenAwsBucket, setIsModalOpenAwsBucket] = useState(false)
-  const { projects } = GetProjects()
+  const { projects } = useProjects()
 
   const code = `# Set environment variables
 export REGION="us-east-1"

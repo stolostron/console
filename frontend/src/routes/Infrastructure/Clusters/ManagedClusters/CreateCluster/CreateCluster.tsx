@@ -44,8 +44,8 @@ import hiveTemplate from './templates/hive-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
 
 import jsyaml from 'js-yaml'
-import { GetProjects } from '../../../../../components/GetProjects'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
+import { useProjects } from '../../../../../hooks/useProjects'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
   ClusterInfrastructureType,
@@ -109,7 +109,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const templateEditorRef = useRef<null>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-  const { projects } = GetProjects()
+
+  const { projects } = useProjects()
 
   // setup translation
   const { t } = useTranslation()
@@ -134,7 +135,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const managedClusters = useRecoilValue(managedClustersState)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
 
-  const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+  const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
   const isKubevirtEnabled = useMemo(() => {
     return (
       subscriptionOperators.findIndex(
@@ -172,8 +173,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     },
     [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled]
   )
-  const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
-  const [infraEnvs] = useRecoilState(infraEnvironmentsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const [warning, setWarning] = useState<WarningContextType>()
   const hypershiftValues = useHypershiftContextValues()
 

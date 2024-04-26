@@ -2,6 +2,9 @@
 import {
   Button,
   Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownToggle,
   Menu,
   MenuContent,
   MenuItem,
@@ -11,16 +14,20 @@ import {
   TextInputGroupMain,
   TextInputGroupUtilities,
 } from '@patternfly/react-core'
+import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton, AcmChip, AcmChipGroup } from '../../../../ui-components'
+import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext } from '../../../../ui-components'
 import { operators } from '../search-helper'
+import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
+import { useSearchDefinitions } from '../searchDefinitions'
+import { generateSearchResultExport } from '../SearchResults/utils'
 import { transformBrowserUrlToSearchString } from '../urlQuery'
 
 type SearchbarTag = {
@@ -44,6 +51,7 @@ type SearchbarProps = {
   toggleInfoModal: () => void
   updateBrowserUrl: (navigate: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
+  searchResultData: SearchResultItemsQuery | undefined
   refetchSearch: any
 }
 
@@ -79,14 +87,19 @@ export function Searchbar(props: SearchbarProps) {
     updateBrowserUrl,
     queryString,
     savedSearchQueries,
+    searchResultData,
     refetchSearch,
   } = props
+  const [t] = useTranslation()
   const navigate = useNavigate()
+  const searchDefinitions = useSearchDefinitions()
+  const toast = useContext(AcmToastContext)
   const [inputValue, setInputValue] = useState('')
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<React.ReactElement[]>([])
   const [currentQuery, setCurrentQuery] = useState(queryString)
   const [searchbarTags, setSearchbarTags] = useState<SearchbarTag[]>(convertStringToTags(currentQuery))
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
   const { useSavedSearchLimit } = useSharedAtoms()
   const savedSearchLimit = useSavedSearchLimit()
 
@@ -148,35 +161,53 @@ export function Searchbar(props: SearchbarProps) {
     setInputValue('')
   }
 
-  const [t] = useTranslation()
+  const handleMarkText = (name: string, input: string) => {
+    const preIndex = name.toLowerCase().indexOf(input.toLowerCase())
+    const pre = name.substring(0, preIndex)
+    const markText = name.substring(preIndex, preIndex + input.length)
+    const mark = (
+      <mark
+        style={{
+          color: 'var(--pf-global--link--Color)',
+          textDecoration: 'underline',
+          background: 'none',
+          fontWeight: 600,
+        }}
+      >
+        {markText}
+      </mark>
+    )
+    const post = name.substring(pre.length + input.length)
+
+    return (
+      <p>
+        {pre}
+        {mark}
+        {post}
+      </p>
+    )
+  }
+
+  // ^ - start of string
+  // [a-z0-9-_./:()=+]* - 1 or more of: any char a-z, 0-9 & special chars: -_./:()=+
+  const handlePartialRegex = (replacedSpecialChars: string) =>
+    new RegExp(`^${replacedSpecialChars.replaceAll('*', '[a-z0-9-_./:=+]*')}`)
+
   useEffect(() => {
     const parsedInputValue = stripOperators(inputValue)
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
+      if (parsedInputValue.includes('*')) {
+        const replacedSpecialChars = parsedInputValue.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const regex = handlePartialRegex(replacedSpecialChars)
+        const regexMatch = currentValue.name.toLowerCase().match(regex)?.[0] ?? ''
+        if (regexMatch === '') {
+          // If match is null -> return item without marks
+          return currentValue.name
+        }
+        return handleMarkText(currentValue.name, regexMatch)
+      }
       if (inputValue !== '' && currentValue.name.toLowerCase().includes(parsedInputValue.toLowerCase())) {
-        const preIndex = currentValue.name.toLowerCase().indexOf(parsedInputValue.toLowerCase())
-        const pre = currentValue.name.substring(0, preIndex)
-        const markText = currentValue.name.substring(preIndex, preIndex + parsedInputValue.length)
-        const mark = (
-          <mark
-            style={{
-              color: 'var(--pf-global--link--Color)',
-              textDecoration: 'underline',
-              background: 'none',
-              fontWeight: 600,
-            }}
-          >
-            {markText}
-          </mark>
-        )
-        const post = currentValue.name.substring(pre.length + parsedInputValue.length)
-
-        return (
-          <p>
-            {pre}
-            {mark}
-            {post}
-          </p>
-        )
+        return handleMarkText(currentValue.name, parsedInputValue)
       }
       return currentValue.name
     }
@@ -189,14 +220,24 @@ export function Searchbar(props: SearchbarProps) {
       </MenuItem>
     )
 
+    //todo - include a debounce
     let filteredMenuItems = []
     /** in the menu only show items that include the text in the input */
     filteredMenuItems = suggestions
-      .filter(
-        (item, index) =>
+      .filter((item, index) => {
+        if (parsedInputValue.includes('*')) {
+          const replacedSpecialChars = parsedInputValue.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const regex = handlePartialRegex(replacedSpecialChars)
+          return (
+            index !== 0 && // filter the headerItem suggestion
+            (!inputValue || item.name.toLowerCase().match(regex))
+          )
+        }
+        return (
           index !== 0 && // filter the headerItem suggestion
           (!inputValue || item.name.toLowerCase().includes(parsedInputValue.toLowerCase()))
-      )
+        )
+      })
       .map((currentValue) => (
         <MenuItem
           isDisabled={currentValue.disabled}
@@ -358,7 +399,7 @@ export function Searchbar(props: SearchbarProps) {
 
   /** apply focus to the run search button */
   const focusRunSearchButton = () => {
-    const runSearchButton = document.querySelector('#inputDropdownButton1') as HTMLButtonElement
+    const runSearchButton = document.querySelector('#run-search-button') as HTMLButtonElement
     runSearchButton?.focus()
   }
 
@@ -418,13 +459,10 @@ export function Searchbar(props: SearchbarProps) {
             </Button>
           </TextInputGroupUtilities>
         )}
-        <Divider isVertical />
-        <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
-          <HelpIcon color={'var(--pf-global--active-color--100)'} />
-        </Button>
-        <Divider isVertical />
-        <AcmButton
-          id="inputDropdownButton1"
+        <Divider orientation={{ default: 'vertical' }} />
+        <Button
+          id="run-search-button"
+          isInline
           variant="plain"
           onClick={() => {
             // If run search is pressed but the query hasn't changed - we are refetching
@@ -437,9 +475,13 @@ export function Searchbar(props: SearchbarProps) {
           }}
           isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
         >
-          {t('Run search')}
-        </AcmButton>
-        <Divider isVertical />
+          <ArrowRightIcon />
+        </Button>
+        <Divider orientation={{ default: 'vertical' }} />
+        <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
+          <HelpIcon color={'var(--pf-global--active-color--100)'} />
+        </Button>
+        <Divider orientation={{ default: 'vertical' }} />
         <AcmButton
           onClick={() =>
             setSaveSearch({
@@ -455,6 +497,40 @@ export function Searchbar(props: SearchbarProps) {
         >
           {t('Save search')}
         </AcmButton>
+        <Divider orientation={{ default: 'vertical' }} />
+        <Dropdown
+          onSelect={(event) => {
+            event?.stopPropagation()
+            setIsExportMenuOpen(false)
+          }}
+          className="export-dropdownMenu"
+          toggle={
+            <DropdownToggle
+              toggleIndicator={null}
+              onToggle={(value, event) => {
+                event.stopPropagation()
+                setIsExportMenuOpen(value)
+              }}
+              aria-label="export-search-result"
+              id="export-search-result"
+            >
+              <ExportIcon />
+            </DropdownToggle>
+          }
+          isOpen={isExportMenuOpen}
+          isPlain
+          dropdownItems={[
+            <DropdownItem
+              style={{ width: '10rem' }}
+              key={'item.text'}
+              onClick={() => generateSearchResultExport(searchResultData, searchDefinitions, toast, t)}
+              isDisabled={window.location.search === ''}
+            >
+              {t('Export as CSV')}
+            </DropdownItem>,
+          ]}
+          position={'right'}
+        />
       </TextInputGroup>
     </div>
   )

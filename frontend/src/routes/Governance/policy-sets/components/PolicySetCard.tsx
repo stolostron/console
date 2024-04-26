@@ -29,7 +29,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 
@@ -232,9 +232,9 @@ function DeletePolicySetModal(props: {
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
   const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placementBindings = useRecoilValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
   const onConfirm = useCallback(async () => {

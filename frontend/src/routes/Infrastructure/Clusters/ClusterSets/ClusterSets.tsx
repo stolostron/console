@@ -40,7 +40,7 @@ import { ClusterStatuses } from './components/ClusterStatuses'
 import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
-import { useSharedAtoms, useRecoilValue, useSharedRecoil } from '../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
 
 export default function ClusterSetsPage() {
   const { t } = useTranslation()
@@ -125,8 +125,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
     return () => canCreateManagedClusterSet.abort()
   }, [])
   const { managedClusterSetBindingsState } = useSharedAtoms()
-  const { waitForAll } = useSharedRecoil()
-  const [managedClusterSetBindings] = useRecoilValue(waitForAll([managedClusterSetBindingsState]))
+  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
 
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {

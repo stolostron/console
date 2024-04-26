@@ -17,7 +17,7 @@ import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../li
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmEmptyState } from '../../../ui-components'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
@@ -66,8 +66,8 @@ export default function PolicySetsPage() {
   const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
   const { namespacesState, policySetsState } = useSharedAtoms()
-  const [policySets] = useRecoilState(policySetsState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const policySets = useRecoilValue(policySetsState)
+  const namespaces = useRecoilValue(namespacesState)
   const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
     Name: presetNames,
     Namespace: presetNs,

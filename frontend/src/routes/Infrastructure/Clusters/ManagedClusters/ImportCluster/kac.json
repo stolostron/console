@@ -54,13 +54,6 @@
                 "enabled": { "type": "boolean" }
               },
               "required": ["enabled"]
-            },
-            "iamPolicyController": {
-              "type": "object",
-              "properties": {
-                "enabled": { "type": "boolean" }
-              },
-              "required": ["enabled"]
             }
           },
           "required": [
@@ -70,8 +63,7 @@
             "applicationManager",
             "policyController",
             "searchCollector",
-            "certPolicyController",
-            "iamPolicyController"
+            "certPolicyController"
           ]
         },
         "version": { "type": "string" }

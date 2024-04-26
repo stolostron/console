@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
-import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { RecoilRoot } from 'recoil'
+import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } from '../../../../../lib/nock-util'
+import { waitForNocks } from '../../../../../lib/test-util'
+import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { MemoryRouter } from 'react-router-dom'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',
@@ -227,6 +229,52 @@ const mockClusterFailedUpgrade: Cluster = {
   isHypershift: false,
   isRegionalHubCluster: false,
 }
+const mockClusterWithUpgrade: Cluster = {
+  name: 'cluster-5-upgrade',
+  displayName: 'cluster-5-upgrade',
+  namespace: 'cluster-5-upgrade',
+  uid: 'cluster-5-upgrade-uid',
+  status: ClusterStatus.ready,
+  isHive: false,
+  distribution: {
+    k8sVersion: '1.19',
+    displayVersion: 'Openshift 2.2.3',
+    isManagedOpenShift: false,
+    upgradeInfo: {
+      upgradeFailed: false,
+      isUpgrading: false,
+      isReadyUpdates: true,
+      isReadySelectChannels: false,
+      availableUpdates: ['2.2.4', '2.2.5', '2.2.6', '2.2'],
+      currentVersion: '2.2.3',
+      desiredVersion: '2.2.3',
+      latestJob: {},
+    },
+  },
+  labels: {
+    clusterID: '1234-abcd',
+  },
+  nodes: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hasAutomationTemplate: false,
+  hive: {
+    isHibernatable: true,
+    clusterPool: undefined,
+    secrets: {
+      installConfig: '',
+    },
+  },
+  isManaged: true,
+  isCurator: false,
+  isHostedCluster: false,
+  isSNOCluster: false,
+  owner: {},
+  kubeadmin: '',
+  kubeconfig: '',
+  isHypershift: false,
+  isRegionalHubCluster: false,
+}
 const allClusters: Array<Cluster> = [
   mockClusterNoAvailable,
   mockClusterReady1,
@@ -264,12 +312,35 @@ const getPatchUpdate = (version: string) => {
   return data
 }
 
+const mockUpgradeRisksPredictions: any = [
+  {
+    statusCode: 200,
+    body: {
+      predictions: [
+        {
+          cluster_id: '1234-abcd',
+          prediction_status: 'ok',
+          upgrade_recommended: true,
+          upgrade_risks_predictors: {
+            alerts: [],
+            operator_conditions: [],
+          },
+          last_checked_at: '2024-03-27T14:35:06.238290+00:00',
+        },
+      ],
+      status: 'ok',
+    },
+  },
+]
+
 describe('BatchUpgradeModal', () => {
   beforeEach(() => nockIgnoreApiPaths())
   it('should only show upgradeable ones, and select latest version as default', () => {
     const { queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     expect(queryByText('cluster-0-no-available')).toBeFalsy()
@@ -287,13 +358,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -315,13 +388,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -343,13 +418,15 @@ describe('BatchUpgradeModal', () => {
     let isClosed = false
     const { getByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
+        <MemoryRouter>
+          <BatchUpgradeModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
     userEvent.click(getByText('Cancel'))
@@ -359,7 +436,9 @@ describe('BatchUpgradeModal', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     const { getByText, queryByText } = render(
       <RecoilRoot>
-        <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
+        </MemoryRouter>
       </RecoilRoot>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
@@ -376,5 +455,23 @@ describe('BatchUpgradeModal', () => {
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
     expect(queryByText('Error')).toBeTruthy()
     expect(queryByText('cluster-1-ready1')).toBeFalsy()
+  })
+  it('should open modal with cluster upgrade risks present', async () => {
+    const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+      '/upgrade-risks-prediction',
+      { clusterIds: ['1234-abcd'] },
+      mockUpgradeRisksPredictions
+    )
+    const { getByText } = render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <BatchUpgradeModal clusters={[mockClusterWithUpgrade]} open={true} close={() => {}} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Wait for prometheus nocks to finish
+    await waitForNocks([getUpgradeRisksPredictionsNock])
+    expect(getByText('Upgrade')).toBeTruthy()
+    expect(getByText('No risks found')).toBeTruthy()
   })
 })

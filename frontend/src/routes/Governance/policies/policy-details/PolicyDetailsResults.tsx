@@ -4,8 +4,8 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -32,8 +32,8 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
   const { policy } = props
   const { namespacesState, policiesState } = useSharedAtoms()
-  const [policies] = useRecoilState(policiesState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const policies = useRecoilValue(policiesState)
+  const namespaces = useRecoilValue(namespacesState)
   const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
 
   useEffect(() => {

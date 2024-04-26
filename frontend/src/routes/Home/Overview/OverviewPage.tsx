@@ -26,7 +26,7 @@ import {
   PolicyReport,
   PolicyReportResults,
 } from '../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmAlert,
   AcmDonutChart,
@@ -206,18 +206,18 @@ export default function OverviewPage() {
   } = useSharedAtoms()
 
   const policies = usePolicies()
-  const [apps] = useRecoilState(applicationsState)
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApps] = useRecoilState(argoApplicationsState)
-  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [policyReports] = useRecoilState(policyreportState)
-  const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
+  const apps = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApps = useRecoilValue(argoApplicationsState)
+  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const policyReports = useRecoilValue(policyreportState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const [selectedCloud, setSelectedCloud] = useState<string>('')
   const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
-  const [subscriptions] = useRecoilState(subscriptionsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
   const [summaryData, setSummaryData] = useState<any>({
     kubernetesTypes: new Set(),
     regions: new Set(),
@@ -563,7 +563,7 @@ export default function OverviewPage() {
   }, [cloudLabelFilter, offline, ready, t])
 
   function buildClusterAddonLinks(addonType: string): string {
-    return `${NavigationPath.managedClusters}?addons=${addonType}`
+    return `${NavigationPath.managedClusters}?add-ons=${addonType}`
   }
 
   const clusterAddonData = useMemo(() => {

@@ -11,7 +11,7 @@ import {
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Text, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
   getClusterCount,
   getClusterCountField,
@@ -46,30 +46,27 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
-import { useRecoilState } from '../../../../shared-recoil'
-import { PluginContext } from '../../../../lib/PluginContext'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
-const clusterResourceStatusTooltip = (t: TFunction) =>
+const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
-let leftItems: ListItems[] = []
-let rightItems: ListItems[] | undefined = undefined
+const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resources within the topology.')
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
   const { applicationData } = props
   const { t } = useTranslation()
   const localClusterStr = 'local-cluster'
 
-  const { dataContext } = useContext(PluginContext)
-  const { atoms } = useContext(dataContext)
-  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } = atoms
+  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } =
+    useSharedAtoms()
 
-  const [argoApplications] = useRecoilState(argoApplicationsState)
-  const [channels] = useRecoilState(channelsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [namespaces] = useRecoilState(namespacesState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const channels = useRecoilValue(channelsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const namespaces = useRecoilValue(namespacesState)
 
   const managedClusters = useAllClusters(true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
@@ -86,6 +83,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
   let isSubscription = false
   let isPullModel = false
   let subsList = []
+  let leftItems: ListItems[] = []
+  let rightItems: ListItems[] | undefined = undefined
 
   useEffect(() => {
     if (namespaces.length) {
@@ -165,7 +164,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
@@ -234,7 +233,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
@@ -283,7 +282,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
           keyAction: (
-            <Tooltip content={clusterResourceStatusTooltip(t)}>
+            <Tooltip content={clusterResourceStatusTooltipSubscription(t)}>
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),

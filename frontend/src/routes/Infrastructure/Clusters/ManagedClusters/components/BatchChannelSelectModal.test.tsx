@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
+import { MemoryRouter } from 'react-router-dom'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',
@@ -218,7 +219,9 @@ describe('BatchChannelSelectModal', () => {
   beforeEach(() => nockIgnoreApiPaths())
   it('should only show selectable ones, and select current channel as default', () => {
     const { queryAllByText, queryByText } = render(
-      <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
+      <MemoryRouter>
+        <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
+      </MemoryRouter>
     )
     expect(queryByText('cluster-0-no-available')).toBeFalsy()
     expect(queryByText('cluster-1-ready1')).toBeTruthy()
@@ -233,13 +236,15 @@ describe('BatchChannelSelectModal', () => {
   it('should close modal when succeed', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
-      <BatchChannelSelectModal
-        clusters={allClusters}
-        open={true}
-        close={() => {
-          isClosed = true
-        }}
-      />
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={allClusters}
+          open={true}
+          close={() => {
+            isClosed = true
+          }}
+        />
+      </MemoryRouter>
     )
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 404)
     const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('stable-2.3') })
@@ -257,13 +262,15 @@ describe('BatchChannelSelectModal', () => {
   it('should show loading when click select, and select button should be disabled when loading', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
-      <BatchChannelSelectModal
-        clusters={allClusters}
-        open={true}
-        close={() => {
-          isClosed = true
-        }}
-      />
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={allClusters}
+          open={true}
+          close={() => {
+            isClosed = true
+          }}
+        />
+      </MemoryRouter>
     )
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
     expect(getByText('Save')).toBeTruthy()
@@ -283,13 +290,15 @@ describe('BatchChannelSelectModal', () => {
   it('should close modal if click cancel', () => {
     let isClosed = false
     const { getByText } = render(
-      <BatchChannelSelectModal
-        clusters={allClusters}
-        open={true}
-        close={() => {
-          isClosed = true
-        }}
-      />
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={allClusters}
+          open={true}
+          close={() => {
+            isClosed = true
+          }}
+        />
+      </MemoryRouter>
     )
     userEvent.click(getByText('Cancel'))
     expect(isClosed).toBe(true)
@@ -297,7 +306,9 @@ describe('BatchChannelSelectModal', () => {
   it('should show alert when failed; keep failed rows in table with error messages', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     const { getByText, queryByText } = render(
-      <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
+      <MemoryRouter>
+        <BatchChannelSelectModal clusters={allClusters} open={true} close={() => {}} />
+      </MemoryRouter>
     )
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 400)
     expect(queryByText('cluster-1-ready1')).toBeTruthy()

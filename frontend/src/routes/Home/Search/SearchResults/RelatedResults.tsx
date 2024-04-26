@@ -12,7 +12,7 @@ import {
 import _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
@@ -30,7 +30,7 @@ export function RenderItemContent(props: {
   const { t } = useTranslation()
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
   const searchResultLimit = useSearchResultLimit()
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -42,7 +42,7 @@ export function RenderItemContent(props: {
   const searchDefinitions = useSearchDefinitions()
   const colDefs = _.get(
     searchDefinitions,
-    `[${relatedKind.toLowerCase()}].columns`,
+    `['${relatedKind.toLowerCase()}'].columns`,
     searchDefinitions['genericresource'].columns
   )
   const relatedResultItems = useMemo(() => data?.searchResult?.[0]?.related?.[0]?.items || [], [data])

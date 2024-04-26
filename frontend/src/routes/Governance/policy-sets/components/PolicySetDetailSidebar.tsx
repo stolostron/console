@@ -23,7 +23,7 @@ import {
 import { TFunction } from 'react-i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
@@ -109,12 +109,12 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     placementRulesState,
     placementsState,
   } = useSharedAtoms()
-  const [managedClusters] = useRecoilState(managedClustersState)
+  const managedClusters = useRecoilValue(managedClustersState)
   const policies = useAddRemediationPolicies()
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placementBindings = useRecoilValue(placementBindingsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
   const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
   const selectType = (type: 'Clusters' | 'Policies') => {
     setType(type)

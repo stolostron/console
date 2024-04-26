@@ -211,7 +211,6 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     policyController: { enabled: true },
     searchCollector: { enabled: true },
     certPolicyController: { enabled: true },
-    iamPolicyController: { enabled: true },
   },
 }
 
@@ -274,7 +273,6 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     clusterLabels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
     clusterName: 'foobar',
     clusterNamespace: 'foobar',
-    iamPolicyController: { enabled: true },
     policyController: { enabled: true },
     searchCollector: { enabled: true },
   },

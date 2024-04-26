@@ -10,7 +10,7 @@ oc get oauthclient console-oauth-client -o jsonpath='{.secret}' > ocp-console/co
 oc get secrets -n default --field-selector type=kubernetes.io/service-account-token -o json | \
     jq '.items[0].data."ca.crt"' -r | python -m base64 -d > ocp-console/ca.crt
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.12}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.13}
 CONSOLE_PORT=${CONSOLE_PORT:=9000}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 

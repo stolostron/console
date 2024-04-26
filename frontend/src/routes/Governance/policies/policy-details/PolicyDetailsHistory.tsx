@@ -6,7 +6,7 @@ import moment from 'moment'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 
 interface HistoryTableData {
@@ -24,7 +24,7 @@ export function PolicyDetailsHistory(props: {
   const { t } = useTranslation()
   const { policiesState } = useSharedAtoms()
   const { policyName, policyNamespace, clusterName, templateName } = props
-  const [policies] = useRecoilState(policiesState)
+  const policies = useRecoilValue(policiesState)
 
   const statusItems: HistoryTableData[] = useMemo(() => {
     if (!(policyName && policyNamespace && clusterName && templateName)) {

@@ -170,7 +170,7 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByText('Filter'))
     await waitForText('OpenShift', true)
     expect(screen.getAllByText(/openshift/i)).toBeTruthy()
-    userEvent.click(screen.queryAllByRole('checkbox', { name: /openshift/i })[0])
+    userEvent.click(screen.getByRole('checkbox', { name: /openshift/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))

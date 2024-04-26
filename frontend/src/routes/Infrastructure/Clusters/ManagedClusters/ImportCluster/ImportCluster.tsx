@@ -261,7 +261,6 @@ export default function ImportClusterPage() {
           policyController: { enabled: true },
           searchCollector: { enabled: true },
           certPolicyController: { enabled: true },
-          iamPolicyController: { enabled: true },
         },
       })
     }

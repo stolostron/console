@@ -262,7 +262,7 @@ const mockSearchResponse = {
             kind_plural: 'managedclusterinfos',
             kubernetesVersion: 'v1.24.6+5658434',
             label:
-              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=auto-gitops-cluster-set; clusterID=d894c4e2-eb80-41a2-b0ba-0cf54cc9d40f; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=dyna1203; openshiftVersion=4.11.17; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; region=us-east-2; vendor=OpenShift',
+              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=auto-gitops-cluster-set; clusterID=d894c4e2-eb80-41a2-b0ba-0cf54cc9d40f; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=dyna1203; openshiftVersion=4.11.17; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; region=us-east-2; vendor=OpenShift',
             memory: '96260328Ki',
             name: 'dyna1203',
             nodes: '6',
@@ -284,7 +284,7 @@ const mockSearchResponse = {
             kind_plural: 'managedclusterinfos',
             kubernetesVersion: 'v1.24.8+IKS',
             label:
-              'cloud=IBM; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=iks419; vendor=IKS',
+              'cloud=IBM; cluster.open-cluster-management.io/clusterset=default; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=iks419; vendor=IKS',
             memory: '11478240Ki',
             name: 'iks419',
             nodes: '3',
@@ -306,7 +306,7 @@ const mockSearchResponse = {
             kind_plural: 'managedclusterinfos',
             kubernetesVersion: 'v1.24.6+5157800',
             label:
-              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=auto-gitops-cluster-set; clusterID=9deef3b6-8b16-4286-8e5b-3ec36eaccda6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.11.16; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; test=auto; velero.io/exclude-from-backup=true; vendor=OpenShift',
+              'cloud=Amazon; cluster.open-cluster-management.io/clusterset=auto-gitops-cluster-set; clusterID=9deef3b6-8b16-4286-8e5b-3ec36eaccda6; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.11.16; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; test=auto; velero.io/exclude-from-backup=true; vendor=OpenShift',
             memory: '96100584Ki',
             name: 'local-cluster',
             nodes: '6',
@@ -7909,24 +7909,6 @@ const mockSearchResponse = {
               },
               {
                 _clusterNamespace: 'dyna1203',
-                _uid: 'dyna1203/221a40f4-8b5a-4dda-be17-47b436a7bdfe',
-                apigroup: 'apps',
-                apiversion: 'v1',
-                available: '1',
-                cluster: 'dyna1203',
-                created: '2022-12-03T17:27:42Z',
-                current: '1',
-                desired: '1',
-                kind: 'Deployment',
-                kind_plural: 'deployments',
-                label:
-                  'addon.open-cluster-management.io/hosted-manifest-location=hosting; app=iam-policy-controller; chart=iam-policy-controller-2.2.0; heritage=Helm; release=iam-policy-controller',
-                name: 'iam-policy-controller',
-                namespace: 'open-cluster-management-agent-addon',
-                ready: '1',
-              },
-              {
-                _clusterNamespace: 'dyna1203',
                 _uid: 'dyna1203/2328d9ef-86b3-48bb-a0a8-607ca63d6bdc',
                 apigroup: 'apps',
                 apiversion: 'v1',
@@ -11415,17 +11397,6 @@ const mockSearchResponse = {
               },
               {
                 _clusterNamespace: 'dyna1203',
-                _uid: 'dyna1203/2b8d6eb1-5e03-4c26-95ed-384f03ee1d64',
-                apiversion: 'v1',
-                cluster: 'dyna1203',
-                created: '2022-12-03T17:27:28Z',
-                kind: 'Secret',
-                kind_plural: 'secrets',
-                name: 'iam-policy-controller-hub-kubeconfig',
-                namespace: 'open-cluster-management-agent-addon',
-              },
-              {
-                _clusterNamespace: 'dyna1203',
                 _uid: 'dyna1203/2b946047-a9a0-4f93-9acc-573702d3ed7e',
                 apiversion: 'v1',
                 cluster: 'dyna1203',
@@ -13056,7 +13027,7 @@ const mockSearchResponse2 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__feng-mc',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=true; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=true; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'feng-mc',
                 consoleURL:
@@ -13067,7 +13038,7 @@ const mockSearchResponse2 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.24.0+9546431',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=9ad5476e-19d0-4111-acfb-e41db4e2edda; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-mc; openshiftVersion=4.11.0; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=9ad5476e-19d0-4111-acfb-e41db4e2edda; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=feng-mc; openshiftVersion=4.11.0; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; vendor=OpenShift',
                 memory: '32555512Ki',
                 name: 'feng-mc',
                 nodes: '1',
@@ -13081,7 +13052,7 @@ const mockSearchResponse2 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL: 'https://console-openshift-console.apps.app-aws-411ga-hub-rbd6x.dev06.red-chesterfield.com',
@@ -13091,7 +13062,7 @@ const mockSearchResponse2 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.24.0+9546431',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=cfef32ff-523f-48af-a57b-26ada80a2d6e; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.11.0; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=cfef32ff-523f-48af-a57b-26ada80a2d6e; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.11.0; openshiftVersion-major=4; openshiftVersion-major-minor=4.11; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '97666528Ki',
                 name: 'local-cluster',
                 nodes: '3',
@@ -13515,7 +13486,7 @@ const mockSearchResponse3 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -13526,7 +13497,7 @@ const mockSearchResponse3 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -13905,7 +13876,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -13916,7 +13887,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -13956,7 +13927,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -13967,7 +13938,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -14045,7 +14016,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -14056,7 +14027,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -14174,7 +14145,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -14185,7 +14156,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -14302,7 +14273,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -14313,7 +14284,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -14352,7 +14323,7 @@ const mockSearchResponse4 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -14363,7 +14334,7 @@ const mockSearchResponse4 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15306,7 +15277,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15317,7 +15288,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15357,7 +15328,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15368,7 +15339,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15446,7 +15417,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15457,7 +15428,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15575,7 +15546,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15586,7 +15557,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15703,7 +15674,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15714,7 +15685,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',
@@ -15753,7 +15724,7 @@ const mockSearchResponse6 = {
                 _hubClusterResource: 'true',
                 _uid: 'cluster__local-cluster',
                 addon:
-                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=true; observability-controller=false; search-collector=false; work-manager=true',
+                  'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; observability-controller=false; search-collector=false; work-manager=true',
                 apigroup: 'internal.open-cluster-management.io',
                 cluster: 'local-cluster',
                 consoleURL:
@@ -15764,7 +15735,7 @@ const mockSearchResponse6 = {
                 kind_plural: 'managedclusterinfos',
                 kubernetesVersion: 'v1.25.7+eab9cc9',
                 label:
-                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-iam-policy-controller=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
+                  'cloud=Amazon; cluster.open-cluster-management.io/clusterset=default; clusterID=ed841d92-934c-4a8e-8df7-3265bc16da1b; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-hypershift-addon=available; feature.open-cluster-management.io/addon-work-manager=available; local-cluster=true; name=local-cluster; openshiftVersion=4.12.10; openshiftVersion-major=4; openshiftVersion-major-minor=4.12; velero.io/exclude-from-backup=true; vendor=OpenShift',
                 memory: '96604400Ki',
                 name: 'local-cluster',
                 nodes: '6',

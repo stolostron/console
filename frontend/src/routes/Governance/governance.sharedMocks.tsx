@@ -402,6 +402,49 @@ const pendingPolicy0: Policy = {
   },
 }
 
+const policyForOrder1: Policy = {
+  apiVersion: 'policy.open-cluster-management.io/v1',
+  kind: 'Policy',
+  metadata: {
+    name: 'policy-test-order',
+    namespace: 'test',
+    uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+    managedFields: [
+      {
+        manager: 'argocd',
+      },
+    ],
+  },
+  spec: {
+    disabled: true,
+    'policy-templates': [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: { name: 'policy-test-order-1' },
+          spec: {
+            namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+            remediationAction: 'inform',
+            severity: 'low',
+          },
+        },
+      },
+    ],
+    remediationAction: 'inform',
+  },
+  status: {
+    compliant: 'Compliant',
+    placement: [
+      {
+        placement: 'policy-set-with-1-placement',
+        placementBinding: 'policy-set-with-1-placement',
+        policySet: 'policy-set-with-1-placement',
+      },
+    ],
+    status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Compliant' }],
+  },
+}
 const policyWithoutStatus: Policy = {
   apiVersion: PolicyApiVersion,
   kind: PolicyKind,
@@ -760,6 +803,7 @@ export const mockEmptyPolicy: Policy[] = []
 export const mockPolicy: Policy[] = [rootPolicy, policy0, policy1]
 export const mockPolicyBinding: Policy[] = [rootPolicy, policy2]
 export const mockPendingPolicy: Policy[] = [pendingPolicy, pendingPolicy0]
+export const mockOrderPolicy: Policy[] = [pendingPolicy, policyForOrder1]
 
 export const mockPolicyNoStatus: Policy = policyWithoutStatus
 

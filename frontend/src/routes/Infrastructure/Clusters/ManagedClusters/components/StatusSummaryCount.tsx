@@ -12,7 +12,7 @@ import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { Application, ApplicationSet, ApplicationSetKind } from '../../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
 import { localClusterStr } from '../../../../Applications/Overview'
@@ -35,15 +35,15 @@ export function StatusSummaryCount() {
   } = useSharedAtoms()
   const applicationsMatch = useMatch(NavigationPath.clusters + '/*')
   const applicationsMatchExact = !!applicationsMatch?.params['*']
-  const [applications] = useRecoilState(applicationsState)
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApps] = useRecoilState(argoApplicationsState)
-  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [policyReports] = useRecoilState(policyreportState)
-  const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
+  const applications = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApps = useRecoilValue(argoApplicationsState)
+  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const policyReports = useRecoilValue(policyreportState)
+  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
   const policies = usePolicies()
   const { cluster } = useContext(ClusterContext)
 

@@ -454,7 +454,6 @@ const mockBMCluster: Cluster = {
     'feature.open-cluster-management.io/addon-cluster-proxy': 'unreachable',
     'feature.open-cluster-management.io/addon-config-policy-controller': 'unreachable',
     'feature.open-cluster-management.io/addon-governance-policy-framework': 'unreachable',
-    'feature.open-cluster-management.io/addon-iam-policy-controller': 'unreachable',
     'feature.open-cluster-management.io/addon-search-collector': 'unreachable',
     'feature.open-cluster-management.io/addon-work-manager': 'unreachable',
     name: 'feng-test',

@@ -33,7 +33,6 @@ import {
   WizHidden,
   WizItemSelector,
   WizKeyValue,
-  WizNumberInput,
   WizRadioGroup,
   WizSingleSelect,
   WizStringsInput,
@@ -383,26 +382,6 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
           <WizTextInput path="objectDefinition.spec.minimumDuration" label={t('Minimum duration')} required />
         </WizHidden>
 
-        {/* IamPolicy */}
-        <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'IamPolicy'}>
-          <div>
-            <Title headingLevel="h6">{t('IAM Policy')}</Title>
-          </div>
-
-          <WizTextInput
-            path="objectDefinition.metadata.name"
-            label={t('Name')}
-            required
-            helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
-            validation={validateKubernetesResourceName}
-          />
-          <WizNumberInput
-            path="objectDefinition.spec.maxClusterRoleBindingUsers"
-            label={t('Limit cluster role bindings')}
-            required
-          />
-        </WizHidden>
-
         {/* OperatorPolicy */}
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'OperatorPolicy'}>
           <div>
@@ -439,7 +418,11 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                 label={t('Namespace')}
                 labelHelp={t('The operator is installed in this namespace.')}
               />
-              <WizTextInput path="objectDefinition.spec.subscription.channel" label={t('Channel')} required />
+              <WizTextInput
+                path="objectDefinition.spec.subscription.channel"
+                label={t('Channel')}
+                labelHelp={t('operatorPolicy.channel.labelHelper')}
+              />
               <WizRadioGroup
                 path="objectDefinition.spec.subscription.installPlanApproval"
                 label={t('Install Plan Approval')}
@@ -447,11 +430,15 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                 <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
                 <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
               </WizRadioGroup>
-              <WizTextInput path="objectDefinition.spec.subscription.source" label={t('Source')} required />
+              <WizTextInput
+                path="objectDefinition.spec.subscription.source"
+                label={t('Source')}
+                labelHelp={t('operatorPolicy.source.labelHelper')}
+              />
               <WizTextInput
                 path="objectDefinition.spec.subscription.sourceNamespace"
                 label={t('Source Namespace')}
-                required
+                labelHelp={t('operatorPolicy.sourceNamespace.labelHelper')}
               />
               <WizTextInput
                 path="objectDefinition.spec.subscription.startingCSV"

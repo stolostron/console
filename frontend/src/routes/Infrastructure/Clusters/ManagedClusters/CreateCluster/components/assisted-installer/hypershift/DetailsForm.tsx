@@ -23,7 +23,7 @@ import { Secret } from '../../../../../../../../resources'
 import { getExtensionAfter } from '../DetailsForm'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion, getFieldLabels } from './utils'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { FieldName } from '../types'
 
 type FormControl = {
@@ -57,11 +57,10 @@ const fields: any = {
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
   const { setClusterName, setReleaseImage, setSshPublicKey } = useContext(HypershiftAgentContext)
-  const { waitForAll } = useSharedRecoil()
   const { clusterDeploymentsState, clusterImageSetsState, configMapsState } = useSharedAtoms()
-  const [clusterDeployments, clusterImageSets, configMaps] = useRecoilValue(
-    waitForAll([clusterDeploymentsState, clusterImageSetsState, configMapsState])
-  )
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const configMaps = useRecoilValue(configMapsState)
   const formRef = useRef<FormikProps<any>>(null)
 
   const { t } = useTranslation()

@@ -14,7 +14,7 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -69,7 +69,7 @@ function AnsibleJobTemplateTable() {
   const { t } = useTranslation()
   const unauthorizedMessage = t('rbac.unauthorized')
   const { namespacesState } = useSharedAtoms()
-  const [namespaces] = useRecoilState(namespacesState)
+  const namespaces = useRecoilValue(namespacesState)
   const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
   useEffect(() => {
     checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)

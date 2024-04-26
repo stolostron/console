@@ -25,7 +25,7 @@ import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predict
 import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
 import { NavigationPath } from '../../../NavigationPath'
 import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
@@ -94,17 +94,17 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const policies = usePolicies()
   const allAddons = useClusterAddons()
-  const [applications] = useRecoilState(applicationsState)
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApplications] = useRecoilState(argoApplicationsState)
-  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
-  const [managedClusterInfos] = useRecoilState(managedClusterInfosState)
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [ocpApps] = useRecoilState(discoveredOCPAppResourcesState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [policyReports] = useRecoilState(policyreportState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [clusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+  const applications = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const policyReports = useRecoilValue(policyreportState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(true)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
   const [isCustomizationSectionOpen, setIsCustomizationSectionOpen] = useState<boolean>(true)
@@ -437,6 +437,24 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 <GalleryItem key={'upgrade-risk-prediction-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Update risk predictions')}
+                    titlePopover={
+                      <Popover
+                        bodyContent={t(
+                          'Cluster update risks are only collected for OpenShift Container Platform clusters.'
+                        )}
+                      >
+                        <Button
+                          variant="plain"
+                          style={{
+                            padding: 0,
+                            marginLeft: '8px',
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          <HelpIcon />
+                        </Button>
+                      </Popover>
+                    }
                     summaryTotalHeader={{
                       num: `${percentOfClustersWithRisk}%`,
                       text: 'of clusters need to be reviewed before updating',

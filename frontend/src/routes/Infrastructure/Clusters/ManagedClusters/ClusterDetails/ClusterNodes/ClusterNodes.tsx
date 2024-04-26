@@ -9,7 +9,7 @@ import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { getRoles, NodeInfo } from '../../../../../../resources'
-import { useRecoilState, useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmInlineStatus,
@@ -94,7 +94,7 @@ export function NodesPoolsTable() {
   const { isSearchAvailable } = useContext(PluginContext)
   const { isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const [settings] = useRecoilState(settingsState)
+  const settings = useRecoilValue(settingsState)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 

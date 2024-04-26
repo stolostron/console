@@ -3,7 +3,7 @@ import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -63,13 +63,13 @@ export function EditPolicy() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const [namespaces] = useRecoilState(namespacesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const placementBindings = useRecoilValue(placementBindingsState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () =>
       namespaces
@@ -79,9 +79,9 @@ export function EditPolicy() {
     [namespaces]
   )
   const [existingResources, setExistingResources] = useState<IResource[]>()
-  const [helmReleases] = useRecoilState(helmReleaseState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
   const [gitSource, setGitSource] = useState('')
   const searchParams = useSearchParams()
 

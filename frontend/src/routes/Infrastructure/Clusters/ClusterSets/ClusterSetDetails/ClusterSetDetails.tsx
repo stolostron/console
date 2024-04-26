@@ -11,7 +11,7 @@ import {
 } from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilState, useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -68,21 +68,19 @@ export default function ClusterSetDetailsPage() {
   const { id = '' } = useParams()
   const match = { params: { id } }
   const { isSubmarinerAvailable } = useContext(PluginContext)
-  const { waitForAll } = useSharedRecoil()
   const { clusterDeploymentsState, clusterPoolsState, managedClusterAddonsState, managedClusterSetsState } =
     useSharedAtoms()
 
-  const [managedClusterSets, managedClusterAddons] = useRecoilValue(
-    waitForAll([managedClusterSetsState, managedClusterAddonsState])
-  )
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
 
-  const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
 
   const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
   const prevClusterSet = usePrevious(clusterSet)
 
   const clusters = useClusters(clusterSet)
-  const [clusterPools] = useRecoilState(clusterPoolsState)
+  const clusterPools = useRecoilValue(clusterPoolsState)
   const clusterSetClusterPools = clusterPools.filter(
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
   )

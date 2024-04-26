@@ -44,7 +44,7 @@ import { DOC_LINKS, OCP_DOC_BASE_PATH, ViewDocumentationLink } from '../../../li
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
-import { useSharedAtoms, useSharedRecoil, useRecoilValue } from '../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { IResource } from '../../../resources/resource'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { ResourceError, createResource, getResource, listResources, patchResource } from '../../../resources'
@@ -157,10 +157,11 @@ const k8sPrimitives: {
 const InfraEnvironmentsPage: React.FC = () => {
   const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
     useSharedAtoms()
-  const { waitForAll } = useSharedRecoil()
-  const [infraEnvs, agents, infrastructures, agentServiceConfigs, storageClasses] = useRecoilValue(
-    waitForAll([infraEnvironmentsState, agentsState, infrastructuresState, agentServiceConfigsState, storageClassState])
-  )
+  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const agents = useRecoilValue(agentsState)
+  const infrastructures = useRecoilValue(infrastructuresState)
+  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
+  const storageClasses = useRecoilValue(storageClassState)
 
   const [canUserAgentServiceConfig, setCanUserAgentServiceConfig] = useState(false)
   const [isCimConfigurationModalOpen, setIsCimConfigurationModalOpen] = useState(false)
@@ -270,8 +271,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       .replace(':name', infraEnv.metadata?.name as string)
 
   const { clusterVersionState } = useSharedAtoms()
-  const { waitForAll } = useSharedRecoil()
-  const [clusterVersions] = useRecoilValue(waitForAll([clusterVersionState]))
+  const clusterVersions = useRecoilValue(clusterVersionState)
 
   const [modalProps, setModalProps] = useState<BulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
     open: false,

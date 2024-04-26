@@ -16,7 +16,7 @@ import {
 import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -35,7 +35,7 @@ import {
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
   const { t } = useTranslation()
-  const [secrets] = useRecoilState(secretsState)
+  const secrets = useRecoilValue(secretsState)
   const credentialsSecrets = useMemo(
     () =>
       secrets.filter(
@@ -45,7 +45,7 @@ export default function CredentialsPage() {
   )
 
   const providerConnections = secrets.map(unpackProviderConnection)
-  const [discoveryConfigs] = useRecoilState(discoveryConfigState)
+  const discoveryConfigs = useRecoilValue(discoveryConfigState)
 
   return (
     <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>
@@ -83,7 +83,7 @@ export function CredentialsTable(props: {
   })
   const { namespacesState } = useSharedAtoms()
   const unauthorizedMessage = t('rbac.unauthorized')
-  const [namespaces] = useRecoilState(namespacesState)
+  const namespaces = useRecoilValue(namespacesState)
   const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
   useEffect(() => {
     checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)

@@ -31,6 +31,7 @@ import { Searchbar } from './components/Searchbar'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString, operators } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
+  SearchResultItemsQuery,
   useGetMessagesQuery,
   useSearchCompleteQuery,
   useSearchResultItemsQuery,
@@ -98,6 +99,7 @@ interface SearchbarProps {
   savedSearchQueries: SavedSearch[]
   userPreference?: UserPreference
   setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
+  searchResultData: SearchResultItemsQuery | undefined
   refetchSearch: any
 }
 
@@ -110,6 +112,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
     setSelectedSearch,
     userPreference,
     setUserPreference,
+    searchResultData,
     refetchSearch,
   } = props
   const { t } = useTranslation()
@@ -246,6 +249,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         toggleInfoModal={toggle}
         updateBrowserUrl={updateBrowserUrl}
         savedSearchQueries={savedSearchQueries}
+        searchResultData={searchResultData}
         refetchSearch={refetchSearch}
       />
       {HandleErrors(searchSchemaError, searchCompleteError)}
@@ -411,6 +415,7 @@ export default function SearchPage() {
           savedSearchQueries={userSavedSearches}
           userPreference={userPreference}
           setUserPreference={setUserPreference}
+          searchResultData={data}
           refetchSearch={refetch}
         />
         {!queryErrors &&

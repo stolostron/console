@@ -22,7 +22,7 @@ import _ from 'lodash'
 import { useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources'
-import { useRecoilState, useSharedAtoms } from '../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 import {
@@ -99,7 +99,7 @@ function DetailsView(props: {
 }) {
   const { setDetailsView, selectedReport } = props
   const { configMapsState } = useSharedAtoms()
-  const [configmaps] = useRecoilState(configMapsState)
+  const configmaps = useRecoilValue(configMapsState)
   const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
   let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
   policyContentData = policyContentData && JSON.parse(policyContentData)

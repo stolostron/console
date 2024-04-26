@@ -43,7 +43,6 @@ import {
   IAcmRowAction,
   IAcmTableColumn,
 } from '../../ui-components'
-import { getResourceParams } from '../Home/Search/Details/DetailsPage'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
@@ -66,6 +65,7 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -88,7 +88,7 @@ const labelArr: string[] = [
   'app.kubernetes.io/part-of=',
 ]
 
-const filterId = 'table-filter-type-acm-application-label'
+const filterId = 'type'
 
 type IApplicationResource = IResource | OCPAppResource
 
@@ -353,11 +353,6 @@ export function parseOcpAppResources(
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
-  const { cluster } = getResourceParams()
-
-  const { dataContext } = useContext(PluginContext)
-  const { recoil, atoms } = useContext(dataContext)
-  const { useRecoilState } = recoil
   const {
     applicationSetsState,
     applicationsState,
@@ -371,21 +366,21 @@ export default function ApplicationsOverview() {
     placementsState,
     placementDecisionsState,
     subscriptionsState,
-  } = atoms
+  } = useSharedAtoms()
 
-  const [applications] = useRecoilState(applicationsState)
-  const [applicationSets] = useRecoilState(applicationSetsState)
-  const [argoApplications] = useRecoilState(argoApplicationsState)
-  const [subscriptions] = useRecoilState(subscriptionsState)
-  const [channels] = useRecoilState(channelsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementDecisions] = useRecoilState(placementDecisionsState)
-  const [namespaces] = useRecoilState(namespacesState)
-  const [helmReleases] = useRecoilState(helmReleaseState)
+  const applications = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const subscriptions = useRecoilValue(subscriptionsState)
+  const channels = useRecoilValue(channelsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placements = useRecoilValue(placementsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const helmReleases = useRecoilValue(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+  const discoveredOCPAppResources = useRecoilValue(discoveredOCPAppResourcesState)
 
   const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
@@ -394,7 +389,7 @@ export default function ApplicationsOverview() {
   })
   const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
-  const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
+  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -702,24 +697,24 @@ export default function ApplicationsOverview() {
         options: [
           {
             label: t('Application set'),
-            value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
+            value: 'appset',
           },
           {
             label: t('Argo CD'),
-            value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
+            value: 'argo',
           },
           {
             label: t('Flux'),
-            value: 'fluxapps',
+            value: 'flux',
           },
           {
             label: 'OpenShift',
-            value: 'openshiftapps',
+            value: 'openshift',
           },
           { label: t('Default OpenShift'), value: 'openshift-default' },
           {
             label: t('Subscription'),
-            value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+            value: 'subscription',
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
@@ -727,7 +722,7 @@ export default function ApplicationsOverview() {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
               switch (value) {
-                case 'openshiftapps':
+                case 'openshift':
                   return (
                     !isFlux &&
                     !item.metadata?.namespace?.startsWith('openshift-') &&
@@ -738,11 +733,19 @@ export default function ApplicationsOverview() {
                     !isFlux &&
                     (item.metadata?.namespace?.startsWith('openshift-') || item.metadata?.namespace === 'openshift')
                   )
-                case 'fluxapps':
+                case 'flux':
                   return isFlux
               }
             } else {
-              return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
+              switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
+                case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
+                  return selectedValues.includes('appset')
+                case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
+                  return selectedValues.includes('argo')
+                case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
+                  return selectedValues.includes('subscription')
+              }
+              return false
             }
           })
         },
@@ -1116,7 +1119,6 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        initialFilters={cluster ? { ['cluster']: [cluster] } : undefined}
         customTableAction={
           <>
             {appCreationButton}

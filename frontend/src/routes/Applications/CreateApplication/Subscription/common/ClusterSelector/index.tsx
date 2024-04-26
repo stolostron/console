@@ -25,7 +25,7 @@ import { TFunction } from 'react-i18next'
 import Tooltip from '../../../../../../components/TemplateEditor/components/Tooltip'
 import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../../resources'
 import { getTemplateValue } from '../../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { useRecoilState, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import YAML from 'yaml'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { useLabelValuesMap } from '../../../../../../wizards/common/useLabelValuesMap'
@@ -42,9 +42,9 @@ const ClusterSelector = (props: {
 }) => {
   const { t } = useTranslation()
   const { managedClustersState, managedClusterSetsState, managedClusterSetBindingsState } = useSharedAtoms()
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
 
   const { controlId, locale, control, i18n } = props
   const { name, active, forceUpdate, validation = {} } = control

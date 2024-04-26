@@ -16,7 +16,7 @@ import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
 import { ButtonVariant, Button } from '@patternfly/react-core'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
-import { useSharedAtoms, useRecoilState } from '../../../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
 import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
@@ -25,14 +25,14 @@ export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
   const { ansibleJobState, configMapsState, clusterCuratorsState } = useSharedAtoms()
-  const [configMaps] = useRecoilState(configMapsState)
-  const [ansibleJobs] = useRecoilState(ansibleJobState)
+  const configMaps = useRecoilValue(configMapsState)
+  const ansibleJobs = useRecoilValue(ansibleJobState)
   const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
   const agentClusterInstall = useAgentClusterInstall({
     name: props.cluster?.name!,
     namespace: props.cluster?.namespace!,
   })
-  const [curators] = useRecoilState(clusterCuratorsState)
+  const curators = useRecoilValue(clusterCuratorsState)
   const curator = curators.find(
     (curator) => curator.metadata.name === props.cluster?.name && curator.metadata.namespace == props.cluster?.namespace
   )

@@ -8,7 +8,7 @@ import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
-import { useSharedAtoms, useRecoilState } from '../../../shared-recoil'
+import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import schema from './schema.json'
@@ -55,14 +55,14 @@ export function EditPolicySet() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const [policySets] = useRecoilState(policySetsState)
-  const [namespaces] = useRecoilState(namespacesState)
-  const [placements] = useRecoilState(placementsState)
-  const [placementRules] = useRecoilState(placementRulesState)
-  const [managedClusters] = useRecoilState(managedClustersState)
-  const [placementBindings] = useRecoilState(placementBindingsState)
-  const [clusterSets] = useRecoilState(managedClusterSetsState)
-  const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+  const policySets = useRecoilValue(policySetsState)
+  const namespaces = useRecoilValue(namespacesState)
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const placementBindings = useRecoilValue(placementBindingsState)
+  const clusterSets = useRecoilValue(managedClusterSetsState)
+  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
     [namespaces]

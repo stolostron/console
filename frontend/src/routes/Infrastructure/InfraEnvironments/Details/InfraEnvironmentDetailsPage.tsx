@@ -10,7 +10,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Routes, Route, useLocation, useNavigate, Navigate, useParams } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms, useSharedRecoil } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -35,10 +35,10 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
   const match = { params: { name, namespace } }
 
   const { agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState } = useSharedAtoms()
-  const { waitForAll } = useSharedRecoil()
-  const [agentClusterInstalls, agents, bareMetalHosts, nmStateConfigs] = useRecoilValue(
-    waitForAll([agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState])
-  )
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const agents = useRecoilValue(agentsState)
+  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
+  const nmStateConfigs = useRecoilValue(nmStateConfigsState)
   const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
 
   const infraNMStates = useMemo(() => getInfraEnvNMStates(nmStateConfigs, infraEnv), [nmStateConfigs, infraEnv])
