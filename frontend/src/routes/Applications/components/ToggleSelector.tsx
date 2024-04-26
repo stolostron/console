@@ -111,7 +111,7 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
     }
     const newQueryString = queryString.stringify(query)
     const optionalNewQueryString = newQueryString && `?${newQueryString}`
-    navigate(`${location.pathname}${optionalNewQueryString}${location.hash}`, { noScrollToTop: true })
+    navigate(`${location.pathname}${optionalNewQueryString}${location.hash}`)
   }
 
   return (

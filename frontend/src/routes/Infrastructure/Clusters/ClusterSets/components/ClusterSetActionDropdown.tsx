@@ -96,7 +96,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
       actions = actions.filter((action) => action.id !== 'delete-clusterSet')
     }
     return actions
-  }, [history, modalColumns, props.managedClusterSet, t])
+  }, [modalColumns, navigate, props.managedClusterSet, t])
 
   return (
     <>

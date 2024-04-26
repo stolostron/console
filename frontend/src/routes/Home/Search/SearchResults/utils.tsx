@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { generatePath, useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { GetUrlSearchParam } from '../searchDefinitions'
@@ -20,7 +20,7 @@ export function GetRowActions(
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
   t: TFunction
 ) {
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const viewApplication = {
     id: 'view-application',
@@ -33,22 +33,21 @@ export function GetRowActions(
           cluster: cluster === 'local-cluster' ? undefined : cluster,
           applicationset: applicationSet ?? undefined,
         })
-        return history.push({
-          pathname: generatePath(NavigationPath.applicationOverview, {
+        return navigate(
+          generatePath(NavigationPath.applicationOverview, {
             namespace,
             name,
-          }),
-          search: `?${params}`,
-          state: {
-            from: NavigationPath.search,
-            fromSearch: window.location.search,
-          },
-        })
+          }) + `?${params}`,
+          {
+            state: {
+              from: NavigationPath.search,
+              fromSearch: window.location.search,
+            },
+          }
+        )
       }
       const searchParams = GetUrlSearchParam(item)
-      return history.push({
-        pathname: NavigationPath.resourceRelated,
-        search: searchParams,
+      return navigate(NavigationPath.resourceRelated + searchParams, {
         state: {
           from: NavigationPath.search,
           fromSearch: window.location.search,
@@ -61,14 +60,16 @@ export function GetRowActions(
     title: t('View Application topology'),
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
-      return history.push({
-        pathname: generatePath(NavigationPath.applicationTopology, { name: item?.name, namespace: item?.namespace }),
-        search: `?apiVersion=${apiversion}`,
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
-        },
-      })
+      return navigate(
+        generatePath(NavigationPath.applicationTopology, { name: item?.name, namespace: item?.namespace }) +
+          `?apiVersion=${apiversion}`,
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
     },
   }
   const editButton = {
@@ -76,9 +77,7 @@ export function GetRowActions(
     title: t('Edit {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
-      return history.push({
-        pathname: NavigationPath.resourceYAML,
-        search: searchParams,
+      return navigate(NavigationPath.resourceYAML + searchParams, {
         state: {
           from: NavigationPath.search,
           fromSearch: window.location.search,
@@ -91,9 +90,7 @@ export function GetRowActions(
     title: t('View related resources'),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
-      return history.push({
-        pathname: NavigationPath.resourceRelated,
-        search: searchParams,
+      return navigate(NavigationPath.resourceRelated + searchParams, {
         state: {
           from: NavigationPath.search,
           fromSearch: window.location.search,

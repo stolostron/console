@@ -256,10 +256,10 @@ export function PolicyActionDropdown(props: {
     [
       bulkModalRemediationColumns,
       bulkModalStatusColumns,
-      history,
       item.policy.metadata.name,
       item.policy.metadata.namespace,
       item.policy.spec.disabled,
+      navigate,
       policyRemediationAction,
       props.isKebab,
       setModal,

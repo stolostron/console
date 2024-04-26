@@ -408,11 +408,8 @@ export default function DetailsOverviewPage(props: {
                   {canEditResource && (
                     <FlexItem>
                       <Link
-                        to={{
-                          pathname: NavigationPath.resourceYAML,
-                          search: window.location.search,
-                          state: { scrollToLine: labelsLineNumber },
-                        }}
+                        to={NavigationPath.resourceYAML + window.location.search}
+                        state={{ scrollToLine: labelsLineNumber }}
                       >
                         {t('Edit')}
                         <PencilAltIcon style={{ marginLeft: '.5rem' }} />
@@ -451,11 +448,8 @@ export default function DetailsOverviewPage(props: {
                   <DescriptionListDescription>
                     {canEditResource ? (
                       <Link
-                        to={{
-                          pathname: NavigationPath.resourceYAML,
-                          search: window.location.search,
-                          state: { scrollToLine: tolerationsLineNumber },
-                        }}
+                        to={NavigationPath.resourceYAML + window.location.search}
+                        state={{ scrollToLine: tolerationsLineNumber }}
                       >
                         {t('tolerations.count', {
                           count: resourceTolerationsCount,
@@ -476,11 +470,8 @@ export default function DetailsOverviewPage(props: {
                 <DescriptionListDescription>
                   {canEditResource ? (
                     <Link
-                      to={{
-                        pathname: NavigationPath.resourceYAML,
-                        search: window.location.search,
-                        state: { scrollToLine: annotationsLineNumber },
-                      }}
+                      to={NavigationPath.resourceYAML + window.location.search}
+                      state={{ scrollToLine: annotationsLineNumber }}
                     >
                       {t('annotations.count', {
                         count: Object.keys(resource.metadata?.annotations ?? {}).length,

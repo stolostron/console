@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useRef, useState, useContext, useEffect, createContext } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import {
   Drawer,
   DrawerPanelContent,
@@ -27,12 +27,10 @@ export function AcmDrawerProvider(props: { children: React.ReactNode | React.Rea
   const [drawerContext, setDrawerContext] = useState<AcmDrawerProps | undefined>()
 
   // close the drawer on location changes
-  const history = useHistory()
-  const historyListener = history.listen(() => setDrawerContext(undefined))
+  const location = useLocation()
   useEffect(() => {
-    return () => historyListener()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    setDrawerContext(undefined)
+  }, [location])
 
   return (
     <AcmDrawerContext.Provider value={{ drawerContext, setDrawerContext }}>{props.children}</AcmDrawerContext.Provider>

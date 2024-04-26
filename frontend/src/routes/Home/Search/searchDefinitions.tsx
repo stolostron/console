@@ -401,13 +401,10 @@ export function CreateDetailsLink(props: { item: any }) {
       }
       return (
         <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
+          to={NavigationPath.resources + GetUrlSearchParam(item)}
+          state={{
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
           }}
         >
           {item.name}
@@ -430,13 +427,10 @@ export function CreateDetailsLink(props: { item: any }) {
       }
       return (
         <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
+          to={NavigationPath.resources + GetUrlSearchParam(item)}
+          state={{
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
           }}
         >
           {item.name}
@@ -459,13 +453,10 @@ export function CreateDetailsLink(props: { item: any }) {
     default:
       return (
         <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
+          to={NavigationPath.resources + GetUrlSearchParam(item)}
+          state={{
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
           }}
         >
           {item.name}

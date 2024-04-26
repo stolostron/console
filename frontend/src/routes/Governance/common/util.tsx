@@ -424,12 +424,9 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         return (
           <div key={`${idx}-${policySetMatch.metadata.name}`}>
             <Link
-              to={{
-                pathname: NavigationPath.policySets,
-                search: `?${urlSearch}`,
-                state: {
-                  from: NavigationPath.policies,
-                },
+              to={NavigationPath.policySets + `?${urlSearch}`}
+              state={{
+                from: NavigationPath.policies,
               }}
             >
               {policySetMatch.metadata.name}

@@ -15,7 +15,7 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
@@ -42,7 +42,7 @@ type SearchbarProps = {
   suggestions: DropdownSuggestionsProps[]
   currentQueryCallback: (query: string) => void
   toggleInfoModal: () => void
-  updateBrowserUrl: (history: any, currentQuery: string) => void
+  updateBrowserUrl: (navigate: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
   refetchSearch: any
 }
@@ -81,7 +81,7 @@ export function Searchbar(props: SearchbarProps) {
     savedSearchQueries,
     refetchSearch,
   } = props
-  const history = useHistory()
+  const navigate = useNavigate()
   const [inputValue, setInputValue] = useState('')
   const [menuIsOpen, setMenuIsOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<React.ReactElement[]>([])
@@ -314,7 +314,7 @@ export function Searchbar(props: SearchbarProps) {
       case 'Enter':
         if (currentQuery !== '' && !currentQuery.endsWith(':') && inputValue === '') {
           // User has a valid search so run the search query
-          updateBrowserUrl(history, currentQuery)
+          updateBrowserUrl(navigate, currentQuery)
           setMenuIsOpen(false)
           focusRunSearchButton()
         } else {
@@ -431,7 +431,7 @@ export function Searchbar(props: SearchbarProps) {
             if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
               refetchSearch() // if refetching we dont need to update browser url
             } else if (currentQuery !== '' && !currentQuery.endsWith(':')) {
-              updateBrowserUrl(history, currentQuery)
+              updateBrowserUrl(navigate, currentQuery)
             }
             setMenuIsOpen(false)
           }}

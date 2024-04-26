@@ -2,7 +2,7 @@
 
 import { get } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useNavigate, useMatch } from 'react-router-dom-v5-compat'
 import {
   GetArgoApplicationsHashSet,
   GetDiscoveredOCPApps,
@@ -33,7 +33,8 @@ export function StatusSummaryCount() {
     subscriptionsState,
     usePolicies,
   } = useSharedAtoms()
-  const applicationsMatch = useRouteMatch()
+  const applicationsMatch = useMatch(NavigationPath.clusters + '/*')
+  const applicationsMatchExact = !!applicationsMatch?.params['*']
   const [applications] = useRecoilState(applicationsState)
   const [applicationSets] = useRecoilState(applicationSetsState)
   const [argoApps] = useRecoilState(argoApplicationsState)
@@ -46,12 +47,12 @@ export function StatusSummaryCount() {
   const policies = usePolicies()
   const { cluster } = useContext(ClusterContext)
 
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length, cluster?.name)
+  GetDiscoveredOCPApps(applicationsMatchExact, !ocpApps.length && !discoveredApplications.length, cluster?.name)
   const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
-  const { push } = useHistory()
+  const navigate = useNavigate()
 
   const {
     policyReport,
@@ -187,7 +188,7 @@ export function StatusSummaryCount() {
           {
             id: 'nodes',
             count: nodesCount,
-            countClick: () => (cluster ? push(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
+            countClick: () => (cluster ? navigate(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
             title: t('summary.nodes'),
             description: (
               <Trans
@@ -204,7 +205,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'applications',
                   count: appsCount,
-                  countClick: () => push(NavigationPath.applications + `?cluster=${cluster?.name}`),
+                  countClick: () => navigate(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
                 },
               ]
@@ -214,7 +215,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'violations',
                   count: policyViolationCount ?? 0,
-                  countClick: () => push(NavigationPath.policies + '?violations=with-violations'),
+                  countClick: () => navigate(NavigationPath.policies + '?violations=with-violations'),
                   title: t('summary.violations'),
                   isDanger: true,
                 },
