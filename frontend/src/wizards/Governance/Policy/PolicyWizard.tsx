@@ -14,7 +14,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { klona } from 'klona/json'
-import { Fragment, ReactNode, useContext, useMemo } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import set from 'set-value'
 import {
   EditMode,
@@ -40,7 +40,9 @@ import {
   WizTextInput,
   ItemContext,
   useItem,
+  useData,
 } from '@patternfly-labs/react-form-wizard'
+import { FormGroup as CoreFormGroup, Radio as CoreRadio } from '@patternfly/react-core'
 import { WizardPage } from '../../WizardPage'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../common/resources/IResource'
@@ -261,6 +263,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
   const editMode = useEditMode()
   const selectorPath = 'objectDefinition.spec.namespaceSelector'
   const selectorMatchLabels = `${selectorPath}.matchLabels`
+
   const { t } = useTranslation()
 
   return (
@@ -384,83 +387,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
 
         {/* OperatorPolicy */}
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'OperatorPolicy'}>
-          <div>
-            <Title headingLevel="h6">{t('Operator policy')}</Title>
-            <Text component="small">{t('An Operator policy creates operators on managed clusters.')}</Text>
-          </div>
-
-          <WizTextInput
-            path="objectDefinition.metadata.name"
-            label={t('Name')}
-            required
-            helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
-            validation={validateKubernetesResourceName}
-          />
-          <Form>
-            <FormFieldGroupExpandable
-              isExpanded
-              header={
-                <FormFieldGroupHeader titleText={{ text: 'Operator Subscription', id: 'form-field-group-sub' }} />
-              }
-            >
-              <WizTextInput
-                path="objectDefinition.spec.subscription.name"
-                label={t('Name')}
-                labelHelp={t(
-                  'operatorPolicy.subscription.labelHelper',
-                  'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
-                )}
-                required
-                validation={validateKubernetesResourceName}
-              />
-              <WizTextInput
-                path="objectDefinition.spec.subscription.namespace"
-                label={t('Namespace')}
-                labelHelp={t('The operator is installed in this namespace.')}
-              />
-              <WizTextInput
-                path="objectDefinition.spec.subscription.channel"
-                label={t('Channel')}
-                labelHelp={t('operatorPolicy.channel.labelHelper')}
-              />
-              <WizRadioGroup
-                path="objectDefinition.spec.subscription.installPlanApproval"
-                label={t('Install Plan Approval')}
-              >
-                <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
-                <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
-              </WizRadioGroup>
-              <WizTextInput
-                path="objectDefinition.spec.subscription.source"
-                label={t('Source')}
-                labelHelp={t('operatorPolicy.source.labelHelper')}
-              />
-              <WizTextInput
-                path="objectDefinition.spec.subscription.sourceNamespace"
-                label={t('Source Namespace')}
-                labelHelp={t('operatorPolicy.sourceNamespace.labelHelper')}
-              />
-              <WizTextInput
-                path="objectDefinition.spec.subscription.startingCSV"
-                label={t('Starting CSV')}
-                placeholder={t('Enter the ClusterServiceVersion')}
-                labelHelp={t(
-                  'operatorPolicy.startingCsv.labelHelper',
-                  `If you want to install a particular version of your Operator, specify the startingCSV property.`
-                )}
-              />
-            </FormFieldGroupExpandable>
-          </Form>
-          <WizStringsInput
-            id="operator-policy-versions"
-            path={`objectDefinition.spec.versions`}
-            label={t('Allowed Cluster Service Versions')}
-            placeholder={t('Add versions')}
-            labelHelp={t(
-              'operatorpolicy.version.labelHelper',
-              `Versions is a list of non-empty strings that specify which installed versions are compliant when set to 'inform' mode, and which installPlans are approved when you set the parameter to 'enforce' mode.`
-            )}
-          />
+          <OperatorPolicy />
         </WizHidden>
 
         {/* ConfigurationPolicy */}
@@ -618,6 +545,181 @@ export function isExistingTemplateName(name: string, policies: IResource[]) {
     }
   }
   return false
+}
+
+function OperatorPolicy() {
+  const { t } = useTranslation()
+  const template: any = useItem()
+
+  const { update } = useData()
+
+  const [allNamespacesMode, setAllNamespacesMode] = useState<boolean>(
+    !template?.objectDefinition?.spec?.operatorGroup?.targetNamespaces
+  )
+
+  const setTargetNamespace = useCallback(
+    (targetNamespace: string | undefined | null) => {
+      // Handle when given a null value
+      if (!targetNamespace) {
+        if (template?.objectDefinition?.spec?.operatorGroup?.targetNamespaces) {
+          // If the operator group only has targetNamespaces set, then remove the entire operatorGroup section from
+          // the policy.
+          if (Object.keys(template?.objectDefinition?.spec?.operatorGroup).length === 1) {
+            delete template.objectDefinition.spec.operatorGroup
+          } else {
+            delete template.objectDefinition.spec.operatorGroup.targetNamespaces
+          }
+
+          update()
+        }
+
+        return
+      }
+
+      if (allNamespacesMode) {
+        return
+      }
+
+      if (!template?.objectDefinition) {
+        return
+      }
+
+      if (!template.objectDefinition?.spec) {
+        template.objectDefinition.spec = { operatorGroup: {} }
+      }
+
+      if (!template.objectDefinition.spec?.operatorGroup) {
+        template.objectDefinition.spec.operatorGroup = {}
+      }
+
+      if (
+        template.objectDefinition.spec.operatorGroup.targetNamespaces &&
+        template.objectDefinition.spec.operatorGroup.targetNamespaces[0] === targetNamespace
+      ) {
+        return
+      }
+
+      template.objectDefinition.spec.operatorGroup.targetNamespaces = [targetNamespace]
+
+      update()
+    },
+    [allNamespacesMode, template, update]
+  )
+
+  useEffect(() => {
+    setTargetNamespace(template?.objectDefinition?.spec?.subscription?.namespace || '')
+  }, [allNamespacesMode, template, setTargetNamespace])
+
+  return (
+    <Fragment>
+      <div>
+        <Title headingLevel="h6">{t('Operator policy')}</Title>
+        <Text component="small">{t('An Operator policy creates operators on managed clusters.')}</Text>
+      </div>
+
+      <WizTextInput
+        path="objectDefinition.metadata.name"
+        label={t('Name')}
+        required
+        helperText={t('Name needs to be unique to the namespace on each of the managed clusters.')}
+        validation={validateKubernetesResourceName}
+      />
+
+      <CoreFormGroup fieldId="operator-namespaces" label={t('Installation Mode')} isRequired={true}>
+        <CoreRadio
+          id="operator-all-namespaces"
+          name="operator-namespaces"
+          label={t('All namespaces on the cluster (default)')}
+          checked={allNamespacesMode}
+          onChange={(checked: boolean) => {
+            setAllNamespacesMode(checked)
+
+            if (checked) {
+              setTargetNamespace(null)
+            }
+          }}
+        />
+        <CoreRadio
+          id="operator-single-namespace"
+          name="operator-namespaces"
+          label={t('A specific namespace on the cluster')}
+          checked={!allNamespacesMode}
+          onChange={(checked: boolean) => {
+            setAllNamespacesMode(!checked)
+          }}
+        />
+      </CoreFormGroup>
+
+      <WizTextInput
+        path="objectDefinition.spec.subscription.namespace"
+        label={t('Installed Namespace')}
+        labelHelp={t('The operator is installed in this namespace.')}
+        required={!allNamespacesMode}
+        onValueChange={(value: any) => {
+          setTargetNamespace(value)
+        }}
+      />
+
+      <Form>
+        <FormFieldGroupExpandable
+          isExpanded
+          header={<FormFieldGroupHeader titleText={{ text: 'Operator Subscription', id: 'form-field-group-sub' }} />}
+        >
+          <WizTextInput
+            path="objectDefinition.spec.subscription.name"
+            label={t('Name')}
+            labelHelp={t(
+              'operatorPolicy.subscription.labelHelper',
+              'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
+            )}
+            required
+            validation={validateKubernetesResourceName}
+          />
+          <WizTextInput
+            path="objectDefinition.spec.subscription.channel"
+            label={t('Channel')}
+            labelHelp={t('operatorPolicy.channel.labelHelper')}
+          />
+          <WizRadioGroup
+            path="objectDefinition.spec.subscription.installPlanApproval"
+            label={t('Install Plan Approval')}
+          >
+            <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
+            <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
+          </WizRadioGroup>
+          <WizTextInput
+            path="objectDefinition.spec.subscription.source"
+            label={t('Source')}
+            labelHelp={t('operatorPolicy.source.labelHelper')}
+          />
+          <WizTextInput
+            path="objectDefinition.spec.subscription.sourceNamespace"
+            label={t('Source Namespace')}
+            labelHelp={t('operatorPolicy.sourceNamespace.labelHelper')}
+          />
+          <WizTextInput
+            path="objectDefinition.spec.subscription.startingCSV"
+            label={t('Starting CSV')}
+            placeholder={t('Enter the ClusterServiceVersion')}
+            labelHelp={t(
+              'operatorPolicy.startingCsv.labelHelper',
+              `If you want to install a particular version of your Operator, specify the startingCSV property.`
+            )}
+          />
+        </FormFieldGroupExpandable>
+      </Form>
+      <WizStringsInput
+        id="operator-policy-versions"
+        path={`objectDefinition.spec.versions`}
+        label={t('Allowed Cluster Service Versions')}
+        placeholder={t('Add versions')}
+        labelHelp={t(
+          'operatorpolicy.version.labelHelper',
+          `Versions is a list of non-empty strings that specify which installed versions are compliant when set to 'inform' mode, and which installPlans are approved when you set the parameter to 'enforce' mode.`
+        )}
+      />
+    </Fragment>
+  )
 }
 
 function ObjectTemplate() {
