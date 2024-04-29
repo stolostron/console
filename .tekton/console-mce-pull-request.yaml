@@ -128,7 +128,7 @@ spec:
       - name: skip-checks
         value: $(params.skip-checks)
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-init:0.2@sha256:99674c6fbedcb153945ea37729c951e86314746cfc2dbeeecef6ce8b60229383
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-init:0.2@sha256:686109bd8088258f73211618824aee5d3cf9e370f65fa3e85d361790a54260ef
         name: init
     - name: clone-repository
       params:
@@ -158,7 +158,7 @@ spec:
       runAfter:
       - clone-repository
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies:0.1@sha256:76d4c97336234dd673cd3f5115c3d2558cb5ad3d2021a15da38988326b7f1c4a
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies:0.1@sha256:6687b3a54a8cbfbb5c2904d447bbb3d48d5739c5e201f6ddf0c4b471a7e35e27
         name: prefetch-dependencies
       when:
       - input: $(params.hermetic)
@@ -185,7 +185,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:671b0d9e2c983e7d7b179d4dee1c2fc379f17d4508604212d783d3788e00dfad
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:35c6d90d3345aa31d7cee1865fc50942889b643926b3641ec93fd136ed34f62e
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
