@@ -3,7 +3,6 @@ import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom-v5-compat'
-
 import YAML from 'yaml'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
