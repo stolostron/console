@@ -3,8 +3,10 @@
 import i18next from 'i18next'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, GetRowActions } from './utils'
+import { NavigateFunction } from 'react-router-dom-v5-compat'
 
 const mockHistoryPush = jest.fn()
+const navigate: NavigateFunction = jest.fn()
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useHistory: () => ({
@@ -15,7 +17,7 @@ jest.mock('react-router-dom', () => ({
 const t = i18next.t.bind(i18next)
 
 test('Correctly return row Actions', () => {
-  const res = GetRowActions('Pod', 'kind:Pod', false, () => {}, t)
+  const res = GetRowActions('Pod', 'kind:Pod', false, () => {}, navigate, t)
   res[0].click({ kind: 'Pod' }) // edit resource
   res[1].click({ kind: 'Pod' }) // view related resources
   res[2].click({ kind: 'Pod' }) // delete resource
@@ -23,12 +25,12 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const res = GetRowActions('Cluster', 'kind:Cluster', false, () => {}, t)
+  const res = GetRowActions('Cluster', 'kind:Cluster', false, () => {}, navigate, t)
   expect(res).toMatchSnapshot()
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const res = GetRowActions('Application', 'kind:Application', false, () => {}, t)
+  const res = GetRowActions('Application', 'kind:Application', false, () => {}, navigate, t)
   res[0].click({
     apigroup: 'app.k8s.io',
     kind: 'Application',

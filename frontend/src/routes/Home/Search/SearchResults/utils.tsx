@@ -2,7 +2,7 @@
 import { get } from 'lodash'
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { NavigateFunction, generatePath } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { compareStrings, IAlertContext } from '../../../../ui-components'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
@@ -22,10 +22,9 @@ export function GetRowActions(
   currentQuery: string,
   relatedResource: boolean,
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
+  navigate: NavigateFunction,
   t: TFunction
 ) {
-  const navigate = useNavigate()
-
   const viewApplication = {
     id: 'view-application',
     title: t('View Application'),
