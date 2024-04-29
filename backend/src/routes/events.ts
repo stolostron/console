@@ -114,6 +114,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
   },
+  { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'console-search-config' } },
   { kind: 'Namespace', apiVersion: 'v1' },
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
   // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios

@@ -21,13 +21,14 @@ import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../../resources/userpreference'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
 import { Searchbar } from './components/Searchbar'
+import { useSuggestedQueryTemplates } from './components/SuggestedQueryTemplates'
 import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString, operators } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
@@ -343,8 +344,10 @@ export default function SearchPage() {
   usePageVisitMetricHandler(Pages.search)
   const { t } = useTranslation()
   const savedSearchesText = t('Saved searches')
-  const { useSearchResultLimit } = useSharedAtoms()
+  const suggestedQueryTemplates = useSuggestedQueryTemplates().templates as SavedSearch[]
+  const { useSearchResultLimit, configMapsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const configMaps = useRecoilValue(configMapsState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
   const [queryMessages, setQueryMessages] = useState<any[]>([])
@@ -363,6 +366,17 @@ export default function SearchPage() {
       setIsUserPreferenceLoading(false)
     })
   }, [])
+
+  const suggestedSearches: SavedSearch[] = useMemo(() => {
+    const suggestedCM = configMaps.find((cm) => cm.metadata.name === 'console-search-config')
+
+    if (suggestedCM?.data?.suggestedSearches) {
+      const searches = JSON.parse(suggestedCM?.data?.suggestedSearches) as SavedSearch[]
+      // only use suggested searches that contain an ID, name & searchText
+      return searches.filter((search) => search.id && search.searchText && search.name)
+    }
+    return suggestedQueryTemplates
+  }, [configMaps, suggestedQueryTemplates])
 
   const userSavedSearches = useMemo(() => {
     return userPreference?.spec?.savedSearches ?? []
@@ -434,6 +448,7 @@ export default function SearchPage() {
               setSelectedSearch={setSelectedSearch}
               userPreference={userPreference}
               setUserPreference={setUserPreference}
+              suggestedSearches={suggestedSearches}
             />
           ))}
       </AcmScrollable>
