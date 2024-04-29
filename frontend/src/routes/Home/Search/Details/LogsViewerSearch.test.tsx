@@ -60,7 +60,6 @@ describe('LogsViewerSearch', () => {
     const searchbar = screen.getByRole('textbox', { name: /search input/i })
     await waitFor(() => expect(searchbar).toBeInTheDocument())
     userEvent.type(searchbar, 'second')
-    await waitFor(() => expect(searchbar.textContent === 'second'))
 
     // should click previous
     const previousBtn = screen.getByRole('button', { name: /previous/i })

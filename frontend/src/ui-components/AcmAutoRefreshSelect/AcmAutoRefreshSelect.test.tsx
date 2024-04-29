@@ -55,7 +55,7 @@ describe('AcmAutoRefreshSelect', () => {
 
     render(<AcmAutoRefreshSelect refetch={refetch} />)
 
-    expect(window.localStorage.getItem).toReturnWith('60000')
+    expect(window.localStorage.getItem).toHaveReturnedWith('60000')
     expect(screen.getByText('Refresh every 1m')).toBeInTheDocument()
   })
 
@@ -77,7 +77,7 @@ describe('AcmAutoRefreshSelect', () => {
     })
     render(<AcmAutoRefreshSelect refetch={refetch} refreshIntervalCookie={'test-cookie'} />)
 
-    expect(window.localStorage.getItem).toReturnWith('test-cookie')
+    expect(window.localStorage.getItem).toHaveReturnedWith('test-cookie')
     await new Promise((resolve) => setTimeout(resolve, 1000))
   })
 
@@ -92,7 +92,7 @@ describe('AcmAutoRefreshSelect', () => {
     render(<AcmAutoRefreshSelect refetch={refetch} initPollInterval={INITIAL_POLL_INTERVAL} />)
 
     expect(screen.getByText('Refresh every 30s')).toBeInTheDocument()
-    expect(window.localStorage.getItem).toReturnWith(30000)
+    expect(window.localStorage.getItem).toHaveReturnedWith(30000)
     await new Promise((resolve) => setTimeout(resolve, 1000))
   })
 

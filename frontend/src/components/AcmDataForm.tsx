@@ -375,7 +375,7 @@ export function AcmDataFormDefault(props: {
           <FormSection key={section.title}>
             <Title headingLevel="h2">{section.title}</Title>
             {section.sections?.map((group) => {
-              if (sectionHidden(group)) return <Fragment />
+              if (sectionHidden(group)) return <Fragment key={group.title} />
               return (
                 <FormFieldGroupExpandable
                   key={group.title}
@@ -727,8 +727,8 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
               : formSection.sections && (
                   <Fragment>
                     {formSection.sections.map((section) => {
-                      if (sectionHidden(section)) return <Fragment />
-                      if (!anyInputHasValue(section.inputs)) return <Fragment />
+                      if (sectionHidden(section)) return <Fragment key={section.title} />
+                      if (!anyInputHasValue(section.inputs)) return <Fragment key={section.title} />
                       return (
                         <div key={section.title} style={{ paddingLeft: wizardSummary ? '64px' : '32px' }}>
                           <Title headingLevel="h4">{section.title}</Title>
