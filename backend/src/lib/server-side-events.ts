@@ -205,18 +205,24 @@ export class ServerSideEvents {
           events = part
             .substr(7)
             .split(',')
-            .reduce((events, event) => {
-              events[event] = true
-              return events
-            }, {} as Record<string, boolean>)
+            .reduce(
+              (events, event) => {
+                events[event] = true
+                return events
+              },
+              {} as Record<string, boolean>
+            )
         } else if (part.startsWith('namespaces=')) {
           namespaces = part
             .substr(11)
             .split(',')
-            .reduce((namespaces, namespace) => {
-              namespaces[namespace] = true
-              return namespaces
-            }, {} as Record<string, boolean>)
+            .reduce(
+              (namespaces, namespace) => {
+                namespaces[namespace] = true
+                return namespaces
+              },
+              {} as Record<string, boolean>
+            )
         }
       }
     }
