@@ -7,8 +7,12 @@ module.exports = {
     '@storybook/addon-storysource',
     '@storybook/addon-a11y',
     '@storybook/addon-actions',
+    '@storybook/addon-webpack5-compiler-babel',
+    '@chromatic-com/storybook'
   ],
+
   stories: ['../src/ui-components/AcmPage/AcmPage.stories.tsx', '../src/ui-components/**/*.stories.tsx'],
+
   webpackFinal: async (config) => {
     config.module.rules.push(
       {
@@ -35,13 +39,20 @@ module.exports = {
     config.resolve.extensions.push('.ts', '.tsx')
     return config
   },
+
   typescript: {
     check: false,
     checkOptions: {},
   },
-  framework: '@storybook/react',
-  core: {
-    builder: 'webpack5',
+
+  framework: {
+    name: '@storybook/react-webpack5',
+    options: {}
   },
+
   staticDirs: [{ from: '../public', to: '/multicloud' }],
+
+  docs: {
+    autodocs: true
+  }
 }
