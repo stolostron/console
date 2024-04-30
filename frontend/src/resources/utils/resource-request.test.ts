@@ -68,7 +68,7 @@ describe('reconcileResources', () => {
 
     await expect(async () => {
       await reconcileResources([mockClusterCurator, mockClusterNamespace], [])
-    }).rejects.toThrowError(ResourceError)
+    }).rejects.toThrow(ResourceError)
   })
 })
 describe('createResource', () => {
@@ -78,7 +78,7 @@ describe('createResource', () => {
 
     await expect(async () => {
       await createResource(mockClusterCurator).promise
-    }).rejects.toThrowError(ResourceError)
+    }).rejects.toThrow(ResourceError)
   })
 })
 describe('createResources', () => {
@@ -95,7 +95,7 @@ describe('updateResources', () => {
     nockReplace(mockClusterCurator, mockPatchedClusterCurator, 400)
     await expect(async () => {
       await updateResources([mockClusterCurator])
-    }).rejects.toThrowError(ResourceError)
+    }).rejects.toThrow(ResourceError)
   })
   it('detects ECONNRESET', async () => {
     nockReplaceError(mockClusterCurator, { message: 'Reset', code: 'ECONNRESET' })
@@ -110,12 +110,12 @@ describe('deleteResources', () => {
     nockDelete(mockClusterCurator, mockPatchedClusterCurator, 401)
     await expect(async () => {
       await deleteResources([mockClusterCurator])
-    }).rejects.toThrowError(ResourceError)
+    }).rejects.toThrow(ResourceError)
   })
   it('throws error when no name set', async () => {
     await expect(async () => {
       await deleteResources([{ apiVersion: ClusterCuratorApiVersion, kind: ClusterCuratorKind }])
-    }).rejects.toThrowError(ResourceError)
+    }).rejects.toThrow(ResourceError)
   })
   it('detects ETIMEDOUT', async () => {
     nockDeleteError(mockClusterCurator, { message: 'Missing', code: 'ENOTFOUND' })

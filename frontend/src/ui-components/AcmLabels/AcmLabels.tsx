@@ -21,16 +21,19 @@ export function AcmLabels(props: {
   const labelsRecord: Record<string, string> = useMemo(() => {
     if (props.labels === undefined) return {}
     else if (Array.isArray(props.labels))
-      return props.labels.reduce((labels, label) => {
-        const parts = label.split('=')
-        /* istanbul ignore if */
-        if (parts.length === 1) {
-          labels[parts[0]] = ''
-        } else {
-          labels[parts[0]] = parts.slice(1).join('=')
-        }
-        return labels
-      }, {} as Record<string, string>)
+      return props.labels.reduce(
+        (labels, label) => {
+          const parts = label.split('=')
+          /* istanbul ignore if */
+          if (parts.length === 1) {
+            labels[parts[0]] = ''
+          } else {
+            labels[parts[0]] = parts.slice(1).join('=')
+          }
+          return labels
+        },
+        {} as Record<string, string>
+      )
     else return props.labels
   }, [props.labels])
 

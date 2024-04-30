@@ -5,7 +5,7 @@ import { ReactNode } from 'react'
 
 export function useDynamicPropertyValues<
   Control extends Record<string, ((control: Control, controlData: unknown, t: TFunction) => ReactNode) | ReactNode>,
-  DynamicProperty extends keyof Control
+  DynamicProperty extends keyof Control,
 >(
   control: Control,
   controlData: unknown,

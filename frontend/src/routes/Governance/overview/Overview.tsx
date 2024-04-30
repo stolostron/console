@@ -137,9 +137,10 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
         <CardBody>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
             {violations.map((violation) => {
-              if (!(violation.compliant || violation.noncompliant || violation.pending)) return <Fragment />
+              const key = `${props.title}-${violation.name}`
+              if (!(violation.compliant || violation.noncompliant || violation.pending)) return <Fragment key={key} />
               return (
-                <Fragment key={`${props.title}-${violation.name}`}>
+                <Fragment key={key}>
                   <span>{violation.name}</span>
                   {violation.compliant ? (
                     <Tooltip content={t('policies.noviolations', { count: violation.compliant })}>
@@ -241,9 +242,10 @@ function ClustersCard() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
             {clusters.map((cluster) => {
               const clusterViolationSummary = clusterViolationSummaryMap[cluster.metadata.name ?? '']
-              if (!clusterViolationSummary) return <Fragment />
+              const key = `${cluster.metadata.name}-card`
+              if (!clusterViolationSummary) return <Fragment key={key} />
               return (
-                <Fragment key={`${cluster.metadata.name}-card`}>
+                <Fragment key={key}>
                   <span>{cluster.metadata.name}</span>
                   {clusterViolationSummary.compliant ? (
                     <Tooltip

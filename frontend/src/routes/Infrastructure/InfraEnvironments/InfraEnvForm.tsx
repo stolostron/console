@@ -53,11 +53,14 @@ const portals = (
 )
 
 const getLabels = (values: EnvironmentStepFormValues) =>
-  values.labels.reduce((acc, curr) => {
-    const label = curr.split('=')
-    acc[label[0]] = label[1]
-    return acc
-  }, {} as Record<string, string>)
+  values.labels.reduce(
+    (acc, curr) => {
+      const label = curr.split('=')
+      acc[label[0]] = label[1]
+      return acc
+    },
+    {} as Record<string, string>
+  )
 
 type InfraEnvFormProps = {
   control?: any

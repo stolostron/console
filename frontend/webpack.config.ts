@@ -26,7 +26,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       fallback: {
-        fs: require.resolve('browserify-fs'),
         path: require.resolve('path-browserify'),
         buffer: require.resolve('buffer'),
         stream: require.resolve('stream-browserify'),

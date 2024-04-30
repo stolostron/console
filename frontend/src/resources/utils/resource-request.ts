@@ -49,7 +49,11 @@ export enum ResourceErrorCode {
 const ResourceErrorCodes = Object.keys(ResourceErrorCode).map((k) => Number(ResourceErrorCode[k as any]))
 
 export class ResourceError extends Error {
-  constructor(public code: ResourceErrorCode, message?: string, public reason?: string) {
+  constructor(
+    public code: ResourceErrorCode,
+    message?: string,
+    public reason?: string
+  ) {
     super(message || ResourceErrorCode[code])
     Object.setPrototypeOf(this, ResourceError.prototype)
     this.name = 'ResourceError'
