@@ -9,8 +9,10 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { configMapsState } from '../../../atoms'
 import { nockPostRequest, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
+import { ConfigMap } from '../../../resources'
 import { UserPreference } from '../../../resources/userpreference'
 import {
   GetMessagesDocument,
@@ -37,6 +39,27 @@ const mockUserPreference: UserPreference = {
     ],
   },
 }
+
+const mockSuggestedSearchConfigMap: ConfigMap[] = [
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    metadata: {
+      name: 'console-search-config',
+      namespace: 'default',
+      labels: {
+        app: 'console',
+        chart: 'console-chart-2.11.0',
+        component: 'console',
+        release: 'console-chart',
+      },
+    },
+    data: {
+      suggestedSearches:
+        '[{"id":"search.suggested.workloads.name","name":"Workloads","description":"A pre-defined search to help you review your workloads","searchText":"kind:DaemonSet,Deployment,Job,StatefulSet,ReplicaSet"},{"id":"search.suggested.unhealthy.name","name":"Unhealthy pods","description":"Show pods with unhealthy status","searchText":"kind:Pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating"},{"id":"search.suggested.createdLastHour.name","name":"Created last hour","description":"Search for resources created within the last hour","searchText":"created:hour"}]',
+    },
+  },
+]
 
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
@@ -67,7 +90,11 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+        }}
+      >
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -121,7 +148,11 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+        }}
+      >
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -199,7 +230,11 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+        }}
+      >
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />
@@ -317,7 +352,11 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+        }}
+      >
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <SearchPage />

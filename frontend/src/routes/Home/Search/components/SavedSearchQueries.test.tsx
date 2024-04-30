@@ -123,6 +123,27 @@ describe('SavedSearchQueries Page', () => {
               ]}
               setSelectedSearch={() => {}}
               setUserPreference={() => {}}
+              suggestedSearches={[
+                {
+                  id: 'search.suggested.workloads.name',
+                  name: 'Workloads',
+                  description: 'A pre-defined search to help you review your workloads',
+                  searchText: 'kind:DaemonSet,Deployment,Job,StatefulSet,ReplicaSet',
+                },
+                {
+                  id: 'search.suggested.unhealthy.name',
+                  name: 'Unhealthy pods',
+                  description: 'Show pods with unhealthy status',
+                  searchText:
+                    'kind:Pod status:Pending,Error,Failed,Terminating,ImagePullBackOff,CrashLoopBackOff,RunContainerError,ContainerCreating',
+                },
+                {
+                  id: 'search.suggested.createdLastHour.name',
+                  name: 'Created last hour',
+                  description: 'Search for resources created within the last hour',
+                  searchText: 'created:hour',
+                },
+              ]}
             />
           </MockedProvider>
         </Router>
