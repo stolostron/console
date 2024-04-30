@@ -203,6 +203,65 @@ const mockManagedClusterInfoRoks: ManagedClusterInfo = {
         versionAvailableUpdates: [],
       },
     },
+    nodeList: [
+      {
+        name: 'exampleNodeName',
+        labels: {
+          'node.kubernetes.io/instance-type': 'non_upi',
+        },
+      },
+    ],
+  },
+}
+
+const mockManagedClusterRoksSatelite: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'managed-cluster-roks-satelite-clusterset',
+    labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [
+      { name: 'platform.open-cluster-management.io', value: 'IBM' },
+      { name: 'product.open-cluster-management.io', value: 'ROKS' },
+    ],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
+const mockManagedClusterInfoRoksSatelite: ManagedClusterInfo = {
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
+  metadata: {
+    name: mockManagedClusterRoksSatelite.metadata.name!,
+    namespace: mockManagedClusterRoksSatelite.metadata.name!,
+  },
+  status: {
+    conditions: [],
+    version: '1.17',
+    distributionInfo: {
+      type: 'ocp',
+      ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5'],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+        versionAvailableUpdates: [],
+      },
+    },
+    nodeList: [
+      {
+        name: 'exampleNodeName',
+        labels: {
+          'node.kubernetes.io/instance-type': 'upi',
+        },
+      },
+    ],
   },
 }
 
@@ -789,6 +848,24 @@ const mockManagedClusterRoksSubmarinerConfig: SubmarinerConfig = {
   },
 }
 
+const mockManagedClusterRoksSateliteSubmarinerConfig: SubmarinerConfig = {
+  apiVersion: SubmarinerConfigApiVersion,
+  kind: SubmarinerConfigKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterRoksSatelite.metadata.name,
+  },
+  spec: {
+    gatewayConfig: {},
+    IPSecNATTPort: submarinerConfigDefault.nattPort,
+    airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
+    NATTEnable: submarinerConfigDefault.nattEnable,
+    cableDriver: submarinerConfigDefault.cableDriver,
+    loadBalancerEnable: false,
+    globalCIDR: '',
+  },
+}
+
 const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
   kind: SubmarinerConfigKind,
@@ -960,6 +1037,18 @@ const mockSubmarinerAddonRoks: ManagedClusterAddOn = {
   },
 }
 
+const mockSubmarinerAddonRoksSatelite: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterRoksSatelite.metadata.name,
+  },
+  spec: {
+    installNamespace: 'submariner-operator',
+  },
+}
+
 const mockSubmarinerAddonExtra: ManagedClusterAddOn = {
   apiVersion: ManagedClusterAddOnApiVersion,
   kind: ManagedClusterAddOnKind,
@@ -1106,6 +1195,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterInfoRosa,
         mockManagedClusterInfoAro,
         mockManagedClusterInfoRoks,
+        mockManagedClusterInfoRoksSatelite,
         mockManagedClusterInfoBareMetal,
         mockManagedClusterInfoIBMPower,
         mockManagedClusterInfoNoCredentials,
@@ -1120,6 +1210,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterRosa,
         mockManagedClusterAro,
         mockManagedClusterRoks,
+        mockManagedClusterRoksSatelite,
         mockManagedClusterBareMetal,
         mockManagedClusterIBMPower,
         mockManagedClusterNoCredentials,
@@ -1270,6 +1361,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText(mockManagedClusterRosa!.metadata.name!)
     await clickByText(mockManagedClusterAro!.metadata.name!)
     await clickByText(mockManagedClusterRoks!.metadata.name!)
+    await clickByText(mockManagedClusterRoksSatelite!.metadata.name!)
     await clickByText(mockManagedClusterBareMetal!.metadata.name!)
     await clickByText(mockManagedClusterIBMPower!.metadata.name!)
     await clickByLabel('Enable Globalnet')
@@ -1379,6 +1471,11 @@ describe('ClusterSetDetails page', () => {
     const nockSCRoks = nockCreate(mockManagedClusterRoksSubmarinerConfig)
     await clickByText('Next')
 
+    // mockManagedClusterRoksSatelite
+    const nockMCARoksSatelite = nockCreate(mockSubmarinerAddonRoksSatelite)
+    const nockSCRoksSatelite = nockCreate(mockManagedClusterRoksSateliteSubmarinerConfig)
+    await clickByText('Next')
+
     // mockManagedClusterBaremetal
     const nockMCABareMetal = nockCreate(mockSubmarinerAddonBareMetal)
     const nockSCBareMetal = nockCreate(mockManagedClusterBareMetalSubmarinerConfig)
@@ -1419,6 +1516,8 @@ describe('ClusterSetDetails page', () => {
       nockSCAro,
       nockMCARoks,
       nockSCRoks,
+      nockMCARoksSatelite,
+      nockSCRoksSatelite,
       nockBroker,
     ])
   })
