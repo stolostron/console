@@ -865,8 +865,8 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
           const subscriptionPulse = R.includes('Fail', R.pathOr('', ['status'])(subscription))
             ? failureStatus
             : R.pathOr(null, ['status'])(subscription) === null
-            ? warningStatus
-            : checkmarkStatus
+              ? warningStatus
+              : checkmarkStatus
 
           //if subscription has not status show an error message
           const emptyStatusErrorMsg = subscription._hubClusterResource
@@ -969,9 +969,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
       status: failureStatus,
     })
     if (isSearchAvailable()) {
-      const ruleSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
-        node.namespace
-      }%20cluster%3A${'local-cluster'}"}`
+      const ruleSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${'local-cluster'}"}`
       details.push({
         type: 'link',
         value: {
@@ -1307,8 +1305,8 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
   const clusterNames = isHookNode
     ? ['local-cluster']
     : cluster
-    ? [cluster]
-    : R.split(',', getClusterName(nodeId, node, true))
+      ? [cluster]
+      : R.split(',', getClusterName(nodeId, node, true))
   const resourceMap = _.get(node, `specs.${node.type}Model`, {})
   const onlineClusters = getOnlineClusters(node)
 
@@ -1381,16 +1379,16 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
             ? deployedNSStr
             : _.get(res, 'status', deployedStr)
           : node.type === 'namespace'
-          ? notDeployedNSStr
-          : notDeployedStr
+            ? notDeployedNSStr
+            : notDeployedStr
         const deployedKeyLower = deployedKey.toLowerCase()
         const statusStr = _.includes(resSuccessStates, deployedKeyLower)
           ? checkmarkStatus
           : _.includes(resNotDeployedStates, deployedKeyLower)
-          ? pendingStatus
-          : _.includes(resErrorStates, deployedKeyLower)
-          ? failureStatus
-          : warningStatus
+            ? pendingStatus
+            : _.includes(resErrorStates, deployedKeyLower)
+              ? failureStatus
+              : warningStatus
 
         let addItemToDetails = false
         if (resourceStatuses.size > 0) {

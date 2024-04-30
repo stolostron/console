@@ -192,7 +192,7 @@
     "node-util": "0.0.6",
     "null-loader": "4.0.1",
     "path-browserify": "1.0.1",
-    "prettier": "2.7.1",
+    "prettier": "^3.2.5",
     "process": "0.11.10",
     "query-string": "7.1.1",
     "react": "^18.2.0",
@@ -363,6 +363,7 @@
     "printWidth": 120,
     "tabWidth": 2,
     "semi": false,
-    "singleQuote": true
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }
