@@ -18,7 +18,7 @@ import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
-import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
@@ -193,7 +193,7 @@ export function Searchbar(props: SearchbarProps) {
   const handlePartialRegex = (replacedSpecialChars: string) =>
     new RegExp(`^${replacedSpecialChars.replaceAll('*', '[a-z0-9-_./:=+]*')}`)
 
-  useEffect(() => {
+  const filterSuggestionItems = useCallback(() => {
     const parsedInputValue = stripOperators(inputValue)
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
       if (parsedInputValue.includes('*')) {
@@ -220,7 +220,6 @@ export function Searchbar(props: SearchbarProps) {
       </MenuItem>
     )
 
-    //todo - include a debounce
     let filteredMenuItems = []
     /** in the menu only show items that include the text in the input */
     filteredMenuItems = suggestions
@@ -265,6 +264,16 @@ export function Searchbar(props: SearchbarProps) {
 
     setMenuItems([headingItem, divider, ...filteredMenuItems])
   }, [inputValue, suggestions, t])
+
+  useEffect(() => {
+    const suggestionFiltering = setTimeout(() => {
+      filterSuggestionItems()
+    }, 200) // 200ms delay after text entry before filtering
+
+    return () => {
+      clearInterval(suggestionFiltering)
+    }
+  }, [filterSuggestionItems])
 
   const addChip = (newChipText: string, newChipId?: string) => {
     if (!newChipId && newChipText === '') {
