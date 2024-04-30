@@ -2,8 +2,8 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -130,6 +130,7 @@ const savedSearchesMock = [
     },
   },
 ]
+const history = createMemoryHistory()
 
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
@@ -192,7 +193,7 @@ it('should render overview page with expected data', async () => {
         snapshot.set(settingsState, mockSettings)
       }}
     >
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={savedSearchesMock}>
           <OverviewPageBeta selectedClusterLabels={{}} />
         </MockedProvider>

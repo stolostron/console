@@ -5,8 +5,8 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -982,6 +982,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     },
   },
 ]
+const history = createMemoryHistory()
 
 it('should render overview page in empty state', async () => {
   const apiPathNock = nockIgnoreApiPaths()
@@ -993,7 +994,7 @@ it('should render overview page in empty state', async () => {
 
   render(
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={[]}>
           <OverviewPage />
         </MockedProvider>
@@ -1027,7 +1028,7 @@ it('should render overview page in error state', async () => {
 
   render(
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={mocks}>
           <OverviewPage />
         </MockedProvider>
@@ -1147,7 +1148,7 @@ it('should render overview page with expected data', async () => {
         snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
       }}
     >
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={mocks}>
           <OverviewPage />
         </MockedProvider>

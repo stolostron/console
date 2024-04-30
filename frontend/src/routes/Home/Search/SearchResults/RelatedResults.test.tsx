@@ -6,9 +6,9 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
 import { useState } from 'react'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import { isGlobalHubState, Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
@@ -18,6 +18,7 @@ import RelatedResults from './RelatedResults'
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
 }
+const history = createMemoryHistory()
 
 describe('RelatedResults', () => {
   const RelatedTiles = () => {
@@ -64,7 +65,7 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
@@ -134,7 +135,7 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
@@ -215,7 +216,7 @@ describe('RelatedResults', () => {
           snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockGlobalHubSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>

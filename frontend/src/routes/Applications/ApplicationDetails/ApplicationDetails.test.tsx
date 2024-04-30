@@ -16,7 +16,7 @@ import {
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ocpApi, waitForText } from '../../../lib/test-util'
 import ApplicationDetailsPage from './ApplicationDetails'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Home/Search/search-sdk/search-sdk'

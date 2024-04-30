@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -303,7 +303,9 @@ describe('Create Argo Application Set', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
-          <Route component={() => <CreateApplicationArgo />} />
+          <Routes>
+            <Route element={<CreateApplicationArgo />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

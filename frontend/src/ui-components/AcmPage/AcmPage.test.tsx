@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useContext } from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { AcmPage, AcmPageHeader, AcmPageCard, AcmBreadcrumb, AcmPageContent } from './AcmPage'

@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
   useParams: () => ({
     namespace: 'test',
     name: 'policy-set-with-1-placement-policy',

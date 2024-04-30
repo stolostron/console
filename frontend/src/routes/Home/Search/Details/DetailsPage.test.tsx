@@ -3,15 +3,15 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { createMemoryHistory } from 'history'
+import { Router } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
 import DetailsPage from './DetailsPage'
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
   return {
     __esModule: true,
     ...originalModule,
@@ -23,9 +23,7 @@ jest.mock('react-router-dom', () => {
         fromSearch: '?filters={%22textsearch%22:%22kind%3APod%22}',
       },
     }),
-    useHistory: () => ({
-      push: jest.fn(),
-    }),
+    useNavigate: () => jest.fn(),
   }
 })
 Object.defineProperty(window, 'location', {
@@ -96,9 +94,10 @@ describe('DetailsPage', () => {
   const metricNock = nockPostRequest('/metrics?search-details', {})
 
   it('should render local-cluster resource details correctly', async () => {
+    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <DetailsPage />
         </Router>
       </RecoilRoot>

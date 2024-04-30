@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import * as YAML from 'yaml'
 import {
@@ -1141,9 +1141,9 @@ const Component = (props: { isGlobal?: boolean }) => (
         ),
       ]}
     >
-      <Switch>
-        <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-      </Switch>
+      <Routes>
+        <Route path={NavigationPath.clusterSetDetails + '/*'} element={<ClusterSetDetailsPage />} />
+      </Routes>
     </MemoryRouter>
   </RecoilRoot>
 )
@@ -1632,9 +1632,9 @@ describe('ClusterSetDetails error', () => {
       <MemoryRouter
         initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
       >
-        <Switch>
-          <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.clusterSetDetails} element={<ClusterSetDetailsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -1662,9 +1662,9 @@ describe('ClusterSetDetails deletion', () => {
       <MemoryRouter
         initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
       >
-        <Switch>
-          <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.clusterSetDetails + '/*'} element={<ClusterSetDetailsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

@@ -10,7 +10,7 @@ import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
 import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 const axe = configureAxe({
   rules: {
     'scope-attr-valid': { enabled: false },
@@ -248,6 +248,7 @@ describe('AcmTable', () => {
       </MemoryRouter>
     )
   }
+
   test('renders', () => {
     const { container } = render(<Table />)
     expect(container.querySelector('table')).toBeInTheDocument()

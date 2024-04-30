@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import moment from 'moment'
 import { NavigationPath } from '../../NavigationPath'
@@ -452,10 +452,12 @@ describe('Create Subscription Application page', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
-          <Route
-            path={NavigationPath.createApplicationSubscription}
-            render={() => <CreateSubscriptionApplicationPage />}
-          />
+          <Routes>
+            <Route
+              path={NavigationPath.createApplicationSubscription}
+              element={<CreateSubscriptionApplicationPage />}
+            />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -664,10 +666,9 @@ describe('Create Subscription Application page', () => {
               .replace(':name', nockApplication.metadata?.name as string),
           ]}
         >
-          <Route
-            path={NavigationPath.editApplicationSubscription}
-            render={() => <CreateSubscriptionApplicationPage />}
-          />
+          <Routes>
+            <Route path={NavigationPath.editApplicationSubscription} element={<CreateSubscriptionApplicationPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
