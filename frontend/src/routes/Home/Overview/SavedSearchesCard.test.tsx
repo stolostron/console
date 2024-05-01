@@ -3,8 +3,8 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../src/atoms'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
@@ -12,6 +12,7 @@ import { SavedSearch } from '../../../resources'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import SavedSearchesCard from './SavedSearchesCard'
 
+const history = createMemoryHistory()
 jest.mock('../../../resources', () => ({
   listResources: jest.fn(() => ({
     promise: Promise.resolve([
@@ -156,7 +157,7 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={[]}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={[]} />
           </MockedProvider>
@@ -181,7 +182,7 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={mocks}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>
@@ -211,7 +212,7 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <MockedProvider mocks={errorMock}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>

@@ -40,7 +40,7 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
     >
       <MemoryRouter initialEntries={[actualPath]}>
         <Routes>
-          <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation {...props} />} />
+          <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation />} />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>

@@ -19,7 +19,6 @@ import {
   NodePool,
   ResourceAttributes,
 } from '../../../../../resources'
-import { createBrowserHistory } from 'history'
 import { render, waitFor, screen } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'
@@ -27,7 +26,8 @@ import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../..
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
-import { Router } from 'react-router-dom'
+import { Router } from 'react-router-dom-v5-compat'
+import { createMemoryHistory } from 'history'
 import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 
@@ -735,10 +735,11 @@ describe('DistributionField', () => {
       isHypershift: false,
       isRegionalHubCluster: false,
     }
+    const history = createMemoryHistory()
 
     const retResource = render(
       <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
-        <Router history={createBrowserHistory()}>
+        <Router location={history.location} navigator={history}>
           <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
         </Router>
       </RecoilRoot>

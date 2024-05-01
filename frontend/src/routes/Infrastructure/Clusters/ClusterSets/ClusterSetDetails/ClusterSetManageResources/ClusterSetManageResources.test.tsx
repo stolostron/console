@@ -17,7 +17,7 @@ import {
   mapClusters,
 } from '../../../../../../resources'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
@@ -277,14 +277,10 @@ const Component = () => (
       <MemoryRouter
         initialEntries={[NavigationPath.clusterSetManage.replace(':id', mockManagedClusterSet.metadata.name!)]}
       >
-        <Switch>
-          <Route exact path={NavigationPath.clusterSetManage}>
-            <ClusterSetManageResourcesPage />
-          </Route>
-          <Route exact path={NavigationPath.clusterSetOverview}>
-            <div id="redirected" />
-          </Route>
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.clusterSetManage} element={<ClusterSetManageResourcesPage />} />
+          <Route path={NavigationPath.clusterSetOverview} element={<div id="redirected" />} />
+        </Routes>
       </MemoryRouter>
     </ClusterSetContext.Provider>
   </RecoilRoot>

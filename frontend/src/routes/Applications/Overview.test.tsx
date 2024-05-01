@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -77,7 +77,9 @@ describe('Applications Page', () => {
               ocpApi,
             }}
           >
-            <ApplicationsPage />
+            <Routes>
+              <Route path={NavigationPath.applications + '/*'} element={<ApplicationsPage />} />
+            </Routes>
           </PluginContext.Provider>
         </MemoryRouter>
       </RecoilRoot>

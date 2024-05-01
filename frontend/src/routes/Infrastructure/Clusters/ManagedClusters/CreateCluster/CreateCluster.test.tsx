@@ -3,7 +3,7 @@
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   clusterCuratorsState,
@@ -666,9 +666,9 @@ describe('CreateCluster AWS', () => {
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=AWS`]}>
-          <Route path={NavigationPath.createCluster}>
-            <CreateClusterPage />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -1128,9 +1128,9 @@ describe('CreateCluster KubeVirt', () => {
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
-          <Route path={NavigationPath.createCluster}>
-            <CreateClusterPage />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

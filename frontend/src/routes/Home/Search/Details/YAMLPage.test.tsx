@@ -125,8 +125,8 @@ describe('YAMLPage', () => {
     await waitFor(() => expect(screen.queryByText('Loading')).toBeTruthy())
   })
 
-  jest.mock('react-router-dom', () => {
-    const originalModule = jest.requireActual('react-router-dom')
+  jest.mock('react-router-dom-v5-compat', () => {
+    const originalModule = jest.requireActual('react-router-dom-v5-compat')
     return {
       __esModule: true,
       ...originalModule,

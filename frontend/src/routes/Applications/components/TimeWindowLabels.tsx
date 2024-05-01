@@ -20,7 +20,8 @@ export interface ITimeWindowLabelsProps {
 }
 
 export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
-  const params: { namespace?: string; name?: string } = useParams()
+  const { name = '', namespace = '' } = useParams()
+  const params = { name, namespace }
   const { t } = useTranslation()
   const notSelectedLabel = t('Not selected')
 

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
 import { axe } from 'jest-axe'
 import { Router } from 'react-router-dom-v5-compat'
 import { createMemoryHistory } from 'history'

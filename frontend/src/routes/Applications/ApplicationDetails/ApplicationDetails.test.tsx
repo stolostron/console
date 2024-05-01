@@ -314,24 +314,23 @@ const mockSearchResponse = {
   },
 }
 
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useParams: () => {
+      return { name: 'application-0', namespace: 'namespace-0' }
+    },
+    useNavigate: () => jest.fn(),
+  }
+})
+
 describe('Applications Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockIgnoreApiPaths()
-    const props: any = {
-      name: 'application-0',
-      namespace: 'namespace-0',
-      match: {
-        params: {
-          name: 'application-0',
-          namespace: 'namespace-0',
-        },
-      },
-      history: {
-        replace: jest.fn(),
-      },
-    }
     const mocks = [
       {
         request: {
@@ -381,7 +380,7 @@ describe('Applications Page', () => {
                 ocpApi,
               }}
             >
-              <ApplicationDetailsPage {...props} />
+              <ApplicationDetailsPage />
             </PluginContext.Provider>
           </MockedProvider>
         </MemoryRouter>

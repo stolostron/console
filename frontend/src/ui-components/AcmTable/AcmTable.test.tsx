@@ -826,7 +826,7 @@ describe('AcmTable', () => {
     expect(expandedDeleteAction).not.toHaveBeenCalled()
   })
 
-  test('renders with filtering and filters options work correctly', () => {
+  test('renders with filtering and filters options work correctly', async () => {
     const { container, getByText, getByTestId } = render(
       <Table
         filters={[
@@ -867,7 +867,7 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
   })
 
-  test('renders with filtering and successfully deletes selected filters', () => {
+  test('renders with filtering and successfully deletes selected filters', async () => {
     const { container, getAllByText, getByText, getByTestId, getAllByLabelText, getByLabelText } = render(
       <Table
         filters={[

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { DOC_HOME } from '../../../../../lib/doc-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { OnboardingModal } from './OnboardingModal'

@@ -4,7 +4,6 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createBrowserHistory } from 'history'
 import { useMemo, useState } from 'react'
 import { Router } from 'react-router-dom-v5-compat'
 import { createMemoryHistory } from 'history'
@@ -89,7 +88,7 @@ export const BlankSearchbar = () => {
 
   return (
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
+      <Router location={history.location} navigator={history}>
         <MockedProvider mocks={[]}>
           <Searchbar
             queryString={''}

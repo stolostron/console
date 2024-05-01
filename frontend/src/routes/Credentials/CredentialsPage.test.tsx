@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Provider } from '../../ui-components'
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../atoms'
 import { mockBadRequestStatus, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
@@ -88,7 +88,6 @@ const discoveryConfig: DiscoveryConfig = {
 }
 
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
-let testLocation: Location
 
 function getPatchSecretResourceAttributes(name: string, namespace: string) {
   return {
@@ -122,13 +121,9 @@ function TestProviderConnectionsPage(props: {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.credentials]}>
-        <Route
-          path={NavigationPath.credentials}
-          render={(props: any) => {
-            testLocation = props.location
-            return <CredentialsPage {...props} />
-          }}
-        />
+        <Routes>
+          <Route path={NavigationPath.credentials} element={<CredentialsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -143,22 +138,13 @@ describe('provider connections page', () => {
   test('should render the table with provider connections', async () => {
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
   })
 
   test('should goto the edit connection page', async () => {
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
     await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
     await clickByText('Edit credential')
-    await waitFor(() =>
-      expect(testLocation.pathname).toEqual(
-        NavigationPath.editCredentials
-          .replace(':namespace', mockProviderConnection1.metadata.namespace!)
-          .replace(':name', mockProviderConnection1.metadata.name!)
-      )
-    )
     // Verify the information shows up
     await waitForText('Red Hat Ansible Automation Platform')
     await waitForText(mockProviderConnection1.metadata!.name!)

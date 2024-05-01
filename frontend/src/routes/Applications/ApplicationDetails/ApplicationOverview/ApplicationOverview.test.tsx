@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
@@ -528,8 +528,8 @@ const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoA
 
 //////////////// Test /////////////////
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
   useParams: () => ({
     namespace: 'demo-etherpad',
     name: 'demo-etherpad',

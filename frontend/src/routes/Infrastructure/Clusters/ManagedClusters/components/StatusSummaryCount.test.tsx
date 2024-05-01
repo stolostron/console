@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
@@ -19,11 +19,9 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 
 const push = jest.fn()
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
-  useHistory: () => ({
-    push,
-  }),
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
+  useNavigate: () => jest.fn(),
 }))
 
 const mockCluster: Cluster = {
