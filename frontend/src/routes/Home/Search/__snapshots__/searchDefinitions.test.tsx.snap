@@ -1991,6 +1991,68 @@ Array [
 ]
 `;
 
+exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachine 1`] = `
+Array [
+  Object {
+    "cell": <CreateDetailsLink
+      item={
+        Object {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+    />,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": "namespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  Object {
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "status",
+    "header": "Status",
+    "sort": "status",
+  },
+  Object {
+    "cell": "ready",
+    "header": "Ready",
+    "sort": "ready",
+  },
+  Object {
+    "cell": "in a month",
+    "header": "Created",
+    "sort": "created",
+  },
+  Object {
+    "cell": <AcmLabels
+      collapse={Array []}
+      labels={
+        Array [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "sort": "label",
+  },
+]
+`;
+
 exports[`Correctly returns category components 1`] = `
 <AcmLabels
   collapse={Array []}
