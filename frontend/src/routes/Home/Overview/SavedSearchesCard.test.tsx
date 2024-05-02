@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { MockedProvider } from '@apollo/client/testing'
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { Router } from 'react-router-dom-v5-compat'
 import { createMemoryHistory } from 'history'
@@ -219,6 +219,7 @@ describe('SavedSearchesCard', () => {
         </Router>
       </RecoilRoot>
     )
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Check header strings
     await waitFor(() => expect(getByText('Saved searches')).toBeTruthy())
