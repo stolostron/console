@@ -75,7 +75,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
-import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 
 type SortFn<T> = (a: T, b: T) => number
@@ -258,7 +258,7 @@ function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: Fil
 export function useTableFilterSelections<T>({ id, filters }: { id?: string; filters: ITableFilter<T>[] }) {
   const tableFilterLocalStorageKey = id ? `acm-table-filter.${id}` : undefined
 
-  const { search, ...location } = useLocation()
+  const { pathname, search } = useLocation()
   const navigate = useNavigate()
 
   const queryParams = useMemo(() => {
@@ -280,12 +280,12 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     (newFilters: FilterSelections, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
-      navigate(location.pathname + updatedSearch, { replace: true })
+      navigate(pathname + '?' + updatedSearch, { replace: true })
       if (saveFilters && tableFilterLocalStorageKey) {
         setLocalStorage(tableFilterLocalStorageKey, newFilters)
       }
     },
-    [filteredQueryParams, location, tableFilterLocalStorageKey, navigate]
+    [filteredQueryParams, navigate, pathname, tableFilterLocalStorageKey]
   )
 
   const filterSelections = useMemo(() => {
@@ -497,6 +497,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const initialSearch = props.initialSearch || ''
 
   const { t } = useTranslation()
+  const ff = useLocation()
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)

@@ -13,7 +13,7 @@ import {
   SelectVariant,
 } from '@patternfly/react-core'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
@@ -60,11 +60,11 @@ import { LostChangesContext } from '../../../components/LostChanges'
 export default function AnsibleAutomationsFormPage() {
   const params = useParams()
   const { name = '', namespace = '' } = params
-
+  const hasEditPath = !!useMatch(NavigationPath.editAnsibleAutomation)
   let isEditing = false
   let isViewing = false
-  if (name !== undefined) {
-    isEditing = params['*']?.startsWith('edit') || false
+  if (params.name !== undefined) {
+    isEditing = hasEditPath
     isViewing = !isEditing
   }
 

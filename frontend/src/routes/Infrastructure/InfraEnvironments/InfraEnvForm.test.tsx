@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
@@ -61,9 +61,12 @@ const Component = () => {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
-        <Route path={NavigationPath.infraEnvironments}>
-          <InfraEnvForm control={{}} handleChange={() => {}} />
-        </Route>
+        <Routes>
+          <Route
+            path={NavigationPath.infraEnvironments}
+            element={<InfraEnvForm control={{}} handleChange={() => {}} />}
+          />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

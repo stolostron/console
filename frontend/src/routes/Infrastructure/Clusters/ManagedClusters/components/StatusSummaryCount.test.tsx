@@ -21,7 +21,7 @@ import { StatusSummaryCount } from './StatusSummaryCount'
 const push = jest.fn()
 jest.mock('react-router-dom-v5-compat', () => ({
   ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
-  useNavigate: () => jest.fn(),
+  useNavigate: () => push,
 }))
 
 const mockCluster: Cluster = {

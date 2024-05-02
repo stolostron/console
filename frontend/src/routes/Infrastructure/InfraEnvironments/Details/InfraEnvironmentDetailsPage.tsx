@@ -145,11 +145,11 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
         <Suspense fallback={<Fragment />}>
           <Routes>
             <Route
-              path={NavigationPath.infraEnvironmentOverview}
+              path="/overview"
               element={<DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />}
             />
             <Route
-              path={NavigationPath.infraEnvironmentHosts}
+              path="/hosts"
               element={
                 <HostsTab
                   agentClusterInstalls={agentClusterInstalls}
@@ -164,7 +164,7 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
               path="*"
               element={
                 <Navigate
-                  to={NavigationPath.infraEnvironmentDetails
+                  to={NavigationPath.infraEnvironmentOverview
                     .replace(':namespace', match.params.namespace)
                     .replace(':name', match.params.name)}
                   replace

@@ -1282,7 +1282,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
       ]}
     >
       <Routes>
-        <Route path={NavigationPath.clusterDetails} element={<ClusterDetails />} />
+        <Route path={NavigationPath.clusterDetails + '/*'} element={<ClusterDetails />} />
       </Routes>
     </MemoryRouter>
   </RecoilRoot>
@@ -1407,6 +1407,7 @@ describe('ClusterDetails', () => {
 describe('ClusterDetails - different name to namespace', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths() //ignore /apiPaths
     render(<Component clusterDeployment={mockClusterDeploymentDiffNs} />)
   })
 
@@ -1565,7 +1566,7 @@ describe('ClusterDetails with not found', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.clusterDetails} element={<ClusterDetails />} />
+            <Route path={NavigationPath.clusterDetails + '/*'} element={<ClusterDetails />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>

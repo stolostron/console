@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
@@ -65,6 +65,8 @@ describe('Infrastructure Environment Details page', () => {
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
     render(<Component />)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
 
     await waitForText('ai:Infrastructure environment details')
     await waitForNocks(initialNocks)

@@ -5,6 +5,7 @@ import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
+import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 
 jest.mock('react-router-dom-v5-compat', () => ({
   ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
@@ -24,6 +25,7 @@ jest.mock('react-router-dom-v5-compat', () => ({
 
 describe('Policy Template Details Page', () => {
   test('Should render Policy Template Details Page', async () => {
+    nockIgnoreApiPaths() //ignore /apiPaths
     render(
       <RecoilRoot
         initializeState={(snapshot) => {

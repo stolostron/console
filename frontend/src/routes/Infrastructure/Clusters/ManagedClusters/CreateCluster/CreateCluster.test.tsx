@@ -978,9 +978,9 @@ describe('CreateCluster on premise', () => {
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=CIM`]}>
-          <Route path={NavigationPath.createCluster}>
-            <CreateClusterPage />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
