@@ -314,8 +314,8 @@ export const getTargetNsForNode = (node, resourcesForCluster, clusterName, defau
   return targetNamespaces[clusterName]
     ? _.union(targetNamespaces[clusterName], _.uniq(deployedResourcesNS))
     : resourcesForCluster.length > 0
-    ? _.uniq(deployedResourcesNS)
-    : [defaultNS]
+      ? _.uniq(deployedResourcesNS)
+      : [defaultNS]
 }
 
 //returns the list of clusters the app resources must deploy on

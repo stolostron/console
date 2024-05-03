@@ -142,9 +142,7 @@ export default function OverviewClusterLabelSelector(props: {
           placeholderText={t('Select label value')}
           aria-labelledby={'cluster-label-value'}
         >
-          {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => (
-            <SelectOption key={label} value={label} />
-          ))}
+          {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
         </Select>
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
           {Object.keys(selectedClusterLabels).map((label) => {

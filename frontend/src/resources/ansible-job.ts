@@ -47,7 +47,7 @@ export interface AnsibleJob {
         reason?: string
         status?: string
         type?: string
-      }
+      },
     ]
   }
 }

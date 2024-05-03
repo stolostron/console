@@ -205,11 +205,13 @@ export default function PolicySetCard(props: {
                   )}
                   {policySet.status?.statusMessage && (
                     <div>
-                      {policySet.status?.statusMessage.split(';').map((statusMes) => (
-                        <DescriptionListDescription key={`${policySet.metadata.name}-${statusMes}`}>
-                          {statusMes}
-                        </DescriptionListDescription>
-                      ))}
+                      {policySet.status?.statusMessage
+                        .split(';')
+                        .map((statusMes) => (
+                          <DescriptionListDescription key={`${policySet.metadata.name}-${statusMes}`}>
+                            {statusMes}
+                          </DescriptionListDescription>
+                        ))}
                     </div>
                   )}
                 </DescriptionListGroup>

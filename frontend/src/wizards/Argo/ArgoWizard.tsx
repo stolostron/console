@@ -428,8 +428,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
               ? t('Edit application set - Pull model')
               : t('Edit application set - push model')
             : isPullModel
-            ? t('Create application set - Pull model')
-            : t('Create application set - push model')
+              ? t('Create application set - Pull model')
+              : t('Create application set - push model')
         }
         yamlEditor={props.yamlEditor}
         defaultData={defaultData}
