@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
-import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
+import { StaticContext } from 'react-router'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { generatePath } from 'react-router-dom-v5-compat'
 import {
   ACM_ENABLED_FEATURES,
   AgentK8sResource,

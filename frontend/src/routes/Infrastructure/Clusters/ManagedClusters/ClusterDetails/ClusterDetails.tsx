@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Page } from '@patternfly/react-core'
-import { matchPath, generatePath } from 'react-router'
 import {
   AgentClusterInstallK8sResource,
   AgentK8sResource,
@@ -9,7 +8,17 @@ import {
   InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { Link, Routes, Route, useLocation, useParams, Navigate, useNavigate } from 'react-router-dom-v5-compat'
+import {
+  generatePath,
+  Link,
+  matchPath,
+  Routes,
+  Route,
+  useLocation,
+  useParams,
+  Navigate,
+  useNavigate,
+} from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -260,54 +269,22 @@ export default function ClusterDetailsPage() {
             }
             navigation={
               <AcmSecondaryNav>
-                <AcmSecondaryNavItem
-                  isActive={
-                    !!matchPath(location.pathname, {
-                      path: NavigationPath.clusterOverview,
-                      exact: true,
-                      strict: false,
-                    })
-                  }
-                >
+                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterOverview)}>
                   <Link to={generatePath(NavigationPath.clusterOverview, { name, namespace })}>
                     {t('tab.overview')}
                   </Link>
                 </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem
-                  isActive={
-                    !!matchPath(location.pathname, {
-                      path: NavigationPath.clusterNodes,
-                      exact: true,
-                      strict: false,
-                    })
-                  }
-                >
+                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterNodes)}>
                   <Link to={generatePath(NavigationPath.clusterNodes, { name, namespace })}>{t('tab.nodes')}</Link>
                 </AcmSecondaryNavItem>
                 {showMachinePoolTab && (
-                  <AcmSecondaryNavItem
-                    isActive={
-                      !!matchPath(location.pathname, {
-                        path: NavigationPath.clusterMachinePools,
-                        exact: true,
-                        strict: false,
-                      })
-                    }
-                  >
+                  <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterMachinePools)}>
                     <Link to={generatePath(NavigationPath.clusterMachinePools, { name, namespace })}>
                       {t('tab.machinepools')}
                     </Link>
                   </AcmSecondaryNavItem>
                 )}
-                <AcmSecondaryNavItem
-                  isActive={
-                    !!matchPath(location.pathname, {
-                      path: NavigationPath.clusterSettings,
-                      exact: true,
-                      strict: false,
-                    })
-                  }
-                >
+                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterSettings)}>
                   <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>{t('tab.addons')}</Link>
                 </AcmSecondaryNavItem>
               </AcmSecondaryNav>
