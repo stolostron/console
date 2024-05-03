@@ -2,8 +2,7 @@
 /* istanbul ignore file */
 import { LocationDescriptor } from 'history'
 import { useContext, useMemo } from 'react'
-import { generatePath } from 'react-router'
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources'
 
