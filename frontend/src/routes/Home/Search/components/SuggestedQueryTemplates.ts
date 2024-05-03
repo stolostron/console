@@ -6,15 +6,16 @@
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 
+// Suggested query templates are used as back up if the console-search-config ConfigMap is not found
 export const useSuggestedQueryTemplates = () => {
   const { t } = useTranslation()
   return useMemo(
     () => ({
       templates: [
         {
-          id: 'Workloads',
+          id: 'search.suggested.workloads.name',
           name: t('Workloads'),
-          description: t('A pre-defined search to help you review your workloads'),
+          description: t('Show workloads running on your fleet'),
           searchText: 'kind:DaemonSet,Deployment,Job,StatefulSet,ReplicaSet',
         },
         {
@@ -27,8 +28,14 @@ export const useSuggestedQueryTemplates = () => {
         {
           id: 'search.suggested.createdLastHour.name',
           name: t('Created last hour'),
-          description: t('Search for resources created within the last hour'),
+          description: t('Show resources created within the last hour'),
           searchText: 'created:hour',
+        },
+        {
+          id: 'search.suggested.virtualmachines.name',
+          name: t('Virtual Machines'),
+          description: t('Show virtual machine resources'),
+          searchText: 'kind:VirtualMachine',
         },
       ],
     }),
