@@ -18,7 +18,8 @@ import {
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
+import { BrowserRouter } from 'react-router-dom'
+import { CompatRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'
@@ -57,7 +58,7 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 interface IRoute {
   type: 'route'
-  path: string
+  path: NavigationPath
   title: string
   element: React.ReactNode
 }
@@ -229,36 +230,40 @@ export default function App() {
 
   return (
     <PluginDataContextProvider value={pluginDataContextValue}>
-      <Page
-        header={<AppHeader />}
-        sidebar={<AppSidebar routes={routes} />}
-        isManagedSidebar
-        defaultManagedSidebarIsOpen={true}
-        style={{ height: '100vh' }}
-      >
-        <LoadPluginData>
-          <AcmToastProvider>
-            <AcmToastGroup />
-            <AcmTablePaginationContextProvider localStorageKey="clusters">
-              <Suspense fallback={<LoadingPage />}>
-                <Routes>
-                  {routes.map((route) =>
-                    route.type === 'group' ? (
-                      route.routes.map((route) => (
-                        <Route key={route.title} path={route.path + '/*'} element={route.element} />
-                      ))
-                    ) : (
-                      <Route key={route.title} path={route.path + '/*'} element={route.element} />
-                    )
-                  )}
-                  <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
-                </Routes>
-              </Suspense>
-            </AcmTablePaginationContextProvider>
-          </AcmToastProvider>
-        </LoadPluginData>
-      </Page>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
+      <BrowserRouter>
+        <CompatRouter>
+          <Page
+            header={<AppHeader />}
+            sidebar={<AppSidebar routes={routes} />}
+            isManagedSidebar
+            defaultManagedSidebarIsOpen={true}
+            style={{ height: '100vh' }}
+          >
+            <LoadPluginData>
+              <AcmToastProvider>
+                <AcmToastGroup />
+                <AcmTablePaginationContextProvider localStorageKey="clusters">
+                  <Suspense fallback={<LoadingPage />}>
+                    <Routes>
+                      {routes.map((route) =>
+                        route.type === 'group' ? (
+                          route.routes.map((route) => (
+                            <Route key={route.title} path={route.path + '/*'} element={route.element} />
+                          ))
+                        ) : (
+                          <Route key={route.title} path={route.path + '/*'} element={route.element} />
+                        )
+                      )}
+                      <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
+                    </Routes>
+                  </Suspense>
+                </AcmTablePaginationContextProvider>
+              </AcmToastProvider>
+            </LoadPluginData>
+          </Page>
+          <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
+        </CompatRouter>
+      </BrowserRouter>
     </PluginDataContextProvider>
   )
 }
