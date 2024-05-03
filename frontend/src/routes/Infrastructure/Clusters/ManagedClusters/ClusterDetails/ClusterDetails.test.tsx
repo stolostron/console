@@ -1578,7 +1578,7 @@ describe('ClusterDetails with not found', () => {
         screen.getByRole('button', {
           name: /https:\/\/console-openshift-console\.apps\.hostedcluster1\.test\.com/i,
         })
-      )
+      ).toBeDefined()
     )
 
     const mockImportHostedCluster = [

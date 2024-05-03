@@ -290,7 +290,7 @@ export async function typeByLabel(text: string, type: string, index?: number) {
 
 // By Selector
 export async function waitForSelector(container: HTMLElement, selector: string) {
-  await waitFor(() => expect(container.querySelector(selector)))
+  await waitFor(() => expect(container.querySelector(selector)).toBeDefined())
 }
 
 export async function waitForNoSelector(container: HTMLElement, selector: string) {

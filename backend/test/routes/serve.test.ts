@@ -19,7 +19,7 @@ describe(`serve Route`, function () {
       limit: 1 * 1024 * 1024,
       encoding: true,
     })
-    expect(bodyString).toContain('<!DOCTYPE html>')
+    expect(bodyString).toContain('<!doctype html>')
   })
 
   it(`serves index.html with br compression`, async function () {
@@ -48,7 +48,7 @@ describe(`serve Route`, function () {
         limit: 1 * 1024 * 1024,
         encoding: true,
       })
-      expect(bodyString).toContain('<!DOCTYPE html>')
+      expect(bodyString).toContain('<!doctype html>')
     } finally {
       await unlink(indexPathCompressed)
     }
@@ -80,7 +80,7 @@ describe(`serve Route`, function () {
         limit: 1 * 1024 * 1024,
         encoding: true,
       })
-      expect(bodyString).toContain('<!DOCTYPE html>')
+      expect(bodyString).toContain('<!doctype html>')
     } finally {
       await unlink(indexPathCompressed)
     }

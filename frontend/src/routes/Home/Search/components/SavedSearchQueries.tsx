@@ -15,7 +15,6 @@ import { updateBrowserUrl } from '../urlQuery'
 import { DeleteSearchModal } from './Modals/DeleteSearchModal'
 import { SaveAndEditSearchModal } from './Modals/SaveAndEditSearchModal'
 import { ShareSearchModal } from './Modals/ShareSearchModal'
-import { useSuggestedQueryTemplates } from './SuggestedQueryTemplates'
 
 export default function SavedSearchQueries(props: {
   isUserPreferenceLoading: boolean
@@ -23,8 +22,16 @@ export default function SavedSearchQueries(props: {
   setSelectedSearch: React.Dispatch<React.SetStateAction<string>>
   userPreference?: UserPreference
   setUserPreference: React.Dispatch<React.SetStateAction<UserPreference | undefined>>
+  suggestedSearches: SavedSearch[]
 }) {
-  const { isUserPreferenceLoading, savedSearches, setSelectedSearch, userPreference, setUserPreference } = props
+  const {
+    isUserPreferenceLoading,
+    savedSearches,
+    setSelectedSearch,
+    userPreference,
+    setUserPreference,
+    suggestedSearches,
+  } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { useSearchResultLimit } = useSharedAtoms()
@@ -34,16 +41,15 @@ export default function SavedSearchQueries(props: {
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
-  // combine the suggested queries and saved queries
+  // combine suggested and saved search queries
   const input = useMemo(
     () => [
       ...savedSearches.map((query) => convertStringToQuery(query.searchText, searchResultLimit)),
-      ...suggestedQueryTemplates.map((query: { searchText: string }) =>
+      ...suggestedSearches.map((query: { searchText: string }) =>
         convertStringToQuery(query.searchText, searchResultLimit)
       ),
     ],
-    [savedSearches, suggestedQueryTemplates, searchResultLimit]
+    [savedSearches, suggestedSearches, searchResultLimit]
   )
   const { data, error, loading } = useSearchResultCountQuery({
     variables: { input: input },
@@ -148,14 +154,14 @@ export default function SavedSearchQueries(props: {
           expandable={false}
           minWidth={300}
         >
-          {suggestedQueryTemplates.map((query, index) => {
+          {suggestedSearches.map((query, index) => {
             return (
               <AcmCountCard
                 key={index}
                 cardHeader={{
                   hasIcon: true,
                   title: query.name,
-                  description: query.description,
+                  description: query.description ?? '',
                   actions: [
                     {
                       text: t('Share'),

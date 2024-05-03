@@ -14,6 +14,7 @@ import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { waitForText } from '../../../lib/test-util'
+import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
 
 describe('ExistingTemplateName', () => {
   test('should return false for non-existing name', () => {
@@ -86,6 +87,39 @@ function TestPolicyWizardGK() {
   )
 }
 
+function TestPolicyWizardOperatorPolicy() {
+  const mockPolicyOperatorPlc = JSON.parse(JSON.stringify(mockPolicy[0])) as Policy
+  mockPolicyOperatorPlc.spec['policy-templates'] = [
+    {
+      objectDefinition: {
+        apiVersion: 'policy.open-cluster-management.io/v1beta1',
+        kind: 'OperatorPolicy',
+        metadata: { name: 'policy-set-with-1-placement-policy-1' },
+        spec: {},
+      },
+    },
+  ]
+
+  return (
+    <Router>
+      <PolicyWizard
+        title="Testing the policy wizard"
+        namespaces={['argo-server-1']}
+        policies={[mockPolicyOperatorPlc as IResource]}
+        placements={[mockPlacements as IResource]}
+        placementRules={[]}
+        clusters={mockManagedClusters}
+        clusterSets={[mockClusterSet]}
+        clusterSetBindings={[mockClusterSetBinding]}
+        onSubmit={() => new Promise(() => {})}
+        onCancel={() => {}}
+        resources={[mockPolicyOperatorPlc as IResource]}
+        yamlEditor={() => <WizardSyncEditor />}
+      />
+    </Router>
+  )
+}
+
 describe('Policy wizard', () => {
   test('can show correct cluster sets dropdown', async () => {
     const { container } = render(<TestPolicyWizard />)
@@ -114,5 +148,80 @@ describe('Policy wizard', () => {
     await waitForText('Gatekeeper policy templates must be customized using the YAML editor.', true)
     expect(container.querySelector('#objectdefinition-spec-severity-form-group')).toBeNull()
     expect(container.querySelector('#objectdefinition-spec-remediationaction-form-group')).toBeNull()
+  })
+
+  test('single namespace mode of OperatorPolicy', async () => {
+    const { container } = render(<TestPolicyWizardOperatorPolicy />)
+    screen.getByRole('button', { name: /policy templates/i }).click()
+
+    // Wait for the policy wizard to load.
+    await waitForText('An Operator policy creates operators on managed clusters.', true)
+
+    // Verify that the "Installation Namespace" input sets both the subscription namespace and the operator group
+    // target namespaces when in single namespace mode.
+    const singleNSRadio = container.querySelector('#operator-single-namespace')
+    expect(singleNSRadio).toBeTruthy()
+    userEvent.click(singleNSRadio as Element)
+
+    const nsInput = container.querySelector('#objectdefinition-spec-subscription-namespace')
+    userEvent.type(nsInput as Element, 'my-namespace')
+
+    // Open the YAML editor.
+    const yamlCheckBox = screen.getByRole('checkbox', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    await waitFor(() => expect(input).not.toHaveValue(''))
+
+    expect(input).toHaveTextContent('subscription: namespace: my-namespace')
+    expect(input).toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+
+    // Setting all namespaces should wipe the operator group
+    const allNSRadio = container.querySelector('#operator-all-namespaces')
+    expect(allNSRadio).toBeTruthy()
+    userEvent.click(allNSRadio as Element)
+
+    await waitFor(() => {
+      expect(input).toHaveTextContent('subscription: namespace: my-namespace')
+      expect(input).not.toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+    })
+  })
+
+  test('all namespace mode of OperatorPolicy', async () => {
+    const { container } = render(<TestPolicyWizardOperatorPolicy />)
+    screen.getByRole('button', { name: /policy templates/i }).click()
+
+    // Wait for the policy wizard to load.
+    await waitForText('An Operator policy creates operators on managed clusters.', true)
+
+    const allNSRadio = container.querySelector('#operator-all-namespaces')
+    expect(allNSRadio).toBeTruthy()
+    userEvent.click(allNSRadio as Element)
+
+    const nsInput = container.querySelector('#objectdefinition-spec-subscription-namespace')
+    userEvent.type(nsInput as Element, 'my-namespace')
+
+    // Open the YAML editor.
+    const yamlCheckBox = screen.getByRole('checkbox', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    await waitFor(() => {
+      const input = screen.getByRole('textbox', {
+        name: /monaco/i,
+      }) as HTMLTextAreaElement
+
+      expect(input).not.toHaveValue('')
+    })
+
+    const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+
+    expect(input).toHaveTextContent('subscription: namespace: my-namespace')
+    expect(input).not.toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
   })
 })

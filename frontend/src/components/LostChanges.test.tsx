@@ -105,7 +105,7 @@ describe.skip('LostChangesProvider', () => {
     await clickByRole('button', { name: 'Inner Discard' })
     await waitForText('Leave form?')
     await clickByRole('button', { name: 'Leave' })
-    expect(innerDiscard).toBeCalledTimes(1)
+    expect(innerDiscard).toHaveBeenCalledTimes(1)
   })
   it('blocks cancel for nested dirty forms', async () => {
     render(<TestLostChangesProvider />)
@@ -113,13 +113,13 @@ describe.skip('LostChangesProvider', () => {
     await clickByRole('button', { name: 'Inner Discard' })
     await waitForText('Leave form?')
     await clickByRole('button', { name: 'Stay' })
-    expect(innerDiscard).toBeCalledTimes(0)
+    expect(innerDiscard).toHaveBeenCalledTimes(0)
   })
   it('does not block cancel for outer dirty forms', async () => {
     render(<TestLostChangesProvider />)
     await clickByRole('button', { name: 'Outer Dirty' })
     await clickByRole('button', { name: 'Inner Discard' })
-    expect(innerDiscard).toBeCalledTimes(1)
+    expect(innerDiscard).toHaveBeenCalledTimes(1)
   })
   it('does not block submit for dirty forms', async () => {
     render(<TestLostChangesProvider />)

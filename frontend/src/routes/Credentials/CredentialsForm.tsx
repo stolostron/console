@@ -1564,8 +1564,8 @@ export function CredentialsForm(
         isHostedControlPlane
           ? ['Secret.0.metadata.name', 'Secret.0.metadata.namespace']
           : isEditing
-          ? ['*.metadata.name', '*.metadata.namespace']
-          : []
+            ? ['*.metadata.name', '*.metadata.namespace']
+            : []
       }
       edit={() => {
         if (providerConnection) {

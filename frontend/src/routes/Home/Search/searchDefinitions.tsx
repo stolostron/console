@@ -362,6 +362,9 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
         AddColumn('Channel', t('Channel')),
       ]),
     },
+    virtualmachine: {
+      columns: AddDefaultColumns(t, [AddColumn('status', t('Status')), AddColumn('ready', t('Ready'))]),
+    },
   }
 }
 
