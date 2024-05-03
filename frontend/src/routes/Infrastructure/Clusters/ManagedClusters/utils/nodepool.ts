@@ -28,13 +28,10 @@ export const getNodepoolAgents = (
         am.status?.agentRef?.name &&
         am.status?.agentRef?.namespace
     )
-    .reduce(
-      (acc, curr) => {
-        acc[curr.status?.agentRef?.name || ''] = curr.status?.agentRef?.namespace
-        return acc
-      },
-      {} as { [key: string]: string | undefined }
-    )
+    .reduce((acc, curr) => {
+      acc[curr.status?.agentRef?.name || ''] = curr.status?.agentRef?.namespace
+      return acc
+    }, {} as { [key: string]: string | undefined })
 
   return agents.filter((a) => nodePoolAgentMachines[a.metadata?.name || ''] === a.metadata?.namespace)
 }

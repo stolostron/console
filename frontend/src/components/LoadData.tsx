@@ -363,18 +363,15 @@ export function LoadData(props: { children?: ReactNode }) {
     function processEventQueue() {
       if (eventQueue.length === 0) return
 
-      const resourceTypeMap = eventQueue?.reduce(
-        (resourceTypeMap, eventData) => {
-          const apiVersion = eventData.object.apiVersion
-          const groupVersion = apiVersion.split('/')[0]
-          const kind = eventData.object.kind
-          if (!resourceTypeMap[groupVersion]) resourceTypeMap[groupVersion] = {}
-          if (!resourceTypeMap[groupVersion][kind]) resourceTypeMap[groupVersion][kind] = []
-          resourceTypeMap[groupVersion][kind].push(eventData)
-          return resourceTypeMap
-        },
-        {} as Record<string, Record<string, WatchEvent[]>>
-      )
+      const resourceTypeMap = eventQueue?.reduce((resourceTypeMap, eventData) => {
+        const apiVersion = eventData.object.apiVersion
+        const groupVersion = apiVersion.split('/')[0]
+        const kind = eventData.object.kind
+        if (!resourceTypeMap[groupVersion]) resourceTypeMap[groupVersion] = {}
+        if (!resourceTypeMap[groupVersion][kind]) resourceTypeMap[groupVersion][kind] = []
+        resourceTypeMap[groupVersion][kind].push(eventData)
+        return resourceTypeMap
+      }, {} as Record<string, Record<string, WatchEvent[]>>)
       eventQueue.length = 0
 
       for (const groupVersion in resourceTypeMap) {

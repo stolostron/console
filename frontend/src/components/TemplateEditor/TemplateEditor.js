@@ -106,8 +106,8 @@ export default class TemplateEditor extends React.Component {
                 Array.isArray(creationMsg) && creationMsg.length
                   ? creationMsg[0]
                   : isEditing
-                    ? i18n('success.create.updating', [type])
-                    : i18n('success.create.creating', [type]),
+                  ? i18n('success.create.updating', [type])
+                  : i18n('success.create.creating', [type]),
             },
           ]
           break
@@ -121,8 +121,8 @@ export default class TemplateEditor extends React.Component {
                 Array.isArray(creationMsg) && creationMsg.length
                   ? creationMsg[0]
                   : isEditing
-                    ? i18n('success.create.updated', [type])
-                    : i18n('success.create.created', [type]),
+                  ? i18n('success.create.updated', [type])
+                  : i18n('success.create.created', [type]),
             },
           ]
           break

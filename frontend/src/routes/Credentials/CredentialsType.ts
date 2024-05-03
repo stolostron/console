@@ -17,7 +17,7 @@ const credentialsTypes = [
   Provider.nutanix,
 ] as const
 
-export type CredentialsType = (typeof credentialsTypes)[number]
+export type CredentialsType = typeof credentialsTypes[number]
 
 export const isCredentialsType = (credentialsType: string): credentialsType is CredentialsType =>
   (credentialsTypes as unknown as string[]).includes(credentialsType)

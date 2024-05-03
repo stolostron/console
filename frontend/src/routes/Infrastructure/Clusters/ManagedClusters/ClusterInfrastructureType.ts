@@ -27,7 +27,7 @@ const clusterInfrastructureTypes = [
   HostInventoryInfrastructureType.NutanixAI,
 ] as const
 
-export type ClusterInfrastructureType = (typeof clusterInfrastructureTypes)[number]
+export type ClusterInfrastructureType = typeof clusterInfrastructureTypes[number]
 
 export const isClusterInfrastructureType = (
   infrastructureType: string

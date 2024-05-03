@@ -453,13 +453,10 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
 }
 
 export function getPolicySetPolicies(policies: Policy[], policySet: PolicySet) {
-  const policyNameMap = policySet.spec.policies.reduce(
-    (policyNameMap, currentValue) => {
-      policyNameMap[currentValue] = true
-      return policyNameMap
-    },
-    {} as Record<string, true>
-  )
+  const policyNameMap = policySet.spec.policies.reduce((policyNameMap, currentValue) => {
+    policyNameMap[currentValue] = true
+    return policyNameMap
+  }, {} as Record<string, true>)
 
   return policies.filter(
     (policy) => policyNameMap[policy.metadata.name!] && policy.metadata.namespace === policySet.metadata.namespace

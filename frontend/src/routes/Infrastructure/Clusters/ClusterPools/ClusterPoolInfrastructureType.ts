@@ -3,7 +3,7 @@ import { Provider } from '../../../../ui-components'
 
 const clusterPoolInfrastructureTypes = [Provider.aws, Provider.azure, Provider.gcp] as const
 
-export type ClusterPoolInfrastructureType = (typeof clusterPoolInfrastructureTypes)[number]
+export type ClusterPoolInfrastructureType = typeof clusterPoolInfrastructureTypes[number]
 
 export const isClusterPoolInfrastructureType = (
   infrastructureType: string

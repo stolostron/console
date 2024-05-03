@@ -1115,8 +1115,8 @@ export function getClusterStatus(
         ccStatus = checkCuratorConditionFailed(CuratorCondition.monitor, ccConditions)
           ? ClusterStatus.provisionfailed
           : checkCuratorConditionFailed(CuratorCondition.provision, ccConditions)
-            ? ClusterStatus.provisionfailed
-            : ClusterStatus.creating
+          ? ClusterStatus.provisionfailed
+          : ClusterStatus.creating
       } else if (!checkCuratorConditionDone(CuratorCondition.import, ccConditions)) {
         // check if import is in progress or failed
         if (checkCuratorConditionFailed(CuratorCondition.import, ccConditions)) {

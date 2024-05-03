@@ -120,7 +120,7 @@ export async function createCluster(resources: any[]) {
               apiVersion: r.apiVersion,
               kind: r.kind,
               metadata: { name: r.metadata.name, namespace: r.metadata.namespace },
-            }) as IResource
+            } as IResource)
         )
     }
 

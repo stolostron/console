@@ -75,7 +75,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom-v5-compat'
+import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 
 type SortFn<T> = (a: T, b: T) => number
@@ -497,7 +497,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const initialSearch = props.initialSearch || ''
 
   const { t } = useTranslation()
-  const ff = useLocation()
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -678,17 +677,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   useLayoutEffect(() => {
     setSelected((selected) => {
-      const newSelected = (items ?? []).reduce(
-        (newSelected, item) => {
-          const itemKey = keyFn(item)
-          /* istanbul ignore if */
-          if (selected[itemKey]) {
-            newSelected[itemKey] = true
-          }
-          return newSelected
-        },
-        {} as { [uid: string]: boolean }
-      )
+      const newSelected = (items ?? []).reduce((newSelected, item) => {
+        const itemKey = keyFn(item)
+        /* istanbul ignore if */
+        if (selected[itemKey]) {
+          newSelected[itemKey] = true
+        }
+        return newSelected
+      }, {} as { [uid: string]: boolean })
       if (Object.keys(newSelected).length !== Object.keys(selected).length) {
         // Only update the selected object to the newSelected object if it changed
         selected = newSelected

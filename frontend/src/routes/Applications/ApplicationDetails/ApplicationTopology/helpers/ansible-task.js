@@ -39,8 +39,8 @@ export const getInfoForAnsibleTask = (ansibleConditions) => {
       _.indexOf(ansibleTaskErrorStates, reasonStatus) >= 0
         ? 'red'
         : _.indexOf(ansibleTaskSuccessStates, reasonStatus) >= 0
-          ? 'green'
-          : 'yellow'
+        ? 'green'
+        : 'yellow'
   }
 
   return {
@@ -58,10 +58,10 @@ export const getInfoForAnsibleJob = (jobStatus) => {
       _.indexOf(ansibleJobErrorStates, reasonStatus) >= 0
         ? 'red'
         : _.indexOf(ansibleJobSuccessStates, reasonStatus) >= 0
-          ? 'green'
-          : _.indexOf(ansibleJobWarningStates, reasonStatus) >= 0
-            ? 'yellow'
-            : 'orange'
+        ? 'green'
+        : _.indexOf(ansibleJobWarningStates, reasonStatus) >= 0
+        ? 'yellow'
+        : 'orange'
   }
 
   return {

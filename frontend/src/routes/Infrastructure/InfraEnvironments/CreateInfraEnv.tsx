@@ -84,7 +84,7 @@ const CreateInfraEnv: React.FC = () => {
                 apiVersion: r.apiVersion,
                 kind: r.kind,
                 metadata: { name: r.metadata.name, namespace: r.metadata.namespace },
-              }) as IResource
+              } as IResource)
           )
         try {
           await deleteResources(resourcesToDelete).promise
