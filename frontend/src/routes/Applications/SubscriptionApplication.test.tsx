@@ -686,6 +686,7 @@ describe('Create Subscription Application page', () => {
     userEvent.type(githubURL, gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // pick existing Placement
     await screen.getByPlaceholderText(/select an existing placement configuration/i)
