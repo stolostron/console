@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { Routes, Route, CompatRoute } from 'react-router-dom-v5-compat'
+import { Routes, Route } from 'react-router-dom-v5-compat'
 import { CreateClusterPoolPage } from './ClusterPools/CreateClusterPoolPage'
 import ClusterSetDetailsPage from './ClusterSets/ClusterSetDetails/ClusterSetDetails'
 import { ClustersPage } from './ClustersPage'
 import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
-import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
+// import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
 import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
 import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
@@ -28,7 +28,7 @@ export default function Clusters() {
       <Route path="/details/:namespace/:name/*" element={<ClusterDetailsPage />} />
       <Route path="/sets/details/:id/*" element={<ClusterSetDetailsPage />} />
       <Route path="/pools/create" element={<CreateClusterPoolPage />} />
-      <CompatRoute path="/edit/:namespace/:name" component={EditAICluster} />
+      {/* <Route path="/edit/:namespace/:name" element={<EditAICluster />} /> */}
       <Route path="/discovered/configure" element={<DiscoveryConfigPage />} />
       <Route path="/discovered/create" element={<DiscoveryConfigPage />} />
       <Route path="/*" element={<ClustersPage />} />
