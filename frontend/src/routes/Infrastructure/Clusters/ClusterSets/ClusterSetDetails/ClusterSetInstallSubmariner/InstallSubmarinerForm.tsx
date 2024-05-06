@@ -158,6 +158,21 @@ const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | u
   [Provider.openstack]: (secrets: Secret[]) => secrets.find((s) => s.data?.['clouds.yaml']),
 }
 
+function hasNodeWithUpiLabel(cluster: Cluster): boolean {
+  if (!cluster.nodes || !cluster.nodes.nodeList) {
+    return false
+  }
+
+  for (const node of cluster.nodes.nodeList) {
+    const instanceTypeLabel = node.labels?.['node.kubernetes.io/instance-type']
+    if (instanceTypeLabel === 'upi') {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
   const { t } = useTranslation()
   const { clusterSet } = useContext(ClusterSetContext)
@@ -394,6 +409,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         } else {
           submarinerConfig.spec.gatewayConfig = {}
           submarinerConfig.spec.loadBalancerEnable = true
+          // for ROKS IBM managed openshift on IBM Satelite we shouldn't use loadbalancer
+          // ROKS on Satelite is identified by nodes label 'node.kubernetes.io/instance-type' equals to 'upi'
+          if (cluster.provider === Provider.ibm && hasNodeWithUpiLabel(cluster)) {
+            submarinerConfig.spec.loadBalancerEnable = false
+          }
         }
         if (isCustomSubscriptions[cluster.displayName!]) {
           const subscriptionConfig: SubscriptionConfig = {
