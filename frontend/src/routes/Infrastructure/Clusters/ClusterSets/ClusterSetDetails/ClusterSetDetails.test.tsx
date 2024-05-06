@@ -303,12 +303,52 @@ const mockManagedClusterIBMPower: ManagedCluster = {
   },
 }
 
+const mockManagedClusterIBMZ: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'managed-cluster-ibmz-clusterset',
+    labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'IBMZPLATFORM' }],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
 const mockManagedClusterInfoIBMPower: ManagedClusterInfo = {
   apiVersion: ManagedClusterInfoApiVersion,
   kind: ManagedClusterInfoKind,
   metadata: {
     name: mockManagedClusterIBMPower.metadata.name!,
     namespace: mockManagedClusterIBMPower.metadata.name!,
+  },
+  status: {
+    conditions: [],
+    version: '1.17',
+    distributionInfo: {
+      type: 'ocp',
+      ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5'],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+        versionAvailableUpdates: [],
+      },
+    },
+  },
+}
+
+const mockManagedClusterInfoIBMZ: ManagedClusterInfo = {
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
+  metadata: {
+    name: mockManagedClusterIBMZ.metadata.name!,
+    namespace: mockManagedClusterIBMZ.metadata.name!,
   },
   status: {
     conditions: [],
@@ -848,6 +888,23 @@ const mockManagedClusterIBMPowerSubmarinerConfig: SubmarinerConfig = {
   },
 }
 
+const mockManagedClusterIBMZSubmarinerConfig: SubmarinerConfig = {
+  apiVersion: SubmarinerConfigApiVersion,
+  kind: SubmarinerConfigKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterIBMZ.metadata.name,
+  },
+  spec: {
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
+    airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
+    IPSecNATTPort: submarinerConfigDefault.nattPort,
+    NATTEnable: submarinerConfigDefault.nattEnable,
+    cableDriver: submarinerConfigDefault.cableDriver,
+    globalCIDR: '',
+  },
+}
+
 const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
   kind: SubmarinerConfigKind,
@@ -996,6 +1053,18 @@ const mockSubmarinerAddonIBMPower: ManagedClusterAddOn = {
   },
 }
 
+const mockSubmarinerAddonIBMZ: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterIBMZ.metadata.name,
+  },
+  spec: {
+    installNamespace: 'submariner-operator',
+  },
+}
+
 const mockSubmarinerAddonAzure: ManagedClusterAddOn = {
   apiVersion: ManagedClusterAddOnApiVersion,
   kind: ManagedClusterAddOnKind,
@@ -1108,6 +1177,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterInfoRoks,
         mockManagedClusterInfoBareMetal,
         mockManagedClusterInfoIBMPower,
+        mockManagedClusterInfoIBMZ,
         mockManagedClusterInfoNoCredentials,
         mockManagedClusterInfoNoCredentialsAzure,
         mockManagedClusterInfoOpenstack,
@@ -1122,6 +1192,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterRoks,
         mockManagedClusterBareMetal,
         mockManagedClusterIBMPower,
+        mockManagedClusterIBMZ,
         mockManagedClusterNoCredentials,
         mockManagedClusterNoCredentialsAzure,
         mockManagedClusterOpenstack,
@@ -1272,6 +1343,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText(mockManagedClusterRoks!.metadata.name!)
     await clickByText(mockManagedClusterBareMetal!.metadata.name!)
     await clickByText(mockManagedClusterIBMPower!.metadata.name!)
+    await clickByText(mockManagedClusterIBMZ!.metadata.name!)
     await clickByLabel('Enable Globalnet')
     await typeByTestId('broker-globalnet-cidr', '243.0.0.333/16')
     await clickByText('Next')
@@ -1389,6 +1461,11 @@ describe('ClusterSetDetails page', () => {
     const nockSCIBMPower = nockCreate(mockManagedClusterIBMPowerSubmarinerConfig)
     await clickByText('Next')
 
+    // mockManagedClusterIBMZ
+    const nockMCAIBMZ = nockCreate(mockSubmarinerAddonIBMZ)
+    const nockSCIBMZ = nockCreate(mockManagedClusterIBMZSubmarinerConfig)
+    await clickByText('Next')
+
     // mockBroker
     const nockBroker = nockCreate(mockBroker)
 
@@ -1400,6 +1477,8 @@ describe('ClusterSetDetails page', () => {
       nockSCBareMetal,
       nockMCAIBMPower,
       nockSCIBMPower,
+      nockMCAIBMZ,
+      nockSCIBMZ,
       nockMCANoCreds,
       nockSecretNoCreds,
       nockSCNoCreds,
