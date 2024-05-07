@@ -17,9 +17,9 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { BrowserRouter } from 'react-router-dom'
-import { CompatRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom-v5-compat'
+import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { BrowserRouter, Redirect, RouteComponentProps, Switch, Route } from 'react-router-dom'
+import { CompatRouter, CompatRoute, Link, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'
@@ -61,6 +61,8 @@ interface IRoute {
   path: NavigationPath
   title: string
   element: React.ReactNode
+  component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
+  v5?: boolean
 }
 
 interface IRouteGroup {
@@ -145,80 +147,102 @@ function UserDropdown() {
   )
 }
 
-export default function App() {
-  const routes: (IRoute | IRouteGroup)[] = useMemo(
-    () => [
+const routes: (IRoute | IRouteGroup)[] = [
+  {
+    title: 'Home',
+    type: 'group',
+    routes: [
       {
-        title: 'Home',
-        type: 'group',
-        routes: [
-          {
-            title: 'Welcome',
-            type: 'route',
-            path: NavigationPath.welcome,
-            element: <WelcomePage />,
-          },
-          {
-            title: 'Overview',
-            type: 'route',
-            path: NavigationPath.overview,
-            element: <OverviewPage />,
-          },
-          {
-            title: 'Search',
-            type: 'route',
-            path: NavigationPath.search,
-            element: <Search />,
-          },
-        ],
-      },
-      {
-        title: 'Infrastructure',
-        type: 'group',
-        routes: [
-          {
-            title: 'Clusters',
-            type: 'route',
-            path: NavigationPath.clusters,
-            element: <Clusters />,
-          },
-          {
-            title: 'Automation',
-            type: 'route',
-            path: NavigationPath.ansibleAutomations,
-            element: <Automations />,
-          },
-          {
-            title: 'Host inventory',
-            type: 'route',
-            path: NavigationPath.infraEnvironments,
-            element: <InfraEnvironments />,
-          },
-        ],
-      },
-      {
-        title: 'Applications',
+        title: 'Welcome',
         type: 'route',
-        path: NavigationPath.applications,
-        element: <Applications />,
+        path: NavigationPath.welcome,
+        element: <WelcomePage />,
+        component: WelcomePage,
       },
       {
-        title: 'Governance',
+        title: 'Overview',
         type: 'route',
-        path: NavigationPath.governance,
-        element: <Governance />,
+        path: NavigationPath.overview,
+        element: <OverviewPage />,
+        component: OverviewPage,
       },
-
       {
-        title: 'Credentials',
+        title: 'Search',
         type: 'route',
-        path: NavigationPath.credentials,
-        element: <Credentials />,
+        path: NavigationPath.search,
+        element: <Search />,
+        component: Search,
       },
     ],
-    []
-  )
+  },
+  {
+    title: 'Infrastructure',
+    type: 'group',
+    routes: [
+      {
+        title: 'Clusters',
+        type: 'route',
+        path: NavigationPath.clusters,
+        element: <Clusters />,
+        component: Clusters,
+        v5: true,
+      },
+      {
+        title: 'Automation',
+        type: 'route',
+        path: NavigationPath.ansibleAutomations,
+        element: <Automations />,
+        component: Automations,
+      },
+      {
+        title: 'Host inventory',
+        type: 'route',
+        path: NavigationPath.infraEnvironments,
+        element: <InfraEnvironments />,
+        component: InfraEnvironments,
+      },
+    ],
+  },
+  {
+    title: 'Applications',
+    type: 'route',
+    path: NavigationPath.applications,
+    element: <Applications />,
+    component: Applications,
+  },
+  {
+    title: 'Governance',
+    type: 'route',
+    path: NavigationPath.governance,
+    element: <Governance />,
+    component: Governance,
+  },
 
+  {
+    title: 'Credentials',
+    type: 'route',
+    path: NavigationPath.credentials,
+    element: <Credentials />,
+    component: Credentials,
+  },
+]
+
+function mapRoutes(routes: (IRoute | IRouteGroup)[]): ReactNode[] {
+  return routes.map((route) => {
+    if (route.type === 'group') {
+      return mapRoutes(route.routes)
+    } else {
+      const { title, path, component, v5 } = route
+      return v5 ? (
+        <Route key={title} path={path} component={component} />
+      ) : (
+        <CompatRoute key={title} path={path} component={component} />
+      )
+    }
+  })
+}
+
+export default function App() {
   // Enforce light mode for standalone
   useLayoutEffect(() => {
     if (process.env.NODE_ENV === 'production') {
@@ -227,6 +251,8 @@ export default function App() {
   }, [])
 
   const pluginDataContextValue = usePluginDataContextValue()
+
+  const mappedRoutes = useMemo(() => mapRoutes(routes), [])
 
   return (
     <PluginDataContextProvider value={pluginDataContextValue}>
@@ -244,18 +270,12 @@ export default function App() {
                 <AcmToastGroup />
                 <AcmTablePaginationContextProvider localStorageKey="clusters">
                   <Suspense fallback={<LoadingPage />}>
-                    <Routes>
-                      {routes.map((route) =>
-                        route.type === 'group' ? (
-                          route.routes.map((route) => (
-                            <Route key={route.title} path={route.path + '/*'} element={route.element} />
-                          ))
-                        ) : (
-                          <Route key={route.title} path={route.path + '/*'} element={route.element} />
-                        )
-                      )}
-                      <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
-                    </Routes>
+                    <Switch>
+                      {mappedRoutes}
+                      <Route path="*">
+                        <Redirect to={NavigationPath.welcome} />
+                      </Route>
+                    </Switch>
                   </Suspense>
                 </AcmTablePaginationContextProvider>
               </AcmToastProvider>
