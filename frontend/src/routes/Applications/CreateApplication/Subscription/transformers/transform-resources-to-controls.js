@@ -154,7 +154,9 @@ const discoverChannelFromSource = (
     if (isDeprecatedPRControl && deprecatedRuleControl && placementKind === PlacementRuleKind) {
       isDeprecatedPRControl.active = true
       const ruleName = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))?.$v
-      const rule = templateObject[PlacementRuleKind].find((rule) => ruleName === rule?.$raw?.metadata?.name)
+      const rule = templateObject[PlacementRuleKind]
+        ? templateObject[PlacementRuleKind].find((ruleItem) => ruleName === ruleItem?.$raw?.metadata?.name)
+        : undefined
       deprecatedRuleControl.active = YAML.stringify(filterDeep(rule?.$raw))
     }
 
