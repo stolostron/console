@@ -11,7 +11,7 @@ RUN npm ci --no-optional --unsafe-perm --ignore-scripts
 RUN cd backend && npm ci --no-optional  --unsafe-perm
 RUN cd frontend && npm ci --no-optional --legacy-peer-deps --unsafe-perm
 RUN npm run build:backend
-RUN cd frontend && npm run build:plugin:mce
+RUN cd frontend && npm run build:plugin:acm
 
 # Remove build-time dependencies before packaging
 RUN cd backend && npm ci --no-optional --only=production --unsafe-perm
