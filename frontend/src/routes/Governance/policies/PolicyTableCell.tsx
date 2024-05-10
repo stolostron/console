@@ -4,13 +4,13 @@ import { PolicyAutomation, PolicySet } from '../../../resources'
 import { PolicyTableItem } from './Policies'
 import { NavigationPath } from '../../../NavigationPath'
 import { Link } from 'react-router-dom'
-import { t } from 'i18next'
 import { PolicySetList } from '../common/util'
 import moment from 'moment'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import { AcmButton } from '../../../ui-components/AcmButton'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ButtonVariant } from '@patternfly/react-core'
+import { TFunction } from 'react-i18next'
 
 export function handleNameCell(item: PolicyTableItem) {
   return (
@@ -29,7 +29,7 @@ export function handleNameCell(item: PolicyTableItem) {
   )
 }
 
-export function handleStatusCell(item: PolicyTableItem) {
+export function handleStatusCell(item: PolicyTableItem, t: TFunction<string, undefined>) {
   const disabled: string = t('Disabled')
   const enabled: string = t('Enabled')
   return <span>{item.policy.spec.disabled === true ? disabled : enabled}</span>
@@ -58,7 +58,7 @@ export function handleBtnCell(item: PolicyTableItem, setModal: (modal: React.Rea
   return <PolicyActionDropdown setModal={setModal} item={item} isKebab={true} />
 }
 
-export function handleActionGroupCell(item: PolicyTableItem) {
+export function handleActionGroupCell(item: PolicyTableItem, t: TFunction<string, undefined>) {
   const disabled: string = t('policy.table.actionGroup.status.disabled')
   const enabled: string = t('policy.table.actionGroup.status.enabled')
   return <span>{item.policy.spec.disabled === true ? disabled : enabled}</span>
@@ -71,7 +71,8 @@ export function handleAutomationCell(
   unauthorizedMessage: string,
   setDrawerContext: any,
   setModal: any,
-  canCreatePolicyAutomation: boolean
+  canCreatePolicyAutomation: boolean,
+  t: TFunction<string, undefined>
 ) {
   const policyAutomationMatch = policyAutomations.find(
     (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name

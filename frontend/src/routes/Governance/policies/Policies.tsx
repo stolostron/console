@@ -164,7 +164,7 @@ export default function PoliciesPage() {
           const statusB = itemB.policy.spec.disabled === true ? t('Disabled') : t('Enabled')
           return compareStrings(statusA, statusB)
         },
-        cell: handleStatusCell,
+        cell: (item: PolicyTableItem) => handleStatusCell(item, t),
         id: 'status',
         order: 3,
         isDefault: false,
@@ -249,7 +249,8 @@ export default function PoliciesPage() {
             unauthorizedMessage,
             setDrawerContext,
             setModal,
-            canCreatePolicyAutomation
+            canCreatePolicyAutomation,
+            t
           ),
         id: 'automation',
         order: 8,
@@ -295,7 +296,7 @@ export default function PoliciesPage() {
       },
       {
         header: t('policy.table.actionGroup.status'),
-        cell: handleActionGroupCell,
+        cell: (item: PolicyTableItem) => handleActionGroupCell(item, t),
       },
     ],
     [t]
