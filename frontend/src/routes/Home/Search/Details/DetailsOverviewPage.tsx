@@ -23,8 +23,9 @@ import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { IResource, OwnerReference } from '../../../../resources'
+import { OwnerReference } from '../../../../resources'
 import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
+import { useSearchDetailsContext } from './DetailsPage'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -211,14 +212,8 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
   )
 }
 
-export default function DetailsOverviewPage(props: {
-  cluster: string
-  resource: IResource
-  loading: boolean
-  error: string
-  name: string
-}) {
-  const { cluster, resource, loading, error, name } = props
+export default function DetailsOverviewPage() {
+  const { cluster, resource, resourceLoading, resourceError, name } = useSearchDetailsContext()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
@@ -324,7 +319,7 @@ export default function DetailsOverviewPage(props: {
     }
   }, [cluster, resource, navigate])
 
-  if (error) {
+  if (resourceError) {
     return (
       <PageSection>
         <AcmAlert
@@ -332,11 +327,11 @@ export default function DetailsOverviewPage(props: {
           variant={'danger'}
           isInline={true}
           title={`${t('Error querying for resource:')} ${name}`}
-          subtitle={error}
+          subtitle={resourceError}
         />
       </PageSection>
     )
-  } else if (loading) {
+  } else if (resourceLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />
@@ -344,7 +339,7 @@ export default function DetailsOverviewPage(props: {
     )
   }
 
-  if (resource && !loading && !error) {
+  if (resource && !resourceLoading && !resourceError) {
     return (
       <PageSection>
         <PageSection variant={'light'}>

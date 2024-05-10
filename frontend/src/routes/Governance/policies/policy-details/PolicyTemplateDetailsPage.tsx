@@ -2,7 +2,7 @@
 
 import { AcmAlert, AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense, useEffect, useState } from 'react'
-import { Route, Routes, useParams } from 'react-router-dom-v5-compat'
+import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
@@ -104,20 +104,13 @@ export function PolicyTemplateDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              templateError ? (
-                <PageSection style={{ paddingBottom: '0' }}>
-                  <AcmAlert variant="danger" title={templateError} isInline noClose />
-                </PageSection>
-              ) : (
-                <PolicyTemplateDetails clusterName={clusterName} template={template} />
-              )
-            }
-          />
-        </Routes>
+        {templateError ? (
+          <PageSection style={{ paddingBottom: '0' }}>
+            <AcmAlert variant="danger" title={templateError} isInline noClose />
+          </PageSection>
+        ) : (
+          <PolicyTemplateDetails clusterName={clusterName} template={template} />
+        )}
       </Suspense>
     </AcmPage>
   )

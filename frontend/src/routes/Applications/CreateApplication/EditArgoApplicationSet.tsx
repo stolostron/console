@@ -4,7 +4,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -67,8 +67,7 @@ export function EditArgoApplicationSet() {
   const navigate = useNavigate()
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
-  const params: { namespace?: string; name?: string } = useParams()
-  const { name = '' } = params
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editApplicationArgo>>()
   const applicationSets = useRecoilValue(applicationSetsState)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
@@ -93,7 +92,7 @@ export function EditArgoApplicationSet() {
 
   useEffect(() => {
     const applicationSet = applicationSets.find(
-      (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
+      (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
     )
 
     if (applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']) {
@@ -133,7 +132,7 @@ export function EditArgoApplicationSet() {
       isPlacementUsedByApplicationSet(applicationSet, placement)
     )
     setExistingResources([copyOfAppSet, ...applicationSetPlacements])
-  }, [applicationSets, navigate, params.name, params.namespace, placements])
+  }, [applicationSets, navigate, name, namespace, placements])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
@@ -159,11 +158,10 @@ export function EditArgoApplicationSet() {
         if (searchParams.get('context') === 'applicationsets') {
           navigate(NavigationPath.applications)
         } else {
-          navigate(
-            NavigationPath.applicationOverview
-              .replace(':namespace', params.namespace ?? '')
-              .replace(':name', params.name ?? '') + argoAppSetQueryString
-          )
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+            search: argoAppSetQueryString,
+          })
         }
       }}
       channels={channels}

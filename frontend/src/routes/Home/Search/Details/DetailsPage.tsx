@@ -2,8 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
-import { useEffect, useMemo, useState } from 'react'
-import { Link, Routes, Route, useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useOutletContext, Outlet } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -12,10 +12,19 @@ import { fireManagedClusterView } from '../../../../resources/managedclusterview
 import { getResource } from '../../../../resources/utils/resource-request'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { DeleteResourceModal } from './DeleteResourceModal'
-import DetailsOverviewPage from './DetailsOverviewPage'
-import LogsPage from './LogsPage'
-import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
-import YAMLPage from './YAMLPage'
+
+export type SearchDetailsContext = {
+  cluster: string
+  name: string
+  namespace: string
+  apiversion: string
+  kind: string
+  resource: any
+  resourceLoading: boolean
+  resourceError: string
+  containers: string[]
+  setResourceVersion: Dispatch<SetStateAction<string>>
+}
 
 export function getResourceParams() {
   let cluster = '',
@@ -130,6 +139,22 @@ export default function DetailsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const searchDetailsContext = useMemo<SearchDetailsContext>(
+    () => ({
+      cluster,
+      name,
+      namespace,
+      apiversion,
+      kind,
+      resource,
+      resourceLoading: !resource && resourceError === '',
+      resourceError,
+      containers: containers || [],
+      setResourceVersion,
+    }),
+    [apiversion, cluster, containers, kind, name, namespace, resource, resourceError]
+  )
+
   return (
     <AcmPage
       header={
@@ -204,62 +229,11 @@ export default function DetailsPage() {
         resource={resource}
         cluster={cluster}
       />
-      <Routes>
-        <Route
-          path="/yaml"
-          element={
-            <YAMLPage
-              resource={resource}
-              loading={!resource && resourceError === ''}
-              error={resourceError}
-              name={name}
-              namespace={namespace}
-              cluster={cluster}
-              kind={kind}
-              apiversion={apiversion}
-              setResourceVersion={setResourceVersion}
-            />
-          }
-        />
-        <Route
-          path="/related"
-          element={
-            <RelatedResourceDetailsTab
-              cluster={cluster}
-              resource={resource}
-              resourceLoading={!resource && resourceError === ''}
-            />
-          }
-        />
-
-        {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
-          <Route
-            path="/logs"
-            element={
-              <LogsPage
-                resource={resource}
-                resourceError={resourceError}
-                containers={containers}
-                cluster={cluster}
-                namespace={namespace}
-                name={name}
-              />
-            }
-          />
-        )}
-        <Route
-          path="/"
-          element={
-            <DetailsOverviewPage
-              cluster={cluster}
-              loading={!resource && resourceError === ''}
-              error={resourceError}
-              resource={resource}
-              name={name}
-            />
-          }
-        />
-      </Routes>
+      <Outlet context={searchDetailsContext} />
     </AcmPage>
   )
+}
+
+export function useSearchDetailsContext() {
+  return useOutletContext<SearchDetailsContext>()
 }

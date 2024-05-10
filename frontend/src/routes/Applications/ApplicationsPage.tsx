@@ -1,13 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
-import { Fragment, lazy, Suspense } from 'react'
-import { Link, Route, Routes, useMatch } from 'react-router-dom-v5-compat'
+import { Link, Outlet, useMatch } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
-
-const ApplicationsOverviewPage = lazy(() => import('./Overview'))
-const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 
 export default function ApplicationsPage() {
   const { t } = useTranslation()
@@ -35,12 +31,7 @@ export default function ApplicationsPage() {
         />
       }
     >
-      <Suspense fallback={<Fragment />}>
-        <Routes>
-          <Route path="/advanced" element={<AdvancedConfigurationPage />} />
-          <Route path="/" element={<ApplicationsOverviewPage />} />
-        </Routes>
-      </Suspense>
+      <Outlet />
     </AcmPage>
   )
 }

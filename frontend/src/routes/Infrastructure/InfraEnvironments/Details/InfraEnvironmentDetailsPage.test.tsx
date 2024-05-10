@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
@@ -11,9 +11,9 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { IResource } from '../../../../resources/resource'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
-import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
 import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+import InfraEnvironments from '../InfraEnvironments'
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'), // use actual for all non-hook parts
@@ -53,7 +53,7 @@ const Component = () => {
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
         <Routes>
-          <Route path={NavigationPath.infraEnvironmentDetails + '/*'} element={<InfraEnvironmentDetailsPage />} />
+          <Route path={`${NavigationPath.infraEnvironments}/*`} element={<InfraEnvironments />} />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>
@@ -65,8 +65,6 @@ describe('Infrastructure Environment Details page', () => {
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
     render(<Component />)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     await waitForText('ai:Infrastructure environment details')
     await waitForNocks(initialNocks)

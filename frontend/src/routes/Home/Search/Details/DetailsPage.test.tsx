@@ -3,12 +3,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { createMemoryHistory } from 'history'
-import { Router } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
-import DetailsPage from './DetailsPage'
+import Search from '../Search'
+import { NavigationPath } from '../../../../NavigationPath'
 
 jest.mock('react-router-dom-v5-compat', () => {
   const originalModule = jest.requireActual('react-router-dom-v5-compat')
@@ -94,12 +94,13 @@ describe('DetailsPage', () => {
   const metricNock = nockPostRequest('/metrics?search-details', {})
 
   it('should render local-cluster resource details correctly', async () => {
-    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
-          <DetailsPage />
-        </Router>
+        <MemoryRouter initialEntries={[NavigationPath.resources]}>
+          <Routes>
+            <Route path={`${NavigationPath.search}/*`} element={<Search />} />
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

@@ -21,11 +21,10 @@ import {
 } from '../../../../../../ui-components'
 import { AlertVariant, ButtonVariant, Modal, ModalVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useState } from 'react'
+import { Fragment, useState } from 'react'
 import {
   AgentClusterInstallK8sResource,
   ClusterDeploymentK8sResource,
-  HostedClusterK8sResource,
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -43,7 +42,7 @@ import { LoginCredentials } from '../../components/LoginCredentials'
 import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
@@ -72,11 +71,16 @@ function getAIClusterProperties(
   ]
 }
 
-export function ClusterOverviewPageContent(props: {
-  canGetSecret?: boolean
-  selectedHostedClusterResource?: HostedClusterK8sResource
-}) {
-  const { cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } = useContext(ClusterContext)
+export function ClusterOverviewPageContent() {
+  const {
+    canGetSecret,
+    cluster,
+    clusterCurator,
+    clusterDeployment,
+    agentClusterInstall,
+    hostedCluster,
+    selectedHostedCluster,
+  } = useClusterDetailsContext()
   const { t } = useTranslation()
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -301,7 +305,7 @@ export function ClusterOverviewPageContent(props: {
     },
     credentials: {
       key: t('table.credentials'),
-      value: <LoginCredentials canGetSecret={props.canGetSecret} />,
+      value: <LoginCredentials canGetSecret={canGetSecret} />,
     },
     claimedBy: {
       key: cluster?.owner.claimedBy ? t('table.claimedBy') : t('table.createdBy'),
@@ -440,8 +444,8 @@ export function ClusterOverviewPageContent(props: {
         )}
         <ClusterStatusMessageAlert cluster={cluster!} padBottom />
         <HiveNotification />
-        {cluster?.isHypershift && !cluster?.isHostedCluster && props.selectedHostedClusterResource ? (
-          <HypershiftImportCommand selectedHostedClusterResource={props.selectedHostedClusterResource} />
+        {cluster?.isHypershift && !cluster?.isHostedCluster && selectedHostedCluster ? (
+          <HypershiftImportCommand selectedHostedClusterResource={selectedHostedCluster} />
         ) : (
           <ImportCommandContainer />
         )}

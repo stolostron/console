@@ -18,7 +18,7 @@ import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { createBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
+import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
@@ -345,7 +345,7 @@ export function DiscoveredClustersTable(props: {
                 sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
                 sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
                 sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
-                navigate(createBackCancelLocation(NavigationPath.importCluster))
+                navigateToBackCancelLocation(navigate, NavigationPath.importCluster)
               },
             },
           ]

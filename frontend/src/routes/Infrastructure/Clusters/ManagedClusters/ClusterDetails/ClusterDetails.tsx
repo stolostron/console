@@ -7,23 +7,21 @@ import {
   HostedClusterK8sResource,
   InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
+import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   generatePath,
   Link,
-  matchPath,
-  Routes,
-  Route,
-  useLocation,
   useParams,
-  Navigate,
   useNavigate,
+  Outlet,
+  useOutletContext,
+  useMatch,
 } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
-import { getClusterNavPath, NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath'
 import {
   Addon,
   Cluster,
@@ -53,14 +51,10 @@ import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { useAllClusters } from '../components/useAllClusters'
-import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
-import { NodePoolsPageContent } from './ClusterNodes/ClusterNodes'
-import { ClusterOverviewPageContent } from './ClusterOverview/ClusterOverview'
-import { ClustersSettingsPageContent } from './ClusterSettings/ClusterSettings'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 
-export const ClusterContext = createContext<{
+export type ClusterDetailsContext = {
   readonly cluster?: Cluster
   readonly managedCluster?: ManagedCluster
   readonly clusterCurator?: ClusterCurator
@@ -68,14 +62,22 @@ export const ClusterContext = createContext<{
   readonly clusterDeployment?: ClusterDeployment
   readonly agents?: AgentK8sResource[]
   readonly agentClusterInstall?: AgentClusterInstallK8sResource
-  // readonly infraEnv?: InfraEnvK8sResource
   readonly infraEnvAIFlow?: InfraEnvK8sResource
   readonly hostedCluster?: HostedClusterK8sResource
   readonly selectedHostedCluster?: HostedClusterK8sResource
-}>({})
+  readonly canGetSecret: boolean
+}
+
+export function showMachinePools(cluster: Cluster) {
+  return (
+    cluster.isHive &&
+    cluster.isManaged &&
+    cluster.provider &&
+    ![Provider.baremetal, Provider.hostinventory, Provider.nutanix].includes(cluster.provider)
+  )
+}
 
 export default function ClusterDetailsPage() {
-  const location = useLocation()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { name = '', namespace = '' } = useParams()
@@ -143,8 +145,8 @@ export default function ClusterDetailsPage() {
   const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
   const clusters = useAllClusters()
-  const selectedHostedCluster = clusters.find((c) => c.name === name && c.namespace === namespace)
-  const selectedHostedClusterResource = hostedClusters.find(
+  const selectedCluster = clusters.find((c) => c.name === name && c.namespace === namespace)
+  const selectedHostedCluster = hostedClusters.find(
     (hc) => hc.metadata?.name === name && hc.metadata?.namespace === namespace
   )
 
@@ -159,15 +161,11 @@ export default function ClusterDetailsPage() {
     clusterCurator,
     agentClusterInstall,
     hostedCluster,
-    selectedHostedClusterResource,
+    selectedHostedCluster,
     nodePools
   )
   const prevCluster = usePrevious(cluster)
-  const showMachinePoolTab =
-    cluster.isHive &&
-    cluster.isManaged &&
-    cluster.provider &&
-    ![Provider.baremetal, Provider.hostinventory, Provider.nutanix].includes(cluster.provider)
+  const showMachinePoolTab = showMachinePools(cluster)
 
   const [canGetSecret, setCanGetSecret] = useState<boolean>(true)
   useEffect(() => {
@@ -178,6 +176,40 @@ export default function ClusterDetailsPage() {
     }
   }, [namespace])
 
+  const clusterDetailsContext = useMemo<ClusterDetailsContext>(
+    () => ({
+      cluster,
+      managedCluster,
+      clusterCurator,
+      addons,
+      agentClusterInstall,
+      agents,
+      clusterDeployment,
+      infraEnvAIFlow,
+      hostedCluster,
+      selectedHostedCluster,
+      canGetSecret,
+    }),
+    [
+      addons,
+      agentClusterInstall,
+      agents,
+      canGetSecret,
+      cluster,
+      clusterCurator,
+      clusterDeployment,
+      hostedCluster,
+      infraEnvAIFlow,
+      managedCluster,
+      selectedHostedCluster,
+    ]
+  )
+
+  const isClusterOverview = !!useMatch(NavigationPath.clusterOverview)
+  const isClusterNodes = !!useMatch(NavigationPath.clusterNodes)
+  const isClusterMachinePools = !!useMatch(NavigationPath.clusterMachinePools)
+  const isClusterSettings = !!useMatch(NavigationPath.clusterSettings)
+
   if (
     (prevCluster?.isHive && prevCluster?.status === ClusterStatus.destroying) ||
     (!prevCluster?.isHive && prevCluster?.status === ClusterStatus.detaching)
@@ -185,7 +217,7 @@ export default function ClusterDetailsPage() {
     return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} />
   }
 
-  if (!clusterExists && !selectedHostedCluster) {
+  if (!clusterExists && !selectedCluster) {
     return (
       <Page>
         <ErrorPage
@@ -216,7 +248,11 @@ export default function ClusterDetailsPage() {
   }
   if (cluster?.hive.secrets?.installConfig || (cluster?.kubeconfig && !cluster.isHypershift)) {
     clusterActionGroupChildren.push(
-      <DownloadConfigurationDropdown key={'DownloadConfigurationDropdown-cluster-action'} canGetSecret={canGetSecret} />
+      <DownloadConfigurationDropdown
+        key={'DownloadConfigurationDropdown-cluster-action'}
+        cluster={cluster}
+        canGetSecret={canGetSecret}
+      />
     )
   }
   if (cluster?.isHypershift && cluster?.kubeconfig) {
@@ -238,82 +274,51 @@ export default function ClusterDetailsPage() {
   }
 
   return (
-    <ClusterContext.Provider
-      value={{
-        cluster,
-        managedCluster,
-        clusterCurator,
-        addons,
-        agentClusterInstall,
-        agents,
-        clusterDeployment,
-        // infraEnv,
-        infraEnvAIFlow,
-        hostedCluster,
-        selectedHostedCluster: selectedHostedClusterResource,
-      }}
-    >
-      <AcmPage
-        hasDrawer
-        header={
-          <AcmPageHeader
-            breadcrumb={[
-              { text: t('Clusters'), to: NavigationPath.clusters },
-              { text: cluster.displayName!, to: '' },
-            ]}
-            title={cluster.displayName!}
-            description={
-              cluster.hive.clusterClaimName && (
-                <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.hive.clusterClaimName}</span>
-              )
-            }
-            navigation={
-              <AcmSecondaryNav>
-                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterOverview)}>
-                  <Link to={generatePath(NavigationPath.clusterOverview, { name, namespace })}>
-                    {t('tab.overview')}
+    <AcmPage
+      hasDrawer
+      header={
+        <AcmPageHeader
+          breadcrumb={[
+            { text: t('Clusters'), to: NavigationPath.clusters },
+            { text: cluster.displayName!, to: '' },
+          ]}
+          title={cluster.displayName!}
+          description={
+            cluster.hive.clusterClaimName && (
+              <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.hive.clusterClaimName}</span>
+            )
+          }
+          navigation={
+            <AcmSecondaryNav>
+              <AcmSecondaryNavItem isActive={isClusterOverview}>
+                <Link to={generatePath(NavigationPath.clusterOverview, { name, namespace })}>{t('tab.overview')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isClusterNodes}>
+                <Link to={generatePath(NavigationPath.clusterNodes, { name, namespace })}>{t('tab.nodes')}</Link>
+              </AcmSecondaryNavItem>
+              {showMachinePoolTab && (
+                <AcmSecondaryNavItem isActive={isClusterMachinePools}>
+                  <Link to={generatePath(NavigationPath.clusterMachinePools, { name, namespace })}>
+                    {t('tab.machinepools')}
                   </Link>
                 </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterNodes)}>
-                  <Link to={generatePath(NavigationPath.clusterNodes, { name, namespace })}>{t('tab.nodes')}</Link>
-                </AcmSecondaryNavItem>
-                {showMachinePoolTab && (
-                  <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterMachinePools)}>
-                    <Link to={generatePath(NavigationPath.clusterMachinePools, { name, namespace })}>
-                      {t('tab.machinepools')}
-                    </Link>
-                  </AcmSecondaryNavItem>
-                )}
-                <AcmSecondaryNavItem isActive={!!matchPath(location.pathname, NavigationPath.clusterSettings)}>
-                  <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>{t('tab.addons')}</Link>
-                </AcmSecondaryNavItem>
-              </AcmSecondaryNav>
-            }
-            actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}
-          />
-        }
-      >
-        <Suspense fallback={<Fragment />}>
-          <Routes>
-            <Route
-              path="/overview"
-              element={
-                <ClusterOverviewPageContent
-                  canGetSecret={canGetSecret}
-                  selectedHostedClusterResource={selectedHostedClusterResource}
-                />
-              }
-            />
-            <Route path="/nodes" element={<NodePoolsPageContent />} />
-            {showMachinePoolTab && <Route path="/machinepools" element={<MachinePoolsPageContent />} />}
-            <Route path="settings" element={<ClustersSettingsPageContent />} />
-            <Route
-              path="*"
-              element={<Navigate to={getClusterNavPath(NavigationPath.clusterOverview, cluster)} replace />}
-            />
-          </Routes>
-        </Suspense>
-      </AcmPage>
-    </ClusterContext.Provider>
+              )}
+              <AcmSecondaryNavItem isActive={isClusterSettings}>
+                <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>{t('tab.addons')}</Link>
+              </AcmSecondaryNavItem>
+            </AcmSecondaryNav>
+          }
+          actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}
+        />
+      }
+    >
+      <Suspense fallback={<Fragment />}>
+        <Outlet context={clusterDetailsContext} />
+      </Suspense>
+    </AcmPage>
   )
+}
+
+export function useClusterDetailsContext() {
+  return useOutletContext<Required<ClusterDetailsContext>>()
 }

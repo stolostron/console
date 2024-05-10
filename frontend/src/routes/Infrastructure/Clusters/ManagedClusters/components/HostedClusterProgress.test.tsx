@@ -6,6 +6,7 @@ import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import HostedClusterProgress from './HostedClusterProgress'
 import { RecoilRoot } from 'recoil'
+import { Routes, Route, Outlet, MemoryRouter } from 'react-router-dom-v5-compat'
 
 const handleModalToggle = () => {}
 
@@ -216,7 +217,16 @@ describe('HostedClusterProgress', () => {
     nockIgnoreRBAC()
     render(
       <RecoilRoot>
-        <HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster} />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={{}} />}>
+              <Route
+                path="*"
+                element={<HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster} />}
+              />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -231,7 +241,16 @@ describe('HostedClusterProgress click launchToOCP link', () => {
     nockIgnoreRBAC()
     render(
       <RecoilRoot>
-        <HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster2} />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={{}} />}>
+              <Route
+                path="*"
+                element={<HostedClusterProgress handleModalToggle={handleModalToggle} hostedCluster={hostedCluster2} />}
+              />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })

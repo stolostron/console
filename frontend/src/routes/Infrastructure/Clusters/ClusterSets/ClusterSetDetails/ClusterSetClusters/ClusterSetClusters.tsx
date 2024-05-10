@@ -1,20 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterSetDefinition } from '../../../../../../resources'
+import { ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../../resources'
 import { AcmEmptyState, AcmPageContent } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useContext } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import { ClustersTable } from '../../../ManagedClusters/ManagedClusters'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 export function ClusterSetClustersPageContent() {
   const { t } = useTranslation()
-  const { clusterSet, clusters } = useContext(ClusterSetContext)
+  const { clusterSet, clusters } = useClusterSetDetailsContext()
+
+  if (isGlobalClusterSet(clusterSet)) {
+    return (
+      <SubRoutesRedirect matchPath={NavigationPath.clusterSetDetails} targetPath={NavigationPath.clusterSetOverview} />
+    )
+  }
+
   return (
     <AcmPageContent id="clusters">
       <PageSection>

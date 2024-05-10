@@ -3,7 +3,7 @@
 import { List, ListItem, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { Link } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
 import { FormData, Section } from '../../../../../../components/AcmFormData'
@@ -12,7 +12,7 @@ import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { validateJSON, validateCloudsYaml, validateCidr } from '../../../../../../lib/validation'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import {
   Broker,
   BrokerApiVersion,
@@ -24,6 +24,7 @@ import {
   getBroker,
   InstallPlanApproval,
   IResource,
+  isGlobalClusterSet,
   listNamespaceSecrets,
   ManagedClusterAddOnApiVersion,
   ManagedClusterAddOnKind,
@@ -49,15 +50,16 @@ import {
   Provider,
   ProviderLongTextMap,
 } from '../../../../../../ui-components'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../../../../components/LostChanges'
+import { PluginContext } from '../../../../../../lib/PluginContext'
 
 const installNamespace = 'submariner-operator'
 export function InstallSubmarinerFormPage() {
   const { t } = useTranslation()
-  const history = useHistory()
-  const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
+  const navigate = useNavigate()
+  const { clusterSet, clusters, submarinerAddons } = useClusterSetDetailsContext()
   const [availableClusters] = useState<Cluster[]>(
     clusters!.filter(
       (cluster) =>
@@ -65,6 +67,14 @@ export function InstallSubmarinerFormPage() {
         cluster.distribution?.ocp?.version // OpenShift clusters only
     )
   )
+  const { isSubmarinerAvailable } = useContext(PluginContext)
+
+  if (!isSubmarinerAvailable || isGlobalClusterSet(clusterSet)) {
+    return (
+      <SubRoutesRedirect matchPath={NavigationPath.clusterSetDetails} targetPath={NavigationPath.clusterSetOverview} />
+    )
+  }
+
   if (availableClusters.length === 0) {
     return (
       <AcmPage
@@ -118,7 +128,7 @@ export function InstallSubmarinerFormPage() {
                   style={{ marginLeft: '16px' }}
                   variant="secondary"
                   onClick={() =>
-                    history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet?.metadata.name!))
+                    navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet?.metadata.name! }))
                   }
                 >
                   {t('submariner.clusters.back', { name: clusterSet?.metadata.name! })}
@@ -175,8 +185,8 @@ function hasNodeWithUpiLabel(cluster: Cluster): boolean {
 
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
   const { t } = useTranslation()
-  const { clusterSet } = useContext(ClusterSetContext)
-  const history = useHistory()
+  const { clusterSet } = useClusterSetDetailsContext()
+  const navigate = useNavigate()
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>([])
   const [providerSecretMap, setProviderSecretMap] = useState<Record<string, string | null>>({})
@@ -572,7 +582,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     backLabel: t('back'),
     cancel: () => {
       cancelForm()
-      history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
+      navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }))
     },
     stateToData,
     sections: [
@@ -1186,7 +1196,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           throw errors[0]
         } else {
           submitForm()
-          return history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!))
+          return navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }))
         }
       })
     },

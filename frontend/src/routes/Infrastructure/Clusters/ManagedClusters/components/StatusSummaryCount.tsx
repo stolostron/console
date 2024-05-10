@@ -12,7 +12,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
 import { localClusterStr } from '../../../../Applications/Overview'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { useAllClusters } from './useAllClusters'
 import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../../../hooks/application-queries'
@@ -36,7 +36,7 @@ export function StatusSummaryCount() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const policies = usePolicies()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
 
   const clustersFilter = cluster ? [cluster.name] : []
   const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter })

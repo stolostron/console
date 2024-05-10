@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import { Link, useLocation, Route, Routes, useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, useLocation, useParams, useNavigate, useOutletContext, Outlet } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -16,11 +16,13 @@ import {
   AcmSecondaryNavItem,
 } from '../../../../ui-components'
 import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
-import PolicyDetailsOverview from './PolicyDetailsOverview'
-import PolicyDetailsResults from './PolicyDetailsResults'
 import { PolicyTableItem } from '../Policies'
 import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
 import { useAddRemediationPolicies } from '../../common/useCustom'
+
+export type PolicyDetailsContext = {
+  policy: Policy
+}
 
 export function PolicyDetailsPage() {
   const location = useLocation()
@@ -60,6 +62,13 @@ export function PolicyDetailsPage() {
       source: getPolicySource(selectedPolicy, helmReleases, channels, subscriptions, t),
     }
   }, [selectedPolicy, helmReleases, channels, subscriptions, t])
+
+  const policyDetailsContext = useMemo<PolicyDetailsContext>(
+    () => ({
+      policy: selectedPolicy,
+    }),
+    [selectedPolicy]
+  )
 
   if (!selectedPolicy) {
     return (
@@ -116,11 +125,12 @@ export function PolicyDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Routes>
-          <Route path="/" element={<PolicyDetailsOverview policy={selectedPolicy} />} />
-          <Route path="/results" element={<PolicyDetailsResults policy={selectedPolicy} />} />
-        </Routes>
+        <Outlet context={policyDetailsContext} />
       </Suspense>
     </AcmPage>
   )
+}
+
+export function usePolicyDetailsContext() {
+  return useOutletContext<PolicyDetailsContext>()
 }

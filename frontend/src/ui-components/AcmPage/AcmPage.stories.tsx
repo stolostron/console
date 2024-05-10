@@ -13,7 +13,7 @@ import {
 import '@patternfly/react-core/dist/styles/base.css'
 import { Meta } from '@storybook/react'
 import { Fragment, useState } from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { AlertGroupStory } from '../AcmAlert/AcmAlert.stories'
 import { AcmAutoRefreshSelect } from '../AcmAutoRefreshSelect/AcmAutoRefreshSelect'
 import { DescriptionList as DescriptionListStory } from '../AcmDescriptionList/AcmDescriptionList.stories'

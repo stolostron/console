@@ -2,12 +2,12 @@
 
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { ClusterDestroy } from './ClusterDestroy'
 import { Provider } from '../../../../../ui-components'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 const mockDestroyCluster: Cluster = {
   name: 'test-cluster',
@@ -124,7 +124,11 @@ describe('ClusterDestroy', () => {
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />
+          <Routes>
+            <Route element={<Outlet context={{}} />}>
+              <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -135,7 +139,11 @@ describe('ClusterDestroy', () => {
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterDestroy isLoading={true} cluster={mockDetachCluster} />
+          <Routes>
+            <Route element={<Outlet context={{}} />}>
+              <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDetachCluster} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -147,7 +155,11 @@ describe('ClusterDestroy', () => {
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterDestroy isLoading={false} cluster={mockDetachCluster} />
+          <Routes>
+            <Route element={<Outlet context={{}} />}>
+              <Route path="*" element={<ClusterDestroy isLoading={false} cluster={mockDetachCluster} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -159,7 +171,11 @@ describe('ClusterDestroy', () => {
       render(
         <RecoilRoot>
           <MemoryRouter>
-            <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
+            <Routes>
+              <Route element={<Outlet context={{}} />}>
+                <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </RecoilRoot>
       )
@@ -168,24 +184,25 @@ describe('ClusterDestroy', () => {
     })
 
     test('renders the destroying state with logs btn', async () => {
-      render(
-        <ClusterContext.Provider
-          value={{
-            agentClusterInstall: {
-              status: {
-                debugInfo: {
-                  logsURL: 'foobar',
-                },
-              },
+      const context: Partial<ClusterDetailsContext> = {
+        agentClusterInstall: {
+          status: {
+            debugInfo: {
+              logsURL: 'foobar',
             },
-          }}
-        >
-          <RecoilRoot>
-            <MemoryRouter>
-              <ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />
-            </MemoryRouter>
-          </RecoilRoot>
-        </ClusterContext.Provider>
+          },
+        },
+      }
+      render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
+        </RecoilRoot>
       )
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
       expect(screen.queryByText('ai:Download Installation Logs')).toBeInTheDocument()

@@ -219,7 +219,6 @@ describe('SavedSearchesCard', () => {
         </Router>
       </RecoilRoot>
     )
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Check header strings
     await waitFor(() => expect(getByText('Saved searches')).toBeTruthy())

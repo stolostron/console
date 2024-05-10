@@ -2,7 +2,7 @@
 
 import { AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense } from 'react'
-import { useParams, Route, Routes } from 'react-router-dom-v5-compat'
+import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
@@ -37,19 +37,12 @@ export function PolicyDetailsHistoryPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <PolicyDetailsHistory
-                policyName={policyName}
-                policyNamespace={policyNamespace}
-                clusterName={clusterName}
-                templateName={templateName}
-              />
-            }
-          />
-        </Routes>
+        <PolicyDetailsHistory
+          policyName={policyName}
+          policyNamespace={policyNamespace}
+          clusterName={clusterName}
+          templateName={templateName}
+        />
       </Suspense>
     </AcmPage>
   )

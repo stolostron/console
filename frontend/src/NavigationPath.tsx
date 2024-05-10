@@ -1,8 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { LocationDescriptor } from 'history'
 import { useContext, useMemo } from 'react'
-import { generatePath, useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import {
+  Location,
+  LinkProps,
+  NavigateFunction,
+  To,
+  generatePath,
+  useLocation,
+  useNavigate,
+  useMatch,
+  PathParam,
+  Navigate,
+  PathMatch,
+  ParamParseKey,
+} from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources'
 
@@ -23,10 +35,33 @@ export const getClusterNavPath = (
     namespace: (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) || UNKNOWN_NAMESPACE,
   })
 
-export enum NavigationPath {
-  // Console
-  console = '/multicloud',
+type ChildPath<B extends NavigationPath> = NavigationPath & `${B}${string}`
+type RelativePath<B extends NavigationPath, T extends NavigationPath> = T extends `${B}${infer R}` ? R | `${R}/*` : void
 
+export enum MatchType {
+  SubRoutes = '/*',
+  Exact = '',
+}
+
+function getRoutePath<B extends NavigationPath, T extends ChildPath<B>>({
+  basePath = '',
+  targetPath,
+  match = MatchType.Exact,
+}: {
+  basePath?: B | ''
+  targetPath: T
+  match?: MatchType
+}): RelativePath<B, T> {
+  return `${targetPath.slice(basePath.length)}${match.toString()}` as RelativePath<B, T>
+}
+
+export function createRoutePathFunction<B extends NavigationPath>(
+  basePath: B
+): (targetPath: ChildPath<B>, match?: MatchType) => RelativePath<B, ChildPath<B>> {
+  return (targetPath, match) => getRoutePath({ basePath, targetPath, match })
+}
+
+export enum NavigationPath {
   // Home
   home = '/multicloud/home',
   welcome = '/multicloud/home/welcome',
@@ -96,8 +131,8 @@ export enum NavigationPath {
   viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
 
   // Applications
-  advancedConfiguration = '/multicloud/applications/advanced',
   applications = '/multicloud/applications',
+  advancedConfiguration = '/multicloud/applications/advanced',
   createApplicationArgo = '/multicloud/applications/create/argo',
   createApplicationArgoPullModel = '/multicloud/applications/create/argopullmodel',
   editApplicationArgo = '/multicloud/applications/edit/argo/:namespace/:name',
@@ -139,25 +174,27 @@ export type BackCancelState = {
   cancelSteps?: number
 }
 
-export function createBackCancelLocation(
-  location: LocationDescriptor<BackCancelState>
-): LocationDescriptor<BackCancelState> {
+export function getBackCancelLocationLinkProps(location: To | Location): Pick<LinkProps, 'to' | 'state'> {
   const newState: BackCancelState = { maxBackSteps: 1, cancelSteps: 1 }
-  return typeof location === 'string'
-    ? { pathname: location, state: newState }
-    : {
-        ...location,
-        state: {
-          ...(location?.state ? location.state : {}),
-          ...newState,
-        },
-      }
+
+  return {
+    to: location,
+    state: {
+      ...(typeof location !== 'string' && 'state' in location ? location.state : {}),
+      ...newState,
+    },
+  }
+}
+
+export function navigateToBackCancelLocation(navigate: NavigateFunction, location: To | Location): void {
+  const { to, state } = getBackCancelLocationLinkProps(location)
+  navigate(to, { state })
 }
 
 export function useBackCancelNavigation(): {
-  nextStep: (location: LocationDescriptor<BackCancelState>) => () => void
-  back: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
-  cancel: (defaultLocation: LocationDescriptor<BackCancelState>) => () => void
+  nextStep: (location: To | Location) => () => void
+  back: (defaultLocation: To | Location) => () => void
+  cancel: (defaultLocation: To | Location) => () => void
 } {
   const navigate = useNavigate()
   const { state } = useLocation()
@@ -170,17 +207,13 @@ export function useBackCancelNavigation(): {
           maxBackSteps: state?.maxBackSteps ? state.maxBackSteps + 1 : 1, // when starting at an intermediate step, back can navigate to this point
           cancelSteps: state?.cancelSteps ? state.cancelSteps + 1 : 0, // when starting at an intermediate step, cancel should go to default
         }
-        if (typeof newLocation === 'string') {
-          navigate(newLocation, { state: newState })
-        } else {
-          navigate((newLocation.pathname || '') + newLocation.search, {
-            state: {
-              ...(state ? state : {}),
-              ...(newLocation.state ? newLocation.state : {}),
-              ...newState,
-            },
-          })
-        }
+        navigate(newLocation, {
+          state: {
+            ...(state ? state : {}),
+            ...(typeof newLocation !== 'string' && 'state' in newLocation ? newLocation.state : {}),
+            ...newState,
+          },
+        })
       },
       back: (defaultLocation) => () => {
         cancelForm()
@@ -193,12 +226,44 @@ export function useBackCancelNavigation(): {
       cancel: (defaultLocation) => () => {
         cancelForm()
         if (state?.cancelSteps) {
-          history.go(-state.cancelSteps)
+          navigate(-state.cancelSteps)
         } else {
           navigate(defaultLocation)
         }
       },
     }),
     [cancelForm, navigate, state]
+  )
+}
+
+export function SubRoutesRedirect<B extends NavigationPath, M extends ChildPath<B>, T extends ChildPath<M>>({
+  matchPath,
+  targetPath,
+}: {
+  matchPath: M
+  targetPath: T
+}) {
+  const { search } = useLocation()
+
+  const pathMatch = useMatch(`${matchPath}/*`) as unknown as PathMatch<ParamParseKey<M>>
+  type GeneratePathParams = {
+    [key in PathParam<T>]: string | null
+  }
+  const params = pathMatch
+    ? (Object.keys(pathMatch.params) as PathParam<M>[]).reduce((params, key) => {
+        const originalValue = pathMatch.params[key]
+        params[key as unknown as PathParam<T>] = originalValue === undefined ? null : originalValue
+        return params
+      }, {} as GeneratePathParams)
+    : undefined
+
+  return (
+    <Navigate
+      to={{
+        pathname: generatePath(targetPath, params),
+        search,
+      }}
+      replace
+    />
   )
 }

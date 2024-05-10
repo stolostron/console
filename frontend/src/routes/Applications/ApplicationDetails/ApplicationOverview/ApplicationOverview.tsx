@@ -37,7 +37,7 @@ import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
 import { TFunction } from 'react-i18next'
 import { getApplicationRepos } from '../../Overview'
-import { ApplicationDataType } from '../ApplicationDetails'
+import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
@@ -54,8 +54,8 @@ const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
 const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resources within the topology.')
 
-export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
-  const { applicationData } = props
+export function ApplicationOverviewPageContent() {
+  const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const localClusterStr = 'local-cluster'
 

@@ -31,6 +31,7 @@ import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSide
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 import { usePropagatedPolicies } from '../../common/useCustom'
+import { usePolicyDetailsContext } from './PolicyDetailsPage'
 
 interface TableData {
   apiVersion: string
@@ -40,8 +41,8 @@ interface TableData {
   policy: Policy
 }
 
-export default function PolicyDetailsOverview(props: { policy: Policy }) {
-  const { policy } = props
+export default function PolicyDetailsOverview() {
+  const { policy } = usePolicyDetailsContext()
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const {
