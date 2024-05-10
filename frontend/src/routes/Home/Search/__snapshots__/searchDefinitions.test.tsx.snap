@@ -197,7 +197,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyR
     <a
       aria-disabled="false"
       class="pf-c-button pf-m-link pf-m-inline"
-      data-ouia-component-id="OUIA-Generated-Button-link-4"
+      data-ouia-component-id="OUIA-Generated-Button-link-5"
       data-ouia-component-type="PF4/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/infrastructure/clusters/details/testClusterNamespace/testClusterNamespace/overview?showClusterIssues%3Dtrue"
