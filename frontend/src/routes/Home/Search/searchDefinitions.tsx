@@ -524,7 +524,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 
   switch (item.kind.toLowerCase()) {
-    case 'cluster':
+    case 'cluster': {
       if (item.managedHub === 'global-hub') {
         return generateLink(
           'internal',
@@ -536,8 +536,8 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name }),
         GetUrlSearchParam(item)
       )
-
-    case 'application':
+    }
+    case 'application': {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
         const params = queryString.stringify({
@@ -556,8 +556,8 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         NavigationPath.resources,
         GetUrlSearchParam(item)
       )
-
-    case 'policy':
+    }
+    case 'policy': {
       if (
         item.apigroup === 'policy.open-cluster-management.io' &&
         !item.label?.includes('policy.open-cluster-management.io/root-policy')
@@ -570,19 +570,20 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         NavigationPath.resources,
         GetUrlSearchParam(item)
       )
-
-    case 'policyreport':
+    }
+    case 'policyreport': {
       const path = generatePath(NavigationPath.clusterOverview, { name: item.namespace, namespace: item.namespace })
       return generateLink(
         item.managedHub === 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
         path,
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
-
-    default:
+    }
+    default: {
       const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
       const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
       return item.managedHub !== 'global-hub' ? externalLink : searchLink
+    }
   }
 }
 
