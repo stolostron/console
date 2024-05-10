@@ -5,11 +5,13 @@ import { render } from '@testing-library/react'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { isGlobalHubState, Settings, settingsState } from '../../../atoms'
+import { managedClusterInfosState } from '../../../atoms'
+import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../../resources/managed-cluster-info'
 import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
   CreateExternalLink,
+  CreateGlobalSearchDetailsLink,
   FormatLabels,
   FormatPolicyReportCategories,
   FormatPolicyReportPolicies,
@@ -176,25 +178,230 @@ test('Correctly returns CreateDetailsLink - Default', () => {
   expect(baseElement).toMatchSnapshot()
 })
 
-test('Correctly returns GlobalHub CreateDetailsLink - Default', () => {
-  const mockSettings: Settings = {
-    globalSearchFeatureFlag: 'enabled',
-  }
+test('Correctly returns CreateGlobalSearchDetailsLink managed hub default resource', () => {
   const item = {
     name: 'testPodName',
     namespace: 'testPodNamespace',
     kind: 'Pod',
     cluster: 'testCluster',
     selfLink: '/self/link',
+    managedHub: 'global-hub',
   }
   const { baseElement } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+        snapshot.set(managedClusterInfosState, [
+          {
+            apiVersion: ManagedClusterInfoApiVersion,
+            kind: ManagedClusterInfoKind,
+            metadata: {
+              name: 'testCluster',
+              namespace: 'testCluster',
+            },
+            status: {
+              consoleURL: 'https://testCluster.com',
+              conditions: [],
+              version: '1.17',
+            },
+          },
+        ])
       }}
     >
       <MemoryRouter>
-        <CreateDetailsLink item={item} />
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed cluster default resource', () => {
+  const item = {
+    name: 'testPodName',
+    namespace: 'testPodNamespace',
+    kind: 'Pod',
+    cluster: 'testCluster',
+    selfLink: '/self/link',
+    managedHub: 'leaf-hub',
+  }
+  const { baseElement } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(managedClusterInfosState, [
+          {
+            apiVersion: ManagedClusterInfoApiVersion,
+            kind: ManagedClusterInfoKind,
+            metadata: {
+              name: 'leaf-hub',
+              namespace: 'leaf-hub',
+            },
+            status: {
+              consoleURL: 'https://leaf-hub.com',
+              conditions: [],
+              version: '1.17',
+            },
+          },
+        ])
+      }}
+    >
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed hub Cluster resource', () => {
+  const item = {
+    name: 'testClusterName',
+    namespace: 'testClusterNamespace',
+    kind: 'Cluster',
+    managedHub: 'global-hub',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Cluster resource', () => {
+  const item = {
+    name: 'testClusterName',
+    namespace: 'testClusterNamespace',
+    kind: 'Cluster',
+    managedHub: 'leaf-hub',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed hub Application resource', () => {
+  const item = {
+    apigroup: 'app.k8s.io',
+    apiversion: 'v1beta1',
+    name: 'testClusterName',
+    namespace: 'testClusterNamespace',
+    kind: 'Application',
+    managedHub: 'global-hub',
+    cluster: 'local-cluster',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Application resource', () => {
+  const item = {
+    apigroup: 'app.k8s.io',
+    apiversion: 'v1beta1',
+    name: 'testClusterName',
+    namespace: 'testClusterNamespace',
+    kind: 'Application',
+    managedHub: 'global-hub',
+    cluster: 'leaf-cluster',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed hub Policy resource', () => {
+  const item = {
+    apigroup: 'policy.open-cluster-management.io',
+    apiversion: 'v1',
+    cluster: 'leaf-hub',
+    compliant: 'NonCompliant',
+    kind: 'Policy',
+    managedHub: 'global-hub',
+    name: 'hub-a-policy-test',
+    namespace: 'default',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy resource', () => {
+  const item = {
+    apigroup: 'policy.open-cluster-management.io',
+    apiversion: 'v1',
+    cluster: 'local-cluster',
+    compliant: 'NonCompliant',
+    kind: 'Policy',
+    managedHub: 'global-hub',
+    name: 'global-policy',
+    namespace: 'default',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyReport resource', () => {
+  const item = {
+    apigroup: 'wgpolicyk8s.io',
+    apiversion: 'v1alpha2',
+    name: 'local-cluster-policyreport',
+    namespace: 'testClusterNamespace',
+    kind: 'PolicyReport',
+    managedHub: 'global-hub',
+    cluster: 'local-cluster',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyReport resource', () => {
+  const item = {
+    apigroup: 'wgpolicyk8s.io',
+    apiversion: 'v1alpha2',
+    name: 'leaf-cluster-policyreport',
+    namespace: 'testClusterNamespace',
+    kind: 'PolicyReport',
+    managedHub: 'global-hub',
+    cluster: 'leaf-cluster',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
     </RecoilRoot>
   )
