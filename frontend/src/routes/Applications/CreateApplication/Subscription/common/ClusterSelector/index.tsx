@@ -216,7 +216,8 @@ const ClusterSelector = (props: {
     (control: { active: any }, item: { id: any }, isReadOnly?: boolean | undefined) => {
       if (!isReadOnly) {
         // Removed labels are no longer valid
-        control.active.clusterLabelsList[item.id].validValue = false
+        const labelIndexToRemove = control.active.clusterLabelsList.findIndex((clsLabel: any) => clsLabel.id == item.id)
+        control.active.clusterLabelsList.splice(labelIndexToRemove, 1)
 
         // Update UI and yaml editor
         forceUpdate()
