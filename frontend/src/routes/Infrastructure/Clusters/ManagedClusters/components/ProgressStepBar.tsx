@@ -8,10 +8,9 @@ import {
 } from '../../../../../resources'
 import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
-import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
@@ -19,7 +18,7 @@ import { getFailedCuratorJobName } from '../../../../../resources/utils/status-c
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
-  const { cluster, clusterDeployment } = useContext(ClusterContext)
+  const { cluster, clusterDeployment } = useClusterDetailsContext()
   const { ansibleJobState, clusterCuratorsState, configMapsState } = useSharedAtoms()
   const curators = useRecoilValue(clusterCuratorsState)
   const ansibleJobs = useRecoilValue(ansibleJobState)

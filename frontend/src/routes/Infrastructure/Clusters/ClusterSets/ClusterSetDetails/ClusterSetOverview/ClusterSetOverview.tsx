@@ -15,20 +15,20 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clusterDangerStatuses, isGlobalClusterSet, ManagedClusterSetDefinition } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
-import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { ManagedClusterSetBindingModal } from '../../components/ManagedClusterSetBindingModal'
 import { GlobalClusterSetPopover } from '../../components/GlobalClusterSetPopover'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { RbacButton } from '../../../../../../components/Rbac'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 export function ClusterSetOverviewPageContent() {
   const { t } = useTranslation()
   const { isSubmarinerAvailable } = useContext(PluginContext)
   const navigate = useNavigate()
   const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings, clusterRoleBindings } =
-    useContext(ClusterSetContext)
+    useClusterSetDetailsContext()
 
   const unhealthySubmariners = submarinerAddons!.filter(
     (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded

@@ -21,7 +21,7 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../../NavigationPath'
+import { getBackCancelLocationLinkProps, NavigationPath } from '../../../NavigationPath'
 import {
   ClusterCurator,
   ClusterCuratorDefinition,
@@ -281,7 +281,7 @@ function AnsibleJobTemplateTable() {
                   isDisabled={!canCreateAutomationTemplate}
                   tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
                   component={Link}
-                  to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
+                  {...getBackCancelLocationLinkProps(NavigationPath.addAnsibleAutomation)}
                 >
                   {t('template.create')}
                 </AcmButton>

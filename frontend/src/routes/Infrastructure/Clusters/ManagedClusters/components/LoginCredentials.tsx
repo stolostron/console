@@ -11,9 +11,9 @@ import {
   StatusType,
 } from '../../../../../ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
-import { Fragment, useContext, useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 export type LoginCredential = {
   username: string
@@ -55,7 +55,7 @@ const getStyles = (props: LoginCredentialStyle) => ({
 })
 
 export function LoginCredentials(props: { canGetSecret?: boolean }) {
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { t } = useTranslation()
   const [isVisible, setVisible] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)

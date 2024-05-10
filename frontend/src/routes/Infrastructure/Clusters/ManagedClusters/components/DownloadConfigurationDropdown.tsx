@@ -1,13 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
+import { Cluster, createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
 import { AcmDropdown } from '../../../../../ui-components'
-import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
-export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
-  const { cluster } = useContext(ClusterContext)
+export function DownloadConfigurationDropdown({ cluster, canGetSecret }: { cluster: Cluster; canGetSecret: boolean }) {
   const { t } = useTranslation()
 
   const downloadConfig = async (id: string) => {
@@ -37,15 +34,15 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
     dropdownItems.push({
       id: 'install-config.yaml',
       text: 'install-config',
-      isAriaDisabled: !props.canGetSecret,
-      tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
+      isAriaDisabled: !canGetSecret,
+      tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
   cluster?.kubeconfig &&
     dropdownItems.push({
       id: 'kubeconfig',
       text: 'kubeconfig',
-      isAriaDisabled: !props.canGetSecret,
-      tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
+      isAriaDisabled: !canGetSecret,
+      tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
   return (
     <AcmDropdown

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
@@ -21,9 +21,9 @@ import {
   mockSearchResponseOCPApplications,
   mockSearchResponseOCPApplicationsCount,
 } from '../../../../Applications/Application.sharedmocks'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 const queryClient = new QueryClient()
 
@@ -273,22 +273,27 @@ describe('StatusSummaryCount', () => {
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount1)
   })
 
-  const Component = () => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policiesState, mockPolicies)
-        snapshot.set(policyreportState, mockPolicyReports)
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <StatusSummaryCount />
-          </ClusterContext.Provider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    </RecoilRoot>
-  )
+  const Component = () => {
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicies)
+          snapshot.set(policyreportState, mockPolicyReports)
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<StatusSummaryCount />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </RecoilRoot>
+    )
+  }
   test('renders', async () => {
     render(<Component />)
     await act(async () => {

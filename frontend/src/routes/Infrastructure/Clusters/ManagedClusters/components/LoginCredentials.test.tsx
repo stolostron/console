@@ -5,8 +5,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNock, waitForNocks, waitForNotText } from '../../../../../lib/test-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { LoginCredentials } from './LoginCredentials'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -80,10 +81,15 @@ describe('LoginCredentials', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('renders', async () => {
     const nock = nockGet(mockKubeadminSecret)
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <LoginCredentials canGetSecret={true} />
-      </ClusterContext.Provider>
+      <MemoryRouter>
+        <Routes>
+          <Route element={<Outlet context={context} />}>
+            <Route path="*" element={<LoginCredentials canGetSecret={true} />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
     )
     await waitFor(() => screen.getByText('Reveal credentials'))
 
@@ -103,10 +109,15 @@ describe('LoginCredentials', () => {
   })
   test('renders disabled toggle', async () => {
     nockGet(mockKubeadminSecret)
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <LoginCredentials canGetSecret={false} />
-      </ClusterContext.Provider>
+      <MemoryRouter>
+        <Routes>
+          <Route element={<Outlet context={context} />}>
+            <Route path="*" element={<LoginCredentials canGetSecret={false} />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
     )
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
     await waitFor(() => screen.getByText('Reveal credentials'))
@@ -115,19 +126,28 @@ describe('LoginCredentials', () => {
   })
   test('renders as a hyphen when secret name is not set', () => {
     render(
-      <ClusterContext.Provider value={{ cluster: undefined, addons: undefined }}>
-        <LoginCredentials canGetSecret={true} />
-      </ClusterContext.Provider>
+      <MemoryRouter>
+        <Routes>
+          <Route element={<Outlet context={{}} />}>
+            <Route path="*" element={<LoginCredentials canGetSecret={true} />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
     )
     expect(screen.queryByTestId('login-credentials')).toBeNull()
     expect(screen.getByText('-')).toBeInTheDocument()
   })
   test('renders in a failed state', async () => {
     const nock = nockGet(mockKubeadminSecret, mockBadRequestStatus)
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <LoginCredentials canGetSecret={true} />
-      </ClusterContext.Provider>
+      <MemoryRouter>
+        <Routes>
+          <Route element={<Outlet context={context} />}>
+            <Route path="*" element={<LoginCredentials canGetSecret={true} />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
     )
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
     await waitFor(() => screen.getByText('Reveal credentials'))

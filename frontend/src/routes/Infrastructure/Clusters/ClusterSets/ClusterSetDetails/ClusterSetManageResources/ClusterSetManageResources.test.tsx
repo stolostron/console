@@ -17,7 +17,7 @@ import {
   mapClusters,
 } from '../../../../../../resources'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
@@ -38,7 +38,7 @@ import {
   waitForText,
 } from '../../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { ClusterSetDetailsContext } from '../ClusterSetDetails'
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources'
 
 const mockManagedClusterAdd: ManagedCluster = {
@@ -241,50 +241,49 @@ function nockPatchClusterDeployment(clusterName: string, op: 'replace' | 'add' |
   )
 }
 
-const Component = () => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(managedClustersState, [
-        mockManagedClusterAdd,
-        mockManagedClusterRemove,
-        mockManagedClusterUnchanged,
-        mockManagedClusterTransfer,
-        mockManagedClusterClaimed,
-      ])
-      snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
-      snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
-      snapshot.set(managedClusterInfosState, [])
-      snapshot.set(certificateSigningRequestsState, [])
-      snapshot.set(clusterDeploymentsState, [
-        mockClusterDeploymentAdd,
-        mockClusterDeploymentRemove,
-        mockClusterDeploymentClaimed,
-      ])
-      snapshot.set(clusterPoolsState, [mockClusterPool])
-    }}
-  >
-    <ClusterSetContext.Provider
-      value={{
-        clusterSet: mockManagedClusterSet,
-        clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
-        clusterPools: [],
-        submarinerAddons: undefined,
-        clusterSetBindings: undefined,
-        clusterDeployments: [mockClusterDeploymentClaimed],
-        clusterRoleBindings: [],
+const Component = () => {
+  const context: Partial<ClusterSetDetailsContext> = {
+    clusterSet: mockManagedClusterSet,
+    clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
+    clusterPools: [],
+    clusterDeployments: [mockClusterDeploymentClaimed],
+    clusterRoleBindings: [],
+  }
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(managedClustersState, [
+          mockManagedClusterAdd,
+          mockManagedClusterRemove,
+          mockManagedClusterUnchanged,
+          mockManagedClusterTransfer,
+          mockManagedClusterClaimed,
+        ])
+        snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
+        snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
+        snapshot.set(managedClusterInfosState, [])
+        snapshot.set(certificateSigningRequestsState, [])
+        snapshot.set(clusterDeploymentsState, [
+          mockClusterDeploymentAdd,
+          mockClusterDeploymentRemove,
+          mockClusterDeploymentClaimed,
+        ])
+        snapshot.set(clusterPoolsState, [mockClusterPool])
       }}
     >
       <MemoryRouter
         initialEntries={[NavigationPath.clusterSetManage.replace(':id', mockManagedClusterSet.metadata.name!)]}
       >
         <Routes>
-          <Route path={NavigationPath.clusterSetManage} element={<ClusterSetManageResourcesPage />} />
-          <Route path={NavigationPath.clusterSetOverview} element={<div id="redirected" />} />
+          <Route element={<Outlet context={context} />}>
+            <Route path={NavigationPath.clusterSetManage} element={<ClusterSetManageResourcesPage />} />
+            <Route path={NavigationPath.clusterSetOverview} element={<div id="redirected" />} />
+          </Route>
         </Routes>
       </MemoryRouter>
-    </ClusterSetContext.Provider>
-  </RecoilRoot>
-)
+    </RecoilRoot>
+  )
+}
 
 describe('ClusterSetManageClusters', () => {
   beforeEach(() => {

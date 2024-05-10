@@ -20,7 +20,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 
 function getNodeLabelValue(node: NodeInfo, label: string | string[]) {
   // find first label present if given an array, or just use single label provided
@@ -89,7 +89,7 @@ export function NodePoolsPageContent() {
 
 export function NodesPoolsTable() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { isSearchAvailable } = useContext(PluginContext)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!

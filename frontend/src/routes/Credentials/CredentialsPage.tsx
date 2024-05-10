@@ -22,7 +22,7 @@ import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
+import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
   deleteResource,
   DiscoveryConfig,
@@ -137,7 +137,7 @@ export function CredentialsTable(props: {
                   isDisabled={!canAddCredential}
                   tooltip={!canAddCredential ? unauthorizedMessage : ''}
                   component={Link}
-                  to={createBackCancelLocation(NavigationPath.addCredentials)}
+                  {...getBackCancelLocationLinkProps(NavigationPath.addCredentials)}
                 >
                   {t('Add credential')}
                 </AcmButton>
@@ -288,7 +288,7 @@ export function CredentialsTable(props: {
             id: 'add',
             title: t('Add credential'),
             click: () => {
-              navigate(createBackCancelLocation(NavigationPath.addCredentials))
+              navigateToBackCancelLocation(navigate, NavigationPath.addCredentials)
             },
             variant: ButtonVariant.primary,
             isDisabled: !canAddCredential,

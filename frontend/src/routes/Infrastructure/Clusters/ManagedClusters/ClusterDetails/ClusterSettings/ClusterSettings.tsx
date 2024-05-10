@@ -3,12 +3,11 @@
 import { Addon, AddonStatus, getAddonStatusLabel } from '../../../../../../resources'
 import { AcmEmptyState, AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useContext } from 'react'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {
-  const { addons } = useContext(ClusterContext)
+  const { addons } = useClusterDetailsContext()
   return (
     <AcmPageContent id="addons">
       <PageSection>

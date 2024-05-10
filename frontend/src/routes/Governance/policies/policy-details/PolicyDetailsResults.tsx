@@ -13,6 +13,7 @@ import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
+import { usePolicyDetailsContext } from './PolicyDetailsPage'
 
 export interface ResultsTableData {
   templateName: string
@@ -28,10 +29,10 @@ export interface ResultsTableData {
   remediationAction: string
 }
 
-export default function PolicyDetailsResults(props: { policy: Policy }) {
+export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
-  const { policy } = props
+  const { policy } = usePolicyDetailsContext()
   const { namespacesState, policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
   const namespaces = useRecoilValue(namespacesState)

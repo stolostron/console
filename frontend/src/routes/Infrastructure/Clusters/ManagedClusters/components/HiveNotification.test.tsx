@@ -15,9 +15,10 @@ import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../../lib/test-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification, launchToYaml } from './HiveNotification'
 import { Provider } from '../../../../../ui-components'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -115,6 +116,7 @@ describe('HiveNotification', () => {
   beforeEach(() => nockIgnoreApiPaths())
   window.open = jest.fn()
   const Component = () => {
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -122,9 +124,13 @@ describe('HiveNotification', () => {
           snapshot.set(clusterProvisionsState, [mockClusterProvision])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <HiveNotification />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<HiveNotification />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   }
@@ -221,6 +227,7 @@ describe('HiveNotification', () => {
       provider: Provider.hostinventory,
     }
     const AIComponent = () => {
+      const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
       return (
         <RecoilRoot
           initializeState={(snapshot) => {
@@ -228,9 +235,13 @@ describe('HiveNotification', () => {
             snapshot.set(clusterProvisionsState, [mockClusterProvision])
           }}
         >
-          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <HiveNotification />
-          </ClusterContext.Provider>
+          <MemoryRouter>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<HiveNotification />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
         </RecoilRoot>
       )
     }
@@ -278,6 +289,7 @@ test('wont render if cluster has statusMessage', async () => {
     provider: Provider.hostinventory,
   }
   const AIComponent = () => {
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -285,9 +297,13 @@ test('wont render if cluster has statusMessage', async () => {
           snapshot.set(clusterProvisionsState, [mockClusterProvision])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <HiveNotification />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<HiveNotification />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   }

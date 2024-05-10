@@ -3,7 +3,7 @@
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { AcmInlineProvider, AcmToastContext } from '../../../../../ui-components'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -44,7 +44,7 @@ import { getNodepoolStatus } from './NodePoolsTable'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { isSearchAvailable } = useContext(PluginContext)
   const toastContext = useContext(AcmToastContext)
   const { isACMAvailable } = useContext(PluginContext)
@@ -444,9 +444,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.EditAI,
           text: t('managed.editAI'),
           click: (cluster: Cluster) =>
-            history.push(
-              NavigationPath.editCluster.replace(':namespace', cluster.namespace!).replace(':name', cluster.name!)
-            ),
+            navigate(generatePath(NavigationPath.editCluster, { namespace: cluster.namespace!, name: cluster.name! })),
           isAriaDisabled: cluster.status !== ClusterStatus.draft,
         },
         {
@@ -504,7 +502,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     [
       cluster,
       destroyRbac,
-      history,
+      navigate,
       isSearchAvailable,
       modalColumns,
       t,

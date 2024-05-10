@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterDeployment, ResourceErrorCode } from '../../../../../../resources'
+import { Cluster, ClusterDeployment, ResourceErrorCode, isGlobalClusterSet } from '../../../../../../resources'
 import {
   AcmAlertGroup,
   AcmButton,
@@ -14,15 +14,15 @@ import {
   IAcmTableColumn,
 } from '../../../../../../ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
-import { useContext, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 import { useAllClusters } from '../../../ManagedClusters/components/useAllClusters'
 import {
   useClusterDistributionColumn,
@@ -35,7 +35,14 @@ import { noop } from 'lodash'
 
 export function ClusterSetManageResourcesPage() {
   const { t } = useTranslation()
-  const { clusterSet } = useContext(ClusterSetContext)
+  const { clusterSet } = useClusterSetDetailsContext()
+
+  if (isGlobalClusterSet(clusterSet)) {
+    return (
+      <SubRoutesRedirect matchPath={NavigationPath.clusterSetDetails} targetPath={NavigationPath.clusterSetOverview} />
+    )
+  }
+
   return (
     <AcmPage
       hasDrawer
@@ -65,7 +72,7 @@ export function ClusterSetManageResourcesPage() {
 export function ClusterSetManageResourcesContent() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { clusterSet, clusterDeployments } = useContext(ClusterSetContext)
+  const { clusterSet, clusterDeployments } = useClusterSetDetailsContext()
   const deploymentDictionary = new Map<string | undefined, ClusterDeployment>()
   clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 

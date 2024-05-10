@@ -32,17 +32,19 @@ import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { canUser, rbacCreate, rbacDelete, rbacGet, rbacPatch } from '../../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import {
   BrokerDefinition,
   defaultBrokerName,
+  isGlobalClusterSet,
   ManagedClusterAddOn,
   ManagedClusterSetDefinition,
   ResourceErrorCode,
   submarinerBrokerNamespaceAnnotation,
 } from '../../../../../../resources'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
+import { PluginContext } from '../../../../../../lib/PluginContext'
 
 type SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'
 const SubmarinerGatewayNodesLabeled: SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'
@@ -93,7 +95,7 @@ export function ClusterSetSubmarinerPageContent() {
   const navigate = useNavigate()
   const { submarinerConfigsState } = useSharedAtoms()
   const submarinerConfigs = useRecoilValue(submarinerConfigsState)
-  const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
+  const { clusterSet, clusters, submarinerAddons } = useClusterSetDetailsContext()
   const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterAddOn> | { open: false }>({
     open: false,
@@ -101,6 +103,7 @@ export function ClusterSetSubmarinerPageContent() {
   const [editSubmarinerConfigModalProps, setEditSubmarinerConfigModalProps] = useState<EditSubmarinerConfigModalProps>(
     {}
   )
+  const { isSubmarinerAvailable } = useContext(PluginContext)
 
   function keyFn(mca: ManagedClusterAddOn) {
     return mca.metadata.namespace!
@@ -218,6 +221,12 @@ export function ClusterSetSubmarinerPageContent() {
       },
     },
   ]
+
+  if (!isSubmarinerAvailable || isGlobalClusterSet(clusterSet)) {
+    return (
+      <SubRoutesRedirect matchPath={NavigationPath.clusterSetDetails} targetPath={NavigationPath.clusterSetOverview} />
+    )
+  }
 
   return (
     <AcmPageContent id="clusters">

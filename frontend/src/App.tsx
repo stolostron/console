@@ -18,8 +18,7 @@ import {
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Redirect, RouteComponentProps, Switch, Route } from 'react-router-dom'
-import { CompatRouter, CompatRoute, Link, useLocation } from 'react-router-dom-v5-compat'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'
@@ -31,7 +30,7 @@ import { usePluginDataContextValue } from './lib/PluginDataContext'
 import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
-import { NavigationPath } from './NavigationPath'
+import { MatchType, NavigationPath, createRoutePathFunction } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
@@ -59,10 +58,9 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 interface IRoute {
   type: 'route'
   path: NavigationPath
+  match: MatchType
   title: string
   element: React.ReactNode
-  component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
-  v5?: boolean
 }
 
 interface IRouteGroup {
@@ -156,22 +154,22 @@ const routes: (IRoute | IRouteGroup)[] = [
         title: 'Welcome',
         type: 'route',
         path: NavigationPath.welcome,
+        match: MatchType.Exact,
         element: <WelcomePage />,
-        component: WelcomePage,
       },
       {
         title: 'Overview',
         type: 'route',
         path: NavigationPath.overview,
+        match: MatchType.SubRoutes,
         element: <OverviewPage />,
-        component: OverviewPage,
       },
       {
         title: 'Search',
         type: 'route',
         path: NavigationPath.search,
+        match: MatchType.SubRoutes,
         element: <Search />,
-        component: Search,
       },
     ],
   },
@@ -183,23 +181,22 @@ const routes: (IRoute | IRouteGroup)[] = [
         title: 'Clusters',
         type: 'route',
         path: NavigationPath.clusters,
+        match: MatchType.SubRoutes,
         element: <Clusters />,
-        component: Clusters,
-        v5: true,
       },
       {
         title: 'Automation',
         type: 'route',
         path: NavigationPath.ansibleAutomations,
+        match: MatchType.SubRoutes,
         element: <Automations />,
-        component: Automations,
       },
       {
         title: 'Host inventory',
         type: 'route',
         path: NavigationPath.infraEnvironments,
+        match: MatchType.SubRoutes,
         element: <InfraEnvironments />,
-        component: InfraEnvironments,
       },
     ],
   },
@@ -207,37 +204,35 @@ const routes: (IRoute | IRouteGroup)[] = [
     title: 'Applications',
     type: 'route',
     path: NavigationPath.applications,
+    match: MatchType.SubRoutes,
     element: <Applications />,
-    component: Applications,
   },
   {
     title: 'Governance',
     type: 'route',
     path: NavigationPath.governance,
+    match: MatchType.SubRoutes,
     element: <Governance />,
-    component: Governance,
   },
 
   {
     title: 'Credentials',
     type: 'route',
     path: NavigationPath.credentials,
+    match: MatchType.SubRoutes,
     element: <Credentials />,
-    component: Credentials,
   },
 ]
+
+const absolutePath = createRoutePathFunction(NavigationPath.emptyPath)
 
 function mapRoutes(routes: (IRoute | IRouteGroup)[]): ReactNode[] {
   return routes.map((route) => {
     if (route.type === 'group') {
       return mapRoutes(route.routes)
     } else {
-      const { title, path, component, v5 } = route
-      return v5 ? (
-        <Route key={title} path={path} component={component} />
-      ) : (
-        <CompatRoute key={title} path={path} component={component} />
-      )
+      const { title, path, match, element } = route
+      return <Route key={title} path={absolutePath(path, match)} element={element} />
     }
   })
 }
@@ -257,32 +252,28 @@ export default function App() {
   return (
     <PluginDataContextProvider value={pluginDataContextValue}>
       <BrowserRouter>
-        <CompatRouter>
-          <Page
-            header={<AppHeader />}
-            sidebar={<AppSidebar routes={routes} />}
-            isManagedSidebar
-            defaultManagedSidebarIsOpen={true}
-            style={{ height: '100vh' }}
-          >
-            <LoadPluginData>
-              <AcmToastProvider>
-                <AcmToastGroup />
-                <AcmTablePaginationContextProvider localStorageKey="clusters">
-                  <Suspense fallback={<LoadingPage />}>
-                    <Switch>
-                      {mappedRoutes}
-                      <Route path="*">
-                        <Redirect to={NavigationPath.welcome} />
-                      </Route>
-                    </Switch>
-                  </Suspense>
-                </AcmTablePaginationContextProvider>
-              </AcmToastProvider>
-            </LoadPluginData>
-          </Page>
-          <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
-        </CompatRouter>
+        <Page
+          header={<AppHeader />}
+          sidebar={<AppSidebar routes={routes} />}
+          isManagedSidebar
+          defaultManagedSidebarIsOpen={true}
+          style={{ height: '100vh' }}
+        >
+          <LoadPluginData>
+            <AcmToastProvider>
+              <AcmToastGroup />
+              <AcmTablePaginationContextProvider localStorageKey="clusters">
+                <Suspense fallback={<LoadingPage />}>
+                  <Routes>
+                    {mappedRoutes}
+                    <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
+                  </Routes>
+                </Suspense>
+              </AcmTablePaginationContextProvider>
+            </AcmToastProvider>
+          </LoadPluginData>
+        </Page>
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
       </BrowserRouter>
     </PluginDataContextProvider>
   )

@@ -10,6 +10,8 @@ import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForNocks } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../resources'
 import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
+import { SearchDetailsContext } from './DetailsPage'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 
 // TODO why does the react-log-viewer not work with testing-library render...
 jest.mock('@patternfly/react-log-viewer', () => ({
@@ -342,6 +344,26 @@ beforeEach(() => {
   sessionStorage.clear()
 })
 
+const testClusterSearchDetailsContext: Partial<SearchDetailsContext> = {
+  resource: mockPod,
+  resourceError: '',
+  kind: 'pod',
+  containers: ['testContainer', 'testContainer1'],
+  cluster: 'testCluster',
+  namespace: 'testNamespace',
+  name: 'testName',
+}
+
+const localClusterSearchDetailsContext: Partial<SearchDetailsContext> = {
+  resource: mockPod,
+  resourceError: '',
+  kind: 'pod',
+  containers: ['testContainer', 'testContainer1'],
+  cluster: 'local-cluster',
+  namespace: 'testNamespace',
+  name: 'testName',
+}
+
 describe('LogsPage', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
@@ -354,17 +376,20 @@ describe('LogsPage', () => {
       true,
       '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
     )
+    const context: Partial<SearchDetailsContext> = {
+      ...testClusterSearchDetailsContext,
+      resourceError: 'Invalid request',
+    }
 
     render(
       <RecoilRoot>
-        <LogsPage
-          resource={mockPod}
-          resourceError={'Invalid request'}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'testCluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -386,14 +411,13 @@ describe('LogsPage', () => {
           snapshot.set(managedClustersState, managedClusters)
         }}
       >
-        <LogsPage
-          resource={mockPod}
-          resourceError={''}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'testCluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -411,14 +435,13 @@ describe('LogsPage', () => {
 
     render(
       <RecoilRoot>
-        <LogsPage
-          resource={mockPod}
-          resourceError={''}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'testCluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -436,14 +459,13 @@ describe('LogsPage', () => {
 
     render(
       <RecoilRoot>
-        <LogsPage
-          resource={mockPod}
-          resourceError={''}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'local-cluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -465,14 +487,13 @@ describe('LogsPage', () => {
 
     render(
       <RecoilRoot>
-        <LogsPage
-          resource={mockPod}
-          resourceError={''}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'local-cluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -493,14 +514,13 @@ describe('LogsPage', () => {
 
     render(
       <RecoilRoot>
-        <LogsPage
-          resource={mockPod}
-          resourceError={''}
-          containers={['testContainer', 'testContainer1']}
-          cluster={'testCluster'}
-          namespace={'testNamespace'}
-          name={'testName'}
-        />
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

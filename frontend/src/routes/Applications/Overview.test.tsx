@@ -20,7 +20,6 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockSearch } from 
 import { PluginContext } from '../../lib/PluginContext'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 import { ocpApi, waitForText } from '../../lib/test-util'
-import { NavigationPath } from '../../NavigationPath'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import {
   acmExtension,
@@ -51,8 +50,8 @@ import {
   mockSearchResponseOCPApplicationsCount,
   mockSubscriptions,
 } from './Application.sharedmocks'
-import ApplicationsPage from './ApplicationsPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Overview from './Overview'
 
 const queryClient = new QueryClient()
 
@@ -81,7 +80,7 @@ describe('Applications Page', () => {
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={[NavigationPath.applications]}>
+          <MemoryRouter>
             <PluginContext.Provider
               value={{
                 acmExtensions: acmExtension,
@@ -90,7 +89,7 @@ describe('Applications Page', () => {
               }}
             >
               <Routes>
-                <Route path={NavigationPath.applications + '/*'} element={<ApplicationsPage />} />
+                <Route path="*" element={<Overview />} />
               </Routes>
             </PluginContext.Provider>
           </MemoryRouter>

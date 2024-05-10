@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { screen } from '@testing-library/dom'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
@@ -29,9 +29,10 @@ import {
   mockClusterDeployments,
   mockManagedClusterInfos,
   mockManagedClusters,
-} from '../ManagedClusters/ManagedClusters.test'
-import ClusterSetsPage from './ClusterSets'
+} from '../ManagedClusters/ManagedClusters.sharedmocks'
 import { PluginDataContext } from '../../../../lib/PluginDataContext'
+import { NavigationPath } from '../../../../NavigationPath'
+import Clusters from '../Clusters'
 
 const Component = () => (
   <RecoilRoot
@@ -43,8 +44,10 @@ const Component = () => (
       snapshot.set(certificateSigningRequestsState, [])
     }}
   >
-    <MemoryRouter>
-      <ClusterSetsPage />
+    <MemoryRouter initialEntries={[NavigationPath.clusterSets]}>
+      <Routes>
+        <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+      </Routes>
     </MemoryRouter>
   </RecoilRoot>
 )
@@ -52,6 +55,7 @@ const Component = () => (
 describe('ClusterSets page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths()
     render(<Component />)
   })
   test('renders', async () => {

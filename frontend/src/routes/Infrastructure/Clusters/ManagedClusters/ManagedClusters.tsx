@@ -21,7 +21,7 @@ import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metr
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { createBackCancelLocation, getClusterNavPath, NavigationPath } from '../../../../NavigationPath'
+import { getClusterNavPath, navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
   addonPathKey,
   AddonStatus,
@@ -134,7 +134,7 @@ export default function ManagedClusters() {
                 {
                   id: 'createCluster',
                   title: t('managed.createCluster'),
-                  click: () => navigate(createBackCancelLocation(NavigationPath.createCluster)),
+                  click: () => navigateToBackCancelLocation(navigate, NavigationPath.createCluster),
                   isDisabled: !canCreateCluster,
                   tooltip: t('rbac.unauthorized'),
                   variant: ButtonVariant.primary,
@@ -142,7 +142,7 @@ export default function ManagedClusters() {
                 {
                   id: 'importCluster',
                   title: t('managed.importCluster'),
-                  click: () => navigate(createBackCancelLocation(NavigationPath.importCluster)),
+                  click: () => navigateToBackCancelLocation(navigate, NavigationPath.importCluster),
                   isDisabled: !canCreateCluster,
                   tooltip: t('rbac.unauthorized'),
                   variant: ButtonVariant.secondary,

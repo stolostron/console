@@ -9,40 +9,32 @@ import {
   onEditNtpSources,
   onEditProxy,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import {
-  AgentK8sResource,
-  BareMetalHostK8sResource,
-  EnvironmentDetails,
-  EnvironmentErrors,
-  InfraEnvK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { EnvironmentDetails, EnvironmentErrors } from '@openshift-assisted/ui-lib/cim'
+import { useInfraEnvironmentDetailsContext } from './InfraEnvironmentDetailsPage'
 
-type DetailsTabProps = {
-  infraEnv: InfraEnvK8sResource
-  infraAgents: AgentK8sResource[]
-  bareMetalHosts: BareMetalHostK8sResource[]
+const DetailsTab: React.FC = () => {
+  const { infraEnv, infraAgents, bareMetalHosts } = useInfraEnvironmentDetailsContext()
+  return (
+    <AcmPageContent id="overview">
+      <PageSection>
+        <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
+        <Card>
+          <CardBody>
+            <EnvironmentDetails
+              infraEnv={infraEnv}
+              fetchSecret={fetchSecret}
+              onEditPullSecret={savePullSecret}
+              onEditSSHKey={saveSSHKey}
+              onEditNtpSources={onEditNtpSources}
+              hasAgents={!!infraAgents.length}
+              hasBMHs={!!bareMetalHosts.length}
+              onEditProxy={onEditProxy}
+            />
+          </CardBody>
+        </Card>
+      </PageSection>
+    </AcmPageContent>
+  )
 }
-
-const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => (
-  <AcmPageContent id="overview">
-    <PageSection>
-      <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
-      <Card>
-        <CardBody>
-          <EnvironmentDetails
-            infraEnv={infraEnv}
-            fetchSecret={fetchSecret}
-            onEditPullSecret={savePullSecret}
-            onEditSSHKey={saveSSHKey}
-            onEditNtpSources={onEditNtpSources}
-            hasAgents={!!infraAgents.length}
-            hasBMHs={!!bareMetalHosts.length}
-            onEditProxy={onEditProxy}
-          />
-        </CardBody>
-      </Card>
-    </PageSection>
-  </AcmPageContent>
-)
 
 export default DetailsTab

@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { canUser } from '../../../../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../../../../NavigationPath'
+import {
+  getBackCancelLocationLinkProps,
+  navigateToBackCancelLocation,
+  NavigationPath,
+} from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 
@@ -33,7 +37,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                 isDisabled={!canCreateCluster}
                 tooltip={t('rbac.unauthorized')}
                 variant={props.buttonType ?? 'primary'}
-                to={createBackCancelLocation(NavigationPath.createCluster)}
+                {...getBackCancelLocationLinkProps(NavigationPath.createCluster)}
               >
                 {t('managed.createCluster')}
               </AcmButton>
@@ -44,7 +48,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                 isDisabled={!canCreateCluster}
                 tooltip={t('rbac.unauthorized')}
                 variant={props.buttonType ?? 'primary'}
-                to={createBackCancelLocation(NavigationPath.importCluster)}
+                {...getBackCancelLocationLinkProps(NavigationPath.importCluster)}
               >
                 {t('managed.importCluster')}
               </AcmButton>
@@ -58,10 +62,10 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
     const onSelect = (id: string) => {
       switch (id) {
         case 'create-cluster':
-          navigate(createBackCancelLocation(NavigationPath.createCluster))
+          navigateToBackCancelLocation(navigate, NavigationPath.createCluster)
           break
         case 'import-cluster':
-          navigate(createBackCancelLocation(NavigationPath.importCluster))
+          navigateToBackCancelLocation(navigate, NavigationPath.importCluster)
           break
       }
     }

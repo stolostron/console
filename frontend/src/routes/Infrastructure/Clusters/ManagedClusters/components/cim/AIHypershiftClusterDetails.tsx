@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
-import { useContext } from 'react'
+import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'
 import {
   ClusterInstallationProgress,
   ConfigMapK8sResource,
@@ -13,7 +12,7 @@ import { launchToOCP } from '../../../../../../lib/ocp-utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 
 const AIHypershiftClusterDetails: React.FC = () => {
-  const { hostedCluster, agents } = useContext(ClusterContext)
+  const { hostedCluster, agents } = useClusterDetailsContext()
 
   const { agentMachinesState, configMapsState, nodePoolsState } = useSharedAtoms()
   const nodePools = useRecoilValue(nodePoolsState)

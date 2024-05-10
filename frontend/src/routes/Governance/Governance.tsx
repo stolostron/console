@@ -10,26 +10,35 @@ import { PolicyDetailsPage } from './policies/policy-details/PolicyDetailsPage'
 import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetailsPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
+import { NavigationPath, createRoutePathFunction } from '../../NavigationPath'
+import PolicyDetailsOverview from './policies/policy-details/PolicyDetailsOverview'
+import PolicyDetailsResults from './policies/policy-details/PolicyDetailsResults'
+import GovernanceOverview from './overview/Overview'
+import PolicySetsPage from './policy-sets/PolicySets'
+import PoliciesPage from './policies/Policies'
+
+const governanceChildPath = createRoutePathFunction(NavigationPath.governance)
 
 export default function Governance() {
   return (
     <Routes>
-      <Route path="/policies/create" element={<CreatePolicy />} />
-      <Route path="/policies/edit/:namespace/:name" element={<EditPolicy />} />
-      <Route path="/policyautomation/create/:namespace/:name" element={<CreatePolicyAutomation />} />
-      <Route path="/policyautomation/edit/:namespace/:name" element={<EditPolicyAutomation />} />
-      <Route
-        path="/policies/details/:namespace/:name/template/:clusterName/:apiGroup/:apiVersion/:kind/:templateName"
-        element={<PolicyTemplateDetailsPage />}
-      />
-      <Route
-        path="/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history"
-        element={<PolicyDetailsHistoryPage />}
-      />
-      <Route path="/policies/details/:namespace/:name/*" element={<PolicyDetailsPage />} />
-      <Route path="/policy-sets/create" element={<CreatePolicySet />} />
-      <Route path="/policy-sets/edit/:namespace/:name" element={<EditPolicySet />} />
-      <Route path="/*" element={<GovernancePage />} />
+      <Route path={governanceChildPath(NavigationPath.createPolicy)} element={<CreatePolicy />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicy)} element={<EditPolicy />} />
+      <Route path={governanceChildPath(NavigationPath.createPolicyAutomation)} element={<CreatePolicyAutomation />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicyAutomation)} element={<EditPolicyAutomation />} />
+      <Route path={governanceChildPath(NavigationPath.policyTemplateDetails)} element={<PolicyTemplateDetailsPage />} />
+      <Route path={governanceChildPath(NavigationPath.policyDetailsHistory)} element={<PolicyDetailsHistoryPage />} />
+      <Route element={<PolicyDetailsPage />}>
+        <Route path={governanceChildPath(NavigationPath.policyDetails)} element={<PolicyDetailsOverview />} />
+        <Route path={governanceChildPath(NavigationPath.policyDetailsResults)} element={<PolicyDetailsResults />} />
+      </Route>
+      <Route path={governanceChildPath(NavigationPath.createPolicySet)} element={<CreatePolicySet />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicySet)} element={<EditPolicySet />} />
+      <Route element={<GovernancePage />}>
+        <Route path={governanceChildPath(NavigationPath.governance)} element={<GovernanceOverview />} />
+        <Route path={governanceChildPath(NavigationPath.policySets)} element={<PolicySetsPage />} />
+        <Route path={governanceChildPath(NavigationPath.policies)} element={<PoliciesPage />} />
+      </Route>
     </Routes>
   )
 }

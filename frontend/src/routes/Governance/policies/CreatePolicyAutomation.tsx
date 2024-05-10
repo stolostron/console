@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, PathParam } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -37,8 +37,7 @@ function getWizardSyncEditor() {
 
 export function CreatePolicyAutomation() {
   const { t } = useTranslation()
-  const params = useParams<{ namespace: string; name: string }>()
-  const { name = '', namespace = '' } = params
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.createPolicyAutomation>>()
   const { configMapsState, secretsState, usePolicies } = useSharedAtoms()
   const navigate = useNavigate()
   const policies = usePolicies()

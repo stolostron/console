@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   argoApplicationsState,
@@ -37,7 +37,7 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../../resources'
-import { ApplicationDataType } from '../ApplicationDetails'
+import { ApplicationDataType, ApplicationDetailsContext } from '../ApplicationDetails'
 import { ApplicationOverviewPageContent } from './ApplicationOverview'
 
 //////////////// Mock Data /////////////////
@@ -542,6 +542,9 @@ describe('Overview Tab', () => {
     nockIgnoreApiPaths()
   })
   test('should display subscription app info without time window', async () => {
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataSubscription,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -554,7 +557,11 @@ describe('Overview Tab', () => {
         }}
       >
         <MemoryRouter>
-          <ApplicationOverviewPageContent applicationData={mockApplicationDataSubscription} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -569,6 +576,9 @@ describe('Overview Tab', () => {
   })
 
   test('should display subscription app info with time window', async () => {
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataSubscriptionTimewindow,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -581,7 +591,11 @@ describe('Overview Tab', () => {
         }}
       >
         <MemoryRouter>
-          <ApplicationOverviewPageContent applicationData={mockApplicationDataSubscriptionTimewindow} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -597,6 +611,9 @@ describe('Overview Tab', () => {
   })
 
   test('should display AppSet app info', async () => {
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataArgo,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -608,7 +625,11 @@ describe('Overview Tab', () => {
         }}
       >
         <MemoryRouter>
-          <ApplicationOverviewPageContent applicationData={mockApplicationDataArgo} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

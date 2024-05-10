@@ -4,8 +4,9 @@ import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '..
 import { render, screen, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
 
 const mockSecretResponse: Secret = {
   apiVersion: SecretApiVersion,
@@ -57,11 +58,16 @@ const mockCluster: Cluster = {
 describe('ImportCommandContainer', () => {
   beforeEach(() => nockIgnoreApiPaths())
   const Component = () => {
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
       <RecoilRoot>
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <ImportCommandContainer />
-        </ClusterContext.Provider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ImportCommandContainer />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   }

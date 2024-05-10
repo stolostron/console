@@ -2,16 +2,16 @@
 
 import { AcmAlert } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext } from 'react'
+import { Fragment } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { getReadyReplicas } from '../../../../../resources'
 import { Button } from '@patternfly/react-core'
 
 export function ScaleClusterAlert() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { machinePoolsState } = useSharedAtoms()
   const machinePoolState = useRecoilValue(machinePoolsState)
   const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)

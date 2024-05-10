@@ -12,6 +12,7 @@ import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../../resources'
 import { getResource, replaceResource } from '../../../../resources/utils/resource-request'
 import { AcmLoadingPage } from '../../../../ui-components'
+import { useSearchDetailsContext } from './DetailsPage'
 
 const headerContainer = css({
   display: 'flex',
@@ -280,18 +281,9 @@ export function EditorActionBar(props: {
   )
 }
 
-export default function YAMLPage(props: {
-  resource: any
-  loading: boolean
-  error: string
-  name: string
-  namespace: string
-  cluster: string
-  kind: string
-  apiversion: string
-  setResourceVersion: Dispatch<SetStateAction<string>>
-}) {
-  const { resource, loading, error, name, namespace, cluster, kind, apiversion, setResourceVersion } = props
+export default function YAMLPage() {
+  const { resource, resourceLoading, resourceError, name, namespace, cluster, kind, apiversion, setResourceVersion } =
+    useSearchDetailsContext()
   const { t } = useTranslation()
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
   const [resourceYaml, setResourceYaml] = useState<string>('')
@@ -361,15 +353,15 @@ export default function YAMLPage(props: {
     return () => canUpdateResource.abort()
   }, [apiversion, cluster, resourceYaml, kind, name, namespace])
 
-  if (error) {
+  if (resourceError) {
     return (
       <PageSection>
         <Alert variant={'danger'} isInline={true} title={`${t('Error querying for resource:')} ${name}`}>
-          {error}
+          {resourceError}
         </Alert>
       </PageSection>
     )
-  } else if (loading) {
+  } else if (resourceLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />

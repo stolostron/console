@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { NavigationPath } from '../../../../../../../../NavigationPath'
 import HostsForm, { getControlSummary } from './HostsForm'
 import { render } from '@testing-library/react'
 import i18next from 'i18next'
@@ -29,21 +28,19 @@ describe('HostForm', () => {
   const Component = () => {
     return (
       <RecoilRoot>
-        <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-          <Route path={NavigationPath.createCluster}>
-            <HostsForm
-              control={{
-                active: activeControl,
-                step: {
-                  title: {
-                    isComplete: false,
-                  },
+        <MemoryRouter>
+          <HostsForm
+            control={{
+              active: activeControl,
+              step: {
+                title: {
+                  isComplete: false,
                 },
-                onNext: onNext,
-              }}
-              handleChange={handleChange}
-            />
-          </Route>
+              },
+              onNext: onNext,
+            }}
+            handleChange={handleChange}
+          />
         </MemoryRouter>
       </RecoilRoot>
     )

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   placementBindingsState,
@@ -24,6 +24,7 @@ import {
   policy3,
 } from '../../governance.sharedMocks'
 import { REMEDIATION_ACTION } from '../../../../resources'
+import { PolicyDetailsContext } from './PolicyDetailsPage'
 
 describe('Policy Details Results', () => {
   beforeEach(async () => {
@@ -31,6 +32,7 @@ describe('Policy Details Results', () => {
     nockIgnoreApiPaths()
   })
   test('Should render Policy Details Results Page content correctly', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -42,7 +44,11 @@ describe('Policy Details Results', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsOverview policy={mockPolicy[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -68,6 +74,7 @@ describe('Policy Details Results', () => {
   ])(
     'Should render Policy Details Results Page correctly for policy override',
     async (propagatedPolicies, expected) => {
+      const context: PolicyDetailsContext = { policy: mockPolicy[0] }
       render(
         <RecoilRoot
           initializeState={(snapshot) => {
@@ -79,7 +86,11 @@ describe('Policy Details Results', () => {
           }}
         >
           <MemoryRouter>
-            <PolicyDetailsOverview policy={mockPolicy[0]} />
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<PolicyDetailsOverview />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </RecoilRoot>
       )
@@ -90,6 +101,7 @@ describe('Policy Details Results', () => {
   )
 
   test('Should render Policy Details Results Page correctly for policy with description', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[2] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -100,7 +112,11 @@ describe('Policy Details Results', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsOverview policy={mockPolicy[2]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -113,6 +129,7 @@ describe('Policy Details Results', () => {
   })
 
   test('Should render Policy Details Page content correctly for pending policy', async () => {
+    const context: PolicyDetailsContext = { policy: mockPendingPolicy[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -123,7 +140,11 @@ describe('Policy Details Results', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsOverview policy={mockPendingPolicy[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

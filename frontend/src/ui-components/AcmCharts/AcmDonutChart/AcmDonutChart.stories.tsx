@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createBrowserHistory } from 'history'
-
-import { Router } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom-v5-compat'
 import { AcmChartGroup } from '../AcmChartGroup'
 import { AcmDonutChart } from './AcmDonutChart'
 
@@ -47,7 +45,7 @@ export const DonutChart = () => {
     { key: 'Low', value: 1 },
   ]
   return (
-    <Router history={createBrowserHistory()}>
+    <BrowserRouter>
       <AcmChartGroup>
         <AcmDonutChart
           title="Cluster compliance"
@@ -67,7 +65,7 @@ export const DonutChart = () => {
           colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
         />
       </AcmChartGroup>
-    </Router>
+    </BrowserRouter>
   )
 }
 

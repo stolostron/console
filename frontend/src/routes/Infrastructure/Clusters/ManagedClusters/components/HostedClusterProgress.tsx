@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { ExpandableSectionToggle, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -8,7 +8,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import ConditionsTable from './ConditionsTable'
 import { AcmButton } from '../../../../../ui-components'
 import './HypershiftClusterInstallProgress.css'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
 import { onToggle } from '../utils/utils'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
@@ -20,7 +20,7 @@ type HostedClusterProgressProps = {
 
 const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClusterProgressProps) => {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
   localStorage.getItem(hostedClusterProgressID) ?? localStorage.setItem(hostedClusterProgressID, 'show')
   const [expanded, setExpanded] = useState(localStorage.getItem(hostedClusterProgressID) === 'show')

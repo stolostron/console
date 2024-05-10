@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryHistory } from 'history'
-import { Router } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import YAMLPage, { EditorActionBar, EditorHeaderBar } from './YAMLPage'
+import { SearchDetailsContext } from './DetailsPage'
 
 jest.mock('../../../../components/YamlEditor', () => {
   // Mock the editor as there are lots of test errors with monaco
@@ -21,12 +21,11 @@ beforeEach(async () => {
 
 describe('YAMLPage', () => {
   it('Renders YAML page header correctly', async () => {
-    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <EditorHeaderBar cluster={'local-cluster'} namespace={'test-namespace'} />
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -36,12 +35,11 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML page header correctly for non-namespaced resource', async () => {
-    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <EditorHeaderBar cluster={'local-cluster'} namespace={''} />
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -51,10 +49,9 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML page action bar correctly', async () => {
-    const history = createMemoryHistory()
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <EditorActionBar
             cluster={'local-cluster'}
             kind={'Pod'}
@@ -66,7 +63,7 @@ describe('YAMLPage', () => {
             handleResize={() => {}}
             setResourceVersion={() => {}}
           />
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -78,22 +75,25 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page with error', async () => {
-    const history = createMemoryHistory()
+    const context: Partial<SearchDetailsContext> = {
+      resourceLoading: false,
+      resourceError: 'Unexpected error occurred',
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
-          <YAMLPage
-            resource={null}
-            loading={false}
-            error={'Unexpected error occurred'}
-            name={'test-pod'}
-            namespace={'test-namespace'}
-            cluster={'local-cluster'}
-            kind={'Pod'}
-            apiversion={'v1'}
-            setResourceVersion={() => {}}
-          />
-        </Router>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -102,22 +102,25 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page in loading state', async () => {
-    const history = createMemoryHistory()
+    const context: Partial<SearchDetailsContext> = {
+      resourceLoading: true,
+      resourceError: '',
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
-          <YAMLPage
-            resource={null}
-            loading={true}
-            error={''}
-            name={'test-pod'}
-            namespace={'test-namespace'}
-            cluster={'local-cluster'}
-            kind={'Pod'}
-            apiversion={'v1'}
-            setResourceVersion={() => {}}
-          />
-        </Router>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -142,29 +145,33 @@ describe('YAMLPage', () => {
   })
 
   it('Renders YAML Page correctly', async () => {
-    const history = createMemoryHistory()
+    const context: Partial<SearchDetailsContext> = {
+      resource: {
+        kind: 'Pod',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-pod',
+          namespace: 'test-namespace',
+        },
+      },
+      resourceLoading: false,
+      resourceError: '',
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
-          <YAMLPage
-            resource={{
-              kind: 'Pod',
-              apiVersion: 'v1',
-              metadata: {
-                name: 'test-pod',
-                namespace: 'test-namespace',
-              },
-            }}
-            loading={false}
-            error={''}
-            name={'test-pod'}
-            namespace={'test-namespace'}
-            cluster={'local-cluster'}
-            kind={'Pod'}
-            apiversion={'v1'}
-            setResourceVersion={() => {}}
-          />
-        </Router>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -182,29 +189,33 @@ describe('YAMLPage', () => {
   })
   global.URL.createObjectURL = jest.fn()
   it('Renders YAML Page correctly & downloads yaml', async () => {
-    const history = createMemoryHistory()
+    const context: Partial<SearchDetailsContext> = {
+      resource: {
+        kind: 'Pod',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-pod',
+          namespace: 'test-namespace',
+        },
+      },
+      resourceLoading: false,
+      resourceError: '',
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
-          <YAMLPage
-            resource={{
-              kind: 'Pod',
-              apiVersion: 'v1',
-              metadata: {
-                name: 'test-pod',
-                namespace: 'test-namespace',
-              },
-            }}
-            loading={false}
-            error={''}
-            name={'test-pod'}
-            namespace={'test-namespace'}
-            cluster={'local-cluster'}
-            kind={'Pod'}
-            apiversion={'v1'}
-            setResourceVersion={() => {}}
-          />
-        </Router>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

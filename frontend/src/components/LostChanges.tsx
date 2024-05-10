@@ -36,11 +36,11 @@ export const LostChangesContext = createContext<LostChangesContext>({
   setData: noop,
 })
 
-const beforeUnloadListener = (event: { preventDefault: () => void; returnValue: string }) => {
-  event.preventDefault()
-  event.returnValue = ''
-  return event.returnValue
-}
+// const beforeUnloadListener = (event: { preventDefault: () => void; returnValue: string }) => {
+//   event.preventDefault()
+//   event.returnValue = ''
+//   return event.returnValue
+// }
 
 export function LostChangesPrompt(props: {
   isNested?: boolean
@@ -89,9 +89,9 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
 
   const unblock = useCallback(() => {
     historyUnblockRef.current?.()
-    removeEventListener('beforeunload', beforeUnloadListener, {
-      capture: true,
-    })
+    // removeEventListener('beforeunload', beforeUnloadListener, {
+    //   capture: true,
+    // })
   }, [])
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
       //   setLocation(location)
       //   return false
       // })
-      addEventListener('beforeunload', beforeUnloadListener, { capture: true })
+      // addEventListener('beforeunload', beforeUnloadListener, { capture: true })
     }
     return unblock
   }, [dirty, nestedDirty, unblock])
