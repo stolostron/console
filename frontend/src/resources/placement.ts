@@ -25,6 +25,7 @@ export interface Placement extends IResource {
     numberOfClusters?: number
     clusterSets?: Array<string>
     predicates?: PlacementPredicates[]
+    tolerations?: PlacementTolerations[]
 
     clusterSelector?: Selector | null
   }
@@ -34,6 +35,14 @@ export interface Placement extends IResource {
 export interface PlacementPredicates {
   requiredClusterSelector: PlacementRequiredClusterSelector
   clusterName?: string
+}
+
+export interface PlacementTolerations {
+  key: string
+  operator?: 'Equal' | 'Exists'
+  value?: string
+  tolerationSections?: number
+  effect?: 'NoSelect' | 'PreferNoSelect' | 'NoSelectIfNew'
 }
 
 export interface PlacementRequiredClusterSelector {

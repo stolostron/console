@@ -1,9 +1,13 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: clusters
 ---
 apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
   name: '{{{clusterName}}}'
-  namespace: '{{{clusterName}}}'
+  namespace: 'clusters'
   labels:
   {{#if clusterSet}}
     "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
@@ -31,6 +35,7 @@ spec:
     serviceNetwork:
       - cidr: 172.31.0.0/16
     networkType: OVNKubernetes
+  controllerAvailabilityPolicy: HighlyAvailable
   platform:
     type: KubeVirt
     kubevirt:
@@ -55,7 +60,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: pullsecret-cluster-{{{clusterName}}}
-  namespace: {{{clusterName}}}
+  namespace: clusters
 data:
   '.dockerconfigjson': {{{pullSecret}}}
 type: kubernetes.io/dockerconfigjson
@@ -65,8 +70,8 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: sshkey-cluster-{{{clusterName}}}
-  namespace: '{{{clusterName}}}'
-stringData:
+  namespace: 'clusters'
+data:
   id_rsa.pub: {{{ssh-publickey}}}
 
 {{#each nodepools}}
@@ -75,7 +80,7 @@ apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
   name: '{{{this.nodePoolName}}}'
-  namespace: '{{{@root.clusterName}}}'
+  namespace: 'clusters'
 spec:
   arch: amd64
   clusterName: '{{{@root.clusterName}}}'

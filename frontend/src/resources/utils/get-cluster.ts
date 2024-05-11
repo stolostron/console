@@ -1483,9 +1483,12 @@ export function getHCUpgradePercent(hostedCluster?: HostedClusterK8sResource) {
         (condition[1].type == 'ClusterVersionSucceeding' || condition[1].type == 'ClusterVersionProgressing')
       ) {
         const regExp = /\(([^)]+)\)/
-        matches = regExp.exec(condition[1].message)
-        if (matches) {
-          return matches[0]
+        const conditionMsg = condition[1].message
+        if (conditionMsg) {
+          matches = regExp.exec(conditionMsg)
+          if (matches) {
+            return matches[0]
+          }
         }
       }
     }

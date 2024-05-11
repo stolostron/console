@@ -75,7 +75,9 @@ export async function createCluster(resources: any[]) {
   response = await Promise.allSettled(results.map((result: any) => result.promise))
   response.forEach((result) => {
     if (result.status === 'rejected') {
-      errors.push({ message: result.reason.message })
+      if (result.reason && !result.reason.message.startsWith('namespaces "clusters" already exists')) {
+        errors.push({ message: result.reason.message })
+      }
     }
   })
 

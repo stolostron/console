@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
+import { diff } from 'deep-diff'
 import isEqual from 'lodash/isEqual'
 import set from 'lodash/set'
-import { diff } from 'deep-diff'
 import nock from 'nock'
 import StackTrace from 'stacktrace-js'
 import { Url } from 'url'
@@ -22,8 +22,8 @@ import {
 } from '../resources'
 import { AnsibleTowerInventoryList } from '../resources/ansible-inventory'
 import { APIResourceNames } from './api-resource-list'
-import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 import { OperatorCheckResponse, SupportedOperator } from './operatorCheck'
+import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export type ISearchRelatedResult = {
   data: {
@@ -616,6 +616,11 @@ const mockApiPathList: APIResourceNames = {
   'app.k8s.io/v1beta1': {
     Application: {
       pluralName: 'applications',
+    },
+  },
+  'search.open-cluster-management.io/v1alpha1': {
+    Search: {
+      pluralName: 'searches',
     },
   },
 }

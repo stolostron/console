@@ -104,13 +104,20 @@ export function Placement(props: {
         />
       )}
 
+      {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
+        <Alert variant="warning" title={props.alertTitle}>
+          {props.alertContent}
+        </Alert>
+      ) : null}
+
       {/* <TextInput label="Placement name" path="metadata.name" required labelHelp="Name needs to be unique to the namespace." /> */}
       <WizMultiSelect
         label={t('Cluster sets')}
         path="spec.clusterSets"
         placeholder={t('Select the cluster sets')}
         labelHelp={t(
-          'Select configured clusters from the chosen cluster set by using cluster labels, which filters on the clusters. To use cluster labels, your cluster must match all label selectors, label expressions, and claim expressions.'
+          'Select cluster sets from which to select clusters. If you do not select a cluster set, ' +
+            'all clusters are selected from all cluster sets bound to the namespace.'
         )}
         helperText={t(
           'If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.'
@@ -118,18 +125,12 @@ export function Placement(props: {
         footer={
           props.createClusterSetCallback ? (
             <Button icon={<ExternalLinkAltIcon />} isInline variant="link" onClick={props.createClusterSetCallback}>
-              {t('Create cluster set')}
+              {t('Add cluster set')}
             </Button>
           ) : undefined
         }
         options={props.namespaceClusterSetNames}
       />
-
-      {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
-        <Alert variant="warning" title={props.alertTitle}>
-          {props.alertContent}
-        </Alert>
-      ) : null}
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
       <WizNumberInput

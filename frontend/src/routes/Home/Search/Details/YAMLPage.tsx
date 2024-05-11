@@ -89,15 +89,21 @@ function updateResource(
   setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
   if (cluster === 'local-cluster') {
-    replaceResource(jsYaml.load(resourceYaml) as IResource)
-      .promise.then(() => {
-        loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
-        setUpdateSuccess(true)
-      })
-      .catch((err) => {
-        console.error('Error updating resource: ', err)
-        setUpdateError(err.message)
-      })
+    try {
+      const parsedYaml = jsYaml.load(resourceYaml) as IResource
+      replaceResource(parsedYaml)
+        .promise.then(() => {
+          loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
+          setUpdateSuccess(true)
+        })
+        .catch((err) => {
+          console.error('Error updating resource: ', err)
+          setUpdateError(err.message)
+        })
+    } catch (err: any) {
+      console.error('Error updating resource: ', err)
+      setUpdateError(err?.message)
+    }
   } else {
     fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
       .then((actionResponse) => {
@@ -211,6 +217,8 @@ export function EditorActionBar(props: {
               variant="primary"
               id="update-resource-button"
               onClick={() => {
+                setUpdateError('')
+                setUpdateSuccess(false)
                 updateResource(
                   cluster,
                   kind,
