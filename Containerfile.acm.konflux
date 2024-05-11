@@ -27,7 +27,7 @@ USER 1001
 CMD ["node", "backend.mjs"]
 
 LABEL com.redhat.component="console-container" \
-      name="rhacm2/console-rhel9" \
+      name="rhacm2/console-rhel8" \
       version="${CI_CONTAINER_VERSION}" \
       upstream-ref="${CI_CONSOLE_UPSTREAM_COMMIT}" \
       upstream-url="${CI_CONSOLE_UPSTREAM_URL}" \

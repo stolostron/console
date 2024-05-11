@@ -18,7 +18,7 @@ metadata:
 spec:
   params:
   - name: dockerfile
-    value: Dockerfile.prow
+    value: Containerfile.acm.konflux
   - name: git-url
     value: '{{source_url}}'
   - name: output-image
@@ -215,9 +215,9 @@ spec:
       taskRef:
         params:
         - name: name
-          value: buildah
+          value: buildah-6gb
         - name: bundle
-          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah:0.1@sha256:c009a191fe7c87ef3a964f973f04438dc1666b002d4d4b5ca74aa71d4c41f429
+          value: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.1@sha256:35c6d90d3345aa31d7cee1865fc50942889b643926b3641ec93fd136ed34f62e
         - name: kind
           value: task
         resolver: bundles
