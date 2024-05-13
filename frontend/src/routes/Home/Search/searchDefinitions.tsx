@@ -589,6 +589,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
 
 export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }) {
   const { item, t } = props
+  const allClusters = useAllClusters(true)
   if (item?.apiversion && item?.apigroup) {
     const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
     const link = {
@@ -596,7 +597,6 @@ export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }
       search: `?apiVersion=${apiversion}`,
     }
     if (item.managedHub && item.cluster !== 'local-cluster') {
-      const allClusters = useAllClusters(true)
       const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
       const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
       return (
