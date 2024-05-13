@@ -416,8 +416,34 @@ test('Correctly returns CreateApplicationTopologyLink', () => {
     apiversion: 'v1beta1',
     apigroup: 'app.k8s.io',
   }
-  const result = CreateApplicationTopologyLink(item, t)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateApplicationTopologyLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns CreateApplicationTopologyLink - global search', () => {
+  const item = {
+    name: 'testApp',
+    namespace: 'testNamespace',
+    kind: 'Application',
+    apiversion: 'v1beta1',
+    apigroup: 'app.k8s.io',
+    managedHub: 'global-hub',
+    cluster: 'test-cluster',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateApplicationTopologyLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns empty CreateApplicationTopologyLink', () => {
@@ -426,8 +452,14 @@ test('Correctly returns empty CreateApplicationTopologyLink', () => {
     namespace: 'testNamespace',
     dashboard: '',
   }
-  const result = CreateApplicationTopologyLink(item, t)
-  expect(result).toMatchSnapshot()
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateApplicationTopologyLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
 
 test('Correctly returns CreateExternalLink from consoleURL', () => {

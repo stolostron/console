@@ -66,7 +66,7 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
         {
           header: t('Topology'),
           cell: (item: any) => {
-            return CreateApplicationTopologyLink(item, t)
+            return <CreateApplicationTopologyLink item={item} t={t} />
           },
         },
         AddColumn('labels', t('Labels')),
@@ -587,16 +587,35 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 }
 
-export function CreateApplicationTopologyLink(item: any, t: TFunction) {
-  if (item.apiversion && item.apigroup) {
+export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }) {
+  const { item, t } = props
+  if (item?.apiversion && item?.apigroup) {
     const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
     const link = {
       pathname: generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace }),
       search: `?apiVersion=${apiversion}`,
     }
+    if (item.managedHub && item.cluster !== 'local-cluster') {
+      const allClusters = useAllClusters(true)
+      const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
+      const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
+      return (
+        <AcmButton
+          variant="link"
+          component="a"
+          target="_blank"
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
+          isInline={true}
+          href={`${hubUrl}${path}?apiVersion=${apiversion}`}
+        >
+          {t('View topology')}
+        </AcmButton>
+      )
+    }
     return <Link to={link}>{t('View topology')}</Link>
   }
-  return '-'
+  return <div>{'-'}</div>
 }
 
 export function CreateExternalLink(item: any, t: TFunction) {
