@@ -673,7 +673,6 @@ function OperatorPolicy() {
               'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
             )}
             required
-            validation={validateKubernetesResourceName}
           />
           <WizTextInput
             path="objectDefinition.spec.subscription.channel"
