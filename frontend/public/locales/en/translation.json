@@ -1529,6 +1529,7 @@
   "Hypershift upgrade table": "Hypershift upgrade table",
   "I3 - High Frequency Intel Xeon Processors": "I3 - High Frequency Intel Xeon Processors",
   "I3en - Non-Volatile Memory Express SSD instance storage": "I3en - Non-Volatile Memory Express SSD instance storage",
+  "IamPolicy is no longer supported": "IamPolicy is no longer supported",
   "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
   "If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.": "If no cluster sets are selected, all clusters will be selected from the cluster sets bound to the namespace.",
   "Image Content Sources": "Image Content Sources",

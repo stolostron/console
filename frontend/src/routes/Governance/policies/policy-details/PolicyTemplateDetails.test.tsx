@@ -689,4 +689,26 @@ describe('Policy Template Details content', () => {
     await waitForText('networking.k8s.io/v1')
     await waitForNotText('View YAML')
   })
+
+  test('Should show an error when displaying unsupported IamPolicy', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyTemplateDetails
+            clusterName={'local-cluster'}
+            apiGroup={'policy.open-cluster-management.io'}
+            apiVersion={'v1'}
+            kind={'IamPolicy'}
+            templateName={'ns-must-have-gk'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('IamPolicy is no longer supported')
+  })
 })

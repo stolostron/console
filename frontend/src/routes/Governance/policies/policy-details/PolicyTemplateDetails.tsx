@@ -108,6 +108,12 @@ export function PolicyTemplateDetails(props: {
   }
 
   useEffect(() => {
+    if (kind === 'IamPolicy' && apiGroup === 'policy.open-cluster-management.io') {
+      setTemplateError(t('IamPolicy is no longer supported'))
+
+      return
+    }
+
     const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
     fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
       .then((viewResponse) => {
@@ -122,7 +128,7 @@ export function PolicyTemplateDetails(props: {
         console.error('Error getting resource: ', err)
         setTemplateError(err)
       })
-  }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
+  }, [t, templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
 
   // Hook to get the height of the template details section so both details and editor sections are the same height
   /* istanbul ignore next */
