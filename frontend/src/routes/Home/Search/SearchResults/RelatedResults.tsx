@@ -12,8 +12,10 @@ import {
 import _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
@@ -25,12 +27,12 @@ export function RenderItemContent(props: {
   currentQuery: string
   relatedKind: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
 }) {
-  const { currentQuery, relatedKind, setDeleteResource } = props
+  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource } = props
   const { t } = useTranslation()
-  const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const { useSearchResultLimit } = useSharedAtoms()
+  const clusters = useAllClusters(true)
   const searchResultLimit = useSearchResultLimit()
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -67,11 +69,15 @@ export function RenderItemContent(props: {
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={
-        isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
-          ? undefined
-          : GetRowActions(relatedKind, currentQuery, true, setDeleteResource, t)
-      }
+      rowActions={GetRowActions(
+        relatedKind,
+        currentQuery,
+        true,
+        setDeleteResource,
+        setDeleteExternalResource,
+        clusters,
+        t
+      )}
     />
   )
 }
@@ -81,8 +87,10 @@ export default function RelatedResults(props: {
   selectedRelatedKinds: string[]
   setSelectedRelatedKinds: React.Dispatch<React.SetStateAction<string[]>>
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
 }) {
-  const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource } = props
+  const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource, setDeleteExternalResource } =
+    props
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -174,6 +182,7 @@ export default function RelatedResults(props: {
                   currentQuery={currentQuery}
                   relatedKind={currentKind}
                   setDeleteResource={setDeleteResource}
+                  setDeleteExternalResource={setDeleteExternalResource}
                 />
               )}
             </AccordionContent>

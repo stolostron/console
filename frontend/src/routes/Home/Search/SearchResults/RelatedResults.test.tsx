@@ -10,7 +10,7 @@ import { createBrowserHistory } from 'history'
 import { useState } from 'react'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { isGlobalHubState, Settings, settingsState } from '../../../../atoms'
+import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
@@ -28,6 +28,7 @@ describe('RelatedResults', () => {
         selectedRelatedKinds={selectedKinds}
         setSelectedRelatedKinds={setSelectedKinds}
         setDeleteResource={() => {}}
+        setDeleteExternalResource={() => {}}
       />
     )
   }
@@ -205,16 +206,9 @@ describe('RelatedResults', () => {
         },
       },
     ]
-    const mockGlobalHubSettings: Settings = {
-      globalSearchFeatureFlag: 'enabled',
-    }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockGlobalHubSettings)
-        }}
-      >
+      <RecoilRoot>
         <Router history={createBrowserHistory()}>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />

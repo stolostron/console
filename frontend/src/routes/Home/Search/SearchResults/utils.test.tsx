@@ -1,6 +1,7 @@
 // Copyright (c) 2023 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import i18next from 'i18next'
+import { ClusterStatus } from '../../../../resources'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, GetRowActions } from './utils'
 
@@ -14,8 +15,57 @@ jest.mock('react-router-dom', () => ({
 
 const t = i18next.t.bind(i18next)
 
+const allClusters = [
+  {
+    name: 'local-cluster',
+    namespace: 'local-cluster',
+    consoleURL: 'https://local-cluster.com',
+    uid: '',
+    status: ClusterStatus.ready,
+    hasAutomationTemplate: false,
+    hive: {
+      isHibernatable: false,
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isRegionalHubCluster: true,
+    owner: {},
+    isSNOCluster: false,
+    isHypershift: false,
+  },
+  {
+    name: 'leaf-hub',
+    namespace: 'leaf-hub',
+    consoleURL: 'https://leaf-hub.com',
+    uid: '',
+    status: ClusterStatus.ready,
+    hasAutomationTemplate: false,
+    hive: {
+      isHibernatable: false,
+    },
+    isHive: false,
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isRegionalHubCluster: true,
+    owner: {},
+    isSNOCluster: false,
+    isHypershift: false,
+  },
+]
+
 test('Correctly return row Actions', () => {
-  const res = GetRowActions('Pod', 'kind:Pod', false, () => {}, t)
+  const res = GetRowActions(
+    'Pod',
+    'kind:Pod',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    t
+  )
   res[0].click({ kind: 'Pod' }) // edit resource
   res[1].click({ kind: 'Pod' }) // view related resources
   res[2].click({ kind: 'Pod' }) // delete resource
@@ -23,12 +73,28 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const res = GetRowActions('Cluster', 'kind:Cluster', false, () => {}, t)
+  const res = GetRowActions(
+    'Cluster',
+    'kind:Cluster',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    t
+  )
   expect(res).toMatchSnapshot()
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const res = GetRowActions('Application', 'kind:Application', false, () => {}, t)
+  const res = GetRowActions(
+    'Application',
+    'kind:Application',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    t
+  )
   res[0].click({
     apigroup: 'app.k8s.io',
     kind: 'Application',
@@ -43,6 +109,59 @@ test('Correctly return empty row Actions for Application', () => {
     name: 'testApp',
     namespace: 'testAppNs',
   }) // view app topology
+  expect(res).toMatchSnapshot()
+})
+
+test('Correctly return row Actions for Application in global search', () => {
+  const res = GetRowActions(
+    'Application',
+    'kind:Application',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    t
+  )
+  res[0].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'leaf-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+    managedHub: 'global-hub',
+  }) // edit app
+  res[1].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'leaf-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+    managedHub: 'global-hub',
+  }) // view app topology
+  res[2].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'leaf-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+    managedHub: 'global-hub',
+  }) // edit app
+  res[3].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'leaf-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+    managedHub: 'global-hub',
+  }) // view related app resources
+  res[4].click({
+    apigroup: 'app.k8s.io',
+    kind: 'Application',
+    cluster: 'leaf-cluster',
+    name: 'testApp',
+    namespace: 'testAppNs',
+    managedHub: 'global-hub',
+  }) // delete app
   expect(res).toMatchSnapshot()
 })
 

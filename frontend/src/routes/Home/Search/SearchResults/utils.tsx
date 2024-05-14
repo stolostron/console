@@ -4,7 +4,12 @@ import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
 import { generatePath, useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
+import { Cluster } from '../../../../resources/utils/get-cluster'
 import { compareStrings, IAlertContext } from '../../../../ui-components'
+import {
+  ClosedDeleteExternalResourceModalProps,
+  IDeleteExternalResourceModalProps,
+} from '../components/Modals/DeleteExternalResourceModal'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { GetUrlSearchParam, SearchColumnDefinition } from '../searchDefinitions'
@@ -22,6 +27,8 @@ export function GetRowActions(
   currentQuery: string,
   relatedResource: boolean,
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
+  allClusters: Cluster[],
   t: TFunction
 ) {
   const history = useHistory()
@@ -32,16 +39,21 @@ export function GetRowActions(
     click: (item: any) => {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
+        const path = generatePath(NavigationPath.applicationOverview, {
+          namespace,
+          name,
+        })
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: cluster === 'local-cluster' ? undefined : cluster,
           applicationset: applicationSet ?? undefined,
         })
+        if (item.managedHub === 'global-hub' && item.cluster !== 'local-cluster') {
+          const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
+          return window.open(`${hubUrl}${path}?${params}`, '_blank')
+        }
         return history.push({
-          pathname: generatePath(NavigationPath.applicationOverview, {
-            namespace,
-            name,
-          }),
+          pathname: path,
           search: `?${params}`,
           state: {
             from: NavigationPath.search,
@@ -51,7 +63,7 @@ export function GetRowActions(
       }
       const searchParams = GetUrlSearchParam(item)
       return history.push({
-        pathname: NavigationPath.resourceRelated,
+        pathname: NavigationPath.resources,
         search: searchParams,
         state: {
           from: NavigationPath.search,
@@ -65,8 +77,13 @@ export function GetRowActions(
     title: t('View Application topology'),
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
+      const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
+      if (item.managedHub && item.cluster !== 'local-cluster') {
+        const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
+        return window.open(`${hubUrl}${path}?apiVersion=${apiversion}`, '_blank')
+      }
       return history.push({
-        pathname: generatePath(NavigationPath.applicationTopology, { name: item?.name, namespace: item?.namespace }),
+        pathname: path,
         search: `?apiVersion=${apiversion}`,
         state: {
           from: NavigationPath.search,
@@ -80,6 +97,11 @@ export function GetRowActions(
     title: t('Edit {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
+      if (item.managedHub && item.managedHub !== 'global-hub') {
+        // If resource lives on a cluster managed by a managed hub we need to launch user to the managed hub for actions / viewing
+        const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
+        return window.open(`${hubUrl}${NavigationPath.resourceYAML}${searchParams}`, '_blank')
+      }
       return history.push({
         pathname: NavigationPath.resourceYAML,
         search: searchParams,
@@ -95,6 +117,10 @@ export function GetRowActions(
     title: t('View related resources'),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
+      if (item.managedHub && item.managedHub !== 'global-hub') {
+        const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
+        return window.open(`${hubUrl}${NavigationPath.resourceRelated}${GetUrlSearchParam(item)}`, '_blank')
+      }
       return history.push({
         pathname: NavigationPath.resourceRelated,
         search: searchParams,
@@ -109,13 +135,20 @@ export function GetRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      setDeleteResource({
-        open: true,
-        close: () => setDeleteResource(ClosedDeleteModalProps),
-        resource: item,
-        currentQuery,
-        relatedResource,
-      })
+      item.managedHub && item.managedHub !== 'global-hub'
+        ? setDeleteExternalResource({
+            open: true,
+            close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
+            resource: item,
+            hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
+          })
+        : setDeleteResource({
+            open: true,
+            close: () => setDeleteResource(ClosedDeleteModalProps),
+            resource: item,
+            currentQuery,
+            relatedResource,
+          })
     },
   }
 
