@@ -20,8 +20,14 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import {
+  ClosedDeleteExternalResourceModalProps,
+  DeleteExternalResourceModal,
+  IDeleteExternalResourceModalProps,
+} from '../components/Modals/DeleteExternalResourceModal'
 import {
   ClosedDeleteModalProps,
   DeleteResourceModal,
@@ -54,16 +60,23 @@ const accordionItemGroup = css({
 function RenderAccordionItem(props: {
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
   kindSearchResultItems: Record<string, ISearchResult[]>
   kind: string
   idx: number
   defaultIsExpanded: boolean
 }) {
-  const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
+  const {
+    currentQuery,
+    setDeleteResource,
+    setDeleteExternalResource,
+    kindSearchResultItems,
+    kind,
+    idx,
+    defaultIsExpanded,
+  } = props
   const { t } = useTranslation()
-  const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const clusters = useAllClusters(true)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -87,15 +100,19 @@ function RenderAccordionItem(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={
-            isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
-              ? undefined
-              : GetRowActions(kind, currentQuery, false, setDeleteResource, t)
-          }
+          rowActions={GetRowActions(
+            kind,
+            currentQuery,
+            false,
+            setDeleteResource,
+            setDeleteExternalResource,
+            clusters,
+            t
+          )}
         />
       )
     },
-    [currentQuery, isGlobalHub, setDeleteResource, searchDefinitions, settings.globalSearchFeatureFlag, t]
+    [currentQuery, setDeleteResource, searchDefinitions, clusters, setDeleteExternalResource, t]
   )
 
   return (
@@ -125,8 +142,9 @@ function SearchResultAccordion(props: {
   data: ISearchResult[]
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
 }) {
-  const { data, currentQuery, setDeleteResource } = props
+  const { data, currentQuery, setDeleteResource, setDeleteExternalResource } = props
 
   const { kindSearchResultItems, kinds } = useMemo(() => {
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
@@ -162,6 +180,7 @@ function SearchResultAccordion(props: {
               key={accordionItemKey}
               currentQuery={currentQuery}
               setDeleteResource={setDeleteResource}
+              setDeleteExternalResource={setDeleteExternalResource}
               kindSearchResultItems={kindSearchResultItems}
               kind={kind}
               idx={idx}
@@ -187,6 +206,9 @@ export default function SearchResults(props: {
   const searchResultLimit = useSearchResultLimit()
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
+  const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
+    ClosedDeleteExternalResourceModalProps
+  )
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
 
   useEffect(() => {
@@ -251,6 +273,12 @@ export default function SearchResults(props: {
         currentQuery={deleteResource.currentQuery}
         relatedResource={deleteResource.relatedResource}
       />
+      <DeleteExternalResourceModal
+        open={deleteExternalResource.open}
+        close={deleteExternalResource.close}
+        resource={deleteExternalResource.resource}
+        hubCluster={deleteExternalResource.hubCluster}
+      />
       <PageSection className={resultsWrapper}>
         <Stack hasGutter>
           {searchResultItems.length >= searchResultLimit ? (
@@ -285,6 +313,7 @@ export default function SearchResults(props: {
                 selectedRelatedKinds={selectedRelatedKinds}
                 setSelectedRelatedKinds={setSelectedRelatedKinds}
                 setDeleteResource={setDeleteResource}
+                setDeleteExternalResource={setDeleteExternalResource}
               />
             )}
           </PageSection>
@@ -292,6 +321,7 @@ export default function SearchResults(props: {
             data={searchResultItems}
             currentQuery={currentQuery}
             setDeleteResource={setDeleteResource}
+            setDeleteExternalResource={setDeleteExternalResource}
           />
         </Stack>
       </PageSection>
