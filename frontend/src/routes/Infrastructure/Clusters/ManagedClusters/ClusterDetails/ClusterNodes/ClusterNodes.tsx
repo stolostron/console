@@ -9,7 +9,6 @@ import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { getRoles, NodeInfo } from '../../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmInlineStatus,
@@ -92,18 +91,12 @@ export function NodesPoolsTable() {
   const { t } = useTranslation()
   const { cluster } = useContext(ClusterContext)
   const { isSearchAvailable } = useContext(PluginContext)
-  const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
   function getSearchLink(node: NodeInfo) {
-    // if globalHub & global search are enabled OR search is unavailable - return the Node name text
-    if (
-      (isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled') ||
-      !isSearchAvailable
-    ) {
+    // if search is unavailable - return the Node name text
+    if (!isSearchAvailable) {
       return node.name
     }
     return (
