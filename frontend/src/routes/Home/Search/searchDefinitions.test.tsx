@@ -555,6 +555,26 @@ test('Correctly returns all resource definitions', () => {
   })
 })
 
+test('Correctly returns Cluster resource definitions in global search', () => {
+  const testItem = {
+    name: 'test-cluster',
+    namespace: 'test-cluster',
+    kind: 'Cluster',
+    cluster: 'test-cluster',
+    managedHub: 'global-hub',
+    label: 'testLabel=label; testLabel1=label1',
+    created: '2021-01-01T00:00:00Z',
+  }
+  const searchDefinitions = getSearchDefinitions((key) => key, true)
+  const definition = searchDefinitions['cluster'].columns.map((col: any) => {
+    if (typeof col.cell === 'function') {
+      col.cell = col.cell(testItem)
+    }
+    return col
+  })
+  expect(definition).toMatchSnapshot(`SearchDefinitions-Cluster-globalhub`)
+})
+
 test('Correctly returns resource with managedHub column', () => {
   const testItem = {
     cluster: 'testCluster',
