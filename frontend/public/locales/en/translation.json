@@ -1734,6 +1734,7 @@
   "manageClusterSet.form.section.table.description.second": "<bold>Important:</bold> assigning a resource to the cluster set will give all cluster set users permissions to the resource's namespace.",
   "Managed by": "Managed by",
   "Managed externally": "Managed externally",
+  "Managed hub": "Managed hub",
   "managed.addCluster": "Add cluster",
   "managed.ai.editCluster.configurationBreadcrumb": "configuration",
   "managed.ai.editCluster.title": "Configure cluster",
