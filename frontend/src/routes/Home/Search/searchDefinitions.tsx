@@ -12,11 +12,12 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 export interface SearchDefinitions {
-  (t: TFunction): ResourceDefinitions
+  (t: TFunction, isGlobalHub?: boolean): ResourceDefinitions
 }
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -56,7 +57,10 @@ export interface SearchColumnDefinition {
   cell: string | ((item: any) => JSX.Element | '-') | ((item: any) => string)
 }
 
-export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
+export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => ResourceDefinitions = (
+  t: TFunction,
+  isGlobalHub?: boolean
+) => {
   return {
     application: {
       columns: [
@@ -75,6 +79,7 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
     cluster: {
       columns: [
         AddColumn('name', t('Name')),
+        ...(isGlobalHub ? [AddColumn('managedHub', t('Managed hub'))] : []),
         AddColumn('ManagedClusterConditionAvailable', t('Available')),
         AddColumn('HubAcceptedManagedCluster', t('Hub accepted')),
         AddColumn('ManagedClusterJoined', t('Joined')),
@@ -370,8 +375,12 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
 
 export const useSearchDefinitions = () => {
   const { t } = useTranslation()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
+  const globalHub = isGlobalHub && settings.globalSearchFeatureFlag === 'enabled'
 
-  return useMemo(() => getSearchDefinitions(t), [t])
+  return useMemo(() => getSearchDefinitions(t, globalHub), [t, globalHub])
 }
 
 export function GetAge(item: any, key: string) {

@@ -1,5 +1,85 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Correctly returns Cluster resource definitions in global search: SearchDefinitions-Cluster-globalhub 1`] = `
+Array [
+  Object {
+    "cell": <CreateGlobalSearchDetailsLink
+      item={
+        Object {
+          "cluster": "test-cluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Cluster",
+          "label": "testLabel=label; testLabel1=label1",
+          "managedHub": "global-hub",
+          "name": "test-cluster",
+          "namespace": "test-cluster",
+        }
+      }
+    />,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": "managedHub",
+    "header": "Managed hub",
+    "sort": "managedHub",
+  },
+  Object {
+    "cell": "ManagedClusterConditionAvailable",
+    "header": "Available",
+    "sort": "ManagedClusterConditionAvailable",
+  },
+  Object {
+    "cell": "HubAcceptedManagedCluster",
+    "header": "Hub accepted",
+    "sort": "HubAcceptedManagedCluster",
+  },
+  Object {
+    "cell": "ManagedClusterJoined",
+    "header": "Joined",
+    "sort": "ManagedClusterJoined",
+  },
+  Object {
+    "cell": "nodes",
+    "header": "Nodes",
+    "sort": "nodes",
+  },
+  Object {
+    "cell": "kubernetesVersion",
+    "header": "Kubernetes version",
+    "sort": "kubernetesVersion",
+  },
+  Object {
+    "cell": "cpu",
+    "header": "CPU",
+    "sort": "cpu",
+  },
+  Object {
+    "cell": "memory",
+    "header": "Memory",
+    "sort": "memory",
+  },
+  Object {
+    "cell": "-",
+    "header": "Console URL",
+    "sort": "consoleURL",
+  },
+  Object {
+    "cell": <AcmLabels
+      collapse={Array []}
+      labels={
+        Array [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "sort": "label",
+  },
+]
+`;
+
 exports[`Correctly returns CreateApplicationTopologyLink - global search 1`] = `
 <body>
   <div>
