@@ -27,7 +27,8 @@
 /Dockerfile
 /Dockerfile.mce.prow
 /Dockerfile.prow
-/Containerfile.mce.rhtap
+/Containerfile.mce.konflux
+/Containerfile.acm.konflux
 /console.code-workspace
 /*.md
 

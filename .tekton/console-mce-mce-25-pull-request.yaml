@@ -19,7 +19,7 @@ metadata:
 spec:
   params:
   - name: dockerfile
-    value: Containerfile.mce.rhtap
+    value: Containerfile.mce.konflux
   - name: git-url
     value: '{{source_url}}'
   - name: image-expires-after
