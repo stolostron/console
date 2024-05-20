@@ -32,6 +32,17 @@ export const ansibleCredentialsValue = selector({
   },
 })
 
+export const RHOCMCredentials = selector({
+  key: 'RHOCMCredentials',
+  get: ({ get }) => {
+    const providerConnections = get(providerConnectionsValue)
+    return providerConnections.filter(
+      (providerConnection) =>
+        providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'rhocm'
+    )
+  },
+})
+
 export const clusterCuratorTemplatesValue = selector({
   key: 'clusterCuratorTemplates',
   get: ({ get }) => {

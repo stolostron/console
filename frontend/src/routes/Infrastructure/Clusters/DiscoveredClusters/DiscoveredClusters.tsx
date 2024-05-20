@@ -163,6 +163,8 @@ export function DiscoveredClustersPageContent() {
   sessionStorage.removeItem('DiscoveredClusterConsoleURL')
   sessionStorage.removeItem('DiscoveredClusterApiURL')
   sessionStorage.removeItem('DiscoveryCredential')
+  sessionStorage.removeItem('DiscoveredClusterID')
+  sessionStorage.removeItem('DiscoveryType')
   return (
     <Fragment>
       <DiscoveredClustersTable
@@ -357,7 +359,10 @@ export function DiscoveredClustersTable(props: {
             click: (item) => {
               sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
               sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-              sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl || '')
+              sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl ?? '')
+              sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
+              sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
+              sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
               history.push(createBackCancelLocation(NavigationPath.importCluster))
             },
           },
