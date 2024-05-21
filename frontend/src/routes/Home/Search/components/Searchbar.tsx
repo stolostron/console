@@ -198,7 +198,7 @@ export function Searchbar(props: SearchbarProps) {
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
       if (parsedInputValue.includes('*')) {
         const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-        const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
         const regex = handlePartialRegex(replacedSpecialChars)
         const regexMatch = currentValue.name.toLowerCase().match(regex)?.[0] ?? ''
         if (regexMatch === '') {
@@ -227,7 +227,7 @@ export function Searchbar(props: SearchbarProps) {
       .filter((item, index) => {
         if (parsedInputValue.includes('*')) {
           const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-          const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
           const regex = handlePartialRegex(replacedSpecialChars)
           return (
             index !== 0 && // filter the headerItem suggestion
