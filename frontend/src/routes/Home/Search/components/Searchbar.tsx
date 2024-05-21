@@ -189,15 +189,16 @@ export function Searchbar(props: SearchbarProps) {
   }
 
   // ^ - start of string
-  // [a-z0-9-_./:()=+]* - 1 or more of: any char a-z, 0-9 & special chars: -_./:()=+
+  // [a-zA-Z0-9-_./:()=+]* - 1 or more of: any char a-z, A-Z, 0-9 & special chars: -_./:()=+
   const handlePartialRegex = (replacedSpecialChars: string) =>
-    new RegExp(`^${replacedSpecialChars.replaceAll('*', '[a-z0-9-_./:=+]*')}`)
+    new RegExp(`^${replacedSpecialChars.replaceAll('*', '[a-zA-Z0-9-_./:=+]*')}`)
 
   const filterSuggestionItems = useCallback(() => {
     const parsedInputValue = stripOperators(inputValue)
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
       if (parsedInputValue.includes('*')) {
-        const replacedSpecialChars = parsedInputValue.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const lowerCaseParsedInput = parsedInputValue.toLowerCase()
+        const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
         const regex = handlePartialRegex(replacedSpecialChars)
         const regexMatch = currentValue.name.toLowerCase().match(regex)?.[0] ?? ''
         if (regexMatch === '') {
@@ -225,7 +226,8 @@ export function Searchbar(props: SearchbarProps) {
     filteredMenuItems = suggestions
       .filter((item, index) => {
         if (parsedInputValue.includes('*')) {
-          const replacedSpecialChars = parsedInputValue.replace(/[/,!?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const lowerCaseParsedInput = parsedInputValue.toLowerCase()
+          const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
           const regex = handlePartialRegex(replacedSpecialChars)
           return (
             index !== 0 && // filter the headerItem suggestion
