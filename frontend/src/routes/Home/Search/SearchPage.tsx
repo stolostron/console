@@ -369,11 +369,16 @@ export default function SearchPage() {
 
   const suggestedSearches: SavedSearch[] = useMemo(() => {
     const suggestedCM = configMaps.find((cm) => cm.metadata.name === 'console-search-config')
-
     if (suggestedCM?.data?.suggestedSearches) {
-      const searches = JSON.parse(suggestedCM?.data?.suggestedSearches) as SavedSearch[]
-      // only use suggested searches that contain an ID, name & searchText
-      return searches.filter((search) => search.id && search.searchText && search.name)
+      try {
+        const searches = JSON.parse(suggestedCM?.data?.suggestedSearches) as SavedSearch[]
+        // only use suggested searches that contain an ID, name & searchText
+        return searches.filter((search) => search.id && search.searchText && search.name)
+      } catch (err) {
+        // If syntax parsing error occurrs return the suggested search templates
+        console.error(err)
+        return suggestedQueryTemplates
+      }
     }
     return suggestedQueryTemplates
   }, [configMaps, suggestedQueryTemplates])
