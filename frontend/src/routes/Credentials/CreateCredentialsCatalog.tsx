@@ -2,6 +2,7 @@
 import { DataViewStringContext, ICatalogCard, ItemView } from '@stolostron/react-data-view'
 import { LocationDescriptor } from 'history'
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useDataViewStrings } from '../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
@@ -28,6 +29,7 @@ const orderedProviders: [provider: CredentialsType, id?: string][] = [
 ]
 
 export function CreateCredentialsCatalog() {
+  const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
 
   const cards = useMemo(() => {
@@ -46,7 +48,7 @@ export function CreateCredentialsCatalog() {
         })),
     ]
     return newCards
-  }, [nextStep])
+  }, [nextStep, t])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
