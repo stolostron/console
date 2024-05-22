@@ -7,7 +7,8 @@ oc process -f ocp-console-oauth-client.yaml | oc apply -f -
 
 oc get oauthclient console-oauth-client -o jsonpath='{.secret}' > ocp-console/console-client-secret
 
-oc get secrets -n default --field-selector type=kubernetes.io/service-account-token -o json | \
+INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0].spec.targetNamespace}'`
+oc get secrets -n $INSTALLATION_NAMESPACE_MCE --field-selector type=kubernetes.io/service-account-token -o json | \
     jq '.items[0].data."ca.crt"' -r | python -m base64 -d > ocp-console/ca.crt
 
 CONSOLE_VERSION=${CONSOLE_VERSION:=4.13}
