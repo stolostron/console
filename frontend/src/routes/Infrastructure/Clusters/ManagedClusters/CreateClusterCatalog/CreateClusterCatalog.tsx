@@ -150,13 +150,6 @@ export function CreateClusterCatalog() {
         provider: Provider.nutanix,
         description: t('A Red Hat OpenShift cluster that is running in a Nutanix environment.'),
       },
-      {
-        id: 'rhv',
-        provider: Provider.redhatvirtualization,
-        description: t(
-          'A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.'
-        ),
-      },
     ]
   }, [t])
 
@@ -218,19 +211,6 @@ export function CreateClusterCatalog() {
               hasClusterImageSetWithArch(clusterImageSets, ['x86_64', 'x86-64']),
               t,
               <>{t('Nutanix requires x86_64 release image. No other architecture is supported.')}</>
-            ),
-          }
-          break
-        case Provider.redhatvirtualization:
-          card = {
-            ...card,
-            alertTitle: t('Deprecated host platform'),
-            alertVariant: 'info',
-            alertContent: (
-              <>
-                {t('Red Hat Virtualization is deprecated for OpenShift 4.13.')}
-                <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
-              </>
             ),
           }
           break
