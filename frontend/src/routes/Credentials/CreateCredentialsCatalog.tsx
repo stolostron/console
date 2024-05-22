@@ -45,10 +45,11 @@ export function CreateCredentialsCatalog() {
             provider === Provider.aws
               ? nextStep(NavigationPath.addAWSType)
               : nextStep(getTypedCreateCredentialsPath(provider)),
+          ...{},
         })),
     ]
     return newCards
-  }, [nextStep, t])
+  }, [nextStep])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
