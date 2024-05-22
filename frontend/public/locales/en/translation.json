@@ -335,7 +335,6 @@
   "A Red Hat OpenShift cluster that can run and manage virtual machines and container workloads side by side.": "A Red Hat OpenShift cluster that can run and manage virtual machines and container workloads side by side.",
   "A Red Hat OpenShift cluster that is hosted on the Red Hat OpenStack Platform in your on-premise data center.": "A Red Hat OpenShift cluster that is hosted on the Red Hat OpenStack Platform in your on-premise data center.",
   "A Red Hat OpenShift cluster that is running in a Nutanix environment.": "A Red Hat OpenShift cluster that is running in a Nutanix environment.",
-  "A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.": "A Red Hat OpenShift cluster that is running in a Red Hat Virtualization environment in your on-premise data center.",
   "A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.": "A Red Hat OpenShift cluster that is running in a vSphere environment in your on-premise data center.",
   "A Red Hat OpenShift cluster that is running in your AWS subscription.": "A Red Hat OpenShift cluster that is running in your AWS subscription.",
   "A Red Hat OpenShift cluster that is running in your Azure subscription.": "A Red Hat OpenShift cluster that is running in your Azure subscription.",
