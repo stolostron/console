@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { SearchIcon } from '@patternfly/react-icons'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
