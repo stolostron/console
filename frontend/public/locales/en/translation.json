@@ -2185,7 +2185,6 @@
   "Red Hat OpenShift Provisioning": "Red Hat OpenShift Provisioning",
   "Red Hat OpenStack Platform": "Red Hat OpenStack Platform",
   "Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.": "Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.",
-  "Red Hat Virtualization is deprecated for OpenShift 4.13.": "Red Hat Virtualization is deprecated for OpenShift 4.13.",
   "Redo": "Redo",
   "Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.": "Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.",
   "Refer to a single commit": "Refer to a single commit",
