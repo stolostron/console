@@ -61,6 +61,11 @@ describe('AcmPageHeader', () => {
     expect(getByText('Create resource')).toBeInTheDocument()
   })
 
+  test('AcmPageHeader renders with search link', () => {
+    const { getByText } = render(<AcmPageHeader breadcrumb={[]} title="ACM header" searchbar={<div>{'Search'}</div>} />)
+    expect(getByText('Search')).toBeInTheDocument()
+  })
+
   test('AcmPageHeader has zero accessibility defects', async () => {
     const { container } = render(<AcmPageHeader title="ACM header" />)
     expect(await axe(container)).toHaveNoViolations()
