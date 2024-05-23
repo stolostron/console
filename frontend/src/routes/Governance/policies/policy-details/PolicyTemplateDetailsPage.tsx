@@ -1,14 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader } from '../../../../ui-components'
-import { Fragment, Suspense } from 'react'
+import { Fragment, Suspense, useState } from 'react'
 import { Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
+import { TemplateDetailTitle } from '../../components/TemplateDetailTitle'
 
 export function PolicyTemplateDetailsPage() {
   const { t } = useTranslation()
+  const [template, setTemplate] = useState<any>()
 
   const urlParams = useParams<{
     namespace: string
@@ -40,7 +42,13 @@ export function PolicyTemplateDetailsPage() {
     <AcmPage
       header={
         <AcmPageHeader
-          title={templateName}
+          title={
+            <TemplateDetailTitle
+              policyKind={kind}
+              templateName={templateName}
+              compliant={template?.status?.compliant}
+            />
+          }
           breadcrumb={[
             { text: t('Policies'), to: NavigationPath.policies },
             {
@@ -68,6 +76,7 @@ export function PolicyTemplateDetailsPage() {
                 apiVersion={apiVersion}
                 kind={kind}
                 templateName={templateName}
+                setParentTemplate={setTemplate}
               />
             )}
           />
