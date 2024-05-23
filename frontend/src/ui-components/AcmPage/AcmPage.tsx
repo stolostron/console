@@ -55,6 +55,7 @@ export interface AcmPageHeaderProps {
   controls?: React.ReactNode
   switches?: React.ReactNode
   actions?: React.ReactNode
+  searchbar?: React.ReactNode
 }
 
 export function AcmPageHeader(props: AcmPageHeaderProps) {
@@ -130,6 +131,11 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                         </SplitItem>
                       )}
                       {/* <SplitItem>{props.description && <p>{props.description}</p>}</SplitItem> */}
+                      {props.searchbar && (
+                        <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                          {props.searchbar}
+                        </SplitItem>
+                      )}
                     </Split>
                     {props.description && <div style={{ paddingTop: '8px' }}>{props.description}</div>}
                   </StackItem>
@@ -145,30 +151,32 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
             )}
           </Stack>
         </SplitItem>
-        <SplitItem>
-          <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
-            <Stack hasGutter>
-              {props.controls && (
-                <StackItem style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  {props.controls}
-                </StackItem>
-              )}
-              {props.actions && (
-                <StackItem
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    justifyContent: 'flex-end',
-                  }}
-                  isFilled
-                >
-                  {props.actions}
-                </StackItem>
-              )}
-            </Stack>
-          </PageSection>
-        </SplitItem>
+        {(props.controls || props.actions) && (
+          <SplitItem>
+            <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
+              <Stack hasGutter>
+                {props.controls && (
+                  <StackItem style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    {props.controls}
+                  </StackItem>
+                )}
+                {props.actions && (
+                  <StackItem
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      justifyContent: 'flex-end',
+                    }}
+                    isFilled
+                  >
+                    {props.actions}
+                  </StackItem>
+                )}
+              </Stack>
+            </PageSection>
+          </SplitItem>
+        )}
       </Split>
     </PageSection>
   )

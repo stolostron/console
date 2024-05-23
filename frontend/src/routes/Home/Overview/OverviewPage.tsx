@@ -637,9 +637,9 @@ export default function OverviewPage() {
           <AcmAlert
             noClose
             isInline
-            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'warning'}
+            variant={searchError?.graphQLErrors[0]?.message?.includes('not enabled') ? 'info' : 'warning'}
             title={
-              searchError?.graphQLErrors[0]?.message.includes('not enabled')
+              searchError?.graphQLErrors[0]?.message?.includes('not enabled')
                 ? t('Configuration alert')
                 : t('An unexpected error occurred.')
             }

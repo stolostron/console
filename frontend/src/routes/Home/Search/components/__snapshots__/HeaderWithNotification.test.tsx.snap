@@ -59,18 +59,6 @@ exports[`renders clusters disabled message 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              class="pf-l-split__item"
-            >
-              <section
-                class="pf-c-page__main-section pf-m-light"
-                style="height: 100%;"
-              >
-                <div
-                  class="pf-l-stack pf-m-gutter"
-                />
-              </section>
-            </div>
           </div>
         </section>
       </div>
@@ -187,18 +175,6 @@ exports[`renders empty message 1`] = `
                 </div>
               </div>
             </div>
-            <div
-              class="pf-l-split__item"
-            >
-              <section
-                class="pf-c-page__main-section pf-m-light"
-                style="height: 100%;"
-              >
-                <div
-                  class="pf-l-stack pf-m-gutter"
-                />
-              </section>
-            </div>
           </div>
         </section>
       </div>
@@ -265,18 +241,6 @@ exports[`renders unknown message 1`] = `
                   </section>
                 </div>
               </div>
-            </div>
-            <div
-              class="pf-l-split__item"
-            >
-              <section
-                class="pf-c-page__main-section pf-m-light"
-                style="height: 100%;"
-              >
-                <div
-                  class="pf-l-stack pf-m-gutter"
-                />
-              </section>
             </div>
           </div>
         </section>
@@ -441,18 +405,6 @@ exports[`renders with Global Search alert & no message 1`] = `
                   </section>
                 </div>
               </div>
-            </div>
-            <div
-              class="pf-l-split__item"
-            >
-              <section
-                class="pf-c-page__main-section pf-m-light"
-                style="height: 100%;"
-              >
-                <div
-                  class="pf-l-stack pf-m-gutter"
-                />
-              </section>
             </div>
           </div>
         </section>
