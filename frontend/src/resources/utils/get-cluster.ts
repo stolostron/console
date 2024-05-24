@@ -661,8 +661,6 @@ export function getProvider(
       break
     case 'RHV':
     case 'OVIRT':
-      provider = Provider.redhatvirtualization
-      break
     case 'ALIBABA':
     case 'ALICLOUD':
     case 'ALIBABACLOUD':

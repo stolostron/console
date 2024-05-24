@@ -392,7 +392,6 @@ function getProvider(provider: string) {
       return Provider.ibmpowervs
     case 'libvirt':
     case 'ovirt':
-      return Provider.redhatvirtualization
     case Provider.other:
     default:
       return Provider.other
@@ -419,7 +418,6 @@ function searchCloudProvider(provider: string) {
       return [Provider.ibmpowervs, 'ibm power virtual server']
     case 'libvirt':
     case 'ovirt':
-      return [Provider.redhatvirtualization, 'red hat virtualization']
     case Provider.other:
     default:
       return [Provider.other, provider]

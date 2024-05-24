@@ -12,7 +12,6 @@ const credentialsTypes = [
   Provider.kubevirt,
   Provider.openstack,
   Provider.redhatcloud,
-  Provider.redhatvirtualization,
   Provider.vmware,
   Provider.nutanix,
 ] as const

@@ -117,11 +117,6 @@ export const setAvailableOCPImages = (provider, control, result) => {
                 return
               }
               break
-            case 'rhv':
-              if (versionGreater(releaseImage, 4, 13)) {
-                return
-              }
-              break
             case 'kubevirt':
               if (!versionGreater(releaseImage, 4, 13)) {
                 // Has to be 4.14 or greater
