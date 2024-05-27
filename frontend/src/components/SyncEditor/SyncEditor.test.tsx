@@ -343,6 +343,43 @@ describe('SyncEditor component', () => {
     expect(setAwsAccessKeyID).toHaveBeenCalledWith('medium')
   })
 
+  it('Should add namespace key when it is autoCreate and missing ns', async () => {
+    const onEditorChange = jest.fn()
+    const clone = cloneDeep(propsNewResource)
+    clone.onEditorChange = onEditorChange
+    clone.autoCreateNs = true
+    clone.resources = [
+      {
+        apiVersion: 'policy.open-cluster-management.io/v1',
+        kind: 'Policy',
+        metadata: {
+          name: 'test',
+          namespace: 'default',
+        },
+        spec: {
+          disabled: false,
+        },
+      },
+    ]
+    render(<SyncEditor {...clone} />)
+
+    // make sure yaml matches
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+
+    await waitFor(() => expect(input).toHaveTextContent('apiVersion'))
+    // remove namespace
+    const text = `namespace: default`
+    input.focus()
+    const i = input.value.indexOf(text)
+    input.setSelectionRange(i, i + text.length)
+    userEvent.type(input, ' ')
+    await new Promise((resolve) => setTimeout(resolve, 700)) // wait for debounce
+    const metadata = get(onEditorChange.mock.calls, '0.0.resources.0.metadata')
+    expect(metadata['namespace']).not.toBeUndefined()
+  })
+
   it.skip('keyboard', async () => {
     render(<SyncEditor {...propsExistingResource} />)
 
