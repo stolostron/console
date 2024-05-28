@@ -15,11 +15,9 @@ import {
   VALID_DNS_LABEL,
 } from '../../../../../../components/TemplateEditor'
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
-import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util.tsx'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { listClusterImageSets, listStorageClasses, unpackProviderConnection } from '../../../../../../resources'
-import { AcmAlert } from '../../../../../../ui-components'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
