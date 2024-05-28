@@ -204,8 +204,6 @@ export function CredentialsForm(
 
   function getProxyDocLink(credentialsType: Provider) {
     switch (credentialsType) {
-      case Provider.redhatvirtualization:
-        return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
       case Provider.aws:
         return DOC_LINKS.CREATE_CONNECTION_PROXY_AWS
       case Provider.gcp:
@@ -277,13 +275,6 @@ export function CredentialsForm(
       }
     } catch (_e) {}
   }, [cloudsYaml])
-
-  // Red Hat Virtualization
-  const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
-  const [ovirtFqdn, setOvirtFqdn] = useState(() => providerConnection?.stringData?.ovirt_fqdn ?? '')
-  const [ovirtUsername, setOvirtUsername] = useState(() => providerConnection?.stringData?.ovirt_username ?? '')
-  const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
-  const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
 
   // Disconnected
   const [clusterOSImage, setClusterOSImage] = useState(() => providerConnection?.stringData?.clusterOSImage ?? '')
@@ -427,21 +418,6 @@ export function CredentialsForm(
         stringData.noProxy = noProxy
         stringData.additionalTrustBundle = additionalTrustBundle
         break
-      case Provider.redhatvirtualization:
-        stringData.ovirt_url = ovirtUrl
-        stringData.ovirt_fqdn = ovirtFqdn
-        stringData.ovirt_username = ovirtUsername
-        stringData.ovirt_password = ovirtPassword
-        stringData.ovirt_ca_bundle = ovirtCABundle
-        stringData.baseDomain = baseDomain
-        stringData.pullSecret = pullSecret
-        stringData['ssh-privatekey'] = sshPrivatekey
-        stringData['ssh-publickey'] = sshPublickey
-        stringData.httpProxy = httpProxy
-        stringData.httpsProxy = httpsProxy
-        stringData.noProxy = noProxy
-        stringData.additionalTrustBundle = additionalTrustBundle
-        break
       case Provider.ansible:
         stringData.host = _.trimEnd(ansibleHost, '/')
         stringData.token = ansibleToken
@@ -516,11 +492,6 @@ export function CredentialsForm(
       { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
       { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
       { path: 'Secret[0].stringData.os_ca_bundle', setState: setOSCABundle },
-      { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
-      { path: 'Secret[0].stringData.ovirt_fqdn', setState: setOvirtFqdn },
-      { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
-      { path: 'Secret[0].stringData.ovirt_password', setState: setOvirtPassword },
-      { path: 'Secret[0].stringData.ovirt_ca_bundle', setState: setOvirtCABundle },
       { path: 'Secret[0].stringData.clusterOSImage', setState: setClusterOSImage },
       { path: 'Secret[0].stringData.additionalTrustBundle', setState: setAdditionalTrustBundle },
       {
@@ -661,7 +632,6 @@ export function CredentialsForm(
               Provider.gcp,
               Provider.openstack,
               Provider.vmware,
-              Provider.redhatvirtualization,
               Provider.hybrid,
               Provider.hostinventory,
               Provider.nutanix,
@@ -1112,82 +1082,6 @@ export function CredentialsForm(
       },
       {
         type: 'Section',
-        title: t('credentialsForm.rhvCredentials.title'),
-        wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
-        description: (
-          <a href={DOC_LINKS.CREATE_CONNECTION_VIRTUALIZATION} target="_blank" rel="noreferrer">
-            {t('credentialsForm.rhvCredentials.wizardDescription')}
-          </a>
-        ),
-        inputs: [
-          {
-            id: 'ovirt_url',
-            isHidden: credentialsType !== Provider.redhatvirtualization,
-            type: 'Text',
-            label: t('credentialsForm.ovirt_url.label'),
-            placeholder: t('credentialsForm.ovirt_url.placeholder'),
-            labelHelp: t('credentialsForm.ovirt_url.labelHelp'),
-            value: ovirtUrl,
-            onChange: setOvirtUrl,
-            isRequired: true,
-            isSecret: false,
-            // validation: (value) => validateCloudsYaml(value, cloud, t),
-          },
-          {
-            id: 'ovirt_fqdn',
-            isHidden: credentialsType !== Provider.redhatvirtualization,
-            type: 'Text',
-            label: t('credentialsForm.ovirt_fqdn.label'),
-            placeholder: t('credentialsForm.ovirt_fqdn.placeholder'),
-            labelHelp: t('credentialsForm.ovirt_fqdn.labelHelp'),
-            value: ovirtFqdn,
-            onChange: setOvirtFqdn,
-            isRequired: true,
-            isSecret: false,
-            // validation: (value) => validateCloudsYaml(value, cloud, t),
-          },
-          {
-            id: 'ovirt_username',
-            isHidden: credentialsType !== Provider.redhatvirtualization,
-            type: 'Text',
-            label: t('credentialsForm.ovirt_username.label'),
-            placeholder: t('credentialsForm.ovirt_username.placeholder'),
-            labelHelp: t('credentialsForm.ovirt_username.labelHelp'),
-            value: ovirtUsername,
-            onChange: setOvirtUsername,
-            isRequired: true,
-            isSecret: false,
-            // validation: (value) => validateCloudsYaml(value, cloud, t),
-          },
-          {
-            id: 'ovirt_password',
-            isHidden: credentialsType !== Provider.redhatvirtualization,
-            type: 'Text',
-            label: t('credentialsForm.ovirt_password.label'),
-            placeholder: t('credentialsForm.ovirt_password.placeholder'),
-            labelHelp: t('credentialsForm.ovirt_password.labelHelp'),
-            value: ovirtPassword,
-            onChange: setOvirtPassword,
-            isRequired: true,
-            isSecret: true,
-            // validation: (value) => validateCloudsYaml(value, cloud, t),
-          },
-          {
-            id: 'ovirt_ca_bundle',
-            isHidden: credentialsType !== Provider.redhatvirtualization,
-            type: 'TextArea',
-            label: t('credentialsForm.ovirt_ca_bundle.label'),
-            placeholder: t('credentialsForm.ovirt_ca_bundle.placeholder'),
-            labelHelp: t('credentialsForm.ovirt_ca_bundle.labelHelp'),
-            value: ovirtCABundle,
-            onChange: setOvirtCABundle,
-            isRequired: true,
-            validation: (value) => validateCertificate(value, t),
-          },
-        ],
-      },
-      {
-        type: 'Section',
         title: t('Configuration for disconnected installation'),
         wizardTitle: t('Enter the configuration for disconnected installation'),
         description: (
@@ -1248,14 +1142,9 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'httpProxy',
-            isHidden: ![
-              Provider.aws,
-              Provider.azure,
-              Provider.gcp,
-              Provider.openstack,
-              Provider.vmware,
-              Provider.redhatvirtualization,
-            ].includes(credentialsType as Provider),
+            isHidden: ![Provider.aws, Provider.azure, Provider.gcp, Provider.openstack, Provider.vmware].includes(
+              credentialsType as Provider
+            ),
             type: 'Text',
             label: t('HTTP proxy'),
             placeholder: t('Enter the HTTP proxy URL'),
@@ -1268,14 +1157,9 @@ export function CredentialsForm(
           },
           {
             id: 'httpsProxy',
-            isHidden: ![
-              Provider.aws,
-              Provider.azure,
-              Provider.gcp,
-              Provider.openstack,
-              Provider.vmware,
-              Provider.redhatvirtualization,
-            ].includes(credentialsType as Provider),
+            isHidden: ![Provider.aws, Provider.azure, Provider.gcp, Provider.openstack, Provider.vmware].includes(
+              credentialsType as Provider
+            ),
             type: 'Text',
             label: t('HTTPS proxy'),
             placeholder: t('Enter the HTTPS proxy URL'),
@@ -1288,14 +1172,9 @@ export function CredentialsForm(
           },
           {
             id: 'noProxy',
-            isHidden: ![
-              Provider.aws,
-              Provider.azure,
-              Provider.gcp,
-              Provider.openstack,
-              Provider.vmware,
-              Provider.redhatvirtualization,
-            ].includes(credentialsType as Provider),
+            isHidden: ![Provider.aws, Provider.azure, Provider.gcp, Provider.openstack, Provider.vmware].includes(
+              credentialsType as Provider
+            ),
             type: 'Text',
             label: t('No proxy'),
             placeholder: t('Enter the comma delimited list of URLs that do not require a proxy'),
@@ -1308,14 +1187,9 @@ export function CredentialsForm(
           },
           {
             id: 'additionalTrustBundle',
-            isHidden: ![
-              Provider.aws,
-              Provider.azure,
-              Provider.gcp,
-              Provider.openstack,
-              Provider.vmware,
-              Provider.redhatvirtualization,
-            ].includes(credentialsType as Provider),
+            isHidden: ![Provider.aws, Provider.azure, Provider.gcp, Provider.openstack, Provider.vmware].includes(
+              credentialsType as Provider
+            ),
             type: 'TextArea',
             label: t('Additional trust bundle'),
             placeholder: t('Enter your additional trust bundle'),
@@ -1404,7 +1278,6 @@ export function CredentialsForm(
               Provider.gcp,
               Provider.openstack,
               Provider.vmware,
-              Provider.redhatvirtualization,
               Provider.hybrid,
               Provider.hostinventory,
               Provider.kubevirt,
@@ -1424,14 +1297,9 @@ export function CredentialsForm(
           },
           {
             id: 'ssh-privatekey',
-            isHidden: ![
-              Provider.aws,
-              Provider.azure,
-              Provider.gcp,
-              Provider.openstack,
-              Provider.redhatvirtualization,
-              Provider.vmware,
-            ].includes(credentialsType as Provider),
+            isHidden: ![Provider.aws, Provider.azure, Provider.gcp, Provider.openstack, Provider.vmware].includes(
+              credentialsType as Provider
+            ),
             type: 'TextArea',
             label: t('SSH private key'),
             placeholder: t('Enter your SSH private key'),
@@ -1449,7 +1317,6 @@ export function CredentialsForm(
               Provider.azure,
               Provider.gcp,
               Provider.openstack,
-              Provider.redhatvirtualization,
               Provider.vmware,
               Provider.hybrid,
               Provider.hostinventory,

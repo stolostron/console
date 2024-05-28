@@ -15,11 +15,9 @@ import {
   VALID_DNS_LABEL,
 } from '../../../../../../components/TemplateEditor'
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
-import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util.tsx'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { listClusterImageSets, listStorageClasses, unpackProviderConnection } from '../../../../../../resources'
-import { AcmAlert } from '../../../../../../ui-components'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -114,11 +112,6 @@ export const setAvailableOCPImages = (provider, control, result) => {
               break
             case 'vmw':
               if (name.includes('img4.3') || name.includes('img4.4')) {
-                return
-              }
-              break
-            case 'rhv':
-              if (versionGreater(releaseImage, 4, 13)) {
                 return
               }
               break
@@ -792,30 +785,6 @@ const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
   const matches = version.match(versionRegex)
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
-}
-
-export const isDeprecatedRHV = (control, _controlData, t) => {
-  if (control.active && control.active.includes('4.13')) {
-    return (
-      <AcmAlert
-        variant="info"
-        title={t('Deprecated host platform')}
-        message={
-          <>
-            {t(
-              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-            )}
-            <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
-          </>
-        }
-        noClose={true}
-        style={{ marginTop: '2em' }}
-        isInline
-      />
-    )
-  } else {
-    return
-  }
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {

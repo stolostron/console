@@ -659,10 +659,6 @@ export function getProvider(
     case 'VSPHERE':
       provider = Provider.vmware
       break
-    case 'RHV':
-    case 'OVIRT':
-      provider = Provider.redhatvirtualization
-      break
     case 'ALIBABA':
     case 'ALICLOUD':
     case 'ALIBABACLOUD':
