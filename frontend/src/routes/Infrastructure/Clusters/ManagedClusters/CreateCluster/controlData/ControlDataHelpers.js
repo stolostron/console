@@ -789,30 +789,6 @@ function versionGreater(version, x, y) {
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
 }
 
-export const isDeprecatedRHV = (control, _controlData, t) => {
-  if (control.active && control.active.includes('4.13')) {
-    return (
-      <AcmAlert
-        variant="info"
-        title={t('Deprecated host platform')}
-        message={
-          <>
-            {t(
-              'Red Hat Virtualization is deprecated as a host platform for OpenShift 4.13 and will be removed in the next release.'
-            )}
-            <ViewDocumentationLink doclink={DOC_LINKS.RHV_DEPRECATION} />
-          </>
-        }
-        noClose={true}
-        style={{ marginTop: '2em' }}
-        isInline
-      />
-    )
-  } else {
-    return
-  }
-}
-
 export const isHidden_lt_OCP48 = (control, controlData) => {
   const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
   const imageSet = getControlByID(controlData, 'imageSet')

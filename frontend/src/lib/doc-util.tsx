@@ -58,7 +58,6 @@ export const DOC_LINKS = {
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-overview`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
-  RHV_DEPRECATION: `${OCP_DOC_BASE_PATH}/4.13/html/release_notes/ocp-4-13-release-notes#ocp-4-13-rhv-deprecations`,
   ACCESSING_CONSOLE: `${DOC_HOME}/html/web_console/web-console#accessing-your-console`,
   NUTANIX_POST_INSTALL: `https://access.redhat.com/documentation/en-us/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
 }
