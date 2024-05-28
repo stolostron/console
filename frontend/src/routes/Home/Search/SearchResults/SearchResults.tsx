@@ -20,7 +20,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -203,8 +203,10 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -213,11 +215,15 @@ export default function SearchResults(props: {
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
 
   const hasFederatedError = useMemo(() => {
-    if (error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
+    if (
+      isGlobalHub &&
+      settings.globalSearchFeatureFlag === 'enabled' &&
+      error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))
+    ) {
       return true
     }
     return false
-  }, [error?.graphQLErrors])
+  }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
   useEffect(() => {
     // If the current search query changes -> hide related resources

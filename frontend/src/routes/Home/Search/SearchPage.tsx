@@ -190,7 +190,12 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
       )
     }
     return false
-  }, [searchCompleteError?.graphQLErrors, searchSchemaError?.graphQLErrors])
+  }, [
+    isGlobalHub,
+    settings.globalSearchFeatureFlag,
+    searchCompleteError?.graphQLErrors,
+    searchSchemaError?.graphQLErrors,
+  ])
 
   useEffect(() => {
     if ((searchSchemaError || searchCompleteError) && !hasFederatedError) {
