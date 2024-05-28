@@ -133,6 +133,9 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   } = props
   const { t } = useTranslation()
   const history = useHistory()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
   const [saveSearch, setSaveSearch] = useState<SavedSearch>()
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
@@ -180,11 +183,11 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   })
 
   const hasFederatedError = useMemo(() => {
-    if (
-      searchSchemaError?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText)) ||
-      searchCompleteError?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))
-    ) {
-      return true
+    if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
+      return (
+        (searchSchemaError?.graphQLErrors.findIndex((error: any) => error?.includes(federatedErrorText)) ?? -1) > -1 ||
+        (searchCompleteError?.graphQLErrors.findIndex((error: any) => error?.includes(federatedErrorText)) ?? -1) > -1
+      )
     }
     return false
   }, [searchCompleteError?.graphQLErrors, searchSchemaError?.graphQLErrors])
