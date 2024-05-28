@@ -17,7 +17,7 @@ import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-compone
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
-import { convertStringToQuery } from '../search-helper'
+import { convertStringToQuery, federatedErrorText } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
@@ -94,6 +94,7 @@ export default function RelatedResults(props: {
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  // Related count should not have limit
   const queryFilters = convertStringToQuery(currentQuery, searchResultLimit)
   const { data, error, loading } = useSearchResultRelatedCountQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -101,6 +102,13 @@ export default function RelatedResults(props: {
       input: [queryFilters],
     },
   })
+
+  const hasFederatedError = useMemo(() => {
+    if (error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
+      return true
+    }
+    return false
+  }, [error?.graphQLErrors])
 
   const relatedCounts = useMemo(() => {
     const dataArray = data?.searchResult?.[0]?.related || []
@@ -128,7 +136,7 @@ export default function RelatedResults(props: {
         </AccordionItem>
       </Accordion>
     )
-  } else if (error || !data || !data.searchResult) {
+  } else if ((error && !hasFederatedError) || !data || !data.searchResult) {
     return (
       <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
         <Stack>

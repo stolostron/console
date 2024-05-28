@@ -33,6 +33,7 @@ import {
   DeleteResourceModal,
   IDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
+import { federatedErrorText } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
@@ -211,6 +212,13 @@ export default function SearchResults(props: {
   )
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
 
+  const hasFederatedError = useMemo(() => {
+    if (error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
+      return true
+    }
+    return false
+  }, [error?.graphQLErrors])
+
   useEffect(() => {
     // If the current search query changes -> hide related resources
     if (preSelectedRelatedResources.length === 0) {
@@ -232,7 +240,7 @@ export default function SearchResults(props: {
     )
   }
 
-  if (error) {
+  if (error && !hasFederatedError) {
     return (
       <PageSection>
         <EmptyState>

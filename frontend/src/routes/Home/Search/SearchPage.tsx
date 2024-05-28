@@ -29,7 +29,13 @@ import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
 import { Searchbar } from './components/Searchbar'
 import { useSuggestedQueryTemplates } from './components/SuggestedQueryTemplates'
-import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString, operators } from './search-helper'
+import {
+  convertStringToQuery,
+  federatedErrorText,
+  formatSearchbarSuggestions,
+  getSearchCompleteString,
+  operators,
+} from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
   SearchResultItemsQuery,
@@ -54,9 +60,18 @@ const dropdown = css({
   },
 })
 
-function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
+function HandleErrors(
+  schemaError: ApolloError | undefined,
+  completeError: ApolloError | undefined,
+  hasFederatedError: boolean
+) {
   const { t } = useTranslation()
   const notEnabled = 'not enabled'
+  if (hasFederatedError) {
+    // If it is federated error do not block UI from rendering
+    return undefined
+  }
+
   if (schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)) {
     return (
       <EmptyState>
@@ -151,7 +166,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
 
   const {
     data: searchCompleteData,
-    loading: searchDataLoading,
+    loading: searchCompleteLoading,
     error: searchCompleteError,
   } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
@@ -164,13 +179,23 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
     },
   })
 
+  const hasFederatedError = useMemo(() => {
+    if (
+      searchSchemaError?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText)) ||
+      searchCompleteError?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))
+    ) {
+      return true
+    }
+    return false
+  }, [searchCompleteError?.graphQLErrors, searchSchemaError?.graphQLErrors])
+
   useEffect(() => {
-    if (searchSchemaError || searchCompleteError) {
+    if ((searchSchemaError || searchCompleteError) && !hasFederatedError) {
       setQueryErrors(true)
     } else {
       setQueryErrors(false)
     }
-  }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors])
+  }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors, hasFederatedError])
 
   const suggestions = useMemo(() => {
     return currentSearch === '' ||
@@ -196,15 +221,15 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
           'value',
           currentSearch, // pass current search query in order to de-dupe already selected values
           searchAutocompleteLimit,
-          searchDataLoading,
+          searchCompleteLoading,
           t
         )
   }, [
     currentSearch,
     searchSchemaData,
-    searchCompleteData,
-    searchDataLoading,
     searchSchemaLoading,
+    searchCompleteData,
+    searchCompleteLoading,
     searchAutocompleteLimit,
     t,
   ])
@@ -253,7 +278,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         searchResultData={searchResultData}
         refetchSearch={refetchSearch}
       />
-      {HandleErrors(searchSchemaError, searchCompleteError)}
+      {HandleErrors(searchSchemaError, searchCompleteError, hasFederatedError)}
     </PageSection>
   )
 }
