@@ -15,7 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -27,6 +27,7 @@ import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
+import { SearchAlertContext, SearchAlertGroup } from './components/SearchAlertGroup'
 import { Searchbar } from './components/Searchbar'
 import { useSuggestedQueryTemplates } from './components/SuggestedQueryTemplates'
 import {
@@ -35,6 +36,7 @@ import {
   formatSearchbarSuggestions,
   getSearchCompleteString,
   operators,
+  setFederatedErrorAlert,
 } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
@@ -378,8 +380,11 @@ export default function SearchPage() {
   const { t } = useTranslation()
   const savedSearchesText = t('Saved searches')
   const suggestedQueryTemplates = useSuggestedQueryTemplates().templates as SavedSearch[]
-  const { useSearchResultLimit, configMapsState } = useSharedAtoms()
+  const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
+  const { useSearchResultLimit, configMapsState, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const configMaps = useRecoilValue(configMapsState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
@@ -392,6 +397,22 @@ export default function SearchPage() {
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: { input: [convertStringToQuery(presetSearchQuery, searchResultLimit)] },
   })
+
+  useEffect(() => {
+    if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
+      setFederatedErrorAlert(loading, error, data, alerts, addSearchAlert, removeSearchAlert, t)
+    }
+  }, [
+    isGlobalHub,
+    settings.globalSearchFeatureFlag,
+    addSearchAlert,
+    alerts,
+    removeSearchAlert,
+    loading,
+    error,
+    data,
+    t,
+  ])
 
   useEffect(() => {
     getUserPreference().then((resp) => {
@@ -459,6 +480,9 @@ export default function SearchPage() {
       }
     >
       <AcmScrollable>
+        <PageSection style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <SearchAlertGroup />
+        </PageSection>
         <RenderSearchBar
           presetSearchQuery={presetSearchQuery}
           setSelectedSearch={setSelectedSearch}

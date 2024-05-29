@@ -18,10 +18,10 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   ClosedDeleteExternalResourceModalProps,
@@ -33,6 +33,7 @@ import {
   DeleteResourceModal,
   IDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
+import { SearchAlertContext } from '../components/SearchAlertGroup'
 import { federatedErrorText } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
@@ -203,6 +204,7 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
+  const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
@@ -237,6 +239,26 @@ export default function SearchResults(props: {
   }, [preSelectedRelatedResources])
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
+
+  useEffect(() => {
+    const limitWarningKey = 'search-result-limit-warning'
+    if (searchResultItems.length >= searchResultLimit && !alerts.find((alert) => alert.key === limitWarningKey)) {
+      addSearchAlert({
+        key: limitWarningKey,
+        variant: 'warning',
+        title: t(
+          'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
+        ),
+      })
+    } else if (searchResultItems.length < searchResultLimit && alerts.find((alert) => alert.key === limitWarningKey)) {
+      removeSearchAlert(limitWarningKey)
+    }
+    return () => {
+      if (alerts.find((alert) => alert.key === limitWarningKey)) {
+        removeSearchAlert(limitWarningKey)
+      }
+    }
+  }, [alerts, addSearchAlert, removeSearchAlert, searchResultItems, searchResultLimit, t])
 
   if (loading) {
     return (
@@ -295,17 +317,6 @@ export default function SearchResults(props: {
       />
       <PageSection className={resultsWrapper}>
         <Stack hasGutter>
-          {searchResultItems.length >= searchResultLimit ? (
-            <AcmAlert
-              noClose={true}
-              variant={'warning'}
-              isInline={true}
-              title={t(
-                'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
-              )}
-            />
-          ) : null}
-
           <PageSection isFilled={false} variant={'light'}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
