@@ -14,6 +14,9 @@ import {
   ManagedClusterApiVersion,
   ManagedClusterKind,
   managedClusterSetLabel,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
   Project,
   ProjectApiVersion,
   ProjectKind,
@@ -41,6 +44,7 @@ import {
   managedClusterSetsState,
   secretsState,
   subscriptionOperatorsState,
+  namespacesState,
 } from '../../../../../atoms'
 import {
   mockBadRequestStatus,
@@ -80,6 +84,19 @@ const mockROSADiscoveryProject: ProjectRequest = {
   kind: ProjectRequestKind,
   metadata: { name: 'rosa-discovery-cluster' },
 }
+
+const mockNamepaces: Namespace[] = [
+  {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'foobar' },
+  },
+  {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'rosa-discovery-cluster' },
+  },
+]
 
 const mockDiscoveredClusters: DiscoveredCluster[] = [
   {
@@ -807,6 +824,7 @@ describe('Import Discovered Cluster', () => {
           snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection])
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+          snapshot.set(namespacesState, mockNamepaces)
         }}
       >
         <MemoryRouter>
@@ -860,6 +878,7 @@ describe('Import Discovered Cluster', () => {
     await clickByText('Import from Red Hat OpenShift Cluster Manager', 0)
     await clickByText('Import from Red Hat OpenShift Cluster Manager', 1)
 
+    await waitForText('OCM-access')
     await waitForText(mockDiscoveredClusters[1].spec.credential!.name) // discovery credential field should be set correctly
     await waitForText('Cluster ID')
     getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
