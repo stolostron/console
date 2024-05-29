@@ -5,6 +5,7 @@ import { getErrors, validate } from './validation'
 import { getMatchingValues, getUidSiblings, crossReference, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
+import { Pair } from 'yaml/types'
 
 export interface ProcessedType {
   parsed: {
@@ -118,10 +119,34 @@ export const processUser = (
   readonly: boolean,
   validators: any,
   currentEditorValue: string,
-  editableUidSiblings: boolean | undefined
+  editableUidSiblings: boolean | undefined,
+  autoCreateNs?: boolean
 ) => {
   // get yaml, documents, resource, mapped
-  const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
+  let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
+  let createNs = false
+  if (autoCreateNs) {
+    const newDocs = documents.map((doc: YAML.Document) => {
+      if (doc.has('metadata') && !doc.hasIn(['metadata', 'namespace'])) {
+        createNs = true
+        const pair = new Pair('namespace', '')
+
+        doc.addIn(['metadata'], pair)
+
+        return doc
+      }
+      return doc
+    })
+
+    const yamlArr = newDocs.map((doc) => {
+      return YAML.stringify(doc)
+    })
+
+    yaml = yamlArr.join('\n---\n')
+
+    documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
+  }
+
   const syntaxErrors = getErrors(documents)
   const { parsed } = getMappings(documents)
 
@@ -146,7 +171,8 @@ export const processUser = (
       validators,
       currentEditorValue,
       true,
-      editableUidSiblings
+      editableUidSiblings,
+      createNs
     ),
   }
 }
@@ -166,7 +192,8 @@ const process = (
   validators: any,
   currentEditorValue: string,
   editorHasFocus: boolean,
-  editableUidSiblings: boolean | undefined
+  editableUidSiblings: boolean | undefined,
+  createNs?: boolean
 ) => {
   // restore hidden secret values
   let { mappings, parsed, resources, paths } = getMappings(documents)
@@ -226,7 +253,7 @@ const process = (
     }
 
     // create redacted yaml, etc
-    yaml = editorHasFocus ? currentEditorValue : stringify(resources)
+    yaml = editorHasFocus && !createNs ? currentEditorValue : stringify(resources)
     documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
     ;({ mappings, parsed, resources, paths } = getMappings(documents))
   }

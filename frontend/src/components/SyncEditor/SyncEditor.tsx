@@ -29,6 +29,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   syncs?: unknown
   readonly?: boolean
   mock?: boolean
+  autoCreateNs?: boolean
   onClose?: () => void
   onStatusChange?: (editorState: any) => void
   onEditorChange?: (editorResources: any) => void
@@ -48,6 +49,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     filters,
     readonly,
     mock,
+    autoCreateNs,
     onStatusChange,
     onEditorChange,
     onClose,
@@ -443,6 +445,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         comparison: userComparison,
         change,
         unredactedChange,
+        yaml,
       } = processUser(
         monacoRef,
         value,
@@ -455,12 +458,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly === true,
         validationRef.current,
         value,
-        editableUidSiblings
+        editableUidSiblings,
+        autoCreateNs
       )
       setLastUnredactedChange(unredactedChange)
       setProhibited(protectedRanges)
       setFilteredRows(filteredRows)
-
       // determine what changes were made by user so we can decorate
       // and know what form changes to block
       const allErrors = [...errors.validation, ...errors.syntax]
@@ -515,6 +518,19 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       const editStack = model['_commandManager']
       setHasRedo(editStack?.future.length > 0)
       setHasUndo(editStack?.currentOpenStackElement || editStack?.past.length > 0)
+
+      // update yaml in editor
+      if (autoCreateNs) {
+        const model = editorRef.current?.getModel()
+        model.resources = cloneDeep(change.resources)
+        const saveDecorations = getResourceEditorDecorations(editorRef, false)
+        const viewState = editorRef.current?.saveViewState()
+        model.setValue(yaml)
+        // restore cursor position
+        editorRef.current?.restoreViewState(viewState)
+        // display Warnings, errors
+        editorRef.current.deltaDecorations([], saveDecorations)
+      }
     }
   }
 

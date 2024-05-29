@@ -317,7 +317,7 @@ export const validateTemplateSyntax = (object: any, errors: any[]) => {
         if (
           obj &&
           Array.isArray(obj.$p) &&
-          ['metadata.name', 'metadata.namespacer'].includes(obj.$p.slice(-2).join('.')) &&
+          ['metadata.name', 'metadata.namespace'].includes(obj.$p.slice(-2).join('.')) &&
           typeof obj.$v !== 'string'
         ) {
           /* istanbul ignore next */
