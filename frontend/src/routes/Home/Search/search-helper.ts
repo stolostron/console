@@ -5,6 +5,7 @@
 import { TFunction } from 'react-i18next'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
+export const federatedErrorText = 'error sending federated request'
 export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
 

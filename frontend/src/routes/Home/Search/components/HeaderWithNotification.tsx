@@ -5,7 +5,7 @@ import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlert, AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
+import { AcmInlineStatus, AcmPageHeader, StatusType } from '../../../../ui-components'
 import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
@@ -18,16 +18,13 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
   return (
     <div style={{ outline: 'none', display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{ flex: 1 }}>
-        {isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' && (
-          <AcmAlert
-            variant="info"
-            noClose
-            isInline
-            title={t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')}
-          />
-        )}
         <AcmPageHeader
           title={isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' ? t('Global search') : t('Search')}
+          titleTooltip={
+            isGlobalHub &&
+            settings.globalSearchFeatureFlag === 'enabled' &&
+            t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')
+          }
         />
       </div>
 

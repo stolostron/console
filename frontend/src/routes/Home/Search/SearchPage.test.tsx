@@ -9,7 +9,7 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { configMapsState } from '../../../atoms'
+import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../../atoms'
 import { nockPostRequest, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { ConfigMap } from '../../../resources'
@@ -174,6 +174,66 @@ describe('SearchPage', () => {
     await waitFor(() => expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search schema data')).toBeTruthy())
     // Validate message when managed clusters are disabled.
+    await waitFor(() => expect(screen.queryByText('More on disabled clusters')).toBeFalsy())
+  })
+
+  it('should render page with global search federated error', async () => {
+    const mockSettings: Settings = {
+      globalSearchFeatureFlag: 'enabled',
+    }
+    const metricNock = nockPostRequest('/metrics?search', {})
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
+    const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+        },
+        result: {
+          errors: ['error sending federated request' as unknown as GraphQLError],
+        },
+      },
+      {
+        request: {
+          query: SearchSchemaDocument,
+        },
+        result: {
+          errors: ['error sending federated request' as unknown as GraphQLError],
+        },
+      },
+      {
+        request: {
+          query: GetMessagesDocument,
+        },
+        result: {
+          data: {
+            messages: [],
+          },
+        },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+        }}
+      >
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <SearchPage />
+          </MockedProvider>
+        </Router>
+      </RecoilRoot>
+    )
+
+    // Wait for username resource requests to finish
+    await waitForNocks([metricNock, getUserPreferenceNock])
+
+    // Test that the component has rendered correctly with data
+    await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText('Saved searches')[1]).toBeTruthy())
+
+    // Validate that message about disabled cluster doesn't appear.
     await waitFor(() => expect(screen.queryByText('More on disabled clusters')).toBeFalsy())
   })
 

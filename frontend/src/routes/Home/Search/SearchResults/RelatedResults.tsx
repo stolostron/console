@@ -12,12 +12,12 @@ import {
 import _ from 'lodash'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
-import { convertStringToQuery } from '../search-helper'
+import { convertStringToQuery, federatedErrorText } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
@@ -28,8 +28,9 @@ export function RenderItemContent(props: {
   relatedKind: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+  hasFederatedError: boolean
 }) {
-  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource } = props
+  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, hasFederatedError } = props
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
   const clusters = useAllClusters(true)
@@ -49,7 +50,7 @@ export function RenderItemContent(props: {
   )
   const relatedResultItems = useMemo(() => data?.searchResult?.[0]?.related?.[0]?.items || [], [data])
 
-  if (error) {
+  if (error && !hasFederatedError) {
     return (
       <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
         <Stack>
@@ -92,8 +93,11 @@ export default function RelatedResults(props: {
   const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource, setDeleteExternalResource } =
     props
   const { t } = useTranslation()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const searchResultLimit = useSearchResultLimit()
+  // Related count should not have limit
   const queryFilters = convertStringToQuery(currentQuery, searchResultLimit)
   const { data, error, loading } = useSearchResultRelatedCountQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -101,6 +105,17 @@ export default function RelatedResults(props: {
       input: [queryFilters],
     },
   })
+
+  const hasFederatedError = useMemo(() => {
+    if (
+      isGlobalHub &&
+      settings.globalSearchFeatureFlag === 'enabled' &&
+      error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))
+    ) {
+      return true
+    }
+    return false
+  }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
   const relatedCounts = useMemo(() => {
     const dataArray = data?.searchResult?.[0]?.related || []
@@ -128,7 +143,7 @@ export default function RelatedResults(props: {
         </AccordionItem>
       </Accordion>
     )
-  } else if (error || !data || !data.searchResult) {
+  } else if ((error && !hasFederatedError) || !data || !data.searchResult) {
     return (
       <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
         <Stack>
@@ -183,6 +198,7 @@ export default function RelatedResults(props: {
                   relatedKind={currentKind}
                   setDeleteResource={setDeleteResource}
                   setDeleteExternalResource={setDeleteExternalResource}
+                  hasFederatedError={hasFederatedError}
                 />
               )}
             </AccordionContent>

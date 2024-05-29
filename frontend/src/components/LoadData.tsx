@@ -484,7 +484,7 @@ export function LoadData(props: { children?: ReactNode }) {
   // Update global value setters when data has finished
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   if (globalHubRes && !globalHubLoading && !isGlobalHub) {
-    setIsGlobalHub(globalHubRes[0].isGlobalHub)
+    setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
   }
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
