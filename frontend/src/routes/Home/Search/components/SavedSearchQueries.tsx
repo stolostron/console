@@ -2,19 +2,20 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
-import { useSharedAtoms } from '../../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmCountCard, AcmExpandableWrapper } from '../../../../ui-components'
-import { convertStringToQuery } from '../search-helper'
+import { convertStringToQuery, setFederatedErrorAlert } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultCountQuery } from '../search-sdk/search-sdk'
 import { updateBrowserUrl } from '../urlQuery'
 import { DeleteSearchModal } from './Modals/DeleteSearchModal'
 import { SaveAndEditSearchModal } from './Modals/SaveAndEditSearchModal'
 import { ShareSearchModal } from './Modals/ShareSearchModal'
+import { SearchAlertContext } from './SearchAlertGroup'
 
 export default function SavedSearchQueries(props: {
   isUserPreferenceLoading: boolean
@@ -34,8 +35,11 @@ export default function SavedSearchQueries(props: {
   } = props
   const { t } = useTranslation()
   const history = useHistory()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
+  const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
   const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
@@ -56,6 +60,22 @@ export default function SavedSearchQueries(props: {
     skip: isUserPreferenceLoading, // avoid unnecessary query until we have saved search array
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
+
+  useEffect(() => {
+    if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
+      setFederatedErrorAlert(loading, error, data, alerts, addSearchAlert, removeSearchAlert, t)
+    }
+  }, [
+    isGlobalHub,
+    settings.globalSearchFeatureFlag,
+    addSearchAlert,
+    alerts,
+    removeSearchAlert,
+    loading,
+    error,
+    data,
+    t,
+  ])
 
   const handleKeyPress = useCallback(
     (KeyboardEvent: React.KeyboardEvent, query: SavedSearch) => {
