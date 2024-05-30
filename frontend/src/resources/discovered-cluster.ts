@@ -30,6 +30,7 @@ export interface DiscoveredCluster extends IResource {
     status: string
     type?: string
     isManagedCluster?: boolean
+    rhocmClusterId?: string
     credential?: {
       apiVersion: string
       kind: string

@@ -41,7 +41,7 @@
       "properties": {
         "apiVersion": { "type": "string" },
         "kind": { "type": "string", "const": "Secret" },
-        "type": { "type": "string", "enum": ["Opaque"] },
+        "type": { "type": "string", "enum": ["Opaque", "auto-import/rosa"] },
         "metadata": {
           "type": "object",
           "properties": {
@@ -62,7 +62,8 @@
           "oneOf": [
             { "required": ["host", "token"] },
             { "required": ["autoImportRetry", "token", "server"] },
-            { "required": ["autoImportRetry", "kubeconfig"] }
+            { "required": ["autoImportRetry", "kubeconfig"] },
+            { "required": ["api_token", "cluster_id"] }
           ]
         }
       },
