@@ -60,6 +60,7 @@ export const DOC_LINKS = {
   ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
   ACCESSING_CONSOLE: `${DOC_HOME}/html/web_console/web-console#accessing-your-console`,
   NUTANIX_POST_INSTALL: `https://access.redhat.com/documentation/en-us/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
+  ROSA_DISCOVERY_POLICY_EXAMPLE: `https://github.com/stolostron/policy-collection/blob/release-${DOC_VERSION}/community/CM-Configuration-Management/policy-rosa-autoimport.yaml`,
 }
 
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {

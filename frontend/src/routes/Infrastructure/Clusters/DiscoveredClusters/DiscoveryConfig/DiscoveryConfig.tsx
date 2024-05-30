@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import {
   ActionGroup,
+  Alert,
+  AlertActionLink,
   ButtonVariant,
   Divider,
   Modal,
@@ -48,6 +49,8 @@ import {
   Provider,
 } from '../../../../../ui-components'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 const discoveryVersions = ['4.14', '4.15', '4.16', '4.17']
 
@@ -81,6 +84,42 @@ export default function DiscoveryConfigPage() {
     >
       <AcmPageContent id="discoveryConfigPageContent">
         <PageSection variant="light">
+          <Alert
+            variant="info"
+            isInline
+            title="Import your ROSA clusters automatically"
+            style={{ marginBottom: '1em' }}
+            className="pf-v5-u-mb-md"
+            actionLinks={[
+              [
+                <AlertActionLink
+                  key="policy-example"
+                  component="a"
+                  href={DOC_LINKS.ROSA_DISCOVERY_POLICY_EXAMPLE}
+                  target="_blank"
+                  rel="noreferrer"
+                  icon={<ExternalLinkAltIcon />}
+                  iconPosition="right"
+                >
+                  {t('Policy example')}
+                </AlertActionLink>,
+                <AlertActionLink
+                  key="learn-more"
+                  component="a"
+                  href={DOC_LINKS.DISCOVERED_CLUSTERS}
+                  target="_blank"
+                  rel="noreferrer"
+                  icon={<ExternalLinkAltIcon />}
+                  iconPosition="right"
+                >
+                  {t('Learn more')}
+                </AlertActionLink>,
+              ],
+            ]}
+          >
+            {' '}
+            {t('discoveryConfig.autoImportPolicy.Info')}
+          </Alert>
           <AddDiscoveryConfigData />
         </PageSection>
       </AcmPageContent>
