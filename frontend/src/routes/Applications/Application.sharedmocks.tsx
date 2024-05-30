@@ -470,7 +470,23 @@ export const mockSearchQueryArgoApps = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
-export const mockSearchQueryArgoAppsStatusSummaryCount = {
+export const mockSearchQueryArgoAppsCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          { property: 'kind', values: ['Application'] },
+          { property: 'apigroup', values: ['argoproj.io'] },
+          { property: 'cluster', values: ['!local-cluster'] },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
+}
+
+export const mockSearchQueryArgoAppsStatusSummary = {
   operationName: 'searchResult',
   variables: {
     input: [
@@ -485,6 +501,22 @@ export const mockSearchQueryArgoAppsStatusSummaryCount = {
     ],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const mockSearchQueryArgoAppsStatusSummaryFilteredCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          { property: 'kind', values: ['Application'] },
+          { property: 'apigroup', values: ['argoproj.io'] },
+          { property: 'cluster', values: ['test-cluster'] },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
 }
 
 export const mockSearchQueryArgoAppsClusterOverview = {
@@ -502,6 +534,22 @@ export const mockSearchQueryArgoAppsClusterOverview = {
     ],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const mockSearchQueryArgoAppsClusterOverviewFilteredCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          { property: 'kind', values: ['Application'] },
+          { property: 'apigroup', values: ['argoproj.io'] },
+          { property: 'cluster', values: ['feng-hypershift-test'] },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
 }
 
 export const mockSearchResponseArgoApps = {
@@ -528,6 +576,16 @@ export const mockSearchResponseArgoApps = {
             _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
           },
         ],
+      },
+    ],
+  },
+}
+
+export const mockSearchResponseArgoAppsCount = {
+  data: {
+    searchResult: [
+      {
+        count: 1,
       },
     ],
   },
@@ -561,6 +619,16 @@ export const mockSearchResponseArgoApps1 = {
     ],
   },
 }
+export const mockSearchResponseArgoAppsCount1 = {
+  data: {
+    searchResult: [
+      {
+        count: 1,
+      },
+    ],
+  },
+}
+
 export const mockSearchQueryOCPApplications = {
   operationName: 'searchResult',
   variables: {
@@ -571,6 +639,15 @@ export const mockSearchQueryOCPApplications = {
             property: 'kind',
             values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
           },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
+          },
         ],
         limit: 1000,
       },
@@ -579,7 +656,7 @@ export const mockSearchQueryOCPApplications = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
-export const mockSearchQueryOCPApplicationsStatusSummaryCount = {
+export const mockSearchQueryOCPApplicationsCount = {
   operationName: 'searchResult',
   variables: {
     input: [
@@ -588,6 +665,84 @@ export const mockSearchQueryOCPApplicationsStatusSummaryCount = {
           {
             property: 'kind',
             values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
+}
+
+export const mockSearchQueryOCPApplicationsFiltered = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: ['app=*', 'app.kubernetes.io/part-of=*'],
+          },
+        ],
+        limit: 1000,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const mockSearchQueryOCPApplicationsFilteredCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: ['app=*', 'app.kubernetes.io/part-of=*'],
+          },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
+}
+
+export const mockSearchQueryOCPApplicationsStatusSummary = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
           },
           {
             property: 'cluster',
@@ -601,6 +756,36 @@ export const mockSearchQueryOCPApplicationsStatusSummaryCount = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
+export const mockSearchQueryOCPApplicationsStatusSummaryFilteredCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
+          },
+          {
+            property: 'cluster',
+            values: ['test-cluster'],
+          },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
+}
+
 export const mockSearchQueryOCPApplicationsClusterOverview = {
   operationName: 'searchResult',
   variables: {
@@ -610,6 +795,15 @@ export const mockSearchQueryOCPApplicationsClusterOverview = {
           {
             property: 'kind',
             values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
           },
           {
             property: 'cluster',
@@ -623,11 +817,51 @@ export const mockSearchQueryOCPApplicationsClusterOverview = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
+export const mockSearchQueryOCPApplicationsClusterOverviewFilteredCount = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+          },
+          {
+            property: 'label',
+            values: [
+              'app=*',
+              'app.kubernetes.io/part-of=*',
+              'kustomize.toolkit.fluxcd.io/name=*',
+              'helm.toolkit.fluxcd.io/name=*',
+            ],
+          },
+          {
+            property: 'cluster',
+            values: ['feng-hypershift-test'],
+          },
+        ],
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
+}
+
 export const mockSearchResponseOCPApplications = {
   data: {
     searchResult: [
       {
         items: mockOCPApplications,
+      },
+    ],
+  },
+}
+
+export const mockSearchResponseOCPApplicationsCount = {
+  data: {
+    searchResult: [
+      {
+        count: mockOCPApplications.length,
       },
     ],
   },

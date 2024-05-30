@@ -40,12 +40,21 @@ import {
   mockPlacementrules,
   mockPlacementsDecisions,
   mockSearchQueryArgoApps,
+  mockSearchQueryArgoAppsCount,
   mockSearchQueryOCPApplications,
+  mockSearchQueryOCPApplicationsCount,
+  mockSearchQueryOCPApplicationsFiltered,
+  mockSearchQueryOCPApplicationsFilteredCount,
   mockSearchResponseArgoApps,
+  mockSearchResponseArgoAppsCount,
   mockSearchResponseOCPApplications,
+  mockSearchResponseOCPApplicationsCount,
   mockSubscriptions,
 } from './Application.sharedmocks'
 import ApplicationsPage from './ApplicationsPage'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 describe('Applications Page', () => {
   beforeEach(async () => {
@@ -53,7 +62,9 @@ describe('Applications Page', () => {
     nockIgnoreApiPaths()
     nockPostRequest('/metrics?application', {})
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -69,25 +80,27 @@ describe('Applications Page', () => {
           snapshot.set(namespacesState, mockNamespaces)
         }}
       >
-        <MemoryRouter initialEntries={[NavigationPath.applications]}>
-          <PluginContext.Provider
-            value={{
-              acmExtensions: acmExtension,
-              dataContext: PluginDataContext,
-              ocpApi,
-            }}
-          >
-            <ApplicationsPage />
-          </PluginContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[NavigationPath.applications]}>
+            <PluginContext.Provider
+              value={{
+                acmExtensions: acmExtension,
+                dataContext: PluginDataContext,
+                ocpApi,
+              }}
+            >
+              <ApplicationsPage />
+            </PluginContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
-    // wait for page to load
-    await waitForText('feng-remote-argo8')
   })
 
   test('should display info', async () => {
-    // app
+    // wait for page to load
+    await waitForText('feng-remote-argo8')
+
     expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
@@ -116,6 +129,9 @@ describe('Applications Page', () => {
   })
 
   test('should filter', async () => {
+    // wait for page to load
+    await waitForText('feng-remote-argo8')
+
     // subscription
 
     // Open filter
@@ -164,6 +180,9 @@ describe('Applications Page', () => {
 
     // clear appset filter
     userEvent.click(screen.getByRole('button', { name: /close application set/i }))
+
+    nockSearch(mockSearchQueryOCPApplicationsFiltered, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsFilteredCount, mockSearchResponseOCPApplicationsCount)
 
     // OCP
     // Openshift filter possibly 2 (Openshift, Default Openshift)

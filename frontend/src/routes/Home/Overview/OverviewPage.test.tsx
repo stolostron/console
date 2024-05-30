@@ -37,12 +37,19 @@ import {
   mockApplicationSets,
   mockArgoApplications,
   mockSearchQueryArgoApps,
+  mockSearchQueryArgoAppsCount,
   mockSearchQueryOCPApplications,
+  mockSearchQueryOCPApplicationsCount,
   mockSearchResponseArgoApps,
+  mockSearchResponseArgoAppsCount,
   mockSearchResponseOCPApplications,
+  mockSearchResponseOCPApplicationsCount,
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 const getAddonRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
@@ -989,15 +996,19 @@ it('should render overview page in empty state', async () => {
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
 
   render(
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={[]}>
-          <OverviewPage />
-        </MockedProvider>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={[]}>
+            <OverviewPage />
+          </MockedProvider>
+        </Router>
+      </QueryClientProvider>
     </RecoilRoot>
   )
 
@@ -1011,7 +1022,9 @@ it('should render overview page in empty state', async () => {
 it('should render overview page in error state', async () => {
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const mocks = [
@@ -1027,11 +1040,13 @@ it('should render overview page in error state', async () => {
 
   render(
     <RecoilRoot>
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <OverviewPage />
-        </MockedProvider>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <OverviewPage />
+          </MockedProvider>
+        </Router>
+      </QueryClientProvider>
     </RecoilRoot>
   )
 
@@ -1048,7 +1063,9 @@ it('should render overview page in error state', async () => {
 it('should render overview page with expected data', async () => {
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
   nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const mocks = [
@@ -1147,11 +1164,13 @@ it('should render overview page with expected data', async () => {
         snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
       }}
     >
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={mocks}>
-          <OverviewPage />
-        </MockedProvider>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={mocks}>
+            <OverviewPage />
+          </MockedProvider>
+        </Router>
+      </QueryClientProvider>
     </RecoilRoot>
   )
 

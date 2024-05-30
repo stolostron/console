@@ -44,10 +44,20 @@ import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
 import {
   mockSearchQueryArgoAppsClusterOverview,
+  mockSearchQueryArgoAppsClusterOverviewFilteredCount,
+  mockSearchQueryArgoAppsCount,
   mockSearchQueryOCPApplicationsClusterOverview,
+  mockSearchQueryOCPApplicationsClusterOverviewFilteredCount,
+  mockSearchQueryOCPApplicationsCount,
   mockSearchResponseArgoApps1,
+  mockSearchResponseArgoAppsCount,
+  mockSearchResponseArgoAppsCount1,
   mockSearchResponseOCPApplications,
+  mockSearchResponseOCPApplicationsCount,
 } from '../../../../../Applications/Application.sharedmocks'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 const mockHistoryPush = jest.fn()
 
@@ -118,7 +128,11 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -139,17 +153,19 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockAWSHypershiftCluster,
-              addons: undefined,
-              hostedCluster: mockAWSHostedCluster,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockAWSHypershiftCluster,
+                addons: undefined,
+                hostedCluster: mockAWSHostedCluster,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -165,7 +181,11 @@ describe('ClusterOverview with BM hypershift cluster', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -188,17 +208,19 @@ describe('ClusterOverview with BM hypershift cluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockBMHypershiftCluster,
-              addons: undefined,
-              hostedCluster: mockAWSHostedCluster,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockBMHypershiftCluster,
+                addons: undefined,
+                hostedCluster: mockAWSHostedCluster,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -214,7 +236,11 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -237,17 +263,19 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockBMHypershiftClusterNoNamespace,
-              addons: undefined,
-              hostedCluster: mockAWSHostedCluster,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockBMHypershiftClusterNoNamespace,
+                addons: undefined,
+                hostedCluster: mockAWSHostedCluster,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -263,7 +291,11 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -286,17 +318,19 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockAWSHypershiftClusterNoHypershift,
-              addons: undefined,
-              hostedCluster: mockAWSHostedCluster,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockAWSHypershiftClusterNoHypershift,
+                addons: undefined,
+                hostedCluster: mockAWSHostedCluster,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -312,7 +346,11 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -333,17 +371,19 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockAWSHypershiftCluster,
-              addons: undefined,
-              hostedCluster: undefined,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockAWSHypershiftCluster,
+                addons: undefined,
+                hostedCluster: undefined,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -359,7 +399,11 @@ describe('ClusterOverview with regional hub cluster information', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -380,17 +424,19 @@ describe('ClusterOverview with regional hub cluster information', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockRegionalHubCluster,
-              addons: undefined,
-              hostedCluster: undefined,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockRegionalHubCluster,
+                addons: undefined,
+                hostedCluster: undefined,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -408,7 +454,11 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
     render(
       <RecoilRoot
@@ -429,17 +479,19 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockRegionalHubCluster,
-              addons: undefined,
-              hostedCluster: undefined,
-            }}
-          >
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <ClusterContext.Provider
+              value={{
+                cluster: mockRegionalHubCluster,
+                addons: undefined,
+                hostedCluster: undefined,
+              }}
+            >
+              <ClusterOverviewPageContent />
+            </ClusterContext.Provider>
+          </MemoryRouter>
+        </QueryClientProvider>
       </RecoilRoot>
     )
   })
@@ -668,7 +720,11 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
     nockGet(getSecrets1.req, getSecrets1.req) // get 'secrets' in 'clusters' namespace
     nockGet(getSecrets2.req, getSecrets2.req)
