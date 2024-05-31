@@ -39,7 +39,15 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 let requests: { cancel: () => void }[] = []
 
-const resourceCache: {
+export function getKubeResources(kind: string, apiVersion: string) {
+  const option = { apiVersion, kind }
+  const apiVersionPlural = apiVersionPluralFn(option)
+  return Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
+    return event.resource
+  })
+}
+
+export const resourceCache: {
   [apiVersionKind: string]: {
     [uid: string]: {
       resource: IResource

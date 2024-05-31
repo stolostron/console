@@ -1,5 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+interface OwnerReference {
+  apiVersion: string
+  blockOwnerDeletion?: boolean
+  controller?: boolean
+  kind: string
+  name: string
+  uid?: string
+}
 export interface IResource {
   kind: string
   apiVersion: string
@@ -11,5 +19,7 @@ export interface IResource {
     selfLink?: string
     uid?: string
     labels?: Record<string, string>
+    annotations?: Record<string, string>
+    ownerReferences?: OwnerReference[]
   }
 }
