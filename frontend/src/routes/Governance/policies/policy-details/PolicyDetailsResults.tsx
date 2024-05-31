@@ -12,8 +12,9 @@ import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
 import { getPolicyTempRemediation } from '../../common/util'
+import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 
-interface resultsTableData {
+export interface ResultsTableData {
   templateName: string
   cluster: string
   clusterNamespace: string
@@ -40,13 +41,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
   }, [namespaces])
 
-  const policiesDeployedOnCluster: resultsTableData[] = useMemo(() => {
+  const policiesDeployedOnCluster: ResultsTableData[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''
     const policyNamespace = policy.metadata.namespace ?? ''
     const policyResponses: Policy[] = policies.filter(
       (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
     )
-    const status: resultsTableData[] = []
+    const status: ResultsTableData[] = []
     policyResponses.length > 0 &&
       policyResponses.forEach((policyResponse: Policy) => {
         const cluster =
@@ -86,7 +87,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
       {
         header: t('Cluster'),
         sort: 'clusterNamespace',
-        cell: (item: resultsTableData) => (
+        cell: (item: ResultsTableData) => (
           <Link
             to={{
               pathname: generatePath(NavigationPath.clusterOverview, {
@@ -98,7 +99,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             {item.clusterNamespace}
           </Link>
         ),
-        search: (item: resultsTableData) => item.clusterNamespace,
+        search: (item: ResultsTableData) => item.clusterNamespace,
       },
       {
         header: t('Violations'),
@@ -109,7 +110,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           const compliantB = messageB && typeof messageB === 'string' ? messageB.split(';')[0] : '-'
           return compareStrings(compliantA, compliantB)
         },
-        cell: (item: resultsTableData) => {
+        cell: (item: ResultsTableData) => {
           const message = item.message ?? '-'
           let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
           compliant = compliant ? compliant.trim().toLowerCase() : '-'
@@ -122,8 +123,10 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
               )
             case 'noncompliant':
               return (
-                <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
+                <div style={{ width: 'max-content' }}>
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <div style={{ display: 'inline' }}> {t('Violations')}</div>
+                  {message.includes('found but not as specified') && <ViewDiffApiCall {...{ item }} />}
                 </div>
               )
             case 'pending':
@@ -144,13 +147,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
       {
         header: t('Template'),
         sort: 'templateName',
-        cell: (item: resultsTableData) => item.templateName,
-        search: (item: resultsTableData) => item.templateName,
+        cell: (item: ResultsTableData) => item.templateName,
+        search: (item: ResultsTableData) => item.templateName,
       },
       {
         header: t('Message'),
         sort: 'message',
-        cell: (item: resultsTableData) => {
+        cell: (item: ResultsTableData) => {
           const policyName = item?.policyName
           const policyNamespace = item?.policyNamespace
           const cluster = item?.cluster
@@ -193,23 +196,23 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           }
           return '-'
         },
-        search: (item: resultsTableData) => item.message,
+        search: (item: ResultsTableData) => item.message,
       },
       {
         header: t('Remediation'),
         sort: 'remediationAction',
-        cell: (item: resultsTableData) => item.remediationAction,
-        search: (item: resultsTableData) => item.remediationAction,
+        cell: (item: ResultsTableData) => item.remediationAction,
+        search: (item: ResultsTableData) => item.remediationAction,
       },
       {
         header: t('Last report'),
         sort: 'timestamp',
-        cell: (item: resultsTableData) =>
+        cell: (item: ResultsTableData) =>
           item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
       },
       {
         header: t('History'),
-        cell: (item: resultsTableData) => {
+        cell: (item: ResultsTableData) => {
           const policyName = item?.policyName
           const policyNamespace = item?.policyNamespace
           const cluster = item?.cluster
@@ -233,7 +236,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     <PageSection>
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
-        <AcmTable<resultsTableData>
+        <AcmTable<ResultsTableData>
           items={policiesDeployedOnCluster}
           emptyState={
             <AcmEmptyState

@@ -13,16 +13,19 @@ const onToggle = (acmCardID: string, open: boolean, setOpen: (open: boolean) => 
   }
 }
 
-export function AcmExpandableCard(props: {
-  title: string
-  children: React.ReactNode
-  className?: string
-  id?: string
-}) {
+export function AcmExpandableCard(
+  props: Readonly<{
+    title: string
+    children: React.ReactNode
+    className?: string
+    id?: string
+    defaultOpen?: boolean
+  }>
+) {
   const acmCardID = window.location.href + props.id
   localStorage.getItem(acmCardID) ?? localStorage.setItem(acmCardID, 'show')
 
-  const [open, setOpen] = useState<boolean>(localStorage.getItem(acmCardID) === 'show')
+  const [open, setOpen] = useState<boolean>(props.defaultOpen ?? localStorage.getItem(acmCardID) === 'show')
   const { t } = useTranslation()
   return (
     <Card id={props.id} className={props.className} isExpanded={open}>

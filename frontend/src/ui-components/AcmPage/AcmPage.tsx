@@ -43,7 +43,7 @@ export function AcmPage(props: { header: ReactNode; children: ReactNode; hasDraw
 }
 
 export interface AcmPageHeaderProps {
-  title: string
+  title: string | React.ReactNode
   titleTooltip?: string | React.ReactNode
   popoverPosition?: PopoverProps['position']
   popoverAutoWidth?: PopoverProps['hasAutoWidth']

@@ -12,7 +12,7 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import jsYaml from 'js-yaml'
-import { useEffect, useMemo, useState } from 'react'
+import { Dispatch, useEffect, useMemo, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -26,21 +26,26 @@ import {
   AcmTablePaginationContextProvider,
   compareStrings,
 } from '../../../../ui-components'
+import { DiffModal } from '../../components/DiffModal'
 
-export function PolicyTemplateDetails(props: {
-  clusterName: string
-  apiGroup: string
-  apiVersion: string
-  kind: string
-  templateName: string
-}) {
+export function PolicyTemplateDetails(
+  props: Readonly<{
+    clusterName: string
+    apiGroup: string
+    apiVersion: string
+    kind: string
+    templateName: string
+    setParentTemplate: Dispatch<any>
+  }>
+) {
   const { t } = useTranslation()
   const { clusterName, apiGroup, apiVersion, kind, templateName } = props
   const { managedClusterAddonsState } = useSharedAtoms()
   const [template, setTemplate] = useState<any>()
   const [relatedObjects, setRelatedObjects] = useState<any>()
   const [templateError, setTemplateError] = useState<string>()
-  const [isExpanded, setIsExpanded] = useState<boolean>(true)
+  const isCertPolicy = kind === 'CertificatePolicy'
+  const [isExpanded, setIsExpanded] = useState<boolean>(isCertPolicy)
   const [editorHeight, setEditorHeight] = useState<number>(250)
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
@@ -80,7 +85,7 @@ export function PolicyTemplateDetails(props: {
       })
     } else if (
       // Detect if this is a Gatekeeper constraint and is populated with audit results from a newer Gatekeeper. Older
-      // Gatekeeper installations don't set "group" and "version".
+      // Gatekeeper installations don't set 'group' and 'version'.
       resource?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
       resource?.status?.violations?.length &&
       resource.status.violations[0].version !== undefined
@@ -119,6 +124,7 @@ export function PolicyTemplateDetails(props: {
           setTemplateError(viewResponse.message)
         } else {
           setTemplate(viewResponse.result)
+          props.setParentTemplate(viewResponse.result)
           setRelatedObjects(getRelatedObjects(viewResponse.result, clusterName))
         }
       })
@@ -126,7 +132,7 @@ export function PolicyTemplateDetails(props: {
         console.error('Error getting resource: ', err)
         setTemplateError(err)
       })
-  }, [t, templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
+  }, [t, templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName, props])
 
   // Hook to get the height of the template details section so both details and editor sections are the same height
   /* istanbul ignore next */
@@ -143,7 +149,7 @@ export function PolicyTemplateDetails(props: {
   } else if (template?.status?.violations) {
     details = template?.status?.violations
   } else if (template?.status?.conditions) {
-    // Find the "Compliant" condition from the list of conditions
+    // Find the 'Compliant' condition from the list of conditions
     const cond = template.status.conditions.find((c: any) => c.type === 'Compliant')
     details = cond?.message || '-'
   }
@@ -219,7 +225,13 @@ export function PolicyTemplateDetails(props: {
             case 'noncompliant':
               compliant = (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                  <DiffModal
+                    diff={item.properties?.diff}
+                    kind={item.object?.kind}
+                    namespace={item.object?.metadata?.namespace}
+                    name={item.object?.metadata?.name}
+                  />
                 </div>
               )
               break
@@ -289,14 +301,15 @@ export function PolicyTemplateDetails(props: {
           <GridItem span={6}>
             <AcmDescriptionList
               id={'template-details-section'}
-              title={t('Template details')}
+              title={kind + ' ' + t('details')}
               leftItems={descriptionItems}
+              defaultOpen={isCertPolicy}
             />
           </GridItem>
           <GridItem span={6}>
             <Card isExpanded={isExpanded}>
               <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
-                <CardTitle id="titleId">{t('Template yaml')}</CardTitle>
+                <CardTitle id="titleId">{kind + ' ' + t('YAML')}</CardTitle>
               </CardHeader>
               <CardExpandableContent>
                 <YamlEditor resourceYAML={jsYaml.dump(template, { indent: 2 })} readOnly={true} height={editorHeight} />

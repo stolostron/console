@@ -26,14 +26,17 @@ export type ListItems = {
   value?: string | number | React.ReactNode | undefined
 }
 
-export function AcmDescriptionList(props: {
-  id?: string
-  title: string
-  leftItems: ListItems[]
-  rightItems?: ListItems[] | undefined
-}) {
+export function AcmDescriptionList(
+  props: Readonly<{
+    id?: string
+    title: string
+    leftItems: ListItems[]
+    rightItems?: ListItems[]
+    defaultOpen?: boolean
+  }>
+) {
   return (
-    <AcmExpandableCard id={props.id} title={props.title}>
+    <AcmExpandableCard id={props.id} title={props.title} defaultOpen={props.defaultOpen}>
       <Grid sm={12} md={props.rightItems ? 6 : 12}>
         <GridItem className={leftCol}>
           <List items={props.leftItems} />

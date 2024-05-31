@@ -7,6 +7,7 @@ import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { waitForNocks, waitForText, waitForNotText } from '../../../../lib/test-util'
 import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
+import userEvent from '@testing-library/user-event'
 
 jest.mock('../../../../components/YamlEditor', () => {
   // TODO replace with actual YAML Page when Monaco editor is imported correctly
@@ -113,6 +114,7 @@ const getResourceResponse = {
   },
 }
 
+const setParentTemplate = jest.fn()
 describe('Policy Template Details content', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('Should render Policy Template Details Page content correctly', async () => {
@@ -130,6 +132,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1'}
             kind={'ConfigurationPolicy'}
             templateName={'policy-set-with-1-placement-policy-1'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -138,8 +141,10 @@ describe('Policy Template Details content', () => {
     // Wait for delete resource requests to finish
     await waitForNocks([getResourceNock])
 
-    // wait template description section to load correctly
-    await waitForText('Template details')
+    await waitForText('ConfigurationPolicy details')
+    const detailButton = screen.getAllByRole('button')[0]
+    userEvent.click(detailButton)
+
     await waitForText('policy-set-with-1-placement-policy-1')
     await waitForText('test-cluster')
     await waitForText('ConfigurationPolicy')
@@ -148,7 +153,9 @@ describe('Policy Template Details content', () => {
     )
 
     // wait for template yaml to load correctly
-    await waitForText('Template yaml')
+    await waitForText('ConfigurationPolicy YAML')
+    const yamlButton = screen.getAllByRole('button')[1]
+    userEvent.click(yamlButton)
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
@@ -220,6 +227,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1'}
             kind={'ConfigurationPolicy'}
             templateName={'policy-set-with-1-placement-policy-1'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -228,8 +236,11 @@ describe('Policy Template Details content', () => {
     // Wait for the get resource requests to finish
     await waitForNocks([getResourceNock])
 
+    await waitForText('ConfigurationPolicy details')
+    const configDetail = screen.getAllByRole('button')[0]
+    userEvent.click(configDetail)
+
     // Verify the template description section
-    await waitForText('Template details')
     await waitForText('policy-set-with-1-placement-policy-1')
     // Ensure the hosting cluster name isn't shown as the cluster name
     await waitForText(clusterName)
@@ -351,6 +362,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1beta1'}
             kind={'K8sRequiredLabels'}
             templateName={'ns-must-have-gk'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -359,8 +371,10 @@ describe('Policy Template Details content', () => {
     // Wait for the get resource requests to finish
     await waitForNocks([getResourceNock])
 
+    await waitForText('K8sRequiredLabels details')
+    const detailButton = screen.getAllByRole('button')[0]
+    userEvent.click(detailButton)
     // Verify the template description section
-    await waitForText('Template details')
     await waitForText('ns-must-have-gk')
     await waitForText('K8sRequiredLabels')
     screen.getByText(
@@ -582,6 +596,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1beta1'}
             kind={'OperatorPolicy'}
             templateName={'oppol-no-group'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -590,8 +605,11 @@ describe('Policy Template Details content', () => {
     // Wait for the get resource requests to finish
     await waitForNocks([getResourceNock])
 
+    await waitForText('OperatorPolicy details')
+    const detailButton = screen.getAllByRole('button')[0]
+    userEvent.click(detailButton)
+
     // Verify the template description section
-    await waitForText('Template details')
     await waitForText('oppol-no-group')
     await waitForText('OperatorPolicy')
     screen.getByText(
@@ -631,6 +649,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1'}
             kind={'ConfigurationPolicy'}
             templateName={'policy-set-with-1-placement-policy-1'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -638,8 +657,7 @@ describe('Policy Template Details content', () => {
     // Wait for the get resource requests to finish
     await waitForNocks([getResourceNock])
 
-    // wait for template yaml to load correctly
-    await waitForText('Template yaml')
+    await waitForText('ConfigurationPolicy details')
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
@@ -673,6 +691,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1'}
             kind={'ConfigurationPolicy'}
             templateName={'policy-set-with-1-placement-policy-1'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -681,7 +700,7 @@ describe('Policy Template Details content', () => {
     await waitForNocks([getResourceNock])
 
     // wait for template yaml to load correctly
-    await waitForText('Template yaml')
+    await waitForText('ConfigurationPolicy details')
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
@@ -704,6 +723,7 @@ describe('Policy Template Details content', () => {
             apiVersion={'v1'}
             kind={'IamPolicy'}
             templateName={'ns-must-have-gk'}
+            setParentTemplate={setParentTemplate}
           />
         </MemoryRouter>
       </RecoilRoot>
