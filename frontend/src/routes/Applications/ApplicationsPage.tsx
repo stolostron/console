@@ -5,7 +5,6 @@ import { Fragment, lazy, Suspense } from 'react'
 import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
-import { GetDiscoveredOCPApps } from '../../components/GetDiscoveredOCPApps'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
@@ -15,15 +14,6 @@ export default function ApplicationsPage() {
   const location = useLocation()
   const applicationsMatch = useRouteMatch()
   const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
-  const appTableFilter: any = window.localStorage.getItem('acm-table-filter.applicationTable') || '{}'
-  const appTableFilterItems = JSON.parse(appTableFilter)['type'] || []
-  const waitForSearch =
-    appTableFilterItems.includes('openshift') ||
-    appTableFilterItems.includes('openshift-default') ||
-    appTableFilterItems.includes('flux') ||
-    !appTableFilterItems.length
-
-  GetDiscoveredOCPApps(applicationsMatch.isExact, waitForSearch)
 
   return (
     <AcmPage

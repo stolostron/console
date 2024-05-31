@@ -45,7 +45,6 @@ import {
   MulticlusterApplicationSetReport,
   MultiClusterEngine,
   Namespace,
-  OCPAppResource,
   Placement,
   PlacementBinding,
   PlacementDecision,
@@ -67,9 +66,6 @@ function AtomArray<T>() {
 
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
-
-export const discoveredApplicationsState = AtomArray<ArgoApplication>()
-export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
 
 export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()

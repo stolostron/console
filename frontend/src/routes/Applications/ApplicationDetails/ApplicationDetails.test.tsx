@@ -5,7 +5,6 @@ import {
   applicationsState,
   argoApplicationsState,
   channelsState,
-  discoveredOCPAppResourcesState,
   managedClusterInfosState,
   managedClustersState,
   namespacesState,
@@ -35,7 +34,6 @@ import {
   mockManagedClusterInfos,
   mockManagedClusters,
   mockNamespaces,
-  mockOCPApplications,
   mockPlacementrules,
   mockPlacementsDecisions,
   mockSubscriptions,
@@ -369,7 +367,6 @@ describe('Applications Page', () => {
           snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(namespacesState, mockNamespaces)
-          snapshot.set(discoveredOCPAppResourcesState, mockOCPApplications)
         }}
       >
         <MemoryRouter>

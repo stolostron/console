@@ -15,8 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useRouteMatch } from 'react-router-dom'
-import { GetDiscoveredOCPApps } from '../../../components/GetDiscoveredOCPApps'
+import { Link } from 'react-router-dom'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -49,6 +48,7 @@ import {
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 
 function renderSummaryLoading() {
   return [
@@ -74,15 +74,12 @@ function renderSummaryLoading() {
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
   usePageVisitMetricHandler(Pages.overviewFleet)
-  const applicationsMatch = useRouteMatch()
   const { t } = useTranslation()
   const {
     applicationsState,
     applicationSetsState,
     argoApplicationsState,
     clusterManagementAddonsState,
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
     helmReleaseState,
     policyreportState,
     placementDecisionsState,
@@ -96,10 +93,8 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApplications = useRecoilValue(argoApplicationsState)
-  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const helmReleases = useRecoilValue(helmReleaseState)
-  const ocpApps = useRecoilValue(discoveredOCPAppResourcesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
   const subscriptions = useRecoilValue(subscriptionsState)
@@ -112,7 +107,8 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  GetDiscoveredOCPApps(applicationsMatch.isExact, !ocpApps.length && !discoveredApplications.length)
+  const { data: ocpApps = [] } = useDiscoveredOCPApps()
+  const { data: discoveredApplications = [] } = useDiscoveredArgoApps()
 
   const grafanaRoute = useMemo(() => {
     const obsAddOn = clusterManagementAddons.filter(
@@ -144,7 +140,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     return undefined
   }, [selectedClusterLabels])
 
-  const allClusters: Cluster[] = useAllClusters()
+  const allClusters: Cluster[] = useAllClusters(true /* exclude unclaimed cluster pool clusters */)
   const filteredClusters = useMemo(
     () => getFilteredClusters(allClusters, selectedClusterLabels),
     [allClusters, selectedClusterLabels]

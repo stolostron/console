@@ -1,93 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
-import { useCallback, useEffect, useState } from 'react'
-import { queryOCPAppResources, queryRemoteArgoApps, queryEmpty } from '../lib/search'
-import { useQuery } from '../lib/useQuery'
+import { useEffect, useState } from 'react'
 import { ArgoApplication, Cluster, HelmRelease, OCPAppResource } from '../resources'
 import { getArgoDestinationCluster } from '../routes/Applications/ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { hostingSubAnnotationStr } from '../routes/Applications/helpers/resource-helper'
 import { partOfAnnotationStr } from '../routes/Applications/Overview'
-import { useSetRecoilState, useSharedAtoms } from '../shared-recoil'
-import { LoadingPage } from './LoadingPage'
-
-/* Copyright Contributors to the Open Cluster Management project */
-export function GetDiscoveredOCPApps(stop: boolean, waitForSearch: boolean, cluster?: string) {
-  const {
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
-    useAppArgoSearchResultLimit,
-    useAppOCPSearchResultLimit,
-  } = useSharedAtoms()
-  const argoSearchResultLimit = useAppArgoSearchResultLimit()
-  const queryRemoteArgoAppsForClusterFunc = useCallback(
-    () => queryRemoteArgoApps(argoSearchResultLimit, cluster),
-    [argoSearchResultLimit, cluster]
-  )
-  const queryRemoteArgoAppsCB = useCallback(() => queryRemoteArgoApps(argoSearchResultLimit), [argoSearchResultLimit])
-  const queryRemoteArgoAppsFunc = cluster
-    ? cluster == 'local-cluster'
-      ? queryEmpty
-      : queryRemoteArgoAppsForClusterFunc
-    : queryRemoteArgoAppsCB
-  const { data, loading, startPolling, stopPolling } = useQuery(queryRemoteArgoAppsFunc, undefined, {
-    pollInterval: 15,
-  })
-
-  const ocpSearchResultLimit = useAppOCPSearchResultLimit()
-  const queryOCPAppResourcesForClusterFunc = useCallback(
-    () => queryOCPAppResources(ocpSearchResultLimit, cluster),
-    [ocpSearchResultLimit, cluster]
-  )
-  const queryOCPAppResourcesCB = useCallback(() => queryOCPAppResources(ocpSearchResultLimit), [ocpSearchResultLimit])
-  const queryOCPAppResourcesFunc = cluster ? queryOCPAppResourcesForClusterFunc : queryOCPAppResourcesCB
-  const {
-    data: dataOCPResources,
-    loading: loadingOCPResources,
-    startPolling: startPollingOCPResources,
-    stopPolling: stopPollingOCPResources,
-  } = useQuery(queryOCPAppResourcesFunc, undefined, { pollInterval: 15 })
-
-  const [timedOut, setTimedOut] = useState<boolean>()
-  const setDiscoveredApplications = useSetRecoilState(discoveredApplicationsState)
-  const setDiscoveredOCPAppResources = useSetRecoilState(discoveredOCPAppResourcesState)
-
-  useEffect(() => {
-    if (stop) {
-      // No need to poll for Advanced configuration page
-      startPolling()
-      if (waitForSearch) {
-        startPollingOCPResources()
-      } else {
-        stopPollingOCPResources()
-      }
-    } else {
-      stopPolling()
-      stopPollingOCPResources()
-    }
-  }, [waitForSearch, stop, startPolling, stopPolling, startPollingOCPResources, stopPollingOCPResources])
-
-  useEffect(() => {
-    const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
-    setDiscoveredApplications(remoteArgoApps)
-    const ocpAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
-    setDiscoveredOCPAppResources(ocpAppResources)
-  }, [data, dataOCPResources, setDiscoveredApplications, setDiscoveredOCPAppResources])
-
-  // failsafe in case search api is sleeping
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setTimedOut(true)
-    }, 5000)
-
-    return () => {
-      clearInterval(handle)
-    }
-  }, [])
-
-  if (waitForSearch && (loading || loadingOCPResources) && !timedOut) {
-    return <LoadingPage />
-  }
-}
 
 function getValues(labels: { annotation: any; value: any }[]) {
   let itemLabel = ''

@@ -10,8 +10,6 @@ import {
   applicationsState,
   argoApplicationsState,
   clusterManagementAddonsState,
-  discoveredApplicationsState,
-  discoveredOCPAppResourcesState,
   helmReleaseState,
   managedClusterAddonsState,
   managedClusterInfosState,
@@ -36,9 +34,13 @@ import {
   mockApplications,
   mockArgoApplications,
   mockSearchQueryArgoApps,
+  mockSearchQueryArgoAppsCount,
   mockSearchQueryOCPApplications,
+  mockSearchQueryOCPApplicationsCount,
   mockSearchResponseArgoApps,
+  mockSearchResponseArgoAppsCount,
   mockSearchResponseOCPApplications,
+  mockSearchResponseOCPApplicationsCount,
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPageBeta from './OverviewPageBeta'
@@ -50,11 +52,13 @@ import {
   mockClusterManagementAddons,
   mockManagedClusterAddons,
   mockOperatorMetrics,
-  ocpApps,
   placementDecisions,
   policies,
   policyReports,
 } from './sharedmocks'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
@@ -134,7 +138,9 @@ const savedSearchesMock = [
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
   const metricNock = nockPostRequest('/metrics?overview-fleet', {})
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
@@ -184,19 +190,19 @@ it('should render overview page with expected data', async () => {
         snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
         snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
         snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(discoveredOCPAppResourcesState, ocpApps)
         snapshot.set(argoApplicationsState, [])
-        snapshot.set(discoveredApplicationsState, [])
         snapshot.set(helmReleaseState, [])
         snapshot.set(subscriptionsState, [])
         snapshot.set(settingsState, mockSettings)
       }}
     >
-      <Router history={createBrowserHistory()}>
-        <MockedProvider mocks={savedSearchesMock}>
-          <OverviewPageBeta selectedClusterLabels={{}} />
-        </MockedProvider>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router history={createBrowserHistory()}>
+          <MockedProvider mocks={savedSearchesMock}>
+            <OverviewPageBeta selectedClusterLabels={{}} />
+          </MockedProvider>
+        </Router>
+      </QueryClientProvider>
     </RecoilRoot>
   )
 

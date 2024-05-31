@@ -10,13 +10,22 @@ import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
 import {
-  mockSearchQueryArgoAppsStatusSummaryCount,
-  mockSearchQueryOCPApplicationsStatusSummaryCount,
+  mockSearchQueryArgoAppsStatusSummary,
+  mockSearchQueryArgoAppsCount,
+  mockSearchQueryArgoAppsStatusSummaryFilteredCount,
+  mockSearchQueryOCPApplicationsStatusSummary,
+  mockSearchQueryOCPApplicationsCount,
+  mockSearchQueryOCPApplicationsStatusSummaryFilteredCount,
   mockSearchResponseArgoApps1,
+  mockSearchResponseArgoAppsCount1,
   mockSearchResponseOCPApplications,
+  mockSearchResponseOCPApplicationsCount,
 } from '../../../../Applications/Application.sharedmocks'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 const push = jest.fn()
 jest.mock('react-router-dom', () => ({
@@ -258,8 +267,12 @@ const mockPolicies: Policy[] = [
 
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
-    nockSearch(mockSearchQueryOCPApplicationsStatusSummaryCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryArgoAppsStatusSummaryCount, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryOCPApplicationsStatusSummary, mockSearchResponseOCPApplications)
+    nockSearch(mockSearchQueryOCPApplicationsStatusSummaryFilteredCount, mockSearchResponseOCPApplicationsCount)
+    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+    nockSearch(mockSearchQueryArgoAppsStatusSummary, mockSearchResponseArgoApps1)
+    nockSearch(mockSearchQueryArgoAppsStatusSummaryFilteredCount, mockSearchResponseArgoAppsCount1)
+    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount1)
   })
 
   const Component = () => (
@@ -269,11 +282,13 @@ describe('StatusSummaryCount', () => {
         snapshot.set(policyreportState, mockPolicyReports)
       }}
     >
-      <MemoryRouter>
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <StatusSummaryCount />
-        </ClusterContext.Provider>
-      </MemoryRouter>
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
+            <StatusSummaryCount />
+          </ClusterContext.Provider>
+        </MemoryRouter>
+      </QueryClientProvider>
     </RecoilRoot>
   )
   test('renders', async () => {
