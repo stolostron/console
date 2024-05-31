@@ -25,16 +25,10 @@ import { Divider, ExpandableSection, Stack, StackItem } from '@patternfly/react-
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { ClusterImageSet } from '../../../../../resources'
 import { TFunction } from 'i18next'
+import { isValidImageSet, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], architectures: string[]) =>
-  clusterImageSets.filter((cis) => {
-    if (cis.metadata.labels?.visible !== 'true') {
-      return false
-    }
-    return architectures.some(
-      (arch) => cis.spec?.releaseImage.endsWith(arch) || cis.metadata.labels?.architecture === arch
-    )
-  })
+  clusterImageSets.filter((cis) => isValidImageSet(cis as ClusterImageSetK8sResource, architectures))
 
 const clusterImageSetsRequired = (
   clusterImageSets: ClusterImageSet[],

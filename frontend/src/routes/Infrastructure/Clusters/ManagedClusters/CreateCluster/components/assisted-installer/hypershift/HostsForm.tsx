@@ -24,40 +24,39 @@ type HostsFormProps = {
   handleChange: (control: FormControl) => void
 }
 
-export const getControlSummary = (activeControl: FormControl['active'], t: TFunction) => () =>
-  [
-    {
-      term: t('Hosts namespace'),
-      desc: activeControl.agentNamespace,
-    },
-    {
-      term: t('Controller availability policy'),
-      desc:
-        activeControl.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
-    },
-    {
-      term: t('Infrastructure availability policy'),
-      desc:
-        activeControl.infrastructureAvailabilityPolicy === 'HighlyAvailable'
-          ? t('Highly available')
-          : t('Single replica'),
-    },
-    {
-      term: t('OLM catalog placement'),
-      desc: activeControl.olmCatalogPlacement === 'management' ? t('Management') : t('Guest'),
-    },
-    {
-      term: t('Node pools'),
-      desc: activeControl.nodePools.length,
-    },
-    {
-      term: t('Hosts count'),
-      desc: activeControl.nodePools.reduce((acc: number, nodePool: any) => {
-        acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
-        return acc
-      }, 0),
-    },
-  ]
+export const getControlSummary = (activeControl: FormControl['active'], t: TFunction) => () => [
+  {
+    term: t('Hosts namespace'),
+    desc: activeControl.agentNamespace,
+  },
+  {
+    term: t('Controller availability policy'),
+    desc:
+      activeControl.controllerAvailabilityPolicy === 'HighlyAvailable' ? t('Highly available') : t('Single replica'),
+  },
+  {
+    term: t('Infrastructure availability policy'),
+    desc:
+      activeControl.infrastructureAvailabilityPolicy === 'HighlyAvailable'
+        ? t('Highly available')
+        : t('Single replica'),
+  },
+  {
+    term: t('OLM catalog placement'),
+    desc: activeControl.olmCatalogPlacement === 'management' ? t('Management') : t('Guest'),
+  },
+  {
+    term: t('Node pools'),
+    desc: activeControl.nodePools.length,
+  },
+  {
+    term: t('Hosts count'),
+    desc: activeControl.nodePools.reduce((acc: number, nodePool: any) => {
+      acc += nodePool.useAutoscaling ? nodePool.autoscaling.maxReplicas : nodePool.count
+      return acc
+    }, 0),
+  },
+]
 
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
   const {

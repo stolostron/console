@@ -116,6 +116,9 @@ export const clusterImageSet: ClusterImageSetK8sResource = {
   kind: ClusterImageSetKind,
   metadata: {
     name: 'ocp-release48',
+    labels: {
+      visible: 'true',
+    },
   },
   spec: {
     releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.8.15-x86_64',

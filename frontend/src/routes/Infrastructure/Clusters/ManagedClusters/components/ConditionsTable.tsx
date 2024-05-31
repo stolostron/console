@@ -10,10 +10,10 @@ import './ConditionsTable.css'
 
 type ConditionsTableProps = {
   conditions?: {
-    reason: string
+    reason?: string
     status: string
     type: string
-    message: string
+    message?: string
   }[]
   handleModalToggle: () => void
 }
