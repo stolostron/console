@@ -11,14 +11,14 @@ INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0]
 oc get secrets -n $INSTALLATION_NAMESPACE_MCE --field-selector type=kubernetes.io/service-account-token -o json | \
     jq '.items[0].data."ca.crt"' -r | python -m base64 -d > ocp-console/ca.crt
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.13}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.15}
 CONSOLE_PORT=${CONSOLE_PORT:=9000}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
 echo "Starting local OpenShift console..."
 
 
-BRIDGE_BASE_ADDRESS="http://localhost:9000"
+BRIDGE_BASE_ADDRESS="http://localhost:${CONSOLE_PORT}"
 BRIDGE_USER_AUTH="openshift"
 BRIDGE_K8S_MODE="off-cluster"
 BRIDGE_K8S_AUTH="bearer-token"
