@@ -66,6 +66,10 @@ export function AcmLaunchLink(props: { links?: LaunchLink[] }) {
           icon={getLinkIcon(link)}
           iconPosition="right"
           isDisabled={link.disabled ? link.disabled : false}
+          style={{
+            padding: 0,
+            marginLeft: '1rem',
+          }}
         >
           {link.text}
         </AcmButton>

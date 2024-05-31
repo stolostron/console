@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import ReuseableSearchbar from '../../Home/Search/components/ReuseableSearchbar'
 import ClusterPoolsPage from './ClusterPools/ClusterPools'
 import ClusterSetsPage from './ClusterSets/ClusterSets'
 import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
 import ManagedClusters from './ManagedClusters/ManagedClusters'
-import { Flex, FlexItem } from '@patternfly/react-core'
 export const PageContext = createContext<{
   readonly actions: null | ReactNode
   setActions: (actions: null | ReactNode) => void
@@ -26,16 +26,10 @@ export const usePageContext = (showActions: boolean, Component: ElementType, Cus
     if (showActions) {
       setActions(
         <Fragment>
-          <Flex>
-            {CustomAction && (
-              <FlexItem>
-                <CustomAction />
-              </FlexItem>
-            )}
-            <FlexItem>
-              <Component />
-            </FlexItem>
-          </Flex>
+          <div>
+            {CustomAction && <CustomAction />}
+            <Component />
+          </div>
         </Fragment>
       )
     } else {
@@ -88,6 +82,7 @@ export function ClustersPage() {
             </AcmSecondaryNav>
           }
           actions={actions}
+          searchbar={<ReuseableSearchbar />}
         />
       }
     >
