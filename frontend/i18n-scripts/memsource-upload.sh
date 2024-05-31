@@ -38,7 +38,7 @@ echo "Generated all JSON files"
 echo "Creating jobs for generated JSON files"
 for i in "${LANGUAGES[@]}"
 do
-  memsource job create --filenames public/locales/upload/"$i"-translation.json --target-langs "$i" --project-id "${PROJECT_ID}"
+  memsource job create --filenames public/locales/upload/"$i"-translation.json --target-langs $([[ "$i" == "es" ]] && echo es_001 || echo "$i") --project-id "${PROJECT_ID}"
 done
 
 echo "Uploaded JSON files to Memsource"
