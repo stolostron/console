@@ -399,6 +399,10 @@ const tableClass = css({
       borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
     },
   },
+  '&& tbody .pf-c-table__check input': {
+    marginTop: 0,
+    verticalAlign: 'middle',
+  },
 })
 
 function OuiaIdRowWrapper(props: RowWrapperProps) {
