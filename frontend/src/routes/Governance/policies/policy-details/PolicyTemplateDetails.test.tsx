@@ -438,7 +438,6 @@ describe('Policy Template Details content', () => {
           severity: 'medium',
           subscription: {
             channel: 'stable-3.8',
-            installPlanApproval: 'Automatic',
             name: 'quay-operator',
             namespace: 'operator-policy-testns',
             source: 'redhat-operators',
