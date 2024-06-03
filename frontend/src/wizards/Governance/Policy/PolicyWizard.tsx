@@ -679,13 +679,6 @@ function OperatorPolicy() {
             label={t('Channel')}
             labelHelp={t('operatorPolicy.channel.labelHelper')}
           />
-          <WizRadioGroup
-            path="objectDefinition.spec.subscription.installPlanApproval"
-            label={t('Install Plan Approval')}
-          >
-            <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
-            <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
-          </WizRadioGroup>
           <WizTextInput
             path="objectDefinition.spec.subscription.source"
             label={t('Source')}
@@ -707,6 +700,10 @@ function OperatorPolicy() {
           />
         </FormFieldGroupExpandable>
       </Form>
+      <WizRadioGroup path="objectDefinition.spec.upgradeApproval" label={t('Upgrade Approval')}>
+        <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
+        <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
+      </WizRadioGroup>
       <WizStringsInput
         id="operator-policy-versions"
         path={`objectDefinition.spec.versions`}
