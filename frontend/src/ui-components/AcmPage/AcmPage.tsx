@@ -131,11 +131,6 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                         </SplitItem>
                       )}
                       {/* <SplitItem>{props.description && <p>{props.description}</p>}</SplitItem> */}
-                      {props.searchbar && (
-                        <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                          {props.searchbar}
-                        </SplitItem>
-                      )}
                     </Split>
                     {props.description && <div style={{ paddingTop: '8px' }}>{props.description}</div>}
                   </StackItem>
@@ -151,10 +146,15 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
             )}
           </Stack>
         </SplitItem>
-        {(props.controls || props.actions) && (
+        {(props.controls || props.actions || props.searchbar) && (
           <SplitItem>
             <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
               <Stack hasGutter>
+                {props.searchbar && (
+                  <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    {props.searchbar}
+                  </SplitItem>
+                )}
                 {props.controls && (
                   <StackItem style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     {props.controls}
