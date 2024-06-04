@@ -3,19 +3,19 @@
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
-RUN npm ci --no-optional --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:mce
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
 WORKDIR /app/backend
 COPY ./backend .
-RUN npm ci --no-optional
+RUN npm ci --omit=optional
 RUN npm run build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --no-optional --only=production
+RUN npm ci --omit=optional --only=production
 
 FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
 WORKDIR /app
