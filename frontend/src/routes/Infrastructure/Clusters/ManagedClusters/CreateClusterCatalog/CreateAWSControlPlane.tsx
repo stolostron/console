@@ -67,10 +67,6 @@ export function CreateAWSControlPlane() {
         ),
         badgeList: [
           {
-            badge: t('Technology preview'),
-            badgeColor: CatalogColor.orange,
-          },
-          {
             badge: t('CLI-based'),
             badgeColor: CatalogColor.purple,
           },
