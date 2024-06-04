@@ -4,7 +4,7 @@
 
 .PHONY: install
 install:
-	npm ci --no-optional
+	npm ci --omit=optional
 	npm run postinstall
 
 .PHONY: build

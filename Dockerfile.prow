@@ -5,7 +5,7 @@ WORKDIR /app/frontend
 # Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --no-optional --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 COPY ./frontend .
 
 FROM frontend-packages as dynamic-plugin
@@ -16,14 +16,14 @@ WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./backend/package.json ./backend/package-lock.json ./
-RUN npm ci --no-optional
+RUN npm ci --omit=optional
 COPY ./backend .
 RUN npm run build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --no-optional --only=production
+RUN npm ci --omit=optional --only=production
 
 FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
 WORKDIR /app
