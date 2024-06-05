@@ -702,7 +702,7 @@ function OperatorPolicy() {
       </Form>
       <WizRadioGroup path="objectDefinition.spec.upgradeApproval" label={t('Upgrade Approval')}>
         <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
-        <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
+        <Radio id="operator-policy-none" label={t('None')} value="None" />
       </WizRadioGroup>
       <WizStringsInput
         id="operator-policy-versions"
