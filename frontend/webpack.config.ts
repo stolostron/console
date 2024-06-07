@@ -164,6 +164,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/logout',
         '/multicloud/operatorCheck',
         '/multicloud/proxy/search',
+        '/multicloud/aggregate',
         '/multicloud/username',
         '/multicloud/userpreference',
         '/multicloud/version',

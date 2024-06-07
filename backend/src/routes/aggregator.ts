@@ -20,14 +20,10 @@ export function startAggregating(): void {
 
 let stopping = false
 export function stopAggregating(): void {
-  // for (const request of requests) {
-  //   request.cancel()
-  // }
-
   stopping = true
 }
 
-export async function getAggregation(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function aggregate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (!token) return unauthorized(req, res)
   const type = req.url.split('?')[0].split('/')

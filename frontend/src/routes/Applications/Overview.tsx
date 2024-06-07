@@ -66,6 +66,7 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { IRequestView, SupportedAggregate, useAggregate } from '../../lib/aggregates'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -355,12 +356,8 @@ export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const {
     applicationSetsState,
-    applicationsState,
     argoApplicationsState,
     channelsState,
-    discoveredApplicationsState,
-    discoveredOCPAppResourcesState,
-    helmReleaseState,
     namespacesState,
     placementRulesState,
     placementsState,
@@ -368,7 +365,6 @@ export default function ApplicationsOverview() {
     subscriptionsState,
   } = useSharedAtoms()
 
-  const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
@@ -377,19 +373,18 @@ export default function ApplicationsOverview() {
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
-  const helmReleases = useRecoilValue(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
-
-  const discoveredOCPAppResources = useRecoilValue(discoveredOCPAppResourcesState)
 
   const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
-  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
 
-  const discoveredApplications = useRecoilValue(discoveredApplicationsState)
+  const [requestedView, setRequestView] = useState<IRequestView>({
+    page: 1,
+    perPage: 10,
+  })
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -472,37 +467,12 @@ export default function ApplicationsOverview() {
     [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
   )
 
-  const getArgoApplications = useMemo(
-    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, managedClusters),
-    [argoApplications, managedClusters]
-  )
-
-  const getDiscoveredApplications = useMemo(
-    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
-    [discoveredApplications, setArgoApplicationsHashSet]
-  )
-
-  const getOcpAppResources = useMemo(
-    () => parseOcpAppResources(discoveredOCPAppResources, helmReleases, argoApplicationsHashSet),
-    [discoveredOCPAppResources, helmReleases, argoApplicationsHashSet]
-  )
+  const resultView = useAggregate(SupportedAggregate.applications, requestedView)
+  const applications = resultView.items
 
   const tableItems: IResource[] = useMemo(
-    () => [
-      ...applications.map((app) => generateTransformData(app)),
-      ...applicationSets.map((app) => generateTransformData(app)),
-      ...getArgoApplications.map((app) => generateTransformData(app)),
-      ...getDiscoveredApplications.map((app) => generateTransformData(app)),
-      ...getOcpAppResources.map((app) => generateTransformData(app)),
-    ],
-    [
-      applications,
-      applicationSets,
-      getArgoApplications,
-      getDiscoveredApplications,
-      getOcpAppResources,
-      generateTransformData,
-    ]
+    () => [...applications.map((app) => generateTransformData(app))],
+    [applications, generateTransformData]
   )
 
   const keyFn = useCallback(
@@ -1119,6 +1089,8 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
+        setRequestView={setRequestView}
+        resultView={resultView}
         customTableAction={
           <>
             {appCreationButton}

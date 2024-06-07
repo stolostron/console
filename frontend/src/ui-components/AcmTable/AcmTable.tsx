@@ -77,6 +77,7 @@ import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyl
 import { AcmManageColumn } from './AcmManageColumn'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ParsedQuery, parse, stringify } from 'query-string'
+import { IRequestView, IResultView } from '../../lib/aggregates'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -452,6 +453,8 @@ export type AcmTableProps<T> = {
   initialPage?: number
   page?: number
   setPage?: (page: number) => void
+  setRequestView?: (requestedView: IRequestView) => void
+  resultView?: IResultView
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -487,6 +490,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     initialSelectedItems,
     onSelect: propsOnSelect,
     showColumManagement,
+    setRequestView,
+    resultView,
   } = props
 
   const defaultSort = {
@@ -696,6 +701,17 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     })
   }, [items, keyFn])
 
+  // when paging items from backend
+  // send request to backend
+  useEffect(() => {
+    if (setRequestView) {
+      setRequestView({
+        page,
+        perPage,
+      })
+    }
+  }, [page, perPage, setRequestView])
+
   const { tableItems, totalCount } = useMemo<{
     tableItems: ITableItem<T>[]
     totalCount: number
@@ -703,21 +719,25 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     /* istanbul ignore if */
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
-    if (filters.length && Object.keys(filterSelections).length) {
-      const filterCategories = Object.keys(filterSelections)
-      filteredItems = items.filter((item: T) => {
-        let isFilterMatch = true
-        // Item must match 1 filter of each category
-        filterCategories.forEach((filter: string) => {
-          const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-          /* istanbul ignore next */
-          const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-          if (!isMatch) {
-            isFilterMatch = false
-          }
+
+    // if using a result view from backend, the items have already been filtered
+    if (!resultView) {
+      if (filters.length && Object.keys(filterSelections).length) {
+        const filterCategories = Object.keys(filterSelections)
+        filteredItems = items.filter((item: T) => {
+          let isFilterMatch = true
+          // Item must match 1 filter of each category
+          filterCategories.forEach((filter: string) => {
+            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
+            /* istanbul ignore next */
+            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
+            if (!isMatch) {
+              isFilterMatch = false
+            }
+          })
+          return isFilterMatch
         })
-        return isFilterMatch
-      })
+      }
     }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
@@ -738,8 +758,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: tableItems.length }
-  }, [items, selectedSortedCols, addSubRows, keyFn, filters, filterSelections])
+    return { tableItems, totalCount: resultView?.itemCount || tableItems.length }
+  }, [items, resultView, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -749,7 +769,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     if (props.fuseThreshold != undefined) {
       threshold = props.fuseThreshold
     }
-    if (internalSearch && internalSearch !== '') {
+    // if using a result view from backend, the items have already been searched
+    if (!resultView && internalSearch && internalSearch !== '') {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
@@ -763,14 +784,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, internalSearch, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, resultView, internalSearch, tableItems, columns, totalCount])
 
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number
   }>(() => {
     const sorted: ITableItem<T>[] = [...filtered]
-    if (sort && sort.index !== undefined) {
+
+    // if using a result view from backend, the items have already been sorted
+    if (!resultView && sort && sort.index !== undefined) {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -784,17 +807,21 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         sorted.reverse()
       }
     }
-    return { sorted, itemCount: sorted.length }
-  }, [filtered, sort, selectedSortedCols])
+    return { sorted, itemCount: resultView?.itemCount || sorted.length }
+  }, [filtered, resultView, sort, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
-    const start = (page - 1) * perPage
     let actualPage = page
-    if (start >= sorted.length) {
-      actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+
+    // if using a result view from backend, actual page is determined by backend
+    if (!resultView) {
+      const start = (page - 1) * perPage
+      if (start >= sorted.length) {
+        actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+      }
     }
     return actualPage
-  }, [sorted, page, perPage])
+  }, [page, resultView, perPage, sorted.length])
 
   useEffect(() => {
     if (page !== actualPage) {
@@ -803,9 +830,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [page, actualPage, setPage])
 
   const paged = useMemo<ITableItem<T>[]>(() => {
-    const start = (actualPage - 1) * perPage
-    return sorted.slice(start, start + perPage)
-  }, [sorted, actualPage, perPage])
+    // if using a result view from backend, the items have already been sliced and diced
+    if (!resultView) {
+      const start = (actualPage - 1) * perPage
+      return sorted.slice(start, start + perPage)
+    } else {
+      return sorted
+    }
+  }, [resultView, actualPage, perPage, sorted])
 
   const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
     const newRows: IRow[] = []
@@ -1140,7 +1172,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   titles={translatedPaginationTitles}
                   itemCount={itemCount}
                   perPage={perPage}
-                  page={page}
+                  page={resultView?.page || page}
                   variant={PaginationVariant.top}
                   onSetPage={(_event, page) => setPage(page)}
                   onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
@@ -1235,7 +1267,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               titles={translatedPaginationTitles}
               itemCount={itemCount}
               perPage={perPage}
-              page={page}
+              page={resultView?.page || page}
               variant={PaginationVariant.bottom}
               onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
               onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
