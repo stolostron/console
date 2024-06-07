@@ -561,6 +561,10 @@ function OperatorPolicy() {
     (targetNamespace: string | undefined | null) => {
       // Handle when given a null value
       if (!targetNamespace) {
+        if (template?.objectDefinition?.spec?.operatorGroup?.name === 'default') {
+          delete template.objectDefinition.spec.operatorGroup.name
+        }
+
         if (template?.objectDefinition?.spec?.operatorGroup?.targetNamespaces) {
           // If the operator group only has targetNamespaces set, then remove the entire operatorGroup section from
           // the policy.
@@ -590,6 +594,10 @@ function OperatorPolicy() {
 
       if (!template.objectDefinition.spec?.operatorGroup) {
         template.objectDefinition.spec.operatorGroup = {}
+      }
+
+      if (!template.objectDefinition.spec.operatorGroup?.name) {
+        template.objectDefinition.spec.operatorGroup.name = 'default'
       }
 
       if (
