@@ -52,7 +52,7 @@ export async function loadConfigSettings(): Promise<void> {
     }
     if (process.env['globalSearchFeatureFlag'] && !settings['globalSearchFeatureFlag']) {
       // If globalSearchFeatureFlag is set but has been removed from config settings -> removing env var.
-      // delete process.env['globalSearchFeatureFlag']
+      delete process.env['globalSearchFeatureFlag']
     }
     if (settings.LOG_LEVEL) {
       logger.level = settings.LOG_LEVEL
