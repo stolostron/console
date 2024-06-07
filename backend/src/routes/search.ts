@@ -30,9 +30,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     const searchService = `https://search-search-api.${mch?.metadata?.namespace || namespace}.svc.cluster.local:4010`
 
     const searchUrl = process.env.SEARCH_API_URL || searchService
-    const endpoint =
-      process.env.searchApiEnpoint ||
-      (process.env.globalSearchFeatureFlag === 'enabled' ? '/federated' : '/searchapi/graphql')
+    const endpoint = process.env.globalSearchFeatureFlag === 'enabled' ? '/federated' : '/searchapi/graphql'
     const url = new URL(searchUrl + endpoint)
     headers.authorization = `Bearer ${token}`
     headers.host = url.hostname
