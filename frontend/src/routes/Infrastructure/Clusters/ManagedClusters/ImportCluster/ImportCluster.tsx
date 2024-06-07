@@ -274,19 +274,19 @@ export default function ImportClusterPage() {
   const discoveryType = sessionStorage.getItem('DiscoveryType') ?? ''
   const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
   const initialServer = sessionStorage.getItem('DiscoveredClusterApiURL') ?? ''
-  let initialClusterID = ''
-  let initialDiscoveryCredential = ''
   const [discovered] = useState<boolean>(!!initialClusterName)
   const [submitButtonText, setSubmitButtonText] = useState<string>()
   const [submittingButtonText, setSubmittingButtonText] = useState<string>()
   const { RHOCMCredentials } = useSharedSelectors()
   const ocmCredentials = useRecoilValue(RHOCMCredentials)
-  const initialAPIToken =
-    ocmCredentials.find((cred) => cred.metadata.name === initialDiscoveryCredential)?.stringData?.ocmAPIToken ?? ''
-
+  let initialClusterID = ''
+  let initialDiscoveryCredential = ''
+  let initialAPIToken = ''
   if (discoveryType === 'ROSA') {
     initialClusterID = sessionStorage.getItem('DiscoveredClusterID') ?? ''
     initialDiscoveryCredential = sessionStorage.getItem('DiscoveryCredential') ?? ''
+    initialAPIToken =
+      ocmCredentials.find((cred) => cred.metadata.name === initialDiscoveryCredential)?.stringData?.ocmAPIToken ?? ''
   }
 
   const [state, dispatch] = useReducer(
@@ -314,6 +314,7 @@ export default function ImportClusterPage() {
 
   const defaultData = useMemo(() => {
     const clusterAnnotations: Record<string, string> = {}
+    const secretName = 'auto-import-secret'
     if (discovered) {
       clusterAnnotations['open-cluster-management/created-via'] = 'discovery'
     }
@@ -328,6 +329,22 @@ export default function ImportClusterPage() {
       },
       spec: { hubAcceptsClient: true },
     })
+    if (state.importMode === ImportMode.discoveryOCM) {
+      resources.push({
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+          name: secretName,
+          namespace: initialClusterName,
+        },
+        stringData: {
+          autoImportRetry: '2',
+          api_token: initialAPIToken,
+          cluster_id: initialClusterID,
+        },
+        type: 'auto-import/rosa',
+      })
+    }
     if (isACMAvailable) {
       resources.push({
         apiVersion: KlusterletAddonConfigApiVersion,
@@ -345,7 +362,16 @@ export default function ImportClusterPage() {
       })
     }
     return resources
-  }, [discovered, initialClusterName, isACMAvailable, state.defaultLabels, state.kacDefaultLabels])
+  }, [
+    discovered,
+    initialClusterName,
+    isACMAvailable,
+    initialAPIToken,
+    initialClusterID,
+    state.defaultLabels,
+    state.importMode,
+    state.kacDefaultLabels,
+  ])
 
   const syncs = [
     {
