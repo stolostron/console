@@ -45,10 +45,14 @@ export async function loadConfigSettings(): Promise<void> {
     for (const key in settings) {
       if (key.startsWith('LOG_')) {
         process.env[key] = settings[key]
-      } else if (key === 'searchApiEnpoint' || key === 'globalSearchFeatureFlag') {
-        // 2.9 Federated search-api use will be restricted to user defined env variable.
+      } else if (key === 'globalSearchFeatureFlag') {
+        // Global search tech-preview requires feature flag toggle (2.11)
         process.env[key] = settings[key]
       }
+    }
+    if (process.env['globalSearchFeatureFlag'] && !settings['globalSearchFeatureFlag']) {
+      // If globalSearchFeatureFlag is set but has been removed from config settings -> removing env var.
+      delete process.env['globalSearchFeatureFlag']
     }
     if (settings.LOG_LEVEL) {
       logger.level = settings.LOG_LEVEL
