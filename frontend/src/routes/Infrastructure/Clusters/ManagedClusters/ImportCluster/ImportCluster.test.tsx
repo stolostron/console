@@ -875,8 +875,6 @@ describe('Import Discovered Cluster', () => {
 
     await clickByText('Import cluster')
     await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
-    await clickByText('Import from Red Hat OpenShift Cluster Manager', 0)
-    await clickByText('Import from Red Hat OpenShift Cluster Manager', 1)
 
     await waitForText('OCM-access')
     await waitForText(mockDiscoveredClusters[1].spec.credential!.name) // discovery credential field should be set correctly
