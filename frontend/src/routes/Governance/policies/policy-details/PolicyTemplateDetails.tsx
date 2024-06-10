@@ -12,14 +12,12 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import jsYaml from 'js-yaml'
-import { Dispatch, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+
 import {
-  AcmAlert,
   AcmDescriptionList,
   AcmEmptyState,
   AcmTable,
@@ -31,66 +29,36 @@ import { DiffModal } from '../../components/DiffModal'
 export function PolicyTemplateDetails(
   props: Readonly<{
     clusterName: string
-    apiGroup: string
-    apiVersion: string
-    kind: string
-    templateName: string
-    setParentTemplate: Dispatch<any>
+    template: any
   }>
 ) {
   const { t } = useTranslation()
-  const { clusterName, apiGroup, apiVersion, kind, templateName } = props
-  const { managedClusterAddonsState } = useSharedAtoms()
-  const [template, setTemplate] = useState<any>()
+  const { clusterName, template } = props
+  const isCertPolicy = template?.kind === 'CertificatePolicy'
   const [relatedObjects, setRelatedObjects] = useState<any>()
-  const [templateError, setTemplateError] = useState<string>()
-  const isCertPolicy = kind === 'CertificatePolicy'
   const [isExpanded, setIsExpanded] = useState<boolean>(isCertPolicy)
   const [editorHeight, setEditorHeight] = useState<number>(250)
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
-  let templateClusterName = clusterName
-  let templateNamespace = clusterName
+  const kind = template?.kind
 
-  // Determine if the policy framework is deployed in hosted mode. If so, the policy template needs to be retrieved
-  // from the hosting cluster instead of the managed cluster.
-  for (const addon of managedClusterAddOns) {
-    if (addon.metadata.namespace !== clusterName) {
-      continue
-    }
-
-    if (addon.metadata.name !== 'governance-policy-framework') {
-      continue
-    }
-
-    if (addon.metadata.annotations?.['addon.open-cluster-management.io/hosting-cluster-name']) {
-      templateClusterName = addon.metadata.annotations['addon.open-cluster-management.io/hosting-cluster-name']
-      // open-cluster-management-agent-addon is the default namespace but it shouldn't be used for hosted mode.
-      templateNamespace = addon.spec.installNamespace || 'open-cluster-management-agent-addon'
-    }
-
-    if (apiGroup.endsWith('gatekeeper.sh')) {
-      // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
-      templateNamespace = ''
-    }
-
-    break
-  }
-
-  function getRelatedObjects(resource: any, clusterName: string) {
-    if (resource?.status?.relatedObjects?.length) {
-      return resource.status.relatedObjects.map((obj: any) => {
+  useEffect(() => {
+    if (template?.status?.relatedObjects?.length) {
+      const relObjs = template.status.relatedObjects.map((obj: any) => {
         obj.cluster = clusterName
         return obj
       })
+
+      setRelatedObjects(relObjs)
+
+      return
     } else if (
       // Detect if this is a Gatekeeper constraint and is populated with audit results from a newer Gatekeeper. Older
       // Gatekeeper installations don't set 'group' and 'version'.
-      resource?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
-      resource?.status?.violations?.length &&
-      resource.status.violations[0].version !== undefined
+      template?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
+      template?.status?.violations?.length &&
+      template.status.violations[0].version !== undefined
     ) {
-      return resource.status.violations.map((violation: any) => {
+      const relObjs = template.status.violations.map((violation: any) => {
         return {
           cluster: clusterName,
           compliant: 'NonCompliant',
@@ -105,34 +73,14 @@ export function PolicyTemplateDetails(
           reason: violation.message,
         }
       })
-    }
 
-    return []
-  }
-
-  useEffect(() => {
-    if (kind === 'IamPolicy' && apiGroup === 'policy.open-cluster-management.io') {
-      setTemplateError(t('IamPolicy is no longer supported'))
+      setRelatedObjects(relObjs)
 
       return
     }
 
-    const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-    fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
-      .then((viewResponse) => {
-        if (viewResponse?.message) {
-          setTemplateError(viewResponse.message)
-        } else {
-          setTemplate(viewResponse.result)
-          props.setParentTemplate(viewResponse.result)
-          setRelatedObjects(getRelatedObjects(viewResponse.result, clusterName))
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting resource: ', err)
-        setTemplateError(err)
-      })
-  }, [t, templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName, props])
+    setRelatedObjects([])
+  }, [clusterName, template])
 
   // Hook to get the height of the template details section so both details and editor sections are the same height
   /* istanbul ignore next */
@@ -286,14 +234,6 @@ export function PolicyTemplateDetails(
     [t]
   )
 
-  if (templateError) {
-    return (
-      <PageSection style={{ paddingBottom: '0' }}>
-        <AcmAlert variant="danger" title={templateError} isInline noClose />
-      </PageSection>
-    )
-  }
-
   return (
     <div>
       <PageSection style={{ paddingBottom: '0' }}>
@@ -308,7 +248,7 @@ export function PolicyTemplateDetails(
           </GridItem>
           <GridItem span={6}>
             <Card isExpanded={isExpanded}>
-              <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
+              <CardHeader id={'template-yaml-section'} onExpand={() => setIsExpanded(!isExpanded)}>
                 <CardTitle id="titleId">{kind + ' ' + t('YAML')}</CardTitle>
               </CardHeader>
               <CardExpandableContent>
