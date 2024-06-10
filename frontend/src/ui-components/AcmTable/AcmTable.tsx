@@ -77,7 +77,7 @@ import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyl
 import { AcmManageColumn } from './AcmManageColumn'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ParsedQuery, parse, stringify } from 'query-string'
-import { IRequestView, IResultView } from '../../lib/aggregates'
+import { IRequestListView, IResultListView } from '../../lib/aggregates'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -453,8 +453,8 @@ export type AcmTableProps<T> = {
   initialPage?: number
   page?: number
   setPage?: (page: number) => void
-  setRequestView?: (requestedView: IRequestView) => void
-  resultView?: IResultView
+  setRequestView?: (requestedView: IRequestListView) => void
+  resultView?: IResultListView
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -500,6 +500,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
+  const isPreProcessed = resultView?.isPreProcessed
 
   const { t } = useTranslation()
 
@@ -708,9 +709,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       setRequestView({
         page,
         perPage,
+        search: internalSearch,
+        sortBy: sort,
       })
     }
-  }, [page, perPage, setRequestView])
+  }, [internalSearch, page, perPage, setRequestView, sort])
 
   const { tableItems, totalCount } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -721,7 +724,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     let filteredItems: T[] = items
 
     // if using a result view from backend, the items have already been filtered
-    if (!resultView) {
+    if (!isPreProcessed) {
       if (filters.length && Object.keys(filterSelections).length) {
         const filterCategories = Object.keys(filterSelections)
         filteredItems = items.filter((item: T) => {
@@ -759,7 +762,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return tableItem
     })
     return { tableItems, totalCount: resultView?.itemCount || tableItems.length }
-  }, [items, resultView, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
+  }, [items, isPreProcessed, resultView?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -770,7 +773,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       threshold = props.fuseThreshold
     }
     // if using a result view from backend, the items have already been searched
-    if (!resultView && internalSearch && internalSearch !== '') {
+    if (!isPreProcessed && internalSearch && internalSearch !== '') {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
@@ -784,7 +787,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, resultView, internalSearch, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
 
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
@@ -793,7 +796,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sorted: ITableItem<T>[] = [...filtered]
 
     // if using a result view from backend, the items have already been sorted
-    if (!resultView && sort && sort.index !== undefined) {
+    if (!isPreProcessed && sort && sort.index !== undefined) {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -808,20 +811,20 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     }
     return { sorted, itemCount: resultView?.itemCount || sorted.length }
-  }, [filtered, resultView, sort, selectedSortedCols])
+  }, [filtered, isPreProcessed, sort, resultView?.itemCount, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
     let actualPage = page
 
     // if using a result view from backend, actual page is determined by backend
-    if (!resultView) {
+    if (!isPreProcessed) {
       const start = (page - 1) * perPage
       if (start >= sorted.length) {
         actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
       }
     }
     return actualPage
-  }, [page, resultView, perPage, sorted.length])
+  }, [page, isPreProcessed, perPage, sorted.length])
 
   useEffect(() => {
     if (page !== actualPage) {
@@ -831,13 +834,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const paged = useMemo<ITableItem<T>[]>(() => {
     // if using a result view from backend, the items have already been sliced and diced
-    if (!resultView) {
+    if (!isPreProcessed) {
       const start = (actualPage - 1) * perPage
       return sorted.slice(start, start + perPage)
     } else {
       return sorted
     }
-  }, [resultView, actualPage, perPage, sorted])
+  }, [isPreProcessed, actualPage, perPage, sorted])
 
   const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
     const newRows: IRow[] = []

@@ -2,7 +2,7 @@
 
 import { PageSection, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { cellWidth } from '@patternfly/react-table'
+import { SortByDirection, cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
@@ -66,7 +66,7 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { IRequestView, SupportedAggregate, useAggregate } from '../../lib/aggregates'
+import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/aggregates'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -381,9 +381,13 @@ export default function ApplicationsOverview() {
     open: false,
   })
 
-  const [requestedView, setRequestView] = useState<IRequestView>({
+  const [requestedView, setRequestView] = useState<IRequestListView>({
     page: 1,
     perPage: 10,
+    sortBy: {
+      index: 0,
+      direction: SortByDirection.asc,
+    },
   })
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()

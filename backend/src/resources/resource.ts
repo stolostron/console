@@ -21,5 +21,7 @@ export interface IResource {
     labels?: Record<string, string>
     annotations?: Record<string, string>
     ownerReferences?: OwnerReference[]
+    creationTimestamp?: string | number | Date
   }
+  transform?: string[]
 }

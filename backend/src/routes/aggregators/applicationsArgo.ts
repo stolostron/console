@@ -22,7 +22,7 @@ const query = JSON.stringify({
             values: ['!local-cluster'],
           },
         ],
-        limit: 1100,
+        limit: 3000,
       },
     ],
   },

@@ -2,20 +2,27 @@
 /* istanbul ignore file */
 
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
 
-export interface IRequestView {
-  page: number
-  perPage: number
-  search?: string
-  // filter?: any
-  // sort?: any
+export interface ISortBy {
+  index?: number
+  direction?: 'asc' | 'desc'
 }
 
-export interface IResultView {
+export interface IRequestListView {
+  page: number
+  perPage: number
+  sortBy?: ISortBy
+  search?: string
+  // filter?: any
+}
+
+export interface IResultListView {
   page: number
   items: IResource[]
   itemCount: number
+  isPreProcessed: boolean
 }
 
 export interface PaginatedResults {
@@ -37,30 +44,52 @@ export function paginate(req: Http2ServerRequest, res: Http2ServerResponse, data
   })
   req.on('end', () => {
     const body = chucks.join()
-    const { page, perPage } = JSON.parse(body) as IRequestView
-    const startIndex = (page - 1) * perPage
-    const endIndex = page * perPage
+    const { page, perPage, search, sortBy } = JSON.parse(body) as IRequestListView
 
-    const items = data.slice(startIndex, endIndex) as IResource[]
+    let items = data as IResource[]
+    let itemCount = data.length
+    if (data.length) {
+      // filter
 
-    // if (endIndex < data.length) {
-    //   results.next = {
-    //     page: page + 1,
-    //     limit: perPage,
-    //   }
-    // }
+      // search
+      if (search) {
+        const fuse = new Fuse(items, {
+          ignoreLocation: true,
+          threshold: 0.3,
+          keys: [
+            {
+              name: 'search',
+              getFn: (item) => {
+                return [item.transform[0], item.transform[2]]
+              },
+            },
+          ],
+        })
+        items = fuse.search({ search }).map((result) => result.item)
+        itemCount = items.length
+      }
 
-    // if (startIndex > 0) {
-    //   results.previous = {
-    //     page: page - 1,
-    //     limit: perPage,
-    //   }
-    // }
+      // sort
+      if (sortBy && sortBy.index >= 0) {
+        items = items.sort((a, b) => {
+          return a.transform[sortBy.index].localeCompare(b.transform[sortBy.index])
+        })
+        if (sortBy.direction === 'desc') {
+          items = items.reverse()
+        }
+      }
 
-    const results: IResultView = {
+      // slice and dice
+      const startIndex = (page - 1) * perPage
+      const endIndex = page * perPage
+      items = items.slice(startIndex, endIndex)
+    }
+
+    const results: IResultListView = {
       page,
       items,
-      itemCount: data.length,
+      itemCount,
+      isPreProcessed: true,
     }
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(results))

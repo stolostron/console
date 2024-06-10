@@ -1,24 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ISortBy } from '@patternfly/react-table'
 import { IResource, getBackendUrl, postRequest } from '../resources'
 import { useQuery } from './useQuery'
 import { useCallback, useEffect, useMemo } from 'react'
 
 const apiUrl = '/aggregate'
 
-export interface IRequestView {
+export interface IRequestListView {
   page: number
   perPage: number
+  sortBy: ISortBy | undefined
   search?: string
   filter?: any
-  sort?: any
 }
 
-export interface IResultView {
+export interface IResultListView {
   page: number
   loading: boolean
   items: IResource[]
   itemCount: number
+  isPreProcessed: boolean
 }
 
 export enum SupportedAggregate {
@@ -28,19 +30,20 @@ export enum SupportedAggregate {
   clusterDetails = 'cluster-details',
 }
 
-export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequestView): IResultView {
-  const defaultResponse = useMemo<IResultView>(
+export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequestListView): IResultListView {
+  const defaultResponse = useMemo<IResultListView>(
     () => ({
       page: 1,
       loading: true,
       items: [],
       itemCount: 0,
+      isPreProcessed: false,
     }),
     []
   )
 
   const queryFunc = useCallback(() => {
-    return postRequest<IRequestView, IResultView>(`${getBackendUrl()}${apiUrl}/${aggregate}`, requestedView)
+    return postRequest<IRequestListView, IResultListView>(`${getBackendUrl()}${apiUrl}/${aggregate}`, requestedView)
   }, [aggregate, requestedView])
 
   const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {
@@ -60,5 +63,6 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
     loading,
     items: response.items,
     itemCount: response.itemCount,
+    isPreProcessed: response.isPreProcessed,
   }
 }
