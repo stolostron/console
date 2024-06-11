@@ -86,7 +86,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     () => [
       {
         header: t('Cluster'),
-        sort: 'clusterNamespace',
+        sort: 'cluster',
         cell: (item: ResultsTableData) => (
           <Link
             to={{
@@ -96,10 +96,10 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
               }),
             }}
           >
-            {item.clusterNamespace}
+            {item.cluster}
           </Link>
         ),
-        search: (item: ResultsTableData) => item.clusterNamespace,
+        search: (item: ResultsTableData) => item.cluster,
       },
       {
         header: t('Violations'),
@@ -245,7 +245,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             />
           }
           columns={columns}
-          keyFn={(item) => `${item.clusterNamespace}.${item.templateName}`}
+          keyFn={(item) => `${item.cluster}.${item.templateName}`}
           initialSort={
             window.location.search === ''
               ? {
