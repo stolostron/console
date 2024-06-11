@@ -27,7 +27,7 @@ const labelArr: string[] = [
   'app.kubernetes.io/part-of=',
 ]
 
-interface IOCPAppResource {
+export interface IOCPAppResource extends IResource {
   apigroup: string
   apiversion: string
   kind: string

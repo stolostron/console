@@ -7,12 +7,16 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 const apiUrl = '/aggregate'
 
+export type FilterCounts = {
+  [filter: string]: number
+}
+
 export interface IRequestListView {
   page: number
   perPage: number
   sortBy: ISortBy | undefined
   search?: string
-  filter?: any
+  filters?: any
 }
 
 export interface IResultListView {
@@ -20,6 +24,8 @@ export interface IResultListView {
   loading: boolean
   items: IResource[]
   itemCount: number
+  filterCounts: FilterCounts
+  emptyResult: boolean
   isPreProcessed: boolean
 }
 
@@ -37,6 +43,8 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
       loading: true,
       items: [],
       itemCount: 0,
+      filterCounts: {},
+      emptyResult: false,
       isPreProcessed: false,
     }),
     []
@@ -63,6 +71,8 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
     loading,
     items: response.items,
     itemCount: response.itemCount,
+    filterCounts: response.filterCounts,
+    emptyResult: response.emptyResult,
     isPreProcessed: response.isPreProcessed,
   }
 }

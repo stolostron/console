@@ -47,6 +47,15 @@ export function getKubeResources(kind: string, apiVersion: string) {
   })
 }
 
+export async function isAuth(resource: IResource, token: string): Promise<boolean> {
+  let allowed = await canListClusterScopedKind(resource, token)
+  if (allowed) return true
+  allowed = await canListNamespacedScopedKind(resource, token)
+  if (allowed) return true
+  allowed = await canGetResource(resource, token)
+  return allowed
+}
+
 export const resourceCache: {
   [apiVersionKind: string]: {
     [uid: string]: {

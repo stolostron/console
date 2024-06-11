@@ -77,7 +77,7 @@ import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyl
 import { AcmManageColumn } from './AcmManageColumn'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ParsedQuery, parse, stringify } from 'query-string'
-import { IRequestListView, IResultListView } from '../../lib/aggregates'
+import { FilterCounts, IRequestListView, IResultListView } from '../../lib/aggregates'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -501,6 +501,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
   const isPreProcessed = resultView?.isPreProcessed
+  const filterCounts = resultView?.filterCounts
+  const isLoading = resultView?.loading
+  const isEmptyResult = resultView?.emptyResult
 
   const { t } = useTranslation()
 
@@ -704,16 +707,18 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   // when paging items from backend
   // send request to backend
+  const filterSelectionsStr = JSON.stringify(filterSelections)
   useEffect(() => {
     if (setRequestView) {
       setRequestView({
         page,
         perPage,
         search: internalSearch,
+        filters: JSON.parse(filterSelectionsStr),
         sortBy: sort,
       })
     }
-  }, [internalSearch, page, perPage, setRequestView, sort])
+  }, [filterSelectionsStr, internalSearch, page, perPage, setRequestView, sort])
 
   const { tableItems, totalCount } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -1074,7 +1079,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems : false
+  const showToolbar = props.showToolbar !== false ? hasItems || isEmptyResult : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
   const translatedPaginationTitles = usePaginationTitles()
@@ -1150,7 +1155,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     />
                   </ToolbarItem>
                 )}
-                {hasFilter && <TableColumnFilters id={id} filters={filters} items={items} />}
+                {hasFilter && (
+                  <TableColumnFilters id={id} filters={filters} filterCounts={filterCounts} items={items} />
+                )}
               </ToolbarGroup>
             )}
             {props.tableActionButtons && props.tableActionButtons.length > 0 && (
@@ -1187,7 +1194,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </ToolbarContent>
         </Toolbar>
       )}
-      {!items || !rows || !filtered || !paged ? (
+      {!items || !rows || !filtered || !paged || isLoading ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
           <EmptyState>
             <EmptyStateIcon variant="container" component={Spinner} />
@@ -1196,7 +1203,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             </Title>
           </EmptyState>
         </PageSection>
-      ) : items.length === 0 ? (
+      ) : items.length === 0 && !isEmptyResult ? (
         props.emptyState && (
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
             {props.emptyState}
@@ -1283,9 +1290,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   )
 }
 
-function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFilter<T>[]; items?: T[] }>) {
+function TableColumnFilters<T>(
+  props: Readonly<{ id?: string; filters: ITableFilter<T>[]; filterCounts: FilterCounts | undefined; items?: T[] }>
+) {
   const [isOpen, setIsOpen] = useState(false)
-  const { id, filters, items } = props
+  const { id, filters, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
     id,
     filters,
@@ -1335,7 +1344,9 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
       const options: { option: TableFilterOption<string>; count: number }[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
-        const count = items?.filter((item) => filter.tableFilterFn([option.value], item)).length
+        const count = filterCounts
+          ? filterCounts[option.value]
+          : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
         /* istanbul ignore next */
         if (
           filter.showEmptyOptions ||
@@ -1373,7 +1384,7 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
         })}
       </SelectGroup>
     ))
-  }, [filters, items, selections])
+  }, [filterCounts, filters, items, selections])
 
   return (
     <ToolbarItem>
