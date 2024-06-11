@@ -178,7 +178,7 @@ describe('Policy wizard', () => {
     await waitFor(() => expect(input).not.toHaveValue(''))
 
     expect(input).toHaveTextContent('subscription: namespace: my-namespace')
-    expect(input).toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+    expect(input).toHaveTextContent('operatorGroup: name: default targetNamespaces: - my-namespace')
 
     // Setting all namespaces should wipe the operator group
     const allNSRadio = container.querySelector('#operator-all-namespaces')
@@ -187,7 +187,7 @@ describe('Policy wizard', () => {
 
     await waitFor(() => {
       expect(input).toHaveTextContent('subscription: namespace: my-namespace')
-      expect(input).not.toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+      expect(input).not.toHaveTextContent('operatorGroup: name: default targetNamespaces: - my-namespace')
     })
   })
 

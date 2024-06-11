@@ -1,16 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader } from '../../../../ui-components'
-import { Fragment, Suspense, useState } from 'react'
+import { AcmAlert, AcmPage, AcmPageHeader } from '../../../../ui-components'
+import { Fragment, Suspense, useEffect, useState } from 'react'
 import { Route, Switch, useParams } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
+import { fireManagedClusterView } from '../../../../resources'
+import { PageSection } from '@patternfly/react-core'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import { TemplateDetailTitle } from '../../components/TemplateDetailTitle'
 
 export function PolicyTemplateDetailsPage() {
   const { t } = useTranslation()
   const [template, setTemplate] = useState<any>()
+  const [templateError, setTemplateError] = useState<string>()
+  const { managedClusterAddonsState } = useSharedAtoms()
+  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
   const urlParams = useParams<{
     namespace: string
@@ -37,6 +43,56 @@ export function PolicyTemplateDetailsPage() {
     .replace(':apiVersion', apiVersion)
     .replace(':kind', kind)
     .replace(':templateName', templateName)
+
+  let templateClusterName = clusterName
+  let templateNamespace = clusterName
+
+  // Determine if the policy framework is deployed in hosted mode. If so, the policy template needs to be retrieved
+  // from the hosting cluster instead of the managed cluster.
+  for (const addon of managedClusterAddOns) {
+    if (addon.metadata.namespace !== clusterName) {
+      continue
+    }
+
+    if (addon.metadata.name !== 'governance-policy-framework') {
+      continue
+    }
+
+    if (addon.metadata.annotations?.['addon.open-cluster-management.io/hosting-cluster-name']) {
+      templateClusterName = addon.metadata.annotations['addon.open-cluster-management.io/hosting-cluster-name']
+      // open-cluster-management-agent-addon is the default namespace but it shouldn't be used for hosted mode.
+      templateNamespace = addon.spec.installNamespace ?? 'open-cluster-management-agent-addon'
+    }
+
+    if (apiGroup.endsWith('gatekeeper.sh')) {
+      // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
+      templateNamespace = ''
+    }
+
+    break
+  }
+
+  useEffect(() => {
+    if (kind === 'IamPolicy' && apiGroup === 'policy.open-cluster-management.io') {
+      setTemplateError(t('IamPolicy is no longer supported'))
+
+      return
+    }
+
+    const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
+    fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
+      .then((viewResponse) => {
+        if (viewResponse?.message) {
+          setTemplateError(viewResponse.message)
+        } else {
+          setTemplate(viewResponse.result)
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting resource: ', err)
+        setTemplateError(err)
+      })
+  }, [t, clusterName, kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
 
   return (
     <AcmPage
@@ -69,16 +125,17 @@ export function PolicyTemplateDetailsPage() {
           <Route
             exact
             path={templateDetailsUrl}
-            render={() => (
-              <PolicyTemplateDetails
-                clusterName={clusterName}
-                apiGroup={apiGroup}
-                apiVersion={apiVersion}
-                kind={kind}
-                templateName={templateName}
-                setParentTemplate={setTemplate}
-              />
-            )}
+            render={() => {
+              if (templateError) {
+                return (
+                  <PageSection style={{ paddingBottom: '0' }}>
+                    <AcmAlert variant="danger" title={templateError} isInline noClose />
+                  </PageSection>
+                )
+              }
+
+              return <PolicyTemplateDetails clusterName={clusterName} template={template} />
+            }}
           />
         </Switch>
       </Suspense>
