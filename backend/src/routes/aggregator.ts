@@ -17,7 +17,7 @@ let intervalTimer: NodeJS.Timer | undefined
 export function startAggregating(): void {
   intervalTimer = setInterval(async () => {
     await aggregateApplications(aggregatedCache, 'applications')
-  }, 15 * 1000).unref()
+  }, 30 * 1000).unref()
 }
 
 let stopping = false

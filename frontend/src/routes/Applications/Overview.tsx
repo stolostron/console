@@ -356,6 +356,7 @@ export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const {
     applicationSetsState,
+    applicationsState,
     argoApplicationsState,
     channelsState,
     namespacesState,
@@ -365,6 +366,7 @@ export default function ApplicationsOverview() {
     subscriptionsState,
   } = useSharedAtoms()
 
+  const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
@@ -472,11 +474,11 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
-  const applications = resultView.items
+  const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
-    () => [...applications.map((app) => generateTransformData(app))],
-    [applications, generateTransformData]
+    () => [...allApplications.map((app) => generateTransformData(app))],
+    [allApplications, generateTransformData]
   )
 
   const keyFn = useCallback(

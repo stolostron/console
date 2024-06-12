@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { RequestOptions } from 'https'
 import { ISearchResult, getSearchResults, getServiceAccountOptions } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 
-const query = JSON.stringify({
+const query = {
   operationName: 'searchResult',
   variables: {
     input: [
@@ -22,12 +23,12 @@ const query = JSON.stringify({
             values: ['!local-cluster'],
           },
         ],
-        limit: 3000,
+        limit: 20000,
       },
     ],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
-})
+}
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -90,9 +91,7 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 
 async function getRemoteArgoApps(argoAppSet: Set<string>) {
   const options = await getServiceAccountOptions()
-  const results: ISearchResult = await getSearchResults(options, query)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const argoApps = (results.data?.searchResult?.[0]?.items || []) as IArgoAppRemoteResource[]
+  const argoApps = await getPagedRemoteArgoApps(options)
 
   const apps: IResource[] = []
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {
@@ -128,4 +127,35 @@ async function getRemoteArgoApps(argoAppSet: Set<string>) {
   })
 
   return apps
+}
+
+// get argo apps from search api in three queries with a second apart
+async function getPagedRemoteArgoApps(options: RequestOptions) {
+  // a,i,n,etc are used with the hope that the distribution of names is evenly matched between queries
+  let _query = structuredClone(query)
+  _query.variables.input[0].filters.push({
+    property: 'name',
+    values: ['a*', 'i*', 'n*', 'e*', 'r*', 'o*'],
+  })
+  let results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
+  let argoApps: IArgoAppRemoteResource[] = (results.data?.searchResult?.[0]?.items || []) as IArgoAppRemoteResource[]
+  await new Promise((r) => setTimeout(r, 1000))
+  _query = structuredClone(query)
+  _query.variables.input[0].filters.push({
+    property: 'name',
+    values: ['s*', 't*', 'u*', 'l*', 'm*', 'c*', 'd*', 'b*', 'g*'],
+  })
+  results = await getSearchResults(options, JSON.stringify(_query))
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  argoApps = argoApps.concat(results.data?.searchResult?.[0]?.items || [])
+  await new Promise((r) => setTimeout(r, 1000))
+  _query = structuredClone(query)
+  _query.variables.input[0].filters.push({
+    property: 'name',
+    values: ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*', 'j*', 'q*', 'x*'],
+  })
+  results = await getSearchResults(options, JSON.stringify(_query))
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  argoApps = argoApps.concat(results.data?.searchResult?.[0]?.items || [])
+  return argoApps
 }
