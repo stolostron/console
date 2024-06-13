@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 const apiUrl = '/aggregate'
 
 export type FilterCounts = {
-  [filter: string]: number
+  [id: string]: { [filter: string]: number }
 }
 
 export interface IRequestListView {

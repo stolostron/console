@@ -2,11 +2,11 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { FilterCounts, paginate } from '../lib/pagination'
+import { FilterCounts, ITransformedResource, paginate } from '../lib/pagination'
 import { aggregateApplications, filterApplications } from './aggregators/applications'
 import { IResource } from '../resources/resource'
 
-export type AggregateCache = { data: IResource[]; filterCounts: FilterCounts }
+export type AggregateCache = { data: ITransformedResource[]; filterCounts: FilterCounts }
 export type AggregatedCacheType = {
   [type: string]: AggregateCache
 }

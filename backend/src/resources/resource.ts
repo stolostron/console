@@ -23,5 +23,4 @@ export interface IResource {
     ownerReferences?: OwnerReference[]
     creationTimestamp?: string | number | Date
   }
-  transform?: string[]
 }

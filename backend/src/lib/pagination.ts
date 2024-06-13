@@ -12,7 +12,7 @@ export type FilterSelections = {
 }
 
 export type FilterCounts = {
-  [filter: string]: number
+  [id: string]: { [filter: string]: number }
 }
 
 export interface ISortBy {
@@ -37,6 +37,10 @@ export interface IResultListView {
   isPreProcessed: boolean
 }
 
+export interface ITransformedResource extends IResource {
+  transform?: string[][]
+}
+
 export interface PaginatedResults {
   next?: {
     page: number
@@ -54,7 +58,7 @@ export function paginate(
   res: Http2ServerResponse,
   token: string,
   cache: AggregateCache,
-  filterItems: (filters: FilterSelections, items: IResource[]) => IResource[]
+  filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -69,7 +73,7 @@ export function paginate(
     let items = data
     let itemCount = items.length
     let rpage = page
-    let emptyResult = true
+    let emptyResult = false
     if (data.length) {
       // filter
       if (filters) {
@@ -85,7 +89,7 @@ export function paginate(
             {
               name: 'search',
               getFn: (item) => {
-                return [item.transform[0], item.transform[2]]
+                return [item.transform[0][0], item.transform[2][0]]
               },
             },
           ],
@@ -99,7 +103,7 @@ export function paginate(
       // sort
       if (sortBy && sortBy.index >= 0) {
         items = items.sort((a, b) => {
-          return a.transform[sortBy.index].localeCompare(b.transform[sortBy.index])
+          return a.transform[sortBy.index][0].localeCompare(b.transform[sortBy.index][0])
         })
         if (sortBy.direction === 'desc') {
           items = items.reverse()
@@ -112,12 +116,18 @@ export function paginate(
         }
       }
 
+      // if item count is 0 it's then search/filter returned no results
+      // id data,length is 0 there are no resources and we show create resource button
       itemCount = items.length
       emptyResult = itemCount === 0
+
       // slice and dice
       const startIndex = (rpage - 1) * perPage
       const endIndex = rpage * perPage
       items = items.slice(startIndex, endIndex)
+
+      // remove the transform work attribute
+      items = items.map(({ transform, ...keepAttrs }) => keepAttrs)
     }
 
     const results: IResultListView = {
