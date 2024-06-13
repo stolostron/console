@@ -4,7 +4,6 @@ import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { FilterCounts, ITransformedResource, paginate } from '../lib/pagination'
 import { aggregateApplications, filterApplications } from './aggregators/applications'
-import { IResource } from '../resources/resource'
 
 export type AggregateCache = { data: ITransformedResource[]; filterCounts: FilterCounts }
 export type AggregatedCacheType = {
