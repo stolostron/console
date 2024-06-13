@@ -1345,7 +1345,7 @@ function TableColumnFilters<T>(
       for (const option of filter.options) {
         /* istanbul ignore next */
         const count = filterCounts
-          ? filterCounts[option.value]
+          ? filterCounts[filter.id][option.value]
           : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
         /* istanbul ignore next */
         if (
