@@ -899,4 +899,15 @@ describe('Import Discovered Cluster', () => {
 
     await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
   })
+
+  test('sets discovered OCP cluster URL field', async () => {
+    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
+
+    await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for Discovered ROSA Cluster to appear in table
+    userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+
+    await clickByText('Import cluster')
+    await waitForText('Enter your server URL and API token for the existing cluster', true)
+    getByDisplayValue(mockDiscoveredClusters[0].spec.apiUrl!)
+  })
 })
