@@ -81,7 +81,7 @@ export function HypershiftUpgradeModal(props: {
   if (supportedVersions.versions) {
     for (let i = 1; i < supportedVersions.versions.length; i++) {
       if (semver.gt(supportedVersions.versions[i] + '.0', latestSupportedVersion)) {
-        latestSupportedVersion = supportedVersions.versions[i]
+        latestSupportedVersion = supportedVersions.versions[i] + '.0'
       }
     }
   }
