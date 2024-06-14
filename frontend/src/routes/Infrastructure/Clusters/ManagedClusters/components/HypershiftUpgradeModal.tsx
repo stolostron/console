@@ -34,6 +34,9 @@ import {
 } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
+import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import _ from 'lodash'
+import semver from 'semver'
 
 export function HypershiftUpgradeModal(props: {
   close: () => void
@@ -62,10 +65,49 @@ export function HypershiftUpgradeModal(props: {
   const [nodepoolsDisabled, setNodepoolsDisabled] = useState<any>({})
   const [controlPlaneCheckboxDisabled, setControlPlaneCheckboxDisabled] = useState<boolean>(false)
   const [patchErrors, setPatchErrors] = useState<any[]>([])
+  const zeroVersion = '0.0.0'
+
+  const { configMapsState } = useSharedAtoms()
+  const configMaps = useRecoilValue(configMapsState)
+  const hypershiftSupportedVersionsConfigMap = configMaps.find(
+    (cm) => cm.metadata?.name === 'supported-versions' && cm.metadata?.namespace === 'hypershift'
+  )
+  const supportedVersions = JSON.parse(_.get(hypershiftSupportedVersionsConfigMap, 'data.supported-versions', '{}'))
+
+  let latestSupportedVersion =
+    supportedVersions.versions && supportedVersions.versions.length > 0
+      ? supportedVersions.versions[0] + '.0'
+      : zeroVersion
+  if (supportedVersions.versions) {
+    for (let i = 1; i < supportedVersions.versions.length; i++) {
+      if (semver.gt(supportedVersions.versions[i] + '.0', latestSupportedVersion)) {
+        latestSupportedVersion = supportedVersions.versions[i]
+      }
+    }
+  }
 
   const availableUpdateKeys = useMemo(() => {
-    return Object.keys(props.availableUpdates).sort().reverse()
-  }, [props.availableUpdates])
+    return Object.keys(props.availableUpdates)
+      .filter((version) => {
+        if (latestSupportedVersion === zeroVersion) {
+          return true
+        }
+        return (
+          semver.major(version) <= semver.major(latestSupportedVersion) &&
+          semver.minor(version) <= semver.minor(latestSupportedVersion)
+        )
+      })
+      .sort((a, b) => {
+        if (semver.lt(a, b)) {
+          return -1
+        }
+        if (semver.gt(a, b)) {
+          return 1
+        }
+        return 0
+      })
+      .reverse()
+  }, [props.availableUpdates, latestSupportedVersion])
 
   const controlPlaneNameTdRef = useCallback((node: HTMLTableCellElement | null) => {
     if (node) {
