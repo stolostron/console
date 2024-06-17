@@ -10,9 +10,10 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { Cluster, ClusterStatus, NodePool } from '../../../../../resources'
+import { Cluster, ClusterStatus, ConfigMap, NodePool } from '../../../../../resources'
 import { Provider } from '../../../../../ui-components'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
+import { configMapsState } from '../../../../../atoms'
 
 const mockNodepools: NodePoolK8sResource[] = [
   {
@@ -268,6 +269,13 @@ const availableUpdates3: Record<string, string> = {
   '5.0.12': 'quay.io/openshift-release-dev/ocp-release:5.0.12-x86_64',
   '4.12.0': 'quay.io/openshift-release-dev/ocp-release:4.12.0-ec.4-x86_64',
   '4.11.12': 'quay.io/openshift-release-dev/ocp-release:4.11.12-x86_64',
+}
+
+const availableUpdates4: Record<string, string> = {
+  '4.15.12': 'quay.io/openshift-release-dev/ocp-release:4.15.12-x86_64',
+  '4.14.0': 'quay.io/openshift-release-dev/ocp-release:4.14.0-ec.4-x86_64',
+  '4.13.12': 'quay.io/openshift-release-dev/ocp-release:4.13.12-x86_64',
+  '4.16.12': 'quay.io/openshift-release-dev/ocp-release:4.16.12-x86_64',
 }
 
 const mockCluster: Cluster = {
@@ -1521,6 +1529,42 @@ const mockHostedCluster0: HostedClusterK8sResource = {
   },
 }
 
+const mockConfigMaps: ConfigMap[] = [
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    metadata: {
+      name: 'supported-versions',
+      namespace: 'hypershift',
+    },
+    data: {
+      'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+    },
+  },
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    metadata: {
+      name: 'myconfig',
+      namespace: 'hypershift',
+    },
+    data: {
+      'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+    },
+  },
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    metadata: {
+      name: 'myotherconfig',
+      namespace: 'differentnamespace',
+    },
+    data: {
+      'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+    },
+  },
+]
+
 describe('HypershiftUpgradeModal', () => {
   const renderHypershiftUpgradeModal = async (
     controlPlane: Cluster,
@@ -1529,24 +1573,44 @@ describe('HypershiftUpgradeModal', () => {
     agents?: AgentK8sResource[],
     agentMachines?: AgentMachineK8sResource[],
     hostedCluster?: HostedClusterK8sResource,
-    open = true
+    open = true,
+    includeSupportedVersion = false
   ) => {
     nockIgnoreRBAC()
 
-    const retResource = render(
-      <RecoilRoot>
-        <HypershiftUpgradeModal
-          controlPlane={controlPlane}
-          nodepools={nodepools}
-          open={open}
-          close={() => {}}
-          availableUpdates={availableUpdates}
-          agents={agents}
-          agentMachines={agentMachines}
-          hostedCluster={hostedCluster}
-        />
-      </RecoilRoot>
-    )
+    const retResource = !includeSupportedVersion
+      ? render(
+          <RecoilRoot>
+            <HypershiftUpgradeModal
+              controlPlane={controlPlane}
+              nodepools={nodepools}
+              open={open}
+              close={() => {}}
+              availableUpdates={availableUpdates}
+              agents={agents}
+              agentMachines={agentMachines}
+              hostedCluster={hostedCluster}
+            />
+          </RecoilRoot>
+        )
+      : render(
+          <RecoilRoot
+            initializeState={(snapshot) => {
+              snapshot.set(configMapsState, mockConfigMaps)
+            }}
+          >
+            <HypershiftUpgradeModal
+              controlPlane={controlPlane}
+              nodepools={nodepools}
+              open={open}
+              close={() => {}}
+              availableUpdates={availableUpdates}
+              agents={agents}
+              agentMachines={agentMachines}
+              hostedCluster={hostedCluster}
+            />
+          </RecoilRoot>
+        )
 
     return retResource
   }
@@ -1570,7 +1634,9 @@ describe('HypershiftUpgradeModal', () => {
       availableUpdates0,
       undefined,
       undefined,
-      undefined
+      undefined,
+      true,
+      true
     )
     expect(queryAllByText('hypershift-cluster1').length).toBe(1)
     expect(screen.getByTestId('controlplane-checkbox')).toBeTruthy()
@@ -1758,5 +1824,64 @@ describe('HypershiftUpgradeModal', () => {
     expect(screen.getByTestId('nodepool-feng-test-1-toggle')).toBeTruthy()
     userEvent.click(screen.getByTestId('nodepool-feng-test-1-toggle'))
     expect(getByText('fog26.cluster.internal')).toBeTruthy()
+  })
+})
+
+describe('HypershiftUpgradeModal - SupportVersion', () => {
+  const renderHypershiftUpgradeModal = async (
+    controlPlane: Cluster,
+    nodepools: NodePool[],
+    availableUpdates: Record<string, string>,
+    agents?: AgentK8sResource[],
+    agentMachines?: AgentMachineK8sResource[],
+    hostedCluster?: HostedClusterK8sResource,
+    open = true
+  ) => {
+    nockIgnoreRBAC()
+
+    const retResource = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [
+            {
+              kind: 'ConfigMap',
+              apiVersion: 'v1',
+              metadata: {
+                name: 'supported-versions',
+                namespace: 'hypershift',
+              },
+              data: {
+                'supported-versions': '{"versions":["4.13","4.14","4.15"]}',
+              },
+            },
+          ])
+        }}
+      >
+        <HypershiftUpgradeModal
+          controlPlane={controlPlane}
+          nodepools={nodepools}
+          open={open}
+          close={() => {}}
+          availableUpdates={availableUpdates}
+          agents={agents}
+          agentMachines={agentMachines}
+          hostedCluster={hostedCluster}
+        />
+      </RecoilRoot>
+    )
+
+    return retResource
+  }
+
+  it('should render upgrade modal with supported version', async () => {
+    const { queryAllByText } = await renderHypershiftUpgradeModal(
+      mockCluster,
+      mockCluster.hypershift?.nodePools as NodePool[],
+      availableUpdates4,
+      undefined,
+      undefined,
+      undefined
+    )
+    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
   })
 })
