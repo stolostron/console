@@ -105,6 +105,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     metadata: {
       name: 'foobar',
       namespace: 'foobar',
+      uid: 'foobar',
     },
     spec: {
       activityTimestamp: '2020-07-30T19:09:43Z',
@@ -161,6 +162,27 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
       name: 'test-cluster-02',
       openshiftVersion: '4.6.1',
       status: 'Stale',
+    },
+  },
+  {
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
+    metadata: {
+      name: 'mce-hcp',
+      namespace: 'mce-hcp',
+      uid: 'mce-hcp',
+    },
+    spec: {
+      activityTimestamp: '2024-06-18T10:39:27Z',
+      cloudProvider: 'N/A',
+      apiUrl: 'https://api.mce-hcp.dev01.red-chesterfield.com',
+      displayName: 'mce-hcp',
+      console: 'https://console-openshift-console.apps.mce-hcp.dev01.red-chesterfield.com',
+      creationTimestamp: '2024-06-18T10:39:27Z',
+      name: 'mce-hcp',
+      type: 'MultiClusterEngineHCP',
+      openshiftVersion: '4.15.8',
+      status: 'Active',
     },
   },
 ]
@@ -909,5 +931,19 @@ describe('Import Discovered Cluster', () => {
     await clickByText('Import cluster')
     await waitForText('Enter your server URL and API token for the existing cluster', true)
     getByDisplayValue(mockDiscoveredClusters[0].spec.apiUrl!)
+  })
+
+  test('disabled for MultiClusterEngineHCP clusters', async () => {
+    const { container } = render(<Component />) // Render component
+    expect(
+      container.querySelector(
+        `[data-ouia-component-id=${mockDiscoveredClusters[0].metadata.uid!}] td.pf-c-table__action`
+      )?.innerHTML
+    ).toBeDefined()
+    expect(
+      container.querySelector(
+        `[data-ouia-component-id=${mockDiscoveredClusters[3].metadata.uid!}] td.pf-c-table__action`
+      )
+    ).toBeEmptyDOMElement()
   })
 })
