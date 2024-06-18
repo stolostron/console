@@ -345,6 +345,22 @@ export default function ImportClusterPage() {
         type: 'auto-import/rosa',
       })
     }
+    if (state.importMode === ImportMode.token) {
+      resources.push({
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+          name: secretName,
+          namespace: initialClusterName,
+        },
+        stringData: {
+          autoImportRetry: '2',
+          token: '',
+          server: initialServer,
+        },
+        type: 'Opaque',
+      })
+    }
     if (isACMAvailable) {
       resources.push({
         apiVersion: KlusterletAddonConfigApiVersion,
@@ -365,6 +381,7 @@ export default function ImportClusterPage() {
   }, [
     discovered,
     initialClusterName,
+    initialServer,
     isACMAvailable,
     initialAPIToken,
     initialClusterID,
