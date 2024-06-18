@@ -14,7 +14,7 @@ import {
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
-import { Fragment, useMemo } from 'react'
+import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
@@ -331,6 +331,29 @@ export function DiscoveredClustersTable(props: {
     }
   }
 
+  const rowActionResolver = useCallback(
+    (item: DiscoveredCluster) => {
+      return item.spec.type !== 'MultiClusterEngineHCP' // DiscoveredClusters representing HostedClusters only support auto-import
+        ? [
+            {
+              id: 'importCluster',
+              title: t('discovery.import'),
+              click: (item: DiscoveredCluster) => {
+                sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
+                sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl ?? '')
+                sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
+                sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
+                sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
+                history.push(createBackCancelLocation(NavigationPath.importCluster))
+              },
+            },
+          ]
+        : []
+    },
+    [history, t]
+  )
+
   return (
     <Fragment>
       <AcmTable<DiscoveredCluster>
@@ -352,21 +375,7 @@ export function DiscoveredClustersTable(props: {
             variant: ButtonVariant.secondary,
           },
         ]}
-        rowActions={[
-          {
-            id: 'importCluster',
-            title: t('discovery.import'),
-            click: (item) => {
-              sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
-              sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-              sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl ?? '')
-              sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
-              sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
-              sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
-              history.push(createBackCancelLocation(NavigationPath.importCluster))
-            },
-          },
-        ]}
+        rowActionResolver={rowActionResolver}
         emptyState={emptyState}
       />
     </Fragment>
