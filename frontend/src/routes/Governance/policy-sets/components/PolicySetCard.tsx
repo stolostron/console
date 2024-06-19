@@ -24,7 +24,7 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -132,9 +132,10 @@ export default function PolicySetCard(props: {
                   key="edit"
                   onClick={() => {
                     navigate(
-                      NavigationPath.editPolicySet
-                        .replace(':namespace', policySet.metadata.namespace)
-                        .replace(':name', policySet.metadata.name)
+                      generatePath(NavigationPath.editPolicySet, {
+                        namespace: policySet.metadata.namespace,
+                        name: policySet.metadata.name,
+                      })
                     )
                   }}
                 >

@@ -13,7 +13,7 @@ import {
   AcmTable,
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
@@ -91,9 +91,10 @@ function AnsibleJobTemplateTable() {
             cell: (curator) => (
               <span style={{ whiteSpace: 'nowrap' }}>
                 <Link
-                  to={NavigationPath.editAnsibleAutomation
-                    .replace(':namespace', curator.metadata.namespace!)
-                    .replace(':name', curator.metadata.name!)}
+                  to={generatePath(NavigationPath.editAnsibleAutomation, {
+                    namespace: curator.metadata.namespace!,
+                    name: curator.metadata.name!,
+                  })}
                 >
                   {curator.metadata.name!}
                 </Link>
@@ -154,9 +155,10 @@ function AnsibleJobTemplateTable() {
                   rbac: [rbacPatch(curator)],
                   click: (curator: ClusterCurator) => {
                     navigate(
-                      NavigationPath.editAnsibleAutomation
-                        .replace(':namespace', curator.metadata.namespace!)
-                        .replace(':name', curator.metadata.name!)
+                      generatePath(NavigationPath.editAnsibleAutomation, {
+                        namespace: curator.metadata.namespace!,
+                        name: curator.metadata.name!,
+                      })
                     )
                   },
                 },

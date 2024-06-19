@@ -28,7 +28,7 @@ import {
   ITableFilter,
 } from '../../../ui-components'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -675,10 +675,13 @@ export default function PoliciesPage() {
                                   variant="link"
                                   isInline
                                   onClick={() => {
-                                    const path = NavigationPath.editPolicy
-                                      .replace(':namespace', item.policy.metadata.namespace!)
-                                      .replace(':name', item.policy.metadata.name!)
-                                    navigate(path + '?context=policies')
+                                    navigate({
+                                      pathname: generatePath(NavigationPath.editPolicy, {
+                                        namespace: item.policy.metadata.namespace!,
+                                        name: item.policy.metadata.name!,
+                                      }),
+                                      search: '?context=policies',
+                                    })
                                   }}
                                 >
                                   {t('Add')}
@@ -781,17 +784,20 @@ function usePolicyViolationsColumn(
         return (
           <ClusterPolicyViolationIcons2
             compliant={clusterViolationSummary.compliant}
-            compliantHref={`${NavigationPath.policyDetailsResults
-              .replace(':namespace', item.policy.metadata?.namespace ?? '')
-              .replace(':name', item.policy.metadata?.name ?? '')}?sort=-1`}
+            compliantHref={`${generatePath(NavigationPath.policyDetailsResults, {
+              namespace: item.policy.metadata?.namespace ?? '',
+              name: item.policy.metadata?.name ?? '',
+            })}?sort=-1`}
             noncompliant={clusterViolationSummary.noncompliant}
-            violationHref={`${NavigationPath.policyDetailsResults
-              .replace(':namespace', item.policy.metadata?.namespace ?? '')
-              .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
+            violationHref={`${generatePath(NavigationPath.policyDetailsResults, {
+              namespace: item.policy.metadata?.namespace ?? '',
+              name: item.policy.metadata?.name ?? '',
+            })}?sort=1`}
             pending={clusterViolationSummary.pending}
-            pendingHref={`${NavigationPath.policyDetailsResults
-              .replace(':namespace', item.policy.metadata?.namespace ?? '')
-              .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
+            pendingHref={`${generatePath(NavigationPath.policyDetailsResults, {
+              namespace: item.policy.metadata?.namespace ?? '',
+              name: item.policy.metadata?.name ?? '',
+            })}?sort=1`}
             unknown={clusterViolationSummary.unknown}
           />
         )

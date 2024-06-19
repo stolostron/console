@@ -183,11 +183,13 @@ export function EditArgoApplicationSet() {
             if (searchParams.get('context') === 'applicationsets') {
               navigate(NavigationPath.applications)
             } else {
-              navigate(
-                NavigationPath.applicationOverview
-                  .replace(':namespace', applicationSet.metadata?.namespace ?? '')
-                  .replace(':name', applicationSet.metadata?.name ?? '') + argoAppSetQueryString
-              )
+              navigate({
+                pathname: generatePath(NavigationPath.applicationOverview, {
+                  namespace: applicationSet.metadata?.namespace ?? '',
+                  name: applicationSet.metadata?.name ?? '',
+                }),
+                search: argoAppSetQueryString,
+              })
             }
           }
         })

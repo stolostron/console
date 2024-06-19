@@ -15,7 +15,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useLocation, useNavigate, Location } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
 import { getErrorInfo } from '../../components/ErrorPage'
@@ -218,11 +218,13 @@ export function CreateSubscriptionApplication(
             type: 'success',
             autoClose: true,
           })
-          navigate(
-            NavigationPath.applicationOverview
-              .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
-              .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
-          )
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, {
+              namespace: applicationResourceJSON.metadata.namespace!,
+              name: applicationResourceJSON.metadata.name!,
+            }),
+            search: location.search,
+          })
         })
         .catch((err) => {
           const errorInfo = getErrorInfo(err, t)
@@ -349,9 +351,10 @@ export function CreateSubscriptionApplication(
       navigate(NavigationPath.applications)
     } else {
       navigate(
-        NavigationPath.applicationOverview
-          .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
-          .replace(':name', editApplication?.selectedAppName ?? '')
+        generatePath(NavigationPath.applicationOverview, {
+          namespace: editApplication?.selectedAppNamespace ?? '',
+          name: editApplication?.selectedAppName ?? '',
+        })
       )
     }
   }

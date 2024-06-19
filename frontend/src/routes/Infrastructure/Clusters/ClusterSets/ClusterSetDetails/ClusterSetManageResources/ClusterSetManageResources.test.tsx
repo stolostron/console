@@ -17,7 +17,7 @@ import {
   mapClusters,
 } from '../../../../../../resources'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
@@ -272,7 +272,7 @@ const Component = () => {
       }}
     >
       <MemoryRouter
-        initialEntries={[NavigationPath.clusterSetManage.replace(':id', mockManagedClusterSet.metadata.name!)]}
+        initialEntries={[generatePath(NavigationPath.clusterSetManage, { id: mockManagedClusterSet.metadata.name! })]}
       >
         <Routes>
           <Route element={<Outlet context={context} />}>

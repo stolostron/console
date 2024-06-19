@@ -15,7 +15,7 @@ import {
 } from '../../ui-components'
 import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
@@ -155,9 +155,10 @@ export function CredentialsTable(props: {
             cell: (secret) => (
               <span style={{ whiteSpace: 'nowrap' }}>
                 <Link
-                  to={NavigationPath.viewCredentials
-                    .replace(':namespace', secret.metadata.namespace as string)
-                    .replace(':name', secret.metadata.name as string)}
+                  to={generatePath(NavigationPath.viewCredentials, {
+                    namespace: secret.metadata.namespace!,
+                    name: secret.metadata.name!,
+                  })}
                 >
                   {secret.metadata.name}
                 </Link>
@@ -225,9 +226,10 @@ export function CredentialsTable(props: {
                   isAriaDisabled: true,
                   click: (secret: Secret) => {
                     navigate(
-                      NavigationPath.editCredentials
-                        .replace(':namespace', secret.metadata.namespace!)
-                        .replace(':name', secret.metadata.name!)
+                      generatePath(NavigationPath.editCredentials, {
+                        namespace: secret.metadata.namespace!,
+                        name: secret.metadata.name!,
+                      })
                     )
                   },
                   rbac: [rbacPatch(secret)], // validate that this is working

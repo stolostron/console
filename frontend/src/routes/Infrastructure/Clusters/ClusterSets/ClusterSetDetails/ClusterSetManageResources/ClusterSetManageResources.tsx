@@ -16,7 +16,7 @@ import {
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
@@ -52,7 +52,7 @@ export function ClusterSetManageResourcesPage() {
             { text: t('clusterSets'), to: NavigationPath.clusterSets },
             {
               text: clusterSet?.metadata.name!,
-              to: NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!),
+              to: generatePath(NavigationPath.clusterSetOverview, { id: clusterSet?.metadata.name! }),
             },
             { text: t('page.header.cluster-set.manage-assignments'), to: '' },
           ]}
@@ -200,7 +200,9 @@ export function ClusterSetManageResourcesContent() {
             </AcmButton>
             <AcmButton
               variant="link"
-              onClick={() => navigate(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
+              onClick={() =>
+                navigate(generatePath(NavigationPath.clusterSetOverview, { id: clusterSet?.metadata.name! }))
+              }
             >
               {t('cancel')}
             </AcmButton>
@@ -214,7 +216,7 @@ export function ClusterSetManageResourcesContent() {
           action={t('save')}
           processing={t('saving')}
           onCancel={() => setShowConfirmModal(false)}
-          close={() => navigate(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
+          close={() => navigate(generatePath(NavigationPath.clusterSetOverview, { id: clusterSet?.metadata.name! }))}
           isValidError={errorIsNot([ResourceErrorCode.NotFound])}
           items={[...removedResources, ...selectedResources]}
           emptyState={

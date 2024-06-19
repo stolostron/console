@@ -4,7 +4,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, compareStrings } from '../../../ui-components'
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
@@ -56,11 +56,10 @@ export function SecurityGroupPolicySummarySidebar(props: {
         cell: (policy: Policy) => {
           return (
             <Link
-              to={{
-                pathname: NavigationPath.policyDetailsResults
-                  .replace(':namespace', policy.metadata.namespace!)
-                  .replace(':name', policy.metadata.name!),
-              }}
+              to={generatePath(NavigationPath.policyDetailsResults, {
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name!,
+              })}
             >
               {policy.metadata.name}
             </Link>

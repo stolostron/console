@@ -12,7 +12,7 @@ import {
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
@@ -235,9 +235,10 @@ export function AutomationDetailsSidebar(props: {
           variant="primary"
           onClick={() =>
             navigate(
-              NavigationPath.editPolicyAutomation
-                .replace(':namespace', policy.metadata.namespace as string)
-                .replace(':name', policy.metadata.name as string)
+              generatePath(NavigationPath.editPolicyAutomation, {
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name!,
+              })
             )
           }
         >

@@ -1808,7 +1808,7 @@ describe('ClusterSetDetails error', () => {
       }}
     >
       <MemoryRouter
-        initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+        initialEntries={[generatePath(NavigationPath.clusterSetDetails, { id: mockManagedClusterSet.metadata.name! })]}
       >
         <Routes>
           <Route path={NavigationPath.clusterSetDetails} element={<ClusterSetDetails />} />
@@ -1838,7 +1838,7 @@ describe('ClusterSetDetails deletion', () => {
       }}
     >
       <MemoryRouter
-        initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+        initialEntries={[generatePath(NavigationPath.clusterSetDetails, { id: mockManagedClusterSet.metadata.name! })]}
       >
         <Routes>
           <Route path={NavigationPath.clusterSetDetails + '/*'} element={<ClusterSetDetails />} />

@@ -1,7 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import { Link, useLocation, useParams, useNavigate, useOutletContext, Outlet } from 'react-router-dom-v5-compat'
+import {
+  Link,
+  useLocation,
+  useParams,
+  useNavigate,
+  useOutletContext,
+  Outlet,
+  generatePath,
+} from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -41,12 +49,11 @@ export function PolicyDetailsPage() {
 
   const isResultsTab = location.pathname.endsWith('/results')
 
-  const detailsUrl = NavigationPath.policyDetails
-    .replace(':namespace', policyNamespace as string)
-    .replace(':name', policyName as string)
-  const resultsUrl = NavigationPath.policyDetailsResults
-    .replace(':namespace', policyNamespace as string)
-    .replace(':name', policyName as string)
+  const detailsUrl = generatePath(NavigationPath.policyDetails, { namespace: policyNamespace!, name: policyName! })
+  const resultsUrl = generatePath(NavigationPath.policyDetailsResults, {
+    namespace: policyNamespace!,
+    name: policyName!,
+  })
 
   const selectedPolicy: Policy = useMemo(() => {
     const idx =

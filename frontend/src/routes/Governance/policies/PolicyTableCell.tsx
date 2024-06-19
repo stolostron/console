@@ -3,7 +3,7 @@
 import { PolicyAutomation, PolicySet } from '../../../resources'
 import { PolicyTableItem } from './Policies'
 import { NavigationPath } from '../../../NavigationPath'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { PolicySetList } from '../common/util'
 import moment from 'moment'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
@@ -15,9 +15,10 @@ import { TFunction } from 'react-i18next'
 export function handleNameCell(item: PolicyTableItem) {
   return (
     <Link
-      to={NavigationPath.policyDetails
-        .replace(':namespace', item.policy.metadata.namespace as string)
-        .replace(':name', item.policy.metadata.name as string)}
+      to={generatePath(NavigationPath.policyDetails, {
+        namespace: item.policy.metadata.namespace!,
+        name: item.policy.metadata.name!,
+      })}
       state={{
         from: NavigationPath.policies,
       }}
@@ -116,9 +117,10 @@ export function handleAutomationCell(
         isInline
         variant={ButtonVariant.link}
         component={Link}
-        to={NavigationPath.createPolicyAutomation
-          .replace(':namespace', item.policy.metadata.namespace as string)
-          .replace(':name', item.policy.metadata.name as string)}
+        to={generatePath(NavigationPath.createPolicyAutomation, {
+          namespace: item.policy.metadata.namespace!,
+          name: item.policy.metadata.name!,
+        })}
       >
         {configure}
       </AcmButton>

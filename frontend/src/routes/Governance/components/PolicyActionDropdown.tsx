@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -233,9 +233,10 @@ export function PolicyActionDropdown(props: {
         text: t('Edit'),
         addSeparator: true,
         click: (item: PolicyTableItem) => {
-          let path = NavigationPath.editPolicy
-            .replace(':namespace', item.policy.metadata.namespace!)
-            .replace(':name', item.policy.metadata.name!)
+          let path = generatePath(NavigationPath.editPolicy, {
+            namespace: item.policy.metadata.namespace!,
+            name: item.policy.metadata.name!,
+          })
           if (props.isKebab) {
             path += '?context=policies'
           }

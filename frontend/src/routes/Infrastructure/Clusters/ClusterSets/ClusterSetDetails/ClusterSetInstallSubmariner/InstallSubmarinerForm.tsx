@@ -101,7 +101,7 @@ export function InstallSubmarinerFormPage() {
               },
               {
                 text: clusterSet!.metadata.name!,
-                to: NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!),
+                to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }),
               },
               {
                 text: t('managed.clusterSets.submariner.addons.install'),
@@ -118,7 +118,7 @@ export function InstallSubmarinerFormPage() {
               <>
                 <RbacButton
                   component={Link}
-                  to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
                   variant="primary"
                   rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
                 >
@@ -567,7 +567,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
       },
       {
         text: clusterSet!.metadata.name!,
-        to: NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!),
+        to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }),
       },
       {
         text: t('managed.clusterSets.submariner.addons.install'),

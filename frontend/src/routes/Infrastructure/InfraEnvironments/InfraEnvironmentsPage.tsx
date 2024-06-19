@@ -35,7 +35,7 @@ import {
   InfrastructureK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -266,9 +266,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const { t } = useTranslation()
   const navigate = useNavigate()
   const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
-    NavigationPath.infraEnvironmentDetails
-      .replace(':namespace', infraEnv.metadata?.namespace as string)
-      .replace(':name', infraEnv.metadata?.name as string)
+    generatePath(NavigationPath.infraEnvironmentDetails, {
+      namespace: infraEnv.metadata?.namespace!,
+      name: infraEnv.metadata?.name!,
+    })
 
   const { clusterVersionState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)

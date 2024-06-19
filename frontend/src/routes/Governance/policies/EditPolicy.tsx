@@ -2,7 +2,7 @@
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -144,9 +144,10 @@ export function EditPolicy() {
               navigate(NavigationPath.policies)
             } else {
               navigate(
-                NavigationPath.policyDetails
-                  .replace(':namespace', policy.metadata?.namespace ?? '')
-                  .replace(':name', policy.metadata?.name ?? '')
+                generatePath(NavigationPath.policyDetails, {
+                  namespace: policy.metadata?.namespace ?? '',
+                  name: policy.metadata?.name ?? '',
+                })
               )
             }
           }
@@ -160,9 +161,10 @@ export function EditPolicy() {
           const policy = existingResources.find((resource) => resource.kind === PolicyKind)
           if (policy) {
             navigate(
-              NavigationPath.policyDetails
-                .replace(':namespace', policy.metadata?.namespace ?? '')
-                .replace(':name', policy.metadata?.name ?? '')
+              generatePath(NavigationPath.policyDetails, {
+                namespace: policy.metadata?.namespace ?? '',
+                name: policy.metadata?.name ?? '',
+              })
             )
           } else {
             navigate(NavigationPath.policies)

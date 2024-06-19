@@ -380,11 +380,13 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                         })
                         resolve(status)
                         setCreationStatus(undefined)
-                        navigate(
-                          `${NavigationPath.editCluster
-                            .replace(':namespace', clusterNamespace as string)
-                            .replace(':name', clusterName as string)}?${params.toString()}`
-                        )
+                        navigate({
+                          pathname: generatePath(NavigationPath.editCluster, {
+                            namespace: clusterNamespace!,
+                            name: clusterName!,
+                          }),
+                          search: `?${params.toString()}`,
+                        })
                       }, 250)
                     }
                   }

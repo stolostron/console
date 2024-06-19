@@ -5,7 +5,7 @@ import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -132,11 +132,13 @@ export function CreateApplicationArgoPullModel() {
           }
           submitForm()
 
-          navigate(
-            NavigationPath.applicationOverview
-              .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
-              .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString
-          )
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, {
+              namespace: applicationSet?.metadata?.namespace ?? '',
+              name: applicationSet?.metadata?.name ?? '',
+            }),
+            search: argoAppSetQueryString,
+          })
         })
       }}
       timeZones={timeZones}

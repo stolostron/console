@@ -10,7 +10,7 @@ import {
 import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, useLocation } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useLocation } from 'react-router-dom-v5-compat'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
@@ -165,9 +165,10 @@ export function StatusField(props: { cluster: Cluster }) {
       hasAction = true
       Action = () => (
         <Link
-          to={`${NavigationPath.editCluster
-            .replace(':namespace', props.cluster?.namespace!)
-            .replace(':name', props.cluster?.name!)}`}
+          to={generatePath(NavigationPath.editCluster, {
+            namespace: props.cluster?.namespace!,
+            name: props.cluster?.name!,
+          })}
         >
           {t('Continue cluster configuration')}
         </Link>
@@ -179,9 +180,10 @@ export function StatusField(props: { cluster: Cluster }) {
         hasAction = true
         Action = () => (
           <Link
-            to={`${NavigationPath.clusterOverview
-              .replace(':namespace', props.cluster?.namespace!)
-              .replace(':name', props.cluster?.name!)}`}
+            to={generatePath(NavigationPath.clusterOverview, {
+              namespace: props.cluster?.namespace!,
+              name: props.cluster?.name!,
+            })}
           >
             {t('Go to Overview')}
           </Link>

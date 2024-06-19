@@ -164,14 +164,15 @@ export default function PolicyDetailsResults() {
           const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
           if (prunedMessage && policyName && policyNamespace && cluster && templateName && apiVersion && kind) {
             const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
-            const templateDetailURL = NavigationPath.policyTemplateDetails
-              .replace(':namespace', policyNamespace)
-              .replace(':name', policyName)
-              .replace(':clusterName', cluster)
-              .replace(':apiGroup/', apiGroup ? `${apiGroup}/` : '')
-              .replace(':apiVersion', version)
-              .replace(':kind', kind)
-              .replace(':templateName', templateName)
+            const templateDetailURL = generatePath(NavigationPath.policyTemplateDetails, {
+              namespace: policyNamespace,
+              name: policyName,
+              clusterName: cluster,
+              apiGroup,
+              apiVersion: version,
+              kind,
+              templateName,
+            })
             const templateLink = canCreatePolicy ? (
               templateDetailURL && (
                 <span>
@@ -219,11 +220,12 @@ export default function PolicyDetailsResults() {
           const cluster = item?.cluster
           const templateName = item?.templateName
           if (policyName && policyNamespace && cluster && templateName) {
-            const statusHistoryURL = NavigationPath.policyDetailsHistory
-              .replace(':namespace', policyNamespace)
-              .replace(':name', policyName)
-              .replace(':clusterName', cluster)
-              .replace(':templateName', templateName)
+            const statusHistoryURL = generatePath(NavigationPath.policyDetailsHistory, {
+              namespace: policyNamespace,
+              name: policyName,
+              clusterName: cluster,
+              templateName,
+            })
             return <Link to={statusHistoryURL}>{t('View history')}</Link>
           }
           return '-'
