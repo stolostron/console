@@ -463,14 +463,6 @@ export const getDeleteHostAction =
     }
     if (bmh) {
       resources.push(bmh)
-      resources.push({
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-          namespace: bmh.metadata?.namespace,
-          name: bmh.spec?.bmc?.credentialsName,
-        },
-      })
 
       const bmhNMStates = (nmStates || []).filter(
         (nm) => nm.metadata?.labels?.[AGENT_BMH_NAME_LABEL_KEY] === bmh?.metadata?.name
