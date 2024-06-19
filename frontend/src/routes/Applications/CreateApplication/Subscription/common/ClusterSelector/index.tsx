@@ -262,7 +262,6 @@ const ClusterSelector = (props: {
                         id={`labelName-${id}-${controlId}`}
                         label={i18n('clusterSelector.label.field.ui')}
                         value={value}
-                        isRequired
                         placeholder={i18n('Select the label')}
                         onChange={(label) => {
                           handleChange(label!, 'labelName', id)
@@ -281,7 +280,6 @@ const ClusterSelector = (props: {
                         id={`operator-${id}-${controlId}`}
                         label={i18n('Operator')}
                         value={operator}
-                        isRequired
                         onChange={(operator) => {
                           handleChange(operator!, 'operatorValue', id)
                           switch (operator) {
@@ -308,7 +306,6 @@ const ClusterSelector = (props: {
                           value={matchLabelValue}
                           placeholder={i18n('Select the values')}
                           onChange={(value) => handleChange(value!, 'labelValue', id)}
-                          isRequired
                         >
                           {labelValuesMap[labelName]?.map((value: any) => (
                             <SelectOption key={value} value={value}>
