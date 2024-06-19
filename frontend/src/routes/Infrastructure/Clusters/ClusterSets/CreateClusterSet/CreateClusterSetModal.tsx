@@ -18,7 +18,7 @@ import {
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 function getEmptySet() {
@@ -115,7 +115,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
             <AcmButton
               variant="primary"
               onClick={() => {
-                navigate(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
+                navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
               }}
             >
               {t('set.manage-resources')}

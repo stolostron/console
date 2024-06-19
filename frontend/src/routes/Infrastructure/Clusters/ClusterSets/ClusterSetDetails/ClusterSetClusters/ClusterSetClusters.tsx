@@ -4,7 +4,7 @@ import { ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../
 import { AcmEmptyState, AcmPageContent } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
@@ -34,7 +34,7 @@ export function ClusterSetClustersPageContent() {
               action={
                 <RbacButton
                   component={Link}
-                  to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
                   variant="primary"
                   rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
                 >

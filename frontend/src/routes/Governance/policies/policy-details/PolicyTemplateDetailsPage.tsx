@@ -2,7 +2,7 @@
 
 import { AcmAlert, AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
+import { generatePath, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
@@ -92,9 +92,7 @@ export function PolicyTemplateDetailsPage() {
             { text: t('Policies'), to: NavigationPath.policies },
             {
               text: policyName,
-              to: NavigationPath.policyDetailsResults
-                .replace(':namespace', policyNamespace)
-                .replace(':name', policyName),
+              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace, name: policyName }),
             },
             { text: templateName, to: '' },
           ]}

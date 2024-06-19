@@ -4,7 +4,7 @@ import { ManagedClusterSet } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/ClusterSetSubmariner/ClusterSetSubmariner'
@@ -24,19 +24,19 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
   let type: StatusType = StatusType.pending
   let status = ''
   let message = ''
-  let path = NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
+  let path = generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
   let linkText = t('view.submariner')
 
   if (clusters.length < 2 || submarinerAddons.length < 2) {
     if (clusters.length < 2) {
       status = t('status.submariner.network.insufficientClusters')
       message = t('status.submariner.network.insufficientClusters.message')
-      path = NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)
+      path = generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })
       linkText = t('page.header.cluster-set.manage-assignments')
     } else {
       status = t('status.submariner.network.insufficientSubmariners')
       message = t('status.submariner.network.insufficientSubmariners.message')
-      path = NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
+      path = generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
       linkText = t('summary.submariner.launch')
     }
 

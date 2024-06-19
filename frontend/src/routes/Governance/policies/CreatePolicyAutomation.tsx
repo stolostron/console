@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, PathParam, useLocation } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, PathParam, useLocation, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -73,7 +73,7 @@ export function CreatePolicyAutomation() {
         { text: t('Policies'), to: NavigationPath.policies },
         {
           text: name,
-          to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
+          to: generatePath(NavigationPath.policyDetails, { namespace, name }),
         },
         { text: t('Create policy automation') },
       ]}

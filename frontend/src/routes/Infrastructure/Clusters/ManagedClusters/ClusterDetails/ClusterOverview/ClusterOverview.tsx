@@ -28,7 +28,7 @@ import {
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -314,7 +314,9 @@ export function ClusterOverviewPageContent() {
     clusterSet: {
       key: t('table.clusterSet'),
       value: cluster?.clusterSet! && (
-        <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>{cluster?.clusterSet}</Link>
+        <Link to={generatePath(NavigationPath.clusterSetOverview, { id: cluster?.clusterSet! })}>
+          {cluster?.clusterSet}
+        </Link>
       ),
     },
     clusterPool: {

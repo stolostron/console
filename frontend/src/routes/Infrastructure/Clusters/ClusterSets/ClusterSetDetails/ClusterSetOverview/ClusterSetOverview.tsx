@@ -11,7 +11,7 @@ import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clusterDangerStatuses, isGlobalClusterSet, ManagedClusterSetDefinition } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
@@ -36,7 +36,7 @@ export function ClusterSetOverviewPageContent() {
 
   const navigateToClusterSet = () => {
     if (clusterSet?.metadata?.name) {
-      navigate(NavigationPath.clusterSetClusters.replace(':id', clusterSet.metadata.name))
+      navigate(generatePath(NavigationPath.clusterSetClusters, { id: clusterSet.metadata.name }))
     }
   }
 
@@ -139,9 +139,13 @@ export function ClusterSetOverviewPageContent() {
                         title: t('submariner.addons'),
                         linkText: t('summary.submariner.launch'),
                         onLinkClick: () =>
-                          navigate(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
+                          navigate(
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
+                          ),
                         countClick: () =>
-                          navigate(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
+                          navigate(
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
+                          ),
                         isDanger: unhealthySubmariners.length > 0,
                       },
                     ]
@@ -161,9 +165,9 @@ export function ClusterSetOverviewPageContent() {
                   title: t('clusterPools'),
                   linkText: t('summary.clusterPools.launch'),
                   onLinkClick: () =>
-                    navigate(NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet!.metadata.name! })),
                   countClick: () =>
-                    navigate(NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet!.metadata.name! })),
                 },
               ]}
             />

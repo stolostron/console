@@ -2,7 +2,7 @@
 
 import { AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
+import { generatePath, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
@@ -25,9 +25,7 @@ export function PolicyDetailsHistoryPage() {
             { text: t('Policies'), to: NavigationPath.policies },
             {
               text: policyName,
-              to: NavigationPath.policyDetailsResults
-                .replace(':namespace', policyNamespace as string)
-                .replace(':name', policyName as string),
+              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace!, name: policyName }),
             },
             { text: t('History'), to: '' },
           ]}

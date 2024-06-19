@@ -24,7 +24,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
@@ -371,7 +371,9 @@ export function ClusterSetSubmarinerPageContent() {
                   id: 'install-submariner',
                   title: t('managed.clusterSets.submariner.addons.install'),
                   click: () =>
-                    navigate(NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)),
+                    navigate(
+                      generatePath(NavigationPath.clusterSetSubmarinerInstall, { id: clusterSet?.metadata.name! })
+                    ),
                   variant: ButtonVariant.primary,
                   isDisabled: !canInstallSubmarinerAddons,
                 },
@@ -401,7 +403,7 @@ export function ClusterSetSubmarinerPageContent() {
                     clusters!.length === 0 ? (
                       <RbacButton
                         component={Link}
-                        to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                        to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
                         variant="primary"
                         rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
                       >
@@ -411,7 +413,9 @@ export function ClusterSetSubmarinerPageContent() {
                       <RbacButton
                         id="install-submariner"
                         component={Link}
-                        to={NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)}
+                        to={generatePath(NavigationPath.clusterSetSubmarinerInstall, {
+                          id: clusterSet?.metadata.name!,
+                        })}
                         variant="primary"
                         rbac={[
                           rbacCreate(

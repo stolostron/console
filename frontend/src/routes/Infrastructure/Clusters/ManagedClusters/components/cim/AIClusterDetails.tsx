@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'
@@ -121,9 +121,10 @@ const AIClusterDetails: React.FC = () => {
             clusterStatus={getClusterStatus(agentClusterInstall)}
             onContinueClusterConfiguration={() =>
               navigate(
-                NavigationPath.editCluster
-                  .replace(':namespace', clusterDeployment.metadata.namespace!)
-                  .replace(':name', clusterDeployment.metadata.name!)
+                generatePath(NavigationPath.editCluster, {
+                  namespace: clusterDeployment.metadata.namespace!,
+                  name: clusterDeployment.metadata.name!,
+                })
               )
             }
           />

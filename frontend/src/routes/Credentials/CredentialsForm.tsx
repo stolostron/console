@@ -2,7 +2,7 @@
 import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom-v5-compat'
 import YAML from 'yaml'
 import set from 'lodash/set'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -1447,9 +1447,10 @@ export function CredentialsForm(
       edit={() => {
         if (providerConnection) {
           navigate(
-            NavigationPath.editCredentials
-              .replace(':namespace', providerConnection.metadata.namespace!)
-              .replace(':name', providerConnection.metadata.name!)
+            generatePath(NavigationPath.editCredentials, {
+              namespace: providerConnection.metadata.namespace!,
+              name: providerConnection.metadata.name!,
+            })
           )
         }
       }}

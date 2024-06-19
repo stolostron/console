@@ -4,7 +4,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
@@ -172,15 +172,15 @@ export default function PolicyDetailsOverview() {
             isInline
             variant={ButtonVariant.link}
             component={Link}
-            to={{
-              pathname: NavigationPath.createPolicyAutomation
-                .replace(':namespace', policy.metadata.namespace as string)
-                .replace(':name', policy.metadata.name as string),
-            }}
+            to={generatePath(NavigationPath.createPolicyAutomation, {
+              namespace: policy.metadata.namespace!,
+              name: policy.metadata.name!,
+            })}
             state={{
-              from: NavigationPath.policyDetails
-                .replace(':namespace', policy.metadata.namespace as string)
-                .replace(':name', policy.metadata.name as string),
+              from: generatePath(NavigationPath.policyDetails, {
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name!,
+              }),
             }}
           >
             {t('Configure')}
@@ -352,9 +352,13 @@ export default function PolicyDetailsOverview() {
                         return (
                           <span key={`${cluster}-link`}>
                             <Link
-                              to={`${NavigationPath.policyDetailsResults
-                                .replace(':namespace', policy.metadata.namespace!)
-                                .replace(':name', policy.metadata.name!)}?search=${cluster}`}
+                              to={{
+                                pathname: generatePath(NavigationPath.policyDetailsResults, {
+                                  namespace: policy.metadata.namespace!,
+                                  name: policy.metadata.name!,
+                                }),
+                                search: `?search=${cluster}`,
+                              }}
                             >
                               {cluster}
                               {index < clusterList[status].size - 1 && ', '}

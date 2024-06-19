@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -77,9 +77,10 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
 
       found &&
         navigate(
-          NavigationPath.policyDetails
-            .replace(':namespace', createdPolicy.metadata?.namespace ?? '')
-            .replace(':name', createdPolicy.metadata?.name ?? '')
+          generatePath(NavigationPath.policyDetails, {
+            namespace: createdPolicy.metadata?.namespace ?? '',
+            name: createdPolicy.metadata?.name ?? '',
+          })
         )
     }
   }, [policies, createdPolicy, navigate])

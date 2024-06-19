@@ -8,6 +8,7 @@ import { useTranslation } from '../lib/acm-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { NavigationPath } from '../NavigationPath'
 import { useState } from 'react'
+import { generatePath } from 'react-router-dom-v5-compat'
 
 export interface ITemplateSummaryModalProps {
   curatorTemplate: ClusterCurator
@@ -187,9 +188,10 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href={`${NavigationPath.editAnsibleAutomation
-            .replace(':namespace', templateCurator.metadata?.namespace as string)
-            .replace(':name', templateCurator.metadata?.name as string)}`}
+          href={generatePath(NavigationPath.editAnsibleAutomation, {
+            namespace: templateCurator.metadata?.namespace!,
+            name: templateCurator.metadata?.name!,
+          })}
           style={{ fontSize: '14px' }}
         >
           {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}

@@ -745,14 +745,13 @@ export default function ApplicationsOverview() {
           return (
             <span style={{ whiteSpace: 'nowrap' }}>
               <Link
-                to={
-                  NavigationPath.applicationDetails
-                    .replace(':namespace', application.metadata?.namespace as string)
-                    .replace(':name', application.metadata?.name as string) +
-                  '?apiVersion=' +
-                  apiVersion +
-                  clusterQuery
-                }
+                to={{
+                  pathname: generatePath(NavigationPath.applicationDetails, {
+                    namespace: application.metadata?.namespace!,
+                    name: application.metadata?.name!,
+                  }),
+                  search: `?apiVersion=${apiVersion}${clusterQuery}`,
+                }}
               >
                 {application.metadata?.name}
               </Link>

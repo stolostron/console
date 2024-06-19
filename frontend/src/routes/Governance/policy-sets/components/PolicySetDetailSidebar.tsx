@@ -22,7 +22,7 @@ import {
 } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -255,11 +255,10 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         cell: (policy: Policy) => {
           return (
             <Link
-              to={{
-                pathname: NavigationPath.policyDetails
-                  .replace(':namespace', policy.metadata.namespace ?? '')
-                  .replace(':name', policy.metadata.name ?? ''),
-              }}
+              to={generatePath(NavigationPath.policyDetails, {
+                namespace: policy.metadata.namespace ?? '',
+                name: policy.metadata.name ?? '',
+              })}
             >
               {policy.metadata.name}
             </Link>

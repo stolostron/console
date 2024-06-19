@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import moment from 'moment'
 import { NavigationPath } from '../../NavigationPath'
@@ -661,9 +661,10 @@ describe('Create Subscription Application page', () => {
       >
         <MemoryRouter
           initialEntries={[
-            NavigationPath.editApplicationSubscription
-              .replace(':namespace', nockApplication.metadata?.namespace as string)
-              .replace(':name', nockApplication.metadata?.name as string),
+            generatePath(NavigationPath.editApplicationSubscription, {
+              namespace: nockApplication.metadata?.namespace!,
+              name: nockApplication.metadata?.name!,
+            }),
           ]}
         >
           <Routes>
