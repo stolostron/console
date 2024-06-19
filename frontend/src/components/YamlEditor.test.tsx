@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor } from '@testing-library/react'
-import { Router } from 'react-router-dom-v5-compat'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import YAMLEditor, { findResourceFieldLineNumber } from './YamlEditor'
-const history = createMemoryHistory()
 describe('YamlEditor', () => {
   it('findResourceFieldLineNumber - returns properly', async () => {
     const test = findResourceFieldLineNumber(
@@ -29,7 +27,7 @@ describe('YamlEditor', () => {
   it('YamlEditor renders properly', async () => {
     const { baseElement } = render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <YAMLEditor
             resourceYAML={
               'kind: Pod\napiVersion: v1\nmetadata:\n  name: test-pod\n  namespace: test-namespace\n  managedFields:\n    - manager: unknown'
@@ -39,7 +37,7 @@ describe('YamlEditor', () => {
             setResourceYaml={() => {}}
             defaultScrollToLine={1}
           />
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

@@ -9,14 +9,12 @@ import {
   ApplicationSetKind,
   IResource,
 } from '../../../resources'
-import { Router } from 'react-router-dom-v5-compat'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
-const history = createMemoryHistory()
 
 describe('DeleteResourceModal', () => {
   it('should render delete ACM app no related resources', () => {
@@ -30,7 +28,7 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -47,7 +45,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete Application acmapp?')).toBeTruthy()
@@ -87,7 +85,7 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -104,7 +102,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete Application acmapp2?')).toBeTruthy()
@@ -156,7 +154,7 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -173,7 +171,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('This application uses the following shared resources, which are not removable:')).toBeTruthy()
@@ -218,7 +216,7 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -235,7 +233,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('This subscription deploys the following resources, which will be removed:')).toBeTruthy()
@@ -257,7 +255,7 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -274,7 +272,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
@@ -293,7 +291,7 @@ describe('DeleteResourceModal', () => {
     const appSetPlacement = 'appset2-placement'
     const appSetApps = ['appset2-local-cluster']
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -310,7 +308,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset2?')).toBeTruthy()
@@ -337,7 +335,7 @@ describe('DeleteResourceModal', () => {
     const appSetApps = ['appset3-local-cluster']
     const appSetsSharingPlacement = ['appset4']
     const { getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <DeleteResourceModal
           open={true}
           canRemove={true}
@@ -354,7 +352,7 @@ describe('DeleteResourceModal', () => {
           close={() => void {}}
           t={t}
         />
-      </Router>
+      </MemoryRouter>
     )
 
     expect(

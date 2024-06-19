@@ -16,7 +16,7 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -369,13 +369,11 @@ function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
 }
 
 export default function SearchPage() {
-  // Only using setCurrentQuery to trigger a re-render
-  // useEffect using window.location to trigger re-render doesn't work cause react hooks can't use window
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { search } = useLocation()
   const {
     presetSearchQuery = '',
     preSelectedRelatedResources = [], // used to show any related resource on search page navigation
-  } = transformBrowserUrlToSearchString(window.location.search || '')
+  } = transformBrowserUrlToSearchString(search)
   usePageVisitMetricHandler(Pages.search)
   const { t } = useTranslation()
   const savedSearchesText = t('Saved searches')

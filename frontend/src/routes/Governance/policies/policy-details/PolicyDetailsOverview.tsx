@@ -176,11 +176,11 @@ export default function PolicyDetailsOverview() {
               pathname: NavigationPath.createPolicyAutomation
                 .replace(':namespace', policy.metadata.namespace as string)
                 .replace(':name', policy.metadata.name as string),
-              state: {
-                from: NavigationPath.policyDetails
-                  .replace(':namespace', policy.metadata.namespace as string)
-                  .replace(':name', policy.metadata.name as string),
-              },
+            }}
+            state={{
+              from: NavigationPath.policyDetails
+                .replace(':namespace', policy.metadata.namespace as string)
+                .replace(':name', policy.metadata.name as string),
             }}
           >
             {t('Configure')}

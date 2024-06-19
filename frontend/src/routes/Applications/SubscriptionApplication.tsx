@@ -9,14 +9,13 @@ import {
   Provider,
 } from '../../ui-components'
 import Handlebars from 'handlebars'
-import { Location } from 'history'
 import _ from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate, Location } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
 import { getErrorInfo } from '../../components/ErrorPage'

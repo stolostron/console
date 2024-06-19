@@ -2,8 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { ProviderProps } from 'react'
-import { createMemoryHistory } from 'history'
-import { Router } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { nockRequest } from '../lib/nock-util'
 import { defaultContext, PluginData } from '../lib/PluginDataContext'
 import { waitForText } from '../lib/test-util'
@@ -38,11 +37,10 @@ describe('PluginDataContextProvider', () => {
       startLoading: true,
       load: jest.fn(),
     }
-    const history = createMemoryHistory()
     render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <TestPluginDataContextProvider value={pluginData} />
-      </Router>
+      </MemoryRouter>
     )
 
     await waitForText('Main Content')

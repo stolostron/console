@@ -94,7 +94,6 @@ import {
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
 } from '../../../../../resources/multi-cluster-engine'
-import ClusterDetails from './ClusterDetails'
 import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 import Clusters from '../../Clusters'
 

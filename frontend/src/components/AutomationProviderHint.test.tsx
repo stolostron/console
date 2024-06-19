@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { createMemoryHistory } from 'history'
-import { Router } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../atoms'
 import { waitForNotText, waitForText } from '../lib/test-util'
@@ -132,7 +131,6 @@ function WrappedAutomationProviderHint(props: {
   ansibleOperators?: SubscriptionOperator[]
   componentProps: React.ComponentProps<typeof AutomationProviderHint>
 }) {
-  const history = createMemoryHistory()
   return (
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -140,9 +138,9 @@ function WrappedAutomationProviderHint(props: {
         snapshot.set(subscriptionOperatorsState, props.ansibleOperators || [])
       }}
     >
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AutomationProviderHint {...props.componentProps} />
-      </Router>
+      </MemoryRouter>
     </RecoilRoot>
   )
 }

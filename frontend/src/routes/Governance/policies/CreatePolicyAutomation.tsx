@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, PathParam } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, PathParam, useLocation } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -61,6 +61,8 @@ export function CreatePolicyAutomation() {
   )
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const { state } = useLocation()
+  const destination = state?.from ?? NavigationPath.policies
 
   return (
     <PolicyAutomationWizard
@@ -93,9 +95,9 @@ export function CreatePolicyAutomation() {
       }}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.policies)
+        navigate(destination)
       }}
-      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t)}
+      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)}
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

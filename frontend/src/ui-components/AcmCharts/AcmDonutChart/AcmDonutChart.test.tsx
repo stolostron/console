@@ -2,11 +2,8 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { Router } from 'react-router-dom-v5-compat'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { AcmDonutChart } from './AcmDonutChart'
-
-const history = createMemoryHistory()
 
 const complianceData = [
   { key: 'Compliant', value: 1, isPrimary: true, link: '/linkToCompiantResources' },
@@ -25,13 +22,13 @@ const podData = [
 describe('AcmDonutChart', () => {
   test('renders', () => {
     const { getByRole, getByTestId } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AcmDonutChart
           title="Cluster compliance"
           description="Overview of policy compliance status"
           data={complianceData}
         />
-      </Router>
+      </MemoryRouter>
     )
     expect(getByTestId('cluster-compliance-chart')).toBeInTheDocument()
     expect(getByRole('link')).toBeInTheDocument()
@@ -39,18 +36,18 @@ describe('AcmDonutChart', () => {
 
   test('renders skeleton', () => {
     const { queryByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AcmDonutChart loading={true} title="Cluster compliance" description="Policy compliance" data={[]} />
-      </Router>
+      </MemoryRouter>
     )
     expect(queryByText('Cluster compliance')).toBeInTheDocument()
   })
 
   test('renders with zero values state', () => {
     const { queryByRole, getByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AcmDonutChart title="Some title" description="Some description" data={zeroData} />
-      </Router>
+      </MemoryRouter>
     )
     expect(getByText('0%')).toBeInTheDocument()
     expect(getByText('0 Key1')).toBeInTheDocument()
@@ -60,16 +57,16 @@ describe('AcmDonutChart', () => {
 
   test('has zero accessibility defects', async () => {
     const { container } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AcmDonutChart title="Pods" description="Overview of pod count and status" data={podData} />
-      </Router>
+      </MemoryRouter>
     )
     expect(await axe(container)).toHaveNoViolations()
   })
 
   test('alternate donut title text', async () => {
     const { queryByText } = render(
-      <Router location={history.location} navigator={history}>
+      <MemoryRouter>
         <AcmDonutChart
           title="Pods"
           description="Overview of pod count and status"
@@ -79,7 +76,7 @@ describe('AcmDonutChart', () => {
             subTitle: 'total pods',
           }}
         />
-      </Router>
+      </MemoryRouter>
     )
     expect(queryByText('total pods')).toBeInTheDocument()
   })

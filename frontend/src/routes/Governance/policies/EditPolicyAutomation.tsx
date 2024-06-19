@@ -3,7 +3,7 @@ import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, generatePath, PathParam } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, generatePath, PathParam, useLocation } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -69,6 +69,8 @@ export function EditPolicyAutomation() {
   )
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const { state } = useLocation()
+  const destination = state?.from ?? NavigationPath.policies
 
   if (currentPolicyAutomation === undefined) {
     return <LoadingPage />
@@ -93,11 +95,20 @@ export function EditPolicyAutomation() {
       resource={currentPolicyAutomation}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.policies)
+        navigate(destination)
       }}
       configMaps={configMaps}
       onSubmit={(data) =>
-        handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t, currentPolicyAutomation)
+        handlePolicyAutomationSubmit(
+          submitForm,
+          data,
+          secrets,
+          navigate,
+          destination,
+          toast,
+          t,
+          currentPolicyAutomation
+        )
       }
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
