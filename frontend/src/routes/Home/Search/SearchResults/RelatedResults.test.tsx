@@ -7,8 +7,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { useState } from 'react'
-import { Router } from 'react-router-dom-v5-compat'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
@@ -18,7 +17,6 @@ import RelatedResults from './RelatedResults'
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
 }
-const history = createMemoryHistory()
 
 describe('RelatedResults', () => {
   const RelatedTiles = () => {
@@ -66,11 +64,11 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
@@ -136,11 +134,11 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
@@ -210,11 +208,11 @@ describe('RelatedResults', () => {
 
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes

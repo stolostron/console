@@ -7,12 +7,10 @@ import {
   useCallback,
   useMemo,
   useContext,
-  useRef,
   Dispatch,
 } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, Location } from 'react-router-dom-v5-compat'
 import { Modal, ModalVariant, Button } from '@patternfly/react-core'
-import { Location, UnregisterCallback } from 'history'
 import isEqual from 'lodash/isEqual'
 import { useTranslation } from '../lib/acm-i18next'
 import { noop } from 'lodash'
@@ -85,10 +83,10 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const historyUnblockRef = useRef<UnregisterCallback>()
+  // const historyUnblockRef = useRef<UnregisterCallback>()
 
   const unblock = useCallback(() => {
-    historyUnblockRef.current?.()
+    // historyUnblockRef.current?.()
     // removeEventListener('beforeunload', beforeUnloadListener, {
     //   capture: true,
     // })

@@ -10,7 +10,6 @@ import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../r
 import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
-import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 const t = (string: string) => {
   return string

@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Button, ButtonProps } from '@patternfly/react-core'
-import { Location, LocationDescriptor, LocationState } from 'history'
-
 import { TooltipWrapper } from '../utils'
+import { LinkProps } from 'react-router-dom-v5-compat'
 
 export function AcmButton(
   props: ButtonProps & {
     tooltip?: string | React.ReactNode
-    to?: LocationDescriptor<LocationState> | ((location: Location<LocationState>) => LocationDescriptor<LocationState>)
+    to?: LinkProps['to']
+    state?: LinkProps['state']
   }
 ) {
   const { isDisabled, tooltip, children, ...otherProps } = props

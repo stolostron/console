@@ -192,9 +192,9 @@ export function navigateToBackCancelLocation(navigate: NavigateFunction, locatio
 }
 
 export function useBackCancelNavigation(): {
-  nextStep: (location: To | Location) => () => void
-  back: (defaultLocation: To | Location) => () => void
-  cancel: (defaultLocation: To | Location) => () => void
+  nextStep: (location: To | Location<BackCancelState>) => () => void
+  back: (defaultLocation: To | Location<BackCancelState>) => () => void
+  cancel: (defaultLocation: To | Location<BackCancelState>) => () => void
 } {
   const navigate = useNavigate()
   const { state } = useLocation()

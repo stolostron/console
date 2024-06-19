@@ -3,8 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { Router } from 'react-router-dom-v5-compat'
-import { createMemoryHistory } from 'history'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
@@ -14,7 +13,6 @@ import SavedSearchQueries from './SavedSearchQueries'
 const mockSettings: Settings = {
   SAVED_SEARCH_LIMIT: '5',
 }
-const history = createMemoryHistory()
 
 describe('SavedSearchQueries Page', () => {
   it('should render page with correct data', async () => {
@@ -110,7 +108,7 @@ describe('SavedSearchQueries Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SavedSearchQueries
               isUserPreferenceLoading={false}
@@ -147,7 +145,7 @@ describe('SavedSearchQueries Page', () => {
               ]}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes

@@ -116,14 +116,9 @@ export function handleAutomationCell(
         isInline
         variant={ButtonVariant.link}
         component={Link}
-        to={{
-          pathname: NavigationPath.createPolicyAutomation
-            .replace(':namespace', item.policy.metadata.namespace as string)
-            .replace(':name', item.policy.metadata.name as string),
-          state: {
-            from: NavigationPath.policies,
-          },
-        }}
+        to={NavigationPath.createPolicyAutomation
+          .replace(':namespace', item.policy.metadata.namespace as string)
+          .replace(':name', item.policy.metadata.name as string)}
       >
         {configure}
       </AcmButton>

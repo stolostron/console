@@ -2,7 +2,7 @@
 import { Chip } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link, NavigateFunction, To } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Channel,
@@ -575,7 +575,8 @@ export function handlePolicyAutomationSubmit(
   submitForm: LostChangesContext['submitForm'],
   data: any,
   secrets: Secret[],
-  history: any,
+  navigate: NavigateFunction,
+  destination: To,
   toast: IAlertContext,
   t: TFunction,
   currentPolicyAutomation?: PolicyAutomation
@@ -619,7 +620,7 @@ export function handlePolicyAutomationSubmit(
       })
     }
     submitForm()
-    history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
+    navigate(destination)
   })
 }
 

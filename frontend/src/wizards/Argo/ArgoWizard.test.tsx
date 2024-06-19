@@ -3,8 +3,7 @@ import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { createMemoryHistory } from 'history'
-import { MemoryRouter, Router, Routes, Route } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
 import { waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
@@ -111,15 +110,13 @@ describe('ArgoWizard tests', () => {
 
   test('should have danger alert', async () => {
     nockIgnoreOperatorCheck(true)
-    const history = createMemoryHistory()
-    history.push(NavigationPath.createApplicationArgo)
     render(
       <RecoilRoot>
-        <Router location={history.location} navigator={history}>
+        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
           <Routes>
             <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
           </Routes>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     await waitForText('OpenShift GitOps Operator is required to create ApplicationSets.')
