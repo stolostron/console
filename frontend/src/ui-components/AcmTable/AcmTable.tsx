@@ -1054,12 +1054,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const commonPaginationProps: Partial<Omit<PaginationProps, 'ref'>> = {
     titles: translatedPaginationTitles,
-    itemCount: !indeterminateCount ? itemCount : undefined,
+    itemCount,
     toggleTemplate: indeterminateCount
-      ? ({ firstIndex, lastIndex }) => (
+      ? ({ firstIndex, lastIndex }: { firstIndex?: number; lastIndex?: number }) => (
           <>
             <b>
-              {firstIndex} - {lastIndex}
+              {firstIndex} - {Math.min(lastIndex ?? 0, itemCount)}
             </b>{' '}
             {translatedPaginationTitles.ofWord} <b>{itemCount}+</b>
           </>
