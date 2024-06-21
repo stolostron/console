@@ -149,7 +149,7 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
       } else {
         reject({
           message:
-            'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
+            'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and healthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
         })
       }
       deleteManagedClusterAction({ name: actionName, namespace: clusterName })
