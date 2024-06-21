@@ -38,9 +38,7 @@ import {
   hasInformOnlyPolicies,
   getPlacementBindingsForResource,
   getPlacementsForResource,
-  getSource,
-  resolveExternalStatus,
-  resolveSource,
+  getPolicySource,
 } from '../common/util'
 import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -98,15 +96,9 @@ export default function PoliciesPage() {
 
   const tableItems: PolicyTableItem[] = useMemo(() => {
     return policies.map((policy) => {
-      const isExternal = resolveExternalStatus(policy)
-      let source: string | JSX.Element = t('Local')
-      if (isExternal) {
-        const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-        source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
-      }
       return {
         policy,
-        source,
+        source: getPolicySource(policy, helmReleases, channels, subscriptions, t),
       }
     })
   }, [policies, helmReleases, channels, subscriptions, t])

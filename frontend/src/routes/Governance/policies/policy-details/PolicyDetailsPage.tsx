@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, Suspense, useMemo } from 'react'
+import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
 import { ErrorPage } from '../../../../components/ErrorPage'
-import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, ResourceError, ResourceErrorCode } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -17,19 +15,23 @@ import {
   AcmSecondaryNav,
   AcmSecondaryNavItem,
 } from '../../../../ui-components'
-import { getPolicyDetailSourceLabel } from '../../common/util'
+import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
+import { PolicyTableItem } from '../Policies'
+import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
+import { useAddRemediationPolicies } from '../../common/useCustom'
 
 export function PolicyDetailsPage() {
   const location = useLocation()
   const { t } = useTranslation()
-  const { channelsState, helmReleaseState, subscriptionsState, usePolicies } = useSharedAtoms()
+  const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const history = useHistory()
-  const policies = usePolicies()
+  const policies = useAddRemediationPolicies()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
+  const [modal, setModal] = useState<ReactNode | undefined>()
 
   const params = useParams<{ namespace: string; name: string }>()
   const policyNamespace = params.namespace
@@ -52,22 +54,12 @@ export function PolicyDetailsPage() {
     return policies[idx]
   }, [policies, policyName, policyNamespace])
 
-  const actions = useMemo(
-    () => [
-      {
-        id: 'edit-policy',
-        text: t('Edit policy'),
-        click: () =>
-          history.push(NavigationPath.editPolicy.replace(':namespace', policyNamespace).replace(':name', policyName)),
-        isAriaDisabled: true,
-        rbac: [
-          selectedPolicy &&
-            rbacPatch(selectedPolicy, selectedPolicy?.metadata.namespace ?? '', selectedPolicy?.metadata.name ?? ''),
-        ],
-      },
-    ],
-    [selectedPolicy, policyNamespace, policyName, history, t]
-  )
+  const policyItem: PolicyTableItem = useMemo(() => {
+    return {
+      policy: selectedPolicy,
+      source: getPolicySource(selectedPolicy, helmReleases, channels, subscriptions, t),
+    }
+  }, [selectedPolicy, helmReleases, channels, subscriptions, t])
 
   if (!selectedPolicy) {
     return (
@@ -106,18 +98,19 @@ export function PolicyDetailsPage() {
           }
           description={getPolicyDetailSourceLabel(selectedPolicy, helmReleases, channels, subscriptions, t)}
           actions={
-            <AcmActionGroup>
-              {[
-                <RbacDropdown<Policy>
-                  id={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
-                  key={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
-                  item={selectedPolicy}
-                  isKebab={false}
-                  text={t('actions')}
-                  actions={actions}
-                />,
-              ]}
-            </AcmActionGroup>
+            <>
+              {modal !== undefined && modal}
+              <AcmActionGroup>
+                {[
+                  <PolicyActionDropdown
+                    key={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
+                    setModal={setModal}
+                    item={policyItem}
+                    isKebab={false}
+                  />,
+                ]}
+              </AcmActionGroup>
+            </>
           }
         />
       }
