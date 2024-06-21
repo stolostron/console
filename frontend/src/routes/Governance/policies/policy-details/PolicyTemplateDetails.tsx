@@ -183,6 +183,39 @@ export function PolicyTemplateDetails(
                 </div>
               )
               break
+            case 'unknowncompliancy':
+              if (kind === 'OperatorPolicy') {
+                switch (item.object?.kind) {
+                  case 'Deployment':
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      </div>
+                    )
+                    break
+                  case 'CustomResourceDefinition':
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      </div>
+                    )
+                    break
+                  default:
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                      </div>
+                    )
+                    break
+                }
+              } else {
+                compliant = (
+                  <div>
+                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  </div>
+                )
+              }
+              break
             default:
               compliant = (
                 <div>
@@ -231,7 +264,7 @@ export function PolicyTemplateDetails(
         },
       },
     ],
-    [t]
+    [t, kind]
   )
 
   return (
