@@ -87,7 +87,7 @@ export default function DiscoveryConfigPage() {
           <Alert
             variant="info"
             isInline
-            title="Import your ROSA clusters automatically"
+            title="Import your clusters automatically"
             style={{ marginBottom: '1em' }}
             className="pf-v5-u-mb-md"
             actionLinks={[
@@ -95,24 +95,13 @@ export default function DiscoveryConfigPage() {
                 <AlertActionLink
                   key="policy-example"
                   component="a"
-                  href={DOC_LINKS.ROSA_DISCOVERY_POLICY_EXAMPLE}
+                  href={DOC_LINKS.ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE}
                   target="_blank"
                   rel="noreferrer"
                   icon={<ExternalLinkAltIcon />}
                   iconPosition="right"
                 >
-                  {t('Policy example')}
-                </AlertActionLink>,
-                <AlertActionLink
-                  key="learn-more"
-                  component="a"
-                  href={DOC_LINKS.DISCOVERED_CLUSTERS}
-                  target="_blank"
-                  rel="noreferrer"
-                  icon={<ExternalLinkAltIcon />}
-                  iconPosition="right"
-                >
-                  {t('Learn more')}
+                  {t('Get started with automatic import')}
                 </AlertActionLink>,
               ],
             ]}
