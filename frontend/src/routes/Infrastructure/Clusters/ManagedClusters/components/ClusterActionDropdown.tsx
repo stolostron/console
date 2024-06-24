@@ -47,6 +47,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const history = useHistory()
   const { isSearchAvailable } = useContext(PluginContext)
   const toastContext = useContext(AcmToastContext)
+  const { isACMAvailable } = useContext(PluginContext)
 
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -462,7 +463,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
                 ) as HostedClusterK8sResource,
                 t,
-                toastContext
+                toastContext,
+                isACMAvailable
               ) as IRequestResult
           ),
         },
@@ -511,6 +513,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
       toastContext,
       importTemplate,
       isHypershiftUpdateAvailable,
+      isACMAvailable,
     ]
   )
 
