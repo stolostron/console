@@ -56,7 +56,6 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
-import hash from 'object-hash'
 import {
   createContext,
   FormEvent,
@@ -1074,8 +1073,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     [parseRowAction, resolveTableItem, rowActionResolver]
   )
 
-  const filtersHash = useMemo(() => hash(filters), [filters])
-
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
@@ -1098,7 +1095,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       {showToolbar && (
         <Toolbar
           clearFiltersButtonText={t('Clear all filters')}
-          key={filtersHash} // reset state if filters change
           clearAllFilters={clearSearchAndFilters}
           collapseListedFiltersBreakpoint={'lg'}
           inset={{ default: 'insetMd', xl: 'insetLg' }}
