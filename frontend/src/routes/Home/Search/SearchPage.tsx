@@ -15,7 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -27,9 +27,17 @@ import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
 import SavedSearchQueries from './components/SavedSearchQueries'
+import { SearchAlertContext, SearchAlertGroup } from './components/SearchAlertGroup'
 import { Searchbar } from './components/Searchbar'
 import { useSuggestedQueryTemplates } from './components/SuggestedQueryTemplates'
-import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString, operators } from './search-helper'
+import {
+  convertStringToQuery,
+  federatedErrorText,
+  formatSearchbarSuggestions,
+  getSearchCompleteString,
+  operators,
+  setFederatedErrorAlert,
+} from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
   SearchResultItemsQuery,
@@ -54,9 +62,18 @@ const dropdown = css({
   },
 })
 
-function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
+function HandleErrors(
+  schemaError: ApolloError | undefined,
+  completeError: ApolloError | undefined,
+  hasFederatedError: boolean
+) {
   const { t } = useTranslation()
   const notEnabled = 'not enabled'
+  if (hasFederatedError) {
+    // If it is federated error do not block UI from rendering
+    return undefined
+  }
+
   if (schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)) {
     return (
       <EmptyState>
@@ -118,6 +135,9 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   } = props
   const { t } = useTranslation()
   const history = useHistory()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
   const [saveSearch, setSaveSearch] = useState<SavedSearch>()
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
@@ -151,7 +171,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
 
   const {
     data: searchCompleteData,
-    loading: searchDataLoading,
+    loading: searchCompleteLoading,
     error: searchCompleteError,
   } = useSearchCompleteQuery({
     skip: !currentSearch.endsWith(':') && !operators.some((operator: string) => currentSearch.endsWith(operator)),
@@ -164,13 +184,28 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
     },
   })
 
+  const hasFederatedError = useMemo(() => {
+    if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
+      return (
+        (searchSchemaError?.graphQLErrors.findIndex((error: any) => error?.includes(federatedErrorText)) ?? -1) > -1 ||
+        (searchCompleteError?.graphQLErrors.findIndex((error: any) => error?.includes(federatedErrorText)) ?? -1) > -1
+      )
+    }
+    return false
+  }, [
+    isGlobalHub,
+    settings.globalSearchFeatureFlag,
+    searchCompleteError?.graphQLErrors,
+    searchSchemaError?.graphQLErrors,
+  ])
+
   useEffect(() => {
-    if (searchSchemaError || searchCompleteError) {
+    if ((searchSchemaError || searchCompleteError) && !hasFederatedError) {
       setQueryErrors(true)
     } else {
       setQueryErrors(false)
     }
-  }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors])
+  }, [searchSchemaError, searchCompleteError, queryErrors, setQueryErrors, hasFederatedError])
 
   const suggestions = useMemo(() => {
     return currentSearch === '' ||
@@ -196,15 +231,15 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
           'value',
           currentSearch, // pass current search query in order to de-dupe already selected values
           searchAutocompleteLimit,
-          searchDataLoading,
+          searchCompleteLoading,
           t
         )
   }, [
     currentSearch,
     searchSchemaData,
-    searchCompleteData,
-    searchDataLoading,
     searchSchemaLoading,
+    searchCompleteData,
+    searchCompleteLoading,
     searchAutocompleteLimit,
     t,
   ])
@@ -253,7 +288,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         searchResultData={searchResultData}
         refetchSearch={refetchSearch}
       />
-      {HandleErrors(searchSchemaError, searchCompleteError)}
+      {HandleErrors(searchSchemaError, searchCompleteError, hasFederatedError)}
     </PageSection>
   )
 }
@@ -345,8 +380,11 @@ export default function SearchPage() {
   const { t } = useTranslation()
   const savedSearchesText = t('Saved searches')
   const suggestedQueryTemplates = useSuggestedQueryTemplates().templates as SavedSearch[]
-  const { useSearchResultLimit, configMapsState } = useSharedAtoms()
+  const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
+  const { useSearchResultLimit, configMapsState, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const configMaps = useRecoilValue(configMapsState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
@@ -361,6 +399,22 @@ export default function SearchPage() {
   })
 
   useEffect(() => {
+    if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
+      setFederatedErrorAlert(loading, error, data, alerts, addSearchAlert, removeSearchAlert, t)
+    }
+  }, [
+    isGlobalHub,
+    settings.globalSearchFeatureFlag,
+    addSearchAlert,
+    alerts,
+    removeSearchAlert,
+    loading,
+    error,
+    data,
+    t,
+  ])
+
+  useEffect(() => {
     getUserPreference().then((resp) => {
       setUserPreference(resp)
       setIsUserPreferenceLoading(false)
@@ -369,11 +423,16 @@ export default function SearchPage() {
 
   const suggestedSearches: SavedSearch[] = useMemo(() => {
     const suggestedCM = configMaps.find((cm) => cm.metadata.name === 'console-search-config')
-
     if (suggestedCM?.data?.suggestedSearches) {
-      const searches = JSON.parse(suggestedCM?.data?.suggestedSearches) as SavedSearch[]
-      // only use suggested searches that contain an ID, name & searchText
-      return searches.filter((search) => search.id && search.searchText && search.name)
+      try {
+        const searches = JSON.parse(suggestedCM?.data?.suggestedSearches) as SavedSearch[]
+        // only use suggested searches that contain an ID, name & searchText
+        return searches.filter((search) => search.id && search.searchText && search.name)
+      } catch (err) {
+        // If syntax parsing error occurrs return the suggested search templates
+        console.error(err)
+        return suggestedQueryTemplates
+      }
     }
     return suggestedQueryTemplates
   }, [configMaps, suggestedQueryTemplates])
@@ -421,6 +480,9 @@ export default function SearchPage() {
       }
     >
       <AcmScrollable>
+        <PageSection style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <SearchAlertGroup />
+        </PageSection>
         <RenderSearchBar
           presetSearchQuery={presetSearchQuery}
           setSelectedSearch={setSelectedSearch}

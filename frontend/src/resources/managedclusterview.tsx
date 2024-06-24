@@ -110,7 +110,7 @@ export async function fireManagedClusterView(
       } else {
         return {
           message:
-            'There was an error while getting the managed resource. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
+            'There was an error while getting the managed resource. Make sure the managed cluster is online and healthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
         }
       }
       deleteManagedClusterView({ namespace: clusterName, name: viewName })
@@ -180,7 +180,7 @@ export async function pollManagedClusterView(viewName: string, clusterName: stri
       } else {
         reject({
           message:
-            'There was an error while getting the managed resource. Make sure the managed cluster is online and helthy, and the work manager pod in namespace open-cluster-management-agent-addon is healthy.',
+            'There was an error while getting the managed resource. Make sure the managed cluster is online and healthy, and the work manager pod in namespace open-cluster-management-agent-addon is healthy.',
         })
       }
       deleteManagedClusterView({ namespace: clusterName, name: viewName })

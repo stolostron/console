@@ -216,7 +216,8 @@ const ClusterSelector = (props: {
     (control: { active: any }, item: { id: any }, isReadOnly?: boolean | undefined) => {
       if (!isReadOnly) {
         // Removed labels are no longer valid
-        control.active.clusterLabelsList[item.id].validValue = false
+        const labelIndexToRemove = control.active.clusterLabelsList.findIndex((clsLabel: any) => clsLabel.id == item.id)
+        control.active.clusterLabelsList.splice(labelIndexToRemove, 1)
 
         // Update UI and yaml editor
         forceUpdate()
@@ -261,7 +262,6 @@ const ClusterSelector = (props: {
                         id={`labelName-${id}-${controlId}`}
                         label={i18n('clusterSelector.label.field.ui')}
                         value={value}
-                        isRequired
                         placeholder={i18n('Select the label')}
                         onChange={(label) => {
                           handleChange(label!, 'labelName', id)
@@ -280,7 +280,6 @@ const ClusterSelector = (props: {
                         id={`operator-${id}-${controlId}`}
                         label={i18n('Operator')}
                         value={operator}
-                        isRequired
                         onChange={(operator) => {
                           handleChange(operator!, 'operatorValue', id)
                           switch (operator) {
@@ -307,7 +306,6 @@ const ClusterSelector = (props: {
                           value={matchLabelValue}
                           placeholder={i18n('Select the values')}
                           onChange={(value) => handleChange(value!, 'labelValue', id)}
-                          isRequired
                         >
                           {labelValuesMap[labelName]?.map((value: any) => (
                             <SelectOption key={value} value={value}>

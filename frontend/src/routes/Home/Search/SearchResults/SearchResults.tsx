@@ -18,15 +18,23 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import {
+  ClosedDeleteExternalResourceModalProps,
+  DeleteExternalResourceModal,
+  IDeleteExternalResourceModalProps,
+} from '../components/Modals/DeleteExternalResourceModal'
 import {
   ClosedDeleteModalProps,
   DeleteResourceModal,
   IDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
+import { SearchAlertContext } from '../components/SearchAlertGroup'
+import { federatedErrorText } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
@@ -54,16 +62,23 @@ const accordionItemGroup = css({
 function RenderAccordionItem(props: {
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
   kindSearchResultItems: Record<string, ISearchResult[]>
   kind: string
   idx: number
   defaultIsExpanded: boolean
 }) {
-  const { currentQuery, setDeleteResource, kindSearchResultItems, kind, idx, defaultIsExpanded } = props
+  const {
+    currentQuery,
+    setDeleteResource,
+    setDeleteExternalResource,
+    kindSearchResultItems,
+    kind,
+    idx,
+    defaultIsExpanded,
+  } = props
   const { t } = useTranslation()
-  const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const clusters = useAllClusters(true)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -87,15 +102,19 @@ function RenderAccordionItem(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={
-            isGlobalHub && settings.globalSearchFeatureFlag && settings.globalSearchFeatureFlag === 'enabled'
-              ? undefined
-              : GetRowActions(kind, currentQuery, false, setDeleteResource, t)
-          }
+          rowActions={GetRowActions(
+            kind,
+            currentQuery,
+            false,
+            setDeleteResource,
+            setDeleteExternalResource,
+            clusters,
+            t
+          )}
         />
       )
     },
-    [currentQuery, isGlobalHub, setDeleteResource, searchDefinitions, settings.globalSearchFeatureFlag, t]
+    [currentQuery, setDeleteResource, searchDefinitions, clusters, setDeleteExternalResource, t]
   )
 
   return (
@@ -125,8 +144,9 @@ function SearchResultAccordion(props: {
   data: ISearchResult[]
   currentQuery: string
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
 }) {
-  const { data, currentQuery, setDeleteResource } = props
+  const { data, currentQuery, setDeleteResource, setDeleteExternalResource } = props
 
   const { kindSearchResultItems, kinds } = useMemo(() => {
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
@@ -162,6 +182,7 @@ function SearchResultAccordion(props: {
               key={accordionItemKey}
               currentQuery={currentQuery}
               setDeleteResource={setDeleteResource}
+              setDeleteExternalResource={setDeleteExternalResource}
               kindSearchResultItems={kindSearchResultItems}
               kind={kind}
               idx={idx}
@@ -183,11 +204,28 @@ export default function SearchResults(props: {
 }) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
+  const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
+  const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
+    ClosedDeleteExternalResourceModalProps
+  )
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
+
+  const hasFederatedError = useMemo(() => {
+    if (
+      isGlobalHub &&
+      settings.globalSearchFeatureFlag === 'enabled' &&
+      error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))
+    ) {
+      return true
+    }
+    return false
+  }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
   useEffect(() => {
     // If the current search query changes -> hide related resources
@@ -202,6 +240,26 @@ export default function SearchResults(props: {
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
+  useEffect(() => {
+    const limitWarningKey = 'search-result-limit-warning'
+    if (searchResultItems.length >= searchResultLimit && !alerts.find((alert) => alert.key === limitWarningKey)) {
+      addSearchAlert({
+        key: limitWarningKey,
+        variant: 'warning',
+        title: t(
+          'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
+        ),
+      })
+    } else if (searchResultItems.length < searchResultLimit && alerts.find((alert) => alert.key === limitWarningKey)) {
+      removeSearchAlert(limitWarningKey)
+    }
+    return () => {
+      if (alerts.find((alert) => alert.key === limitWarningKey)) {
+        removeSearchAlert(limitWarningKey)
+      }
+    }
+  }, [alerts, addSearchAlert, removeSearchAlert, searchResultItems, searchResultLimit, t])
+
   if (loading) {
     return (
       <PageSection>
@@ -210,7 +268,7 @@ export default function SearchResults(props: {
     )
   }
 
-  if (error) {
+  if (error && !hasFederatedError) {
     return (
       <PageSection>
         <EmptyState>
@@ -251,19 +309,14 @@ export default function SearchResults(props: {
         currentQuery={deleteResource.currentQuery}
         relatedResource={deleteResource.relatedResource}
       />
+      <DeleteExternalResourceModal
+        open={deleteExternalResource.open}
+        close={deleteExternalResource.close}
+        resource={deleteExternalResource.resource}
+        hubCluster={deleteExternalResource.hubCluster}
+      />
       <PageSection className={resultsWrapper}>
         <Stack hasGutter>
-          {searchResultItems.length >= searchResultLimit ? (
-            <AcmAlert
-              noClose={true}
-              variant={'warning'}
-              isInline={true}
-              title={t(
-                'Search result limit has been reached. Your query results have been truncated. Add more filter conditions to your query to narrow results, or view the RHACM documentation to learn how to increase the search results limit.'
-              )}
-            />
-          ) : null}
-
           <PageSection isFilled={false} variant={'light'}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
@@ -285,6 +338,7 @@ export default function SearchResults(props: {
                 selectedRelatedKinds={selectedRelatedKinds}
                 setSelectedRelatedKinds={setSelectedRelatedKinds}
                 setDeleteResource={setDeleteResource}
+                setDeleteExternalResource={setDeleteExternalResource}
               />
             )}
           </PageSection>
@@ -292,6 +346,7 @@ export default function SearchResults(props: {
             data={searchResultItems}
             currentQuery={currentQuery}
             setDeleteResource={setDeleteResource}
+            setDeleteExternalResource={setDeleteExternalResource}
           />
         </Stack>
       </PageSection>

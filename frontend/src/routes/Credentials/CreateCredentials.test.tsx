@@ -70,12 +70,6 @@ describe('CreateCredentialsPage', () => {
     await clickByTestId('redhatcloud')
   })
 
-  test('can select rhv - located in page 2', async () => {
-    render(<Component />)
-    userEvent.click(screen.getByRole('button', { name: /go to next page/i }))
-    await clickByTestId('rhv')
-  })
-
   test('can click cancel', async () => {
     render(<Component />)
     userEvent.click(

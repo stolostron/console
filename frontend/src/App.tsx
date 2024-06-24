@@ -34,6 +34,7 @@ import { NavigationPath } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -261,6 +262,7 @@ export default function App() {
           </LoadPluginData>
         </Page>
       </BrowserRouter>
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
     </PluginDataContextProvider>
   )
 }

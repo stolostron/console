@@ -64,11 +64,6 @@ describe('CreateClusterCatalog', () => {
     await clickByTestId('openstack')
   })
 
-  test('can select rhv', async () => {
-    render(<Component />)
-    await clickByTestId('rhv')
-  })
-
   test('can select vsphere', async () => {
     render(<Component />)
     await clickByTestId('vsphere')

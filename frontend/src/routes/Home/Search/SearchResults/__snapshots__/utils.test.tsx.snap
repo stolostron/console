@@ -51,3 +51,33 @@ Array [
   },
 ]
 `;
+
+exports[`Correctly return row Actions for Application in global search 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "id": "view-application",
+    "title": "View Application",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-application-topology",
+    "title": "View Application topology",
+  },
+  Object {
+    "click": [Function],
+    "id": "edit",
+    "title": "Edit Application",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-related",
+    "title": "View related resources",
+  },
+  Object {
+    "click": [Function],
+    "id": "delete",
+    "title": "Delete Application",
+  },
+]
+`;

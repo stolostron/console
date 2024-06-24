@@ -89,6 +89,8 @@ const labelArr: string[] = [
   'app.kubernetes.io/part-of=',
 ]
 
+const TABLE_ID = 'applicationTable'
+
 const filterId = 'type'
 
 type IApplicationResource = IResource | OCPAppResource
@@ -1006,8 +1008,6 @@ export default function ApplicationsOverview() {
         isKebab={false}
         isPlain={false}
         isPrimary={true}
-        // tooltipPosition={tableDropdown.tooltipPosition}
-        // dropdownPosition={DropdownPosition.left}
       />
     ),
     [canCreateApplication, history, t]
@@ -1089,7 +1089,7 @@ export default function ApplicationsOverview() {
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTable<IResource>
-        id="applicationTable"
+        id={TABLE_ID}
         key="data-table"
         columns={columns}
         keyFn={keyFn}

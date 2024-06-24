@@ -18,9 +18,9 @@ spec:
           subscription:
             name:
             channel:
-            installPlanApproval: Automatic
             source: redhat-operators
             sourceNamespace: openshift-marketplace
+          upgradeApproval: Automatic
           versions:
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1

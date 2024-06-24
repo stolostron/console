@@ -14,7 +14,7 @@ import {
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
-import { Fragment, useMemo } from 'react'
+import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
@@ -163,6 +163,8 @@ export function DiscoveredClustersPageContent() {
   sessionStorage.removeItem('DiscoveredClusterConsoleURL')
   sessionStorage.removeItem('DiscoveredClusterApiURL')
   sessionStorage.removeItem('DiscoveryCredential')
+  sessionStorage.removeItem('DiscoveredClusterID')
+  sessionStorage.removeItem('DiscoveryType')
   return (
     <Fragment>
       <DiscoveredClustersTable
@@ -329,6 +331,29 @@ export function DiscoveredClustersTable(props: {
     }
   }
 
+  const rowActionResolver = useCallback(
+    (item: DiscoveredCluster) => {
+      return item.spec.type !== 'MultiClusterEngineHCP' // DiscoveredClusters representing HostedClusters only support auto-import
+        ? [
+            {
+              id: 'importCluster',
+              title: t('discovery.import'),
+              click: (item: DiscoveredCluster) => {
+                sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
+                sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
+                sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl ?? '')
+                sessionStorage.setItem('DiscoveryCredential', item.spec.credential?.name ?? '')
+                sessionStorage.setItem('DiscoveredClusterID', item.spec?.rhocmClusterId ?? '')
+                sessionStorage.setItem('DiscoveryType', item.spec.type ?? '')
+                history.push(createBackCancelLocation(NavigationPath.importCluster))
+              },
+            },
+          ]
+        : []
+    },
+    [history, t]
+  )
+
   return (
     <Fragment>
       <AcmTable<DiscoveredCluster>
@@ -350,18 +375,7 @@ export function DiscoveredClustersTable(props: {
             variant: ButtonVariant.secondary,
           },
         ]}
-        rowActions={[
-          {
-            id: 'importCluster',
-            title: t('discovery.import'),
-            click: (item) => {
-              sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
-              sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-              sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl || '')
-              history.push(createBackCancelLocation(NavigationPath.importCluster))
-            },
-          },
-        ]}
+        rowActionResolver={rowActionResolver}
         emptyState={emptyState}
       />
     </Fragment>
@@ -390,9 +404,6 @@ function getProvider(provider: string) {
       return Provider.kubevirt
     case 'powervs':
       return Provider.ibmpowervs
-    case 'libvirt':
-    case 'ovirt':
-      return Provider.redhatvirtualization
     case Provider.other:
     default:
       return Provider.other
@@ -417,9 +428,6 @@ function searchCloudProvider(provider: string) {
       return [Provider.kubevirt, 'red hat openshift virtualization']
     case 'powervs':
       return [Provider.ibmpowervs, 'ibm power virtual server']
-    case 'libvirt':
-    case 'ovirt':
-      return [Provider.redhatvirtualization, 'red hat virtualization']
     case Provider.other:
     default:
       return [Provider.other, provider]

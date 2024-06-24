@@ -61,7 +61,6 @@ import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
 import { getControlDataKubeVirt, setKubeVirtSecrets } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
-import getControlDataRHV from './controlData/ControlDataRHV'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
 
@@ -476,9 +475,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         isACMAvailable,
         settings.singleNodeOpenshift === 'enabled'
       )
-      break
-    case Provider.redhatvirtualization:
-      controlData = getControlDataRHV(t, handleModalToggle, true, isACMAvailable)
       break
     case HostInventoryInfrastructureType.CIMHypershift:
       template = Handlebars.compile(hypershiftTemplate)

@@ -3,6 +3,7 @@ import { Switch } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { AcmPage, AcmPageHeader } from '../../../ui-components'
+import ReuseableSearchbar from '../Search/components/ReuseableSearchbar'
 import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
 import OverviewPage from './OverviewPage'
 import OverviewPageBeta from './OverviewPageBeta'
@@ -28,6 +29,7 @@ export default function Overview() {
                 }}
               />
             }
+            searchbar={<ReuseableSearchbar />}
           />
           {/* Fleet view includes a cluster label filter */}
           {isBetaView && (

@@ -41,6 +41,7 @@ import {
   ManagedClusterApiVersion,
   ManagedClusterKind,
   managedClusterSetLabel,
+  ProviderConnection,
   ResourceError,
   ResourceErrorCode,
   Secret,
@@ -65,7 +66,6 @@ import {
   WizTextArea,
   WizTextInput,
   useSetHasValue,
-  useValidate,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -74,6 +74,7 @@ import { AutomationProviderHint } from '../../../../../components/AutomationProv
 import { validateYAML } from '../../../../../lib/validation'
 import { useWizardStrings } from '../../../../../lib/wizardStrings'
 import { css } from '@emotion/css'
+import { AcmFormInputAdapter } from '../../../../../wizards/common/AcmFormInputAdapter'
 
 const acmSchema = [...schema, ...kac]
 
@@ -81,6 +82,7 @@ enum ImportMode {
   manual = 'manual',
   token = 'token',
   kubeconfig = 'kubeconfig',
+  discoveryOCM = 'discoveryOCM',
 }
 
 const isImportMode = (importMode?: string): importMode is ImportMode => {
@@ -106,6 +108,12 @@ type State = {
   token: string
   server: string
   kubeconfig: string
+  clusterID: string
+  discoveryCredentialName: string
+  api_token: string
+  presetDiscoveredCluster?: boolean
+  namespace: string
+  credential: string
 }
 
 type Action =
@@ -119,16 +127,50 @@ type Action =
   | ({ type: 'setToken' } & Pick<State, 'token'>)
   | ({ type: 'setServer' } & Pick<State, 'server'>)
   | ({ type: 'setKubeconfig' } & Pick<State, 'kubeconfig'>)
+  | ({ type: 'setClusterID' } & Pick<State, 'clusterID'>)
+  | ({ type: 'setPresetDiscoveredCluster' } & Pick<State, 'presetDiscoveredCluster'>)
+  | ({ type: 'setNamespace' } & Pick<State, 'namespace'>)
+  | ({ type: 'setCredential' } & Pick<State, 'credential'>)
 
-const getInitialState = (initialClusterName: State['clusterName'], initialServer: State['server']): State => {
+const getImportMode = (presetDiscoveredCluster: boolean, discoveryClusterType?: string) => {
+  if (presetDiscoveredCluster) {
+    if (discoveryClusterType === 'ROSA') {
+      return ImportMode.discoveryOCM
+    } else {
+      return ImportMode.token
+    }
+  }
+  return ImportMode.manual
+}
+
+const getInitialState = (
+  initialClusterName: State['clusterName'],
+  initialServer: State['server'],
+  initialClusterID: State['clusterID'],
+  discoveryCredential: State['discoveryCredentialName'],
+  discoveryClusterType?: string,
+  initialAPIToken?: string,
+  credentialList?: ProviderConnection[]
+): State => {
   const defaultLabels = {
     cloud: 'auto-detect',
     vendor: 'auto-detect',
     name: initialClusterName,
   }
+  const presetClusterInformation = !!initialClusterName
+  let initialNamespace = ''
+  let initialCredential = ''
+
+  if (presetClusterInformation) {
+    initialNamespace =
+      credentialList?.find((credential) => credential.metadata.name === discoveryCredential)?.metadata.namespace ?? ''
+    initialCredential =
+      credentialList?.find((credential) => credential.metadata.name === discoveryCredential)?.metadata.name ?? ''
+  }
+
   return {
     clusterName: initialClusterName,
-    importMode: ImportMode.manual,
+    importMode: getImportMode(presetClusterInformation, discoveryClusterType),
     defaultLabels,
     managedClusterSet: '',
     additionalLabels: {},
@@ -139,6 +181,12 @@ const getInitialState = (initialClusterName: State['clusterName'], initialServer
     token: '',
     server: initialServer,
     kubeconfig: '',
+    clusterID: presetClusterInformation ? initialClusterID : '',
+    discoveryCredentialName: discoveryCredential,
+    api_token: initialAPIToken ?? '',
+    presetDiscoveredCluster: presetClusterInformation,
+    namespace: initialNamespace,
+    credential: initialCredential,
   }
 }
 
@@ -193,12 +241,20 @@ function reducer(state: State, action: Action): State {
         kacAdditionalLabels: pick(action.labels, kacAdditionalLabelKeys),
       }
     }
+    case 'setPresetDiscoveredCluster':
+      return { ...state, presetDiscoveredCluster: false }
     case 'setTemplateName':
       return { ...state, templateName: action.templateName }
     case 'setToken':
       return state.importMode === ImportMode.token ? { ...state, token: action.token } : state
     case 'setServer':
       return state.importMode === ImportMode.token ? { ...state, server: action.server } : state
+    case 'setClusterID':
+      return state.importMode === ImportMode.discoveryOCM ? { ...state, clusterID: action.clusterID } : state
+    case 'setNamespace':
+      return state.importMode === ImportMode.discoveryOCM ? { ...state, namespace: action.namespace } : state
+    case 'setCredential':
+      return state.importMode === ImportMode.discoveryOCM ? { ...state, credential: action.credential } : state
     case 'setKubeconfig':
       return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
   }
@@ -215,12 +271,36 @@ export default function ImportClusterPage() {
   const { cancel } = useBackCancelNavigation()
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
+  const discoveryType = sessionStorage.getItem('DiscoveryType') ?? ''
   const initialClusterName = sessionStorage.getItem('DiscoveredClusterDisplayName') ?? ''
   const initialServer = sessionStorage.getItem('DiscoveredClusterApiURL') ?? ''
   const [discovered] = useState<boolean>(!!initialClusterName)
   const [submitButtonText, setSubmitButtonText] = useState<string>()
   const [submittingButtonText, setSubmittingButtonText] = useState<string>()
-  const [state, dispatch] = useReducer(reducer, getInitialState(initialClusterName, initialServer))
+  const { RHOCMCredentials } = useSharedSelectors()
+  const ocmCredentials = useRecoilValue(RHOCMCredentials)
+  let initialClusterID = ''
+  let initialDiscoveryCredential = ''
+  let initialAPIToken = ''
+  if (discoveryType === 'ROSA') {
+    initialClusterID = sessionStorage.getItem('DiscoveredClusterID') ?? ''
+    initialDiscoveryCredential = sessionStorage.getItem('DiscoveryCredential') ?? ''
+    initialAPIToken =
+      ocmCredentials.find((cred) => cred.metadata.name === initialDiscoveryCredential)?.stringData?.ocmAPIToken ?? ''
+  }
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    getInitialState(
+      initialClusterName,
+      initialServer,
+      initialClusterID,
+      initialDiscoveryCredential,
+      discoveryType,
+      initialAPIToken,
+      ocmCredentials
+    )
+  )
 
   useEffect(() => {
     if (state.importMode !== 'manual') {
@@ -234,6 +314,7 @@ export default function ImportClusterPage() {
 
   const defaultData = useMemo(() => {
     const clusterAnnotations: Record<string, string> = {}
+    const secretName = 'auto-import-secret'
     if (discovered) {
       clusterAnnotations['open-cluster-management/created-via'] = 'discovery'
     }
@@ -248,6 +329,38 @@ export default function ImportClusterPage() {
       },
       spec: { hubAcceptsClient: true },
     })
+    if (state.importMode === ImportMode.discoveryOCM) {
+      resources.push({
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+          name: secretName,
+          namespace: initialClusterName,
+        },
+        stringData: {
+          autoImportRetry: '2',
+          api_token: initialAPIToken,
+          cluster_id: initialClusterID,
+        },
+        type: 'auto-import/rosa',
+      })
+    }
+    if (state.importMode === ImportMode.token) {
+      resources.push({
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        metadata: {
+          name: secretName,
+          namespace: initialClusterName,
+        },
+        stringData: {
+          autoImportRetry: '2',
+          token: '',
+          server: initialServer,
+        },
+        type: 'Opaque',
+      })
+    }
     if (isACMAvailable) {
       resources.push({
         apiVersion: KlusterletAddonConfigApiVersion,
@@ -265,7 +378,17 @@ export default function ImportClusterPage() {
       })
     }
     return resources
-  }, [discovered, initialClusterName, isACMAvailable, state.defaultLabels, state.kacDefaultLabels])
+  }, [
+    discovered,
+    initialClusterName,
+    initialServer,
+    isACMAvailable,
+    initialAPIToken,
+    initialClusterID,
+    state.defaultLabels,
+    state.importMode,
+    state.kacDefaultLabels,
+  ])
 
   const syncs = [
     {
@@ -287,6 +410,10 @@ export default function ImportClusterPage() {
     {
       path: 'Secret[0].stringData.kubeconfig',
       setState: (kubeconfig: State['kubeconfig']) => dispatch({ type: 'setKubeconfig', kubeconfig }),
+    },
+    {
+      path: 'Secret[0].stringData.clusterID',
+      setState: (clusterID: State['clusterID']) => dispatch({ type: 'setClusterID', clusterID }),
     },
     ...(isACMAvailable
       ? [
@@ -322,7 +449,7 @@ export default function ImportClusterPage() {
         id="code-content"
         schema={isACMAvailable ? acmSchema : schema}
         resources={resources}
-        secrets={['Secret.*.stringData.token', 'Secret.*.stringData.kubeconfig']}
+        secrets={['Secret.*.stringData.token', 'Secret.*.stringData.kubeconfig', 'Secret.*.stringData.api_token']}
         syncs={syncs}
         onEditorChange={(changes: { resources: any[] }): void => {
           update(changes?.resources)
@@ -527,7 +654,6 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
   } = props
   const { t } = useTranslation()
   const resources = useItem() as any[]
-  const { update } = useData()
   const mode = useDisplayMode()
 
   const managedCluster = resources.find((item) => item.kind === ManagedClusterKind) as ManagedCluster
@@ -557,9 +683,8 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
       }
       dispatch({ type: 'setManagedClusterSet', managedClusterSet: clusterSet })
       dispatch({ type: 'setAdditionalLabels', additionalLabels: labels })
-      update()
     },
-    [dispatch, managedCluster, klusterletAddonConfig, update]
+    [dispatch, managedCluster, klusterletAddonConfig]
   )
 
   const onChangeAdditionalLabels = useCallback(
@@ -602,15 +727,41 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
 
 const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> }) => {
   const {
-    state: { clusterName, importMode, kubeconfig, server, token },
+    state: {
+      clusterName,
+      importMode,
+      kubeconfig,
+      server,
+      token,
+      presetDiscoveredCluster,
+      clusterID,
+      namespace,
+      credential,
+    },
     dispatch,
   } = props
   const { t } = useTranslation()
   const secretName = 'auto-import-secret'
   const resources = useItem() as any[]
-  const { update } = useData()
-  const validate = useValidate()
   const mode = useDisplayMode()
+  const { RHOCMCredentials } = useSharedSelectors()
+  const ocmCredentials = useRecoilValue(RHOCMCredentials)
+  const [credentials, setCredentials] = useState<ProviderConnection[]>([])
+  let ocmCredentialNamespaces = ocmCredentials.map((credential) => credential.metadata.namespace!)
+  ocmCredentialNamespaces = [...new Set(ocmCredentialNamespaces)]
+
+  // Filters list of credentials
+  useEffect(() => {
+    if (namespace) {
+      const credentials: ProviderConnection[] = []
+      ocmCredentials.forEach((credential) => {
+        if (credential.metadata.namespace === namespace) {
+          credentials.push(credential)
+        }
+      })
+      setCredentials(credentials)
+    }
+  }, [ocmCredentials, namespace])
 
   const autoImportSecret = useMemo(
     (): Secret => ({
@@ -636,15 +787,46 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         return t('import.mode.token')
       case ImportMode.kubeconfig:
         return t('import.mode.kubeconfig')
+      case ImportMode.discoveryOCM:
+        return t('import.mode.discovery')
     }
     return '-'
   }
 
+  const getImportModeHelperText = (m: ImportMode) => {
+    switch (m) {
+      case ImportMode.manual:
+        return t('import.description')
+      case ImportMode.discoveryOCM:
+        return t('import.mode.discovery.helpertext')
+      default:
+        return t('import.credential.explanation')
+    }
+  }
+
+  const updateROSAImportSecret = useCallback(
+    (credentialName: string) => {
+      const newToken =
+        ocmCredentials.find((credential) => credential.metadata.name === credentialName)?.stringData?.ocmAPIToken ?? ''
+      const discoverySecret = cloneDeep(autoImportSecret)
+      discoverySecret.stringData = {
+        ...discoverySecret.stringData,
+        api_token: newToken,
+        cluster_id: clusterID,
+      }
+      discoverySecret.type = 'auto-import/rosa'
+      return discoverySecret
+    },
+    [autoImportSecret, clusterID, ocmCredentials]
+  )
   const onChangeImportMode = useCallback(
     (importMode?: string) => {
       if (isImportMode(importMode)) {
         const secretIndex = resources.findIndex((item) => item.kind === 'Secret' && item?.metadata?.name === secretName)
         const deleteCount = secretIndex >= 0 ? 1 : 0
+        const replaceSecretTemplate = (newSecret: Secret) => {
+          resources.splice(deleteCount ? secretIndex : 1, deleteCount, newSecret)
+        }
         switch (importMode) {
           case ImportMode.manual:
             // Delete auto-import secret
@@ -656,29 +838,44 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             // Insert/Replace auto-import secret
             const kubeconfigSecret = cloneDeep(autoImportSecret)
             kubeconfigSecret.stringData = { ...kubeconfigSecret.stringData, kubeconfig }
-            resources.splice(deleteCount ? secretIndex : 1, deleteCount, kubeconfigSecret)
+            replaceSecretTemplate(kubeconfigSecret)
             break
           }
           case ImportMode.token: {
             // Insert/Replace auto-import secret
             const tokenSecret = cloneDeep(autoImportSecret)
             tokenSecret.stringData = { ...tokenSecret.stringData, token, server }
-            resources.splice(deleteCount ? secretIndex : 1, deleteCount, tokenSecret)
+            replaceSecretTemplate(tokenSecret)
+            break
+          }
+          case ImportMode.discoveryOCM: {
+            // Insert/Replace auto-import secret
+            const discoverySecret = updateROSAImportSecret(credential)
+            replaceSecretTemplate(discoverySecret)
             break
           }
         }
         dispatch({ type: 'setImportMode', importMode: importMode })
-        update()
-        validate()
       }
     },
-    [autoImportSecret, dispatch, kubeconfig, resources, server, token, update, validate]
+    [autoImportSecret, dispatch, kubeconfig, resources, server, token, credential, updateROSAImportSecret]
   )
 
-  const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
+  useEffect(() => {
+    // if directed from a discovered cluster, update config
+    if (presetDiscoveredCluster) {
+      onChangeImportMode(importMode)
+      dispatch({ type: 'setPresetDiscoveredCluster', presetDiscoveredCluster: false })
+    }
+  })
 
+  const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
   const controlId = 'import-mode'
   const controlLabel = t('import.mode.select')
+  const credentialControlId = 'credential'
+  const credentialLabel = t('import.credential')
+  const namespaceControlId = 'namespace'
+  const namespaceLabel = t('discoveryConfig.namespaces.label')
   return (
     <>
       {mode === DisplayMode.Details ? (
@@ -687,23 +884,90 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
           <DescriptionListDescription id={controlId}>{getImportModeDescription(importMode)}</DescriptionListDescription>
         </DescriptionListGroup>
       ) : (
-        <AcmSelect
-          id={controlId}
-          label={controlLabel}
-          placeholder={t('import.mode.default')}
-          value={importMode}
-          onChange={onChangeImportMode}
-          helperText={importMode === ImportMode.manual ? t('import.description') : t('import.credential.explanation')}
-          isRequired
-        >
-          {Object.values(ImportMode).map((m) => {
-            return (
-              <SelectOption key={m} value={m}>
-                {getImportModeDescription(m)}
-              </SelectOption>
-            )
-          })}
-        </AcmSelect>
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('import.mode.default')}
+            value={importMode}
+            onChange={onChangeImportMode}
+            helperText={getImportModeHelperText(importMode)}
+            isRequired
+          >
+            {Object.values(ImportMode).map((m) => {
+              return (
+                <SelectOption key={m} value={m}>
+                  {getImportModeDescription(m)}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      )}
+      {mode === DisplayMode.Details ? (
+        <DescriptionListGroup>
+          <DescriptionListTerm>{namespaceLabel}</DescriptionListTerm>
+          <DescriptionListDescription id={namespaceControlId}>{namespace}</DescriptionListDescription>
+        </DescriptionListGroup>
+      ) : (
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={'namespace'}
+            label={t('discoveryConfig.namespaces.label')}
+            placeholder={t('discoveryConfig.namespaces.placeholder')}
+            labelHelp={t('discoveryConfig.namespaces.labelHelp')}
+            value={namespace}
+            isRequired={importMode === ImportMode.discoveryOCM}
+            hidden={importMode !== ImportMode.discoveryOCM}
+            onChange={(namespaceName) => {
+              namespaceName && dispatch({ type: 'setNamespace', namespace: namespaceName })
+              dispatch({ type: 'setCredential', credential: '' })
+              const discoverySecret = updateROSAImportSecret('')
+              resources.splice(1, 1, discoverySecret)
+            }}
+          >
+            {ocmCredentialNamespaces.map((namespace) => {
+              return (
+                <SelectOption key={namespace} value={namespace}>
+                  {namespace}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      )}
+      {mode === DisplayMode.Details ? (
+        <DescriptionListGroup>
+          <DescriptionListTerm>{credentialLabel}</DescriptionListTerm>
+          <DescriptionListDescription id={credentialControlId}>{credential}</DescriptionListDescription>
+        </DescriptionListGroup>
+      ) : (
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={credentialControlId}
+            label={credentialLabel}
+            placeholder={t('import.credential.place')}
+            value={credential}
+            onChange={(credentialName) => {
+              if (credentialName) {
+                dispatch({ type: 'setCredential', credential: credentialName })
+                const discoverySecret = updateROSAImportSecret(credentialName)
+                resources.splice(1, 1, discoverySecret)
+              }
+            }}
+            isRequired={importMode === ImportMode.discoveryOCM}
+            hidden={importMode !== ImportMode.discoveryOCM}
+            isDisabled={!namespace}
+          >
+            {credentials.map((credential) => {
+              return (
+                <SelectOption key={credential.metadata.uid} value={credential.metadata.name}>
+                  {credential.metadata.name}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
       )}
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={SecretKind} targetPath="metadata.namespace" />
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={ClusterCuratorKind} targetPath="metadata.name" />
@@ -744,6 +1008,15 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
           required={importMode === ImportMode.kubeconfig}
           hidden={() => importMode !== ImportMode.kubeconfig}
         />
+        <WizTextInput
+          id="clusterID"
+          path="stringData.cluster_id"
+          label={t('import.clusterid')}
+          placeholder={t('import.clusterid.place')}
+          onValueChange={(s: any) => dispatch({ type: 'setClusterID', clusterID: (s as State['clusterID']) ?? '' })}
+          required={importMode === ImportMode.discoveryOCM}
+          hidden={() => importMode !== ImportMode.discoveryOCM}
+        />
       </WizItemSelector>
     </>
   )
@@ -758,7 +1031,6 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
   const resources = useItem() as any[]
   const mode = useDisplayMode()
-  const { update } = useData()
   const {
     state: { clusterName, templateName },
     dispatch,
@@ -837,9 +1109,8 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
       }
       setSelectedTemplateName(curatorTemplate)
       dispatch({ type: 'setTemplateName', templateName: template })
-      update()
     },
-    [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations, update]
+    [ansibleCredentials, clusterName, curatorTemplates, dispatch, resources, supportedCurations]
   )
 
   const controlId = 'templateName'
@@ -851,44 +1122,46 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
     </DescriptionListGroup>
   ) : (
     <>
-      <AcmSelect
-        id={controlId}
-        label={controlLabel}
-        placeholder={t('template.clusterCreate.select.placeholder')}
-        labelHelp={t('template.clusterImport.tooltip')}
-        variant={SelectVariant.typeahead}
-        helperText={
-          <Split>
-            <SplitItem isFilled />
-            <SplitItem>
-              <AcmButton
-                variant="link"
-                style={{ paddingRight: '0px' }}
-                onClick={() =>
-                  window.open(
-                    `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
-                    'add-automation-template'
-                  )
-                }
-              >
-                {t('creation.ocp.cloud.add.template')}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </AcmButton>
-            </SplitItem>
-          </Split>
-        }
-        value={templateName}
-        onChange={onChangeAutomationTemplate}
-      >
-        {Object.values(curatorTemplates).map((template) => {
-          const templateName = template.metadata.name
-          return (
-            <SelectOption key={templateName} value={templateName}>
-              {templateName}
-            </SelectOption>
-          )
-        })}
-      </AcmSelect>
+      <AcmFormInputAdapter>
+        <AcmSelect
+          id={controlId}
+          label={controlLabel}
+          placeholder={t('template.clusterCreate.select.placeholder')}
+          labelHelp={t('template.clusterImport.tooltip')}
+          variant={SelectVariant.typeahead}
+          helperText={
+            <Split>
+              <SplitItem isFilled />
+              <SplitItem>
+                <AcmButton
+                  variant="link"
+                  style={{ paddingRight: '0px' }}
+                  onClick={() =>
+                    window.open(
+                      `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                      'add-automation-template'
+                    )
+                  }
+                >
+                  {t('creation.ocp.cloud.add.template')}
+                  <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                </AcmButton>
+              </SplitItem>
+            </Split>
+          }
+          value={templateName}
+          onChange={onChangeAutomationTemplate}
+        >
+          {Object.values(curatorTemplates).map((template) => {
+            const templateName = template.metadata.name
+            return (
+              <SelectOption key={templateName} value={templateName}>
+                {templateName}
+              </SelectOption>
+            )
+          })}
+        </AcmSelect>
+      </AcmFormInputAdapter>
       <TemplateLinkOut templateCurator={selectedTemplateName} />
       <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
     </>

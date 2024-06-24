@@ -48,9 +48,9 @@ spec:
           subscription:
             name: compliance-operator
             namespace: openshift-compliance
-            installPlanApproval: Automatic
             source: redhat-operators
             sourceNamespace: openshift-marketplace
+          upgradeApproval: Automatic
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

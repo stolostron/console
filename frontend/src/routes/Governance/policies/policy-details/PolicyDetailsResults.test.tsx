@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
@@ -53,6 +53,36 @@ describe('Policy Details Results', () => {
     )
     await waitForText('Remediation')
     await waitForText('enforce')
+  })
+})
+
+describe('Policy results of policy of a hosted cluster', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  test('Should display the cluster name and not namespace', async () => {
+    const mockReplicatedPolicyCopy = JSON.parse(JSON.stringify(mockPolicy[1]))
+    mockReplicatedPolicyCopy.metadata.labels['policy.open-cluster-management.io/cluster-namespace'] =
+      'klusterlet-local-cluster'
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [mockPolicy[0], mockReplicatedPolicyCopy, mockPolicy[2]])
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsResults policy={mockPolicy[0]} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // wait page load
+    await waitForText('Clusters')
+
+    await waitForText('local-cluster')
+    expect(screen.queryAllByText('klusterlet-local-cluster')).toHaveLength(0)
   })
 })
 

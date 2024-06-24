@@ -213,7 +213,11 @@ export function NodePoolForm(props: {
     },
     nodepoolSecurityGroups: {
       key: t('Security groups'),
-      value: props.nodepool?.spec.platform.aws?.securityGroups[0].id,
+      value:
+        props.nodepool?.spec.platform.aws?.securityGroups &&
+        props.nodepool?.spec.platform.aws?.securityGroups.length > 0
+          ? props.nodepool?.spec.platform.aws?.securityGroups[0].id
+          : '',
       edit: (
         <AcmKubernetesLabelsInput
           id="nodepool-rootvolumetype"
@@ -316,7 +320,7 @@ export function NodePoolForm(props: {
     }
 
     if (props.hostedCluster.spec.platform?.type === HypershiftCloudPlatformType.AWS) {
-      if (props.refNodepool?.spec.platform?.aws?.securityGroups.length || -1 > 0) {
+      if ((props.refNodepool?.spec.platform?.aws?.securityGroups?.length || -1) > 0) {
         const sgs: any = {}
         props.refNodepool?.spec.platform?.aws?.securityGroups.forEach((sg: any) => {
           sgs[sg.id] = ''

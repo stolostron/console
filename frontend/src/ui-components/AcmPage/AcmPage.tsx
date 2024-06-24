@@ -43,7 +43,7 @@ export function AcmPage(props: { header: ReactNode; children: ReactNode; hasDraw
 }
 
 export interface AcmPageHeaderProps {
-  title: string
+  title: string | React.ReactNode
   titleTooltip?: string | React.ReactNode
   popoverPosition?: PopoverProps['position']
   popoverAutoWidth?: PopoverProps['hasAutoWidth']
@@ -55,6 +55,7 @@ export interface AcmPageHeaderProps {
   controls?: React.ReactNode
   switches?: React.ReactNode
   actions?: React.ReactNode
+  searchbar?: React.ReactNode
 }
 
 export function AcmPageHeader(props: AcmPageHeaderProps) {
@@ -145,30 +146,37 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
             )}
           </Stack>
         </SplitItem>
-        <SplitItem>
-          <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
-            <Stack hasGutter>
-              {props.controls && (
-                <StackItem style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  {props.controls}
-                </StackItem>
-              )}
-              {props.actions && (
-                <StackItem
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    justifyContent: 'flex-end',
-                  }}
-                  isFilled
-                >
-                  {props.actions}
-                </StackItem>
-              )}
-            </Stack>
-          </PageSection>
-        </SplitItem>
+        {(props.controls || props.actions || props.searchbar) && (
+          <SplitItem>
+            <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
+              <Stack hasGutter>
+                {props.searchbar && (
+                  <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                    {props.searchbar}
+                  </SplitItem>
+                )}
+                {props.controls && (
+                  <StackItem style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    {props.controls}
+                  </StackItem>
+                )}
+                {props.actions && (
+                  <StackItem
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      justifyContent: 'flex-end',
+                    }}
+                    isFilled
+                  >
+                    {props.actions}
+                  </StackItem>
+                )}
+              </Stack>
+            </PageSection>
+          </SplitItem>
+        )}
       </Split>
     </PageSection>
   )

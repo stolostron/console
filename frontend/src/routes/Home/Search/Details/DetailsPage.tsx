@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -10,6 +11,7 @@ import { IResource } from '../../../../resources'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import { getResource } from '../../../../resources/utils/resource-request'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { DeleteResourceModal } from './DeleteResourceModal'
 import DetailsOverviewPage from './DetailsOverviewPage'
 import LogsPage from './LogsPage'
 import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
@@ -49,10 +51,13 @@ export function getResourceParams() {
 export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
+  const history = useHistory()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()
   const [resourceVersion, setResourceVersion] = useState<string>('')
   const [resourceError, setResourceError] = useState('')
+  const [resourceActionsOpen, setResourceActionsOpen] = useState(false)
+  const [isDeleteResourceModalOpen, setIsDeleteResourceModalOpen] = useState(false)
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
 
   useEffect(() => {
@@ -158,9 +163,47 @@ export default function DetailsPage() {
               )}
             </AcmSecondaryNav>
           }
+          actions={
+            <Dropdown
+              isOpen={resourceActionsOpen}
+              position={'right'}
+              toggle={
+                <DropdownToggle onToggle={() => setResourceActionsOpen(!resourceActionsOpen)}>
+                  {t('Actions')}
+                </DropdownToggle>
+              }
+              dropdownItems={[
+                <DropdownItem
+                  component="button"
+                  key="edit-resource"
+                  onClick={() => {
+                    history.push(`${NavigationPath.resourceYAML}${window.location.search}`)
+                  }}
+                >
+                  {t('Edit {{resourceKind}}', { resourceKind: kind })}
+                </DropdownItem>,
+                <DropdownItem
+                  component="button"
+                  key="delete-resource"
+                  onClick={() => {
+                    setIsDeleteResourceModalOpen(true)
+                  }}
+                >
+                  {t('Delete {{resourceKind}}', { resourceKind: kind })}
+                </DropdownItem>,
+              ]}
+              onSelect={() => setResourceActionsOpen(false)}
+            />
+          }
         />
       }
     >
+      <DeleteResourceModal
+        open={isDeleteResourceModalOpen}
+        close={() => setIsDeleteResourceModalOpen(false)}
+        resource={resource}
+        cluster={cluster}
+      />
       <Switch>
         <Route exact path={NavigationPath.resources}>
           <DetailsOverviewPage

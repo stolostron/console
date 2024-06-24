@@ -402,7 +402,7 @@ function OuiaIdRowWrapper(props: RowWrapperProps) {
   return <RowWrapper {...props} ouiaId={get(props, 'row.props.key')} />
 }
 
-const SEARCH_DEBOUNCE_TIME = 500
+export const SEARCH_DEBOUNCE_TIME = 500
 
 const DEFAULT_ITEMS_PER_PAGE = 10
 

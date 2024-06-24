@@ -11,7 +11,7 @@ export function ClusterPolicyViolationIcons(props: {
   unknownHref?: string
 }) {
   const { risks, compliantHref, violationHref, unknownHref } = props
-  const violations = risks.high + risks.medium + risks.low
+  const violations = risks.critical + risks.high + risks.medium + risks.low
   const { t } = useTranslation()
   return (
     <StatusIcons

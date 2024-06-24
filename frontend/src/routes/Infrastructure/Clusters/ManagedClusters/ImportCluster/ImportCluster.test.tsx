@@ -14,6 +14,9 @@ import {
   ManagedClusterApiVersion,
   ManagedClusterKind,
   managedClusterSetLabel,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
   Project,
   ProjectApiVersion,
   ProjectKind,
@@ -41,6 +44,7 @@ import {
   managedClusterSetsState,
   secretsState,
   subscriptionOperatorsState,
+  namespacesState,
 } from '../../../../../atoms'
 import {
   mockBadRequestStatus,
@@ -75,6 +79,25 @@ const mockProject: ProjectRequest = {
   metadata: { name: 'foobar' },
 }
 
+const mockROSADiscoveryProject: ProjectRequest = {
+  apiVersion: ProjectRequestApiVersion,
+  kind: ProjectRequestKind,
+  metadata: { name: 'rosa-discovery-cluster' },
+}
+
+const mockNamepaces: Namespace[] = [
+  {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'foobar' },
+  },
+  {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'rosa-discovery-cluster' },
+  },
+]
+
 const mockDiscoveredClusters: DiscoveredCluster[] = [
   {
     apiVersion: DiscoveredClusterApiVersion,
@@ -82,6 +105,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
     metadata: {
       name: 'foobar',
       namespace: 'foobar',
+      uid: 'foobar',
     },
     spec: {
       activityTimestamp: '2020-07-30T19:09:43Z',
@@ -99,6 +123,35 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
   {
     apiVersion: DiscoveredClusterApiVersion,
     kind: DiscoveredClusterKind,
+    metadata: {
+      name: 'rosa-discovery-cluster',
+      namespace: 'foobar',
+    },
+    spec: {
+      activityTimestamp: '2020-07-30T19:09:40Z',
+      cloudProvider: 'aws',
+      apiUrl: 'https://api.rosa-discovery-cluster.dev01.red -chesterfield.com',
+      displayName: 'rosa-discovery-cluster',
+      console: 'https://console-openshift-console.apps.rosa-discovery-cluster.dev01.red-chesterfield.com',
+      creationTimestamp: '2020-07-30T19:09:43Z',
+      name: 'rosa-discovery-cluster',
+      type: 'ROSA',
+      openshiftVersion: '4.5.5',
+      status: 'Active',
+      rhocmClusterId: '39ldt3r51vjjsho1eqntrg3m',
+      credential: {
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        name: 'OCM-access',
+        namespace: 'foobar',
+        resourceVersion: '87010',
+        uid: '6a',
+      },
+    },
+  },
+  {
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
     metadata: { name: 'test-cluster-02', namespace: 'foobar' },
     spec: {
       activityTimestamp: '2020-07-30T19:09:43Z',
@@ -109,6 +162,27 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
       name: 'test-cluster-02',
       openshiftVersion: '4.6.1',
       status: 'Stale',
+    },
+  },
+  {
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
+    metadata: {
+      name: 'mce-hcp',
+      namespace: 'mce-hcp',
+      uid: 'mce-hcp',
+    },
+    spec: {
+      activityTimestamp: '2024-06-18T10:39:27Z',
+      cloudProvider: 'N/A',
+      apiUrl: 'https://api.mce-hcp.dev01.red-chesterfield.com',
+      displayName: 'mce-hcp',
+      console: 'https://console-openshift-console.apps.mce-hcp.dev01.red-chesterfield.com',
+      creationTimestamp: '2024-06-18T10:39:27Z',
+      name: 'mce-hcp',
+      type: 'MultiClusterEngineHCP',
+      openshiftVersion: '4.15.8',
+      status: 'Active',
     },
   },
 ]
@@ -174,6 +248,20 @@ const mockAutoTokenSecret: Secret = {
   },
   type: 'Opaque',
 }
+const mockROSAAutoTokenSecret: Secret = {
+  apiVersion: SecretApiVersion,
+  kind: SecretKind,
+  metadata: {
+    name: 'auto-import-secret',
+    namespace: 'rosa-discovery-cluster',
+  },
+  stringData: {
+    autoImportRetry: '2',
+    api_token: 'fake_token',
+    cluster_id: '39ldt3r51vjjsho1eqntrg3m',
+  },
+  type: 'auto-import/rosa',
+}
 
 const mockManagedCluster: ManagedCluster = {
   apiVersion: ManagedClusterApiVersion,
@@ -199,6 +287,19 @@ const mockManagedDiscoveredCluster: ManagedCluster = {
   spec: { hubAcceptsClient: true },
 }
 
+const mockManagedROSADiscoveredCluster: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'rosa-discovery-cluster',
+    labels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'rosa-discovery-cluster', foo: 'bar' },
+    annotations: {
+      'open-cluster-management/created-via': 'discovery',
+    },
+  },
+  spec: { hubAcceptsClient: true },
+}
+
 const mockKlusterletAddonConfig: KlusterletAddonConfig = {
   apiVersion: KlusterletAddonConfigApiVersion,
   kind: KlusterletAddonConfigKind,
@@ -207,6 +308,21 @@ const mockKlusterletAddonConfig: KlusterletAddonConfig = {
     clusterName: 'foobar',
     clusterNamespace: 'foobar',
     clusterLabels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'foobar', foo: 'bar' },
+    applicationManager: { enabled: true },
+    policyController: { enabled: true },
+    searchCollector: { enabled: true },
+    certPolicyController: { enabled: true },
+  },
+}
+
+const mockROSADiscoveryKlusterletAddonConfig: KlusterletAddonConfig = {
+  apiVersion: KlusterletAddonConfigApiVersion,
+  kind: KlusterletAddonConfigKind,
+  metadata: { name: 'rosa-discovery-cluster', namespace: 'rosa-discovery-cluster' },
+  spec: {
+    clusterName: 'rosa-discovery-cluster',
+    clusterNamespace: 'rosa-discovery-cluster',
+    clusterLabels: { cloud: 'auto-detect', vendor: 'auto-detect', name: 'rosa-discovery-cluster', foo: 'bar' },
     applicationManager: { enabled: true },
     policyController: { enabled: true },
     searchCollector: { enabled: true },
@@ -232,6 +348,24 @@ const mockProjectResponse: Project = {
     },
   },
 }
+const mockROSADiscoveryProjectResponse: Project = {
+  apiVersion: ProjectApiVersion,
+  kind: ProjectKind,
+  metadata: {
+    name: 'rosa-discovery-cluster',
+    selfLink: '/apis/project.openshift.io/v1/projectrequests/rosa-discovery-cluster',
+    uid: 'a452d',
+    resourceVersion: '16251055',
+    annotations: {
+      'openshift.io/description': '',
+      'openshift.io/display-name': '',
+      'openshift.io/requester': 'kube:admin',
+      'openshift.io/sa.scc.mcs': 's0:c25,c15',
+      'openshift.io/sa.scc.supplemental-groups': '1000630000/10000',
+      'openshift.io/sa.scc.uid-range': '1000630000/10000',
+    },
+  },
+}
 
 const mockManagedDiscoveredClusterResponse: ManagedCluster = {
   apiVersion: ManagedClusterApiVersion,
@@ -239,6 +373,20 @@ const mockManagedDiscoveredClusterResponse: ManagedCluster = {
   metadata: {
     labels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
     name: 'foobar',
+    uid: 'e60ef618-324b-49d4-8a28-48839c546565',
+    annotations: {
+      'open-cluster-management/created-via': 'discovery',
+    },
+  },
+  spec: { hubAcceptsClient: true, leaseDurationSeconds: 60 },
+}
+
+const mockManagedROSADiscoveredClusterResponse: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    labels: { cloud: 'auto-detect', name: 'rosa-discovery-cluster', vendor: 'auto-detect', foo: 'bar' },
+    name: 'rosa-discovery-cluster',
     uid: 'e60ef618-324b-49d4-8a28-48839c546565',
     annotations: {
       'open-cluster-management/created-via': 'discovery',
@@ -273,6 +421,25 @@ const mockKlusterletAddonConfigResponse: KlusterletAddonConfig = {
     clusterLabels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
     clusterName: 'foobar',
     clusterNamespace: 'foobar',
+    policyController: { enabled: true },
+    searchCollector: { enabled: true },
+  },
+}
+
+const mockROSADiscoveryKlusterletAddonConfigResponse: KlusterletAddonConfig = {
+  apiVersion: 'agent.open-cluster-management.io/v1',
+  kind: 'KlusterletAddonConfig',
+  metadata: {
+    name: 'rosa-discovery-cluster',
+    namespace: 'rosa-discovery-cluster',
+    uid: 'fba00095-386b-4d68-b2da-97003bc6a987',
+  },
+  spec: {
+    applicationManager: { enabled: true },
+    certPolicyController: { enabled: true },
+    clusterLabels: { cloud: 'auto-detect', name: 'foobar', vendor: 'auto-detect', foo: 'bar' },
+    clusterName: 'rosa-discovery-cluster',
+    clusterNamespace: 'rosa-discovery-cluster',
     policyController: { enabled: true },
     searchCollector: { enabled: true },
   },
@@ -358,6 +525,25 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
   stringData: {
     host: 'test',
     token: 'test',
+  },
+  type: 'Opaque',
+}
+
+const mockOCMConnection: Secret = {
+  apiVersion: ProviderConnectionApiVersion,
+  kind: ProviderConnectionKind,
+  metadata: {
+    name: 'OCM-access',
+    namespace: 'foobar',
+    labels: {
+      'cluster.open-cluster-management.io/type': 'rhocm',
+      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ROSA',
+      'cluster.open-cluster-management.io/copiedFromSecretName': 'OCM-connection',
+      'cluster.open-cluster-management.io/backup': 'cluster',
+    },
+  },
+  stringData: {
+    ocmAPIToken: 'fake_token',
   },
   type: 'Opaque',
 }
@@ -548,7 +734,7 @@ describe('ImportCluster', () => {
     await typeByTestId('clusterName', 'foobar')
     await clickByTestId('label-input-button')
     await typeByTestId('additionalLabels', 'foo=bar{enter}')
-    await clickByText('Run import commands manually')
+    await clickByText('Run import commands manually', 0)
     await clickByText('Kubeconfig', 0)
     await clickByTestId('kubeConfigEntry')
     await typeByTestId('kubeConfigEntry', 'Test text')
@@ -574,7 +760,7 @@ describe('ImportCluster', () => {
     await typeByTestId('clusterName', 'foobar')
     await clickByTestId('label-input-button')
     await typeByTestId('additionalLabels', 'foo=bar{enter}')
-    await clickByText('Run import commands manually')
+    await clickByText('Run import commands manually', 0)
     await clickByText('Enter your server URL and API token for the existing cluster')
     await clickByTestId('token')
     await typeByTestId('token', 'Test token')
@@ -657,9 +843,10 @@ describe('Import Discovered Cluster', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(secretsState, [mockCRHCredential])
+          snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection])
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+          snapshot.set(namespacesState, mockNamepaces)
         }}
       >
         <MemoryRouter>
@@ -682,6 +869,9 @@ describe('Import Discovered Cluster', () => {
     await clickByText('Import cluster')
     await waitForText('Import an existing cluster', true)
 
+    await clickByText('Enter your server URL and API token for the existing cluster', 0)
+    await clickByText('Run import commands manually')
+
     const projectNock = nockCreate(mockProject, mockProjectResponse)
     const managedClusterNock = nockCreate(mockManagedDiscoveredCluster, mockManagedDiscoveredClusterResponse)
     const kacNock = nockCreate(mockKlusterletAddonConfig, mockKlusterletAddonConfigResponse)
@@ -698,5 +888,62 @@ describe('Import Discovered Cluster', () => {
     await clickByText('Generate command')
 
     await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock])
+  })
+
+  test('create discovered ROSA cluster', async () => {
+    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
+    await waitFor(() => expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()) // Wait for Discovered ROSA Cluster to appear in table
+    userEvent.click(getAllByLabelText('Actions')[1]) // Click on Kebab menu
+
+    await clickByText('Import cluster')
+    await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
+
+    await waitForText('OCM-access')
+    await waitForText(mockDiscoveredClusters[1].spec.credential!.name) // discovery credential field should be set correctly
+    await waitForText('Cluster ID')
+    getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
+
+    const projectNock = nockCreate(mockROSADiscoveryProject, mockROSADiscoveryProjectResponse)
+    const managedClusterNock = nockCreate(mockManagedROSADiscoveredCluster, mockManagedROSADiscoveredClusterResponse)
+    const kacNock = nockCreate(mockROSADiscoveryKlusterletAddonConfig, mockROSADiscoveryKlusterletAddonConfigResponse)
+    const autoImportSecretNock = nockCreate(mockROSAAutoTokenSecret)
+    const importCommandNock = nockGet(mockROSAAutoTokenSecret)
+
+    // Add labels
+    await clickByTestId('label-input-button')
+    await typeByTestId('additionalLabels', 'foo=bar{enter}')
+
+    // Advance to Review step and submit the form
+    await clickByText('Next')
+    await clickByText('Next')
+    await waitForText('Import')
+    await clickByText('Import')
+
+    await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
+  })
+
+  test('sets discovered OCP cluster URL field', async () => {
+    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
+
+    await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for Discovered ROSA Cluster to appear in table
+    userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+
+    await clickByText('Import cluster')
+    await waitForText('Enter your server URL and API token for the existing cluster', true)
+    getByDisplayValue(mockDiscoveredClusters[0].spec.apiUrl!)
+  })
+
+  test('disabled for MultiClusterEngineHCP clusters', async () => {
+    const { container } = render(<Component />) // Render component
+    expect(
+      container.querySelector(
+        `[data-ouia-component-id=${mockDiscoveredClusters[0].metadata.uid!}] td.pf-c-table__action`
+      )?.innerHTML
+    ).toBeDefined()
+    expect(
+      container.querySelector(
+        `[data-ouia-component-id=${mockDiscoveredClusters[3].metadata.uid!}] td.pf-c-table__action`
+      )
+    ).toBeEmptyDOMElement()
   })
 })

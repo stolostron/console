@@ -5,6 +5,7 @@ import { Policy } from '../../../resources/policy'
 import { getPolicyRemediation } from './util'
 import { cloneDeep } from 'lodash'
 
+// Get Policies(Kind: Policy) include remediationResult(informOnly, inform, etc)
 export function useAddRemediationPolicies() {
   const { policiesState, usePolicies } = useSharedAtoms()
   const policies = usePolicies()

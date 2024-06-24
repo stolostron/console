@@ -2,8 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { ButtonProps, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
@@ -13,10 +13,11 @@ import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLabels } from '../../../ui-components'
+import { AcmButton, AcmLabels } from '../../../ui-components'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 export interface SearchDefinitions {
-  (t: TFunction): ResourceDefinitions
+  (t: TFunction, isGlobalHub?: boolean): ResourceDefinitions
 }
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -56,7 +57,10 @@ export interface SearchColumnDefinition {
   cell: string | ((item: any) => JSX.Element | '-') | ((item: any) => string)
 }
 
-export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
+export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => ResourceDefinitions = (
+  t: TFunction,
+  isGlobalHub?: boolean
+) => {
   return {
     application: {
       columns: [
@@ -66,7 +70,7 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
         {
           header: t('Topology'),
           cell: (item: any) => {
-            return CreateApplicationTopologyLink(item, t)
+            return <CreateApplicationTopologyLink item={item} t={t} />
           },
         },
         AddColumn('labels', t('Labels')),
@@ -75,6 +79,7 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
     cluster: {
       columns: [
         AddColumn('name', t('Name')),
+        ...(isGlobalHub ? [AddColumn('managedHub', t('Managed hub'))] : []),
         AddColumn('ManagedClusterConditionAvailable', t('Available')),
         AddColumn('HubAcceptedManagedCluster', t('Hub accepted')),
         AddColumn('ManagedClusterJoined', t('Joined')),
@@ -370,8 +375,12 @@ export const getSearchDefinitions: SearchDefinitions = (t: TFunction) => {
 
 export const useSearchDefinitions = () => {
   const { t } = useTranslation()
+  const { isGlobalHubState, settingsState } = useSharedAtoms()
+  const isGlobalHub = useRecoilValue(isGlobalHubState)
+  const settings = useRecoilValue(settingsState)
+  const globalHub = isGlobalHub && settings.globalSearchFeatureFlag === 'enabled'
 
-  return useMemo(() => getSearchDefinitions(t), [t])
+  return useMemo(() => getSearchDefinitions(t, globalHub), [t, globalHub])
 }
 
 export function GetAge(item: any, key: string) {
@@ -405,13 +414,21 @@ export const GetUrlSearchParam = (resource: any) => {
 
 export function CreateDetailsLink(props: { item: any }) {
   const { item } = props
-  const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
 
-  if (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') {
-    return item.name
-  }
+  const defaultSearchLink = (
+    <Link
+      to={{
+        pathname: NavigationPath.resources,
+        search: GetUrlSearchParam(item),
+        state: {
+          from: NavigationPath.search,
+          fromSearch: window.location.search,
+        },
+      }}
+    >
+      {item.name}
+    </Link>
+  )
 
   switch (item.kind.toLowerCase()) {
     case 'cluster':
@@ -443,20 +460,7 @@ export function CreateDetailsLink(props: { item: any }) {
           </Link>
         )
       }
-      return (
-        <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
-          }}
-        >
-          {item.name}
-        </Link>
-      )
+      return defaultSearchLink
     }
     case 'policy':
       // Redirects to the policy page if the policy is a hub cluster resource.
@@ -472,20 +476,7 @@ export function CreateDetailsLink(props: { item: any }) {
           </Link>
         )
       }
-      return (
-        <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
-          }}
-        >
-          {item.name}
-        </Link>
-      )
+      return defaultSearchLink
     case 'policyreport':
       return (
         <Link
@@ -501,33 +492,139 @@ export function CreateDetailsLink(props: { item: any }) {
         </Link>
       )
     default:
-      return (
-        <Link
-          to={{
-            pathname: NavigationPath.resources,
-            search: GetUrlSearchParam(item),
-            state: {
-              from: NavigationPath.search,
-              fromSearch: window.location.search,
-            },
-          }}
-        >
-          {item.name}
-        </Link>
-      )
+      return defaultSearchLink
   }
 }
 
-export function CreateApplicationTopologyLink(item: any, t: TFunction) {
-  if (item.apiversion && item.apigroup) {
+export function CreateGlobalSearchDetailsLink(props: { item: any }) {
+  const { item } = props
+  const clusters = useAllClusters(true)
+
+  const managedHub = clusters.find((cluster) => {
+    if (item.managedHub === 'global-hub') {
+      // If the resource lives on a managed hub (managed by global hub) use the cluster name
+      return cluster.name === item.cluster
+    }
+    return cluster.name === item.managedHub
+  })
+
+  const generateLink = (linkType: string, path: string, params?: string) => {
+    const linkProps: ButtonProps = {
+      variant: 'link',
+      component: 'a',
+      target: '_blank',
+      icon: <ExternalLinkAltIcon />,
+      iconPosition: 'right',
+      isInline: true,
+    }
+
+    switch (linkType) {
+      case 'internal':
+        return <Link to={{ pathname: path, search: params }}>{item.name}</Link>
+      case 'external':
+        return (
+          <AcmButton {...linkProps} href={`${managedHub?.consoleURL}${path}${params ? params : ''}`}>
+            {item.name}
+          </AcmButton>
+        )
+      default:
+        return item.name
+    }
+  }
+
+  switch (item.kind.toLowerCase()) {
+    case 'cluster': {
+      if (item.managedHub === 'global-hub') {
+        return generateLink(
+          'internal',
+          generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name })
+        )
+      }
+      return generateLink(
+        'external',
+        generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name }),
+        GetUrlSearchParam(item)
+      )
+    }
+    case 'application': {
+      const { apigroup, applicationSet, cluster, name, namespace, kind } = item
+      if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
+        const params = queryString.stringify({
+          apiVersion: `${kind}.${apigroup}`.toLowerCase(),
+          cluster: cluster === 'local-cluster' ? undefined : cluster,
+          applicationset: applicationSet == null ? undefined : applicationSet,
+        })
+        const path = generatePath(NavigationPath.applicationOverview, { namespace, name })
+        if (item.managedHub === 'global-hub' && item.cluster !== 'local-cluster') {
+          return generateLink('external', path, `?${params}`)
+        }
+        return generateLink('internal', path, `?${params}`)
+      }
+      return generateLink(
+        item.managedHub === 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        NavigationPath.resources,
+        GetUrlSearchParam(item)
+      )
+    }
+    case 'policy': {
+      if (
+        item.apigroup === 'policy.open-cluster-management.io' &&
+        !item.label?.includes('policy.open-cluster-management.io/root-policy')
+      ) {
+        const path = generatePath(NavigationPath.policyDetails, { name: item.name, namespace: item.namespace })
+        return item.cluster === 'local-cluster' ? generateLink('internal', path) : generateLink('external', path)
+      }
+      return generateLink(
+        item.managedHub !== 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        NavigationPath.resources,
+        GetUrlSearchParam(item)
+      )
+    }
+    case 'policyreport': {
+      const path = generatePath(NavigationPath.clusterOverview, { name: item.namespace, namespace: item.namespace })
+      return generateLink(
+        item.managedHub === 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        path,
+        `?${encodeURIComponent('showClusterIssues=true')}`
+      )
+    }
+    default: {
+      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
+      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
+      return item.managedHub !== 'global-hub' ? externalLink : searchLink
+    }
+  }
+}
+
+export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }) {
+  const { item, t } = props
+  const allClusters = useAllClusters(true)
+  if (item?.apiversion && item?.apigroup) {
     const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`.toLowerCase())
     const link = {
       pathname: generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace }),
       search: `?apiVersion=${apiversion}`,
     }
+    if (item.managedHub && item.cluster !== 'local-cluster') {
+      const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
+      const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
+      return (
+        <AcmButton
+          variant="link"
+          component="a"
+          target="_blank"
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
+          isInline={true}
+          href={`${hubUrl}${path}?apiVersion=${apiversion}`}
+        >
+          {t('View topology')}
+        </AcmButton>
+      )
+    }
     return <Link to={link}>{t('View topology')}</Link>
   }
-  return '-'
+  return <div>{'-'}</div>
 }
 
 export function CreateExternalLink(item: any, t: TFunction) {
@@ -588,6 +685,10 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
         header: localizedColumnName,
         sort: 'name',
         cell: (item: any) => {
+          if (item.managedHub) {
+            // item exists in global search env
+            return <CreateGlobalSearchDetailsLink item={item} />
+          }
           return <CreateDetailsLink item={item} />
         },
       }

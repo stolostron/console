@@ -651,3 +651,19 @@ export function hasInformOnlyPolicies(items: Array<PolicyTableItem>): boolean {
 
   return true
 }
+
+export function getPolicySource(
+  policy: Policy,
+  helmReleases: HelmRelease[],
+  channels: Channel[],
+  subscriptions: Subscription[],
+  t: TFunction<string, undefined>
+): string | JSX.Element {
+  const isExternal = resolveExternalStatus(policy)
+  let source: string | JSX.Element = t('Local')
+  if (isExternal) {
+    const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+    source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
+  }
+  return source
+}

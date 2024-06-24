@@ -16,78 +16,49 @@ import { useEffect, useMemo, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+
 import {
-  AcmAlert,
   AcmDescriptionList,
   AcmEmptyState,
   AcmTable,
   AcmTablePaginationContextProvider,
   compareStrings,
 } from '../../../../ui-components'
+import { DiffModal } from '../../components/DiffModal'
 
-export function PolicyTemplateDetails(props: {
-  clusterName: string
-  apiGroup: string
-  apiVersion: string
-  kind: string
-  templateName: string
-}) {
+export function PolicyTemplateDetails(
+  props: Readonly<{
+    clusterName: string
+    template: any
+  }>
+) {
   const { t } = useTranslation()
-  const { clusterName, apiGroup, apiVersion, kind, templateName } = props
-  const { managedClusterAddonsState, isGlobalHubState, settingsState } = useSharedAtoms()
-  const [template, setTemplate] = useState<any>()
+  const { clusterName, template } = props
+  const isCertPolicy = template?.kind === 'CertificatePolicy'
   const [relatedObjects, setRelatedObjects] = useState<any>()
-  const [templateError, setTemplateError] = useState<string>()
-  const [isExpanded, setIsExpanded] = useState<boolean>(true)
+  const [isExpanded, setIsExpanded] = useState<boolean>(isCertPolicy)
   const [editorHeight, setEditorHeight] = useState<number>(250)
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
 
-  let templateClusterName = clusterName
-  let templateNamespace = clusterName
+  const kind = template?.kind
 
-  // Determine if the policy framework is deployed in hosted mode. If so, the policy template needs to be retrieved
-  // from the hosting cluster instead of the managed cluster.
-  for (const addon of managedClusterAddOns) {
-    if (addon.metadata.namespace !== clusterName) {
-      continue
-    }
-
-    if (addon.metadata.name !== 'governance-policy-framework') {
-      continue
-    }
-
-    if (addon.metadata.annotations?.['addon.open-cluster-management.io/hosting-cluster-name']) {
-      templateClusterName = addon.metadata.annotations['addon.open-cluster-management.io/hosting-cluster-name']
-      // open-cluster-management-agent-addon is the default namespace but it shouldn't be used for hosted mode.
-      templateNamespace = addon.spec.installNamespace || 'open-cluster-management-agent-addon'
-    }
-
-    if (apiGroup.endsWith('gatekeeper.sh')) {
-      // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
-      templateNamespace = ''
-    }
-
-    break
-  }
-
-  function getRelatedObjects(resource: any, clusterName: string) {
-    if (resource?.status?.relatedObjects?.length) {
-      return resource.status.relatedObjects.map((obj: any) => {
+  useEffect(() => {
+    if (template?.status?.relatedObjects?.length) {
+      const relObjs = template.status.relatedObjects.map((obj: any) => {
         obj.cluster = clusterName
         return obj
       })
+
+      setRelatedObjects(relObjs)
+
+      return
     } else if (
       // Detect if this is a Gatekeeper constraint and is populated with audit results from a newer Gatekeeper. Older
-      // Gatekeeper installations don't set "group" and "version".
-      resource?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
-      resource?.status?.violations?.length &&
-      resource.status.violations[0].version !== undefined
+      // Gatekeeper installations don't set 'group' and 'version'.
+      template?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
+      template?.status?.violations?.length &&
+      template.status.violations[0].version !== undefined
     ) {
-      return resource.status.violations.map((violation: any) => {
+      const relObjs = template.status.violations.map((violation: any) => {
         return {
           cluster: clusterName,
           compliant: 'NonCompliant',
@@ -102,27 +73,14 @@ export function PolicyTemplateDetails(props: {
           reason: violation.message,
         }
       })
+
+      setRelatedObjects(relObjs)
+
+      return
     }
 
-    return []
-  }
-
-  useEffect(() => {
-    const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-    fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
-      .then((viewResponse) => {
-        if (viewResponse?.message) {
-          setTemplateError(viewResponse.message)
-        } else {
-          setTemplate(viewResponse.result)
-          setRelatedObjects(getRelatedObjects(viewResponse.result, clusterName))
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting resource: ', err)
-        setTemplateError(err)
-      })
-  }, [templateClusterName, templateNamespace, clusterName, kind, apiGroup, apiVersion, templateName])
+    setRelatedObjects([])
+  }, [clusterName, template])
 
   // Hook to get the height of the template details section so both details and editor sections are the same height
   /* istanbul ignore next */
@@ -139,7 +97,7 @@ export function PolicyTemplateDetails(props: {
   } else if (template?.status?.violations) {
     details = template?.status?.violations
   } else if (template?.status?.conditions) {
-    // Find the "Compliant" condition from the list of conditions
+    // Find the 'Compliant' condition from the list of conditions
     const cond = template.status.conditions.find((c: any) => c.type === 'Compliant')
     details = cond?.message || '-'
   }
@@ -215,9 +173,48 @@ export function PolicyTemplateDetails(props: {
             case 'noncompliant':
               compliant = (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                  <DiffModal
+                    diff={item.properties?.diff}
+                    kind={item.object?.kind}
+                    namespace={item.object?.metadata?.namespace}
+                    name={item.object?.metadata?.name}
+                  />
                 </div>
               )
+              break
+            case 'unknowncompliancy':
+              if (kind === 'OperatorPolicy') {
+                switch (item.object?.kind) {
+                  case 'Deployment':
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      </div>
+                    )
+                    break
+                  case 'CustomResourceDefinition':
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      </div>
+                    )
+                    break
+                  default:
+                    compliant = (
+                      <div>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                      </div>
+                    )
+                    break
+                }
+              } else {
+                compliant = (
+                  <div>
+                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  </div>
+                )
+              }
               break
             default:
               compliant = (
@@ -248,11 +245,7 @@ export function PolicyTemplateDetails(props: {
               metadata: { name, namespace = '' },
             },
           } = item
-          if (
-            (isGlobalHub && settings.globalSearchFeatureFlag === 'enabled') ||
-            reason === 'Resource not found but should exist' ||
-            reason === 'Resource not found as expected'
-          ) {
+          if (reason === 'Resource not found but should exist' || reason === 'Resource not found as expected') {
             return ''
           }
           if (cluster && kind && apiVersion && name && name != '-') {
@@ -271,16 +264,8 @@ export function PolicyTemplateDetails(props: {
         },
       },
     ],
-    [isGlobalHub, settings.globalSearchFeatureFlag, t]
+    [t, kind]
   )
-
-  if (templateError) {
-    return (
-      <PageSection style={{ paddingBottom: '0' }}>
-        <AcmAlert variant="danger" title={templateError} isInline noClose />
-      </PageSection>
-    )
-  }
 
   return (
     <div>
@@ -289,14 +274,15 @@ export function PolicyTemplateDetails(props: {
           <GridItem span={6}>
             <AcmDescriptionList
               id={'template-details-section'}
-              title={t('Template details')}
+              title={kind + ' ' + t('details')}
               leftItems={descriptionItems}
+              defaultOpen={isCertPolicy}
             />
           </GridItem>
           <GridItem span={6}>
             <Card isExpanded={isExpanded}>
-              <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
-                <CardTitle id="titleId">{t('Template yaml')}</CardTitle>
+              <CardHeader id={'template-yaml-section'} onExpand={() => setIsExpanded(!isExpanded)}>
+                <CardTitle id="titleId">{kind + ' ' + t('YAML')}</CardTitle>
               </CardHeader>
               <CardExpandableContent>
                 <YamlEditor resourceYAML={jsYaml.dump(template, { indent: 2 })} readOnly={true} height={editorHeight} />

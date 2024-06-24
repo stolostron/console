@@ -19,7 +19,6 @@ const clusterInfrastructureTypes = [
   Provider.kubevirt,
   Provider.vmware,
   Provider.openstack,
-  Provider.redhatvirtualization,
   HostInventoryInfrastructureType.CIMHypershift,
   HostInventoryInfrastructureType.CIM,
   HostInventoryInfrastructureType.AI,

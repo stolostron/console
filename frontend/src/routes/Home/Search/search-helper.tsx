@@ -3,8 +3,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { TFunction } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { NavigationPath } from '../../../NavigationPath'
+import { SearchAlertProps } from './components/SearchAlertGroup'
 import { DropdownSuggestionsProps } from './components/Searchbar'
 
+export const federatedErrorText = 'error sending federated request'
 export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
 
@@ -142,4 +146,41 @@ export const getSearchCompleteString = (searchQuery: string) => {
     return queryTags[queryTags.length - 1].replace(':', '').replace(operator[0], '')
   }
   return ''
+}
+
+export function setFederatedErrorAlert(
+  loading: boolean,
+  error: any,
+  data: any,
+  alerts: SearchAlertProps[],
+  addSearchAlert: (alert: SearchAlertProps) => void,
+  removeSearchAlert: (key: string) => void,
+  t: any
+) {
+  const federatedWarningKey = 'federated-error'
+  if (!loading && error && error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
+    !alerts.find((alert) => alert.key === federatedWarningKey) &&
+      addSearchAlert({
+        key: federatedWarningKey,
+        variant: 'warning',
+        title: t('One or more managed hubs are not reporting'),
+        children: (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {t(
+              'Resources from these managed hubs and managed clusters will be missing in search results. Resolve cluster issues to see all cluster resources.'
+            )}
+            <Link style={{ paddingTop: '0.25rem' }} to={NavigationPath.clusters}>
+              {t('View clusters')}
+            </Link>
+          </div>
+        ),
+      })
+  } else if (
+    !loading &&
+    !error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText)) &&
+    data &&
+    alerts.find((alert) => alert.key === federatedWarningKey)
+  ) {
+    removeSearchAlert(federatedWarningKey)
+  }
 }

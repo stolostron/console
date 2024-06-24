@@ -561,6 +561,10 @@ function OperatorPolicy() {
     (targetNamespace: string | undefined | null) => {
       // Handle when given a null value
       if (!targetNamespace) {
+        if (template?.objectDefinition?.spec?.operatorGroup?.name === 'default') {
+          delete template.objectDefinition.spec.operatorGroup.name
+        }
+
         if (template?.objectDefinition?.spec?.operatorGroup?.targetNamespaces) {
           // If the operator group only has targetNamespaces set, then remove the entire operatorGroup section from
           // the policy.
@@ -590,6 +594,10 @@ function OperatorPolicy() {
 
       if (!template.objectDefinition.spec?.operatorGroup) {
         template.objectDefinition.spec.operatorGroup = {}
+      }
+
+      if (!template.objectDefinition.spec.operatorGroup?.name) {
+        template.objectDefinition.spec.operatorGroup.name = 'default'
       }
 
       if (
@@ -673,20 +681,12 @@ function OperatorPolicy() {
               'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
             )}
             required
-            validation={validateKubernetesResourceName}
           />
           <WizTextInput
             path="objectDefinition.spec.subscription.channel"
             label={t('Channel')}
             labelHelp={t('operatorPolicy.channel.labelHelper')}
           />
-          <WizRadioGroup
-            path="objectDefinition.spec.subscription.installPlanApproval"
-            label={t('Install Plan Approval')}
-          >
-            <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
-            <Radio id="operator-policy-Manual" label={t('Manual')} value="Manual" />
-          </WizRadioGroup>
           <WizTextInput
             path="objectDefinition.spec.subscription.source"
             label={t('Source')}
@@ -708,6 +708,10 @@ function OperatorPolicy() {
           />
         </FormFieldGroupExpandable>
       </Form>
+      <WizRadioGroup path="objectDefinition.spec.upgradeApproval" label={t('Upgrade Approval')}>
+        <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
+        <Radio id="operator-policy-none" label={t('None')} value="None" />
+      </WizRadioGroup>
       <WizStringsInput
         id="operator-policy-versions"
         path={`objectDefinition.spec.versions`}
