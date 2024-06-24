@@ -24,11 +24,13 @@ import { LoginCredential } from './LoginCredentials'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { TFunction } from 'i18next'
 import { useContext } from 'react'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 export const importHostedControlPlaneCluster = (
   selectedHostedClusterResource: HostedClusterK8sResource,
   t: TFunction,
-  toastContext: IAlertContext
+  toastContext: IAlertContext,
+  isACMAvailable: boolean | undefined
 ) => {
   const hdName = selectedHostedClusterResource.metadata?.name
   const clusterName = hdName
@@ -73,7 +75,13 @@ export const importHostedControlPlaneCluster = (
         .promise.catch((err) => {
           // ignore conflict if KlusterletAddonConfig already exists
           if (!(err instanceof ResourceError && err.code === ResourceErrorCode.Conflict)) {
-            throw err
+            // ignore KlusterletAddonConfig not found for MCE only clusters
+            if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound && isACMAvailable) {
+              throw err
+            }
+            if (!(err instanceof ResourceError && err.code === ResourceErrorCode.NotFound)) {
+              throw err
+            }
           }
         })
         .then(() => mc)
@@ -88,6 +96,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const [hypershiftKubeAPI, error] = useHypershiftKubeconfig()
   const { cluster, managedCluster } = React.useContext(ClusterContext)
   const toastContext = useContext(AcmToastContext)
+  const { isACMAvailable } = useContext(PluginContext)
 
   const [credentials, setCredentials] = React.useState<LoginCredential>()
   const name = cluster?.kubeadmin
@@ -129,7 +138,9 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                 <AcmButton
                   variant="link"
                   style={{ paddingLeft: '0px' }}
-                  onClick={() => importHostedControlPlaneCluster(selectedHostedClusterResource, t, toastContext)}
+                  onClick={() =>
+                    importHostedControlPlaneCluster(selectedHostedClusterResource, t, toastContext, isACMAvailable)
+                  }
                   isDisabled={HostedClusterReadyStatus?.status !== 'True'}
                 >
                   {t('managed.importCluster')}
