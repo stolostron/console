@@ -30,13 +30,13 @@ DOWNLOAD_PATH="public/locales/download"
 for i in "${LANGUAGES[@]}"
 do
   COUNTER=0
-  CURRENT_PAGE=( $(memsource job list --project-id "$PROJECT_ID" --target-lang "$i" -f value --page-number 0 -c uid) )
+  CURRENT_PAGE=( $(memsource job list --project-id "$PROJECT_ID" --target-lang $([[ "$i" == "es" ]] && echo es_001 || echo "$i") -f value --page-number 0 -c uid) )
   until [ -z "$CURRENT_PAGE" ]
   do
     ((COUNTER=COUNTER+1))
     echo Downloading page "$CURRENT_PAGE"
     memsource job download --project-id "$PROJECT_ID" --output-dir "$DOWNLOAD_PATH" --job-id "${CURRENT_PAGE[@]}"
-    CURRENT_PAGE=$(memsource job list --project-id "$PROJECT_ID" --target-lang "$i" -f value --page-number "$COUNTER" -c uid | tr '\n' ' ')
+    CURRENT_PAGE=$(memsource job list --project-id "$PROJECT_ID" --target-lang $([[ "$i" == "es" ]] && echo es_001 || echo "$i") -f value --page-number "$COUNTER" -c uid | tr '\n' ' ')
   done
 done
 
