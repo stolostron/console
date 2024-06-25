@@ -4,6 +4,7 @@ import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ExtractRouteParams, useHistory, useRouteMatch } from 'react-router'
 import YAML from 'yaml'
+import set from 'lodash/set'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
@@ -12,7 +13,6 @@ import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import {
-  enforceCloudsYaml,
   validateAnsibleHost,
   validateAwsRegion,
   validateBaseDomain,
@@ -268,13 +268,23 @@ export function CredentialsForm(
   // user changes yaml, update cloud to first cloud in yaml
   useEffect(() => {
     try {
-      const yamlData = YAML.parse(cloudsYaml)
+      const yamlData = YAML.parse(cloudsYaml) as {
+        clouds: {
+          [cloud: string]: {
+            cacert?: string
+          }
+        }
+      }
       const clouds = Object.keys(yamlData?.clouds)
       if (clouds.length) {
         setOpenstackCloud(clouds[0])
+        if (osCABundle && !yamlData?.clouds[clouds[0]]?.cacert) {
+          set(yamlData, `clouds[${clouds[0]}].cacert`, '/etc/openstack-ca/ca.crt')
+          setOpenstackCloudsYaml(YAML.stringify(yamlData))
+        }
       }
     } catch (_e) {}
-  }, [cloudsYaml])
+  }, [cloudsYaml, osCABundle])
 
   // Disconnected
   const [clusterOSImage, setClusterOSImage] = useState(() => providerConnection?.stringData?.clusterOSImage ?? '')
@@ -403,7 +413,7 @@ export function CredentialsForm(
         stringData.additionalTrustBundle = additionalTrustBundle
         break
       case Provider.openstack:
-        stringData['clouds.yaml'] = enforceCloudsYaml(cloudsYaml, cloud, osCABundle)
+        stringData['clouds.yaml'] = cloudsYaml
         stringData.cloud = cloud
         stringData.os_ca_bundle = osCABundle
         stringData.baseDomain = baseDomain
