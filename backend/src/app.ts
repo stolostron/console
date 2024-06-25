@@ -99,8 +99,8 @@ export function start(): Promise<Http2Server | undefined> {
   loadSettings()
   if (eventsEnabled) {
     startWatching()
+    startAggregating()
   }
-  startAggregating()
   return startServer({ requestHandler })
 }
 

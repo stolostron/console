@@ -74,7 +74,9 @@ export function paginate(
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
-    if (data.length) {
+    let isPreProcessed = false // if false, we pass all data and frontend does the filter/search/sort
+    if (data.length > 500) {
+      isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
       if (filters) {
         items = filterItems(filters, items)
@@ -136,7 +138,7 @@ export function paginate(
       itemCount,
       filterCounts,
       emptyResult,
-      isPreProcessed: true,
+      isPreProcessed,
     }
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(results))

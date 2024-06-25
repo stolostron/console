@@ -499,10 +499,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
-  const isPreProcessed = resultView?.isPreProcessed
-  const filterCounts = resultView?.filterCounts
-  const isLoading = resultView?.loading
-  const isEmptyResult = resultView?.emptyResult
+  const { isPreProcessed, filterCounts, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
 
@@ -708,7 +705,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // send request to backend
   const filterSelectionsStr = JSON.stringify(filterSelections)
   useEffect(() => {
-    if (setRequestView) {
+    if (setRequestView && isPreProcessed) {
       setRequestView({
         page,
         perPage,
@@ -717,7 +714,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         sortBy: sort,
       })
     }
-  }, [filterSelectionsStr, internalSearch, page, perPage, setRequestView, sort])
+  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
 
   const { tableItems, totalCount } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -765,7 +762,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: resultView?.itemCount || tableItems.length }
+    return { tableItems, totalCount: (isPreProcessed && resultView?.itemCount) || tableItems.length }
   }, [items, isPreProcessed, resultView?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
 
   const { filtered, filteredCount } = useMemo<{
@@ -814,7 +811,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         sorted.reverse()
       }
     }
-    return { sorted, itemCount: resultView?.itemCount || sorted.length }
+    return { sorted, itemCount: (isPreProcessed && resultView?.itemCount) || sorted.length }
   }, [filtered, isPreProcessed, sort, resultView?.itemCount, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
@@ -1076,7 +1073,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems || isEmptyResult : false
+  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
   const translatedPaginationTitles = usePaginationTitles()
@@ -1178,7 +1175,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   titles={translatedPaginationTitles}
                   itemCount={itemCount}
                   perPage={perPage}
-                  page={resultView?.page || page}
+                  page={isPreProcessed ? resultView?.page : page}
                   variant={PaginationVariant.top}
                   onSetPage={(_event, page) => setPage(page)}
                   onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
@@ -1190,7 +1187,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </ToolbarContent>
         </Toolbar>
       )}
-      {!items || !rows || !filtered || !paged || isLoading ? (
+      {!items || !rows || !filtered || !paged || loading ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
           <EmptyState>
             <EmptyStateIcon variant="container" component={Spinner} />
@@ -1199,7 +1196,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             </Title>
           </EmptyState>
         </PageSection>
-      ) : items.length === 0 && !isEmptyResult ? (
+      ) : items.length === 0 && !emptyResult ? (
         props.emptyState && (
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
             {props.emptyState}
@@ -1273,7 +1270,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               titles={translatedPaginationTitles}
               itemCount={itemCount}
               perPage={perPage}
-              page={resultView?.page || page}
+              page={isPreProcessed ? resultView?.page : page}
               variant={PaginationVariant.bottom}
               onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
               onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}

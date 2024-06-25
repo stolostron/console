@@ -632,8 +632,6 @@ export default function ApplicationsOverview() {
           )
         },
         tooltip: t('Provides links to each of the resource repositories used by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
       },
       {
         header: t('Time window'),
