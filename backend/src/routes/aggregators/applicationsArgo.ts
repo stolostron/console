@@ -143,7 +143,7 @@ async function getPagedRemoteArgoApps(options: RequestOptions) {
   _query = structuredClone(query)
   _query.variables.input[0].filters.push({
     property: 'name',
-    values: ['s*', 't*', 'u*', 'l*', 'm*', 'c*', 'd*', 'b*', 'g*'],
+    values: ['s*', 't*', 'u*', 'l*', 'm*', 'c*', 'd*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
   })
   results = await getSearchResults(options, JSON.stringify(_query))
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -152,7 +152,7 @@ async function getPagedRemoteArgoApps(options: RequestOptions) {
   _query = structuredClone(query)
   _query.variables.input[0].filters.push({
     property: 'name',
-    values: ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*', 'j*', 'q*', 'x*'],
+    values: ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*', 'j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
   })
   results = await getSearchResults(options, JSON.stringify(_query))
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
