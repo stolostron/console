@@ -163,7 +163,7 @@ export function CreateClusterCatalog() {
       } else if (provider === Provider.hostinventory) {
         return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
       } else if (provider === Provider.nutanix) {
-        return hasClusterImageSetWithArch(clusterImageSets, 'x86_64').length
+        return hasClusterImageSetWithArch(clusterImageSets, ['x86_64']).length
           ? nextStep({
               pathname: NavigationPath.createDiscoverHost,
               search: 'nutanix=true',
@@ -209,7 +209,7 @@ export function CreateClusterCatalog() {
           card = {
             ...card,
             ...clusterImageSetsRequired(
-              hasClusterImageSetWithArch(clusterImageSets, 'x86_64'),
+              hasClusterImageSetWithArch(clusterImageSets, ['x86_64']),
               t,
               <>{t('Nutanix requires x86_64 release image. No other architecture is supported.')}</>
             ),
