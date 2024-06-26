@@ -5,7 +5,6 @@ import YAML from 'yaml'
 import { TFunction } from 'react-i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
-import set from 'lodash/set'
 
 import isCidr from 'is-cidr'
 import { awsRegions } from '../routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
@@ -128,29 +127,6 @@ export function validateBaseDomain(value: string, t: TFunction) {
     }
   }
   return undefined
-}
-
-// user provided ca but didn't add cacert key
-export function enforceCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string) {
-  if (yamlValue && cloudValue && osCABundle) {
-    try {
-      //ensure we have valid YAML
-      const yamlData = YAML.parse(yamlValue) as {
-        clouds: {
-          [cloud: string]: {
-            auth?: {
-              cacert?: string
-            }
-          }
-        }
-      }
-      if (!yamlData?.clouds[cloudValue]?.auth?.cacert) {
-        set(yamlData, `clouds[${cloudValue}].auth.cacert`, '/etc/openstack-ca/ca.crt')
-        return YAML.stringify(yamlData)
-      }
-    } catch (e) {}
-  }
-  return yamlValue
 }
 
 export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABundle: string, t: TFunction) {
