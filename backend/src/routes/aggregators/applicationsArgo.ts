@@ -61,9 +61,9 @@ interface IArgoAppRemoteResource {
 
 export async function getArgoApps() {
   const argoAppSet = new Set<string>()
-  const localApps = getLocalArgoApps(argoAppSet)
-  const remoteApps = await getRemoteArgoApps(argoAppSet)
-  return { argoApps: localApps.concat(remoteApps), argoAppSet }
+  const localArgoApps = getLocalArgoApps(argoAppSet)
+  const remoteArgoApps = await getRemoteArgoApps(argoAppSet)
+  return { localArgoApps, remoteArgoApps, argoAppSet }
 }
 
 function getLocalArgoApps(argoAppSet: Set<string>) {

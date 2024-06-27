@@ -118,7 +118,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
     }
   } else if (resource.apiVersion === ArgoApplicationApiVersion) {
     if (resource.kind === ArgoApplicationKind) {
-      return t('Discovered')
+      return t('Argo CD')
     } else if (resource.kind === ApplicationSetKind) {
       return t('Application set')
     }

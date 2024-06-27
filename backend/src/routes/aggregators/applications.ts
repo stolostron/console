@@ -48,28 +48,32 @@ interface ISubscription extends IResource {
 
 export async function aggregateApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
   // ACM Apps
-  const acmApps = getKubeResources('Application', 'app.k8s.io/v1beta1')
+  const localSubscriptionApps = getKubeResources('Application', 'app.k8s.io/v1beta1')
 
   // Argo Apps
-  const { argoApps, argoAppSet } = await getArgoApps()
+  const { localArgoApps, remoteArgoApps, argoAppSet } = await getArgoApps()
 
   // Argo AppSets
-  const argoAppSets = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
+  const localArgoAppSets = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
 
   // OCP Apps
-  const ocpApps = await getOCPApps(argoAppSet)
+  const { localOCPApps, remoteOCPApps } = await getOCPApps(argoAppSet)
 
   const filterCounts: FilterCounts = {}
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
-  const allApps = acmApps
-    .concat(argoAppSets)
-    .concat(argoApps)
-    .concat(ocpApps)
+  const locals = localSubscriptionApps
+    .concat(localArgoApps)
+    .concat(localArgoAppSets)
+    .concat(localOCPApps)
+    .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions))
+  const remotes = remoteArgoApps
+    .concat(remoteOCPApps)
     .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions))
   aggregatedCache[key] = {
     filterCounts,
-    data: allApps,
+    locals,
+    remotes,
   }
 }
 

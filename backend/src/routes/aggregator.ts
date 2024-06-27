@@ -5,7 +5,11 @@ import { getAuthenticatedToken } from '../lib/token'
 import { FilterCounts, ITransformedResource, paginate } from '../lib/pagination'
 import { aggregateApplications, filterApplications } from './aggregators/applications'
 
-export type AggregateCache = { data: ITransformedResource[]; filterCounts: FilterCounts }
+export type AggregateCache = {
+  locals: ITransformedResource[]
+  remotes: ITransformedResource[]
+  filterCounts: FilterCounts
+}
 export type AggregatedCacheType = {
   [type: string]: AggregateCache
 }

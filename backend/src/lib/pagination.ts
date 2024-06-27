@@ -4,7 +4,7 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
-import { isAuth } from '../routes/events'
+import { getAuthorizedLocalResources, getAuthorizedRemoteResources } from '../routes/events'
 import { AggregateCache } from '../routes/aggregator'
 
 export type FilterSelections = {
@@ -64,18 +64,22 @@ export function paginate(
   req.on('data', (chuck: string) => {
     chucks.push(chuck)
   })
-  req.on('end', () => {
+  req.on('end', async () => {
     const body = chucks.join()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { page, perPage, search, sortBy, filters } = JSON.parse(body) as IRequestListView
 
-    const { data, filterCounts } = cache
-    let items = data
+    // filter based on rbac
+    // TODO to speed up local check, cache rbac check in ServerSideEvents and use here
+    const { locals, remotes, filterCounts } = cache
+    let items = (await getAuthorizedLocalResources(locals, token)) as unknown as ITransformedResource[]
+    items = items.concat(await getAuthorizedRemoteResources(remotes, token)) as unknown as ITransformedResource[]
+
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
-    let isPreProcessed = false // if false, we pass all data and frontend does the filter/search/sort
-    if (data.length > 500) {
+    let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
+    if (itemCount > 500) {
       isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
       if (filters) {
@@ -98,9 +102,6 @@ export function paginate(
         })
         items = fuse.search({ search }).map((result) => result.item)
       }
-
-      // authorize
-      items = items.filter((item) => isAuth(item, token))
 
       // sort
       if (sortBy && sortBy.index >= 0) {

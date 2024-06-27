@@ -47,13 +47,40 @@ export function getKubeResources(kind: string, apiVersion: string) {
   })
 }
 
-export async function isAuth(resource: IResource, token: string): Promise<boolean> {
-  let allowed = await canListClusterScopedKind(resource, token)
-  if (allowed) return true
-  allowed = await canListNamespacedScopedKind(resource, token)
-  if (allowed) return true
-  allowed = await canGetResource(resource, token)
-  return allowed
+export async function getAuthorizedLocalResources(resources: IResource[], token: string): Promise<IResource[]> {
+  const authorized: IResource[] = []
+  const queue = resources.map((resource) => {
+    return canListResources(token, resource)
+      .then((allowResource) => (allowResource ? resource : undefined))
+      .catch((err: unknown) => undefined) as Promise<IResource>
+  })
+  while (queue.length) {
+    const resource = await queue.shift()
+    if (resource) {
+      authorized.push(resource)
+    }
+  }
+  return authorized
+}
+
+export async function getAuthorizedRemoteResources(resources: IResource[], token: string): Promise<IResource[]> {
+  if (
+    await canAccess(
+      { kind: 'ManagedClusterView', apiVersion: 'view.open-cluster-management.io/v1beta1' },
+      'create',
+      token
+    )
+  ) {
+    return resources
+  }
+  return []
+}
+
+function canListResources(token: string, resource: IResource): Promise<boolean> {
+  return canListClusterScopedKind(resource, token).then((allowed) => {
+    if (allowed) return true
+    return canListNamespacedScopedKind(resource, token)
+  })
 }
 
 export const resourceCache: {
@@ -581,7 +608,7 @@ function canGetResource(resource: IResource, token: string): Promise<boolean> {
 
 function canAccess(
   resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  verb: 'get' | 'list',
+  verb: 'get' | 'list' | 'create',
   token: string
 ): Promise<boolean> {
   // TODO make sure old cache items get cleaned up

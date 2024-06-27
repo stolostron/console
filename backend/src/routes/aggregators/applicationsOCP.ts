@@ -81,7 +81,8 @@ export async function getOCPApps(argAppSet: Set<string>) {
     }
   }
 
-  const apps: IResource[] = []
+  const localOCPApps: IResource[] = []
+  const remoteOCPApps: IResource[] = []
   Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
     let labelIdx
     let i
@@ -96,6 +97,7 @@ export async function getOCPApps(argAppSet: Set<string>) {
     const semicolon = value.label?.indexOf(';', labelIdx)
     const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
     const resourceName = value.name
+    const apps = value.cluster === 'local-cluster' ? localOCPApps : remoteOCPApps
     apps.push({
       apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
       kind: value.kind,
@@ -112,7 +114,7 @@ export async function getOCPApps(argAppSet: Set<string>) {
     } as unknown as IResource)
   })
 
-  return apps
+  return { localOCPApps, remoteOCPApps }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
