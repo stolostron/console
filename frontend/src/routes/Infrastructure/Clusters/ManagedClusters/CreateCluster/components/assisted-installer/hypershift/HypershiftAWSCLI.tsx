@@ -30,9 +30,9 @@ export function HypershiftAWSCLI() {
 export REGION="us-east-1"
 export CLUSTER_NAME="example"
 export STS_CREDS="example-sts-creds-json"  # JSON file from step 2
-export NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE
+export NAMESPACE="example-namespace"
 export ROLE_ARN="example-role-arn" # Role ARN from step 3
-export PULL_SECRET="example-pull-secret-file" # Pull secret file path
+export PULL_SECRET="example-pull-secret-file" # Pull secret file path from step 4
 
 hcp create cluster aws \\
   --name $CLUSTER_NAME \\
@@ -79,10 +79,23 @@ hcp create cluster aws \\
       title: t('Create AWS Identity and Access Management (IAM) role'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>{t('Create AWS IAM role.')}</Text>
+          <Text component={TextVariants.p}>{t('This creates a AWS IAM role.')}</Text>
           <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_HOSTED_AWS} target="_blank">
             {t('Follow documentation for more information.')}
           </Text>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create Red Hat OpenShift Container Platform pull secret'),
+      content: (
+        <Fragment>
+          <Text component={TextVariants.p}>
+            {t('This creates a Red Hat OpenShift Container Platform pull secret.')}
+          </Text>
+          <a href={'https://console.redhat.com/openshift/install/pull-secret'} target="_blank" rel="noreferrer">
+            {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
+          </a>
         </Fragment>
       ),
     },
