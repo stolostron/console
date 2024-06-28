@@ -629,7 +629,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
-        keys: columns
+        keys: selectedSortedCols
           .map((column, i) => (column.search ? `column-${i}` : undefined))
           .filter((value) => value !== undefined) as string[],
         // TODO use FuseOptionKeyObject to allow for weights
@@ -639,7 +639,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, internalSearch, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, internalSearch, tableItems, totalCount, selectedSortedCols])
 
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
