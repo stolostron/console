@@ -111,12 +111,12 @@ export function paginate(
         if (sortBy.direction === 'desc') {
           items = items.reverse()
         }
+      }
 
-        // adjust page if now past end of items
-        const start = (page - 1) * perPage
-        if (start >= items.length) {
-          rpage = Math.max(1, Math.ceil(items.length / perPage))
-        }
+      // adjust page if now past end of items
+      const start = (page - 1) * perPage
+      if (start >= items.length) {
+        rpage = Math.max(1, Math.ceil(items.length / perPage))
       }
 
       // if item count is 0 it's then search/filter returned no results

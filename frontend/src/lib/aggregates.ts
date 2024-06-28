@@ -67,7 +67,7 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
 
   const response = { ...(data?.[0] ?? defaultResponse) }
   return {
-    page: requestedView.page,
+    page: response.page,
     loading,
     items: response.items,
     itemCount: response.itemCount,
