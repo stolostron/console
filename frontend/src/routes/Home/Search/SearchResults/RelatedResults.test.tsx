@@ -6,9 +6,8 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
 import { useState } from 'react'
-import { Router } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
@@ -65,11 +64,11 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
@@ -135,11 +134,11 @@ describe('RelatedResults', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
@@ -209,11 +208,11 @@ describe('RelatedResults', () => {
 
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes

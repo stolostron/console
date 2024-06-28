@@ -18,7 +18,7 @@ import {
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -81,7 +81,9 @@ function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] 
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.addAnsibleAutomation]}>
-        <Route component={(props: any) => <AnsibleAutomationsFormPage {...props} />} />
+        <Routes>
+          <Route path={NavigationPath.addAnsibleAutomation} element={<AnsibleAutomationsFormPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

@@ -8,7 +8,7 @@ import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { generatePath, Link, useParams } from 'react-router-dom'
+import { Link, useParams, generatePath } from 'react-router-dom-v5-compat'
 
 export interface ITimeWindowLabelsProps {
   subName: string
@@ -20,7 +20,8 @@ export interface ITimeWindowLabelsProps {
 }
 
 export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
-  const params: { namespace?: string; name?: string } = useParams()
+  const { name = '', namespace = '' } = useParams()
+  const params = { name, namespace }
   const { t } = useTranslation()
   const notSelectedLabel = t('Not selected')
 

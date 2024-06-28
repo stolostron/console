@@ -2,12 +2,13 @@
 
 import { Cluster, ClusterStatus, createDownloadFile } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { DownloadConfigurationDropdown } from './DownloadConfigurationDropdown'
+import { clickByText } from '../../../../../lib/test-util'
 
-jest.mock('../../../../../lib/utils', () => ({
+jest.mock('../../../../../resources/utils', () => ({
+  __esModule: true,
+  ...jest.requireActual('../../../../../resources/utils'),
   createDownloadFile: jest.fn(),
 }))
 
@@ -91,58 +92,38 @@ const mockKubeconfig = {
   type: 'Opaque',
 }
 
+function Component({ cluster }: { cluster: Cluster }) {
+  return <DownloadConfigurationDropdown cluster={cluster} canGetSecret={true} />
+}
+
 describe('DownloadConfigurationDropdown', () => {
   test('renders', () => {
-    render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <DownloadConfigurationDropdown canGetSecret={true} />
-      </ClusterContext.Provider>
-    )
+    render(<Component cluster={mockCluster} />)
     expect(screen.getByTestId('download-configuration')).toBeInTheDocument()
   })
   test('can download the cluster install-config', async () => {
     nockGet(mockInstallConfig)
-    render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <DownloadConfigurationDropdown canGetSecret={true} />
-      </ClusterContext.Provider>
-    )
-    userEvent.click(screen.getByTestId('download-configuration'))
-    await waitFor(() => screen.getByTestId('install-config.yaml'))
-    userEvent.click(screen.getByTestId('install-config.yaml'))
+    nockIgnoreApiPaths()
+    render(<Component cluster={mockCluster} />)
+    await clickByText('Download configuration')
+    await clickByText('install-config')
     await waitFor(() => expect(createDownloadFile).toHaveBeenCalled())
   })
   test('can download the cluster kubeconfig', async () => {
     nockGet(mockKubeconfig)
-    render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <DownloadConfigurationDropdown canGetSecret={true} />
-      </ClusterContext.Provider>
-    )
-    userEvent.click(screen.getByTestId('download-configuration'))
-    await waitFor(() => screen.getByTestId('kubeconfig'))
-    userEvent.click(screen.getByTestId('kubeconfig'))
+    nockIgnoreApiPaths()
+    render(<Component cluster={mockCluster} />)
+    await clickByText('Download configuration')
+    await clickByText('kubeconfig')
     await waitFor(() => expect(createDownloadFile).toHaveBeenCalled())
-  })
-  test('renders null when secrets are not available', () => {
-    render(
-      <ClusterContext.Provider value={{ cluster: undefined, addons: undefined }}>
-        <DownloadConfigurationDropdown canGetSecret={true} />
-      </ClusterContext.Provider>
-    )
-    expect(screen.queryByTestId('download-configuration')).toBeNull()
   })
   test('handles error case', async () => {
     console.error = jest.fn()
     nockGet(mockKubeconfig, mockBadRequestStatus)
-    render(
-      <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-        <DownloadConfigurationDropdown canGetSecret={true} />
-      </ClusterContext.Provider>
-    )
-    userEvent.click(screen.getByTestId('download-configuration'))
-    await waitFor(() => screen.getByTestId('kubeconfig'))
-    userEvent.click(screen.getByTestId('kubeconfig'))
+    nockIgnoreApiPaths()
+    render(<Component cluster={mockCluster} />)
+    await clickByText('Download configuration')
+    await clickByText('kubeconfig')
     await waitFor(() => expect(console.error).toHaveBeenCalled())
   })
 })

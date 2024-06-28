@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom-v5-compat'
 import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CREDENTIALS_TYPE_PARAM, isCredentialsType } from './CredentialsType'
 import { CreateCredentialsCatalog } from './CreateCredentialsCatalog'

@@ -3,7 +3,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useParams, useNavigate, PathParam, useLocation, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -37,10 +37,9 @@ function getWizardSyncEditor() {
 
 export function CreatePolicyAutomation() {
   const { t } = useTranslation()
-  const params = useParams<{ namespace: string; name: string }>()
-  const { name, namespace } = params
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.createPolicyAutomation>>()
   const { configMapsState, secretsState, usePolicies } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = usePolicies()
   const secrets = useRecoilValue(secretsState)
   const configMaps = useRecoilValue(configMapsState)
@@ -62,6 +61,8 @@ export function CreatePolicyAutomation() {
   )
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const { state } = useLocation()
+  const destination = state?.from ?? NavigationPath.policies
 
   return (
     <PolicyAutomationWizard
@@ -72,7 +73,7 @@ export function CreatePolicyAutomation() {
         { text: t('Policies'), to: NavigationPath.policies },
         {
           text: name,
-          to: NavigationPath.policyDetails.replace(':namespace', namespace).replace(':name', name),
+          to: generatePath(NavigationPath.policyDetails, { namespace, name }),
         },
         { text: t('Create policy automation') },
       ]}
@@ -94,9 +95,9 @@ export function CreatePolicyAutomation() {
       }}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.policies)
+        navigate(destination)
       }}
-      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t)}
+      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)}
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

@@ -17,7 +17,6 @@ import {
   NamespaceApiVersion,
 } from '../../../../../resources'
 import { AcmAlert, AcmButton, AcmToastContext, IAlertContext } from '../../../../../ui-components'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/HypershiftKubeAPI'
 import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
@@ -25,6 +24,7 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { TFunction } from 'i18next'
 import { useContext } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 export const importHostedControlPlaneCluster = (
   selectedHostedClusterResource: HostedClusterK8sResource,
@@ -94,7 +94,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const { selectedHostedClusterResource } = props
   const { t } = useTranslation()
   const [hypershiftKubeAPI, error] = useHypershiftKubeconfig()
-  const { cluster, managedCluster } = React.useContext(ClusterContext)
+  const { cluster, managedCluster } = useClusterDetailsContext()
   const toastContext = useContext(AcmToastContext)
   const { isACMAvailable } = useContext(PluginContext)
 

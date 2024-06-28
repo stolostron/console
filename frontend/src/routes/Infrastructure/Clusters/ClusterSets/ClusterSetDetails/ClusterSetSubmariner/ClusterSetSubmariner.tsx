@@ -24,7 +24,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
@@ -32,17 +32,19 @@ import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { canUser, rbacCreate, rbacDelete, rbacGet, rbacPatch } from '../../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import {
   BrokerDefinition,
   defaultBrokerName,
+  isGlobalClusterSet,
   ManagedClusterAddOn,
   ManagedClusterSetDefinition,
   ResourceErrorCode,
   submarinerBrokerNamespaceAnnotation,
 } from '../../../../../../resources'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
+import { PluginContext } from '../../../../../../lib/PluginContext'
 
 type SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'
 const SubmarinerGatewayNodesLabeled: SubmarinerGatewayNodesLabeledType = 'SubmarinerGatewayNodesLabeled'
@@ -90,10 +92,10 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 
 export function ClusterSetSubmarinerPageContent() {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { submarinerConfigsState } = useSharedAtoms()
   const submarinerConfigs = useRecoilValue(submarinerConfigsState)
-  const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
+  const { clusterSet, clusters, submarinerAddons } = useClusterSetDetailsContext()
   const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterAddOn> | { open: false }>({
     open: false,
@@ -101,6 +103,7 @@ export function ClusterSetSubmarinerPageContent() {
   const [editSubmarinerConfigModalProps, setEditSubmarinerConfigModalProps] = useState<EditSubmarinerConfigModalProps>(
     {}
   )
+  const { isSubmarinerAvailable } = useContext(PluginContext)
 
   function keyFn(mca: ManagedClusterAddOn) {
     return mca.metadata.namespace!
@@ -218,6 +221,12 @@ export function ClusterSetSubmarinerPageContent() {
       },
     },
   ]
+
+  if (!isSubmarinerAvailable || isGlobalClusterSet(clusterSet)) {
+    return (
+      <SubRoutesRedirect matchPath={NavigationPath.clusterSetDetails} targetPath={NavigationPath.clusterSetOverview} />
+    )
+  }
 
   return (
     <AcmPageContent id="clusters">
@@ -362,7 +371,9 @@ export function ClusterSetSubmarinerPageContent() {
                   id: 'install-submariner',
                   title: t('managed.clusterSets.submariner.addons.install'),
                   click: () =>
-                    history.push(NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)),
+                    navigate(
+                      generatePath(NavigationPath.clusterSetSubmarinerInstall, { id: clusterSet?.metadata.name! })
+                    ),
                   variant: ButtonVariant.primary,
                   isDisabled: !canInstallSubmarinerAddons,
                 },
@@ -392,7 +403,7 @@ export function ClusterSetSubmarinerPageContent() {
                     clusters!.length === 0 ? (
                       <RbacButton
                         component={Link}
-                        to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                        to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
                         variant="primary"
                         rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
                       >
@@ -402,7 +413,9 @@ export function ClusterSetSubmarinerPageContent() {
                       <RbacButton
                         id="install-submariner"
                         component={Link}
-                        to={NavigationPath.clusterSetSubmarinerInstall.replace(':id', clusterSet?.metadata.name!)}
+                        to={generatePath(NavigationPath.clusterSetSubmarinerInstall, {
+                          id: clusterSet?.metadata.name!,
+                        })}
                         variant="primary"
                         rbac={[
                           rbacCreate(

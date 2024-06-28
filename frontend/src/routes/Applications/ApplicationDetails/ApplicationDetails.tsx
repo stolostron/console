@@ -12,10 +12,19 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useParams,
+  useNavigate,
+  generatePath,
+  useOutletContext,
+  Outlet,
+} from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -49,8 +58,6 @@ import {
   isResourceTypeOf,
 } from '../helpers/resource-helper'
 import { getAppSetApps } from '../Overview'
-import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
-import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
@@ -86,6 +93,15 @@ export type ApplicationDataType = {
   statuses?: any
 }
 
+export type ApplicationDetailsContext = {
+  applicationData?: ApplicationDataType
+  channelControl: {
+    allChannels: string[]
+    activeChannel: string | undefined
+    setActiveChannel: (channel: string) => void
+  }
+}
+
 function searchError(completeError: ApolloError | undefined, t: TFunction) {
   if (completeError && completeError.message.includes('not enabled')) {
     return (
@@ -100,8 +116,10 @@ function searchError(completeError: ApolloError | undefined, t: TFunction) {
   }
 }
 
-export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
-  const location = useLocation()
+export default function ApplicationDetailsPage() {
+  const { search } = useLocation()
+  const { name = '', namespace = '' } = useParams()
+
   const { t } = useTranslation()
   const {
     ansibleJobState,
@@ -132,7 +150,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
   const { acmExtensions } = useContext(PluginContext)
 
   const lastRefreshRef = useRef<any>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
   const isAppSet = applicationData?.application?.isAppSet
   const isOCPApp = applicationData?.application?.isOCPApp
@@ -209,7 +227,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                   apiversion: apiversion as string,
                 },
               })
-          history.push(searchLink)
+          navigate(searchLink)
         }
       },
     },
@@ -222,13 +240,13 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
       text: t('Edit application'),
       click: () => {
         if (isAppSet) {
-          history.push(
+          navigate(
             NavigationPath.editApplicationArgo
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)
           )
         } else {
-          history.push(
+          navigate(
             NavigationPath.editApplicationSubscription
               .replace(namespaceString, selectedApp.metadata?.namespace)
               .replace(nameString, selectedApp.metadata?.name)
@@ -330,7 +348,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     return () => canDeleteApplicationSetPromise.abort()
   }, [])
 
-  const urlParams = location.search ? decodeURIComponent(location.search).substring(1).split('&') : []
+  const urlParams = search ? decodeURIComponent(search).substring(1).split('&') : []
   let apiVersion: string | undefined
   let cluster: string | undefined
   urlParams.forEach((param) => {
@@ -362,8 +380,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
 
           // get application object from recoil states
           const application = await getApplication(
-            match.params.namespace,
-            match.params.name,
+            namespace,
+            name,
             activeChannel,
             recoilStates,
             cluster,
@@ -419,15 +437,22 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     )
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    waitForApplication,
-    activeChannel,
-    apiVersion,
-    cluster,
-    match.params.name,
-    match.params.namespace,
-    getRecoilStates,
-  ])
+  }, [waitForApplication, activeChannel, apiVersion, cluster, name, namespace, getRecoilStates])
+
+  const overviewPath = generatePath(NavigationPath.applicationOverview, { name, namespace })
+  const topologyPath = generatePath(NavigationPath.applicationTopology, { name, namespace })
+
+  const applicationDetailsContext = useMemo<ApplicationDetailsContext>(
+    () => ({
+      applicationData,
+      channelControl: {
+        allChannels,
+        activeChannel,
+        setActiveChannel,
+      },
+    }),
+    [activeChannel, allChannels, applicationData]
+  )
 
   return (
     <AcmPage
@@ -436,46 +461,16 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         <AcmPageHeader
           breadcrumb={[
             { text: t('Applications'), to: NavigationPath.applications },
-            { text: match.params.name, to: '' },
+            { text: name, to: '' },
           ]}
-          title={match.params.name}
+          title={name}
           navigation={
             <AcmSecondaryNav>
-              <AcmSecondaryNavItem
-                isActive={
-                  location.pathname ===
-                  NavigationPath.applicationOverview
-                    .replace(namespaceString, match.params.namespace)
-                    .replace(nameString, match.params.name)
-                }
-              >
-                <Link
-                  to={
-                    NavigationPath.applicationOverview
-                      .replace(namespaceString, match.params.namespace)
-                      .replace(nameString, match.params.name) + location.search
-                  }
-                >
-                  {t('Overview')}
-                </Link>
+              <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
+                <Link to={{ pathname: overviewPath, search }}>{t('Overview')}</Link>
               </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem
-                isActive={
-                  location.pathname ===
-                  NavigationPath.applicationTopology
-                    .replace(namespaceString, match.params.namespace)
-                    .replace(nameString, match.params.name)
-                }
-              >
-                <Link
-                  to={
-                    NavigationPath.applicationTopology
-                      .replace(namespaceString, match.params.namespace)
-                      .replace(nameString, match.params.name) + location.search
-                  }
-                >
-                  {t('Topology')}
-                </Link>
+              <AcmSecondaryNavItem isActive={location.pathname === topologyPath}>
+                <Link to={{ pathname: topologyPath, search }}>{t('Topology')}</Link>
               </AcmSecondaryNavItem>
             </AcmSecondaryNav>
           }
@@ -510,33 +505,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
           <DeleteResourceModal {...modalProps} />
           {pluginModal}
           <Suspense fallback={<Fragment />}>
-            <Switch>
-              <Route exact path={NavigationPath.applicationOverview}>
-                <ApplicationOverviewPageContent applicationData={applicationData} />
-              </Route>
-              <Route exact path={NavigationPath.applicationTopology}>
-                <ApplicationTopologyPageContent
-                  applicationData={applicationData}
-                  channelControl={{
-                    allChannels,
-                    activeChannel,
-                    setActiveChannel,
-                  }}
-                />
-              </Route>
-              <Route exact path={NavigationPath.applicationDetails}>
-                <Redirect
-                  to={
-                    NavigationPath.applicationOverview
-                      .replace(namespaceString, match.params.namespace)
-                      .replace(nameString, match.params.name) + location.search
-                  }
-                />
-              </Route>
-            </Switch>
+            <Outlet context={applicationDetailsContext} />
           </Suspense>
         </Fragment>
       )}
     </AcmPage>
   )
+}
+
+export function useApplicationDetailsContext() {
+  return useOutletContext<ApplicationDetailsContext>()
 }

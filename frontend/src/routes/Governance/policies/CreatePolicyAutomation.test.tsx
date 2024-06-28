@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -27,9 +27,10 @@ import { ConfigMap, SubscriptionOperator } from '../../../resources'
 import { mockOpenShiftConsoleConfigMap } from '../../../lib/test-metadata'
 
 function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperator[]; configMaps?: ConfigMap[] }) {
-  const actualPath = NavigationPath.createPolicyAutomation
-    .replace(':namespace', mockPolicy[0].metadata.namespace as string)
-    .replace(':name', mockPolicy[0].metadata.name as string)
+  const actualPath = generatePath(NavigationPath.createPolicyAutomation, {
+    namespace: mockPolicy[0].metadata.namespace!,
+    name: mockPolicy[0].metadata.name!,
+  })
   return (
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -39,10 +40,9 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Route
-          path={NavigationPath.createPolicyAutomation}
-          component={(props: any) => <CreatePolicyAutomation {...props} />}
-        />
+        <Routes>
+          <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

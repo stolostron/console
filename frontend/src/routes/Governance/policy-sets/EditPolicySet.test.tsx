@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   managedClusterSetBindingsState,
@@ -30,9 +30,10 @@ import { waitForNocks } from '../../../lib/test-util'
 import userEvent from '@testing-library/user-event'
 
 function EditPolicySetTest() {
-  const actualPath = NavigationPath.editPolicySet
-    .replace(':namespace', mockPolicySets[0].metadata.namespace as string)
-    .replace(':name', mockPolicySets[0].metadata.name as string)
+  const actualPath = generatePath(NavigationPath.editPolicySet, {
+    namespace: mockPolicySets[0].metadata.namespace!,
+    name: mockPolicySets[0].metadata.name!,
+  })
   return (
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -47,9 +48,9 @@ function EditPolicySetTest() {
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Switch>
-          <Route path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.editPolicySet} element={<EditPolicySet />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

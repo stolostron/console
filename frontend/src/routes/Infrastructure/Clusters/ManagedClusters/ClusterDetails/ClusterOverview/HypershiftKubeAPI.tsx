@@ -4,10 +4,10 @@ import jsYaml from 'js-yaml'
 import { getResource } from '../../../../../../resources'
 import { AcmInlineCopy } from '../../../../../../ui-components'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 
 export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
-  const { hostedCluster } = React.useContext(ClusterContext)
+  const { hostedCluster } = useClusterDetailsContext()
   const [hypershiftKubeAPI, setHypershiftKubeAPI] = React.useState<string>()
   const [error, setError] = React.useState(false)
 

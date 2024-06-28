@@ -21,7 +21,7 @@ import {
   SecretKind,
 } from '../../../../../resources'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
@@ -256,9 +256,9 @@ describe('CreateClusterPool AWS', () => {
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createClusterPool}?${CLUSTER_POOL_INFRA_TYPE_PARAM}=AWS`]}>
-          <Route path={NavigationPath.createClusterPool}>
-            <CreateClusterPoolPage />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createClusterPool} element={<CreateClusterPoolPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

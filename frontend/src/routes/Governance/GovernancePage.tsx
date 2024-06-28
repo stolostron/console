@@ -2,13 +2,10 @@
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, ReactNode, Suspense, useState } from 'react'
-import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, useLocation, Outlet } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
-import GovernanceOverview from './overview/Overview'
-import PoliciesPage from './policies/Policies'
-import PolicySetsPage from './policy-sets/PolicySets'
 
 export default function GovernancePage() {
   const [actions, setActions] = useState<undefined | ReactNode>(undefined)
@@ -47,11 +44,7 @@ export default function GovernancePage() {
     >
       <PageContext.Provider value={{ actions, setActions }}>
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.governance} render={() => <GovernanceOverview />} />
-            <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
-            <Route exact path={NavigationPath.policies} render={() => <PoliciesPage />} />
-          </Switch>
+          <Outlet />
         </Suspense>
       </PageContext.Provider>
     </AcmPage>

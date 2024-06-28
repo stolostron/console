@@ -12,8 +12,8 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../resources'
-import { render, waitFor, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -34,6 +34,18 @@ import {
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import AnsibleAutomationsPage from './AnsibleAutomations'
+
+const mockedUsedNavigate = jest.fn()
+
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useLocation: () => mockedUsedNavigate,
+    //useNavigate: () => mockedUsedNavigate,
+  }
+})
 
 const mockAnsibleConnection1: ProviderConnection = {
   apiVersion: ProviderConnectionApiVersion,
@@ -135,7 +147,6 @@ const subscriptionOperator: SubscriptionOperator = {
 const clusterCurators = [clusterCurator1, clusterCurator2]
 const mockProviderConnections = [mockAnsibleConnection1, mockAnsibleConnection2, mockAnsibleConnection3]
 const mockSubscription = [subscriptionOperator]
-let testLocation: Location
 
 function TestIntegrationPage(props: {
   providerConnections: ProviderConnection[]
@@ -151,13 +162,9 @@ function TestIntegrationPage(props: {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
-        <Route
-          path={NavigationPath.ansibleAutomations}
-          render={(props: any) => {
-            testLocation = props.location
-            return <AnsibleAutomationsPage />
-          }}
-        />
+        <Routes>
+          <Route path={NavigationPath.ansibleAutomations} element={<AnsibleAutomationsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -171,13 +178,9 @@ function EmptyStateAutomationPage(props: { providerConnections: ProviderConnecti
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
-        <Route
-          path={NavigationPath.ansibleAutomations}
-          render={(props: any) => {
-            testLocation = props.location
-            return <AnsibleAutomationsPage />
-          }}
-        />
+        <Routes>
+          <Route path={NavigationPath.ansibleAutomations} element={<AnsibleAutomationsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -199,7 +202,6 @@ describe('Automations page', () => {
   test('should render the table with templates', async () => {
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator1.metadata!.name!)
-    await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.ansibleAutomations))
   })
 
   test('should be able to delete a template', async () => {

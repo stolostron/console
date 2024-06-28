@@ -4,7 +4,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
@@ -31,6 +31,7 @@ import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSide
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 import { usePropagatedPolicies } from '../../common/useCustom'
+import { usePolicyDetailsContext } from './PolicyDetailsPage'
 
 interface TableData {
   apiVersion: string
@@ -40,8 +41,8 @@ interface TableData {
   policy: Policy
 }
 
-export default function PolicyDetailsOverview(props: { policy: Policy }) {
-  const { policy } = props
+export default function PolicyDetailsOverview() {
+  const { policy } = usePolicyDetailsContext()
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const {
@@ -171,15 +172,15 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             isInline
             variant={ButtonVariant.link}
             component={Link}
-            to={{
-              pathname: NavigationPath.createPolicyAutomation
-                .replace(':namespace', policy.metadata.namespace as string)
-                .replace(':name', policy.metadata.name as string),
-              state: {
-                from: NavigationPath.policyDetails
-                  .replace(':namespace', policy.metadata.namespace as string)
-                  .replace(':name', policy.metadata.name as string),
-              },
+            to={generatePath(NavigationPath.createPolicyAutomation, {
+              namespace: policy.metadata.namespace!,
+              name: policy.metadata.name!,
+            })}
+            state={{
+              from: generatePath(NavigationPath.policyDetails, {
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name!,
+              }),
             }}
           >
             {t('Configure')}
@@ -351,9 +352,13 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                         return (
                           <span key={`${cluster}-link`}>
                             <Link
-                              to={`${NavigationPath.policyDetailsResults
-                                .replace(':namespace', policy.metadata.namespace!)
-                                .replace(':name', policy.metadata.name!)}?search=${cluster}`}
+                              to={{
+                                pathname: generatePath(NavigationPath.policyDetailsResults, {
+                                  namespace: policy.metadata.namespace!,
+                                  name: policy.metadata.name!,
+                                }),
+                                search: `?search=${cluster}`,
+                              }}
                             >
                               {cluster}
                               {index < clusterList[status].size - 1 && ', '}

@@ -1,19 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
-import { Fragment, lazy, Suspense } from 'react'
-import { Link, matchPath, Redirect, Route, Switch, useLocation, useRouteMatch } from 'react-router-dom'
+import { Link, Outlet, useMatch } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 
-const ApplicationsOverviewPage = lazy(() => import('./Overview'))
-const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
-
 export default function ApplicationsPage() {
   const { t } = useTranslation()
-  const location = useLocation()
-  const applicationsMatch = useRouteMatch()
-  const advancedMatch = matchPath(location.pathname, NavigationPath.advancedConfiguration)
+  const applicationsMatch = useMatch(NavigationPath.applications + '/*')
+  const applicationsMatchExact = applicationsMatch?.params['*'] === ''
+  const advancedMatch = useMatch(NavigationPath.advancedConfiguration + '/*')
+  const advancedMatchExact = advancedMatch?.params['*'] === ''
 
   return (
     <AcmPage
@@ -23,10 +20,10 @@ export default function ApplicationsPage() {
           title={t('Applications')}
           navigation={
             <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={applicationsMatch.isExact}>
+              <AcmSecondaryNavItem isActive={applicationsMatchExact}>
                 <Link to={NavigationPath.applications}>{t('Overview')}</Link>
               </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={!!advancedMatch?.isExact}>
+              <AcmSecondaryNavItem isActive={!!advancedMatchExact}>
                 <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
               </AcmSecondaryNavItem>
             </AcmSecondaryNav>
@@ -34,15 +31,7 @@ export default function ApplicationsPage() {
         />
       }
     >
-      <Suspense fallback={<Fragment />}>
-        <Switch>
-          <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
-          <Route exact path={NavigationPath.advancedConfiguration} component={AdvancedConfigurationPage} />
-          <Route path="*">
-            <Redirect to={NavigationPath.applications} />
-          </Route>
-        </Switch>
-      </Suspense>
+      <Outlet />
     </AcmPage>
   )
 }

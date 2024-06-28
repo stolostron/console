@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ButtonVariant,
   ExpandableSectionToggle,
@@ -20,7 +20,7 @@ import './HypershiftClusterInstallProgress.css'
 import { NodePool, NodePoolDefinition } from '../../../../../resources/node-pool'
 import { AcmButton } from '../../../../../ui-components'
 import { AddNodePoolModal } from './AddNodePoolModal'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
 import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
@@ -82,7 +82,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
   const nodePoolsProgressID = `${window.location.href}node-pools-progress`
   localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
   const [expanded, setExpanded] = useState(localStorage.getItem(nodePoolsProgressID) === 'show')
-  const { cluster, hostedCluster } = useContext(ClusterContext)
+  const { cluster, hostedCluster } = useClusterDetailsContext()
   const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
   const toggleAddNodepoolModal = useCallback(
     () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),

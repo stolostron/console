@@ -20,34 +20,23 @@ import {
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AgentAlerts,
-  AgentClusterInstallK8sResource,
   AgentK8sResource,
   BareMetalHostK8sResource,
   EditBMHModal,
   InfoAndTroubleshootingNotification,
   InfraEnvAgentTable,
-  InfraEnvK8sResource,
-  InfrastructureK8sResource,
-  NMStateK8sResource,
   getAgentsHostsNames,
 } from '@openshift-assisted/ui-lib/cim'
+import { useInfraEnvironmentDetailsContext } from './InfraEnvironmentDetailsPage'
 
-type HostsTabProps = {
-  infraEnv: InfraEnvK8sResource
-  infraAgents: AgentK8sResource[]
-  agentClusterInstalls: AgentClusterInstallK8sResource[]
-  bareMetalHosts: BareMetalHostK8sResource[]
-  infraNMStates?: NMStateK8sResource[]
-  infrastructure?: InfrastructureK8sResource
-}
-
-const HostsTab: React.FC<HostsTabProps> = ({
-  infraEnv,
-  infraAgents,
-  agentClusterInstalls,
-  bareMetalHosts,
-  infraNMStates = [],
-}) => {
+const HostsTab: React.FC = () => {
+  const {
+    infraEnv,
+    infraAgents,
+    agentClusterInstalls,
+    bareMetalHosts,
+    infraNMStates = [],
+  } = useInfraEnvironmentDetailsContext()
   const { agentMachinesState } = useSharedAtoms()
   const agentMachines = useRecoilValue(agentMachinesState)
   const [editBMH, setEditBMH] = useState<BareMetalHostK8sResource>()

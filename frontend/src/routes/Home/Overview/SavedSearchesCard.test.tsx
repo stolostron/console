@@ -3,8 +3,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../src/atoms'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
@@ -156,11 +155,11 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={[]}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={[]} />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -181,11 +180,11 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -211,11 +210,11 @@ describe('SavedSearchesCard', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={errorMock}>
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

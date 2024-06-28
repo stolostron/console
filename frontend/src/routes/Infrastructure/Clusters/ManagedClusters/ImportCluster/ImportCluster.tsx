@@ -21,7 +21,7 @@ import {
 } from '../../../../../ui-components'
 import { cloneDeep, groupBy, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
-import { generatePath, Link, useHistory } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -267,7 +267,7 @@ export default function ImportClusterPage() {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
   const { isACMAvailable } = useContext(PluginContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { cancel } = useBackCancelNavigation()
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
@@ -528,7 +528,7 @@ export default function ImportClusterPage() {
               autoClose: true,
             })
             setTimeout(() => {
-              history.push(
+              navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: state.clusterName,
                   namespace: UNKNOWN_NAMESPACE,

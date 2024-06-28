@@ -4,8 +4,8 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -13,6 +13,7 @@ import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
+import { usePolicyDetailsContext } from './PolicyDetailsPage'
 
 export interface ResultsTableData {
   templateName: string
@@ -28,10 +29,10 @@ export interface ResultsTableData {
   remediationAction: string
 }
 
-export default function PolicyDetailsResults(props: { policy: Policy }) {
+export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
-  const { policy } = props
+  const { policy } = usePolicyDetailsContext()
   const { namespacesState, policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
   const namespaces = useRecoilValue(namespacesState)
@@ -163,14 +164,15 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
           if (prunedMessage && policyName && policyNamespace && cluster && templateName && apiVersion && kind) {
             const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
-            const templateDetailURL = NavigationPath.policyTemplateDetails
-              .replace(':namespace', policyNamespace)
-              .replace(':name', policyName)
-              .replace(':clusterName', cluster)
-              .replace(':apiGroup/', apiGroup ? `${apiGroup}/` : '')
-              .replace(':apiVersion', version)
-              .replace(':kind', kind)
-              .replace(':templateName', templateName)
+            const templateDetailURL = generatePath(NavigationPath.policyTemplateDetails, {
+              namespace: policyNamespace,
+              name: policyName,
+              clusterName: cluster,
+              apiGroup,
+              apiVersion: version,
+              kind,
+              templateName,
+            })
             const templateLink = canCreatePolicy ? (
               templateDetailURL && (
                 <span>
@@ -218,11 +220,12 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
           const cluster = item?.cluster
           const templateName = item?.templateName
           if (policyName && policyNamespace && cluster && templateName) {
-            const statusHistoryURL = NavigationPath.policyDetailsHistory
-              .replace(':namespace', policyNamespace)
-              .replace(':name', policyName)
-              .replace(':clusterName', cluster)
-              .replace(':templateName', templateName)
+            const statusHistoryURL = generatePath(NavigationPath.policyDetailsHistory, {
+              namespace: policyNamespace,
+              name: policyName,
+              clusterName: cluster,
+              templateName,
+            })
             return <Link to={statusHistoryURL}>{t('View history')}</Link>
           }
           return '-'

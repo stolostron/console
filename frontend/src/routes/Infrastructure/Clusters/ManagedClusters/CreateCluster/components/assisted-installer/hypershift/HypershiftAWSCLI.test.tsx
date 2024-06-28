@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../../../../lib/test-metadata'
@@ -13,9 +13,9 @@ describe('HypershiftAWSCLI', () => {
     return (
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createAWSCLI]}>
-          <Route path={NavigationPath.createAWSCLI}>
-            <HypershiftAWSCLI />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createAWSCLI} element={<HypershiftAWSCLI />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

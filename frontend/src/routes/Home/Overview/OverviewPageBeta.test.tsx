@@ -2,8 +2,7 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -197,11 +196,11 @@ it('should render overview page with expected data', async () => {
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={savedSearchesMock}>
             <OverviewPageBeta selectedClusterLabels={{}} />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </QueryClientProvider>
     </RecoilRoot>
   )

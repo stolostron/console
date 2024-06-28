@@ -5,7 +5,7 @@ import Handlebars from 'handlebars'
 import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import MonacoEditor from 'react-monaco-editor'
-import { useHistory } from 'react-router'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import TemplateEditor from '../../../components/TemplateEditor'
 import { NavigationPath } from '../../../NavigationPath'
 import infraEnvTemplate from './infraenv-template.hbs'
@@ -34,7 +34,7 @@ const controlData = [
 const CreateInfraEnv: React.FC = () => {
   const template = Handlebars.compile(infraEnvTemplate)
   Handlebars.registerHelper('checkNtpSources', (enable, sources) => enable && sources?.length > 0)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { t: tEditor } = useTranslation()
   const i18n = (key: any, arg: any) => {
@@ -96,10 +96,11 @@ const CreateInfraEnv: React.FC = () => {
         }
       } else {
         setCreationStatus({ status: 'DONE', messages: [] })
-        history.push(
-          NavigationPath.infraEnvironmentOverview
-            .replace(':namespace', infraEnv.metadata.namespace)
-            .replace(':name', infraEnv.metadata.name)
+        navigate(
+          generatePath(NavigationPath.infraEnvironmentOverview, {
+            namespace: infraEnv.metadata.namespace,
+            name: infraEnv.metadata.name,
+          })
         )
       }
     }
@@ -130,7 +131,7 @@ const CreateInfraEnv: React.FC = () => {
               portals={Portals}
               createControl={{
                 createResource: createInfraEnv,
-                cancelCreate: () => history.push(NavigationPath.infraEnvironments),
+                cancelCreate: () => navigate(NavigationPath.infraEnvironments),
                 pauseCreate: () => {},
                 creationStatus: creationStatus?.status,
                 creationMsg: creationStatus?.messages,

@@ -35,7 +35,7 @@ import {
 } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   clusterCuratorsState,
@@ -585,9 +585,9 @@ describe('ImportCluster', () => {
         <AcmToastProvider>
           <AcmToastGroup />
           <MemoryRouter initialEntries={['/import-cluster']}>
-            <Route path="/import-cluster">
-              <ImportClusterPage />
-            </Route>
+            <Routes>
+              <Route path="/import-cluster" element={<ImportClusterPage />} />
+            </Routes>
           </MemoryRouter>
         </AcmToastProvider>
       </RecoilRoot>
@@ -850,12 +850,10 @@ describe('Import Discovered Cluster', () => {
         }}
       >
         <MemoryRouter>
-          <Route>
-            <DiscoveredClustersPage />
-          </Route>
-          <Route path={NavigationPath.importCluster}>
-            <ImportClusterPage />
-          </Route>
+          <Routes>
+            <Route path="/" element={<DiscoveredClustersPage />} />
+            <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

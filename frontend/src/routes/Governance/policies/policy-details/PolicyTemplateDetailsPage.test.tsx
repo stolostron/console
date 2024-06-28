@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, within } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
@@ -318,7 +318,6 @@ describe('Policy Template Details Page', () => {
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'policy.open-cluster-management.io/v1/ConfigurationPolicy/config-policy'
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
-
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -326,7 +325,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -421,7 +422,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -552,7 +555,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -593,7 +598,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -743,7 +750,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -791,7 +800,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -832,7 +843,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -862,7 +875,9 @@ describe('Policy Template Details Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[path]}>
-          <Route path={NavigationPath.policyTemplateDetails} render={() => <PolicyTemplateDetailsPage />} />
+          <Routes>
+            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

@@ -17,8 +17,8 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'
@@ -30,7 +30,7 @@ import { usePluginDataContextValue } from './lib/PluginDataContext'
 import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
-import { NavigationPath } from './NavigationPath'
+import { MatchType, NavigationPath, createRoutePathFunction } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
@@ -57,9 +57,10 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 interface IRoute {
   type: 'route'
-  route: NavigationPath
+  path: NavigationPath
+  match: MatchType
   title: string
-  component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
+  element: React.ReactNode
 }
 
 interface IRouteGroup {
@@ -144,80 +145,99 @@ function UserDropdown() {
   )
 }
 
-export default function App() {
-  const routes: (IRoute | IRouteGroup)[] = useMemo(
-    () => [
+const routes: (IRoute | IRouteGroup)[] = [
+  {
+    title: 'Home',
+    type: 'group',
+    routes: [
       {
-        title: 'Home',
-        type: 'group',
-        routes: [
-          {
-            title: 'Welcome',
-            type: 'route',
-            route: NavigationPath.welcome,
-            component: WelcomePage,
-          },
-          {
-            title: 'Overview',
-            type: 'route',
-            route: NavigationPath.overview,
-            component: OverviewPage,
-          },
-          {
-            title: 'Search',
-            type: 'route',
-            route: NavigationPath.search,
-            component: Search,
-          },
-        ],
-      },
-      {
-        title: 'Infrastructure',
-        type: 'group',
-        routes: [
-          {
-            title: 'Clusters',
-            type: 'route',
-            route: NavigationPath.clusters,
-            component: Clusters,
-          },
-          {
-            title: 'Automation',
-            type: 'route',
-            route: NavigationPath.ansibleAutomations,
-            component: Automations,
-          },
-          {
-            title: 'Host inventory',
-            type: 'route',
-            route: NavigationPath.infraEnvironments,
-            component: InfraEnvironments,
-          },
-        ],
-      },
-      {
-        title: 'Applications',
+        title: 'Welcome',
         type: 'route',
-        route: NavigationPath.applications,
-        component: Applications,
+        path: NavigationPath.welcome,
+        match: MatchType.Exact,
+        element: <WelcomePage />,
       },
       {
-        title: 'Governance',
+        title: 'Overview',
         type: 'route',
-        route: NavigationPath.governance,
-        component: Governance,
+        path: NavigationPath.overview,
+        match: MatchType.SubRoutes,
+        element: <OverviewPage />,
       },
-
       {
-        title: 'Credentials',
+        title: 'Search',
         type: 'route',
-        route: NavigationPath.credentials,
-        component: Credentials,
+        path: NavigationPath.search,
+        match: MatchType.SubRoutes,
+        element: <Search />,
       },
     ],
-    []
-  )
+  },
+  {
+    title: 'Infrastructure',
+    type: 'group',
+    routes: [
+      {
+        title: 'Clusters',
+        type: 'route',
+        path: NavigationPath.clusters,
+        match: MatchType.SubRoutes,
+        element: <Clusters />,
+      },
+      {
+        title: 'Automation',
+        type: 'route',
+        path: NavigationPath.ansibleAutomations,
+        match: MatchType.SubRoutes,
+        element: <Automations />,
+      },
+      {
+        title: 'Host inventory',
+        type: 'route',
+        path: NavigationPath.infraEnvironments,
+        match: MatchType.SubRoutes,
+        element: <InfraEnvironments />,
+      },
+    ],
+  },
+  {
+    title: 'Applications',
+    type: 'route',
+    path: NavigationPath.applications,
+    match: MatchType.SubRoutes,
+    element: <Applications />,
+  },
+  {
+    title: 'Governance',
+    type: 'route',
+    path: NavigationPath.governance,
+    match: MatchType.SubRoutes,
+    element: <Governance />,
+  },
 
+  {
+    title: 'Credentials',
+    type: 'route',
+    path: NavigationPath.credentials,
+    match: MatchType.SubRoutes,
+    element: <Credentials />,
+  },
+]
+
+const absolutePath = createRoutePathFunction(NavigationPath.emptyPath)
+
+function mapRoutes(routes: (IRoute | IRouteGroup)[]): ReactNode[] {
+  return routes.map((route) => {
+    if (route.type === 'group') {
+      return mapRoutes(route.routes)
+    } else {
+      const { title, path, match, element } = route
+      return <Route key={title} path={absolutePath(path, match)} element={element} />
+    }
+  })
+}
+
+export default function App() {
   // Enforce light mode for standalone
   useLayoutEffect(() => {
     if (process.env.NODE_ENV === 'production') {
@@ -226,6 +246,8 @@ export default function App() {
   }, [])
 
   const pluginDataContextValue = usePluginDataContextValue()
+
+  const mappedRoutes = useMemo(() => mapRoutes(routes), [])
 
   return (
     <PluginDataContextProvider value={pluginDataContextValue}>
@@ -242,27 +264,17 @@ export default function App() {
               <AcmToastGroup />
               <AcmTablePaginationContextProvider localStorageKey="clusters">
                 <Suspense fallback={<LoadingPage />}>
-                  <Switch>
-                    {routes.map((route) =>
-                      route.type === 'group' ? (
-                        route.routes.map((route) => (
-                          <Route key={route.title} path={route.route} component={route.component} />
-                        ))
-                      ) : (
-                        <Route key={route.title} path={route.route} component={route.component} />
-                      )
-                    )}
-                    <Route path="*">
-                      <Redirect to={NavigationPath.welcome} />
-                    </Route>
-                  </Switch>
+                  <Routes>
+                    {mappedRoutes}
+                    <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
+                  </Routes>
                 </Suspense>
               </AcmTablePaginationContextProvider>
             </AcmToastProvider>
           </LoadPluginData>
         </Page>
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
       </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" panelPosition="bottom" />
     </PluginDataContextProvider>
   )
 }
@@ -338,17 +350,17 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                   key={route.title}
                   title={route.title}
                   isExpanded
-                  isActive={!!route.routes.find((route) => location.pathname.startsWith(route.route))}
+                  isActive={!!route.routes.find((route) => location.pathname.startsWith(route.path))}
                 >
                   {route.routes.map((route) => (
-                    <NavItem key={route.route} isActive={location.pathname.startsWith(route.route)}>
-                      <Link to={route.route}>{route.title}</Link>
+                    <NavItem key={route.path} isActive={location.pathname.startsWith(route.path)}>
+                      <Link to={route.path}>{route.title}</Link>
                     </NavItem>
                   ))}
                 </NavExpandable>
               ) : (
-                <NavItem key={route.route} isActive={location.pathname.startsWith(route.route)}>
-                  <Link to={route.route}>{route.title}</Link>
+                <NavItem key={route.path} isActive={location.pathname.startsWith(route.path)}>
+                  <Link to={route.path}>{route.title}</Link>
                 </NavItem>
               )
             )}

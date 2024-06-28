@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../../../../lib/nock-util'
@@ -16,40 +16,45 @@ describe('DetailsForm', () => {
     return (
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-          <Route path={NavigationPath.createCluster}>
-            <DetailsForm
-              key={'key'}
-              control={{
-                active: {
-                  name: '',
-                  highAvailabilityMode: 'Full',
-                  openshiftVersion: '',
-                  pullSecret: '',
-                  baseDnsDomain: '',
-                  SNODisclaimer: false,
-                  useRedHatDnsService: true,
-                  enableDiskEncryptionOnMasters: false,
-                  enableDiskEncryptionOnWorkers: false,
-                  diskEncryptionMode: 'tpmv2',
-                  diskEncryptionTangServers: [],
-                  diskEncryption: {},
-                  cpuArchitecture: '',
-                  platform: 'baremetal',
-                },
-                step: {
-                  title: {
-                    isComplete: false,
-                  },
-                },
-              }}
-              controlProps={{
-                apiVersion: 'v1',
-                kind: 'Secret',
-                metadata: {},
-              }}
-              handleChange={handleChange}
+          <Routes>
+            <Route
+              path={NavigationPath.createCluster}
+              element={
+                <DetailsForm
+                  key={'key'}
+                  control={{
+                    active: {
+                      name: '',
+                      highAvailabilityMode: 'Full',
+                      openshiftVersion: '',
+                      pullSecret: '',
+                      baseDnsDomain: '',
+                      SNODisclaimer: false,
+                      useRedHatDnsService: true,
+                      enableDiskEncryptionOnMasters: false,
+                      enableDiskEncryptionOnWorkers: false,
+                      diskEncryptionMode: 'tpmv2',
+                      diskEncryptionTangServers: [],
+                      diskEncryption: {},
+                      cpuArchitecture: '',
+                      platform: 'baremetal',
+                    },
+                    step: {
+                      title: {
+                        isComplete: false,
+                      },
+                    },
+                  }}
+                  controlProps={{
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {},
+                  }}
+                  handleChange={handleChange}
+                />
+              }
             />
-          </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

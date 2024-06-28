@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { namespacesState, subscriptionsState } from '../../atoms'

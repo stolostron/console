@@ -4,7 +4,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -64,11 +64,10 @@ export function EditArgoApplicationSet() {
   } = useSharedAtoms()
   const { ansibleCredentialsValue } = useSharedSelectors()
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
-  const params: { namespace: string; name: string } = useParams()
-  const { name } = params
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editApplicationArgo>>()
   const applicationSets = useRecoilValue(applicationSetsState)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
@@ -93,7 +92,7 @@ export function EditArgoApplicationSet() {
 
   useEffect(() => {
     const applicationSet = applicationSets.find(
-      (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
+      (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
     )
 
     if (applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']) {
@@ -126,14 +125,14 @@ export function EditArgoApplicationSet() {
     }
 
     if (applicationSet === undefined) {
-      history.push(NavigationPath.applications)
+      navigate(NavigationPath.applications)
       return
     }
     const applicationSetPlacements = placements.filter((placement) =>
       isPlacementUsedByApplicationSet(applicationSet, placement)
     )
     setExistingResources([copyOfAppSet, ...applicationSetPlacements])
-  }, [applicationSets, history, params.name, params.namespace, placements])
+  }, [applicationSets, navigate, name, namespace, placements])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
@@ -157,13 +156,12 @@ export function EditArgoApplicationSet() {
       onCancel={() => {
         cancelForm()
         if (searchParams.get('context') === 'applicationsets') {
-          history.push(NavigationPath.applications)
+          navigate(NavigationPath.applications)
         } else {
-          history.push(
-            NavigationPath.applicationOverview
-              .replace(':namespace', params.namespace ?? '')
-              .replace(':name', params.name ?? '') + argoAppSetQueryString
-          )
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+            search: argoAppSetQueryString,
+          })
         }
       }}
       channels={channels}
@@ -183,13 +181,15 @@ export function EditArgoApplicationSet() {
             })
             submitForm()
             if (searchParams.get('context') === 'applicationsets') {
-              history.push(NavigationPath.applications)
+              navigate(NavigationPath.applications)
             } else {
-              history.push(
-                NavigationPath.applicationOverview
-                  .replace(':namespace', applicationSet.metadata?.namespace ?? '')
-                  .replace(':name', applicationSet.metadata?.name ?? '') + argoAppSetQueryString
-              )
+              navigate({
+                pathname: generatePath(NavigationPath.applicationOverview, {
+                  namespace: applicationSet.metadata?.namespace ?? '',
+                  name: applicationSet.metadata?.name ?? '',
+                }),
+                search: argoAppSetQueryString,
+              })
             }
           }
         })

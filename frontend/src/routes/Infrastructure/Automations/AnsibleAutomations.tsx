@@ -13,7 +13,7 @@ import {
   AcmTable,
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
@@ -21,7 +21,7 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../../NavigationPath'
+import { getBackCancelLocationLinkProps, NavigationPath } from '../../../NavigationPath'
 import {
   ClusterCurator,
   ClusterCuratorDefinition,
@@ -74,7 +74,7 @@ function AnsibleJobTemplateTable() {
   useEffect(() => {
     checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
   }, [namespaces])
-  const history = useHistory()
+  const navigate = useNavigate()
 
   // Set table
   return (
@@ -91,9 +91,10 @@ function AnsibleJobTemplateTable() {
             cell: (curator) => (
               <span style={{ whiteSpace: 'nowrap' }}>
                 <Link
-                  to={NavigationPath.editAnsibleAutomation
-                    .replace(':namespace', curator.metadata.namespace!)
-                    .replace(':name', curator.metadata.name!)}
+                  to={generatePath(NavigationPath.editAnsibleAutomation, {
+                    namespace: curator.metadata.namespace!,
+                    name: curator.metadata.name!,
+                  })}
                 >
                   {curator.metadata.name!}
                 </Link>
@@ -153,10 +154,11 @@ function AnsibleJobTemplateTable() {
                   isAriaDisabled: true,
                   rbac: [rbacPatch(curator)],
                   click: (curator: ClusterCurator) => {
-                    history.push(
-                      NavigationPath.editAnsibleAutomation
-                        .replace(':namespace', curator.metadata.namespace!)
-                        .replace(':name', curator.metadata.name!)
+                    navigate(
+                      generatePath(NavigationPath.editAnsibleAutomation, {
+                        namespace: curator.metadata.namespace!,
+                        name: curator.metadata.name!,
+                      })
                     )
                   },
                 },
@@ -231,7 +233,7 @@ function AnsibleJobTemplateTable() {
             id: 'add',
             title: t('template.create'),
             click: () => {
-              history.push(NavigationPath.addAnsibleAutomation)
+              navigate(NavigationPath.addAnsibleAutomation)
             },
             variant: ButtonVariant.primary,
           },
@@ -281,7 +283,7 @@ function AnsibleJobTemplateTable() {
                   isDisabled={!canCreateAutomationTemplate}
                   tooltip={!canCreateAutomationTemplate ? unauthorizedMessage : ''}
                   component={Link}
-                  to={createBackCancelLocation(NavigationPath.addAnsibleAutomation)}
+                  {...getBackCancelLocationLinkProps(NavigationPath.addAnsibleAutomation)}
                 >
                   {t('template.create')}
                 </AcmButton>

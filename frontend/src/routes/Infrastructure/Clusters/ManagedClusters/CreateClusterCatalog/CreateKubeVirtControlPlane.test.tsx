@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
@@ -28,9 +28,9 @@ describe('CreateKubeVirtControlPlane', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createKubeVirtControlPlane]}>
-          <Route path={NavigationPath.createKubeVirtControlPlane}>
-            <CreateKubeVirtControlPlane />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createKubeVirtControlPlane} element={<CreateKubeVirtControlPlane />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

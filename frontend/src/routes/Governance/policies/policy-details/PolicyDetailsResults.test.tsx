@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy, mockPendingPolicy, mockPolicyBinding } from '../../governance.sharedMocks'
+import { PolicyDetailsContext } from './PolicyDetailsPage'
 
 describe('Policy Details Results', () => {
   beforeEach(async () => {
@@ -14,6 +15,7 @@ describe('Policy Details Results', () => {
     nockIgnoreApiPaths()
   })
   test('Should render Policy Details Results Page content correctly', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -21,7 +23,11 @@ describe('Policy Details Results', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsResults policy={mockPolicy[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -40,6 +46,7 @@ describe('Policy Details Results', () => {
     await waitForText('inform')
   })
   test('Should render Policy Details Results Page with Remediation enforce', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicyBinding[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -47,7 +54,11 @@ describe('Policy Details Results', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsResults policy={mockPolicyBinding[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -65,7 +76,7 @@ describe('Policy results of policy of a hosted cluster', () => {
     const mockReplicatedPolicyCopy = JSON.parse(JSON.stringify(mockPolicy[1]))
     mockReplicatedPolicyCopy.metadata.labels['policy.open-cluster-management.io/cluster-namespace'] =
       'klusterlet-local-cluster'
-
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -73,7 +84,11 @@ describe('Policy results of policy of a hosted cluster', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsResults policy={mockPolicy[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -92,6 +107,7 @@ describe('Policy Details Results with pending status', () => {
     nockIgnoreApiPaths()
   })
   test('Should render Policy Details Results Page content correctly for pending status', async () => {
+    const context: PolicyDetailsContext = { policy: mockPendingPolicy[0] }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -99,7 +115,11 @@ describe('Policy Details Results with pending status', () => {
         }}
       >
         <MemoryRouter>
-          <PolicyDetailsResults policy={mockPendingPolicy[0]} />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

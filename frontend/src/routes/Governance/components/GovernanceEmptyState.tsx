@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton, AcmEmptyState } from '../../../ui-components'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { NavigationPath } from '../../NavigationPath'
+import { Route, Routes } from 'react-router-dom-v5-compat'
 import GovernancePage from './GovernancePage'
 import { CreatePolicy } from './policies/CreatePolicy'
 import { CreatePolicyAutomation } from './policies/CreatePolicyAutomation'
@@ -11,23 +10,35 @@ import { PolicyDetailsPage } from './policies/policy-details/PolicyDetailsPage'
 import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetailsPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
+import { NavigationPath, createRoutePathFunction } from '../../NavigationPath'
+import PolicyDetailsOverview from './policies/policy-details/PolicyDetailsOverview'
+import PolicyDetailsResults from './policies/policy-details/PolicyDetailsResults'
+import GovernanceOverview from './overview/Overview'
+import PolicySetsPage from './policy-sets/PolicySets'
+import PoliciesPage from './policies/Policies'
+
+const governanceChildPath = createRoutePathFunction(NavigationPath.governance)
 
 export default function Governance() {
   return (
-    <Switch>
-      <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
-      <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
-      <Route exact path={NavigationPath.createPolicyAutomation} render={() => <CreatePolicyAutomation />} />
-      <Route exact path={NavigationPath.editPolicyAutomation} render={() => <EditPolicyAutomation />} />
-      <Route path={NavigationPath.policyTemplateDetails} component={PolicyTemplateDetailsPage} />
-      <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
-      <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
-      <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
-      <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-      <Route path={NavigationPath.governance} component={GovernancePage} />
-      <Route path="*">
-        <Redirect to={NavigationPath.governance} />
+    <Routes>
+      <Route path={governanceChildPath(NavigationPath.createPolicy)} element={<CreatePolicy />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicy)} element={<EditPolicy />} />
+      <Route path={governanceChildPath(NavigationPath.createPolicyAutomation)} element={<CreatePolicyAutomation />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicyAutomation)} element={<EditPolicyAutomation />} />
+      <Route path={governanceChildPath(NavigationPath.policyTemplateDetails)} element={<PolicyTemplateDetailsPage />} />
+      <Route path={governanceChildPath(NavigationPath.policyDetailsHistory)} element={<PolicyDetailsHistoryPage />} />
+      <Route element={<PolicyDetailsPage />}>
+        <Route path={governanceChildPath(NavigationPath.policyDetails)} element={<PolicyDetailsOverview />} />
+        <Route path={governanceChildPath(NavigationPath.policyDetailsResults)} element={<PolicyDetailsResults />} />
       </Route>
-    </Switch>
+      <Route path={governanceChildPath(NavigationPath.createPolicySet)} element={<CreatePolicySet />} />
+      <Route path={governanceChildPath(NavigationPath.editPolicySet)} element={<EditPolicySet />} />
+      <Route element={<GovernancePage />}>
+        <Route path={governanceChildPath(NavigationPath.governance)} element={<GovernanceOverview />} />
+        <Route path={governanceChildPath(NavigationPath.policySets)} element={<PolicySetsPage />} />
+        <Route path={governanceChildPath(NavigationPath.policies)} element={<PoliciesPage />} />
+      </Route>
+    </Routes>
   )
 }

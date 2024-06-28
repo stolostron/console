@@ -2,7 +2,7 @@
 import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ExtractRouteParams, useHistory, useRouteMatch } from 'react-router'
+import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom-v5-compat'
 import YAML from 'yaml'
 import set from 'lodash/set'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -90,13 +90,10 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
 }
 
 export function ViewEditCredentialsFormPage() {
-  const {
-    path,
-    params: { name, namespace },
-  } = useRouteMatch<ExtractRouteParams<NavigationPath.editCredentials | NavigationPath.viewCredentials, string>>()
-
-  const isEditing = path === NavigationPath.editCredentials
-  const isViewing = path === NavigationPath.viewCredentials
+  const params = useParams()
+  const { name = '', namespace = '' } = params
+  const isEditing = !!useMatch(NavigationPath.editCredentials)
+  const isViewing = !isEditing
 
   const [error, setError] = useState<Error>()
 
@@ -142,7 +139,7 @@ export function CredentialsForm(
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
   const toastContext = useContext(AcmToastContext)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { back, cancel } = useBackCancelNavigation()
 
   // Details
@@ -1377,7 +1374,7 @@ export function CredentialsForm(
             autoClose: true,
           })
           submitForm()
-          history.push(NavigationPath.credentials)
+          navigate(NavigationPath.credentials)
         })
       } else {
         return createResource(credentialData as IResource).promise.then((resource) => {
@@ -1396,7 +1393,7 @@ export function CredentialsForm(
           if (handleModalToggle) {
             handleModalToggle()
           } else {
-            history.push(NavigationPath.credentials)
+            navigate(NavigationPath.credentials)
           }
         })
       }
@@ -1449,10 +1446,11 @@ export function CredentialsForm(
       }
       edit={() => {
         if (providerConnection) {
-          history.push(
-            NavigationPath.editCredentials
-              .replace(':namespace', providerConnection.metadata.namespace!)
-              .replace(':name', providerConnection.metadata.name!)
+          navigate(
+            generatePath(NavigationPath.editCredentials, {
+              namespace: providerConnection.metadata.namespace!,
+              name: providerConnection.metadata.name!,
+            })
           )
         }
       }}

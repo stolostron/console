@@ -35,7 +35,7 @@ import {
   InfrastructureK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { useState, useEffect } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -264,11 +264,12 @@ type InfraEnvsTableProps = {
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agentServiceConfig, isStorage }) => {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
-    NavigationPath.infraEnvironmentDetails
-      .replace(':namespace', infraEnv.metadata?.namespace as string)
-      .replace(':name', infraEnv.metadata?.name as string)
+    generatePath(NavigationPath.infraEnvironmentDetails, {
+      namespace: infraEnv.metadata?.namespace!,
+      name: infraEnv.metadata?.name!,
+    })
 
   const { clusterVersionState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)
@@ -568,7 +569,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
               {
                 id: 'createInfraEnv',
                 title: t('infraEnv.bulkAction.createInfraEnv'),
-                click: () => history.push(NavigationPath.createInfraEnv),
+                click: () => navigate(NavigationPath.createInfraEnv),
                 variant: ButtonVariant.primary,
               },
             ]}
@@ -592,7 +593,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     <AcmButton
                       variant="primary"
                       onClick={() => {
-                        history.push(NavigationPath.createInfraEnv)
+                        navigate(NavigationPath.createInfraEnv)
                       }}
                       isDisabled={!isCIMWorking}
                       tooltip={

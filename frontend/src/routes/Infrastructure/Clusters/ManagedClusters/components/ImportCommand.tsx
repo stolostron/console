@@ -18,15 +18,15 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useEffect, useState } from 'react'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { Fragment, useEffect, useState } from 'react'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 export function ImportCommandContainer() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
 
   const { loading, error, v1ImportCommand, v1Beta1ImportCommand } = useImportCommand()
 
@@ -184,7 +184,7 @@ export const useImportCommand = (oc?: boolean) => {
   const { t } = useTranslation()
   const { secretsState } = useSharedAtoms()
   const secrets = useRecoilValue(secretsState)
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const [error, setError] = useState<string | undefined>()
   const [loading, setLoading] = useState<boolean>(false)
   const [importSecret, setImportSecret] = useState<Secret | undefined>(undefined)

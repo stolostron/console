@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../atoms'
 import { waitForNotText, waitForText } from '../../../../../lib/test-util'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import {
   mockCluster,
   mockMachinePoolAuto,
@@ -11,12 +11,26 @@ import {
   mockMachinePoolManual,
 } from '../ClusterDetails/ClusterDetails.sharedmocks'
 import { ScaleClusterAlert } from './ScaleClusterAlert'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
+
+const Component = () => {
+  const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
+  return (
+    <MemoryRouter>
+      <Routes>
+        <Route element={<Outlet context={context} />}>
+          <Route path="*" element={<ScaleClusterAlert />} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  )
+}
 
 describe('ScaleClusterAlert', () => {
   it('does not render without MachinePools', async () => {
     render(
       <RecoilRoot>
-        <ScaleClusterAlert />
+        <Component />
       </RecoilRoot>
     )
 
@@ -30,9 +44,7 @@ describe('ScaleClusterAlert', () => {
           snapshot.set(machinePoolsState, [mockMachinePoolManual])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <ScaleClusterAlert />
-        </ClusterContext.Provider>
+        <Component />
       </RecoilRoot>
     )
 
@@ -46,9 +58,7 @@ describe('ScaleClusterAlert', () => {
           snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <ScaleClusterAlert />
-        </ClusterContext.Provider>
+        <Component />
       </RecoilRoot>
     )
 
@@ -61,9 +71,7 @@ describe('ScaleClusterAlert', () => {
           snapshot.set(machinePoolsState, [mockMachinePoolOther])
         }}
       >
-        <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-          <ScaleClusterAlert />
-        </ClusterContext.Provider>
+        <Component />
       </RecoilRoot>
     )
 

@@ -2,7 +2,7 @@
 
 import { AcmToastProvider, AcmToastGroup } from '../../../../../ui-components'
 import { render, waitFor, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import {
@@ -40,8 +40,10 @@ function TestAddDiscoveryConfigPage() {
       <MemoryRouter initialEntries={[NavigationPath.createDiscovery]}>
         <AcmToastProvider>
           <AcmToastGroup />
-          <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
-          <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+          <Routes>
+            <Route path={NavigationPath.createDiscovery} element={<DiscoveryConfigPage />} />
+            <Route path={NavigationPath.discoveredClusters} element={<DiscoveredClustersPage />} />
+          </Routes>
         </AcmToastProvider>
       </MemoryRouter>
     </RecoilRoot>
@@ -59,8 +61,10 @@ function TestEditConnectionPage() {
       <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
         <AcmToastProvider>
           <AcmToastGroup />
-          <Route path={NavigationPath.configureDiscovery} render={() => <DiscoveryConfigPage />} />
-          <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
+          <Routes>
+            <Route path={NavigationPath.configureDiscovery} element={<DiscoveryConfigPage />} />
+            <Route path={NavigationPath.discoveredClusters} element={<DiscoveredClustersPage />} />
+          </Routes>
         </AcmToastProvider>
       </MemoryRouter>
     </RecoilRoot>
