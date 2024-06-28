@@ -13,21 +13,25 @@ export function DestroyHostedModal(props: { open: boolean; close: () => void; cl
 
   const destroyCode = `# Set environment variables
 export CLUSTER_NAME="example"
-export SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 1.
+export STS_CREDS="example-sts-creds-json"  # The credential name step 1.
+export ROLE_ARN="example-role-arn" # Role ARN from step 1
 
 hcp destroy cluster aws \\
   --name $CLUSTER_NAME \\
-  --secret-creds $SECRET_CREDS`
+  --sts-creds $STS_CREDS \\
+  --role-arn $ROLE_ARN`
 
   const destroyhelperCommand = `hcp destroy cluster aws --help`
 
   const listItems = [
     {
-      title: t('Log in to your hosted cluster'),
+      title: t('Log in to your hosting hub cluster'),
       content: (
         <Fragment>
           <Text component={TextVariants.p}>
-            {t('Use the Amazon Web Services (AWS) credential that you used to create your hosted cluster.')}
+            {t(
+              'Use a valid Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster.'
+            )}
           </Text>
         </Fragment>
       ),
