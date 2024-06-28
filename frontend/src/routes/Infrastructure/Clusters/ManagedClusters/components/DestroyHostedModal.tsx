@@ -13,7 +13,7 @@ export function DestroyHostedModal(props: { open: boolean; close: () => void; cl
 
   const destroyCode = `# Set environment variables
 export CLUSTER_NAME="example"
-export STS_CREDS="example-sts-creds-json"  # The credential name step 1.
+export STS_CREDS="example-sts-creds-json"  # The credential name from step 1.
 export ROLE_ARN="example-role-arn" # Role ARN from step 1
 
 hcp destroy cluster aws \\
@@ -25,20 +25,17 @@ hcp destroy cluster aws \\
 
   const listItems = [
     {
-      title: t('Log in to your hosting hub cluster'),
+      title: t('Log in to OpenShift Container Platform'),
       content: (
         <Fragment>
+          {GetOCLogInCommand()}
           <Text component={TextVariants.p}>
             {t(
-              'Use a valid Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster.'
+              'Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.'
             )}
           </Text>
         </Fragment>
       ),
-    },
-    {
-      title: t('Log in to OpenShift Container Platform'),
-      content: GetOCLogInCommand(),
     },
     {
       title: t('Destroy the hosted cluster'),

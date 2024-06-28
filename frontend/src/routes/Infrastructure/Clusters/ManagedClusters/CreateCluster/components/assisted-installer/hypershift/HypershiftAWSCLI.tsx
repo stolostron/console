@@ -69,7 +69,7 @@ hcp create cluster aws \\
       content: (
         <Fragment>
           <Text component={TextVariants.p}>{t('This creates a STS credential JSON file.')}</Text>
-          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_HOSTED_AWS} target="_blank">
+          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_STS_ARN} target="_blank">
             {t('Follow documentation for more information.')}
           </Text>
         </Fragment>
@@ -80,7 +80,7 @@ hcp create cluster aws \\
       content: (
         <Fragment>
           <Text component={TextVariants.p}>{t('This creates a AWS IAM role.')}</Text>
-          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_HOSTED_AWS} target="_blank">
+          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_STS_ARN} target="_blank">
             {t('Follow documentation for more information.')}
           </Text>
         </Fragment>
