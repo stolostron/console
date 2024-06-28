@@ -33,6 +33,7 @@ export const DOC_LINKS = {
   CREATE_CLUSTER_HOSTED_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-deploy-cluster-aws`,
   CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/index#creating-a-cluster-on-premises`,
   CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/clusters/index#create-a-cluster-prereq`,
+  CREATE_CLUSTER_STS_ARN: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#create-role-sts-aws`,
   IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/index#import-intro`,
   CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/index#managedclustersets-intro`,
   GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/clusters/index#managedclustersets_global`,
