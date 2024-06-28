@@ -345,7 +345,7 @@ describe('add credentials page', () => {
       'ost',
       {
         'clouds.yaml':
-          'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/etc/openstack-ca/ca.crt"\n',
+          'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n    cacert: "/etc/openstack-ca/ca.crt"\n',
         cloud: 'openstack',
         clusterOSImage: '',
         imageContentSources: '',
