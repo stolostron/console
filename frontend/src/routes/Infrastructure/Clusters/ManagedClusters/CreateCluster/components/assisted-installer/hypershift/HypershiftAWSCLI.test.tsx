@@ -27,7 +27,8 @@ describe('HypershiftAWSCLI', () => {
     render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Prerequisites and Configuration')
-    await waitForText('Add your Amazon Web Services (AWS) credential')
+    await waitForText('Create Amazon Web Services (AWS) Security Token Service (STS) credential')
+    await waitForText('Create AWS Identity and Access Management (IAM) role')
     await waitForText('Create the Hosted Control Plane')
     // find code block
     await waitForTestId('code-content')

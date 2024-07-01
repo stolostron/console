@@ -3,7 +3,6 @@
 import { CodeBlock, CodeBlockCode, Modal, ModalVariant, Page, Text, TextVariants } from '@patternfly/react-core'
 import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
-import { CreateCredentialModal } from '../../../../../../../../components/CreateCredentialModal'
 import { useProjects } from '../../../../../../../../hooks/useProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'
@@ -30,14 +29,18 @@ export function HypershiftAWSCLI() {
   const code = `# Set environment variables
 export REGION="us-east-1"
 export CLUSTER_NAME="example"
-export SECRET_CREDS="example-aws-credential-secret"  # The credential name defined in step 2.
-export NAMESPACE="example-namespace"  # $SECRET_CREDS needs to exist in $NAMESPACE.
+export STS_CREDS="example-sts-creds-json"  # JSON file from step 2
+export NAMESPACE="example-namespace"
+export ROLE_ARN="example-role-arn" # Role ARN from step 3
+export PULL_SECRET="example-pull-secret-file" # Pull secret file path from step 4
 
 hcp create cluster aws \\
   --name $CLUSTER_NAME \\
   --namespace $NAMESPACE \\
   --node-pool-replicas=3 \\
-  --secret-creds $SECRET_CREDS \\
+  --sts-creds $STS_CREDS \\
+  --role-arn $ROLE_ARN \\
+  --pull-secret $PULL_SECRET \\
   --region $REGION`
 
   const helperCommand = `hcp create cluster aws --help`
@@ -62,21 +65,38 @@ hcp create cluster aws \\
       ),
     },
     {
-      title: t('Add your Amazon Web Services (AWS) credential'),
+      title: t('Create Amazon Web Services (AWS) Security Token Service (STS) credential'),
       content: (
-        <Text component={TextVariants.p}>
-          {t('Create a new or update an existing AWS credential.')}
-          <CreateCredentialModal handleModalToggle={handleModalToggleAws} />
-        </Text>
+        <Fragment>
+          <Text component={TextVariants.p}>{t('This creates a STS credential JSON file.')}</Text>
+          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_STS_ARN} target="_blank">
+            {t('Follow documentation for more information.')}
+          </Text>
+        </Fragment>
       ),
     },
     {
-      title: t('Add your AWS S3 bucket credential'),
+      title: t('Create AWS Identity and Access Management (IAM) role'),
       content: (
-        <Text component={TextVariants.p}>
-          {t('Create a new or update an existing AWS S3 bucket credential.')}
-          <CreateCredentialModal handleModalToggle={handleModalToggleAwsBucket} />
-        </Text>
+        <Fragment>
+          <Text component={TextVariants.p}>{t('This creates a AWS IAM role.')}</Text>
+          <Text component={TextVariants.a} href={DOC_LINKS.CREATE_CLUSTER_STS_ARN} target="_blank">
+            {t('Follow documentation for more information.')}
+          </Text>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create Red Hat OpenShift Container Platform pull secret'),
+      content: (
+        <Fragment>
+          <Text component={TextVariants.p}>
+            {t('This creates a Red Hat OpenShift Container Platform pull secret.')}
+          </Text>
+          <a href={'https://console.redhat.com/openshift/install/pull-secret'} target="_blank" rel="noreferrer">
+            {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
+          </a>
+        </Fragment>
       ),
     },
     {
