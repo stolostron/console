@@ -1,20 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Alert,
-  PageSection,
-  Popover,
-  Stack,
-  StackItem,
-  Text,
-  TextContent,
-  TextList,
-  TextListItem,
-  TextVariants,
-  ToolbarItem,
-} from '@patternfly/react-core'
+import { PageSection, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { cellWidth } from '@patternfly/react-table'
+import { SortByDirection, cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
@@ -48,15 +36,12 @@ import {
   Subscription,
 } from '../../resources'
 import {
-  AcmButton,
   AcmDropdown,
   AcmEmptyState,
   AcmTable,
   compareStrings,
   IAcmRowAction,
   IAcmTableColumn,
-  ITableFilter,
-  useTableFilterSelections,
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
@@ -81,8 +66,7 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../hooks/application-queries'
-import { LoadingPage } from '../../components/LoadingPage'
+import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/aggregates'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -134,7 +118,7 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
     }
   } else if (resource.apiVersion === ArgoApplicationApiVersion) {
     if (resource.kind === ArgoApplicationKind) {
-      return t('Discovered')
+      return t('Argo CD')
     } else if (resource.kind === ApplicationSetKind) {
       return t('Application set')
     }
@@ -369,129 +353,6 @@ export function parseOcpAppResources(
   return transformedData
 }
 
-function filterByApplicationType(selectedValues: string[], item: IApplicationResource) {
-  return selectedValues.some((value) => {
-    if (isOCPAppResource(item)) {
-      const isFlux = isFluxApplication(item.label)
-      switch (value) {
-        case 'openshift':
-          return (
-            !isFlux && !item.metadata?.namespace?.startsWith('openshift-') && item.metadata?.namespace !== 'openshift'
-          )
-        case 'openshift-default':
-          return (
-            !isFlux && (item.metadata?.namespace?.startsWith('openshift-') || item.metadata?.namespace === 'openshift')
-          )
-        case 'flux':
-          return isFlux
-      }
-    } else {
-      switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
-        case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
-          return selectedValues.includes('appset')
-        case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
-          return selectedValues.includes('argo')
-        case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
-          return selectedValues.includes('subscription')
-      }
-      return false
-    }
-  })
-}
-
-function filterByCluster(selectedValues: string[], item: IApplicationResource) {
-  const clusterList = get(item, 'transformed.clusterList')
-  return selectedValues.some((value) => {
-    return clusterList.includes(value)
-  })
-}
-
-function generateTableFilters({
-  t,
-  managedClusters,
-  clusters = [],
-  types = [],
-  search,
-  ocpAppsExist,
-  ocpAppsLimitExceeded,
-  argoAppsExist,
-  argoAppsLimitExceeded,
-}: {
-  t: TFunction
-  managedClusters: Cluster[]
-  clusters?: string[]
-  types?: string[]
-  search?: string
-  ocpAppsExist?: boolean
-  ocpAppsLimitExceeded?: boolean
-  argoAppsExist?: boolean
-  argoAppsLimitExceeded?: boolean
-}): ITableFilter<IApplicationResource>[] {
-  const allTypes = types.length === 0
-  const typeExcluded = (type: string) => !allTypes && !types.includes(type)
-  const allClusters = clusters.length === 0
-
-  const ocpIndeterminateCount =
-    ocpAppsExist &&
-    (!!search || ocpAppsLimitExceeded || ['openshift', 'openshift-default'].every((t) => typeExcluded(t)))
-  return [
-    {
-      label: t('Type'),
-      id: filterId,
-      options: [
-        {
-          label: t('Application set'),
-          value: 'appset',
-        },
-        {
-          label: t('Argo CD'),
-          value: 'argo',
-          indeterminateCount: argoAppsExist && (!!search || argoAppsLimitExceeded || typeExcluded('argo')),
-        },
-        {
-          label: t('Flux'),
-          value: 'flux',
-          indeterminateCount: ocpAppsExist && (!!search || ocpAppsLimitExceeded || typeExcluded('flux')),
-        },
-        {
-          label: 'OpenShift',
-          value: 'openshift',
-          indeterminateCount: ocpIndeterminateCount,
-        },
-        {
-          label: t('Default OpenShift'),
-          value: 'openshift-default',
-          indeterminateCount: ocpIndeterminateCount,
-        },
-        {
-          label: t('Subscription'),
-          value: 'subscription',
-        },
-      ],
-      tableFilterFn: filterByApplicationType,
-    },
-    {
-      id: 'cluster',
-      label: t('Cluster'),
-      options: Object.values(managedClusters)
-        .map((cluster) => {
-          const clusterExcluded = !allClusters && !clusters.includes(cluster.name)
-          return {
-            label: cluster.name,
-            value: cluster.name,
-            indeterminateCount:
-              cluster.name === 'local-cluster'
-                ? ocpAppsExist && (!!search || ocpAppsLimitExceeded || clusterExcluded)
-                : (ocpAppsExist || argoAppsExist) &&
-                  (!!search || ocpAppsLimitExceeded || argoAppsLimitExceeded || clusterExcluded),
-          }
-        })
-        .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-      tableFilterFn: filterByCluster,
-    },
-  ]
-}
-
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
@@ -500,7 +361,6 @@ export default function ApplicationsOverview() {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    helmReleaseState,
     namespacesState,
     placementRulesState,
     placementsState,
@@ -517,7 +377,6 @@ export default function ApplicationsOverview() {
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
-  const helmReleases = useRecoilValue(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
 
   const managedClusters = useAllClusters(true)
@@ -525,11 +384,17 @@ export default function ApplicationsOverview() {
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
-  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+
+  const [requestedView, setRequestView] = useState<IRequestListView>({
+    page: 1,
+    perPage: 10,
+    sortBy: {
+      index: 0,
+      direction: SortByDirection.asc,
+    },
+  })
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
-
-  const [search, setSearch] = useState<string>()
 
   const getTimeWindow = useCallback(
     (app: IResource) => {
@@ -610,81 +475,12 @@ export default function ApplicationsOverview() {
     [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
   )
 
-  const baseFilters = useMemo(() => generateTableFilters({ t, managedClusters }), [t, managedClusters])
-  const {
-    filterSelections: { type, cluster },
-  } = useTableFilterSelections({ id: TABLE_ID, filters: baseFilters })
-
-  const {
-    data: discoveredOCPAppResources = [],
-    isLoading: ocpAppsPending,
-    limitExceeded: ocpAppsLimitExceeded,
-    hasResults: ocpAppsExist,
-  } = useDiscoveredOCPApps({ clusters: cluster, types: type, search })
-  const {
-    data: discoveredApplications = [],
-    isLoading: argoAppsPending,
-    limitExceeded: argoAppsLimitExceeded,
-    hasResults: argoAppsExist,
-  } = useDiscoveredArgoApps({ clusters: cluster, types: type, search })
-
-  const filters = useMemo(
-    () =>
-      generateTableFilters({
-        t,
-        managedClusters,
-        clusters: cluster,
-        types: type,
-        search,
-        ocpAppsExist,
-        ocpAppsLimitExceeded,
-        argoAppsExist,
-        argoAppsLimitExceeded,
-      }),
-    [
-      t,
-      managedClusters,
-      cluster,
-      type,
-      search,
-      ocpAppsExist,
-      ocpAppsLimitExceeded,
-      argoAppsExist,
-      argoAppsLimitExceeded,
-    ]
-  )
-
-  const getArgoApplications = useMemo(
-    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, managedClusters),
-    [argoApplications, managedClusters]
-  )
-
-  const getDiscoveredApplications = useMemo(
-    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
-    [discoveredApplications, setArgoApplicationsHashSet]
-  )
-
-  const getOcpAppResources = useMemo(
-    () => parseOcpAppResources(discoveredOCPAppResources, helmReleases, argoApplicationsHashSet),
-    [discoveredOCPAppResources, helmReleases, argoApplicationsHashSet]
-  )
+  const resultView = useAggregate(SupportedAggregate.applications, requestedView)
+  const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
-    () => [
-      ...applications.map((app) => generateTransformData(app)),
-      ...applicationSets.map((app) => generateTransformData(app)),
-      ...getArgoApplications.map((app) => generateTransformData(app)),
-      ...getDiscoveredApplications.map((app) => generateTransformData(app)),
-      ...getOcpAppResources.map((app) => generateTransformData(app)),
-    ],
-    [
-      applications,
-      applicationSets,
-      getArgoApplications,
-      getDiscoveredApplications,
-      getOcpAppResources,
-      generateTransformData,
-    ]
+    () => [...allApplications.map((app) => generateTransformData(app))],
+    [allApplications, generateTransformData]
   )
 
   const keyFn = useCallback(
@@ -836,8 +632,6 @@ export default function ApplicationsOverview() {
           )
         },
         tooltip: t('Provides links to each of the resource repositories used by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
       },
       {
         header: t('Time window'),
@@ -869,6 +663,87 @@ export default function ApplicationsOverview() {
       managedClusters,
       extensionColumns,
     ]
+  )
+
+  const filters = useMemo(
+    () => [
+      {
+        label: t('Type'),
+        id: filterId,
+        options: [
+          {
+            label: t('Application set'),
+            value: 'appset',
+          },
+          {
+            label: t('Argo CD'),
+            value: 'argo',
+          },
+          {
+            label: t('Flux'),
+            value: 'flux',
+          },
+          {
+            label: 'OpenShift',
+            value: 'openshift',
+          },
+          { label: t('Default OpenShift'), value: 'openshift-default' },
+          {
+            label: t('Subscription'),
+            value: 'subscription',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.some((value) => {
+            if (isOCPAppResource(item)) {
+              const isFlux = isFluxApplication(item.label)
+              switch (value) {
+                case 'openshift':
+                  return (
+                    !isFlux &&
+                    !item.metadata?.namespace?.startsWith('openshift-') &&
+                    item.metadata?.namespace !== 'openshift'
+                  )
+                case 'openshift-default':
+                  return (
+                    !isFlux &&
+                    (item.metadata?.namespace?.startsWith('openshift-') || item.metadata?.namespace === 'openshift')
+                  )
+                case 'flux':
+                  return isFlux
+              }
+            } else {
+              switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
+                case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
+                  return selectedValues.includes('appset')
+                case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
+                  return selectedValues.includes('argo')
+                case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
+                  return selectedValues.includes('subscription')
+              }
+              return false
+            }
+          })
+        },
+      },
+      {
+        id: 'cluster',
+        label: t('Cluster'),
+        options: Object.values(managedClusters)
+          .map((cluster) => ({
+            label: cluster.name,
+            value: cluster.name,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          const clusterList = get(item, 'transformed.clusterList')
+          return selectedValues.some((value) => {
+            return clusterList.includes(value)
+          })
+        },
+      },
+    ],
+    [t, managedClusters]
   )
 
   const history = useHistory()
@@ -1136,8 +1011,8 @@ export default function ApplicationsOverview() {
     [canCreateApplication, history, t]
   )
 
-  const compareAppTypesLink = useMemo(
-    () => (
+  const compareAppTypesLink = useCallback(
+    (isEmptyState: boolean) => (
       <Popover
         headerContent={t('Compare application types')}
         bodyContent={
@@ -1183,99 +1058,29 @@ export default function ApplicationsOverview() {
         position="bottom"
         maxWidth="850px"
       >
-        <AcmButton variant="link" isInline>
+        <Text
+          component={TextVariants.a}
+          isVisitedLink
+          style={
+            isEmptyState
+              ? {
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  paddingTop: '20px',
+                }
+              : {
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  paddingLeft: '20px',
+                }
+          }
+        >
           {t('Compare application types')}
-        </AcmButton>
+        </Text>
       </Popover>
     ),
     [t]
   )
-
-  const searchLimitsExceededAlert = useMemo(() => {
-    if (!(ocpAppsLimitExceeded || argoAppsLimitExceeded)) return undefined
-    return (
-      <Popover
-        bodyContent={
-          <TextContent>
-            <Text component={TextVariants.p}>
-              {t(
-                'There are too many applications to display. There may be additional applications of the following types.'
-              )}
-            </Text>
-            <TextList>
-              {argoAppsLimitExceeded && <TextListItem>Argo CD</TextListItem>}
-              {ocpAppsLimitExceeded && (
-                <>
-                  <TextListItem>Flux</TextListItem>
-                  <TextListItem>OpenShift</TextListItem>
-                  <TextListItem>{t('Default OpenShift')}</TextListItem>
-                </>
-              )}
-            </TextList>
-          </TextContent>
-        }
-        footerContent={
-          <Stack hasGutter>
-            <StackItem>
-              <TextContent>
-                <Text component={TextVariants.p}>{t('Enter search text or apply filters to limit the results.')}</Text>
-              </TextContent>
-            </StackItem>
-            {argoAppsLimitExceeded && (
-              <StackItem>
-                <AcmButton
-                  component={Link}
-                  to={getSearchLink({
-                    properties: {
-                      kind: 'Application',
-                      apigroup: 'argoproj.io',
-                    },
-                  })}
-                  variant="secondary"
-                >
-                  {t('Search Argo CD applications')}
-                </AcmButton>
-              </StackItem>
-            )}
-          </Stack>
-        }
-        position="bottom"
-      >
-        <AcmButton variant="link">
-          <Alert variant="warning" isInline isPlain title={t('Application list is incomplete')} />
-        </AcmButton>
-      </Popover>
-    )
-  }, [argoAppsLimitExceeded, ocpAppsLimitExceeded, t])
-
-  const additionalToolbarItems = useMemo(
-    () => (
-      <>
-        <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>
-        {searchLimitsExceededAlert && (
-          <ToolbarItem key="search-limit-exceeded">{searchLimitsExceededAlert}</ToolbarItem>
-        )}
-      </>
-    ),
-    [compareAppTypesLink, searchLimitsExceededAlert]
-  )
-
-  const emptyStateActions = useMemo(
-    () => (
-      <Stack hasGutter>
-        <StackItem>{appCreationButton}</StackItem>
-        <StackItem>{compareAppTypesLink}</StackItem>
-        <StackItem>
-          <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
-        </StackItem>
-      </Stack>
-    ),
-    [appCreationButton, compareAppTypesLink]
-  )
-
-  if (ocpAppsExist === undefined || argoAppsExist === undefined) {
-    return <LoadingPage />
-  }
 
   return (
     <PageSection>
@@ -1287,13 +1092,15 @@ export default function ApplicationsOverview() {
         columns={columns}
         keyFn={keyFn}
         items={tableItems}
-        nonZeroCount={ocpAppsExist || argoAppsExist}
-        indeterminateCount={ocpAppsPending || ocpAppsLimitExceeded || argoAppsPending || argoAppsLimitExceeded}
-        search={search}
-        setSearch={setSearch}
         filters={filters}
-        customTableAction={appCreationButton}
-        additionalToolbarItems={additionalToolbarItems}
+        setRequestView={setRequestView}
+        resultView={resultView}
+        customTableAction={
+          <>
+            {appCreationButton}
+            {compareAppTypesLink(false)}
+          </>
+        }
         emptyState={
           <AcmEmptyState
             key="appOverviewEmptyState"
@@ -1306,7 +1113,13 @@ export default function ApplicationsOverview() {
                 />
               </Text>
             }
-            action={emptyStateActions}
+            action={
+              <>
+                {appCreationButton}
+                <div>{compareAppTypesLink(true)}</div>
+                <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+              </>
+            }
           />
         }
         rowActionResolver={rowActionResolver}
