@@ -28,14 +28,12 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
           path="key"
           options={Object.keys(labelValuesMap)}
           isCreatable
-          required
           onValueChange={(_value, item) => set(item as object, 'values', [])}
         />
       ) : (
         <WizTextInput
           label={t('Label')}
           path="key"
-          required
           onValueChange={(_value, item) => set(item as object, 'values', [])}
         />
       )}
@@ -48,7 +46,6 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
           { label: t('exists'), value: 'Exists' },
           { label: t('does not exist'), value: 'DoesNotExist' },
         ]}
-        required
         onValueChange={(value, item) => {
           switch (value) {
             case 'Exists':
@@ -69,7 +66,6 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
                 placeholder={t('Select the values')}
                 path="values"
                 isCreatable
-                required
                 hidden={(labelSelector) => !['In', 'NotIn'].includes(labelSelector?.operator)}
                 options={values}
               />
@@ -80,7 +76,6 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
         <WizStringsInput
           label={t('Values')}
           path="values"
-          required
           hidden={(labelSelector) => !['In', 'NotIn'].includes(labelSelector?.operator)}
         />
       )}
