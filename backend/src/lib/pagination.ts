@@ -128,16 +128,16 @@ export function paginate(
       const startIndex = (rpage - 1) * perPage
       const endIndex = rpage * perPage
       items = items.slice(startIndex, endIndex)
-
-      // remove the transform work attribute
-      items = items.map(({ transform, ...keepAttrs }) => keepAttrs)
     }
+
+    // remove the transform work attribute
+    items = items.map(({ transform, ...keepAttrs }) => keepAttrs)
 
     const results: IResultListView = {
       page: rpage,
       items,
       itemCount,
-      filterCounts,
+      filterCounts: isPreProcessed ? filterCounts : undefined,
       emptyResult,
       isPreProcessed,
     }

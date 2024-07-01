@@ -24,7 +24,7 @@ export interface IResultListView {
   loading: boolean
   items: IResource[]
   itemCount: number
-  filterCounts: FilterCounts
+  filterCounts: FilterCounts | undefined
   emptyResult: boolean
   isPreProcessed: boolean
 }
@@ -43,7 +43,7 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
       loading: true,
       items: [],
       itemCount: 0,
-      filterCounts: {},
+      filterCounts: undefined,
       emptyResult: false,
       isPreProcessed: false,
     }),

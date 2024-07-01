@@ -379,20 +379,54 @@ export const mockArgoApplication1: ArgoApplication = {
   },
   status: {},
 }
+export const mockArgoApplication2: ArgoApplication = {
+  apiVersion: ArgoApplicationApiVersion,
+  kind: ArgoApplicationKind,
+  metadata: {
+    name: 'feng-remote-argo8',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    destination: {
+      namespace: 'argoapplication-1-ns',
+      server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+    },
+    project: 'default',
+    source: {
+      path: 'foo',
+      repoURL: 'https://test.com/test.git',
+      targetRevision: 'HEAD',
+    },
+    syncPolicy: {},
+  },
+  status: {
+    cluster: 'feng-managed',
+  },
+}
+
 export const mockOCPApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
   kind: 'deployment',
+  label: 'app=authentication-operator',
+  metadata: {
+    name: 'authentication-operator',
+    namespace: 'authentication-operator-ns',
+  },
   name: 'authentication-operator',
   namespace: 'authentication-operator-ns',
-  label: 'app=authentication-operator',
   status: {
     cluster: 'test-cluster',
   },
 }
+
 export const mockFluxApplication0: OCPAppResource = {
   apiVersion: 'apps/v1',
   kind: 'deployment',
-  name: 'authentication-operator',
+  metadata: {
+    name: 'authentication-operatorf',
+    namespace: 'authentication-operator-ns',
+  },
+  name: 'authentication-operatorf',
   namespace: 'authentication-operator-ns',
   label: 'kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
   status: {
@@ -550,35 +584,6 @@ export const mockSearchQueryArgoAppsClusterOverviewFilteredCount = {
     ],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n  }\n}',
-}
-
-export const mockSearchResponseArgoApps = {
-  data: {
-    searchResult: [
-      {
-        items: [
-          {
-            apigroup: 'argoproj.io',
-            apiversion: 'v1alpha1',
-            cluster: 'feng-managed',
-            created: '2021-12-03T18:55:47Z',
-            destinationName: 'in-cluster',
-            destinationNamespace: 'feng-remote-namespace',
-            kind: 'application',
-            name: 'feng-remote-argo8',
-            namespace: 'openshift-gitops',
-            path: 'helloworld-perf',
-            repoURL: 'https://github.com/fxiang1/app-samples',
-            status: 'Healthy',
-            targetRevision: 'HEAD',
-            _clusterNamespace: 'feng-managed',
-            _rbac: 'feng-managed_argoproj.io_applications',
-            _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
-          },
-        ],
-      },
-    ],
-  },
 }
 
 export const mockSearchResponseArgoAppsCount = {
