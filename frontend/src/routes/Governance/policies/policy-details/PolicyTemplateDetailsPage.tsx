@@ -19,13 +19,13 @@ export function PolicyTemplateDetailsPage() {
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
   const urlParams = useParams()
-  const policyNamespace = urlParams.namespace || ''
-  const policyName = urlParams.name || ''
-  const clusterName = urlParams.clusterName || ''
-  const apiGroup = urlParams.apiGroup || ''
-  const apiVersion = urlParams.apiVersion || ''
-  const kind = urlParams.kind || ''
-  const templateName = urlParams.templateName || ''
+  const policyNamespace = urlParams.namespace ?? ''
+  const policyName = urlParams.name ?? ''
+  const clusterName = urlParams.clusterName ?? ''
+  const apiGroup = urlParams.apiGroup ?? ''
+  const apiVersion = urlParams.apiVersion ?? ''
+  const kind = urlParams.kind ?? ''
+  const templateName = urlParams.templateName ?? ''
 
   let templateClusterName = clusterName
   let templateNamespace = clusterName

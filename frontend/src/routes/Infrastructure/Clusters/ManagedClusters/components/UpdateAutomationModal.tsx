@@ -277,8 +277,8 @@ export function UpdateAutomationModal(props: {
                 prompt: {
                   label: t('View selected template'),
                   href: generatePath(NavigationPath.editAnsibleAutomation, {
-                    namespace: selectedCuratorTemplate?.metadata.namespace || '',
-                    name: selectedCuratorTemplate?.metadata.name || '',
+                    namespace: selectedCuratorTemplate?.metadata.namespace ?? '',
+                    name: selectedCuratorTemplate?.metadata.name ?? '',
                   }),
                   isDisabled: !selectedCuratorTemplate,
                 },

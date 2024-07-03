@@ -32,7 +32,7 @@ export const getClusterNavPath = (
 ) =>
   generatePath(navPath, {
     name: cluster.name,
-    namespace: (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) || UNKNOWN_NAMESPACE,
+    namespace: (cluster.isHypershift ? cluster.hypershift?.hostingNamespace : cluster.namespace) ?? UNKNOWN_NAMESPACE,
   })
 
 type ChildPath<B extends NavigationPath> = NavigationPath & `${B}${string}`
@@ -240,8 +240,8 @@ export function SubRoutesRedirect<B extends NavigationPath, M extends ChildPath<
   matchPath,
   targetPath,
 }: {
-  matchPath: M
-  targetPath: T
+  readonly matchPath: M
+  readonly targetPath: T
 }) {
   const { search } = useLocation()
 
@@ -252,7 +252,7 @@ export function SubRoutesRedirect<B extends NavigationPath, M extends ChildPath<
   const params = pathMatch
     ? (Object.keys(pathMatch.params) as PathParam<M>[]).reduce((params, key) => {
         const originalValue = pathMatch.params[key]
-        params[key as unknown as PathParam<T>] = originalValue === undefined ? null : originalValue
+        params[key as unknown as PathParam<T>] = originalValue ?? null
         return params
       }, {} as GeneratePathParams)
     : undefined

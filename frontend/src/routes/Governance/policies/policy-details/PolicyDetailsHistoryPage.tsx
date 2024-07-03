@@ -11,10 +11,10 @@ export function PolicyDetailsHistoryPage() {
   const { t } = useTranslation()
 
   const urlParams = useParams()
-  const policyNamespace = urlParams.namespace || ''
-  const policyName = urlParams.name || ''
-  const clusterName = urlParams.clusterName || ''
-  const templateName = urlParams.templateName || ''
+  const policyNamespace = urlParams.namespace ?? ''
+  const policyName = urlParams.name ?? ''
+  const clusterName = urlParams.clusterName ?? ''
+  const templateName = urlParams.templateName ?? ''
 
   return (
     <AcmPage

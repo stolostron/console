@@ -4,7 +4,13 @@ import { Cluster, createDownloadFile, getSecret, unpackSecret } from '../../../.
 import { AcmDropdown } from '../../../../../ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
-export function DownloadConfigurationDropdown({ cluster, canGetSecret }: { cluster: Cluster; canGetSecret: boolean }) {
+export function DownloadConfigurationDropdown({
+  cluster,
+  canGetSecret,
+}: {
+  readonly cluster: Cluster
+  readonly canGetSecret: boolean
+}) {
   const { t } = useTranslation()
 
   const downloadConfig = async (id: string) => {

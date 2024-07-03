@@ -44,8 +44,8 @@ export function PolicyDetailsPage() {
   const [modal, setModal] = useState<ReactNode | undefined>()
 
   const params = useParams()
-  const policyNamespace = params.namespace || ''
-  const policyName = params.name || ''
+  const policyNamespace = params.namespace ?? ''
+  const policyName = params.name ?? ''
 
   const isResultsTab = location.pathname.endsWith('/results')
 

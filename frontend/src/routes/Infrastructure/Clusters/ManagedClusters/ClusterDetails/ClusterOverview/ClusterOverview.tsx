@@ -180,7 +180,7 @@ export function ClusterOverviewPageContent() {
               })}
             ></AcmInlineStatus>
           ) : (
-            cluster!.distribution?.upgradeInfo?.currentChannel || ''
+            cluster!.distribution?.upgradeInfo?.currentChannel ?? ''
           )}
           <Popover bodyContent={<Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
