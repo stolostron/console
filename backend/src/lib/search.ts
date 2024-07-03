@@ -34,8 +34,8 @@ export async function getServiceAccountOptions() {
 export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<RequestOptions> {
   const mch = await getMultiClusterHub()
   const namespace = getNamespace()
-  const searchService = `https://search-search-api.${mch?.metadata?.namespace || namespace}.svc.cluster.local:4010`
-
+  const machineNs = process.env.NODE_ENV === 'test' ? 'undefined' : `${mch?.metadata?.namespace || namespace}`
+  const searchService = `https://search-search-api.${machineNs}.svc.cluster.local:4010`
   const searchUrl = process.env.SEARCH_API_URL || searchService
   const endpoint = process.env.globalSearchFeatureFlag === 'enabled' ? '/federated' : '/searchapi/graphql'
   const url = new URL(searchUrl + endpoint)

@@ -2,7 +2,7 @@
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import { getAggregatedCache } from '../../src/routes/aggregator'
 import { aggregateApplications } from '../../src/routes/aggregators/applications'
-import { ResourceCache, initResourceCache } from '../../src/routes/events'
+import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
 
