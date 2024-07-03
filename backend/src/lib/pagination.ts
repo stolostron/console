@@ -79,7 +79,8 @@ export function paginate(
     let rpage = page
     let emptyResult = false
     let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
-    if (itemCount > 500) {
+    const backendLimit = process.env.NODE_ENV === 'test' ? 0 : 500
+    if (itemCount > backendLimit) {
       isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
       if (filters) {

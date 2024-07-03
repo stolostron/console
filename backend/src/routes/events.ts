@@ -83,14 +83,21 @@ function canListResources(token: string, resource: IResource): Promise<boolean> 
   })
 }
 
-export const resourceCache: {
+export interface ResourceCache {
   [apiVersionKind: string]: {
     [uid: string]: {
       resource: IResource
       eventID: number
     }
   }
-} = {}
+}
+
+// for testing
+export function initResourceCache(cache: ResourceCache) {
+  resourceCache = cache
+}
+
+export let resourceCache: ResourceCache = {}
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 

@@ -56,7 +56,7 @@ export async function aggregateApplications(aggregatedCache: AggregatedCacheType
   // Argo AppSets
   const localArgoAppSets = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
 
-  // OCP Apps
+  // OCP Apps/FLUX
   const { localOCPApps, remoteOCPApps } = await getOCPApps(argoAppSet)
 
   const filterCounts: FilterCounts = {}

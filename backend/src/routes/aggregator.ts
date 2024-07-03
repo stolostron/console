@@ -16,6 +16,10 @@ export type AggregatedCacheType = {
 
 const aggregatedCache: AggregatedCacheType = {}
 
+export function getAggregatedCache(): AggregatedCacheType {
+  return aggregatedCache
+}
+
 let intervalTimer: NodeJS.Timer | undefined
 export function startAggregating(): void {
   intervalTimer = setInterval(async () => {
