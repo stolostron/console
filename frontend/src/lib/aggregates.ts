@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { IResource, getBackendUrl, postRequest } from '../resources'
+import { IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
 import { useCallback, useEffect, useMemo } from 'react'
+import { usePluginDataContextValue } from './PluginDataContext'
 
 const apiUrl = '/aggregate'
 
@@ -49,10 +50,11 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
     }),
     []
   )
+  const { backendUrl } = usePluginDataContextValue()
 
   const queryFunc = useCallback(() => {
-    return postRequest<IRequestListView, IResultListView>(`${getBackendUrl()}${apiUrl}/${aggregate}`, requestedView)
-  }, [aggregate, requestedView])
+    return postRequest<IRequestListView, IResultListView>(`${backendUrl}${apiUrl}/${aggregate}`, requestedView)
+  }, [aggregate, backendUrl, requestedView])
 
   const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {
     pollInterval: 15,
