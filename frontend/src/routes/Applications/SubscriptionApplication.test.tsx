@@ -687,7 +687,10 @@ describe('Create Subscription Application page', () => {
     userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
 
     // pick existing Placement
+
     await waitForText('Select an existing placement configuration')
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
     screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacement.metadata.name!)
     const patchNocks: Scope[] = [
