@@ -60,9 +60,9 @@ export function InstallSubmarinerFormPage() {
   const navigate = useNavigate()
   const { clusterSet, clusters, submarinerAddons } = useClusterSetDetailsContext()
   const [availableClusters] = useState<Cluster[]>(
-    clusters!.filter(
+    clusters.filter(
       (cluster) =>
-        !submarinerAddons!.find((addon) => addon.metadata.namespace === cluster.namespace) &&
+        !submarinerAddons.find((addon) => addon.metadata.namespace === cluster.namespace) &&
         cluster.distribution?.ocp?.version // OpenShift clusters only
     )
   )
@@ -99,8 +99,8 @@ export function InstallSubmarinerFormPage() {
                 to: NavigationPath.clusterSets,
               },
               {
-                text: clusterSet!.metadata.name!,
-                to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }),
+                text: clusterSet.metadata.name!,
+                to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }),
               },
               {
                 text: t('managed.clusterSets.submariner.addons.install'),
@@ -117,9 +117,9 @@ export function InstallSubmarinerFormPage() {
               <>
                 <RbacButton
                   component={Link}
-                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
+                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet.metadata.name! })}
                   variant="primary"
-                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
+                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
                 >
                   {t('managed.clusterSets.clusters.emptyStateButton')}
                 </RbacButton>
@@ -565,8 +565,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         to: NavigationPath.clusterSets,
       },
       {
-        text: clusterSet!.metadata.name!,
-        to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }),
+        text: clusterSet.metadata.name!,
+        to: generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }),
       },
       {
         text: t('managed.clusterSets.submariner.addons.install'),
@@ -581,7 +581,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     backLabel: t('back'),
     cancel: () => {
       cancelForm()
-      navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }))
+      navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }))
     },
     stateToData,
     sections: [
@@ -1195,7 +1195,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           throw errors[0]
         } else {
           submitForm()
-          return navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! }))
+          return navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }))
         }
       })
     },

@@ -351,7 +351,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       <AddNodePoolModal
         open={openAddNodepoolModal}
         close={toggleAddNodepoolModal}
-        hostedCluster={hostedCluster!}
+        hostedCluster={hostedCluster}
         refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
         clusterImages={clusterImages}
       />

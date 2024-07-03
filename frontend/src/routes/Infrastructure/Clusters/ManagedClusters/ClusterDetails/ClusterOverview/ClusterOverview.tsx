@@ -114,7 +114,7 @@ export function ClusterOverviewPageContent() {
       key: t('table.clusterName'),
       value: (
         <span>
-          {cluster!.name}
+          {cluster.name}
           <Popover
             bodyContent={
               <Trans
@@ -180,7 +180,7 @@ export function ClusterOverviewPageContent() {
               })}
             ></AcmInlineStatus>
           ) : (
-            cluster!.distribution?.upgradeInfo?.currentChannel ?? ''
+            cluster.distribution?.upgradeInfo?.currentChannel ?? ''
           )}
           <Popover bodyContent={<Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -314,7 +314,7 @@ export function ClusterOverviewPageContent() {
     clusterSet: {
       key: t('table.clusterSet'),
       value: cluster?.clusterSet! && (
-        <Link to={generatePath(NavigationPath.clusterSetOverview, { id: cluster?.clusterSet! })}>
+        <Link to={generatePath(NavigationPath.clusterSetOverview, { id: cluster.clusterSet })}>
           {cluster?.clusterSet}
         </Link>
       ),
@@ -444,7 +444,7 @@ export function ClusterOverviewPageContent() {
             }}
           ></TemplateSummaryModal>
         )}
-        <ClusterStatusMessageAlert cluster={cluster!} padBottom />
+        <ClusterStatusMessageAlert cluster={cluster} padBottom />
         <HiveNotification />
         {cluster?.isHypershift && !cluster?.isHostedCluster && selectedHostedCluster ? (
           <HypershiftImportCommand selectedHostedClusterResource={selectedHostedCluster} />
@@ -456,11 +456,11 @@ export function ClusterOverviewPageContent() {
             showEditLabels
               ? {
                   ...ManagedClusterDefinition,
-                  metadata: { name: cluster!.name, labels: cluster!.labels },
+                  metadata: { name: cluster.name, labels: cluster.labels },
                 }
               : undefined
           }
-          displayName={cluster!.displayName}
+          displayName={cluster.displayName}
           close={() => setShowEditLabels(false)}
         />
         {details}
@@ -470,7 +470,7 @@ export function ClusterOverviewPageContent() {
           rightItems={rightItems}
           id="cluster-overview"
         />
-        {cluster!.isManaged &&
+        {cluster.isManaged &&
           [
             ClusterStatus.ready,
             ClusterStatus.degraded,
@@ -478,7 +478,7 @@ export function ClusterOverviewPageContent() {
             ClusterStatus.resuming,
             ClusterStatus.hibernating,
             ClusterStatus.unknown,
-          ].includes(cluster!.status) && <StatusSummaryCount />}
+          ].includes(cluster.status) && <StatusSummaryCount />}
         {cluster && (
           <BatchChannelSelectModal
             clusters={[cluster]}

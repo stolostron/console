@@ -181,8 +181,8 @@ export function StatusField(props: { cluster: Cluster }) {
         Action = () => (
           <Link
             to={generatePath(NavigationPath.clusterOverview, {
-              namespace: props.cluster?.namespace!,
-              name: props.cluster?.name!,
+              namespace: props.cluster.namespace!,
+              name: props.cluster.name,
             })}
           >
             {t('Go to Overview')}

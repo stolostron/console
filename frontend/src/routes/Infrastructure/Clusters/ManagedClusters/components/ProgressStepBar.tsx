@@ -23,9 +23,9 @@ export function ProgressStepBar() {
   const curators = useRecoilValue(clusterCuratorsState)
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const configMaps = useRecoilValue(configMapsState)
-  const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster?.name!)
+  const latestJobs = getLatestAnsibleJob(ansibleJobs, cluster.name)
   const curator = curators.find(
-    (curator) => curator.metadata.name === cluster?.name && curator.metadata.namespace == cluster?.namespace
+    (curator) => curator.metadata.name === cluster.name && curator.metadata.namespace == cluster?.namespace
   )
 
   const installStatus = [
@@ -38,10 +38,10 @@ export function ProgressStepBar() {
   ]
 
   if (
-    installStatus.includes(cluster?.status!) ||
+    installStatus.includes(cluster.status) ||
     (clusterDeployment && // Creation flow only valid when there is a ClusterDeployment
       clusterDeployment?.status?.powerState !== 'Running' && // if ClusterDeployment is already running, this is a re-import
-      [ClusterStatus.importing, ClusterStatus.importfailed].includes(cluster?.status!))
+      [ClusterStatus.importing, ClusterStatus.importfailed].includes(cluster.status))
   ) {
     // hook state
     const prehooks = curator?.spec?.install?.prehook?.length
@@ -147,7 +147,7 @@ export function ProgressStepBar() {
         statusText: t('status.install.text'),
         statusSubtitle: getStatusLabel(creatingStatus, t),
         stepID: 'install',
-        ...(provisionStatus.includes(cluster?.status!) && {
+        ...(provisionStatus.includes(cluster.status) && {
           link: {
             linkName: t('status.link.logs'),
             linkCallback: () => {
@@ -155,7 +155,7 @@ export function ProgressStepBar() {
                 const url = `k8s/ns/${cluster.hypershift?.hostingNamespace}-${cluster.name}/pods`
                 launchToOCP(url)
               } else {
-                launchLogs(cluster!, configMaps)
+                launchLogs(cluster, configMaps)
               }
             },
           },

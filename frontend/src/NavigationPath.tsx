@@ -209,7 +209,7 @@ export function useBackCancelNavigation(): {
         }
         navigate(newLocation, {
           state: {
-            ...(state ? state : {}),
+            ...(state ?? {}),
             ...(typeof newLocation !== 'string' && 'state' in newLocation ? newLocation.state : {}),
             ...newState,
           },

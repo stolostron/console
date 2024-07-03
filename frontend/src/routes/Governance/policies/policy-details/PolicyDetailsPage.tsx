@@ -49,10 +49,10 @@ export function PolicyDetailsPage() {
 
   const isResultsTab = location.pathname.endsWith('/results')
 
-  const detailsUrl = generatePath(NavigationPath.policyDetails, { namespace: policyNamespace!, name: policyName! })
+  const detailsUrl = generatePath(NavigationPath.policyDetails, { namespace: policyNamespace, name: policyName })
   const resultsUrl = generatePath(NavigationPath.policyDetailsResults, {
-    namespace: policyNamespace!,
-    name: policyName!,
+    namespace: policyNamespace,
+    name: policyName,
   })
 
   const selectedPolicy: Policy = useMemo(() => {

@@ -112,7 +112,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
       <AddNodePoolModal
         open={openAddNodepoolModal}
         close={toggleAddNodepoolModal}
-        hostedCluster={hostedCluster!}
+        hostedCluster={hostedCluster}
         refNodepool={nodePools && nodePools.length > 0 ? (nodePools[0] as NodePool) : undefined}
         clusterImages={rest.clusterImages}
       />

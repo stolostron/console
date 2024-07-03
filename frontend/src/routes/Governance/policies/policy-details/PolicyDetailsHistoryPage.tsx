@@ -25,7 +25,7 @@ export function PolicyDetailsHistoryPage() {
             { text: t('Policies'), to: NavigationPath.policies },
             {
               text: policyName,
-              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace!, name: policyName }),
+              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace, name: policyName }),
             },
             { text: t('History'), to: '' },
           ]}

@@ -30,7 +30,7 @@ export function ClusterSetOverviewPageContent() {
   const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings, clusterRoleBindings } =
     useClusterSetDetailsContext()
 
-  const unhealthySubmariners = submarinerAddons!.filter(
+  const unhealthySubmariners = submarinerAddons.filter(
     (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
   )
 
@@ -83,7 +83,7 @@ export function ClusterSetOverviewPageContent() {
               ? [
                   {
                     key: t('table.networkStatus'),
-                    value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
+                    value: <MultiClusterNetworkStatus clusterSet={clusterSet} />,
                   },
                 ]
               : []),
@@ -107,7 +107,7 @@ export function ClusterSetOverviewPageContent() {
                     }}
                     variant="link"
                     style={{ padding: 0, paddingLeft: '6px' }}
-                    rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'bind')]}
+                    rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'bind')]}
                   >
                     <PencilAltIcon />
                   </RbacButton>
@@ -135,16 +135,16 @@ export function ClusterSetOverviewPageContent() {
                   ? [
                       {
                         id: 'submariners',
-                        count: submarinerAddons!.length,
+                        count: submarinerAddons.length,
                         title: t('submariner.addons'),
                         linkText: t('summary.submariner.launch'),
                         onLinkClick: () =>
                           navigate(
-                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! })
                           ),
                         countClick: () =>
                           navigate(
-                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet!.metadata.name! })
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! })
                           ),
                         isDanger: unhealthySubmariners.length > 0,
                       },
@@ -152,22 +152,22 @@ export function ClusterSetOverviewPageContent() {
                   : []),
                 {
                   id: 'clusters',
-                  count: clusters!.length,
+                  count: clusters.length,
                   title: t('Clusters'),
                   linkText: t('summary.clusters.launch'),
                   onLinkClick: navigateToClusterSet,
                   countClick: navigateToClusterSet,
-                  isDanger: clusters!.filter((cluster) => clusterDangerStatuses.includes(cluster.status)).length > 0,
+                  isDanger: clusters.filter((cluster) => clusterDangerStatuses.includes(cluster.status)).length > 0,
                 },
                 {
                   id: 'clusterPools',
-                  count: clusterPools!.length,
+                  count: clusterPools.length,
                   title: t('clusterPools'),
                   linkText: t('summary.clusterPools.launch'),
                   onLinkClick: () =>
-                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet!.metadata.name! })),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet.metadata.name! })),
                   countClick: () =>
-                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet!.metadata.name! })),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet.metadata.name! })),
                 },
               ]}
             />

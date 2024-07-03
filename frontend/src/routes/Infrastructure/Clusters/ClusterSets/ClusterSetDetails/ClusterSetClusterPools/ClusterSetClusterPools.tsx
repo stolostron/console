@@ -25,8 +25,8 @@ export function ClusterSetClusterPoolsPageContent() {
     <AcmPageContent id="cluster-pools">
       <PageSection>
         <ClusterPoolsTable
-          clusterPools={clusterPools!}
-          clusters={clusters!}
+          clusterPools={clusterPools}
+          clusters={clusters}
           emptyState={
             <AcmEmptyState
               key="mcEmptyState"
@@ -39,10 +39,10 @@ export function ClusterSetClusterPoolsPageContent() {
                   component={Link}
                   {...getBackCancelLocationLinkProps({
                     pathname: NavigationPath.createClusterPool,
-                    search: `?clusterSet=${clusterSet!.metadata.name}`,
+                    search: `?clusterSet=${clusterSet.metadata.name}`,
                   })}
                   variant="primary"
-                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
+                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
                 >
                   {t('managed.clusterSets.clusterPools.emptyStateButton')}
                 </RbacButton>

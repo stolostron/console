@@ -34,9 +34,9 @@ export function ClusterSetClustersPageContent() {
               action={
                 <RbacButton
                   component={Link}
-                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
+                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet.metadata.name! })}
                   variant="primary"
-                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
+                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
                 >
                   {t('managed.clusterSets.clusters.emptyStateButton')}
                 </RbacButton>

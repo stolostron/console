@@ -44,7 +44,7 @@ export function MachinePoolsTable() {
   })
   const [scaleMachinePool, setScaleMachinePool] = useState<ScaleMachinePoolModalProps | undefined>()
   const machinePoolState = useRecoilValue(machinePoolsState)
-  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
+  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster.namespace)
 
   function getInstanceType(machinePool: MachinePool) {
     let type: string | undefined
@@ -211,8 +211,8 @@ export function MachinePoolsTable() {
             isKebab={true}
             text={`${machinePool.metadata.name}-actions`}
             actions={actions}
-            tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster!.status}`) })}
-            isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster!.status)}
+            tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster.status}`) })}
+            isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster.status)}
           />
         )
       },

@@ -444,7 +444,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.EditAI,
           text: t('managed.editAI'),
           click: (cluster: Cluster) =>
-            navigate(generatePath(NavigationPath.editCluster, { namespace: cluster.namespace!, name: cluster.name! })),
+            navigate(generatePath(NavigationPath.editCluster, { namespace: cluster.namespace!, name: cluster.name })),
           isAriaDisabled: cluster.status !== ClusterStatus.draft,
         },
         {

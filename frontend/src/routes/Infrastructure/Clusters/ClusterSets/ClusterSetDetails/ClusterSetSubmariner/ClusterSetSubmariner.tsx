@@ -139,14 +139,14 @@ export function ClusterSetSubmarinerPageContent() {
       sort: 'metadata.namespace',
       search: 'metadata.namespace',
       cell: (mca: ManagedClusterAddOn) => {
-        const matchedCluster = clusters!.find((c) => c.namespace === mca.metadata.namespace)
+        const matchedCluster = clusters.find((c) => c.namespace === mca.metadata.namespace)
         return matchedCluster!.displayName
       },
     },
     {
       header: t('table.provider'),
       cell: (mca: ManagedClusterAddOn) => {
-        const matchedCluster = clusters!.find((c) => c.namespace === mca.metadata.namespace)
+        const matchedCluster = clusters.find((c) => c.namespace === mca.metadata.namespace)
         return matchedCluster?.provider ? <AcmInlineProvider provider={matchedCluster!.provider!} /> : '-'
       },
     },
@@ -382,12 +382,12 @@ export function ClusterSetSubmarinerPageContent() {
                 <AcmEmptyState
                   key="mcEmptyState"
                   title={
-                    clusters!.length === 0
+                    clusters.length === 0
                       ? t('managed.clusterSets.clusters.emptyStateHeader')
                       : t('empty-state.submariner.title')
                   }
                   message={
-                    clusters!.length === 0 ? (
+                    clusters.length === 0 ? (
                       <Trans
                         i18nKey="managed.clusterSets.submariner.clusters.emptyStateMsg"
                         components={{ bold: <strong />, p: <p /> }}
@@ -400,12 +400,12 @@ export function ClusterSetSubmarinerPageContent() {
                     )
                   }
                   action={
-                    clusters!.length === 0 ? (
+                    clusters.length === 0 ? (
                       <RbacButton
                         component={Link}
-                        to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet!.metadata.name! })}
+                        to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet.metadata.name! })}
                         variant="primary"
-                        rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'join')]}
+                        rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
                       >
                         {t('managed.clusterSets.clusters.emptyStateButton')}
                       </RbacButton>

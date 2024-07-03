@@ -64,8 +64,8 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
           )}
           <Link
             to={generatePath(NavigationPath.editApplicationSubscription, {
-              name: params.name!,
-              namespace: params.namespace!,
+              name: params.name,
+              namespace: params.namespace,
             })}
           >
             <AcmButton

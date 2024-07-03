@@ -42,7 +42,7 @@ export function HiveNotification() {
     (c) => c.type === 'ClusterProvisionFailed'
   )
   const clusterProvisionStatus =
-    provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster!.statusMessage
+    provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster.statusMessage
 
   const provisionStatuses: string[] = [
     ClusterStatus.destroying,
@@ -58,7 +58,7 @@ export function HiveNotification() {
     return null
   }
 
-  if (cluster!.statusMessage) {
+  if (cluster.statusMessage) {
     return null
   }
 
@@ -83,7 +83,7 @@ export function HiveNotification() {
           <Fragment>
             {getProvisionNotification(cluster?.status, t)}
             <AcmButton
-              onClick={() => launchLogs(cluster!, configMaps)}
+              onClick={() => launchLogs(cluster, configMaps)}
               variant={ButtonVariant.link}
               role="link"
               id="view-logs"

@@ -100,7 +100,7 @@ export function NodesPoolsTable() {
       return node.name
     }
     return (
-      <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
+      <Link to={`${NavigationPath.resources}?cluster=${cluster.name!}&kind=node&apiversion=v1&name=${node.name}`}>
         {node.name}
       </Link>
     )

@@ -14,7 +14,7 @@ export function ScaleClusterAlert() {
   const { cluster } = useClusterDetailsContext()
   const { machinePoolsState } = useSharedAtoms()
   const machinePoolState = useRecoilValue(machinePoolsState)
-  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
+  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster.namespace)
 
   const totalDesiredReplicas = machinePools.reduce((sum, mp) => sum + (mp.status?.replicas || 0), 0)
   const totalReadyReplicas = machinePools.reduce((sum, mp) => sum + getReadyReplicas(mp), 0)
