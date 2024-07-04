@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 
 import { NavigationPath } from '../../../../../../NavigationPath'
 
@@ -31,6 +31,7 @@ import {
 } from './EditAICluster.sharedmocks'
 import { ClusterDeployment } from '../../../../../../resources'
 import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+import EditAICluster from './EditAICluster'
 
 jest.mock('react-router-dom-v5-compat', () => {
   const originalModule = jest.requireActual('react-router-dom-v5-compat')
@@ -57,7 +58,9 @@ const Component = () => {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.editCluster]}>
-        <Routes>{/* <Route path={NavigationPath.editCluster} element={<EditAICluster />} /> */}</Routes>
+        <Routes>
+          <Route path={NavigationPath.editCluster} element={<EditAICluster />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -75,7 +78,7 @@ const provisioningConfig = {
   },
 }
 
-describe.skip('Edit AI Cluster', () => {
+describe('Edit AI Cluster', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can be rendered', async () => {
     ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockReturnValue([provisioningConfig, true, null])
@@ -84,9 +87,7 @@ describe.skip('Edit AI Cluster', () => {
       nockList(managedClusterMock, managedClusterMock),
       nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
     ]
-    const { debug } = render(<Component />)
-    debug()
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    render(<Component />)
 
     await waitForText('ai:Installation type')
 
