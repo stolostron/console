@@ -18,13 +18,14 @@ import {
 import { GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { generatePath, Link, useHistory } from 'react-router-dom'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { findResourceFieldLineNumber } from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { IResource, OwnerReference } from '../../../../resources'
+import { OwnerReference } from '../../../../resources'
 import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../../ui-components'
+import { useSearchDetailsContext } from './DetailsPage'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -211,16 +212,10 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
   )
 }
 
-export default function DetailsOverviewPage(props: {
-  cluster: string
-  resource: IResource
-  loading: boolean
-  error: string
-  name: string
-}) {
-  const { cluster, resource, loading, error, name } = props
+export default function DetailsOverviewPage() {
+  const { cluster, resource, resourceLoading, resourceError, name } = useSearchDetailsContext()
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
 
   const { labelsLineNumber, annotationsLineNumber, tolerationsLineNumber } = useMemo(() => {
@@ -284,7 +279,7 @@ export default function DetailsOverviewPage(props: {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              history.push(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -293,7 +288,7 @@ export default function DetailsOverviewPage(props: {
         )
       }
     }
-  }, [cluster, resource, history])
+  }, [cluster, resource, navigate])
 
   const nodeSelectorLink = useMemo(() => {
     if (resource) {
@@ -313,7 +308,7 @@ export default function DetailsOverviewPage(props: {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              history.push(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -322,9 +317,9 @@ export default function DetailsOverviewPage(props: {
         )
       }
     }
-  }, [cluster, resource, history])
+  }, [cluster, resource, navigate])
 
-  if (error) {
+  if (resourceError) {
     return (
       <PageSection>
         <AcmAlert
@@ -332,11 +327,11 @@ export default function DetailsOverviewPage(props: {
           variant={'danger'}
           isInline={true}
           title={`${t('Error querying for resource:')} ${name}`}
-          subtitle={error}
+          subtitle={resourceError}
         />
       </PageSection>
     )
-  } else if (loading) {
+  } else if (resourceLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />
@@ -344,7 +339,7 @@ export default function DetailsOverviewPage(props: {
     )
   }
 
-  if (resource && !loading && !error) {
+  if (resource && !resourceLoading && !resourceError) {
     return (
       <PageSection>
         <PageSection variant={'light'}>
@@ -372,7 +367,7 @@ export default function DetailsOverviewPage(props: {
                       type="button"
                       isInline
                       onClick={() => {
-                        history.push(
+                        navigate(
                           `${NavigationPath.resources}?cluster=${cluster}&kind=Namespace&apiversion=v1&name=${resource.metadata?.namespace}`
                         )
                       }}
@@ -408,11 +403,8 @@ export default function DetailsOverviewPage(props: {
                   {canEditResource && (
                     <FlexItem>
                       <Link
-                        to={{
-                          pathname: NavigationPath.resourceYAML,
-                          search: window.location.search,
-                          state: { scrollToLine: labelsLineNumber },
-                        }}
+                        to={NavigationPath.resourceYAML + window.location.search}
+                        state={{ scrollToLine: labelsLineNumber }}
                       >
                         {t('Edit')}
                         <PencilAltIcon style={{ marginLeft: '.5rem' }} />
@@ -451,11 +443,8 @@ export default function DetailsOverviewPage(props: {
                   <DescriptionListDescription>
                     {canEditResource ? (
                       <Link
-                        to={{
-                          pathname: NavigationPath.resourceYAML,
-                          search: window.location.search,
-                          state: { scrollToLine: tolerationsLineNumber },
-                        }}
+                        to={NavigationPath.resourceYAML + window.location.search}
+                        state={{ scrollToLine: tolerationsLineNumber }}
                       >
                         {t('tolerations.count', {
                           count: resourceTolerationsCount,
@@ -476,11 +465,8 @@ export default function DetailsOverviewPage(props: {
                 <DescriptionListDescription>
                   {canEditResource ? (
                     <Link
-                      to={{
-                        pathname: NavigationPath.resourceYAML,
-                        search: window.location.search,
-                        state: { scrollToLine: annotationsLineNumber },
-                      }}
+                      to={NavigationPath.resourceYAML + window.location.search}
+                      state={{ scrollToLine: annotationsLineNumber }}
                     >
                       {t('annotations.count', {
                         count: Object.keys(resource.metadata?.annotations ?? {}).length,

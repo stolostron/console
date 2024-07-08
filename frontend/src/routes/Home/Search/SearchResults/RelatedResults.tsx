@@ -22,6 +22,7 @@ import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { GetRowActions } from './utils'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 export function RenderItemContent(props: {
   currentQuery: string
@@ -41,6 +42,7 @@ export function RenderItemContent(props: {
       input: [{ ...convertStringToQuery(currentQuery, searchResultLimit), relatedKinds: [relatedKind] }],
     },
   })
+  const navigate = useNavigate()
 
   const searchDefinitions = useSearchDefinitions()
   const colDefs = _.get(
@@ -77,6 +79,7 @@ export function RenderItemContent(props: {
         setDeleteResource,
         setDeleteExternalResource,
         clusters,
+        navigate,
         t
       )}
     />

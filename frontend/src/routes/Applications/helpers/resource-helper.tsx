@@ -4,8 +4,7 @@ import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
-import { Link } from 'react-router-dom'
-import { generatePath } from 'react-router'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,

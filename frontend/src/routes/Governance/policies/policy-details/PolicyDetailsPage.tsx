@@ -1,7 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useParams,
+  useNavigate,
+  useOutletContext,
+  Outlet,
+  generatePath,
+} from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -16,35 +24,36 @@ import {
   AcmSecondaryNavItem,
 } from '../../../../ui-components'
 import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
-import PolicyDetailsOverview from './PolicyDetailsOverview'
-import PolicyDetailsResults from './PolicyDetailsResults'
 import { PolicyTableItem } from '../Policies'
 import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
 import { useAddRemediationPolicies } from '../../common/useCustom'
+
+export type PolicyDetailsContext = {
+  policy: Policy
+}
 
 export function PolicyDetailsPage() {
   const location = useLocation()
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
-  const history = useHistory()
+  const navigate = useNavigate()
   const policies = useAddRemediationPolicies()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const [modal, setModal] = useState<ReactNode | undefined>()
 
-  const params = useParams<{ namespace: string; name: string }>()
-  const policyNamespace = params.namespace
-  const policyName = params.name
+  const params = useParams()
+  const policyNamespace = params.namespace ?? ''
+  const policyName = params.name ?? ''
 
   const isResultsTab = location.pathname.endsWith('/results')
 
-  const detailsUrl = NavigationPath.policyDetails
-    .replace(':namespace', policyNamespace as string)
-    .replace(':name', policyName as string)
-  const resultsUrl = NavigationPath.policyDetailsResults
-    .replace(':namespace', policyNamespace as string)
-    .replace(':name', policyName as string)
+  const detailsUrl = generatePath(NavigationPath.policyDetails, { namespace: policyNamespace, name: policyName })
+  const resultsUrl = generatePath(NavigationPath.policyDetailsResults, {
+    namespace: policyNamespace,
+    name: policyName,
+  })
 
   const selectedPolicy: Policy = useMemo(() => {
     const idx =
@@ -61,12 +70,19 @@ export function PolicyDetailsPage() {
     }
   }, [selectedPolicy, helmReleases, channels, subscriptions, t])
 
+  const policyDetailsContext = useMemo<PolicyDetailsContext>(
+    () => ({
+      policy: selectedPolicy,
+    }),
+    [selectedPolicy]
+  )
+
   if (!selectedPolicy) {
     return (
       <ErrorPage
         error={new ResourceError(ResourceErrorCode.NotFound)}
         actions={
-          <AcmButton role="link" onClick={() => history.push(NavigationPath.policies)}>
+          <AcmButton role="link" onClick={() => navigate(NavigationPath.policies)}>
             {t('Back to policies')}
           </AcmButton>
         }
@@ -116,11 +132,12 @@ export function PolicyDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
-          <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
-          <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
-        </Switch>
+        <Outlet context={policyDetailsContext} />
       </Suspense>
     </AcmPage>
   )
+}
+
+export function usePolicyDetailsContext() {
+  return useOutletContext<PolicyDetailsContext>()
 }

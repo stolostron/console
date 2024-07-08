@@ -3,8 +3,8 @@ import { render, waitFor } from '@testing-library/react'
 import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { TimeWindowLabels } from './TimeWindowLabels'
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
   useParams: () => ({
     namespace: 'test-ns',
     name: 'test',

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -20,7 +20,6 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockSearch } from 
 import { PluginContext } from '../../lib/PluginContext'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 import { ocpApi, waitForText } from '../../lib/test-util'
-import { NavigationPath } from '../../NavigationPath'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import {
   acmExtension,
@@ -51,8 +50,8 @@ import {
   mockSearchResponseOCPApplicationsCount,
   mockSubscriptions,
 } from './Application.sharedmocks'
-import ApplicationsPage from './ApplicationsPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Overview from './Overview'
 
 const queryClient = new QueryClient()
 
@@ -81,7 +80,7 @@ describe('Applications Page', () => {
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter initialEntries={[NavigationPath.applications]}>
+          <MemoryRouter>
             <PluginContext.Provider
               value={{
                 acmExtensions: acmExtension,
@@ -89,7 +88,9 @@ describe('Applications Page', () => {
                 ocpApi,
               }}
             >
-              <ApplicationsPage />
+              <Routes>
+                <Route path="*" element={<Overview />} />
+              </Routes>
             </PluginContext.Provider>
           </MemoryRouter>
         </QueryClientProvider>

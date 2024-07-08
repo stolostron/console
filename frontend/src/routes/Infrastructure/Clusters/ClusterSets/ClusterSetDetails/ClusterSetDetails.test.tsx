@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import * as YAML from 'yaml'
 import {
@@ -70,8 +70,9 @@ import {
   mockClusterDeployments,
   mockManagedClusterInfos,
   mockManagedClusters,
-} from '../../ManagedClusters/ManagedClusters.test'
-import ClusterSetDetailsPage from './ClusterSetDetails'
+} from '../../ManagedClusters/ManagedClusters.sharedmocks'
+import ClusterSetDetails from './ClusterSetDetails'
+import Clusters from '../../Clusters'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -1297,15 +1298,14 @@ const Component = (props: { isGlobal?: boolean }) => (
   >
     <MemoryRouter
       initialEntries={[
-        NavigationPath.clusterSetDetails.replace(
-          ':id',
-          props.isGlobal ? mockGlobalManagedClusterSet.metadata.name! : mockManagedClusterSet.metadata.name!
-        ),
+        generatePath(NavigationPath.clusterSetDetails, {
+          id: props.isGlobal ? mockGlobalManagedClusterSet.metadata.name! : mockManagedClusterSet.metadata.name!,
+        }),
       ]}
     >
-      <Switch>
-        <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-      </Switch>
+      <Routes>
+        <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+      </Routes>
     </MemoryRouter>
   </RecoilRoot>
 )
@@ -1808,11 +1808,11 @@ describe('ClusterSetDetails error', () => {
       }}
     >
       <MemoryRouter
-        initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+        initialEntries={[generatePath(NavigationPath.clusterSetDetails, { id: mockManagedClusterSet.metadata.name! })]}
       >
-        <Switch>
-          <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.clusterSetDetails} element={<ClusterSetDetails />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -1838,11 +1838,11 @@ describe('ClusterSetDetails deletion', () => {
       }}
     >
       <MemoryRouter
-        initialEntries={[NavigationPath.clusterSetDetails.replace(':id', mockManagedClusterSet.metadata.name!)]}
+        initialEntries={[generatePath(NavigationPath.clusterSetDetails, { id: mockManagedClusterSet.metadata.name! })]}
       >
-        <Switch>
-          <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.clusterSetDetails + '/*'} element={<ClusterSetDetails />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

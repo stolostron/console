@@ -1,19 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
-import { useContext } from 'react'
-import {
-  ClusterInstallationProgress,
-  ConfigMapK8sResource,
-  getSupportedCM,
-  HostedClusterK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'
+import { ClusterInstallationProgress, ConfigMapK8sResource, getSupportedCM } from '@openshift-assisted/ui-lib/cim'
 import { createResource, deleteResource, getResource, IResource, patchResource } from '../../../../../../resources'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { launchToOCP } from '../../../../../../lib/ocp-utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 
 const AIHypershiftClusterDetails: React.FC = () => {
-  const { hostedCluster, agents } = useContext(ClusterContext)
+  const { hostedCluster, agents } = useClusterDetailsContext()
 
   const { agentMachinesState, configMapsState, nodePoolsState } = useSharedAtoms()
   const nodePools = useRecoilValue(nodePoolsState)
@@ -35,7 +29,7 @@ const AIHypershiftClusterDetails: React.FC = () => {
           <ClusterInstallationProgress
             agents={agents || []}
             agentMachines={agentMachines}
-            hostedCluster={hostedCluster as HostedClusterK8sResource}
+            hostedCluster={hostedCluster}
             fetchSecret={(name, namespace) =>
               getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise
             }

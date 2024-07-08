@@ -9,7 +9,7 @@ import {
 } from '../../../../../resources'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { rbacCreate, rbacDelete } from '../../../../../lib/rbac-util'
@@ -19,7 +19,7 @@ import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterSet> | { open: false }>({
     open: false,
   })
@@ -57,7 +57,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         id: 'manage-clusterSet-resources',
         text: t('set.manage-resources'),
         click: (managedClusterSet: ManagedClusterSet) => {
-          history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
+          navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
         },
         isAriaDisabled: true,
         rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'join')],
@@ -96,7 +96,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
       actions = actions.filter((action) => action.id !== 'delete-clusterSet')
     }
     return actions
-  }, [history, modalColumns, props.managedClusterSet, t])
+  }, [modalColumns, navigate, props.managedClusterSet, t])
 
   return (
     <>

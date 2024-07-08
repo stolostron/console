@@ -15,14 +15,14 @@ import {
 } from '../../ui-components'
 import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
-import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
+import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
   deleteResource,
   DiscoveryConfig,
@@ -77,7 +77,7 @@ export function CredentialsTable(props: {
   secrets?: Secret[]
 }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
@@ -137,7 +137,7 @@ export function CredentialsTable(props: {
                   isDisabled={!canAddCredential}
                   tooltip={!canAddCredential ? unauthorizedMessage : ''}
                   component={Link}
-                  to={createBackCancelLocation(NavigationPath.addCredentials)}
+                  {...getBackCancelLocationLinkProps(NavigationPath.addCredentials)}
                 >
                   {t('Add credential')}
                 </AcmButton>
@@ -155,9 +155,10 @@ export function CredentialsTable(props: {
             cell: (secret) => (
               <span style={{ whiteSpace: 'nowrap' }}>
                 <Link
-                  to={NavigationPath.viewCredentials
-                    .replace(':namespace', secret.metadata.namespace as string)
-                    .replace(':name', secret.metadata.name as string)}
+                  to={generatePath(NavigationPath.viewCredentials, {
+                    namespace: secret.metadata.namespace!,
+                    name: secret.metadata.name!,
+                  })}
                 >
                   {secret.metadata.name}
                 </Link>
@@ -224,10 +225,11 @@ export function CredentialsTable(props: {
                   text: t('Edit credential'),
                   isAriaDisabled: true,
                   click: (secret: Secret) => {
-                    history.push(
-                      NavigationPath.editCredentials
-                        .replace(':namespace', secret.metadata.namespace!)
-                        .replace(':name', secret.metadata.name!)
+                    navigate(
+                      generatePath(NavigationPath.editCredentials, {
+                        namespace: secret.metadata.namespace!,
+                        name: secret.metadata.name!,
+                      })
                     )
                   },
                   rbac: [rbacPatch(secret)], // validate that this is working
@@ -288,7 +290,7 @@ export function CredentialsTable(props: {
             id: 'add',
             title: t('Add credential'),
             click: () => {
-              history.push(createBackCancelLocation(NavigationPath.addCredentials))
+              navigateToBackCancelLocation(navigate, NavigationPath.addCredentials)
             },
             variant: ButtonVariant.primary,
             isDisabled: !canAddCredential,

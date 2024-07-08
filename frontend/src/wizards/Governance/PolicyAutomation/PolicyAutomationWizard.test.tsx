@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PolicyAutomationWizard, PolicyAutomationWizardProps } from './PolicyAutomationWizard'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { render, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../../../atoms'

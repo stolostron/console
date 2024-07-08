@@ -3,7 +3,7 @@
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
@@ -20,7 +20,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 
 function getNodeLabelValue(node: NodeInfo, label: string | string[]) {
   // find first label present if given an array, or just use single label provided
@@ -89,7 +89,7 @@ export function NodePoolsPageContent() {
 
 export function NodesPoolsTable() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { isSearchAvailable } = useContext(PluginContext)
 
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
@@ -100,7 +100,7 @@ export function NodesPoolsTable() {
       return node.name
     }
     return (
-      <Link to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`}>
+      <Link to={`${NavigationPath.resources}?cluster=${cluster.name!}&kind=node&apiversion=v1&name=${node.name}`}>
         {node.name}
       </Link>
     )

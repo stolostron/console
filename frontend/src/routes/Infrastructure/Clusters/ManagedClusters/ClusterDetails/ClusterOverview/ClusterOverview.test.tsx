@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   agentClusterInstallsState,
@@ -28,7 +28,6 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../../../../resources'
-import { ClusterContext } from '../ClusterDetails'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import {
   mockAWSHostedCluster,
@@ -56,13 +55,14 @@ import {
   mockSearchResponseOCPApplicationsCount,
 } from '../../../../../Applications/Application.sharedmocks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ClusterDetailsContext } from '../ClusterDetails'
 
 const queryClient = new QueryClient()
 
 const mockHistoryPush = jest.fn()
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
   useHistory: () => ({
     push: mockHistoryPush,
   }),
@@ -134,6 +134,10 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockAWSHypershiftCluster,
+      hostedCluster: mockAWSHostedCluster,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -155,15 +159,11 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockAWSHypershiftCluster,
-                addons: undefined,
-                hostedCluster: mockAWSHostedCluster,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -189,6 +189,10 @@ describe('ClusterOverview with BM hypershift cluster', () => {
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockBMHypershiftCluster,
+      hostedCluster: mockAWSHostedCluster,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -210,15 +214,11 @@ describe('ClusterOverview with BM hypershift cluster', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockBMHypershiftCluster,
-                addons: undefined,
-                hostedCluster: mockAWSHostedCluster,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -244,6 +244,10 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockBMHypershiftClusterNoNamespace,
+      hostedCluster: mockAWSHostedCluster,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -265,15 +269,11 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockBMHypershiftClusterNoNamespace,
-                addons: undefined,
-                hostedCluster: mockAWSHostedCluster,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -299,6 +299,10 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockAWSHypershiftClusterNoHypershift,
+      hostedCluster: mockAWSHostedCluster,
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -320,15 +324,11 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockAWSHypershiftClusterNoHypershift,
-                addons: undefined,
-                hostedCluster: mockAWSHostedCluster,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -352,6 +352,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -373,15 +374,11 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockAWSHypershiftCluster,
-                addons: undefined,
-                hostedCluster: undefined,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -405,6 +402,7 @@ describe('ClusterOverview with regional hub cluster information', () => {
     nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -426,15 +424,11 @@ describe('ClusterOverview with regional hub cluster information', () => {
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockRegionalHubCluster,
-                addons: undefined,
-                hostedCluster: undefined,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -460,6 +454,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -481,15 +476,11 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
       >
         <QueryClientProvider client={queryClient}>
           <MemoryRouter>
-            <ClusterContext.Provider
-              value={{
-                cluster: mockRegionalHubCluster,
-                addons: undefined,
-                hostedCluster: undefined,
-              }}
-            >
-              <ClusterOverviewPageContent />
-            </ClusterContext.Provider>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<ClusterOverviewPageContent />} />
+              </Route>
+            </Routes>
           </MemoryRouter>
         </QueryClientProvider>
       </RecoilRoot>
@@ -731,22 +722,31 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
   })
 
   it('should display error alert on import with invalid cluster name', async () => {
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockRegionalHubCluster,
+      hostedCluster: mockHostedCluster1,
+    }
     const { queryAllByText } = render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              cluster: mockRegionalHubCluster,
-              addons: undefined,
-              hostedCluster: mockHostedCluster1,
-            }}
-          >
-            <AcmToastProvider>
-              <AcmToastGroup />
-              <HypershiftImportCommand selectedHostedClusterResource={mockHostedCluster1}></HypershiftImportCommand>
-            </AcmToastProvider>
-            <ClusterOverviewPageContent />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route
+                path="*"
+                element={
+                  <>
+                    <AcmToastProvider>
+                      <AcmToastGroup />
+                      <HypershiftImportCommand
+                        selectedHostedClusterResource={mockHostedCluster1}
+                      ></HypershiftImportCommand>
+                    </AcmToastProvider>
+                    <ClusterOverviewPageContent />
+                  </>
+                }
+              />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

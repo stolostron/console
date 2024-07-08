@@ -3,16 +3,16 @@ import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
 import { saveAs } from 'file-saver'
-import { History } from 'history'
 import jsYaml from 'js-yaml'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../../resources'
 import { getResource, replaceResource } from '../../../../resources/utils/resource-request'
 import { AcmLoadingPage } from '../../../../ui-components'
+import { useSearchDetailsContext } from './DetailsPage'
 
 const headerContainer = css({
   display: 'flex',
@@ -122,10 +122,10 @@ function updateResource(
 }
 
 /* istanbul ignore next */
-function onCancel(history: History<unknown>) {
+function onCancel(navigate: any) {
   // OCP returns to previous page
   // We could instead revert any changes and remain on the page || if no changes then go back to previous page?
-  history.goBack()
+  navigate(-1)
 }
 
 /* istanbul ignore next */
@@ -174,7 +174,7 @@ export function EditorActionBar(props: {
     setResourceVersion,
   } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [updateSuccess, setUpdateSuccess] = useState<boolean>(false)
   const [updateError, setUpdateError] = useState<string>('')
 
@@ -259,7 +259,7 @@ export function EditorActionBar(props: {
             </Button>
           </ActionListItem>
           <ActionListItem>
-            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(history)}>
+            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(navigate)}>
               {t('Cancel')}
             </Button>
           </ActionListItem>
@@ -281,18 +281,9 @@ export function EditorActionBar(props: {
   )
 }
 
-export default function YAMLPage(props: {
-  resource: any
-  loading: boolean
-  error: string
-  name: string
-  namespace: string
-  cluster: string
-  kind: string
-  apiversion: string
-  setResourceVersion: Dispatch<SetStateAction<string>>
-}) {
-  const { resource, loading, error, name, namespace, cluster, kind, apiversion, setResourceVersion } = props
+export default function YAMLPage() {
+  const { resource, resourceLoading, resourceError, name, namespace, cluster, kind, apiversion, setResourceVersion } =
+    useSearchDetailsContext()
   const { t } = useTranslation()
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
   const [resourceYaml, setResourceYaml] = useState<string>('')
@@ -362,15 +353,15 @@ export default function YAMLPage(props: {
     return () => canUpdateResource.abort()
   }, [apiversion, cluster, resourceYaml, kind, name, namespace])
 
-  if (error) {
+  if (resourceError) {
     return (
       <PageSection>
         <Alert variant={'danger'} isInline={true} title={`${t('Error querying for resource:')} ${name}`}>
-          {error}
+          {resourceError}
         </Alert>
       </PageSection>
     )
-  } else if (loading) {
+  } else if (resourceLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />

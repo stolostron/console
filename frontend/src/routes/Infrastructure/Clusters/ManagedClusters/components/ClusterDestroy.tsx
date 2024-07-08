@@ -1,16 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext } from 'react'
 import { LogsDownloadButton, AgentClusterInstallK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { AcmButton, AcmPageProcess, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 import { ButtonVariant } from '@patternfly/react-core'
-import { ClusterContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 const getLoadingMsgI18nKey = (
@@ -41,14 +40,14 @@ const getLoadingMsgI18nKey = (
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { configMapsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
   const isHybrid =
     props.cluster?.provider &&
     [Provider.hostinventory, Provider.nutanix].includes(props.cluster?.provider) &&
     !props.cluster?.isHypershift
-  const { agentClusterInstall } = useContext(ClusterContext)
+  const { agentClusterInstall } = useClusterDetailsContext()
 
   const { loadingTitle, successTitle } =
     props.cluster.status === ClusterStatus.detaching
@@ -80,7 +79,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
         />
       }
       loadingPrimaryAction={
-        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
+        <AcmButton role="link" onClick={() => navigate(NavigationPath.clusters)}>
           {t('button.backToClusters')}
         </AcmButton>
       }
@@ -108,7 +107,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
         </>
       }
       primaryAction={
-        <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
+        <AcmButton role="link" onClick={() => navigate(NavigationPath.clusters)}>
           {t('button.backToClusters')}
         </AcmButton>
       }

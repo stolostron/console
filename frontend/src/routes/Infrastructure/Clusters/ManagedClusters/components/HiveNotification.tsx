@@ -15,9 +15,9 @@ import {
 import { AcmAlert, AcmButton, Provider } from '../../../../../ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext } from 'react'
+import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 const logsButton = css({
@@ -30,7 +30,7 @@ const logsButton = css({
 })
 
 export function HiveNotification() {
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { t } = useTranslation()
   const { clusterProvisionsState, configMapsState } = useSharedAtoms()
   const clusterProvisions = useRecoilValue(clusterProvisionsState)
@@ -42,7 +42,7 @@ export function HiveNotification() {
     (c) => c.type === 'ClusterProvisionFailed'
   )
   const clusterProvisionStatus =
-    provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster!.statusMessage
+    provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster.statusMessage
 
   const provisionStatuses: string[] = [
     ClusterStatus.destroying,
@@ -58,7 +58,7 @@ export function HiveNotification() {
     return null
   }
 
-  if (cluster!.statusMessage) {
+  if (cluster.statusMessage) {
     return null
   }
 
@@ -83,7 +83,7 @@ export function HiveNotification() {
           <Fragment>
             {getProvisionNotification(cluster?.status, t)}
             <AcmButton
-              onClick={() => launchLogs(cluster!, configMaps)}
+              onClick={() => launchLogs(cluster, configMaps)}
               variant={ButtonVariant.link}
               role="link"
               id="view-logs"

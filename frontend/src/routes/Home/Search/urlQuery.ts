@@ -4,13 +4,13 @@
 import queryString from 'query-string'
 
 // This function pushes the new search query to the browsers history
-export function updateBrowserUrl(history: any, currentQuery: string) {
+export function updateBrowserUrl(navigate: any, currentQuery: string) {
   if (currentQuery === '') {
     // on clear search query
-    history.push(window.location.pathname)
+    navigate(window.location.pathname)
   } else {
     const url = `${window.location.pathname}?filters={"textsearch":${encodeURIComponent(JSON.stringify(currentQuery))}}`
-    history.push(url)
+    navigate(url)
   }
 }
 

@@ -21,6 +21,9 @@ import { fetchRetry, getBackendUrl } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../../ui-components'
 import { LogViewerSearch } from './LogsViewerSearch'
+import { useSearchDetailsContext } from './DetailsPage'
+import { Navigate, useLocation } from 'react-router-dom-v5-compat'
+import { NavigationPath } from '../../../../NavigationPath'
 
 const toolbarContainer = css({
   alignItems: 'stretch',
@@ -282,15 +285,9 @@ export function LogsFooterButton(props: {
   )
 }
 
-export default function LogsPage(props: {
-  resource: any
-  resourceError: string
-  containers: string[]
-  cluster: string
-  namespace: string
-  name: string
-}) {
-  const { resource, resourceError, containers, cluster, namespace, name } = props
+export default function LogsPage() {
+  const { kind, resource, resourceError, containers, cluster, namespace, name } = useSearchDetailsContext()
+  const { search } = useLocation()
   const logViewerRef = useRef<any>()
   const resourceLogRef = useRef<any>()
   const { t } = useTranslation()
@@ -425,7 +422,9 @@ export default function LogsPage(props: {
     }
   }
 
-  if (resourceError !== '') {
+  if (!(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') || !containers.length) {
+    return <Navigate to={{ pathname: NavigationPath.resources, search }} replace />
+  } else if (resourceError !== '') {
     return (
       <PageSection>
         <AcmAlert

@@ -10,17 +10,22 @@ import {
 } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../../components/Rbac'
 import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
-import { ClusterContext } from '../ClusterDetails'
+import { showMachinePools, useClusterDetailsContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
+import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 
 export function MachinePoolsPageContent() {
+  const { cluster } = useClusterDetailsContext()
+  if (!showMachinePools(cluster)) {
+    return <SubRoutesRedirect matchPath={NavigationPath.clusterDetails} targetPath={NavigationPath.clusterOverview} />
+  }
   return (
     <AcmPageContent id="nodes">
       <PageSection>
@@ -32,14 +37,14 @@ export function MachinePoolsPageContent() {
 
 export function MachinePoolsTable() {
   const { t } = useTranslation()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
   const { machinePoolsState } = useSharedAtoms()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<MachinePool> | { open: false }>({
     open: false,
   })
   const [scaleMachinePool, setScaleMachinePool] = useState<ScaleMachinePoolModalProps | undefined>()
   const machinePoolState = useRecoilValue(machinePoolsState)
-  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster!.namespace)
+  const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster.namespace)
 
   function getInstanceType(machinePool: MachinePool) {
     let type: string | undefined
@@ -206,8 +211,8 @@ export function MachinePoolsTable() {
             isKebab={true}
             text={`${machinePool.metadata.name}-actions`}
             actions={actions}
-            tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster!.status}`) })}
-            isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster!.status)}
+            tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster.status}`) })}
+            isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster.status)}
           />
         )
       },

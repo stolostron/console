@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { MemoryRouter, Route, Link } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, Link } from 'react-router-dom-v5-compat'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
@@ -24,30 +24,33 @@ describe('AcmDrawer', () => {
       <MemoryRouter initialEntries={['/drawer']}>
         <AcmDrawerProvider>
           <AcmDrawer>
-            <Route path="/drawer">
-              <AcmDrawerContext.Consumer>
-                {({ setDrawerContext }) => (
-                  <div style={{ height: '100vh' }}>
-                    <AcmButton
-                      onClick={() =>
-                        setDrawerContext({
-                          isExpanded: true,
-                          title: 'Drawer title',
-                          onCloseClick: () => setDrawerContext(undefined),
-                          panelContent: <div id="test-content" />,
-                        })
-                      }
-                    >
-                      Open
-                    </AcmButton>
-                    <Link to="/empty">New page</Link>
-                  </div>
-                )}
-              </AcmDrawerContext.Consumer>
-            </Route>
-            <Route path="/empty">
-              <div id="no-drawer"></div>
-            </Route>
+            <Routes>
+              <Route
+                path="/drawer"
+                element={
+                  <AcmDrawerContext.Consumer>
+                    {({ setDrawerContext }) => (
+                      <div style={{ height: '100vh' }}>
+                        <AcmButton
+                          onClick={() =>
+                            setDrawerContext({
+                              isExpanded: true,
+                              title: 'Drawer title',
+                              onCloseClick: () => setDrawerContext(undefined),
+                              panelContent: <div id="test-content" />,
+                            })
+                          }
+                        >
+                          Open
+                        </AcmButton>
+                        <Link to="/empty">New page</Link>
+                      </div>
+                    )}
+                  </AcmDrawerContext.Consumer>
+                }
+              />
+              <Route path="/empty" element={<div id="no-drawer"></div>} />
+            </Routes>
           </AcmDrawer>
         </AcmDrawerProvider>
       </MemoryRouter>

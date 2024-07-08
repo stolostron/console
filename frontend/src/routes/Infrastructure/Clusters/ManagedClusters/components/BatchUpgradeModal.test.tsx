@@ -8,7 +8,7 @@ import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } fro
 import { waitForNocks } from '../../../../../lib/test-util'
 import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',

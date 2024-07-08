@@ -4,7 +4,7 @@ import { css } from '@emotion/css'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Badge, Card, CardTitle, Skeleton } from '@patternfly/react-core'
 
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { useViewport } from '../AcmChartGroup'
 
 type StyleProps = {

@@ -33,6 +33,7 @@ import { cloneDeep } from 'lodash'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { generatePath } from 'react-router-dom-v5-compat'
 
 const select = css({
   '& > div': {
@@ -275,9 +276,10 @@ export function UpdateAutomationModal(props: {
               helperText={AcmHelperTextPrompt({
                 prompt: {
                   label: t('View selected template'),
-                  href: NavigationPath.editAnsibleAutomation
-                    .replace(':namespace', selectedCuratorTemplate?.metadata.namespace || '')
-                    .replace(':name', selectedCuratorTemplate?.metadata.name || ''),
+                  href: generatePath(NavigationPath.editAnsibleAutomation, {
+                    namespace: selectedCuratorTemplate?.metadata.namespace ?? '',
+                    name: selectedCuratorTemplate?.metadata.name ?? '',
+                  }),
                   isDisabled: !selectedCuratorTemplate,
                 },
               })}

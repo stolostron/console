@@ -21,15 +21,14 @@ import {
 } from '../../../../../../ui-components'
 import { AlertVariant, ButtonVariant, Modal, ModalVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useContext, useState } from 'react'
+import { Fragment, useState } from 'react'
 import {
   AgentClusterInstallK8sResource,
   ClusterDeploymentK8sResource,
-  HostedClusterK8sResource,
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -43,7 +42,7 @@ import { LoginCredentials } from '../../components/LoginCredentials'
 import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
-import { ClusterContext } from '../ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
@@ -72,11 +71,16 @@ function getAIClusterProperties(
   ]
 }
 
-export function ClusterOverviewPageContent(props: {
-  canGetSecret?: boolean
-  selectedHostedClusterResource?: HostedClusterK8sResource
-}) {
-  const { cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } = useContext(ClusterContext)
+export function ClusterOverviewPageContent() {
+  const {
+    canGetSecret,
+    cluster,
+    clusterCurator,
+    clusterDeployment,
+    agentClusterInstall,
+    hostedCluster,
+    selectedHostedCluster,
+  } = useClusterDetailsContext()
   const { t } = useTranslation()
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -110,7 +114,7 @@ export function ClusterOverviewPageContent(props: {
       key: t('table.clusterName'),
       value: (
         <span>
-          {cluster!.name}
+          {cluster.name}
           <Popover
             bodyContent={
               <Trans
@@ -176,7 +180,7 @@ export function ClusterOverviewPageContent(props: {
               })}
             ></AcmInlineStatus>
           ) : (
-            cluster!.distribution?.upgradeInfo?.currentChannel || ''
+            cluster.distribution?.upgradeInfo?.currentChannel ?? ''
           )}
           <Popover bodyContent={<Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -301,7 +305,7 @@ export function ClusterOverviewPageContent(props: {
     },
     credentials: {
       key: t('table.credentials'),
-      value: <LoginCredentials canGetSecret={props.canGetSecret} />,
+      value: <LoginCredentials canGetSecret={canGetSecret} />,
     },
     claimedBy: {
       key: cluster?.owner.claimedBy ? t('table.claimedBy') : t('table.createdBy'),
@@ -310,7 +314,9 @@ export function ClusterOverviewPageContent(props: {
     clusterSet: {
       key: t('table.clusterSet'),
       value: cluster?.clusterSet! && (
-        <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>{cluster?.clusterSet}</Link>
+        <Link to={generatePath(NavigationPath.clusterSetOverview, { id: cluster.clusterSet })}>
+          {cluster?.clusterSet}
+        </Link>
       ),
     },
     clusterPool: {
@@ -438,10 +444,10 @@ export function ClusterOverviewPageContent(props: {
             }}
           ></TemplateSummaryModal>
         )}
-        <ClusterStatusMessageAlert cluster={cluster!} padBottom />
+        <ClusterStatusMessageAlert cluster={cluster} padBottom />
         <HiveNotification />
-        {cluster?.isHypershift && !cluster?.isHostedCluster && props.selectedHostedClusterResource ? (
-          <HypershiftImportCommand selectedHostedClusterResource={props.selectedHostedClusterResource} />
+        {cluster?.isHypershift && !cluster?.isHostedCluster && selectedHostedCluster ? (
+          <HypershiftImportCommand selectedHostedClusterResource={selectedHostedCluster} />
         ) : (
           <ImportCommandContainer />
         )}
@@ -450,11 +456,11 @@ export function ClusterOverviewPageContent(props: {
             showEditLabels
               ? {
                   ...ManagedClusterDefinition,
-                  metadata: { name: cluster!.name, labels: cluster!.labels },
+                  metadata: { name: cluster.name, labels: cluster.labels },
                 }
               : undefined
           }
-          displayName={cluster!.displayName}
+          displayName={cluster.displayName}
           close={() => setShowEditLabels(false)}
         />
         {details}
@@ -464,7 +470,7 @@ export function ClusterOverviewPageContent(props: {
           rightItems={rightItems}
           id="cluster-overview"
         />
-        {cluster!.isManaged &&
+        {cluster.isManaged &&
           [
             ClusterStatus.ready,
             ClusterStatus.degraded,
@@ -472,7 +478,7 @@ export function ClusterOverviewPageContent(props: {
             ClusterStatus.resuming,
             ClusterStatus.hibernating,
             ClusterStatus.unknown,
-          ].includes(cluster!.status) && <StatusSummaryCount />}
+          ].includes(cluster.status) && <StatusSummaryCount />}
         {cluster && (
           <BatchChannelSelectModal
             clusters={[cluster]}

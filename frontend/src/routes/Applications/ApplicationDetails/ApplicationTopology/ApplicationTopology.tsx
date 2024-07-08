@@ -5,7 +5,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import { useContext, useEffect, useState } from 'react'
 import { Topology } from './topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { ApplicationDataType } from '../ApplicationDetails'
+import { useApplicationDetailsContext } from '../ApplicationDetails'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getDiagramElements } from './model/topology'
 import { getOptions } from './options'
@@ -34,15 +34,7 @@ export type ClusterDetailsContainerData = {
   selectedClusterList: any[]
 }
 
-export function ApplicationTopologyPageContent(props: {
-  applicationData: ApplicationDataType | undefined
-  channelControl: {
-    allChannels: string[]
-    activeChannel: string | undefined
-    setActiveChannel: (channel: string) => void
-  }
-}) {
-  const { t } = useTranslation()
+export function ApplicationTopologyPageContent() {
   const {
     applicationData = {
       refreshTime: undefined,
@@ -52,7 +44,8 @@ export function ApplicationTopologyPageContent(props: {
       statuses: undefined,
     },
     channelControl,
-  } = props
+  } = useApplicationDetailsContext()
+  const { t } = useTranslation()
   const { refreshTime, application, appData, topology, statuses } = applicationData
 
   const { setDrawerContext } = useContext(AcmDrawerContext)

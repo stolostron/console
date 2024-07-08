@@ -11,32 +11,32 @@ import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clusterDangerStatuses, isGlobalClusterSet, ManagedClusterSetDefinition } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
-import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { ManagedClusterSetBindingModal } from '../../components/ManagedClusterSetBindingModal'
 import { GlobalClusterSetPopover } from '../../components/GlobalClusterSetPopover'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { RbacButton } from '../../../../../../components/Rbac'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 export function ClusterSetOverviewPageContent() {
   const { t } = useTranslation()
   const { isSubmarinerAvailable } = useContext(PluginContext)
-  const { push } = useHistory()
+  const navigate = useNavigate()
   const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings, clusterRoleBindings } =
-    useContext(ClusterSetContext)
+    useClusterSetDetailsContext()
 
-  const unhealthySubmariners = submarinerAddons!.filter(
+  const unhealthySubmariners = submarinerAddons.filter(
     (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.degraded
   )
 
   const navigateToClusterSet = () => {
     if (clusterSet?.metadata?.name) {
-      push(NavigationPath.clusterSetClusters.replace(':id', clusterSet.metadata.name))
+      navigate(generatePath(NavigationPath.clusterSetClusters, { id: clusterSet.metadata.name }))
     }
   }
 
@@ -83,7 +83,7 @@ export function ClusterSetOverviewPageContent() {
               ? [
                   {
                     key: t('table.networkStatus'),
-                    value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
+                    value: <MultiClusterNetworkStatus clusterSet={clusterSet} />,
                   },
                 ]
               : []),
@@ -107,7 +107,7 @@ export function ClusterSetOverviewPageContent() {
                     }}
                     variant="link"
                     style={{ padding: 0, paddingLeft: '6px' }}
-                    rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet!.metadata.name, 'bind')]}
+                    rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'bind')]}
                   >
                     <PencilAltIcon />
                   </RbacButton>
@@ -135,35 +135,39 @@ export function ClusterSetOverviewPageContent() {
                   ? [
                       {
                         id: 'submariners',
-                        count: submarinerAddons!.length,
+                        count: submarinerAddons.length,
                         title: t('submariner.addons'),
                         linkText: t('summary.submariner.launch'),
                         onLinkClick: () =>
-                          push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
+                          navigate(
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! })
+                          ),
                         countClick: () =>
-                          push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
+                          navigate(
+                            generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! })
+                          ),
                         isDanger: unhealthySubmariners.length > 0,
                       },
                     ]
                   : []),
                 {
                   id: 'clusters',
-                  count: clusters!.length,
+                  count: clusters.length,
                   title: t('Clusters'),
                   linkText: t('summary.clusters.launch'),
                   onLinkClick: navigateToClusterSet,
                   countClick: navigateToClusterSet,
-                  isDanger: clusters!.filter((cluster) => clusterDangerStatuses.includes(cluster.status)).length > 0,
+                  isDanger: clusters.filter((cluster) => clusterDangerStatuses.includes(cluster.status)).length > 0,
                 },
                 {
                   id: 'clusterPools',
-                  count: clusterPools!.length,
+                  count: clusterPools.length,
                   title: t('clusterPools'),
                   linkText: t('summary.clusterPools.launch'),
                   onLinkClick: () =>
-                    push(NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet.metadata.name! })),
                   countClick: () =>
-                    push(NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)),
+                    navigate(generatePath(NavigationPath.clusterSetClusterPools, { id: clusterSet.metadata.name! })),
                 },
               ]}
             />

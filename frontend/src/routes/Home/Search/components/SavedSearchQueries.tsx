@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../../resources/userpreference'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -34,7 +34,7 @@ export default function SavedSearchQueries(props: {
     suggestedSearches,
   } = props
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -80,11 +80,11 @@ export default function SavedSearchQueries(props: {
   const handleKeyPress = useCallback(
     (KeyboardEvent: React.KeyboardEvent, query: SavedSearch) => {
       if (KeyboardEvent.key === 'Enter' || KeyboardEvent.key === ' ') {
-        updateBrowserUrl(history, query.searchText)
+        updateBrowserUrl(navigate, query.searchText)
         setSelectedSearch(query.name)
       }
     },
-    [history, setSelectedSearch]
+    [navigate, setSelectedSearch]
   )
 
   if (loading) {
@@ -154,7 +154,7 @@ export default function SavedSearchQueries(props: {
                     ],
                   }}
                   onCardClick={() => {
-                    updateBrowserUrl(history, savedSearch.searchText)
+                    updateBrowserUrl(navigate, savedSearch.searchText)
                     setSelectedSearch(savedSearch.name)
                   }}
                   count={data?.searchResult?.[index]?.count ?? 0}
@@ -190,7 +190,7 @@ export default function SavedSearchQueries(props: {
                   ],
                 }}
                 onCardClick={() => {
-                  updateBrowserUrl(history, query.searchText)
+                  updateBrowserUrl(navigate, query.searchText)
                 }}
                 count={data?.searchResult?.[savedSearches.length + index]?.count ?? 0} // use length of savedSearches + current indeex as we run saved and suggested queries in same search request.
                 countTitle={t('Results')}

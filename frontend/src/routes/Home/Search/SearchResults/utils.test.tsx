@@ -4,10 +4,12 @@ import i18next from 'i18next'
 import { ClusterStatus } from '../../../../resources'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, GetRowActions } from './utils'
+import { NavigateFunction } from 'react-router-dom-v5-compat'
 
 const mockHistoryPush = jest.fn()
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+const navigate: NavigateFunction = jest.fn()
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
   useHistory: () => ({
     push: mockHistoryPush,
   }),
@@ -64,6 +66,7 @@ test('Correctly return row Actions', () => {
     () => {},
     () => {},
     allClusters,
+    navigate,
     t
   )
   res[0].click({ kind: 'Pod' }) // edit resource
@@ -80,6 +83,7 @@ test('Correctly return empty row Actions for restricted resource', () => {
     () => {},
     () => {},
     allClusters,
+    navigate,
     t
   )
   expect(res).toMatchSnapshot()
@@ -93,6 +97,7 @@ test('Correctly return empty row Actions for Application', () => {
     () => {},
     () => {},
     allClusters,
+    navigate,
     t
   )
   res[0].click({
@@ -120,6 +125,7 @@ test('Correctly return row Actions for Application in global search', () => {
     () => {},
     () => {},
     allClusters,
+    navigate,
     t
   )
   res[0].click({

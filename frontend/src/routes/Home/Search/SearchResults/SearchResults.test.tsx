@@ -5,8 +5,7 @@ import { ApolloError } from '@apollo/client'
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { wait } from '../../../../lib/test-util'
@@ -29,7 +28,7 @@ describe('SearchResults Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={[]}>
             <SearchResults
               currentQuery={'kind:Pod testCluster'}
@@ -39,7 +38,7 @@ describe('SearchResults Page', () => {
               data={{}}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // Test the loading state while apollo query finishes
@@ -100,7 +99,7 @@ describe('SearchResults Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SearchResults
               currentQuery={'kind:Pod testCluster'}
@@ -132,7 +131,7 @@ describe('SearchResults Page', () => {
               }}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
@@ -326,7 +325,7 @@ describe('SearchResults Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SearchResults
               currentQuery={'kind:Pod,Daemonset'}
@@ -386,7 +385,7 @@ describe('SearchResults Page', () => {
               }}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
@@ -596,7 +595,7 @@ describe('SearchResults Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SearchResults
               currentQuery={'kind:Pod'}
@@ -628,7 +627,7 @@ describe('SearchResults Page', () => {
               }}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data
@@ -719,7 +718,7 @@ describe('SearchResults Page', () => {
           snapshot.set(settingsState, mockSettings)
         }}
       >
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <SearchResults
               currentQuery={'kind:Pod'}
@@ -729,7 +728,7 @@ describe('SearchResults Page', () => {
               data={{}}
             />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
     // This wait pauses till apollo query is returning data

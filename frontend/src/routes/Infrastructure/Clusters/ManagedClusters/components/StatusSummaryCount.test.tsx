@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
@@ -21,18 +21,16 @@ import {
   mockSearchResponseOCPApplications,
   mockSearchResponseOCPApplicationsCount,
 } from '../../../../Applications/Application.sharedmocks'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 
 const queryClient = new QueryClient()
 
 const push = jest.fn()
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
-  useHistory: () => ({
-    push,
-  }),
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
+  useNavigate: () => push,
 }))
 
 const mockCluster: Cluster = {
@@ -275,22 +273,27 @@ describe('StatusSummaryCount', () => {
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount1)
   })
 
-  const Component = () => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policiesState, mockPolicies)
-        snapshot.set(policyreportState, mockPolicyReports)
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <StatusSummaryCount />
-          </ClusterContext.Provider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    </RecoilRoot>
-  )
+  const Component = () => {
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicies)
+          snapshot.set(policyreportState, mockPolicyReports)
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<StatusSummaryCount />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </RecoilRoot>
+    )
+  }
   test('renders', async () => {
     render(<Component />)
     await act(async () => {

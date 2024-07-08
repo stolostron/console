@@ -2,7 +2,7 @@
 import { get } from 'lodash'
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { generatePath, useHistory } from 'react-router-dom'
+import { NavigateFunction, generatePath } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Cluster } from '../../../../resources/utils/get-cluster'
 import { compareStrings, IAlertContext } from '../../../../ui-components'
@@ -29,10 +29,9 @@ export function GetRowActions(
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
   allClusters: Cluster[],
+  navigate: NavigateFunction,
   t: TFunction
 ) {
-  const history = useHistory()
-
   const viewApplication = {
     id: 'view-application',
     title: t('View Application'),
@@ -52,24 +51,32 @@ export function GetRowActions(
           const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
           return window.open(`${hubUrl}${path}?${params}`, '_blank')
         }
-        return history.push({
-          pathname: path,
-          search: `?${params}`,
+        return navigate(
+          {
+            pathname: path,
+            search: `?${params}`,
+          },
+          {
+            state: {
+              from: NavigationPath.search,
+              fromSearch: window.location.search,
+            },
+          }
+        )
+      }
+      const searchParams = GetUrlSearchParam(item)
+      return navigate(
+        {
+          pathname: NavigationPath.resources,
+          search: searchParams,
+        },
+        {
           state: {
             from: NavigationPath.search,
             fromSearch: window.location.search,
           },
-        })
-      }
-      const searchParams = GetUrlSearchParam(item)
-      return history.push({
-        pathname: NavigationPath.resources,
-        search: searchParams,
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
-        },
-      })
+        }
+      )
     },
   }
   const viewAppTopology = {
@@ -82,14 +89,18 @@ export function GetRowActions(
         const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
         return window.open(`${hubUrl}${path}?apiVersion=${apiversion}`, '_blank')
       }
-      return history.push({
-        pathname: path,
-        search: `?apiVersion=${apiversion}`,
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
+      return navigate(
+        {
+          pathname: path,
+          search: `?apiVersion=${apiversion}`,
         },
-      })
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
     },
   }
   const editButton = {
@@ -102,14 +113,18 @@ export function GetRowActions(
         const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
         return window.open(`${hubUrl}${NavigationPath.resourceYAML}${searchParams}`, '_blank')
       }
-      return history.push({
-        pathname: NavigationPath.resourceYAML,
-        search: searchParams,
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
+      return navigate(
+        {
+          pathname: NavigationPath.resourceYAML,
+          search: searchParams,
         },
-      })
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
     },
   }
   const viewRelatedButton = {
@@ -121,14 +136,18 @@ export function GetRowActions(
         const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
         return window.open(`${hubUrl}${NavigationPath.resourceRelated}${GetUrlSearchParam(item)}`, '_blank')
       }
-      return history.push({
-        pathname: NavigationPath.resourceRelated,
-        search: searchParams,
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
+      return navigate(
+        {
+          pathname: NavigationPath.resourceRelated,
+          search: searchParams,
         },
-      })
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
     },
   }
   const deleteButton = {

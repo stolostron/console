@@ -18,8 +18,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -746,14 +745,13 @@ export default function ApplicationsOverview() {
           return (
             <span style={{ whiteSpace: 'nowrap' }}>
               <Link
-                to={
-                  NavigationPath.applicationDetails
-                    .replace(':namespace', application.metadata?.namespace as string)
-                    .replace(':name', application.metadata?.name as string) +
-                  '?apiVersion=' +
-                  apiVersion +
-                  clusterQuery
-                }
+                to={{
+                  pathname: generatePath(NavigationPath.applicationDetails, {
+                    namespace: application.metadata?.namespace!,
+                    name: application.metadata?.name!,
+                  }),
+                  search: `?apiVersion=${apiVersion}${clusterQuery}`,
+                }}
               >
                 {application.metadata?.name}
               </Link>
@@ -871,7 +869,7 @@ export default function ApplicationsOverview() {
     ]
   )
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
   const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
   const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
@@ -879,30 +877,28 @@ export default function ApplicationsOverview() {
   const rowActionResolver = useCallback(
     (resource: IResource) => {
       const actions: IAcmRowAction<any>[] = []
+      const { metadata = {} } = resource
+      const { name = '', namespace = '' } = metadata
 
       if (isResourceTypeOf(resource, ApplicationDefinition)) {
         actions.push({
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            history.push(
-              `${
-                NavigationPath.applicationOverview
-                  .replace(':namespace', resource.metadata?.namespace as string)
-                  .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
-              }`
-            )
+            navigate({
+              pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+              search: subscriptionAppQueryString,
+            })
           },
         })
         actions.push({
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            history.push(
-              NavigationPath.editApplicationSubscription
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string) + '?context=applications'
-            )
+            navigate({
+              pathname: generatePath(NavigationPath.editApplicationSubscription, { name, namespace }),
+              search: '?context=applications',
+            })
           },
         })
       }
@@ -912,22 +908,20 @@ export default function ApplicationsOverview() {
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            history.push(
-              `${NavigationPath.applicationOverview
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
-            )
+            navigate({
+              pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+              search: argoAppSetQueryString,
+            })
           },
         })
         actions.push({
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            history.push(
-              NavigationPath.editApplicationArgo
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
-            )
+            navigate({
+              pathname: generatePath(NavigationPath.editApplicationArgo, { name, namespace }),
+              search: '?context=applicationsets',
+            })
           },
         })
       }
@@ -939,11 +933,10 @@ export default function ApplicationsOverview() {
             id: 'viewApplication',
             title: t('View application'),
             click: () => {
-              history.push(
-                `${NavigationPath.applicationOverview
-                  .replace(':namespace', resource.metadata?.namespace as string)
-                  .replace(':name', resource.metadata?.name as string)}?apiVersion=application.argoproj.io`
-              )
+              navigate({
+                pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+                search: '?apiVersion=application.argoproj.io',
+              })
             },
           })
         }
@@ -978,7 +971,7 @@ export default function ApplicationsOverview() {
                   cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
                 },
               })
-          history.push(searchLink)
+          navigate(searchLink)
         },
       })
 
@@ -989,13 +982,10 @@ export default function ApplicationsOverview() {
           click: () => {
             const isFlux = isFluxApplication(resource.label)
             const resourceType = isFlux ? 'flux' : 'ocp'
-            history.push(
-              `${NavigationPath.applicationOverview
-                .replace(':namespace', resource.metadata?.namespace as string)
-                .replace(':name', resource.metadata?.name as string)}?apiVersion=${resourceType}&cluster=${
-                resource.status.cluster
-              }`
-            )
+            navigate({
+              pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+              search: `?apiVersion=${resourceType}&cluster=${resource.status.cluster}`,
+            })
           },
         })
       }
@@ -1074,7 +1064,7 @@ export default function ApplicationsOverview() {
       canDeleteApplicationSet,
       canCreateApplication,
       channels,
-      history,
+      navigate,
       placements,
       placementRules,
       subscriptions,
@@ -1101,11 +1091,11 @@ export default function ApplicationsOverview() {
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
-            history.push(NavigationPath.createApplicationArgo)
+            navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
-            history.push(NavigationPath.createApplicationArgoPullModel)
+            navigate(NavigationPath.createApplicationArgoPullModel)
           } else {
-            history.push(NavigationPath.createApplicationSubscription)
+            navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}
@@ -1133,7 +1123,7 @@ export default function ApplicationsOverview() {
         isPrimary={true}
       />
     ),
-    [canCreateApplication, history, t]
+    [canCreateApplication, navigate, t]
   )
 
   const compareAppTypesLink = useMemo(

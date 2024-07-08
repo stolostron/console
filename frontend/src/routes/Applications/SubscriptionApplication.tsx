@@ -9,14 +9,13 @@ import {
   Provider,
 } from '../../ui-components'
 import Handlebars from 'handlebars'
-import { Location } from 'history'
 import _ from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import TemplateEditor from '../../components/TemplateEditor'
 import { getErrorInfo } from '../../components/ErrorPage'
@@ -177,7 +176,7 @@ export function CreateSubscriptionApplication(
   setConnectionControl: Dispatch<SetStateAction<undefined>>,
   onControlChange: (control: any) => void
 ) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const {
     ansibleJobState,
@@ -219,11 +218,13 @@ export function CreateSubscriptionApplication(
             type: 'success',
             autoClose: true,
           })
-          history.push(
-            NavigationPath.applicationOverview
-              .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
-              .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
-          )
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, {
+              namespace: applicationResourceJSON.metadata.namespace!,
+              name: applicationResourceJSON.metadata.name!,
+            }),
+            search: location.search,
+          })
         })
         .catch((err) => {
           const errorInfo = getErrorInfo(err, t)
@@ -347,12 +348,13 @@ export function CreateSubscriptionApplication(
 
   const redirectRoute = () => {
     if (searchParams.get('context') === 'applications') {
-      history.push(NavigationPath.applications)
+      navigate(NavigationPath.applications)
     } else {
-      history.push(
-        NavigationPath.applicationOverview
-          .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
-          .replace(':name', editApplication?.selectedAppName ?? '')
+      navigate(
+        generatePath(NavigationPath.applicationOverview, {
+          namespace: editApplication?.selectedAppNamespace ?? '',
+          name: editApplication?.selectedAppName ?? '',
+        })
       )
     }
   }

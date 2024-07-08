@@ -1,11 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Provider } from '../../ui-components'
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../atoms'
-import { mockBadRequestStatus, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../lib/nock-util'
+import {
+  mockBadRequestStatus,
+  nockDelete,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockRBAC,
+} from '../../lib/nock-util'
 import {
   clickBulkAction,
   clickByLabel,
@@ -28,6 +35,7 @@ import {
   Secret,
 } from '../../resources'
 import CredentialsPage from './CredentialsPage'
+import { ViewEditCredentialsFormPage } from './CredentialsForm'
 
 const mockProviderConnection1: ProviderConnection = {
   apiVersion: ProviderConnectionApiVersion,
@@ -88,7 +96,6 @@ const discoveryConfig: DiscoveryConfig = {
 }
 
 const mockProviderConnections = [mockProviderConnection1, mockProviderConnection2]
-let testLocation: Location
 
 function getPatchSecretResourceAttributes(name: string, namespace: string) {
   return {
@@ -110,6 +117,30 @@ function getDeleteSecretResourceAttributes(name: string, namespace: string) {
   } as ResourceAttributes
 }
 
+//---get 'secrets' in 'provider-connection-namespace' namespace---
+const getSecrets1 = {
+  req: {
+    apiVersion: 'v1',
+    kind: 'secrets',
+    metadata: {
+      namespace: 'provider-connection-namespace',
+      name: 'provider-connection-1',
+    },
+  },
+  res: {
+    kind: 'Secret',
+    apiVersion: 'v1',
+    metadata: {
+      name: 'provider-connection-1',
+      namespace: 'provider-connection-namespace',
+      labels: {
+        'cluster.open-cluster-management.io/credentials': '',
+        'cluster.open-cluster-management.io/type': 'aws',
+      },
+    },
+  },
+}
+
 function TestProviderConnectionsPage(props: {
   providerConnections: ProviderConnection[]
   discoveryConfigs?: DiscoveryConfig[]
@@ -122,13 +153,10 @@ function TestProviderConnectionsPage(props: {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.credentials]}>
-        <Route
-          path={NavigationPath.credentials}
-          render={(props: any) => {
-            testLocation = props.location
-            return <CredentialsPage {...props} />
-          }}
-        />
+        <Routes>
+          <Route path={NavigationPath.editCredentials} element={<ViewEditCredentialsFormPage />} />
+          <Route path={NavigationPath.credentials} element={<CredentialsPage />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -143,26 +171,17 @@ describe('provider connections page', () => {
   test('should render the table with provider connections', async () => {
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
   })
 
   test('should goto the edit connection page', async () => {
+    nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
     await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
     await clickByText('Edit credential')
-    await waitFor(() =>
-      expect(testLocation.pathname).toEqual(
-        NavigationPath.editCredentials
-          .replace(':namespace', mockProviderConnection1.metadata.namespace!)
-          .replace(':name', mockProviderConnection1.metadata.name!)
-      )
-    )
     // Verify the information shows up
-    await waitForText('Red Hat Ansible Automation Platform')
-    await waitForText(mockProviderConnection1.metadata!.name!)
-    await waitForText(mockProviderConnection1.metadata!.namespace!, true)
+    await waitForText('A credential stores the access credentials and configuration information for creating clusters.')
+    await waitForText('Basic information')
   })
 
   test('should be able to delete a provider connection', async () => {

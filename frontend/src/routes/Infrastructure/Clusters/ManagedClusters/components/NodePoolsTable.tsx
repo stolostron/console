@@ -8,7 +8,7 @@ import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } fr
 import { HypershiftCloudPlatformType, NodePool, NodePoolDefinition } from '../../../../../resources'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
@@ -36,7 +36,7 @@ export const getNodepoolStatus = (nodepool: NodePool | NodePoolK8sResource) => {
 
 const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
   const { t } = useTranslation()
-  const { cluster, hostedCluster } = useContext(ClusterContext)
+  const { cluster, hostedCluster } = useClusterDetailsContext()
   const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)
   const toggleAddNodepoolModal = useCallback(
     () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
@@ -351,7 +351,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       <AddNodePoolModal
         open={openAddNodepoolModal}
         close={toggleAddNodepoolModal}
-        hostedCluster={hostedCluster!}
+        hostedCluster={hostedCluster}
         refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
         clusterImages={clusterImages}
       />

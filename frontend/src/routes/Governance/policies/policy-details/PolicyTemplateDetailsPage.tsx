@@ -2,7 +2,7 @@
 
 import { AcmAlert, AcmPage, AcmPageHeader } from '../../../../ui-components'
 import { Fragment, Suspense, useEffect, useState } from 'react'
-import { Route, Switch, useParams } from 'react-router-dom'
+import { generatePath, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
@@ -18,31 +18,14 @@ export function PolicyTemplateDetailsPage() {
   const { managedClusterAddonsState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
-  const urlParams = useParams<{
-    namespace: string
-    name: string
-    clusterName: string
-    apiGroup: string
-    apiVersion: string
-    kind: string
-    templateName: string
-  }>()
-  const policyNamespace = urlParams.namespace
-  const policyName = urlParams.name
-  const clusterName = urlParams.clusterName
-  const apiGroup = urlParams.apiGroup
-  const apiVersion = urlParams.apiVersion
-  const kind = urlParams.kind
-  const templateName = urlParams.templateName
-
-  const templateDetailsUrl = NavigationPath.policyTemplateDetails
-    .replace(':namespace', policyNamespace)
-    .replace(':name', policyName)
-    .replace(':clusterName', clusterName)
-    .replace(':apiGroup/', apiGroup ? `${apiGroup}/` : '')
-    .replace(':apiVersion', apiVersion)
-    .replace(':kind', kind)
-    .replace(':templateName', templateName)
+  const urlParams = useParams()
+  const policyNamespace = urlParams.namespace ?? ''
+  const policyName = urlParams.name ?? ''
+  const clusterName = urlParams.clusterName ?? ''
+  const apiGroup = urlParams.apiGroup ?? ''
+  const apiVersion = urlParams.apiVersion ?? ''
+  const kind = urlParams.kind ?? ''
+  const templateName = urlParams.templateName ?? ''
 
   let templateClusterName = clusterName
   let templateNamespace = clusterName
@@ -109,9 +92,7 @@ export function PolicyTemplateDetailsPage() {
             { text: t('Policies'), to: NavigationPath.policies },
             {
               text: policyName,
-              to: NavigationPath.policyDetailsResults
-                .replace(':namespace', policyNamespace)
-                .replace(':name', policyName),
+              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace, name: policyName }),
             },
             { text: templateName, to: '' },
           ]}
@@ -121,23 +102,13 @@ export function PolicyTemplateDetailsPage() {
       }
     >
       <Suspense fallback={<Fragment />}>
-        <Switch>
-          <Route
-            exact
-            path={templateDetailsUrl}
-            render={() => {
-              if (templateError) {
-                return (
-                  <PageSection style={{ paddingBottom: '0' }}>
-                    <AcmAlert variant="danger" title={templateError} isInline noClose />
-                  </PageSection>
-                )
-              }
-
-              return <PolicyTemplateDetails clusterName={clusterName} template={template} />
-            }}
-          />
-        </Switch>
+        {templateError ? (
+          <PageSection style={{ paddingBottom: '0' }}>
+            <AcmAlert variant="danger" title={templateError} isInline noClose />
+          </PageSection>
+        ) : (
+          <PolicyTemplateDetails clusterName={clusterName} template={template} />
+        )}
       </Suspense>
     </AcmPage>
   )

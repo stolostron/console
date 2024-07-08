@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { TFunction } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import { SearchAlertProps } from './components/SearchAlertGroup'
 import { DropdownSuggestionsProps } from './components/Searchbar'

@@ -5,8 +5,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
@@ -1003,11 +1002,11 @@ it('should render overview page in empty state', async () => {
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={[]}>
             <OverviewPage />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </QueryClientProvider>
     </RecoilRoot>
   )
@@ -1041,11 +1040,11 @@ it('should render overview page in error state', async () => {
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <OverviewPage />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </QueryClientProvider>
     </RecoilRoot>
   )
@@ -1165,11 +1164,11 @@ it('should render overview page with expected data', async () => {
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <OverviewPage />
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </QueryClientProvider>
     </RecoilRoot>
   )

@@ -9,7 +9,7 @@ import moment from 'moment'
 import queryString from 'query-string'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Link } from 'react-router-dom'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -420,10 +420,10 @@ export function CreateDetailsLink(props: { item: any }) {
       to={{
         pathname: NavigationPath.resources,
         search: GetUrlSearchParam(item),
-        state: {
-          from: NavigationPath.search,
-          fromSearch: window.location.search,
-        },
+      }}
+      state={{
+        from: NavigationPath.search,
+        fromSearch: window.location.search,
       }}
     >
       {item.name}

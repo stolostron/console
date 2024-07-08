@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 
@@ -61,22 +61,27 @@ describe('NetworkForm', () => {
     return (
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-          <Route path={NavigationPath.createCluster}>
-            <NetworkForm
-              templateYAML={templateYAML}
-              key={'key'}
-              control={{
-                active: false,
-                onNext,
-                step: {
-                  title: {
-                    isComplete: false,
-                  },
-                },
-              }}
-              handleChange={handleChange}
-            />{' '}
-          </Route>
+          <Routes>
+            <Route
+              path={NavigationPath.createCluster}
+              element={
+                <NetworkForm
+                  templateYAML={templateYAML}
+                  key={'key'}
+                  control={{
+                    active: false,
+                    onNext,
+                    step: {
+                      title: {
+                        isComplete: false,
+                      },
+                    },
+                  }}
+                  handleChange={handleChange}
+                />
+              }
+            />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

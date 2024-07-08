@@ -28,7 +28,7 @@ import {
 } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { generatePath, useHistory } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 export type ClusterClaimModalProps = {
@@ -38,7 +38,7 @@ export type ClusterClaimModalProps = {
 
 export function ClusterClaimModal(props: ClusterClaimModalProps) {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
   const [claimCreated, setClaimCreated] = useState<boolean>(false)
   const [claimed, setClaimed] = useState<boolean>(false)
@@ -209,7 +209,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
             isDisabled={!clusterClaim?.spec?.namespace}
             onClick={() =>
               clusterClaim?.spec?.namespace &&
-              history.push(
+              navigate(
                 generatePath(NavigationPath.clusterOverview, {
                   name: clusterClaim?.spec?.namespace,
                   namespace: clusterClaim?.spec?.namespace,

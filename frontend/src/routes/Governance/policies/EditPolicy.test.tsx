@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementRulesState, policiesState, namespacesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
@@ -18,9 +18,10 @@ const mockPlacementBindingCopy = JSON.parse(JSON.stringify(mockPlacementBindings
 mockPlacementBindingCopy.metadata.uid = '49661783-5b48-4f9c-b12c-d5a6b2fac434'
 
 function TestEditPolicyPage() {
-  const actualPath = NavigationPath.editPolicy
-    .replace(':namespace', mockPolicyCopy.metadata.namespace as string)
-    .replace(':name', mockPolicyCopy.metadata.name as string)
+  const actualPath = generatePath(NavigationPath.editPolicy, {
+    namespace: mockPolicyCopy.metadata.namespace!,
+    name: mockPolicyCopy.metadata.name!,
+  })
   return (
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -31,9 +32,9 @@ function TestEditPolicyPage() {
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
-        <Switch>
-          <Route path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
-        </Switch>
+        <Routes>
+          <Route path={NavigationPath.editPolicy} element={<EditPolicy />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

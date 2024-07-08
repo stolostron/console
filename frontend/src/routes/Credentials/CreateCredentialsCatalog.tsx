@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DataViewStringContext, ICatalogCard, ItemView } from '@stolostron/react-data-view'
-import { LocationDescriptor } from 'history'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useDataViewStrings } from '../../lib/dataViewStrings'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { BackCancelState, NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
+import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { AcmIcon, AcmPage, AcmPageHeader, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
 import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
+import { To } from 'react-router-dom-v5-compat'
 
-export const getTypedCreateCredentialsPath = (type: CredentialsType): LocationDescriptor<BackCancelState> => ({
+export const getTypedCreateCredentialsPath = (type: CredentialsType): To => ({
   pathname: NavigationPath.addCredentials,
   search: `?${CREDENTIALS_TYPE_PARAM}=${type}`,
 })

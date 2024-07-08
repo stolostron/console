@@ -6,6 +6,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { wait } from '../../../../lib/test-util'
 import { deleteResource, fireManagedClusterAction } from '../../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 jest.mock('../../../../lib/rbac-util', () => ({
   canUser: jest.fn(() => ({
@@ -22,25 +23,6 @@ jest.mock('../../../../resources/managedclusteraction', () => ({
   fireManagedClusterAction: jest.fn(() => Promise.resolve({ actionDone: 'ActionDone' })),
 }))
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
-  return {
-    __esModule: true,
-    ...originalModule,
-    useLocation: () => ({
-      pathname: '/multicloud/home/search/resources',
-      search: '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testPod',
-      state: {
-        from: '/multicloud/home/search',
-        fromSearch: '?filters={%22textsearch%22:%22kind%3APod%22}',
-      },
-    }),
-    useHistory: () => ({
-      push: jest.fn(),
-    }),
-  }
-})
-
 describe('DeleteResourceModal', () => {
   it('should render component with props', async () => {
     nockIgnoreRBAC()
@@ -48,19 +30,21 @@ describe('DeleteResourceModal', () => {
 
     render(
       <RecoilRoot>
-        <DeleteResourceModal
-          open={true}
-          close={() => {}}
-          cluster={'local-cluster'}
-          resource={{
-            apiVersion: 'v1',
-            kind: 'Pod',
-            metadata: {
-              name: 'testPod',
-              namespace: 'testNamespace',
-            },
-          }}
-        />
+        <MemoryRouter>
+          <DeleteResourceModal
+            open={true}
+            close={() => {}}
+            cluster={'local-cluster'}
+            resource={{
+              apiVersion: 'v1',
+              kind: 'Pod',
+              metadata: {
+                name: 'testPod',
+                namespace: 'testNamespace',
+              },
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -77,19 +61,21 @@ describe('DeleteResourceModal', () => {
 
     const { getByTestId } = render(
       <RecoilRoot>
-        <DeleteResourceModal
-          open={true}
-          close={mockOnCloseModal}
-          cluster={'local-cluster'}
-          resource={{
-            apiVersion: 'v1',
-            kind: 'Pod',
-            metadata: {
-              name: 'testPod',
-              namespace: 'testNamespace',
-            },
-          }}
-        />
+        <MemoryRouter>
+          <DeleteResourceModal
+            open={true}
+            close={mockOnCloseModal}
+            cluster={'local-cluster'}
+            resource={{
+              apiVersion: 'v1',
+              kind: 'Pod',
+              metadata: {
+                name: 'testPod',
+                namespace: 'testNamespace',
+              },
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -125,19 +111,21 @@ describe('DeleteResourceModal', () => {
 
     const { getByTestId } = render(
       <RecoilRoot>
-        <DeleteResourceModal
-          open={true}
-          close={mockOnCloseModal}
-          cluster={'test-cluster'}
-          resource={{
-            apiVersion: 'v1',
-            kind: 'Pod',
-            metadata: {
-              name: 'testPod',
-              namespace: 'testNamespace',
-            },
-          }}
-        />
+        <MemoryRouter>
+          <DeleteResourceModal
+            open={true}
+            close={mockOnCloseModal}
+            cluster={'test-cluster'}
+            resource={{
+              apiVersion: 'v1',
+              kind: 'Pod',
+              metadata: {
+                name: 'testPod',
+                namespace: 'testNamespace',
+              },
+            }}
+          />
+        </MemoryRouter>
       </RecoilRoot>
     )
 
