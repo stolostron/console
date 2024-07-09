@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions, UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
+import { AcmButton, AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useMemo, useEffect, useState } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
@@ -9,6 +9,8 @@ import { LoadingPage } from './LoadingPage'
 import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import { OutlinedCommentsIcon } from '@patternfly/react-icons'
+import { AcmFeedbackModal, AcmFeedbackModalProvider } from './AcmFeedbackModal'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
@@ -52,8 +54,32 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   }, [])
 
   // ACM Custom extensions
-
   const acmExtensions = useAcmExtension()
+
+  // Feedback Modal Control
+  const [toggleOpen, setToggleOpen] = useState<boolean>(false)
+  const toggle = () => setToggleOpen(!toggleOpen)
+
+  const AcmFeedbackModalButton = () => {
+    return (
+      <AcmButton
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          right: 'var(--pf-global--spacer--xl)',
+          zIndex: 20000,
+          color: 'var(--pf-global--palette--white)',
+        }}
+        icon={<OutlinedCommentsIcon />}
+        iconPosition="left"
+        variant="danger"
+        id="feedback-trigger-button"
+        onClick={toggle}
+      >
+        Feedback
+      </AcmButton>
+    )
+  }
 
   return pluginDataContext ? (
     <PluginContext.Provider
@@ -69,16 +95,24 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         ocpApi,
       }}
     >
-      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-        <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
-          <AcmToastProvider>
-            <AcmToastGroup />
-            <AcmTablePaginationContextProvider localStorageKey="clusters">
-              {props.children}
-            </AcmTablePaginationContextProvider>
-          </AcmToastProvider>
+      <AcmFeedbackModalProvider>
+        <AcmFeedbackModalButton />
+        <AcmFeedbackModal
+          isOpen={toggleOpen}
+          onClose={() => setToggleOpen(false)}
+          onShareFeedback="https://console.redhat.com/self-managed-feedback-form"
+        />
+        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+          <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
+            <AcmToastProvider>
+              <AcmToastGroup />
+              <AcmTablePaginationContextProvider localStorageKey="clusters">
+                {props.children}
+              </AcmTablePaginationContextProvider>
+            </AcmToastProvider>
+          </div>
         </div>
-      </div>
+      </AcmFeedbackModalProvider>
     </PluginContext.Provider>
   ) : (
     <LoadingPage />
