@@ -26,6 +26,7 @@ export function WizardSyncEditor() {
         update(changes?.resources)
       }}
       editableUidSiblings={true}
+      autoCreateNs
     />
   )
 }
