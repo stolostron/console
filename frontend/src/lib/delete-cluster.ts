@@ -15,6 +15,8 @@ import {
   IResource,
   ManagedClusterApiVersion,
   ManagedClusterKind,
+  NodePoolApiVersion,
+  NodePoolKind,
   patchResource,
   ResourceError,
   ResourceErrorCode,
@@ -39,13 +41,15 @@ export function deleteCluster({
   let resources: IResource[] = []
 
   if (clusterDestroyable(cluster)) {
-    resources = [
-      {
-        apiVersion: ClusterDeploymentApiVersion,
-        kind: ClusterDeploymentKind,
-        metadata: { name: cluster.name!, namespace: cluster.namespace! },
-      },
-    ]
+    resources = !(cluster.isHypershift || cluster.isHostedCluster)
+      ? [
+          {
+            apiVersion: ClusterDeploymentApiVersion,
+            kind: ClusterDeploymentKind,
+            metadata: { name: cluster.name!, namespace: cluster.namespace! },
+          },
+        ]
+      : []
     if (cluster.isManaged) {
       resources.push({
         apiVersion: ManagedClusterApiVersion,
@@ -72,6 +76,37 @@ export function deleteCluster({
           name: cluster.hive.secrets.pullSecret,
           namespace: cluster.namespace,
         },
+      })
+    }
+
+    // clean up Hypershift artifacts
+    if (cluster.isHostedCluster || cluster.isHypershift) {
+      resources.push({
+        apiVersion: HostedClusterApiVersion,
+        kind: HostedClusterKind,
+        metadata: {
+          name: cluster.name,
+          namespace: cluster.namespace,
+        },
+      })
+
+      cluster.hypershift?.nodePools?.forEach((np) => {
+        resources.push({
+          apiVersion: NodePoolApiVersion,
+          kind: NodePoolKind,
+          metadata: {
+            name: np.metadata?.name,
+            namespace: cluster.namespace,
+          },
+        })
+      })
+
+      cluster.hypershift?.secretNames?.forEach((name) => {
+        resources.push({
+          apiVersion: SecretApiVersion,
+          kind: SecretKind,
+          metadata: { name, namespace: cluster.namespace },
+        })
       })
     }
 
