@@ -7,12 +7,10 @@ import {
   useCallback,
   useMemo,
   useContext,
-  useRef,
   Dispatch,
 } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate, Location } from 'react-router-dom-v5-compat'
 import { Modal, ModalVariant, Button } from '@patternfly/react-core'
-import { Location, UnregisterCallback } from 'history'
 import isEqual from 'lodash/isEqual'
 import { useTranslation } from '../lib/acm-i18next'
 import { noop } from 'lodash'
@@ -36,11 +34,11 @@ export const LostChangesContext = createContext<LostChangesContext>({
   setData: noop,
 })
 
-const beforeUnloadListener = (event: { preventDefault: () => void; returnValue: string }) => {
-  event.preventDefault()
-  event.returnValue = ''
-  return event.returnValue
-}
+// const beforeUnloadListener = (event: { preventDefault: () => void; returnValue: string }) => {
+//   event.preventDefault()
+//   event.returnValue = ''
+//   return event.returnValue
+// }
 
 export function LostChangesPrompt(props: {
   isNested?: boolean
@@ -82,29 +80,29 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
   const [dirty, setDirty] = useState(false)
   const [nestedDirty, setNestedDirty] = useState(false)
 
-  const history = useHistory()
+  const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const historyUnblockRef = useRef<UnregisterCallback>()
+  // const historyUnblockRef = useRef<UnregisterCallback>()
 
   const unblock = useCallback(() => {
-    historyUnblockRef.current?.()
-    removeEventListener('beforeunload', beforeUnloadListener, {
-      capture: true,
-    })
+    // historyUnblockRef.current?.()
+    // removeEventListener('beforeunload', beforeUnloadListener, {
+    //   capture: true,
+    // })
   }, [])
 
   useEffect(() => {
     if (dirty || nestedDirty) {
-      historyUnblockRef.current = history.block((location) => {
-        setIsOpen(true)
-        setLocation(location)
-        return false
-      })
-      addEventListener('beforeunload', beforeUnloadListener, { capture: true })
+      // historyUnblockRef.current = history.block((location) => {
+      //   setIsOpen(true)
+      //   setLocation(location)
+      //   return false
+      // })
+      // addEventListener('beforeunload', beforeUnloadListener, { capture: true })
     }
     return unblock
-  }, [dirty, nestedDirty, history, unblock])
+  }, [dirty, nestedDirty, unblock])
 
   const submitForm = useCallback(() => {
     unblock()
@@ -142,11 +140,11 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
     close()
     if (location) {
       unblock()
-      history.push(location)
+      navigate(location)
     } else if (callback) {
       callback()
     }
-  }, [callback, close, location, history, unblock])
+  }, [callback, close, location, navigate, unblock])
 
   return (
     <LostChangesContext.Provider value={lostChangesContext}>

@@ -13,10 +13,10 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 
 const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
@@ -782,7 +782,7 @@ describe('NodePoolsTable', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-
+    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -790,15 +790,14 @@ describe('NodePoolsTable', () => {
         }}
       >
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              hostedCluster: mockHostedCluster0,
-              cluster: undefined,
-              addons: undefined,
-            }}
-          >
-            <NodePoolsTable nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route
+                path="*"
+                element={<NodePoolsTable nodePools={nodePools} clusterImages={[mockClusterImageSet0]} />}
+              />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -876,18 +875,15 @@ describe('NodePoolsTable no status', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              hostedCluster: mockHostedCluster0,
-              cluster: undefined,
-              addons: undefined,
-            }}
-          >
-            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<NodePoolsTable nodePools={nodePools} clusterImages={[]} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -948,18 +944,15 @@ describe('NodePoolsTable no conditions', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              hostedCluster: mockHostedCluster0,
-              cluster: undefined,
-              addons: undefined,
-            }}
-          >
-            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<NodePoolsTable nodePools={nodePools} clusterImages={[]} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -1088,18 +1081,15 @@ describe('NodePoolsTable - Azure', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster1 }
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              hostedCluster: mockHostedCluster1,
-              cluster: undefined,
-              addons: undefined,
-            }}
-          >
-            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<NodePoolsTable nodePools={nodePools} clusterImages={[]} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -1152,18 +1142,15 @@ describe('NodePoolsTable - PowerVS', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster2 }
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <ClusterContext.Provider
-            value={{
-              hostedCluster: mockHostedCluster2,
-              cluster: undefined,
-              addons: undefined,
-            }}
-          >
-            <NodePoolsTable nodePools={nodePools} clusterImages={[]} />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<NodePoolsTable nodePools={nodePools} clusterImages={[]} />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

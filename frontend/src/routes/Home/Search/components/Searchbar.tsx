@@ -19,7 +19,7 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'
 import { useSharedAtoms } from '../../../../shared-recoil'
@@ -49,7 +49,7 @@ type SearchbarProps = {
   suggestions: DropdownSuggestionsProps[]
   currentQueryCallback: (query: string) => void
   toggleInfoModal: () => void
-  updateBrowserUrl: (history: any, currentQuery: string) => void
+  updateBrowserUrl: (navigate: any, currentQuery: string) => void
   savedSearchQueries: SavedSearch[]
   searchResultData: SearchResultItemsQuery | undefined
   refetchSearch: any
@@ -91,7 +91,7 @@ export function Searchbar(props: SearchbarProps) {
     refetchSearch,
   } = props
   const [t] = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const searchDefinitions = useSearchDefinitions()
   const toast = useContext(AcmToastContext)
   const [inputValue, setInputValue] = useState('')
@@ -366,7 +366,7 @@ export function Searchbar(props: SearchbarProps) {
       case 'Enter':
         if (currentQuery !== '' && !currentQuery.endsWith(':') && inputValue === '') {
           // User has a valid search so run the search query
-          updateBrowserUrl(history, currentQuery)
+          updateBrowserUrl(navigate, currentQuery)
           setMenuIsOpen(false)
           focusRunSearchButton()
         } else {
@@ -480,7 +480,7 @@ export function Searchbar(props: SearchbarProps) {
             if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
               refetchSearch() // if refetching we dont need to update browser url
             } else if (currentQuery !== '' && !currentQuery.endsWith(':')) {
-              updateBrowserUrl(history, currentQuery)
+              updateBrowserUrl(navigate, currentQuery)
             }
             setMenuIsOpen(false)
           }}

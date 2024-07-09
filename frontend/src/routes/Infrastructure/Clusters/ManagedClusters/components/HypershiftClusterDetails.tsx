@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { useContext } from 'react'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import HypershiftClusterInstallProgress from './HypershiftClusterInstallProgress'
 import { AcmExpandableCard } from '../../../../../ui-components'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
@@ -9,7 +8,7 @@ import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const HypershiftClusterDetails = (props: { handleModalToggle: () => void }) => {
   const { t } = useTranslation()
-  const { hostedCluster } = useContext(ClusterContext)
+  const { hostedCluster } = useClusterDetailsContext()
   const { clusterImageSetsState, nodePoolsState } = useSharedAtoms()
   const nodePools = useRecoilValue(nodePoolsState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)

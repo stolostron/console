@@ -6,7 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
-import { ClusterContext } from '../ClusterDetails'
+import { ClusterDetailsContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
 import {
   mockCluster,
@@ -14,12 +14,13 @@ import {
   mockMachinePoolManual,
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster, addons: undefined }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -27,9 +28,11 @@ describe('ClusterMachinePools', () => {
         }}
       >
         <MemoryRouter>
-          <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
-            <MachinePoolsPageContent />
-          </ClusterContext.Provider>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<MachinePoolsPageContent />} />
+            </Route>
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

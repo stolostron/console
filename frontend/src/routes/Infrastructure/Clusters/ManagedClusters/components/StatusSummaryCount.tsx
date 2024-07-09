@@ -2,7 +2,7 @@
 
 import { get } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
@@ -12,7 +12,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { getClusterList } from '../../../../Applications/helpers/resource-helper'
 import { localClusterStr } from '../../../../Applications/Overview'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 import { useAllClusters } from './useAllClusters'
 import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../../../hooks/application-queries'
@@ -36,7 +36,7 @@ export function StatusSummaryCount() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const policies = usePolicies()
-  const { cluster } = useContext(ClusterContext)
+  const { cluster } = useClusterDetailsContext()
 
   const clustersFilter = cluster ? [cluster.name] : []
   const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter })
@@ -45,7 +45,7 @@ export function StatusSummaryCount() {
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
-  const { push } = useHistory()
+  const navigate = useNavigate()
 
   const {
     policyReport,
@@ -79,7 +79,7 @@ export function StatusSummaryCount() {
 
     const localCluster = clusters.find((cls) => cls.name === localClusterStr)
     const clusterList = getClusterList(argoApp, argoApps, placementDecisions, subscriptions, localCluster, clusters)
-    return (!argoApp.metadata.ownerReferences || !isChildOfAppset) && clusterList.includes(cluster?.name!)
+    return (!argoApp.metadata.ownerReferences || !isChildOfAppset) && clusterList.includes(cluster.name)
   })
 
   const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
@@ -95,7 +95,7 @@ export function StatusSummaryCount() {
         localCluster,
         clusters
       )
-      if (clusterList.includes(cluster?.name!)) {
+      if (clusterList.includes(cluster.name)) {
         appList.push(application)
       }
     })
@@ -181,7 +181,7 @@ export function StatusSummaryCount() {
           {
             id: 'nodes',
             count: nodesCount,
-            countClick: () => (cluster ? push(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
+            countClick: () => (cluster ? navigate(getClusterNavPath(NavigationPath.clusterNodes, cluster)) : undefined),
             title: t('summary.nodes'),
             description: (
               <Trans
@@ -198,7 +198,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'applications',
                   count: appsCount,
-                  countClick: () => push(NavigationPath.applications + `?cluster=${cluster?.name}`),
+                  countClick: () => navigate(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
                 },
               ]
@@ -208,7 +208,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'violations',
                   count: policyViolationCount ?? 0,
-                  countClick: () => push(NavigationPath.policies + '?violations=with-violations'),
+                  countClick: () => navigate(NavigationPath.policies + '?violations=with-violations'),
                   title: t('summary.violations'),
                   isDanger: true,
                 },

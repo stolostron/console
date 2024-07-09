@@ -43,16 +43,16 @@ import {
   ToggleGroupItem,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'
-import { ClusterSetContext } from '../ClusterSetDetails'
+import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
   const { t } = useTranslation()
-  const { clusterSet } = useContext(ClusterSetContext)
+  const { clusterSet } = useClusterSetDetailsContext()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterRoleBinding> | { open: false }>({
     open: false,
   })
@@ -78,7 +78,7 @@ export function ClusterSetAccessManagement() {
     clusterRoleBindings = data.filter((item) => {
       const role = item.subjects ? item.roleRef.name : ''
       return (
-        role.startsWith('open-cluster-management:managedclusterset:') && role.endsWith(`:${clusterSet!.metadata.name!}`)
+        role.startsWith('open-cluster-management:managedclusterset:') && role.endsWith(`:${clusterSet.metadata.name}`)
       )
     })
   }
@@ -268,7 +268,7 @@ function AddUsersModal(props: {
   groups?: Group[]
 }) {
   const { t } = useTranslation()
-  const { clusterSet } = useContext(ClusterSetContext)
+  const { clusterSet } = useClusterSetDetailsContext()
   const [type, setType] = useState<'User' | 'Group'>('User')
   const [userGroup, setUserGroup] = useState<string | undefined>()
   const [role, setRole] = useState<string | undefined>()

@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, AlertVariant, Button, Hint, HintBody, HintFooter } from '@patternfly/react-core'
 import { useTranslation } from '../lib/acm-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
+
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 export function OperatorAlert(props: {

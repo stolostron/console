@@ -9,6 +9,7 @@ import {
   ApplicationSetKind,
   IResource,
 } from '../../../resources'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
@@ -27,22 +28,24 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete Application acmapp?')).toBeTruthy()
@@ -82,22 +85,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete Application acmapp2?')).toBeTruthy()
@@ -149,22 +154,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={shared}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={shared}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('This application uses the following shared resources, which are not removable:')).toBeTruthy()
@@ -209,22 +216,24 @@ describe('DeleteResourceModal', () => {
     ]
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={selected}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={selected}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('This subscription deploys the following resources, which will be removed:')).toBeTruthy()
@@ -246,22 +255,24 @@ describe('DeleteResourceModal', () => {
     }
 
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement=""
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={[]}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement=""
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={[]}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
@@ -280,22 +291,24 @@ describe('DeleteResourceModal', () => {
     const appSetPlacement = 'appset2-placement'
     const appSetApps = ['appset2-local-cluster']
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement={appSetPlacement}
-        appSetsSharingPlacement={[]}
-        appKind={resource.kind}
-        appSetApps={appSetApps}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement={appSetPlacement}
+          appSetsSharingPlacement={[]}
+          appKind={resource.kind}
+          appSetApps={appSetApps}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(getByText('Permanently delete ApplicationSet appset2?')).toBeTruthy()
@@ -322,22 +335,24 @@ describe('DeleteResourceModal', () => {
     const appSetApps = ['appset3-local-cluster']
     const appSetsSharingPlacement = ['appset4']
     const { getByText } = render(
-      <DeleteResourceModal
-        open={true}
-        canRemove={true}
-        resource={resource}
-        errors={undefined}
-        warnings={undefined}
-        loading={false}
-        selected={[]}
-        shared={[]}
-        appSetPlacement={appSetPlacement}
-        appSetsSharingPlacement={appSetsSharingPlacement}
-        appKind={resource.kind}
-        appSetApps={appSetApps}
-        close={() => void {}}
-        t={t}
-      />
+      <MemoryRouter>
+        <DeleteResourceModal
+          open={true}
+          canRemove={true}
+          resource={resource}
+          errors={undefined}
+          warnings={undefined}
+          loading={false}
+          selected={[]}
+          shared={[]}
+          appSetPlacement={appSetPlacement}
+          appSetsSharingPlacement={appSetsSharingPlacement}
+          appKind={resource.kind}
+          appSetApps={appSetApps}
+          close={() => void {}}
+          t={t}
+        />
+      </MemoryRouter>
     )
 
     expect(

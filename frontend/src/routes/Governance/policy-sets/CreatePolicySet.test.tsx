@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, namespacesState, policiesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC, nockCreate, nockIgnoreApiPaths } from '../../../lib/nock-util'
@@ -22,9 +22,9 @@ function TestCreatePolicySet() {
       }}
     >
       <MemoryRouter initialEntries={[`${NavigationPath.createPolicySet}`]}>
-        <Route path={NavigationPath.createPolicySet}>
-          <CreatePolicySet />
-        </Route>
+        <Routes>
+          <Route path={NavigationPath.createPolicySet} element={<CreatePolicySet />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

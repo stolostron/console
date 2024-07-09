@@ -5,8 +5,7 @@ import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
-import { generatePath } from 'react-router'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import cloneDeep from 'lodash/cloneDeep'
 import {
@@ -33,6 +32,7 @@ import {
   nockIgnoreApiPaths,
   nockList,
   nockNamespacedList,
+  nockPostRequest,
 } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
@@ -94,8 +94,8 @@ import {
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
 } from '../../../../../resources/multi-cluster-engine'
-import ClusterDetails from './ClusterDetails'
 import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
+import Clusters from '../../Clusters'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
   apiVersion: ManagedClusterInfoApiVersion,
@@ -1281,9 +1281,9 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
         }),
       ]}
     >
-      <Switch>
-        <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-      </Switch>
+      <Routes>
+        <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+      </Routes>
     </MemoryRouter>
   </RecoilRoot>
 )
@@ -1407,6 +1407,7 @@ describe('ClusterDetails', () => {
 describe('ClusterDetails - different name to namespace', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths() //ignore /apiPaths
     render(<Component clusterDeployment={mockClusterDeploymentDiffNs} />)
   })
 
@@ -1512,6 +1513,7 @@ describe('ClusterDetails with not found', () => {
     nockIgnoreApiPaths()
   })
   test('page renders error state to return to cluster page', async () => {
+    const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -1525,10 +1527,17 @@ describe('ClusterDetails with not found', () => {
           snapshot.set(configMapsState, [])
         }}
       >
-        <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
-          <Switch>
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-          </Switch>
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.clusterDetails, {
+              name: mockHostedCluster1.metadata?.name!,
+              namespace: mockHostedCluster1.metadata?.namespace!,
+            }),
+          ]}
+        >
+          <Routes>
+            <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -1539,6 +1548,7 @@ describe('ClusterDetails with not found', () => {
       })
     )
     expect(window.location.pathname).toEqual('/')
+    await waitForNock(metricNock)
   })
   test('page renders error state, should have option to import', async () => {
     nockGet(mockSecret, undefined, 404)
@@ -1564,9 +1574,9 @@ describe('ClusterDetails with not found', () => {
             }),
           ]}
         >
-          <Switch>
-            <Route path={NavigationPath.clusterDetails} component={ClusterDetails} />
-          </Switch>
+          <Routes>
+            <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

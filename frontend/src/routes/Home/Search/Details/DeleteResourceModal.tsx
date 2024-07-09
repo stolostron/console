@@ -2,7 +2,7 @@
 
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -18,7 +18,7 @@ interface Props {
 
 export const DeleteResourceModal = (props: Props) => {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const { open, close, resource, cluster } = props
   const [canDelete, setCanDelete] = useState<boolean>(false)
   const [loadingAccessRequest, setLoadingAccessRequest] = useState<boolean>(true)
@@ -108,7 +108,7 @@ export const DeleteResourceModal = (props: Props) => {
                     setDeleteResourceError(err)
                   })
               }
-              history.push(NavigationPath.search)
+              navigate(NavigationPath.search)
             }}
           >
             {t('Delete')}

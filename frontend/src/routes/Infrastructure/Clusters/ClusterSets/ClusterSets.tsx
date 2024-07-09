@@ -23,7 +23,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { Link } from 'react-router-dom'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
@@ -173,9 +173,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
             cell: (managedClusterSet: ManagedClusterSet) => (
               <>
                 <span style={{ whiteSpace: 'nowrap' }}>
-                  <Link
-                    to={NavigationPath.clusterSetOverview.replace(':id', managedClusterSet.metadata.name as string)}
-                  >
+                  <Link to={generatePath(NavigationPath.clusterSetOverview, { id: managedClusterSet.metadata.name! })}>
                     {managedClusterSet.metadata.name}
                   </Link>
                 </span>

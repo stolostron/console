@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useMemo, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useMemo, useEffect, useState } from 'react'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
-import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
+import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
@@ -56,10 +56,10 @@ const fetchEvents = async (url: string) => {
 }
 
 const AIClusterDetails: React.FC = () => {
-  const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
+  const { clusterDeployment, agentClusterInstall, agents } = useClusterDetailsContext()
   const [aiNamespace, setAiNamespace] = useState<string>('')
   const [namespaceError, setNamespaceError] = useState<boolean>()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [isEventsModalOpen, setIsEventsModalOpen] = useState(false)
 
   const cdName = clusterDeployment?.metadata?.name
@@ -120,10 +120,11 @@ const AIClusterDetails: React.FC = () => {
             validationsInfo={agentClusterInstall?.status?.validationsInfo!}
             clusterStatus={getClusterStatus(agentClusterInstall)}
             onContinueClusterConfiguration={() =>
-              history.push(
-                NavigationPath.editCluster
-                  .replace(':namespace', clusterDeployment.metadata.namespace!)
-                  .replace(':name', clusterDeployment.metadata.name!)
+              navigate(
+                generatePath(NavigationPath.editCluster, {
+                  namespace: clusterDeployment.metadata.namespace!,
+                  name: clusterDeployment.metadata.name!,
+                })
               )
             }
           />

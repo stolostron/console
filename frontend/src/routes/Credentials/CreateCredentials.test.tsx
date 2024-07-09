@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths } from '../../lib/nock-util'
 import { clickByTestId } from '../../lib/test-util'
@@ -17,9 +17,9 @@ describe('CreateCredentialsPage', () => {
     return (
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
-          <Route path={NavigationPath.addCredentials}>
-            <CreateCredentialsPage />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.addCredentials} element={<CreateCredentialsPage />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

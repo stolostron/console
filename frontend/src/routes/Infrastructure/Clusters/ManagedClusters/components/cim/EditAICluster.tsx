@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
-import { RouteComponentProps, StaticContext, useHistory, generatePath } from 'react-router'
+import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import {
   ACM_ENABLED_FEATURES,
   AgentK8sResource,
@@ -53,18 +53,13 @@ import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 
-type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }, StaticContext>
-
-const EditAICluster: React.FC<EditAIClusterProps> = ({
-  match: {
-    params: { namespace, name },
-  },
-  location: { search },
-}) => {
+const EditAICluster: React.FC = () => {
+  const { search } = useLocation()
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editCluster>>()
   const searchParams = new URLSearchParams(search)
   const { t } = useTranslation()
   const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
-  const history = useHistory()
+  const navigate = useNavigate()
   const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState } = useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
@@ -205,7 +200,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
-                onClose={history.goBack}
+                onClose={() => navigate(-1)}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values, isNutanix)}
                 onSaveHostsSelection={(values) =>
@@ -233,7 +228,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 hostActions={hostActions}
                 onFinish={async () => {
                   const aci = await onEditFinish(agentClusterInstall, clusterCurator)
-                  history.push(generatePath(NavigationPath.clusterDetails, { name, namespace }))
+                  navigate(generatePath(NavigationPath.clusterDetails, { name, namespace }))
                   return aci
                 }}
                 aiConfigMap={aiConfigMap}

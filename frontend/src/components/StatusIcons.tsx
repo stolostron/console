@@ -3,7 +3,7 @@
 import { Button, ButtonVariant, Divider, Flex, FlexItem, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom-v5-compat'
 
 export function StatusIcons(props: {
   compliant?: number

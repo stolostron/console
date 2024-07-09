@@ -3,13 +3,27 @@ import { Page } from '@patternfly/react-core'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { isMatch } from 'lodash'
 import {
+  AgentClusterInstallK8sResource,
   InfraEnvHostsTabAgentsWarning,
   INFRAENV_AGENTINSTALL_LABEL_KEY,
   getAgentsHostsNames,
   AddHostDropdown,
+  InfraEnvK8sResource,
+  AgentK8sResource,
+  BareMetalHostK8sResource,
+  NMStateK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+  PathParam,
+  generatePath,
+  useOutletContext,
+  Outlet,
+} from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -23,23 +37,28 @@ import {
   useProvisioningConfiguration,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { getInfraEnvNMStates } from '../utils'
-import DetailsTab from './DetailsTab'
-import HostsTab from './HostsTab'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 
-type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
+type InfraEnvironmentDetailsContext = {
+  agentClusterInstalls: AgentClusterInstallK8sResource[]
+  infraEnv: InfraEnvK8sResource
+  infraAgents: AgentK8sResource[]
+  bareMetalHosts: BareMetalHostK8sResource[]
+  infraNMStates: NMStateK8sResource[]
+}
 
-const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = ({ match }) => {
+const InfraEnvironmentDetailsPage: React.FC = () => {
   const { t } = useTranslation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.infraEnvironmentDetails>>()
 
   const { agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState } = useSharedAtoms()
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const agents = useRecoilValue(agentsState)
   const bareMetalHosts = useRecoilValue(bareMetalHostsState)
   const nmStateConfigs = useRecoilValue(nmStateConfigsState)
-  const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
+  const infraEnv = useInfraEnv({ name, namespace })
 
   const infraNMStates = useMemo(() => getInfraEnvNMStates(nmStateConfigs, infraEnv), [nmStateConfigs, infraEnv])
 
@@ -63,6 +82,17 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     [bareMetalHosts, infraEnv?.metadata?.namespace, infraEnv?.metadata?.name]
   )
 
+  const infraEnvDetailsContext = useMemo(
+    () => ({
+      agentClusterInstalls,
+      infraEnv,
+      infraAgents,
+      bareMetalHosts: infraBMHs,
+      infraNMStates,
+    }),
+    [agentClusterInstalls, infraAgents, infraBMHs, infraEnv, infraNMStates]
+  )
+
   const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
   const provisioningConfigResult = useProvisioningConfiguration()
   if (!infraEnv) {
@@ -71,7 +101,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => history.push(NavigationPath.infraEnvironments)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.infraEnvironments)}>
               {t('button.backToInfraEnvs')}
             </AcmButton>
           }
@@ -79,6 +109,9 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
       </Page>
     )
   }
+
+  const overviewPath = generatePath(NavigationPath.infraEnvironmentOverview, { name, namespace })
+  const hostsPath = generatePath(NavigationPath.infraEnvironmentHosts, { name, namespace })
 
   return (
     <>
@@ -93,35 +126,11 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             title={infraEnv.metadata?.name || ''}
             navigation={
               <AcmSecondaryNav>
-                <AcmSecondaryNavItem
-                  isActive={
-                    location.pathname ===
-                    NavigationPath.infraEnvironmentOverview
-                      .replace(':namespace', match.params.namespace)
-                      .replace(':name', match.params.name)
-                  }
-                >
-                  <Link
-                    to={NavigationPath.infraEnvironmentOverview
-                      .replace(':namespace', match.params.namespace)
-                      .replace(':name', match.params.name)}
-                  >
-                    {t('tab.details')}
-                  </Link>
+                <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
+                  <Link to={overviewPath}>{t('tab.details')}</Link>
                 </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem
-                  isActive={
-                    location.pathname ===
-                    NavigationPath.infraEnvironmentHosts
-                      .replace(':namespace', match.params.namespace)
-                      .replace(':name', match.params.name)
-                  }
-                >
-                  <Link
-                    to={NavigationPath.infraEnvironmentHosts
-                      .replace(':namespace', match.params.namespace)
-                      .replace(':name', match.params.name)}
-                  >
+                <AcmSecondaryNavItem isActive={location.pathname === hostsPath}>
+                  <Link to={hostsPath}>
                     {t('tab.hosts')}
                     <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} infraBMHs={infraBMHs} />
                   </Link>
@@ -143,31 +152,15 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         }
       >
         <Suspense fallback={<Fragment />}>
-          <Switch>
-            <Route exact path={NavigationPath.infraEnvironmentOverview}>
-              <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
-            </Route>
-            <Route exact path={NavigationPath.infraEnvironmentHosts}>
-              <HostsTab
-                agentClusterInstalls={agentClusterInstalls}
-                infraEnv={infraEnv}
-                infraAgents={infraAgents}
-                bareMetalHosts={infraBMHs}
-                infraNMStates={infraNMStates}
-              />
-            </Route>
-            <Route exact path={NavigationPath.infraEnvironmentDetails}>
-              <Redirect
-                to={NavigationPath.infraEnvironmentOverview
-                  .replace(':namespace', match.params.namespace)
-                  .replace(':name', match.params.name)}
-              />
-            </Route>
-          </Switch>
+          <Outlet context={infraEnvDetailsContext} />
         </Suspense>
       </AcmPage>
     </>
   )
+}
+
+export function useInfraEnvironmentDetailsContext() {
+  return useOutletContext<InfraEnvironmentDetailsContext>()
 }
 
 export default InfraEnvironmentDetailsPage

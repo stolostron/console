@@ -3,7 +3,7 @@ import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
 import { waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
@@ -95,9 +95,9 @@ function TestArgoWizard() {
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
-        <Route path={NavigationPath.createApplicationArgo}>
-          <ArgoWizard {...props} />
-        </Route>
+        <Routes>
+          <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -113,9 +113,9 @@ describe('ArgoWizard tests', () => {
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
-          <Route path={NavigationPath.createApplicationArgo}>
-            <ArgoWizard {...props} />
-          </Route>
+          <Routes>
+            <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
+          </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )

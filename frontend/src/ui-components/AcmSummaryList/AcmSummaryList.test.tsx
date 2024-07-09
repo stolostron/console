@@ -5,7 +5,7 @@ import { CaretDownIcon } from '@patternfly/react-icons'
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { AcmSummaryList } from './AcmSummaryList'
 
 describe('AcmSummaryList', () => {

@@ -3,13 +3,12 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { createBrowserHistory } from 'history'
-import { Router } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { SearchResultRelatedItemsDocument } from '../search-sdk/search-sdk'
 import RelatedResourceDetailsTab from './RelatedResourceDetailsTab'
-
+import { SearchDetailsContext } from './DetailsPage'
 describe('RelatedResourceDetailsTab', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
@@ -114,13 +113,22 @@ describe('RelatedResourceDetailsTab', () => {
         },
       },
     ]
+    const context: Partial<SearchDetailsContext> = {
+      resourceLoading: false,
+      cluster: 'test-cluster',
+      resource: testResourceNs,
+    }
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNs} />
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<RelatedResourceDetailsTab />} />
+              </Route>
+            </Routes>
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 
@@ -189,13 +197,22 @@ describe('RelatedResourceDetailsTab', () => {
         },
       },
     ]
+    const context: Partial<SearchDetailsContext> = {
+      resourceLoading: false,
+      cluster: 'test-cluster',
+      resource: testResourceNonNs,
+    }
     render(
       <RecoilRoot>
-        <Router history={createBrowserHistory()}>
+        <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <RelatedResourceDetailsTab resourceLoading={false} cluster={'test-cluster'} resource={testResourceNonNs} />
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<RelatedResourceDetailsTab />} />
+              </Route>
+            </Routes>
           </MockedProvider>
-        </Router>
+        </MemoryRouter>
       </RecoilRoot>
     )
 

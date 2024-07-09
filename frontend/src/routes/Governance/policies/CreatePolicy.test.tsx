@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   policiesState,
@@ -42,9 +42,12 @@ function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
       }}
     >
       <MemoryRouter initialEntries={[`${NavigationPath.createPolicy}`]}>
-        <Route path={NavigationPath.createPolicy}>
-          <CreatePolicy initialResources={props.initialResources} />
-        </Route>
+        <Routes>
+          <Route
+            path={NavigationPath.createPolicy}
+            element={<CreatePolicy initialResources={props.initialResources} />}
+          />
+        </Routes>
       </MemoryRouter>
     </RecoilRoot>
   )

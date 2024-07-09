@@ -4,7 +4,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, compareStrings } from '../../../ui-components'
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { ManagedCluster } from '../../../resources'
@@ -38,11 +38,10 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
         cell: (policy: ClusterPolicies) => {
           return (
             <Link
-              to={{
-                pathname: NavigationPath.policyDetailsResults
-                  .replace(':namespace', policy.policyNamespace)
-                  .replace(':name', policy.policyName),
-              }}
+              to={generatePath(NavigationPath.policyDetailsResults, {
+                namespace: policy.policyNamespace,
+                name: policy.policyName,
+              })}
             >
               {policy.policyName}
             </Link>

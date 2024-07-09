@@ -2,7 +2,7 @@
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useParams, useNavigate, PathParam } from 'react-router-dom-v5-compat'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -40,9 +40,8 @@ function getWizardSyncEditor() {
 export function EditPolicySet() {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
-  const params = useParams<{ namespace: string; name: string }>()
-  const { name } = params
-  const history = useHistory()
+  const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editPolicySet>>()
+  const navigate = useNavigate()
   const {
     managedClusterSetBindingsState,
     managedClusterSetsState,
@@ -70,17 +69,17 @@ export function EditPolicySet() {
   const [existingResources, setExistingResources] = useState<IResource[]>()
   useEffect(() => {
     const policySet = policySets.find(
-      (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
+      (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
     )
     if (policySet === undefined) {
-      history.push(NavigationPath.policySets)
+      navigate(NavigationPath.policySets)
       return
     }
     const policySetPlacementBindings = getPlacementBindingsForResource(policySet, placementBindings)
     const policySetPlacements = getPlacementsForResource(policySet, policySetPlacementBindings, placements)
     const policySetPlacementRules = getPlacementsForResource(policySet, policySetPlacementBindings, placementRules)
     setExistingResources([policySet, ...policySetPlacements, ...policySetPlacementRules, ...policySetPlacementBindings])
-  }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policySets])
+  }, [navigate, name, namespace, placementBindings, placementRules, placements, policySets])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
@@ -115,12 +114,12 @@ export function EditPolicySet() {
             })
           }
           submitForm()
-          history.push(NavigationPath.policySets)
+          navigate(NavigationPath.policySets)
         })
       }}
       onCancel={() => {
         cancelForm()
-        history.push(NavigationPath.policySets)
+        navigate(NavigationPath.policySets)
       }}
     />
   )

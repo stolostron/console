@@ -74,7 +74,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { FilterCounts, IRequestListView, IResultListView } from '../../lib/aggregates'
 
@@ -258,8 +258,8 @@ function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: Fil
 export function useTableFilterSelections<T>({ id, filters }: { id?: string; filters: ITableFilter<T>[] }) {
   const tableFilterLocalStorageKey = id ? `acm-table-filter.${id}` : undefined
 
-  const { search, ...location } = useLocation()
-  const { replace } = useHistory()
+  const { pathname, search } = useLocation()
+  const navigate = useNavigate()
 
   const queryParams = useMemo(() => {
     return parse(search, { arrayFormat: 'comma' })
@@ -280,12 +280,12 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     (newFilters: FilterSelections, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
-      replace({ ...location, search: updatedSearch })
+      navigate(pathname + '?' + updatedSearch, { replace: true })
       if (saveFilters && tableFilterLocalStorageKey) {
         setLocalStorage(tableFilterLocalStorageKey, newFilters)
       }
     },
-    [filteredQueryParams, replace, location, tableFilterLocalStorageKey]
+    [filteredQueryParams, navigate, pathname, tableFilterLocalStorageKey]
   )
 
   const filterSelections = useMemo(() => {

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { placementDecisionsState, subscriptionsState } from '../../atoms'
 import {
@@ -15,7 +15,6 @@ import {
 import { PluginContext } from '../../lib/PluginContext'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 import { ocpApi, waitForText } from '../../lib/test-util'
-import { NavigationPath } from '../../NavigationPath'
 import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../resources'
 import {
   acmExtension,
@@ -33,7 +32,7 @@ import {
   mockSearchResponseOCPApplicationsCount,
   mockSubscriptions,
 } from './Application.sharedmocks'
-import ApplicationsPage from './ApplicationsPage'
+import Overview from './Overview'
 
 const applicationAggregate = {
   req: { page: 1, perPage: 10, sortBy: { index: 0, direction: 'asc' } },
@@ -68,7 +67,7 @@ describe('Applications Page', () => {
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
         }}
       >
-        <MemoryRouter initialEntries={[NavigationPath.applications]}>
+        <MemoryRouter>
           <PluginContext.Provider
             value={{
               acmExtensions: acmExtension,
@@ -76,7 +75,9 @@ describe('Applications Page', () => {
               ocpApi,
             }}
           >
-            <ApplicationsPage />
+            <Routes>
+              <Route path="*" element={<Overview />} />
+            </Routes>
           </PluginContext.Provider>
         </MemoryRouter>
       </RecoilRoot>

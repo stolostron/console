@@ -13,7 +13,7 @@ import {
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -109,7 +109,7 @@ export default function CreateClusterPool(props: { infrastructureType: ClusterPo
 
 function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrastructureType }) {
   const { infrastructureType } = props
-  const history = useHistory()
+  const navigate = useNavigate()
   const { search } = useLocation()
   const { back, cancel } = useBackCancelNavigation()
   const { namespacesState, settingsState, clusterPoolsState, secretsState } = useSharedAtoms()
@@ -160,7 +160,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
           type: 'success',
           autoClose: true,
         })
-        history.push(NavigationPath.clusterPools)
+        navigate(NavigationPath.clusterPools)
       }
     }
   }

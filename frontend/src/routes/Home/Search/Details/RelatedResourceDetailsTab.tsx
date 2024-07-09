@@ -11,20 +11,17 @@ import {
 import _ from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { getGroupFromApiVersion, IResource } from '../../../../resources'
+import { getGroupFromApiVersion } from '../../../../resources'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'
 import { SearchRelatedResult, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { ISearchResult } from '../SearchResults/utils'
+import { useSearchDetailsContext } from './DetailsPage'
 
-export default function RelatedResourceDetailsTab(props: {
-  cluster: string
-  resource: IResource
-  resourceLoading: boolean
-}) {
-  const { cluster, resource, resourceLoading } = props
+export default function RelatedResourceDetailsTab() {
+  const { cluster, resource, resourceLoading } = useSearchDetailsContext()
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -130,7 +127,7 @@ export default function RelatedResourceDetailsTab(props: {
       return { kindSearchResultItems, kinds }
     }, [relatedResultItems])
 
-  if (resourceLoading || loading) {
+  if (loading || resourceLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />

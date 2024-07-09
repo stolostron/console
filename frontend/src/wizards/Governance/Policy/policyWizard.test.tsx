@@ -11,7 +11,7 @@ import {
 
 import { Policy } from '../../../resources'
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
-import { BrowserRouter as Router } from 'react-router-dom'
+import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { waitForText } from '../../../lib/test-util'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
