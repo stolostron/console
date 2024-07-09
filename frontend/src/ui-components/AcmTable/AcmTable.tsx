@@ -9,8 +9,6 @@ import {
   DropdownSeparator,
   DropdownToggle,
   DropdownToggleCheckbox,
-  EmptyState,
-  EmptyStateIcon,
   PageSection,
   Pagination,
   PaginationVariant,
@@ -21,8 +19,7 @@ import {
   SelectOption,
   SelectOptionObject,
   SelectVariant,
-  Spinner,
-  Title,
+  Skeleton,
   Toolbar,
   ToolbarChip,
   ToolbarContent,
@@ -1073,7 +1070,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult : false
+  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult || loading : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
 
   const translatedPaginationTitles = usePaginationTitles()
@@ -1189,12 +1186,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       )}
       {!items || !rows || !filtered || !paged || loading ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
-          <EmptyState>
-            <EmptyStateIcon variant="container" component={Spinner} />
-            <Title size="lg" headingLevel="h4">
-              {t('Loading')}
-            </Title>
-          </EmptyState>
+          <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'padding' }}>
+            <Fragment>
+              {Array(10).fill(
+                <>
+                  <Skeleton width="100%" screenreaderText="Loading" />
+                  <br />
+                </>
+              )}
+            </Fragment>
+          </PageSection>
         </PageSection>
       ) : items.length === 0 && !emptyResult ? (
         props.emptyState && (
