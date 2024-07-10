@@ -137,7 +137,7 @@ const mockCluster3: Cluster = {
   isManaged: true,
   isCurator: true,
   hasAutomationTemplate: false,
-  isHostedCluster: true,
+  isHostedCluster: false,
   isHypershift: false,
   isSNOCluster: false,
   owner: {},
