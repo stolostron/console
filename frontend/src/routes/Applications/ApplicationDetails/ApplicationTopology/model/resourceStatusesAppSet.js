@@ -2,7 +2,7 @@
 
 import _ from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
 
 export async function getAppSetResourceStatuses(application, appData) {
@@ -69,7 +69,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
   query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
 
   return searchClient.query({
-    query: SearchResultRelatedItemsDocument,
+    query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
       input: [{ ...query }, ...queryNotNamespaceScoped],
       limit: 1000,

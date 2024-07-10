@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { MockedProvider } from '@apollo/client/testing'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
 import {
   applicationSetsState,
   applicationsState,
@@ -13,18 +18,12 @@ import {
   subscriptionsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
-import { render, screen } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { ocpApi, waitForText } from '../../../lib/test-util'
-import ApplicationDetailsPage from './ApplicationDetails'
-import { GetMessagesDocument, SearchSchemaDocument } from '../../Home/Search/search-sdk/search-sdk'
-import { MockedProvider } from '@apollo/client/testing'
-import userEvent from '@testing-library/user-event'
 import { PluginContext } from '../../../lib/PluginContext'
-import { AcmExtension } from '../../../plugin-extensions/types'
-import { ApplicationActionProps } from '../../../plugin-extensions/properties'
 import { PluginDataContext } from '../../../lib/PluginDataContext'
+import { ocpApi, waitForText } from '../../../lib/test-util'
+import { ApplicationActionProps } from '../../../plugin-extensions/properties'
+import { AcmExtension } from '../../../plugin-extensions/types'
+import { GetMessagesDocument, SearchSchemaDocument } from '../../Home/Search/search-sdk/search-sdk'
 import {
   mockApplication0,
   mockApplications,
@@ -38,6 +37,7 @@ import {
   mockPlacementsDecisions,
   mockSubscriptions,
 } from '../Application.sharedmocks'
+import ApplicationDetailsPage from './ApplicationDetails'
 
 const applicationActionProps: ApplicationActionProps[] = [
   {
@@ -63,7 +63,7 @@ const acmExtension: AcmExtension = {
 }
 
 const mockSearchQuery = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -78,7 +78,7 @@ const mockSearchQuery = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchResponse = {
