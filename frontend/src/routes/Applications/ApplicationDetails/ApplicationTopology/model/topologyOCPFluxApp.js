@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, uniqBy, filter, includes } from 'lodash'
+import { filter, get, includes, uniqBy } from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
@@ -29,7 +29,7 @@ async function getResourcesWithAppLabel(application) {
   const query = getQueryStringForLabel(label, namespace, cluster.name)
 
   return searchClient.query({
-    query: SearchResultRelatedItemsDocument,
+    query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
       input: [{ ...query }],
       limit: 1000,

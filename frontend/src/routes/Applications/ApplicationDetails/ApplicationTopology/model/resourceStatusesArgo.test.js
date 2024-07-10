@@ -7,7 +7,7 @@ import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 
 const mockSearchQuery = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -27,11 +27,11 @@ const mockSearchQuery = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchQuery2 = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -63,11 +63,11 @@ const mockSearchQuery2 = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchQuery3 = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -99,11 +99,11 @@ const mockSearchQuery3 = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchQuery4 = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -203,11 +203,11 @@ const mockSearchQuery4 = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchQuery5 = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -231,7 +231,7 @@ const mockSearchQuery5 = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchResponse = {

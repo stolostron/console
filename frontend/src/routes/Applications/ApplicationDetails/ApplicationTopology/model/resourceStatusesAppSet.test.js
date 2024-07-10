@@ -7,7 +7,7 @@ import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 
 const mockSearchQuery = {
-  operationName: 'searchResultRelatedItems',
+  operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
       {
@@ -55,7 +55,7 @@ const mockSearchQuery = {
     ],
   },
   query:
-    'query searchResultRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
 const mockSearchResponse = {

@@ -18,9 +18,8 @@ query searchResultCount($input: [SearchInput]) {
   }
 }
 
-query searchResultCountAndRelatedCount($input: [SearchInput]) {
+query searchResultRelatedCount($input: [SearchInput]) {
   searchResult: search(input: $input) {
-    count
     related {
       kind
       count
@@ -28,11 +27,12 @@ query searchResultCountAndRelatedCount($input: [SearchInput]) {
   }
 }
 
-query searchResultRelatedCount($input: [SearchInput]) {
+query searchResultItemsAndRelatedItems($input: [SearchInput]) {
   searchResult: search(input: $input) {
+    items
     related {
       kind
-      count
+      items
     }
   }
 }

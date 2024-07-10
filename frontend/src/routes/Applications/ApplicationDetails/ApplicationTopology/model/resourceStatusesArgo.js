@@ -2,7 +2,7 @@
 
 import _ from 'lodash'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 
 export async function getArgoResourceStatuses(application, appData, topology) {
@@ -51,7 +51,7 @@ async function getArgoSource(application, appData) {
     }
   }
   return searchClient.query({
-    query: SearchResultRelatedItemsDocument,
+    query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
       input: [{ ...query }],
       limit: 1000,
@@ -153,7 +153,7 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
     query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
   }
   return searchClient.query({
-    query: SearchResultRelatedItemsDocument,
+    query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
       input: [{ ...query }, ...queryNotNamespaceScoped],
       limit: 1000,
@@ -207,7 +207,7 @@ export const getArgoSecret = (appData, resourceStatuses = {}) => {
         `kind:secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster='true'`
       )
       return searchClient.query({
-        query: SearchResultRelatedItemsDocument,
+        query: SearchResultItemsAndRelatedItemsDocument,
         variables: {
           input: [{ ...query }],
           limit: 1000,

@@ -3,7 +3,7 @@
 import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 
 export async function getRelatedResources(reports = []) {
   const promises = []
@@ -79,7 +79,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
     query.filters.push({ property: 'cluster', values: [cluster] })
   }
   return searchClient.query({
-    query: SearchResultRelatedItemsDocument,
+    query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
       input: [{ ...query, relatedKinds }],
       limit: 1000,
