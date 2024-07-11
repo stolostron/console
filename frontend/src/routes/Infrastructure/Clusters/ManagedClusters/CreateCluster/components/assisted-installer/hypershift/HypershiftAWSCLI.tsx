@@ -33,6 +33,7 @@ export STS_CREDS="example-sts-creds-json"  # JSON file from step 2
 export NAMESPACE="example-namespace"
 export ROLE_ARN="example-role-arn" # Role ARN from step 3
 export PULL_SECRET="example-pull-secret-file" # Pull secret file path from step 4
+export BASE_DOMAIN="www.example.com" # Base domain for this cluster
 
 hcp create cluster aws \\
   --name $CLUSTER_NAME \\
@@ -41,7 +42,8 @@ hcp create cluster aws \\
   --sts-creds $STS_CREDS \\
   --role-arn $ROLE_ARN \\
   --pull-secret $PULL_SECRET \\
-  --region $REGION`
+  --region $REGION \\
+  --base-domain $BASE_DOMAIN`
 
   const helperCommand = `hcp create cluster aws --help`
   const handleModalToggleAws = () => {

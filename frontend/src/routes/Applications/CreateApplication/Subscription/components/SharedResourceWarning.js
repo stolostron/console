@@ -8,7 +8,7 @@ import PropTypes from 'prop-types'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import './style.css'
 
 export const RESOURCE_TYPES = {
@@ -103,7 +103,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
       const query = getQuery(resourceType, resourceName, resourceNamespace)
       searchClient
         .query({
-          query: SearchResultRelatedItemsDocument,
+          query: SearchResultItemsAndRelatedItemsDocument,
           variables: {
             input: [{ ...query }],
             limit: 1000,

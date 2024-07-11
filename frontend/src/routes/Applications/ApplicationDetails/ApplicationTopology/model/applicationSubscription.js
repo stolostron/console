@@ -148,7 +148,8 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
     modelSubscriptions.push(subscription)
 
     // get post hooks
-    const postHooks = get(subscription, 'status.ansiblejobs.posthookjobshistory', [])
+    const lastPosthookJob = get(subscription, 'status.ansiblejobs.lastposthookjob')
+    const postHooks = lastPosthookJob ? [lastPosthookJob] : []
     postHooks.forEach((value) => {
       const [deployableNamespace, deployableName] = value.split('/')
       if (deployableNamespace && deployableName) {
@@ -165,7 +166,8 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
     }
 
     // get pre hooks
-    const preHooks = get(subscription, 'status.ansiblejobs.prehookjobshistory', [])
+    const lastPrehookJob = get(subscription, 'status.ansiblejobs.lastprehookjob')
+    const preHooks = lastPrehookJob ? [lastPrehookJob] : []
     preHooks.forEach((value) => {
       const [deployableNamespace, deployableName] = value.split('/')
       if (deployableNamespace && deployableName) {

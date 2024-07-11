@@ -1,219 +1,208 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-
 import * as Apollo from '@apollo/client'
 import { gql } from '@apollo/client'
 export type Maybe<T> = T | null
+export type InputMaybe<T> = Maybe<T>
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> }
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> }
-const defaultOptions = {}
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never }
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never }
+const defaultOptions = {} as const
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string
-  String: string
-  Boolean: boolean
-  Int: number
-  Float: number
-  /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
-  JSON: any
-  /** The `Upload` scalar type represents a file upload. */
-  Upload: any
+  ID: { input: string; output: string }
+  String: { input: string; output: string }
+  Boolean: { input: boolean; output: boolean }
+  Int: { input: number; output: number }
+  Float: { input: number; output: number }
+  Map: { input: any; output: any }
 }
 
-export type Application = {
-  _uid?: Maybe<Scalars['String']>
-  apiVersion?: Maybe<Scalars['String']>
-  created?: Maybe<Scalars['String']>
-  dashboard?: Maybe<Scalars['String']>
-  labels?: Maybe<Array<Maybe<Scalars['String']>>>
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-  cluster?: Maybe<Scalars['String']>
-  clusterCount?: Maybe<Scalars['JSON']>
-  hubChannels?: Maybe<Array<Maybe<Scalars['JSON']>>>
-  hubSubscriptions?: Maybe<Array<Maybe<Subscription>>>
-  applicationSet?: Maybe<Scalars['String']>
-  destinationName?: Maybe<Scalars['String']>
-  destinationServer?: Maybe<Scalars['String']>
-  destinationCluster?: Maybe<Scalars['String']>
-  destinationNamespace?: Maybe<Scalars['String']>
-  repoURL?: Maybe<Scalars['String']>
-  path?: Maybe<Scalars['String']>
-  chart?: Maybe<Scalars['String']>
-  targetRevision?: Maybe<Scalars['String']>
-}
-
-export enum CacheControlScope {
-  Public = 'PUBLIC',
-  Private = 'PRIVATE',
-}
-
-export type Channel = {
-  _uid?: Maybe<Scalars['String']>
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-  created?: Maybe<Scalars['String']>
-  type?: Maybe<Scalars['String']>
-  pathname?: Maybe<Scalars['String']>
-  localPlacement?: Maybe<Scalars['Boolean']>
-  subscriptionCount?: Maybe<Scalars['Int']>
-  clusterCount?: Maybe<Scalars['JSON']>
-}
-
+/** A message is used to communicate conditions detected while executing a query on the server. */
 export type Message = {
-  id: Scalars['String']
-  kind?: Maybe<Scalars['String']>
-  description?: Maybe<Scalars['String']>
+  /** Message text. */
+  description?: Maybe<Scalars['String']['output']>
+  /** Unique identifier to be used by clients to process the message independently of locale or grammatical changes. */
+  id: Scalars['String']['output']
+  /**
+   * Message type.
+   * **Values:** information, warning, error.
+   */
+  kind?: Maybe<Scalars['String']['output']>
 }
 
-export type PlacementRule = {
-  _uid?: Maybe<Scalars['String']>
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-  created?: Maybe<Scalars['String']>
-  clusterCount?: Maybe<Scalars['JSON']>
-  replicas?: Maybe<Scalars['Int']>
-}
-
+/** Queries supported by the Search Query API. */
 export type Query = {
-  applications?: Maybe<Array<Maybe<Application>>>
-  subscriptions?: Maybe<Array<Maybe<Subscription>>>
-  placementRules?: Maybe<Array<Maybe<PlacementRule>>>
-  channels?: Maybe<Array<Maybe<Channel>>>
-  search?: Maybe<Array<Maybe<SearchResult>>>
+  /**
+   * Additional information about the service status or conditions found while processing the query.
+   * This is similar to the errors query, but without implying that there was a problem processing the query.
+   */
   messages?: Maybe<Array<Maybe<Message>>>
-  searchComplete?: Maybe<Array<Maybe<Scalars['String']>>>
-  searchSchema?: Maybe<Scalars['JSON']>
+  /**
+   * Search for resources and their relationships.
+   * *[PLACEHOLDER] Results only include kubernetes resources for which the authenticated user has list permission.*
+   *
+   * For more information see the feature spec.
+   */
+  search?: Maybe<Array<Maybe<SearchResult>>>
+  /**
+   * Query all values for the given property.
+   * Optionally, a query can be included to filter the results.
+   * For example, if we want to get the names of all resources in the namespace foo, we can pass a query with the filter `{property: namespace, values:['foo']}`
+   *
+   * **Default limit is** 1,000
+   * A value of -1 will remove the limit. Use carefully because it may impact the service.
+   */
+  searchComplete?: Maybe<Array<Maybe<Scalars['String']['output']>>>
+  /** Returns all properties from resources currently in the index. */
+  searchSchema?: Maybe<Scalars['Map']['output']>
 }
 
-export type QueryApplicationsArgs = {
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-}
-
-export type QuerySubscriptionsArgs = {
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-}
-
-export type QueryPlacementRulesArgs = {
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-}
-
-export type QueryChannelsArgs = {
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-}
-
+/** Queries supported by the Search Query API. */
 export type QuerySearchArgs = {
-  input?: Maybe<Array<Maybe<SearchInput>>>
+  input?: InputMaybe<Array<InputMaybe<SearchInput>>>
 }
 
+/** Queries supported by the Search Query API. */
 export type QuerySearchCompleteArgs = {
-  property: Scalars['String']
-  query?: Maybe<SearchInput>
-  limit?: Maybe<Scalars['Int']>
+  limit?: InputMaybe<Scalars['Int']['input']>
+  property: Scalars['String']['input']
+  query?: InputMaybe<SearchInput>
 }
 
+/**
+ * Defines a key/value to filter results.
+ * When multiple values are provided for a property, it is interpreted as an OR operation.
+ */
 export type SearchFilter = {
-  property: Scalars['String']
-  values?: Maybe<Array<Maybe<Scalars['String']>>>
+  /** Name of the property (key). */
+  property: Scalars['String']['input']
+  /**
+   * Values for the property. Multiple values per property are interpreted as an OR operation.
+   * Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value.
+   * By default the equality operation is used.
+   * The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`.
+   * Property `kind`, if included in the filter, will be matched using a case-insensitive comparison.
+   * For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1.
+   */
+  values: Array<InputMaybe<Scalars['String']['input']>>
 }
 
+/** Input options to the search query. */
 export type SearchInput = {
-  keywords?: Maybe<Array<Maybe<Scalars['String']>>>
-  filters?: Maybe<Array<Maybe<SearchFilter>>>
-  limit?: Maybe<Scalars['Int']>
-  relatedKinds?: Maybe<Array<Maybe<Scalars['String']>>>
+  /**
+   * List of SearchFilter, which is a key(property) and values.
+   * When multiple filters are provided, results will match all filters (AND operation).
+   */
+  filters?: InputMaybe<Array<InputMaybe<SearchFilter>>>
+  /**
+   * List of strings to match resources.
+   * Will match resources containing any of the keywords in any text field.
+   * When multiple keywords are provided, it is interpreted as an AND operation.
+   * Matches are case insensitive.
+   */
+  keywords?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>
+  /**
+   * Max number of results returned by the query.
+   * **Default is** 10,000
+   * A value of -1 will remove the limit. Use carefully because it may impact the service.
+   */
+  limit?: InputMaybe<Scalars['Int']['input']>
+  /**
+   * Filter relationships to the specified kinds.
+   * If empty, all relationships will be included.
+   * This filter is used with the 'related' field on SearchResult.
+   */
+  relatedKinds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>
 }
 
+/** Resources related to the items resolved from the search query. */
 export type SearchRelatedResult = {
-  kind: Scalars['String']
-  count?: Maybe<Scalars['Int']>
-  items?: Maybe<Scalars['JSON']>
+  /**
+   * Total number of related resources.
+   * **NOTE:** Should not use count in combination with items. If items are requested, the count is simply the size of items.
+   */
+  count?: Maybe<Scalars['Int']['output']>
+  /** Resources matched by the query. */
+  items?: Maybe<Array<Maybe<Scalars['Map']['output']>>>
+  kind: Scalars['String']['output']
 }
 
+/** Data returned by the search query. */
 export type SearchResult = {
-  count?: Maybe<Scalars['Int']>
-  items?: Maybe<Scalars['JSON']>
+  /**
+   * Total number of resources matching the query.
+   * **NOTE:** Should not use count in combination with items. If items are requested, the count is simply the size of items.
+   */
+  count?: Maybe<Scalars['Int']['output']>
+  /** Resources matching the search query. */
+  items?: Maybe<Array<Maybe<Scalars['Map']['output']>>>
+  /**
+   * Resources related to the query results (items).
+   * For example, if searching for deployments, this will return the related pod resources.
+   */
   related?: Maybe<Array<Maybe<SearchRelatedResult>>>
-}
-
-export type Subscription = {
-  _uid?: Maybe<Scalars['String']>
-  name?: Maybe<Scalars['String']>
-  namespace?: Maybe<Scalars['String']>
-  created?: Maybe<Scalars['String']>
-  channel?: Maybe<Scalars['String']>
-  appCount?: Maybe<Scalars['Int']>
-  clusterCount?: Maybe<Scalars['JSON']>
-  timeWindow?: Maybe<Scalars['String']>
-  localPlacement?: Maybe<Scalars['Boolean']>
-  status?: Maybe<Scalars['String']>
 }
 
 export type SearchSchemaQueryVariables = Exact<{ [key: string]: never }>
 
-export type SearchSchemaQuery = Pick<Query, 'searchSchema'>
+export type SearchSchemaQuery = { searchSchema?: any | null }
 
 export type SearchCompleteQueryVariables = Exact<{
-  property: Scalars['String']
-  query?: Maybe<SearchInput>
-  limit?: Maybe<Scalars['Int']>
+  property: Scalars['String']['input']
+  query?: InputMaybe<SearchInput>
+  limit?: InputMaybe<Scalars['Int']['input']>
 }>
 
-export type SearchCompleteQuery = Pick<Query, 'searchComplete'>
+export type SearchCompleteQuery = { searchComplete?: Array<string | null> | null }
 
 export type SearchResultItemsQueryVariables = Exact<{
-  input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+  input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
-export type SearchResultItemsQuery = { searchResult?: Maybe<Array<Maybe<Pick<SearchResult, 'items'>>>> }
+export type SearchResultItemsQuery = { searchResult?: Array<{ items?: Array<any | null> | null } | null> | null }
 
 export type SearchResultCountQueryVariables = Exact<{
-  input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+  input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
-export type SearchResultCountQuery = { searchResult?: Maybe<Array<Maybe<Pick<SearchResult, 'count'>>>> }
-
-export type SearchResultCountAndRelatedCountQueryVariables = Exact<{
-  input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
-}>
-
-export type SearchResultCountAndRelatedCountQuery = {
-  searchResult?: Maybe<
-    Array<
-      Maybe<
-        Pick<SearchResult, 'count'> & {
-          related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'count'>>>>
-        }
-      >
-    >
-  >
-}
+export type SearchResultCountQuery = { searchResult?: Array<{ count?: number | null } | null> | null }
 
 export type SearchResultRelatedCountQueryVariables = Exact<{
-  input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+  input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
 export type SearchResultRelatedCountQuery = {
-  searchResult?: Maybe<Array<Maybe<{ related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'count'>>>> }>>>
+  searchResult?: Array<{ related?: Array<{ kind: string; count?: number | null } | null> | null } | null> | null
+}
+
+export type SearchResultItemsAndRelatedItemsQueryVariables = Exact<{
+  input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
+}>
+
+export type SearchResultItemsAndRelatedItemsQuery = {
+  searchResult?: Array<{
+    items?: Array<any | null> | null
+    related?: Array<{ kind: string; items?: Array<any | null> | null } | null> | null
+  } | null> | null
 }
 
 export type SearchResultRelatedItemsQueryVariables = Exact<{
-  input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+  input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
 export type SearchResultRelatedItemsQuery = {
-  searchResult?: Maybe<Array<Maybe<{ related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'items'>>>> }>>>
+  searchResult?: Array<{
+    related?: Array<{ kind: string; items?: Array<any | null> | null } | null> | null
+  } | null> | null
 }
 
 export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>
 
-export type GetMessagesQuery = { messages?: Maybe<Array<Maybe<Pick<Message, 'id' | 'kind' | 'description'>>>> }
+export type GetMessagesQuery = {
+  messages?: Array<{ id: string; kind?: string | null; description?: string | null } | null> | null
+}
 
 export const SearchSchemaDocument = gql`
   query searchSchema {
@@ -248,8 +237,15 @@ export function useSearchSchemaLazyQuery(
   const options = { ...defaultOptions, ...baseOptions }
   return Apollo.useLazyQuery<SearchSchemaQuery, SearchSchemaQueryVariables>(SearchSchemaDocument, options)
 }
+export function useSearchSchemaSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchSchemaQuery, SearchSchemaQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchSchemaQuery, SearchSchemaQueryVariables>(SearchSchemaDocument, options)
+}
 export type SearchSchemaQueryHookResult = ReturnType<typeof useSearchSchemaQuery>
 export type SearchSchemaLazyQueryHookResult = ReturnType<typeof useSearchSchemaLazyQuery>
+export type SearchSchemaSuspenseQueryHookResult = ReturnType<typeof useSearchSchemaSuspenseQuery>
 export type SearchSchemaQueryResult = Apollo.QueryResult<SearchSchemaQuery, SearchSchemaQueryVariables>
 export const SearchCompleteDocument = gql`
   query searchComplete($property: String!, $query: SearchInput, $limit: Int) {
@@ -276,7 +272,8 @@ export const SearchCompleteDocument = gql`
  * });
  */
 export function useSearchCompleteQuery(
-  baseOptions: Apollo.QueryHookOptions<SearchCompleteQuery, SearchCompleteQueryVariables>
+  baseOptions: Apollo.QueryHookOptions<SearchCompleteQuery, SearchCompleteQueryVariables> &
+    ({ variables: SearchCompleteQueryVariables; skip?: boolean } | { skip: boolean })
 ) {
   const options = { ...defaultOptions, ...baseOptions }
   return Apollo.useQuery<SearchCompleteQuery, SearchCompleteQueryVariables>(SearchCompleteDocument, options)
@@ -287,8 +284,15 @@ export function useSearchCompleteLazyQuery(
   const options = { ...defaultOptions, ...baseOptions }
   return Apollo.useLazyQuery<SearchCompleteQuery, SearchCompleteQueryVariables>(SearchCompleteDocument, options)
 }
+export function useSearchCompleteSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchCompleteQuery, SearchCompleteQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchCompleteQuery, SearchCompleteQueryVariables>(SearchCompleteDocument, options)
+}
 export type SearchCompleteQueryHookResult = ReturnType<typeof useSearchCompleteQuery>
 export type SearchCompleteLazyQueryHookResult = ReturnType<typeof useSearchCompleteLazyQuery>
+export type SearchCompleteSuspenseQueryHookResult = ReturnType<typeof useSearchCompleteSuspenseQuery>
 export type SearchCompleteQueryResult = Apollo.QueryResult<SearchCompleteQuery, SearchCompleteQueryVariables>
 export const SearchResultItemsDocument = gql`
   query searchResultItems($input: [SearchInput]) {
@@ -329,8 +333,18 @@ export function useSearchResultItemsLazyQuery(
     options
   )
 }
+export function useSearchResultItemsSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultItemsQuery, SearchResultItemsQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchResultItemsQuery, SearchResultItemsQueryVariables>(
+    SearchResultItemsDocument,
+    options
+  )
+}
 export type SearchResultItemsQueryHookResult = ReturnType<typeof useSearchResultItemsQuery>
 export type SearchResultItemsLazyQueryHookResult = ReturnType<typeof useSearchResultItemsLazyQuery>
+export type SearchResultItemsSuspenseQueryHookResult = ReturnType<typeof useSearchResultItemsSuspenseQuery>
 export type SearchResultItemsQueryResult = Apollo.QueryResult<SearchResultItemsQuery, SearchResultItemsQueryVariables>
 export const SearchResultCountDocument = gql`
   query searchResultCount($input: [SearchInput]) {
@@ -371,71 +385,19 @@ export function useSearchResultCountLazyQuery(
     options
   )
 }
+export function useSearchResultCountSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultCountQuery, SearchResultCountQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchResultCountQuery, SearchResultCountQueryVariables>(
+    SearchResultCountDocument,
+    options
+  )
+}
 export type SearchResultCountQueryHookResult = ReturnType<typeof useSearchResultCountQuery>
 export type SearchResultCountLazyQueryHookResult = ReturnType<typeof useSearchResultCountLazyQuery>
+export type SearchResultCountSuspenseQueryHookResult = ReturnType<typeof useSearchResultCountSuspenseQuery>
 export type SearchResultCountQueryResult = Apollo.QueryResult<SearchResultCountQuery, SearchResultCountQueryVariables>
-export const SearchResultCountAndRelatedCountDocument = gql`
-  query searchResultCountAndRelatedCount($input: [SearchInput]) {
-    searchResult: search(input: $input) {
-      count
-      related {
-        kind
-        count
-      }
-    }
-  }
-`
-
-/**
- * __useSearchResultCountAndRelatedCountQuery__
- *
- * To run a query within a React component, call `useSearchResultCountAndRelatedCountQuery` and pass it any options that fit your needs.
- * When your component renders, `useSearchResultCountAndRelatedCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useSearchResultCountAndRelatedCountQuery({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useSearchResultCountAndRelatedCountQuery(
-  baseOptions?: Apollo.QueryHookOptions<
-    SearchResultCountAndRelatedCountQuery,
-    SearchResultCountAndRelatedCountQueryVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useQuery<SearchResultCountAndRelatedCountQuery, SearchResultCountAndRelatedCountQueryVariables>(
-    SearchResultCountAndRelatedCountDocument,
-    options
-  )
-}
-export function useSearchResultCountAndRelatedCountLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<
-    SearchResultCountAndRelatedCountQuery,
-    SearchResultCountAndRelatedCountQueryVariables
-  >
-) {
-  const options = { ...defaultOptions, ...baseOptions }
-  return Apollo.useLazyQuery<SearchResultCountAndRelatedCountQuery, SearchResultCountAndRelatedCountQueryVariables>(
-    SearchResultCountAndRelatedCountDocument,
-    options
-  )
-}
-export type SearchResultCountAndRelatedCountQueryHookResult = ReturnType<
-  typeof useSearchResultCountAndRelatedCountQuery
->
-export type SearchResultCountAndRelatedCountLazyQueryHookResult = ReturnType<
-  typeof useSearchResultCountAndRelatedCountLazyQuery
->
-export type SearchResultCountAndRelatedCountQueryResult = Apollo.QueryResult<
-  SearchResultCountAndRelatedCountQuery,
-  SearchResultCountAndRelatedCountQueryVariables
->
 export const SearchResultRelatedCountDocument = gql`
   query searchResultRelatedCount($input: [SearchInput]) {
     searchResult: search(input: $input) {
@@ -481,16 +443,104 @@ export function useSearchResultRelatedCountLazyQuery(
     options
   )
 }
+export function useSearchResultRelatedCountSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables>(
+    SearchResultRelatedCountDocument,
+    options
+  )
+}
 export type SearchResultRelatedCountQueryHookResult = ReturnType<typeof useSearchResultRelatedCountQuery>
 export type SearchResultRelatedCountLazyQueryHookResult = ReturnType<typeof useSearchResultRelatedCountLazyQuery>
+export type SearchResultRelatedCountSuspenseQueryHookResult = ReturnType<
+  typeof useSearchResultRelatedCountSuspenseQuery
+>
 export type SearchResultRelatedCountQueryResult = Apollo.QueryResult<
   SearchResultRelatedCountQuery,
   SearchResultRelatedCountQueryVariables
 >
+export const SearchResultItemsAndRelatedItemsDocument = gql`
+  query searchResultItemsAndRelatedItems($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+      items
+      related {
+        kind
+        items
+      }
+    }
+  }
+`
+
+/**
+ * __useSearchResultItemsAndRelatedItemsQuery__
+ *
+ * To run a query within a React component, call `useSearchResultItemsAndRelatedItemsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSearchResultItemsAndRelatedItemsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchResultItemsAndRelatedItemsQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSearchResultItemsAndRelatedItemsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    SearchResultItemsAndRelatedItemsQuery,
+    SearchResultItemsAndRelatedItemsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<SearchResultItemsAndRelatedItemsQuery, SearchResultItemsAndRelatedItemsQueryVariables>(
+    SearchResultItemsAndRelatedItemsDocument,
+    options
+  )
+}
+export function useSearchResultItemsAndRelatedItemsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    SearchResultItemsAndRelatedItemsQuery,
+    SearchResultItemsAndRelatedItemsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<SearchResultItemsAndRelatedItemsQuery, SearchResultItemsAndRelatedItemsQueryVariables>(
+    SearchResultItemsAndRelatedItemsDocument,
+    options
+  )
+}
+export function useSearchResultItemsAndRelatedItemsSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<
+    SearchResultItemsAndRelatedItemsQuery,
+    SearchResultItemsAndRelatedItemsQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchResultItemsAndRelatedItemsQuery, SearchResultItemsAndRelatedItemsQueryVariables>(
+    SearchResultItemsAndRelatedItemsDocument,
+    options
+  )
+}
+export type SearchResultItemsAndRelatedItemsQueryHookResult = ReturnType<
+  typeof useSearchResultItemsAndRelatedItemsQuery
+>
+export type SearchResultItemsAndRelatedItemsLazyQueryHookResult = ReturnType<
+  typeof useSearchResultItemsAndRelatedItemsLazyQuery
+>
+export type SearchResultItemsAndRelatedItemsSuspenseQueryHookResult = ReturnType<
+  typeof useSearchResultItemsAndRelatedItemsSuspenseQuery
+>
+export type SearchResultItemsAndRelatedItemsQueryResult = Apollo.QueryResult<
+  SearchResultItemsAndRelatedItemsQuery,
+  SearchResultItemsAndRelatedItemsQueryVariables
+>
 export const SearchResultRelatedItemsDocument = gql`
   query searchResultRelatedItems($input: [SearchInput]) {
     searchResult: search(input: $input) {
-      items
       related {
         kind
         items
@@ -533,8 +583,20 @@ export function useSearchResultRelatedItemsLazyQuery(
     options
   )
 }
+export function useSearchResultRelatedItemsSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables>(
+    SearchResultRelatedItemsDocument,
+    options
+  )
+}
 export type SearchResultRelatedItemsQueryHookResult = ReturnType<typeof useSearchResultRelatedItemsQuery>
 export type SearchResultRelatedItemsLazyQueryHookResult = ReturnType<typeof useSearchResultRelatedItemsLazyQuery>
+export type SearchResultRelatedItemsSuspenseQueryHookResult = ReturnType<
+  typeof useSearchResultRelatedItemsSuspenseQuery
+>
 export type SearchResultRelatedItemsQueryResult = Apollo.QueryResult<
   SearchResultRelatedItemsQuery,
   SearchResultRelatedItemsQueryVariables
@@ -576,6 +638,13 @@ export function useGetMessagesLazyQuery(
   const options = { ...defaultOptions, ...baseOptions }
   return Apollo.useLazyQuery<GetMessagesQuery, GetMessagesQueryVariables>(GetMessagesDocument, options)
 }
+export function useGetMessagesSuspenseQuery(
+  baseOptions?: Apollo.SuspenseQueryHookOptions<GetMessagesQuery, GetMessagesQueryVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSuspenseQuery<GetMessagesQuery, GetMessagesQueryVariables>(GetMessagesDocument, options)
+}
 export type GetMessagesQueryHookResult = ReturnType<typeof useGetMessagesQuery>
 export type GetMessagesLazyQueryHookResult = ReturnType<typeof useGetMessagesLazyQuery>
+export type GetMessagesSuspenseQueryHookResult = ReturnType<typeof useGetMessagesSuspenseQuery>
 export type GetMessagesQueryResult = Apollo.QueryResult<GetMessagesQuery, GetMessagesQueryVariables>

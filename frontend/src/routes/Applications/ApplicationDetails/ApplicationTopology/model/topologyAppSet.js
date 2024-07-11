@@ -3,7 +3,7 @@
 import { get, set, uniqBy } from 'lodash'
 import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
@@ -277,7 +277,7 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
 
   searchClient
     .query({
-      query: SearchResultRelatedItemsDocument,
+      query: SearchResultItemsAndRelatedItemsDocument,
       variables: {
         input: [{ ...query }],
         limit: 1000,
