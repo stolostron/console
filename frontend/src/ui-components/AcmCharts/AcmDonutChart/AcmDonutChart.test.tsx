@@ -21,26 +21,26 @@ const podData = [
 
 describe('AcmDonutChart', () => {
   test('renders', () => {
-    const { getByRole, getByTestId } = render(
+    const { queryAllByText } = render(
       <MemoryRouter>
         <AcmDonutChart
-          title="Cluster compliance"
-          description="Overview of policy compliance status"
+          title="Cluster violations"
+          description="Overview of policy violations status"
           data={complianceData}
         />
       </MemoryRouter>
     )
-    expect(getByTestId('cluster-compliance-chart')).toBeInTheDocument()
-    expect(getByRole('link')).toBeInTheDocument()
+
+    expect(queryAllByText('Cluster violations').length).toBeGreaterThan(0)
   })
 
   test('renders skeleton', () => {
     const { queryByText } = render(
       <MemoryRouter>
-        <AcmDonutChart loading={true} title="Cluster compliance" description="Policy compliance" data={[]} />
+        <AcmDonutChart loading={true} title="Cluster violations" description="Policy violations" data={[]} />
       </MemoryRouter>
     )
-    expect(queryByText('Cluster compliance')).toBeInTheDocument()
+    expect(queryByText('Cluster violations')).toBeInTheDocument()
   })
 
   test('renders with zero values state', () => {

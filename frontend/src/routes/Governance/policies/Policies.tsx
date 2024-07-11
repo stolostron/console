@@ -531,7 +531,7 @@ export default function PoliciesPage() {
     () => [
       {
         id: 'violations',
-        label: 'Cluster compliance',
+        label: 'Cluster violations',
         options: [
           {
             label: t('Without violations'),
@@ -772,7 +772,7 @@ function usePolicyViolationsColumn(
 ): IAcmTableColumn<PolicyTableItem> {
   const { t } = useTranslation()
   return {
-    header: t('Cluster compliance'),
+    header: t('Cluster violations'),
     cell: (item) => {
       const clusterViolationSummary = policyClusterViolationSummaryMap[item.policy.metadata.uid ?? '']
       if (
