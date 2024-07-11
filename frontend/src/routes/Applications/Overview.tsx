@@ -19,7 +19,6 @@ import {
   ApplicationDefinition,
   ApplicationKind,
   ApplicationSet,
-  ApplicationSetApiVersion,
   ApplicationSetDefinition,
   ApplicationSetKind,
   ArgoApplication,
@@ -662,7 +661,6 @@ export default function ApplicationsOverview() {
       extensionColumns,
     ]
   )
-
   const filters = useMemo(
     () => [
       {
@@ -671,30 +669,30 @@ export default function ApplicationsOverview() {
         options: [
           {
             label: t('Application set'),
-            value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
+            value: 'appset',
           },
           {
             label: t('Argo CD'),
-            value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
+            value: 'argo',
           },
           {
             label: t('Flux'),
-            value: 'fluxapps',
+            value: 'flux',
           },
           {
             label: 'OpenShift',
-            value: 'openshiftapps',
+            value: 'openshift',
           },
           {
             label: t('Subscription'),
-            value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+            value: 'subscription',
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return selectedValues.some((value) => {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
-              return (value === 'fluxapps' && isFlux) || (value === 'openshiftapps' && !isFlux)
+              return (value === 'flux' && isFlux) || (value === 'openshift' && !isFlux)
             } else {
               return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
             }
