@@ -64,7 +64,8 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/aggregates'
+import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
+import { getSlicedText } from '../../lib/fuzzy-text'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -548,7 +549,12 @@ export default function ApplicationsOverview() {
                   search: `?apiVersion=${apiVersion}${clusterQuery}`,
                 }}
               >
-                {application.metadata?.name}
+                {getSlicedText(application.metadata?.name, requestedView?.search).map((idSplit, index) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <span key={`slice-${index}`} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
+                    {idSplit.text}
+                  </span>
+                ))}
               </Link>
             </span>
           )
@@ -650,15 +656,16 @@ export default function ApplicationsOverview() {
       },
     ],
     [
+      t,
+      extensionColumns,
+      requestedView?.search,
       argoApplications,
-      channels,
-      getTimeWindow,
-      localCluster,
       placementDecisions,
       subscriptions,
-      t,
+      localCluster,
       managedClusters,
-      extensionColumns,
+      channels,
+      getTimeWindow,
     ]
   )
   const filters = useMemo(

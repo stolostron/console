@@ -73,7 +73,7 @@ import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyl
 import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
-import { FilterCounts, IRequestListView, IResultListView } from '../../lib/aggregates'
+import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
