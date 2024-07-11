@@ -1072,7 +1072,6 @@
   "Decisions": "Decisions",
   "decoupled control plane and workers": "decoupled control plane and workers",
   "dedicated control plane nodes": "dedicated control plane nodes",
-  "Default OpenShift": "Default OpenShift",
   "Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.": "Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.",
   "Degraded": "Degraded",
   "Delay After Run Seconds": "Delay After Run Seconds",
