@@ -65,7 +65,7 @@ import {
 import { isLocalSubscription } from './helpers/subscriptions'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
-import { getSlicedText } from '../../lib/fuzzy-text'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -549,12 +549,7 @@ export default function ApplicationsOverview() {
                   search: `?apiVersion=${apiVersion}${clusterQuery}`,
                 }}
               >
-                {getSlicedText(application.metadata?.name, requestedView?.search).map((idSplit, index) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <span key={`slice-${index}`} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
-                    {idSplit.text}
-                  </span>
-                ))}
+                <HighlightSearchText text={application.metadata?.name} searchText={requestedView?.search} />
               </Link>
             </span>
           )
@@ -591,7 +586,7 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Namespace'),
-        cell: (resource) => getAppNamespace(resource),
+        cell: (resource) => <HighlightSearchText text={getAppNamespace(resource)} searchText={requestedView?.search} />,
         sort: 'transformed.namespace',
         search: 'transformed.namespace',
         tooltip: t(

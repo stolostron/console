@@ -1,5 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+export function HighlightSearchText(props: { text?: string; searchText?: string }) {
+  const { text, searchText } = props
+  return (
+    <>
+      {getSlicedText(text, searchText).map((idSplit, index) => (
+        <span key={`slice-${index}`} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
+          {idSplit.text}
+        </span>
+      ))}
+    </>
+  )
+}
+
+interface SlicedText {
+  text: string
+  isBold: boolean
+}
+
+const getSlicedText = (itemId: string = '', filterText: string = ''): SlicedText[] => {
+  const slicedText = []
+  if (filterText) {
+    const lcs = lcss(itemId, filterText)
+    let pos = 0
+
+    lcs.forEach(({ beg, end }) => {
+      slicedText.push({ text: itemId.slice(pos, beg), isBold: false })
+      slicedText.push({ text: itemId.slice(beg, end + 1), isBold: true })
+      pos = end + 1
+    })
+    if (pos < itemId.length) {
+      slicedText.push({ text: itemId.slice(pos), isBold: false })
+    }
+  } else {
+    return [{ text: itemId, isBold: false }]
+  }
+  return slicedText
+}
+
 const lcs = (str1: string, str2: string) => {
   let sequence = ''
   const str1Length = str1.length
@@ -104,30 +142,3 @@ const lcss = (str1: string, str2: string) => {
 
   return ret
 }
-
-interface SlicedText {
-  text: string
-  isBold: boolean
-}
-
-const getSlicedText = (itemId: string = '', filterText: string = ''): SlicedText[] => {
-  const slicedText = []
-  if (filterText) {
-    const lcs = lcss(itemId, filterText)
-    let pos = 0
-
-    lcs.forEach(({ beg, end }) => {
-      slicedText.push({ text: itemId.slice(pos, beg), isBold: false })
-      slicedText.push({ text: itemId.slice(beg, end + 1), isBold: true })
-      pos = end + 1
-    })
-    if (pos < itemId.length) {
-      slicedText.push({ text: itemId.slice(pos), isBold: false })
-    }
-  } else {
-    return [{ text: itemId, isBold: false }]
-  }
-  return slicedText
-}
-
-export { getSlicedText }
