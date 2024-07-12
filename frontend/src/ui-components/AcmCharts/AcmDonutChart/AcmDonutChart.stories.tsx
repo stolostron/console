@@ -48,7 +48,7 @@ export const DonutChart = () => {
     <BrowserRouter>
       <AcmChartGroup>
         <AcmDonutChart
-          title="Cluster compliance"
+          title="Cluster violations"
           description="Overview of policy compliance status"
           data={complianceData}
         />
@@ -72,7 +72,7 @@ export const DonutChart = () => {
 export const DonutChartSkeleton = () => {
   return (
     <AcmChartGroup>
-      <AcmDonutChart loading={true} title="Cluster compliance" description="Policy compliance" data={[]} />
+      <AcmDonutChart loading={true} title="Cluster violations" description="Policy compliance" data={[]} />
       <AcmDonutChart loading={true} title="Pods" description="Overview of pod count and status" data={[]} />
       <AcmDonutChart loading={true} title="Cluster status" description="Overview of cluster status" data={[]} />
     </AcmChartGroup>
