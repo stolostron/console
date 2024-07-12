@@ -19,6 +19,7 @@ import {
   ApplicationDefinition,
   ApplicationKind,
   ApplicationSet,
+  ApplicationSetApiVersion,
   ApplicationSetDefinition,
   ApplicationSetKind,
   ArgoApplication,
@@ -696,7 +697,15 @@ export default function ApplicationsOverview() {
               const isFlux = isFluxApplication(item.label)
               return (value === 'flux' && isFlux) || (value === 'openshift' && !isFlux)
             } else {
-              return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
+              switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
+                case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
+                  return selectedValues.includes('appset')
+                case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
+                  return selectedValues.includes('argo')
+                case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
+                  return selectedValues.includes('subscription')
+              }
+              return false
             }
           })
         },
