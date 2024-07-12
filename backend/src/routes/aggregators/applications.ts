@@ -46,6 +46,17 @@ interface ISubscription extends IResource {
   }
 }
 
+let stopping = false
+export function stopAggregatingApplications(): void {
+  stopping = true
+}
+
+export async function startAggregatingApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
+  while (!stopping) {
+    await aggregateApplications(aggregatedCache, key)
+    await new Promise((r) => setTimeout(r, 5 * 1000))
+  }
+}
 export async function aggregateApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
   // ACM Apps
   const localSubscriptionApps = getKubeResources('Application', 'app.k8s.io/v1beta1')

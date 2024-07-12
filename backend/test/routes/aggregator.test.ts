@@ -2,6 +2,7 @@
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import { getAggregatedCache } from '../../src/routes/aggregator'
 import { aggregateApplications } from '../../src/routes/aggregators/applications'
+import { argoPageQueries } from '../../src/routes/aggregators/applicationsArgo'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
@@ -231,51 +232,44 @@ const responseFiltered = {
 function setupNocks() {
   //
   // REMOTE ARGO
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
-    .post(
+  argoPageQueries.forEach((query, inx) => {
+    const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":["a*","i*","n*","e*","r*","o*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
     )
-    .reply(200, {
-      data: {
-        searchResult: [
-          {
-            items: [
-              {
-                apigroup: 'argoproj.io',
-                apiversion: 'v1alpha1',
-                cluster: 'feng-managed',
-                created: '2021-12-03T18:55:47Z',
-                destinationName: 'in-cluster',
-                destinationNamespace: 'feng-remote-namespace',
-                kind: 'application',
-                name: 'feng-remote-argo8',
-                namespace: 'openshift-gitops',
-                path: 'helloworld-perf',
-                repoURL: 'https://github.com/fxiang1/app-samples',
-                status: 'Healthy',
-                targetRevision: 'HEAD',
-                _clusterNamespace: 'feng-managed',
-                _rbac: 'feng-managed_argoproj.io_applications',
-                _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
-              },
-            ],
-          },
-        ],
-      },
-    })
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
-    .post(
-      '/searchapi/graphql',
-      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":["s*","t*","u*","l*","m*","c*","d*","b*","g*","0*","1*","2*","3*","4*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
-    )
-    .reply(200, {})
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
-    .post(
-      '/searchapi/graphql',
-      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":["h*","p*","k*","y*","v*","z*","w*","f*","j*","q*","x*","5*","6*","7*","8*","9*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
-    )
-    .reply(200, {})
+    if (inx === 0) {
+      nocked.reply(200, {
+        data: {
+          searchResult: [
+            {
+              items: [
+                {
+                  apigroup: 'argoproj.io',
+                  apiversion: 'v1alpha1',
+                  cluster: 'feng-managed',
+                  created: '2021-12-03T18:55:47Z',
+                  destinationName: 'in-cluster',
+                  destinationNamespace: 'feng-remote-namespace',
+                  kind: 'application',
+                  name: 'feng-remote-argo8',
+                  namespace: 'openshift-gitops',
+                  path: 'helloworld-perf',
+                  repoURL: 'https://github.com/fxiang1/app-samples',
+                  status: 'Healthy',
+                  targetRevision: 'HEAD',
+                  _clusterNamespace: 'feng-managed',
+                  _rbac: 'feng-managed_argoproj.io_applications',
+                  _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
+                },
+              ],
+            },
+          ],
+        },
+      })
+    } else {
+      nocked.reply(200, {})
+    }
+  })
 
   //
   // REMOTE/LOCAL OCP and FLUX
@@ -358,7 +352,27 @@ function setupNocks() {
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
-      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","resource":"managedclusterviews","verb":"create"}}}'
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"openshift-gitops","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"authentication-operator-ns","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"test-app-ns","resource":"managedclusterviews","verb":"create"}}}'
     )
     .reply(200, {
       status: {

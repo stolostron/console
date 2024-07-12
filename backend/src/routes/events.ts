@@ -64,16 +64,19 @@ export async function getAuthorizedLocalResources(resources: IResource[], token:
 }
 
 export async function getAuthorizedRemoteResources(resources: IResource[], token: string): Promise<IResource[]> {
-  if (
-    await canAccess(
-      { kind: 'ManagedClusterView', apiVersion: 'view.open-cluster-management.io/v1beta1' },
-      'create',
-      token
-    )
-  ) {
-    return resources
+  const authorized: IResource[] = []
+  const queue = resources.map((resource) => {
+    return canAccessRemoteResource(token, resource)
+      .then((allowResource) => (allowResource ? resource : undefined))
+      .catch((err: unknown) => undefined) as Promise<IResource>
+  })
+  while (queue.length) {
+    const resource = await queue.shift()
+    if (resource) {
+      authorized.push(resource)
+    }
   }
-  return []
+  return authorized
 }
 
 function canListResources(token: string, resource: IResource): Promise<boolean> {
@@ -81,6 +84,19 @@ function canListResources(token: string, resource: IResource): Promise<boolean> 
     if (allowed) return true
     return canListNamespacedScopedKind(resource, token)
   })
+}
+
+function canAccessRemoteResource(token: string, resource: IResource): Promise<boolean> {
+  if (!resource.metadata?.namespace) return Promise.resolve(false)
+  return canAccess(
+    {
+      kind: 'ManagedClusterView',
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      metadata: { namespace: resource.metadata.namespace },
+    },
+    'create',
+    token
+  )
 }
 
 export interface ResourceCache {

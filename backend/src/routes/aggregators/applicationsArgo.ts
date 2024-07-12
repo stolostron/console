@@ -130,32 +130,29 @@ async function getRemoteArgoApps(argoAppSet: Set<string>) {
 }
 
 // get argo apps from search api in three queries with a second apart
+// Search API mosquito bites -- just a few every 3 seconds
+export const argoPageQueries: string[][] = [
+  ['a*', 'i*', 'n*'],
+  ['e*', 'r*', 'o*'],
+  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
+  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
+  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
+  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
+]
 async function getPagedRemoteArgoApps(options: RequestOptions) {
-  // a,i,n,etc are used with the hope that the distribution of names is evenly matched between queries
-  let _query = structuredClone(query)
-  _query.variables.input[0].filters.push({
-    property: 'name',
-    values: ['a*', 'i*', 'n*', 'e*', 'r*', 'o*'],
-  })
-  let results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
-  let argoApps: IArgoAppRemoteResource[] = (results.data?.searchResult?.[0]?.items || []) as IArgoAppRemoteResource[]
-  await new Promise((r) => setTimeout(r, 1000))
-  _query = structuredClone(query)
-  _query.variables.input[0].filters.push({
-    property: 'name',
-    values: ['s*', 't*', 'u*', 'l*', 'm*', 'c*', 'd*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
-  })
-  results = await getSearchResults(options, JSON.stringify(_query))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  argoApps = argoApps.concat(results.data?.searchResult?.[0]?.items || [])
-  await new Promise((r) => setTimeout(r, 1000))
-  _query = structuredClone(query)
-  _query.variables.input[0].filters.push({
-    property: 'name',
-    values: ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*', 'j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
-  })
-  results = await getSearchResults(options, JSON.stringify(_query))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  argoApps = argoApps.concat(results.data?.searchResult?.[0]?.items || [])
+  let argoApps: IArgoAppRemoteResource[] = []
+  for (let i = 0; i < argoPageQueries.length; i++) {
+    const values = argoPageQueries[i]
+    const _query = structuredClone(query)
+    _query.variables.input[0].filters.push({
+      property: 'name',
+      values,
+    })
+    const results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
+    argoApps = argoApps.concat((results.data?.searchResult?.[0]?.items || []) as IArgoAppRemoteResource[])
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise((r) => setTimeout(r, 3000))
+    }
+  }
   return argoApps
 }

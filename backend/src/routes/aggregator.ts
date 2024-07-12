@@ -3,7 +3,11 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { FilterCounts, ITransformedResource, paginate } from '../lib/pagination'
-import { aggregateApplications, filterApplications } from './aggregators/applications'
+import {
+  startAggregatingApplications,
+  stopAggregatingApplications,
+  filterApplications,
+} from './aggregators/applications'
 
 export type AggregateCache = {
   locals: ITransformedResource[]
@@ -20,16 +24,12 @@ export function getAggregatedCache(): AggregatedCacheType {
   return aggregatedCache
 }
 
-let intervalTimer: NodeJS.Timer | undefined
 export function startAggregating(): void {
-  intervalTimer = setInterval(async () => {
-    await aggregateApplications(aggregatedCache, 'applications')
-  }, 30 * 1000).unref()
+  void startAggregatingApplications(aggregatedCache, 'applications')
 }
 
-let stopping = false
 export function stopAggregating(): void {
-  stopping = true
+  stopAggregatingApplications()
 }
 
 export async function aggregate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
