@@ -32,7 +32,7 @@ import {
   ToolbarItem,
   TooltipProps,
 } from '@patternfly/react-core'
-import { FilterIcon } from '@patternfly/react-icons'
+import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
   expandable,
@@ -71,12 +71,15 @@ import {
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
+import { AcmToastContext } from '../AcmAlert/AcmToast'
 import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
+import { IAlertContext } from '../AcmAlert/AcmAlert'
+import { createDownloadFile } from '../../resources/utils'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T) => ReactNode
@@ -97,6 +100,9 @@ export interface IAcmTableColumn<T> {
 
   /** cell content, either on field name of using cell function */
   cell: CellFn<T> | string
+
+  /** exported value as a string, supported export: CSV*/
+  exportContent?: CellFn<T>
 
   transforms?: ITransform[]
 
@@ -480,6 +486,8 @@ export type AcmTableProps<T> = {
   showColumManagement?: boolean
   nonZeroCount?: boolean
   indeterminateCount?: boolean
+  showExportButton?: boolean
+  exportFilePrefix?: string
 }
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
@@ -501,6 +509,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     showColumManagement,
     nonZeroCount,
     indeterminateCount,
+    showExportButton,
+    exportFilePrefix,
   } = props
 
   const defaultSort = {
@@ -511,6 +521,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const initialSearch = props.initialSearch || ''
 
   const { t } = useTranslation()
+  const toastContext = useContext(AcmToastContext)
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -816,6 +827,51 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [page, actualPage, setPage])
 
+  const exportTable = useCallback(
+    (toastContext: IAlertContext) => {
+      toastContext.addAlert({
+        title: t('Generating data. Download may take a moment to start.'),
+        type: 'info',
+        autoClose: true,
+      })
+
+      const fileNamePrefix = exportFilePrefix ?? 'table-values'
+      const headerString: string[] = []
+      const csvExportCellArray: string[] = []
+
+      selectedSortedCols.forEach(({ header }) => {
+        header && headerString.push(header)
+      })
+      csvExportCellArray.push(headerString.join(','))
+
+      sorted.forEach(({ item }) => {
+        let contentString: string[] = []
+        selectedSortedCols.forEach(({ header, exportContent }) => {
+          if (header) {
+            // if callback and its output exists, add to array, else add "-"
+            exportContent && exportContent(item)
+              ? contentString.push(exportContent(item) as string)
+              : contentString.push('-')
+          }
+        })
+        contentString = [contentString.join(',')]
+        contentString[0] && csvExportCellArray.push(contentString[0])
+      })
+
+      const exportString = csvExportCellArray.join('\n')
+      const fileName = `${fileNamePrefix}-${Date.now()}.csv`
+
+      createDownloadFile(fileName, exportString, 'text/csv')
+
+      toastContext.addAlert({
+        title: t('Export successful'),
+        type: 'success',
+        autoClose: true,
+      })
+    },
+    [selectedSortedCols, sorted, exportFilePrefix, t]
+  )
+
   const paged = useMemo<ITableItem<T>[]>(() => {
     const start = (actualPage - 1) * perPage
     return sorted.slice(start, start + perPage)
@@ -1053,6 +1109,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasItems = (items && items.length > 0 && filtered) || nonZeroCount || indeterminateCount
   const showToolbar = props.showToolbar !== false ? hasItems : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
   const translatedPaginationTitles = usePaginationTitles()
 
@@ -1158,12 +1215,55 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
             {customTableAction && <ToolbarItem>{customTableAction}</ToolbarItem>}
-            {showColumManagement && (
-              <AcmManageColumn<T>
-                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
-                allCols={columns.filter((col) => !col.isActionCol)}
-              />
-            )}
+            <ToolbarGroup spaceItems={{ default: 'spaceItemsNone' }}>
+              {showColumManagement && (
+                <ToolbarItem>
+                  <AcmManageColumn<T>
+                    {...{
+                      selectedColIds,
+                      setSelectedColIds,
+                      requiredColIds,
+                      defaultColIds,
+                      setColOrderIds,
+                      colOrderIds,
+                    }}
+                    allCols={columns.filter((col) => !col.isActionCol)}
+                  />
+                </ToolbarItem>
+              )}
+              {showExportButton && (
+                <ToolbarItem key={`export-toolbar-item`}>
+                  <Dropdown
+                    onSelect={(event) => {
+                      event?.stopPropagation()
+                      setIsExportMenuOpen(false)
+                    }}
+                    className="export-dropdownMenu"
+                    toggle={
+                      <DropdownToggle
+                        toggleIndicator={null}
+                        onToggle={(value, event) => {
+                          event.stopPropagation()
+                          setIsExportMenuOpen(value)
+                        }}
+                        aria-label="export-search-result"
+                        id="export-search-result"
+                      >
+                        <ExportIcon />
+                      </DropdownToggle>
+                    }
+                    isOpen={isExportMenuOpen}
+                    isPlain
+                    dropdownItems={[
+                      <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
+                        {t('Export as CSV')}
+                      </DropdownItem>,
+                    ]}
+                    position={'left'}
+                  />
+                </ToolbarItem>
+              )}
+            </ToolbarGroup>
             {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
