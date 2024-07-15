@@ -76,7 +76,7 @@ import { ParsedQuery, parse, stringify } from 'query-string'
 import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
-type CellFn<T> = (item: T) => ReactNode
+type CellFn<T> = (item: T, search: string) => ReactNode
 type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[] | number[]
 
 /* istanbul ignore next */
@@ -846,7 +846,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
           ? get(item as Record<string, unknown>, column.cell)
-          : { title: <Fragment key={key}>{column.cell(item)}</Fragment> }
+          : { title: <Fragment key={key}>{column.cell(item, internalSearch)}</Fragment> }
       })
     let addedSubRowCount = 0
     paged.forEach((tableItem, i) => {
@@ -866,7 +866,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     })
     return { rows: newRows, addedSubRowCount }
-  }, [paged, selectedSortedCols, expanded, selected, disabled])
+  }, [paged, selectedSortedCols, internalSearch, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {

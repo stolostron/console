@@ -513,7 +513,7 @@ export default function ApplicationsOverview() {
         sort: 'metadata.name',
         search: 'metadata.name',
         transforms: [cellWidth(20)],
-        cell: (application) => {
+        cell: (application, search) => {
           let clusterQuery = ''
           let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
           if (
@@ -550,7 +550,7 @@ export default function ApplicationsOverview() {
                   search: `?apiVersion=${apiVersion}${clusterQuery}`,
                 }}
               >
-                <HighlightSearchText text={application.metadata?.name} searchText={requestedView?.search} />
+                <HighlightSearchText text={application.metadata?.name} searchText={search} />
               </Link>
             </span>
           )
@@ -587,7 +587,9 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Namespace'),
-        cell: (resource) => <HighlightSearchText text={getAppNamespace(resource)} searchText={requestedView?.search} />,
+        cell: (resource, search) => {
+          return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
+        },
         sort: 'transformed.namespace',
         search: 'transformed.namespace',
         tooltip: t(
@@ -654,7 +656,6 @@ export default function ApplicationsOverview() {
     [
       t,
       extensionColumns,
-      requestedView?.search,
       argoApplications,
       placementDecisions,
       subscriptions,

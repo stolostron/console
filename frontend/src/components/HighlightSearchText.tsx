@@ -109,7 +109,7 @@ const lcss = (str1: string, str2: string) => {
     let match
     matches = []
     let res = lcs(item, find)
-    if (res.length > 0) {
+    if (res.length > 1) {
       // escape search pattern (ex: if there's a period, escape to \\.)
       const { length: len } = res
       res = res.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&')
