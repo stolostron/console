@@ -34,13 +34,15 @@ import {
   ManagedClusterSetDefinition,
   ResourceErrorCode,
   isGlobalClusterSet,
+  Cluster,
 } from '../../../../resources'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
-import { ClusterStatuses } from './components/ClusterStatuses'
+import { ClusterStatuses, getClusterStatusCount } from './components/ClusterStatuses'
 import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
 import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
+import { getMappedClusterPoolClusterSetClusters } from './components/useClusters'
 
 export default function ClusterSetsPage() {
   const { t } = useTranslation()
@@ -124,8 +126,57 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
       .catch((err) => console.error(err))
     return () => canCreateManagedClusterSet.abort()
   }, [])
-  const { managedClusterSetBindingsState } = useSharedAtoms()
+  const {
+    managedClusterSetBindingsState,
+    certificateSigningRequestsState,
+    clusterClaimsState,
+    clusterDeploymentsState,
+    managedClusterAddonsState,
+    clusterManagementAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
+    agentClusterInstallsState,
+    clusterCuratorsState,
+    hostedClustersState,
+    nodePoolsState,
+  } = useSharedAtoms()
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterClaims = useRecoilValue(clusterClaimsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const nodePools = useRecoilValue(nodePoolsState)
+
+  const managedClusterSetClusters: Record<string, Cluster[]> = {}
+
+  props.managedClusterSets &&
+    props.managedClusterSets.forEach((managedClusterSet) => {
+      if (managedClusterSet.metadata.name) {
+        const clusters = getMappedClusterPoolClusterSetClusters(
+          managedClusters,
+          clusterDeployments,
+          managedClusterInfos,
+          certificateSigningRequests,
+          managedClusterAddons,
+          clusterManagementAddons,
+          clusterClaims,
+          clusterCurators,
+          agentClusterInstalls,
+          hostedClusters,
+          nodePools,
+          managedClusterSet,
+          undefined,
+          isGlobalClusterSet(managedClusterSet)
+        )
+        managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
+      }
+    })
 
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {
@@ -157,6 +208,12 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
   }
 
   const disabledResources = props.managedClusterSets?.filter((resource) => isGlobalClusterSet(resource))
+  const getNamespaceBindings = (managedClusterSet: ManagedClusterSet) => {
+    const bindings = managedClusterSetBindings.filter(
+      (mcsb) => mcsb.spec.clusterSet === managedClusterSet.metadata.name!
+    )
+    return bindings.map((mcsb) => mcsb.metadata.namespace!)
+  }
 
   return (
     <Fragment>
@@ -180,6 +237,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
                 {isGlobalClusterSet(managedClusterSet) && <GlobalClusterSetPopover />}
               </>
             ),
+            exportContent: (managedClusterSet: ManagedClusterSet) => managedClusterSet.metadata.name,
           },
           {
             header: t('table.cluster.statuses'),
@@ -190,20 +248,40 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
                 <ClusterStatuses managedClusterSet={managedClusterSet} />
               )
             },
+            exportContent: (managedClusterSet: ManagedClusterSet) => {
+              const status = getClusterStatusCount(managedClusterSetClusters[managedClusterSet.metadata.name!])
+              const clusterStatusAvailable =
+                status &&
+                Object.values(status).find((val) => {
+                  return typeof val === 'number' && val > 0
+                })
+
+              if (clusterStatusAvailable)
+                return (
+                  `healthy: ${status?.healthy}, running: ${status?.running}, ` +
+                  `warning: ${status?.warning}, progress: ${status?.progress}, ` +
+                  `danger: ${status?.danger}, detached: ${status?.detached}, ` +
+                  `pending: ${status?.pending}, sleep: ${status?.sleep}, ` +
+                  `unknown: ${status?.unknown}`
+                )
+            },
           },
           {
             header: t('table.clusterSetBinding'),
             tooltip: t('clusterSetBinding.edit.message.noBold'),
             cell: (managedClusterSet) => {
-              const bindings = managedClusterSetBindings.filter(
-                (mcsb) => mcsb.spec.clusterSet === managedClusterSet.metadata.name!
-              )
-              const namespaces = bindings.map((mcsb) => mcsb.metadata.namespace!)
+              const namespaces = getNamespaceBindings(managedClusterSet)
               return namespaces.length ? (
                 <AcmLabels labels={namespaces} collapse={namespaces.filter((_ns, i) => i > 1)} />
               ) : (
                 '-'
               )
+            },
+            exportContent: (managedClusterSet: ManagedClusterSet) => {
+              const namespaceBinding = getNamespaceBindings(managedClusterSet)
+              if (namespaceBinding) {
+                return `${getNamespaceBindings(managedClusterSet).toString()}`
+              }
             },
           },
           {
@@ -273,6 +351,8 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
             }
           />
         }
+        showExportButton
+        exportFilePrefix="clustersets"
       />
     </Fragment>
   )
