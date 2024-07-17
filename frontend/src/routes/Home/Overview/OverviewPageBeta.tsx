@@ -25,7 +25,7 @@ import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObs
 import { NavigationPath } from '../../../NavigationPath'
 import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
+import { AcmButton, AcmDonutChart, colorThemes } from '../../../ui-components'
 import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
@@ -309,8 +309,8 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [userPreference])
 
   return (
-    <AcmScrollable>
-      <PageSection>
+    <>
+      <PageSection style={{ paddingTop: 0 }}>
         <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
           {clustersSummary
             ? clustersSummary.map(
@@ -656,6 +656,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
           )}
         </Card>
       </PageSection>
-    </AcmScrollable>
+    </>
   )
 }
