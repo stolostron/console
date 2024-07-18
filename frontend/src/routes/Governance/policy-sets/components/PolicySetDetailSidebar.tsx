@@ -266,7 +266,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         },
       },
       {
-        header: t('Cluster violation'),
+        header: t('Cluster violations'),
         sort: (policyA: Policy, policyB: Policy) => {
           // Find the clusters in context of the PolicySet
           const policySetClusterContextA = getClusterContext(policyA)
