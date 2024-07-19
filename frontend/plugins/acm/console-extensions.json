@@ -48,8 +48,15 @@
             "perspective": "acm",
             "id": "acm-search",
             "name": "%plugin__acm~Search%",
-            "href": "/multicloud/home/search",
+            "href": "/multicloud/search",
             "insertBefore": "mce-infrastructure"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/search",
+            "component": { "$codeRef": "search.default" }
         }
     },
     {

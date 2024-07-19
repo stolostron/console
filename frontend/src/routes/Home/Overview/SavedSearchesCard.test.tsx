@@ -8,7 +8,7 @@ import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../src/atoms'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { SavedSearch } from '../../../resources'
-import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
+import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import SavedSearchesCard from './SavedSearchesCard'
 
 jest.mock('../../../resources/userpreference', () => ({

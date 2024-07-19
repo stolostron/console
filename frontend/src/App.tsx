@@ -39,7 +39,7 @@ import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } fr
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
 const OverviewPage = lazy(() => import('./routes/Home/Overview/Overview'))
-const Search = lazy(() => import('./routes/Home/Search/Search'))
+const Search = lazy(() => import('./routes/Search/Search'))
 
 // INFRASTRUCTURE
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))

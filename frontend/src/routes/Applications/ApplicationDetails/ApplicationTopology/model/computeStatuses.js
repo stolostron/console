@@ -1,29 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import R from 'ramda'
 import _ from 'lodash'
+import R from 'ramda'
+import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
-  getAge,
-  addOCPRouteLocation,
   addDetails,
-  createEditLink,
   addNodeServiceLocation,
+  addOCPRouteLocation,
   addPropertyToList,
+  createEditLink,
+  getAge,
   getNodePropery,
   pulseValueArr,
 } from '../helpers/diagram-helpers'
 import {
-  isDeployableResource,
-  nodeMustHavePods,
-  getClusterName,
-  getActiveFilterCodes,
   filterSubscriptionObject,
-  showMissingClusterDetails,
+  getActiveFilterCodes,
+  getClusterName,
   getTargetNsForNode,
+  isDeployableResource,
   isResourceNamespaceScoped,
+  nodeMustHavePods,
+  showMissingClusterDetails,
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
-import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
 
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
@@ -571,7 +571,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
         ),
         status: failureStatus,
       })
-      const subscrSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
+      const subscrSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
       details.push({
         type: 'link',
         value: {
@@ -969,7 +969,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
       status: failureStatus,
     })
     if (isSearchAvailable()) {
-      const ruleSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${'local-cluster'}"}`
+      const ruleSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${'local-cluster'}"}`
       details.push({
         type: 'link',
         value: {

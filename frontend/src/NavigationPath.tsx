@@ -2,18 +2,18 @@
 /* istanbul ignore file */
 import { useContext, useMemo } from 'react'
 import {
-  Location,
-  LinkProps,
-  NavigateFunction,
-  To,
   generatePath,
-  useLocation,
-  useNavigate,
-  useMatch,
-  PathParam,
+  LinkProps,
+  Location,
   Navigate,
-  PathMatch,
+  NavigateFunction,
   ParamParseKey,
+  PathMatch,
+  PathParam,
+  To,
+  useLocation,
+  useMatch,
+  useNavigate,
 } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources'
@@ -67,12 +67,12 @@ export enum NavigationPath {
   welcome = '/multicloud/home/welcome',
   overview = '/multicloud/home/overview',
 
-  // Home - Search
-  search = '/multicloud/home/search',
-  resources = '/multicloud/home/search/resources',
-  resourceYAML = '/multicloud/home/search/resources/yaml',
-  resourceRelated = '/multicloud/home/search/resources/related',
-  resourceLogs = '/multicloud/home/search/resources/logs',
+  // Search
+  search = '/multicloud/search',
+  resources = '/multicloud/search/resources',
+  resourceYAML = '/multicloud/search/resources/yaml',
+  resourceRelated = '/multicloud/search/resources/related',
+  resourceLogs = '/multicloud/search/resources/logs',
 
   // Infrastructure
   infrastructure = '/multicloud/infrastructure',

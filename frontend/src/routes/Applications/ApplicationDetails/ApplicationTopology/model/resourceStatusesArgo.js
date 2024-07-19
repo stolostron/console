@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { searchClient } from '../../../../Search/search-sdk/search-client'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 
 export async function getArgoResourceStatuses(application, appData, topology) {

@@ -2,8 +2,8 @@
 
 import { get, set, uniqBy } from 'lodash'
 import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
-import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { searchClient } from '../../../../Search/search-sdk/search-client'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'

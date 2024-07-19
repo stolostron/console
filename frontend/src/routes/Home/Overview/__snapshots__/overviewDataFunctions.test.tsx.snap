@@ -30,13 +30,13 @@ exports[`Correctly returns getClusterStatus 1`] = `
 Array [
   Object {
     "key": "Offline",
-    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True%20label%3Acloud%3DAmazon\\"}",
+    "link": "/multicloud/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True%20label%3Acloud%3DAmazon\\"}",
     "value": 1,
   },
   Object {
     "isPrimary": true,
     "key": "Ready",
-    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue%20label%3Acloud%3DAmazon\\"}",
+    "link": "/multicloud/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue%20label%3Acloud%3DAmazon\\"}",
     "value": 1,
   },
 ]
@@ -88,7 +88,7 @@ Array [
       size="sm"
     />,
     "id": "nodes-count",
-    "link": "/multicloud/home/search?filters={\\"textsearch\\":\\"kind%3ANode\\"}",
+    "link": "/multicloud/search?filters={\\"textsearch\\":\\"kind%3ANode\\"}",
     "title": "Nodes",
   },
 ]

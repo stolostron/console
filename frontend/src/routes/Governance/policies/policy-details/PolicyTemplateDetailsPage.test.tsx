@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
-import { waitForNocks, waitForText, waitForNotText } from '../../../../lib/test-util'
-import userEvent from '@testing-library/user-event'
 
 jest.mock('../../../../components/YamlEditor', () => {
   // TODO replace with actual YAML Page when Monaco editor is imported correctly
@@ -445,7 +445,7 @@ describe('Policy Template Details Page', () => {
     )
     const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/home/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
+      `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
     )
   })
 
@@ -580,7 +580,7 @@ describe('Policy Template Details Page', () => {
     })
     const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
     expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/home/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
+      `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
   })
 
@@ -623,7 +623,7 @@ describe('Policy Template Details Page', () => {
     })
     const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
     expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=Deployment&apiversion=apps/v1&name=quay-operator.v3.8.15&namespace=operator-policy-testns`
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Deployment&apiversion=apps/v1&name=quay-operator.v3.8.15&namespace=operator-policy-testns`
     )
   })
 
