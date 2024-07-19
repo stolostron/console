@@ -28,6 +28,8 @@ export const searchForKeyword = (searchedInput: string, parsedData: string[], it
   const regex = new RegExp(searchedInput, 'ig')
   parsedData.forEach((row, index) => {
     const rawRow = row.replace(
+      // Using same regex as patternfly/react-log-viewer - https://github.com/patternfly/react-log-viewer/blob/9a8a6e8bc91b1de4a64f96d5a8ae9e54a19c8413/packages/module/src/LogViewer/utils/utils.tsx#L53
+      /* eslint-disable-next-line no-control-regex */
       new RegExp(`[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-PRZcf-nqry=><]`, 'g'),
       ''
     )

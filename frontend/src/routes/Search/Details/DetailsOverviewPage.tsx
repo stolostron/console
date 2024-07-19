@@ -24,7 +24,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { OwnerReference } from '../../../resources'
-import { AcmAlert, AcmLoadingPage, AcmTable } from '../../../ui-components'
+import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
 
 export function ResourceSearchLink(props: {
@@ -266,7 +266,7 @@ export default function DetailsOverviewPage() {
         !podSelectors.matchLabels && !podSelectors.matchExpressions ? podSelectors : podSelectors.matchLabels
 
       Object.keys(matchLabels || {})
-        .sort()
+        .sort((a: string, b: string) => compareStrings(a, b))
         .forEach(function (k) {
           requirements.push(`${k}=${matchLabels[k]}`)
         })
@@ -295,7 +295,7 @@ export default function DetailsOverviewPage() {
       const requirements: any = []
       const nodeSelectors = _.get(resource, 'spec.template.spec.nodeSelector', {})
       Object.keys(nodeSelectors || {})
-        .sort()
+        .sort((a: string, b: string) => compareStrings(a, b))
         .forEach(function (k) {
           requirements.push(nodeSelectors[k] !== '' ? `${k}=${nodeSelectors[k]}` : k)
         })
