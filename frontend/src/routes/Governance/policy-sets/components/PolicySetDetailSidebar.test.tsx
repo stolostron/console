@@ -345,7 +345,7 @@ describe('PolicySets Page', () => {
     await clickByText('Policies')
 
     // Find remediation
-    await waitForText('Cluster violation')
+    await waitForText('Cluster violations')
     await waitForText(REMEDIATION_ACTION.ENFORCE_OVERRIDDEN)
 
     // find the policy names in table
