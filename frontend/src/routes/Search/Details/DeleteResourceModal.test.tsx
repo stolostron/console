@@ -8,7 +8,7 @@ import { wait } from '../../../lib/test-util'
 import { deleteResource, fireManagedClusterAction } from '../../../resources'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
-jest.mock('../../../../lib/rbac-util', () => ({
+jest.mock('../../../lib/rbac-util', () => ({
   canUser: jest.fn(() => ({
     promise: Promise.resolve({ status: { allowed: true } }),
     abort: jest.fn(),
