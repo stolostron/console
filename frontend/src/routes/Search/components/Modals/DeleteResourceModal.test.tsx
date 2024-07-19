@@ -17,14 +17,14 @@ jest.mock('../../../../lib/rbac-util', () => ({
   })),
 }))
 
-jest.mock('../../../../../resources/utils/resource-request', () => ({
+jest.mock('../../../../resources/utils/resource-request', () => ({
   getBackendUrl: jest.fn(() => ''),
   getResource: jest.fn(() => ({ promise: Promise.resolve() })),
   createResource: jest.fn(() => ({ promise: Promise.resolve() })),
   deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
 }))
 
-jest.mock('../../../../../resources/managedclusteraction', () => ({
+jest.mock('../../../../resources/managedclusteraction', () => ({
   fireManagedClusterAction: jest.fn(() => Promise.resolve({ actionDone: 'ActionDone' })),
 }))
 
