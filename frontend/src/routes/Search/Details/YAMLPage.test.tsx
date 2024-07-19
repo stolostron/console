@@ -7,7 +7,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { SearchDetailsContext } from './DetailsPage'
 import YAMLPage, { EditorActionBar, EditorHeaderBar } from './YAMLPage'
 
-jest.mock('../../../../components/YamlEditor', () => {
+jest.mock('../../../components/YamlEditor', () => {
   // Mock the editor as there are lots of test errors with monaco
   return function YamlEditor() {
     return <div />
