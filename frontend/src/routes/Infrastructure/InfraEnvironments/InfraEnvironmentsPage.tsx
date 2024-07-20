@@ -47,7 +47,14 @@ import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { IResource } from '../../../resources/resource'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
-import { ResourceError, createResource, getResource, listResources, patchResource } from '../../../resources'
+import {
+  ResourceError,
+  createResource,
+  exportObjectString,
+  getResource,
+  listResources,
+  patchResource,
+} from '../../../resources'
 
 // Will change perspective, still in the OCP Console app
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
@@ -387,6 +394,13 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
   const docStorageUrl = `${OCP_DOC_BASE_PATH}/${ocpVersion}/post_installation_configuration/storage-configuration.html`
 
+  const getDateTimeCellValue = (infraEnv: InfraEnvK8sResource) => {
+    const dateTimeCell = getDateTimeCell(
+      infraEnv.metadata?.creationTimestamp ? new Date(infraEnv.metadata?.creationTimestamp).toString() : '-'
+    )
+    return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
+  }
+
   return (
     <>
       <BulkActionModal<InfraEnvK8sResource> {...modalProps} />
@@ -403,6 +417,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
             items={infraEnvs}
             rowActions={[]}
             keyFn={keyFn}
+            showExportButton
+            exportFilePrefix="hostenvironments"
             columns={[
               {
                 header: t('infraEnv.tableHeader.name'),
@@ -413,11 +429,17 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     <Link to={getDetailsLink(infraEnv)}>{infraEnv.metadata?.name}</Link>
                   </span>
                 ),
+                exportContent: (infraEnv) => {
+                  return infraEnv.metadata?.name
+                },
               },
               {
                 header: t('infraEnv.tableHeader.namespace'),
                 cell: 'metadata.namespace',
                 search: 'metadata.namespace',
+                exportContent: (infraEnv) => {
+                  return infraEnv.metadata?.namespace
+                },
               },
               {
                 header: t('infraEnv.tableHeader.labels'),
@@ -447,11 +469,20 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     return '-'
                   }
                 },
+                exportContent: (infraEnv) => {
+                  if (infraEnv.metadata?.labels && Object.keys(infraEnv.metadata?.labels).length > 0) {
+                    return exportObjectString(infraEnv.metadata?.labels)
+                  }
+                  return '-'
+                },
                 search: (infraEnv) => JSON.stringify(infraEnv.metadata?.labels) || '',
               },
               {
                 header: t('infraEnv.tableHeader.location'),
                 cell: (infraEnv) => infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-',
+                exportContent: (infraEnv) => {
+                  return infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-'
+                },
               },
               {
                 header: t('infraEnv.tableHeader.hosts'),
@@ -472,6 +503,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     </Link>
                   )
                 },
+                exportContent: (infraEnv) => {
+                  const { infraAgents, errorAgents, warningAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
+                  return `healthy: ${infraAgents.length - errorAgents.length - warningAgents.length}, danger: ${errorAgents.length}, warning: ${warningAgents.length}`
+                },
               },
               {
                 header: t('infraEnv.tableHeader.creationDate'),
@@ -488,12 +523,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                   )
                 },
                 cell: (infraEnv) => {
-                  const dateTimeCell = getDateTimeCell(
-                    infraEnv.metadata?.creationTimestamp
-                      ? new Date(infraEnv.metadata?.creationTimestamp).toString()
-                      : '-'
-                  )
-                  return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
+                  return getDateTimeCellValue(infraEnv)
+                },
+                exportContent: (infraEnv) => {
+                  return getDateTimeCellValue(infraEnv)
                 },
               },
               {
