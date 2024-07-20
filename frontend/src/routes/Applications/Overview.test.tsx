@@ -201,4 +201,27 @@ describe('Applications Page', () => {
     // clear openshift filter
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
   })
+
+  test('export button should produce a file for download', async () => {
+    await waitForText('feng-remote-argo8')
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    userEvent.click(screen.getByLabelText('export-search-result'))
+    userEvent.click(screen.getByText('Export as CSV'))
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
+  })
 })
