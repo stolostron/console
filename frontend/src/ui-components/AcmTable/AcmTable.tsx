@@ -1140,6 +1140,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       value={search}
                       onChange={updateSearch}
                       onClear={clearSearch}
+                      spellCheck={false}
                       resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
                       style={{ flexGrow: 1 }}
                     />
