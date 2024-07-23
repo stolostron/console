@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RequestOptions } from 'https'
-import { ISearchResult, getSearchResults, getServiceAccountOptions } from '../../lib/search'
+import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 
@@ -59,10 +58,10 @@ interface IArgoAppRemoteResource {
   cluster: string
 }
 
-export async function getArgoApps() {
+export async function getArgoApps(pass: number) {
   const argoAppSet = new Set<string>()
   const localArgoApps = getLocalArgoApps(argoAppSet)
-  const remoteArgoApps = await getRemoteArgoApps(argoAppSet)
+  const remoteArgoApps = pass > 1 ? await getRemoteArgoApps(argoAppSet, pass) : []
   return { localArgoApps, remoteArgoApps, argoAppSet }
 }
 
@@ -89,9 +88,8 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
   })
 }
 
-async function getRemoteArgoApps(argoAppSet: Set<string>) {
-  const options = await getServiceAccountOptions()
-  const argoApps = await getPagedRemoteArgoApps(options)
+async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
+  const argoApps = (await getPagedSearchResources(query, pass)) as unknown as IArgoAppRemoteResource[]
 
   const apps: IResource[] = []
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {
@@ -127,32 +125,4 @@ async function getRemoteArgoApps(argoAppSet: Set<string>) {
   })
 
   return apps
-}
-
-// get argo apps from search api in three queries with a second apart
-// Search API mosquito bites -- just a few every 3 seconds
-export const argoPageQueries: string[][] = [
-  ['a*', 'i*', 'n*'],
-  ['e*', 'r*', 'o*'],
-  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
-  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
-  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
-  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
-]
-async function getPagedRemoteArgoApps(options: RequestOptions) {
-  let argoApps: IArgoAppRemoteResource[] = []
-  for (let i = 0; i < argoPageQueries.length; i++) {
-    const values = argoPageQueries[i]
-    const _query = structuredClone(query)
-    _query.variables.input[0].filters.push({
-      property: 'name',
-      values,
-    })
-    const results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
-    argoApps = argoApps.concat((results.data?.searchResult?.[0]?.items || []) as IArgoAppRemoteResource[])
-    if (process.env.NODE_ENV !== 'test') {
-      await new Promise((r) => setTimeout(r, 3000))
-    }
-  }
-  return argoApps
 }

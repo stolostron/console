@@ -4,6 +4,7 @@ import { RequestOptions, request } from 'https'
 import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
+import { IResource } from '../resources/resource'
 
 export type ISearchResult = {
   data: {
@@ -70,4 +71,56 @@ export function getSearchResults(options: string | RequestOptions | URL, variabl
     req.write(variables)
     req.end()
   })
+}
+
+// get argo apps from search api in three queries with a second apart
+// Search API mosquito bites -- just a few every n seconds
+export const pagedSearchQueries: string[][] = [
+  ['a*'],
+  ['i*'],
+  ['n*'],
+  ['e*'],
+  ['r*'],
+  ['o*'],
+  ['s*'],
+  ['t*'],
+  ['u*'],
+  ['l*'],
+  ['m*'],
+  ['c*'],
+  ['p*'],
+  ['z*'],
+  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*', '5*'],
+  ['h*', 'k*', 'y*', 'v*', 'w*', 'f*', '6*', '7*', '8*', '9*'],
+]
+export async function getPagedSearchResources(
+  query: {
+    operationName: string
+    variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
+    query: string
+  },
+  pass: number
+) {
+  const options = await getServiceAccountOptions()
+  let resources: IResource[] = []
+  for (let i = 0; i < pagedSearchQueries.length; i++) {
+    const values = pagedSearchQueries[i]
+    const _query = structuredClone(query)
+    _query.variables.input[0].filters.push({
+      property: 'name',
+      values,
+    })
+    if (pass === 2) {
+      _query.variables.input[0].limit = 100
+    }
+    const results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
+    resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
+    if (process.env.NODE_ENV !== 'test') {
+      let timeout = 10000
+      if (pass === 2) timeout = 1000
+      if (pass === 3) timeout = 3000
+      await new Promise((r) => setTimeout(r, timeout))
+    }
+  }
+  return resources
 }

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ISearchResult, getSearchResults, getServiceAccountOptions } from '../../lib/search'
+import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 
-const query = JSON.stringify({
+const query = {
   operationName: 'searchResult',
   variables: {
     input: [
@@ -11,14 +11,15 @@ const query = JSON.stringify({
         filters: [
           {
             property: 'kind',
-            values: ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet'],
+            values: ['Deployment'],
           },
         ],
+        limit: 200000,
       },
     ],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
-})
+}
 
 const labelArr: string[] = [
   'kustomize.toolkit.fluxcd.io/name=',
@@ -39,18 +40,16 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
-export async function getOCPApps(argAppSet: Set<string>) {
-  const options = await getServiceAccountOptions()
-  const results: ISearchResult = await getSearchResults(options, query)
-  const ocpApps = (results.data?.searchResult?.[0]?.items || []) as IOCPAppResource[]
+export async function getOCPApps(argAppSet: Set<string>, pass: number) {
+  const ocpApps = (await getPagedSearchResources(query, pass)) as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from search
   const openShiftAppResourceMaps: Record<string, IOCPAppResource> = {}
-  for (const ocpApp of ocpApps) {
+  ocpApps.forEach((ocpApp: IOCPAppResource) => {
     if (ocpApp._hostingSubscription) {
       // don't list subscription apps as ocp
-      continue
+      return
     }
 
     const labels = (ocpApp.label || '')
@@ -69,7 +68,7 @@ export async function getOCPApps(argAppSet: Set<string>) {
       )
       if (helmRelease && helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']) {
         // don't list helm subscription apps as ocp
-        continue
+        return
       }
     }
     if (itemLabel) {
@@ -79,7 +78,7 @@ export async function getOCPApps(argAppSet: Set<string>) {
         openShiftAppResourceMaps[key] = ocpApp
       }
     }
-  }
+  })
 
   const localOCPApps: IResource[] = []
   const remoteOCPApps: IResource[] = []

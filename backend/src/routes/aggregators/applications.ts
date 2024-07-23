@@ -51,40 +51,55 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
+// takes time to fill in the cache, so when backend first starts up fill cache quickly
+// when backend first starts up, just fill in the resources that are the fastest to gather
+// 1st pass, just locals
+// 2nd pass, everything w/ 100 limit, 1s pause
+// 3rd pass, everything w/ 20000 limit, 3s pause
+// 4th pass, everything 10s
 export async function startAggregatingApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
+  aggregatedCache[key] = {
+    filterCounts: {},
+    items: [],
+  }
+  let pass = 1
   while (!stopping) {
-    await aggregateApplications(aggregatedCache, key)
-    await new Promise((r) => setTimeout(r, 5 * 1000))
+    await aggregateApplications(aggregatedCache, key, pass++)
   }
 }
-export async function aggregateApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
+export async function aggregateApplications(
+  aggregatedCache: AggregatedCacheType,
+  key: string,
+  pass: number
+): Promise<void> {
   // ACM Apps
   const localSubscriptionApps = getKubeResources('Application', 'app.k8s.io/v1beta1')
 
   // Argo Apps
-  const { localArgoApps, remoteArgoApps, argoAppSet } = await getArgoApps()
+  const { localArgoApps, remoteArgoApps, argoAppSet } = await getArgoApps(pass)
 
   // Argo AppSets
   const localArgoAppSets = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
 
   // OCP Apps/FLUX
-  const { localOCPApps, remoteOCPApps } = await getOCPApps(argoAppSet)
+  const { localOCPApps = [], remoteOCPApps = [] } = pass > 1 ? await getOCPApps(argoAppSet, pass) : {}
 
   const filterCounts: FilterCounts = {}
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
-  const locals = localSubscriptionApps
+  let items = localSubscriptionApps
     .concat(localArgoApps)
     .concat(localArgoAppSets)
     .concat(localOCPApps)
-    .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions))
-  const remotes = remoteArgoApps
-    .concat(remoteOCPApps)
-    .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions))
+    .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions, false))
+  items = items.concat(
+    remoteArgoApps
+      .concat(remoteOCPApps)
+      .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions, true))
+  )
   aggregatedCache[key] = {
     filterCounts,
-    locals,
-    remotes,
+    items,
   }
 }
 
@@ -92,7 +107,8 @@ function generateTransformData(
   app: ITransformedResource,
   filterCounts: FilterCounts,
   subscriptions: IResource[],
-  placementDecisions: IResource[]
+  placementDecisions: IResource[],
+  isRemote: boolean
 ): IResource {
   const type = getApplicationType(app)
   const clusters = getApplicationClusters(app, type, subscriptions, placementDecisions)
@@ -105,6 +121,7 @@ function generateTransformData(
     ['timewindow'],
     [app.metadata.creationTimestamp as string],
   ]
+  app.isRemote = isRemote
   incFilterCounts(filterCounts, 'type', [type])
   incFilterCounts(filterCounts, 'cluster', clusters)
   return app

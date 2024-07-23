@@ -10,8 +10,7 @@ import {
 } from './aggregators/applications'
 
 export type AggregateCache = {
-  locals: ITransformedResource[]
-  remotes: ITransformedResource[]
+  items: ITransformedResource[]
   filterCounts: FilterCounts
 }
 export type AggregatedCacheType = {

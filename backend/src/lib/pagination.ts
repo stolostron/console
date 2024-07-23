@@ -3,7 +3,7 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
-import { getAuthorizedLocalResources, getAuthorizedRemoteResources } from '../routes/events'
+import { getAuthorizedResources } from '../routes/events'
 import { AggregateCache } from '../routes/aggregator'
 
 export type FilterSelections = {
@@ -38,6 +38,7 @@ export interface IResultListView {
 
 export interface ITransformedResource extends IResource {
   transform?: string[][]
+  isRemote?: boolean
 }
 
 export interface PaginatedResults {
@@ -67,18 +68,15 @@ export function paginate(
     const body = chucks.join()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { page, perPage, search, sortBy, filters } = JSON.parse(body) as IRequestListView
-
-    // filter based on rbac
-    // TODO to speed up local check, cache rbac check in ServerSideEvents and use here
-    const { locals, remotes, filterCounts } = cache
-    let items = (await getAuthorizedLocalResources(locals, token)) as unknown as ITransformedResource[]
-    items = items.concat(await getAuthorizedRemoteResources(remotes, token)) as unknown as ITransformedResource[]
-
+    const { filterCounts } = cache
+    let { items } = cache
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
     let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
     const backendLimit = process.env.NODE_ENV === 'test' ? 0 : 500
+    let startIndex = 0
+    let endIndex = itemCount
     if (itemCount > backendLimit) {
       isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
@@ -95,7 +93,7 @@ export function paginate(
             {
               name: 'search',
               getFn: (item) => {
-                return [item.transform[0][0], item.transform[2][0]]
+                return [item.transform[0][0], item.transform[2][0], item.transform[3][0]]
               },
             },
           ],
@@ -125,13 +123,15 @@ export function paginate(
       emptyResult = itemCount === 0
 
       // slice and dice
-      const startIndex = (rpage - 1) * perPage
-      const endIndex = rpage * perPage
-      items = items.slice(startIndex, endIndex)
+      startIndex = (rpage - 1) * perPage
+      endIndex = rpage * perPage
     }
 
+    // because rbac is expensive. perform it only on the resources the user wants to see
+    items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
+
     // remove the transform work attribute
-    items = items.map(({ transform, ...keepAttrs }) => keepAttrs)
+    items = items.map(({ transform, isRemote, ...keepAttrs }) => keepAttrs)
 
     const results: IResultListView = {
       page: rpage,

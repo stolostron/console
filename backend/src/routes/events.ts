@@ -14,6 +14,7 @@ import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
+import { ITransformedResource } from '../lib/pagination'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -47,7 +48,14 @@ export function getKubeResources(kind: string, apiVersion: string) {
   })
 }
 
-export async function getAuthorizedLocalResources(resources: IResource[], token: string): Promise<IResource[]> {
+// because rbac checks are expensive,
+// run them only on the resources requested by the UI
+export async function getAuthorizedResources(
+  token: string,
+  resources: IResource[],
+  startInx: number,
+  stopInx: number
+): Promise<IResource[]> {
   const authorized: IResource[] = []
   const queue = resources.map((resource) => {
     return canListResources(token, resource)
@@ -63,20 +71,27 @@ export async function getAuthorizedLocalResources(resources: IResource[], token:
   return authorized
 }
 
-export async function getAuthorizedRemoteResources(resources: IResource[], token: string): Promise<IResource[]> {
-  const authorized: IResource[] = []
-  const queue = resources.map((resource) => {
-    return canAccessRemoteResource(token, resource)
-      .then((allowResource) => (allowResource ? resource : undefined))
-      .catch((err: unknown) => undefined) as Promise<IResource>
-  })
-  while (queue.length) {
-    const resource = await queue.shift()
-    if (resource) {
-      authorized.push(resource)
+  // check every resource until we have reached just the requested number of items
+  // anything more is a waste of response time
+  let inx = 0
+  const chunkSize = stopInx > 100 ? 100 : 50
+  while (resources.length > inx && authorized.length < stopInx) {
+    // perform it in item chunks
+    const _resources = resources.slice(inx, inx + chunkSize)
+    const queue = (_resources as ITransformedResource[]).map((resource) => {
+      return (resource.isRemote ? canListResources(token, resource) : canAccessRemoteResource(token, resource))
+        .then((allowResource) => (allowResource ? resource : undefined))
+        .catch((err: unknown) => undefined) as Promise<IResource>
+    })
+    while (queue.length) {
+      const resource = await queue.shift()
+      if (resource) {
+        authorized.push(resource)
+      }
     }
+    inx += chunkSize
   }
-  return authorized
+  return authorized.slice(startInx, stopInx)
 }
 
 function canListResources(token: string, resource: IResource): Promise<boolean> {

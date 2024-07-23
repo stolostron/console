@@ -37,7 +37,10 @@ export enum SupportedAggregate {
   clusterDetails = 'cluster-details',
 }
 
-export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequestListView): IResultListView {
+export function useAggregate(
+  aggregate: SupportedAggregate,
+  requestedView: IRequestListView | undefined
+): IResultListView {
   const defaultResponse = useMemo<IResultListView>(
     () => ({
       page: 1,
@@ -46,14 +49,15 @@ export function useAggregate(aggregate: SupportedAggregate, requestedView: IRequ
       itemCount: 0,
       filterCounts: undefined,
       emptyResult: false,
-      isPreProcessed: false,
+      isPreProcessed: true,
     }),
     []
   )
   const { backendUrl } = usePluginDataContextValue()
-
   const queryFunc = useCallback(() => {
-    return postRequest<IRequestListView, IResultListView>(`${backendUrl}${apiUrl}/${aggregate}`, requestedView)
+    return requestedView
+      ? postRequest<IRequestListView, IResultListView>(`${backendUrl}${apiUrl}/${aggregate}`, requestedView)
+      : undefined
   }, [aggregate, backendUrl, requestedView])
 
   const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {

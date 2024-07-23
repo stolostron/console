@@ -2,7 +2,7 @@
 
 import { PageSection, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { SortByDirection, cellWidth } from '@patternfly/react-table'
+import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
@@ -385,14 +385,7 @@ export default function ApplicationsOverview() {
     open: false,
   })
 
-  const [requestedView, setRequestView] = useState<IRequestListView>({
-    page: 1,
-    perPage: 10,
-    sortBy: {
-      index: 0,
-      direction: SortByDirection.asc,
-    },
-  })
+  const [requestedView, setRequestView] = useState<IRequestListView>()
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
