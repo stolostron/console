@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { MockedProvider } from '@apollo/client/testing'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -41,7 +42,7 @@ import {
   mockSearchResponseOCPApplications,
   mockSearchResponseOCPApplicationsCount,
 } from '../../Applications/Application.sharedmocks'
-import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
+import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPageBeta from './OverviewPageBeta'
 import {
   appSets,
@@ -55,7 +56,6 @@ import {
   policies,
   policyReports,
 } from './sharedmocks'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 

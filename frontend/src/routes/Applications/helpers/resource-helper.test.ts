@@ -3,9 +3,9 @@
 import i18next from 'i18next'
 import moment from 'moment'
 import {
-  ArgoApplicationDefinition,
-  ApplicationSetKindType,
   ApplicationSetApiVersionType,
+  ApplicationSetKindType,
+  ArgoApplicationDefinition,
   PlacementDecision,
 } from '../../../resources'
 import { mockPlacementRules } from '../../Governance/governance.sharedMocks'
@@ -20,6 +20,7 @@ import {
   getAge,
   getAppChildResources,
   getAppSetRelatedResources,
+  getArgoPullModelClusterList,
   getClusterCountSearchLink,
   getClusterCountString,
   getEditLink,
@@ -28,9 +29,8 @@ import {
   getSearchLink,
   getShortDateTime,
   groupByRepoType,
-  normalizeRepoType,
   isArgoPullModel,
-  getArgoPullModelClusterList,
+  normalizeRepoType,
 } from './resource-helper'
 
 const t = i18next.t.bind(i18next)
@@ -190,12 +190,12 @@ describe('getAge', () => {
 
 describe('getSearchLink', () => {
   it('should work with no props', () => {
-    expect(getSearchLink({})).toEqual('/multicloud/home/search')
+    expect(getSearchLink({})).toEqual('/multicloud/search')
   })
 
   it('should work with multiple props', () => {
     expect(getSearchLink({ properties: { name: 'testing', kind: 'resource' } })).toEqual(
-      '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%20kind%3Aresource%22%7D'
+      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%20kind%3Aresource%22%7D'
     )
   })
 
@@ -205,7 +205,7 @@ describe('getSearchLink', () => {
         properties: { name: 'testing' },
         showRelated: 'subscriptions',
       })
-    ).toEqual('/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%22%7D&showrelated=subscriptions')
+    ).toEqual('/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%22%7D&showrelated=subscriptions')
   })
 
   it('should work with array properties', () => {
@@ -220,7 +220,7 @@ describe('getSearchLink', () => {
         showRelated: 'cluster',
       })
     ).toEqual(
-      '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
+      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
     )
   })
 })
@@ -238,7 +238,7 @@ describe('getEditLink', () => {
         },
       })
     ).toEqual(
-      '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
+      '/multicloud/search/resources/yaml?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
     )
   })
 })

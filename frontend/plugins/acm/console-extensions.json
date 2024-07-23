@@ -5,7 +5,7 @@
             "perspective": "acm",
             "id": "acm-home",
             "name": "%plugin__acm~Home%",
-            "insertBefore": "mce-infrastructure"
+            "insertBefore": "acm-search"
         }
     },
     {
@@ -46,10 +46,17 @@
         "type": "console.navigation/href",
         "properties": {
             "perspective": "acm",
-            "section": "acm-home",
             "id": "acm-search",
             "name": "%plugin__acm~Search%",
-            "href": "/multicloud/home/search"
+            "href": "/multicloud/search",
+            "insertBefore": "mce-infrastructure"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/search",
+            "component": { "$codeRef": "search.default" }
         }
     },
     {

@@ -137,7 +137,7 @@ export const persVolumePendingStatePendingRes = [
         action: 'show_resource_yaml',
         cluster: 'feng',
         editLink:
-          '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
       },
       label: 'View resource YAML',
     },
@@ -175,7 +175,7 @@ export const persVolumePendingStateGreenRes = [
         action: 'show_resource_yaml',
         cluster: 'feng',
         editLink:
-          '/multicloud/home/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
       },
       label: 'View resource YAML',
     },
@@ -719,7 +719,7 @@ export const deploymentNodeNoPODS = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,
@@ -871,7 +871,7 @@ export const deploymentNodeNoPODSNoRes = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,
@@ -1071,7 +1071,7 @@ export const deploymentNodeRed3 = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,

@@ -15,13 +15,13 @@ import {
   checkNotOrObjects,
   computeResourceName,
   createDeployableYamlLink,
+  createEditLink,
   createResourceSearchLink,
   getNameWithoutChartRelease,
   getNodePropery,
   parseApplicationNodeName,
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
-  createEditLink,
 } from './diagram-helpers'
 
 const t = i18n.t.bind(i18n)
@@ -349,7 +349,7 @@ describe('createDeployableYamlLink for application no selflink', () => {
             action: 'show_resource_yaml',
             cluster: 'local-cluster',
             editLink:
-              '/multicloud/home/search/resources/yaml?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
+              '/multicloud/search/resources/yaml?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
           },
           label: 'View resource YAML',
         },
@@ -384,7 +384,7 @@ describe('createDeployableYamlLink for application with editLink', () => {
           action: 'show_resource_yaml',
           cluster: 'local-cluster',
           editLink:
-            '/multicloud/home/search/resources/yaml?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
+            '/multicloud/search/resources/yaml?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
         },
         label: 'View resource YAML',
       },
@@ -1392,7 +1392,7 @@ describe('processResourceActionLink search view2', () => {
     namespace: 'open-cluster-management',
   }
   const result =
-    '/multicloud/home/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
+    '/multicloud/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
 
   it('processResourceActionLink opens search view2', () => {
     expect(processResourceActionLink(openSearchView)).toEqual(result)
@@ -1404,10 +1404,10 @@ describe('processResourceActionLink openRemoteresourceYaml', () => {
     action: 'show_resource_yaml',
     cluster: 'possiblereptile',
     editLink:
-      '/multicloud/home/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
+      '/multicloud/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
   }
   const result =
-    '/multicloud/home/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
+    '/multicloud/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
   it('processResourceActionLink openRemoteresourceYaml', () => {
     expect(processResourceActionLink(openRemoteresourceYaml)).toEqual(result)
   })
@@ -1925,7 +1925,7 @@ describe('createEditLink subscriptionstatus', () => {
 
   it('returns subscriptionstatus link', () => {
     expect(createEditLink(node, kind, cluster, apiversion)).toEqual(
-      '/multicloud/home/search/resources/yaml?apiversion=apps.open-cluster-management.io%2Fv1alpha1&cluster=local-cluster&kind=SubscriptionStatus&name=feng-wordpress-subscription-1&namespace=feng-wordpress'
+      '/multicloud/search/resources/yaml?apiversion=apps.open-cluster-management.io%2Fv1alpha1&cluster=local-cluster&kind=SubscriptionStatus&name=feng-wordpress-subscription-1&namespace=feng-wordpress'
     )
   })
 })
@@ -1941,7 +1941,7 @@ describe('createEditLink deployment', () => {
   }
   it('returns deployment link', () => {
     expect(createEditLink(node)).toEqual(
-      '/multicloud/home/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
+      '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
     )
   })
 })
@@ -1956,7 +1956,7 @@ describe('createEditLink kind undefined', () => {
   }
   it('returns non-working link', () => {
     expect(createEditLink(node)).toEqual(
-      '/multicloud/home/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&name=mydeploy&namespace=default'
+      '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&name=mydeploy&namespace=default'
     )
   })
 })

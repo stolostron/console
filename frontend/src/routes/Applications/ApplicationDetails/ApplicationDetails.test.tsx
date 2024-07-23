@@ -23,7 +23,7 @@ import { PluginDataContext } from '../../../lib/PluginDataContext'
 import { ocpApi, waitForText } from '../../../lib/test-util'
 import { ApplicationActionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
-import { GetMessagesDocument, SearchSchemaDocument } from '../../Home/Search/search-sdk/search-sdk'
+import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
   mockApplication0,
   mockApplications,

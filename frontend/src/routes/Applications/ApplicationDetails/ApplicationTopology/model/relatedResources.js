@@ -2,8 +2,8 @@
 
 import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
-import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
-import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { searchClient } from '../../../../Search/search-sdk/search-client'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 
 export async function getRelatedResources(reports = []) {
   const promises = []

@@ -17,6 +17,7 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
 import './App.css'
@@ -30,16 +31,15 @@ import { usePluginDataContextValue } from './lib/PluginDataContext'
 import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
-import { MatchType, NavigationPath, createRoutePathFunction } from './NavigationPath'
+import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
 import { ResourceError, ResourceErrorCode } from './resources'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
 const OverviewPage = lazy(() => import('./routes/Home/Overview/Overview'))
-const Search = lazy(() => import('./routes/Home/Search/Search'))
+const Search = lazy(() => import('./routes/Search/Search'))
 
 // INFRASTRUCTURE
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
@@ -164,14 +164,14 @@ const routes: (IRoute | IRouteGroup)[] = [
         match: MatchType.SubRoutes,
         element: <OverviewPage />,
       },
-      {
-        title: 'Search',
-        type: 'route',
-        path: NavigationPath.search,
-        match: MatchType.SubRoutes,
-        element: <Search />,
-      },
     ],
+  },
+  {
+    title: 'Search',
+    type: 'route',
+    path: NavigationPath.search,
+    match: MatchType.SubRoutes,
+    element: <Search />,
   },
   {
     title: 'Infrastructure',

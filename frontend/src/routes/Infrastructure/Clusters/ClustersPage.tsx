@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
-import { Link, useLocation, Outlet } from 'react-router-dom-v5-compat'
+import { Link, Outlet, useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
-import ReuseableSearchbar from '../../Home/Search/components/ReuseableSearchbar'
 export const PageContext = createContext<{
   readonly actions: null | ReactNode
   setActions: (actions: null | ReactNode) => void
@@ -78,7 +77,6 @@ export function ClustersPage() {
             </AcmSecondaryNav>
           }
           actions={actions}
-          searchbar={<ReuseableSearchbar />}
         />
       }
     >

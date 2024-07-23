@@ -1,8 +1,8 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { getNodeDetails } from './details'
 import { inflateKubeValue } from '../helpers/diagram-helpers'
+import { getNodeDetails } from './details'
 
 const t = (string) => {
   return string
@@ -37,7 +37,7 @@ describe('getNodeDetails no clusters or violation', () => {
         {
           name: 'Cluster',
           value: 'c1',
-          href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:c1'}",
+          href: "/multicloud/search?filters={'textsearch':'kind:cluster name:c1'}",
         },
       ],
       x: 76.5,
@@ -159,7 +159,7 @@ describe('getNodeDetails application node', () => {
         data: {
           action: 'open_link',
           targetLink:
-            '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Ans-sub-1%20cluster%3Alocal-cluster"}',
+            '/multicloud/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Ans-sub-1%20cluster%3Alocal-cluster"}',
         },
         id: 'application--nginx-app-3-subscrSearch',
         label: 'View all subscriptions in {{0}} namespace',
@@ -233,7 +233,7 @@ describe('getNodeDetails cluster node 1', () => {
         {
           name: 'Cluster',
           value: 'feng',
-          href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:feng'}",
+          href: "/multicloud/search?filters={'textsearch':'kind:cluster name:feng'}",
         },
       ],
       x: 76.5,
@@ -371,7 +371,7 @@ describe('getNodeDetails clusters node', () => {
         {
           name: 'Cluster',
           value: 'feng',
-          href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:feng'}",
+          href: "/multicloud/search?filters={'textsearch':'kind:cluster name:feng'}",
         },
       ],
       x: 76.5,
@@ -611,7 +611,7 @@ describe('getNodeDetails subscription', () => {
         data: {
           action: 'open_link',
           targetLink:
-            '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Asahar-test-ns%20cluster%3Alocal-cluster"}',
+            '/multicloud/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Asahar-test-ns%20cluster%3Alocal-cluster"}',
         },
       },
     },
