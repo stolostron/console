@@ -234,6 +234,17 @@ export const createResourceSearchLink = (node, t) => {
     //get the list of all names from the related list; for helm charts, they are different than the deployable name
     //pulse orange means not deployed on any cluster so don't show link to search page
     if (isSearchAvailable()) {
+      let kindVal
+      switch (nodeType) {
+        case 'placements':
+          kindVal = 'PlacementRule'
+          break;
+        case 'placement':
+          kindVal = 'PlacementDecision'
+          break;
+        default:
+          kindVal = _.get(node, 'type', '')
+      }
       result = {
         type: 'link',
         value: {
@@ -246,7 +257,7 @@ export const createResourceSearchLink = (node, t) => {
               computedNS && computedNS.length > 0
                 ? computedNS
                 : R.pathOr('', ['specs', 'raw', 'metadata', 'namespace'])(node),
-            kind: nodeType === 'placements' ? 'placementrule' : _.get(node, 'type', ''),
+            kind: kindVal,
           },
           indent: true,
         },
