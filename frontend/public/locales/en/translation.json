@@ -1515,6 +1515,7 @@
   "Import cluster steps": "Import cluster steps",
   "Import cluster YAML": "Import cluster YAML",
   "Import the Hosted Cluster once the Hosted Control Plane is available.": "Import the Hosted Cluster once the Hosted Control Plane is available.",
+  "Import your clusters automatically": "Import your clusters automatically",
   "import.auto.config.label": "Kubeconfig",
   "import.auto.config.prompt": "Copy and paste your kubeconfig content",
   "import.clusterid": "Cluster ID",
