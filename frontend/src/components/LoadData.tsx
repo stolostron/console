@@ -61,6 +61,7 @@ import {
   InfraEnvKind,
   InfrastructureApiVersion,
   InfrastructureKind,
+  IResource,
   MachinePoolApiVersion,
   MachinePoolKind,
   ManagedClusterAddOnApiVersion,
@@ -236,12 +237,15 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
 
-  const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
+  const { setters, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
+    const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
       if (!setters[groupVersion]) setters[groupVersion] = {}
       setters[groupVersion][kind] = setter
+      if (!caches[groupVersion]) caches[groupVersion] = {}
+      caches[groupVersion][kind] = {}
     }
     addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
@@ -300,7 +304,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    return setters
+    return { setters, caches }
   }, [
     setAgentClusterInstalls,
     setAgents,
@@ -381,29 +385,24 @@ export function LoadData(props: { children?: ReactNode }) {
         for (const kind in resourceTypeMap[groupVersion]) {
           const setter = setters[groupVersion]?.[kind]
           if (setter) {
-            setter((resources) => {
-              const newResources = [...resources]
+            setter(() => {
+              const cache = caches[groupVersion]?.[kind]
               const watchEvents = resourceTypeMap[groupVersion]?.[kind]
               if (watchEvents) {
                 for (const watchEvent of watchEvents) {
-                  const index = newResources.findIndex(
-                    (resource) =>
-                      resource.metadata?.name === watchEvent.object.metadata.name &&
-                      resource.metadata?.namespace === watchEvent.object.metadata.namespace
-                  )
+                  const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
                   switch (watchEvent.type) {
                     case 'ADDED':
                     case 'MODIFIED':
-                      if (index !== -1) newResources[index] = watchEvent.object
-                      else newResources.push(watchEvent.object)
+                      cache[key] = watchEvent.object
                       break
                     case 'DELETED':
-                      if (index !== -1) newResources.splice(index, 1)
+                      delete cache[key]
                       break
                   }
                 }
               }
-              return newResources
+              return Object.values(cache)
             })
           }
         }
@@ -458,12 +457,10 @@ export function LoadData(props: { children?: ReactNode }) {
     }
     startWatch()
 
-    const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
     return () => {
-      clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [setSettings, setters])
+  }, [caches, setSettings, setters])
 
   const {
     data: globalHubRes,

@@ -57,19 +57,6 @@ export async function getAuthorizedResources(
   stopInx: number
 ): Promise<IResource[]> {
   const authorized: IResource[] = []
-  const queue = resources.map((resource) => {
-    return canListResources(token, resource)
-      .then((allowResource) => (allowResource ? resource : undefined))
-      .catch((err: unknown) => undefined) as Promise<IResource>
-  })
-  while (queue.length) {
-    const resource = await queue.shift()
-    if (resource) {
-      authorized.push(resource)
-    }
-  }
-  return authorized
-}
 
   // check every resource until we have reached just the requested number of items
   // anything more is a waste of response time
