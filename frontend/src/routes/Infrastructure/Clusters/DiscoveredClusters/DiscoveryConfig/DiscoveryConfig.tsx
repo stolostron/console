@@ -87,7 +87,7 @@ export default function DiscoveryConfigPage() {
           <Alert
             variant="info"
             isInline
-            title="Import your clusters automatically"
+            title={t('Import your clusters automatically')}
             style={{ marginBottom: '1em' }}
             className="pf-v5-u-mb-md"
             actionLinks={[
