@@ -238,10 +238,10 @@ export const createResourceSearchLink = (node, t) => {
       switch (nodeType) {
         case 'placements':
           kindVal = 'PlacementRule'
-          break;
+          break
         case 'placement':
           kindVal = 'PlacementDecision'
-          break;
+          break
         default:
           kindVal = _.get(node, 'type', '')
       }
