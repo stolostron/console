@@ -237,8 +237,6 @@ export const createResourceSearchLink = (node, t) => {
       let kindVal
       switch (nodeType) {
         case 'placements':
-          kindVal = 'PlacementRule'
-          break
         case 'placement':
           kindVal = 'PlacementDecision'
           break
