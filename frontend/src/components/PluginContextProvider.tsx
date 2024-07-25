@@ -98,9 +98,9 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
       <AcmFeedbackModalProvider>
         <AcmFeedbackModalButton />
         <AcmFeedbackModal
+          onShareFeedback="https://console.redhat.com/self-managed-feedback-form"
           isOpen={toggleOpen}
           onClose={() => setToggleOpen(false)}
-          onShareFeedback="https://console.redhat.com/self-managed-feedback-form"
         />
         <div style={{ position: 'relative', height: '100%', width: '100%' }}>
           <div style={{ position: 'absolute', height: '100%', width: '100%' }}>

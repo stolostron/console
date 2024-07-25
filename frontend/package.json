@@ -55,7 +55,7 @@
     "@patternfly/react-styles": "4.92.3",
     "@patternfly/react-table": "4.90.3",
     "@patternfly/react-topology": "4.38.5",
-    "@patternfly/react-user-feedback": "^5.0.0",
+    "@patternfly/react-user-feedback": "^1.1.2",
     "@react-hook/resize-observer": "1.2.5",
     "@redhat-cloud-services/rule-components": "^3.2.7",
     "@reduxjs/toolkit": "1.8.x",
