@@ -107,11 +107,7 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
     const response = getHivePod(cluster.namespace, cluster.name, cluster.status)
     response.then((job) => {
       const podName = job?.metadata.name || ''
-      const containerName = podName.includes('uninstall') ? 'deprovision' : 'hive'
-      podName &&
-        window.open(
-          `${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs?container=${containerName}`
-        )
+      podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
     })
   }
 }
