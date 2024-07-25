@@ -1195,7 +1195,7 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('1 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('4Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('6Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
