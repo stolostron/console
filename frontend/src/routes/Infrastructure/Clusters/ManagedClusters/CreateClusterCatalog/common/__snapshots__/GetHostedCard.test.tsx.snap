@@ -3,7 +3,7 @@
 exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
 Object {
   "alertContent": <a
-    href="https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.12/html-single/clusters/index#enable-or-disable-hosted-control-planes"
+    href="https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.12/html-single/clusters/index#enable-or-disable-hosted-control-planes"
     rel="noopener noreferrer"
     target="_blank"
   >
