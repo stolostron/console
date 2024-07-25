@@ -7,6 +7,7 @@ import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
 
+/// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
   it(`should page Unfiltered Applications`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
@@ -273,52 +274,77 @@ function setupNocks() {
 
   //
   // REMOTE/LOCAL OCP and FLUX
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
-    .post(
+  pagedSearchQueries.forEach((query, inx) => {
+    const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["CronJob","DaemonSet","Deployment","DeploymentConfig","Job","StatefulSet"]}]}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":200000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+    )
+    if (inx === 0) {
+      nocked.reply(200, {
+        data: {
+          searchResult: [
+            {
+              items: [
+                // local OCP
+                {
+                  apiversion: 'apps/v1',
+                  kind: 'deployment',
+                  label: 'app=authentication-operator',
+                  name: 'authentication-operator',
+                  namespace: 'authentication-operator-ns',
+                  cluster: 'local-cluster',
+                },
+                // remote OCP
+                {
+                  apiversion: 'apps/v1',
+                  kind: 'deployment',
+                  label: 'app=authentication-operator',
+                  name: 'authentication-operator',
+                  namespace: 'authentication-operator-ns',
+                  cluster: 'test-cluster',
+                },
+                // FLUX
+                {
+                  apiversion: 'apps/v1',
+                  kind: 'deployment',
+                  name: 'test-app',
+                  namespace: 'test-app-ns',
+                  label:
+                    'app=test-app;kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
+                  cluster: 'test-cluster',
+                },
+              ],
+            },
+          ],
+        },
+      })
+    } else {
+      nocked.reply(200, {})
+    }
+  })
+  //
+  // RBAC
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"argoproj.io","resource":"applications","verb":"list"}}}'
     )
     .reply(200, {
-      data: {
-        searchResult: [
-          {
-            items: [
-              // local OCP
-              {
-                apiversion: 'apps/v1',
-                kind: 'deployment',
-                label: 'app=authentication-operator',
-                name: 'authentication-operator',
-                namespace: 'authentication-operator-ns',
-                cluster: 'local-cluster',
-              },
-              // remote OCP
-              {
-                apiversion: 'apps/v1',
-                kind: 'deployment',
-                label: 'app=authentication-operator',
-                name: 'authentication-operator',
-                namespace: 'authentication-operator-ns',
-                cluster: 'test-cluster',
-              },
-              // FLUX
-              {
-                apiversion: 'apps/v1',
-                kind: 'deployment',
-                name: 'test-app',
-                namespace: 'test-app-ns',
-                label:
-                  'app=test-app;kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
-                cluster: 'test-cluster',
-              },
-            ],
-          },
-        ],
+      status: {
+        allowed: true,
+      },
+    })
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"default","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
       },
     })
 
-  //
-  // RBAC
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
