@@ -35,7 +35,7 @@ import {
 import Overview from './Overview'
 
 const applicationAggregate = {
-  req: { page: 1, perPage: 10, sortBy: { index: 0, direction: 'asc' } },
+  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
   res: {
     page: 1,
     items: [
@@ -85,6 +85,9 @@ describe('Applications Page', () => {
   })
 
   test('should display info', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
+
     // wait for page to load
     await waitForText('feng-remote-argo8')
 
