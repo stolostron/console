@@ -457,7 +457,9 @@ export function LoadData(props: { children?: ReactNode }) {
     }
     startWatch()
 
+    const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
     return () => {
+      clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
   }, [caches, setSettings, setters])

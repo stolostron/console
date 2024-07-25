@@ -14,8 +14,6 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
     clusterDeploymentsState,
     managedClusterInfosState,
     certificateSigningRequestsState,
-    managedClusterAddonsState,
-    clusterManagementAddonsState,
     clusterClaimsState,
     clusterCuratorsState,
     agentClusterInstallsState,
@@ -27,8 +25,6 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
@@ -42,8 +38,6 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
         managedClusterInfos,
         certificateSigningRequests,
         managedClusters,
-        managedClusterAddons,
-        clusterManagementAddOns,
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
@@ -62,8 +56,6 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
       managedClusterInfos,
       certificateSigningRequests,
       managedClusters,
-      managedClusterAddons,
-      clusterManagementAddOns,
       clusterClaims,
       clusterCurators,
       agentClusterInstalls,

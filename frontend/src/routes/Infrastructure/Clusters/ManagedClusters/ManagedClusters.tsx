@@ -31,6 +31,7 @@ import {
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterStatus,
+  getAddons,
   getAddonStatusLabel,
   getClusterStatusLabel,
   getRoles,
@@ -817,16 +818,21 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
 
 export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
+  const { managedClusterAddonsState, clusterManagementAddonsState } = useSharedAtoms()
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
   return {
     header: t('Add-ons'),
     sort: 'addons',
     cell: (cluster) => {
-      return cluster.addons!.addonList.length > 0 ? (
+      const addons = managedClusterAddons.filter((mca) => mca.metadata.namespace === cluster.namespace)
+      const list = getAddons(addons, clusterManagementAddOns)
+      return list ? (
         <AcmInlineStatusGroup
-          healthy={cluster.addons!.available}
-          danger={cluster.addons!.degraded}
-          progress={cluster.addons!.progressing}
-          unknown={cluster.addons!.unknown}
+          healthy={list!.available}
+          danger={list!.degraded}
+          progress={list!.progressing}
+          unknown={list!.unknown}
           groupId="add-ons"
         />
       ) : (
