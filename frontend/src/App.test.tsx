@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { lazy, Suspense } from 'react'
 import { render } from '@testing-library/react'
+import { lazy, Suspense } from 'react'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
 const OverviewPage = lazy(() => import('./routes/Home/Overview/OverviewPage'))
-const Search = lazy(() => import('./routes/Home/Search/Search'))
+const Search = lazy(() => import('./routes/Search/Search'))
 
 // INFRASTRUCTURE
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))

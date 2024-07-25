@@ -21,9 +21,9 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, listResources, SavedSearch } from '../../../resources'
 import { useSharedAtoms } from '../../../shared-recoil'
-import { convertStringToQuery } from '../Search/search-helper'
-import { searchClient } from '../Search/search-sdk/search-client'
-import { useSearchResultCountQuery } from '../Search/search-sdk/search-sdk'
+import { convertStringToQuery } from '../../Search/search-helper'
+import { searchClient } from '../../Search/search-sdk/search-client'
+import { useSearchResultCountQuery } from '../../Search/search-sdk/search-sdk'
 
 const CardHeader = (props: { isSearchDisabled: boolean }) => {
   const { isSearchDisabled } = props

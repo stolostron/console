@@ -120,7 +120,7 @@ export function PolicyTemplateDetails(
       value: template?.apiVersion ?? '-',
     },
     {
-      key: t('Compliant'),
+      key: t('Violations'),
       value: template?.status?.compliant ?? '-',
     },
     {
@@ -156,7 +156,7 @@ export function PolicyTemplateDetails(
         search: 'object.apiVersion',
       },
       {
-        header: t('Compliant'),
+        header: t('Violations'),
         sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
         cell: (item: any) => {
           let compliant = item.compliant ?? '-'

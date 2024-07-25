@@ -928,4 +928,30 @@ describe('AcmTable', () => {
     expect(container.querySelector('div .pf-c-dropdown__toggle')).toBeInTheDocument()
     userEvent.click(getByTestId('create'))
   })
+
+  test('renders with export button', () => {
+    const { getByTestId, getByText, container } = render(<Table showExportButton />)
+    expect(container.querySelector('#export-search-result')).toBeInTheDocument()
+    userEvent.click(getByTestId('export-search-result'))
+    expect(getByText('Export as CSV')).toBeInTheDocument()
+  })
+
+  test('export button should produce a file for download', () => {
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const { getByTestId, getByText, container } = render(<Table showExportButton />)
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    expect(container.querySelector('#export-search-result')).toBeInTheDocument()
+    userEvent.click(getByTestId('export-search-result'))
+    expect(getByText('Export as CSV')).toBeInTheDocument()
+    userEvent.click(getByText('Export as CSV'))
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+  })
 })

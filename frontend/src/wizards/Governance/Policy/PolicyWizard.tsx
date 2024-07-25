@@ -93,7 +93,7 @@ export function PolicyWizard(props: {
       title={props.title}
       breadcrumb={props.breadcrumb}
       description={t(
-        'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls.'
+        'A policy generates reports and validates cluster violations based on specified security standards, categories, and controls.'
       )}
       yamlEditor={props.yamlEditor}
       onSubmit={props.onSubmit}

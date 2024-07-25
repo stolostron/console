@@ -28,7 +28,7 @@ import {
   ToolbarItem,
   TooltipProps,
 } from '@patternfly/react-core'
-import { FilterIcon } from '@patternfly/react-icons'
+import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
   expandable,
@@ -67,12 +67,15 @@ import {
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
+import { AcmToastContext } from '../AcmAlert/AcmToast'
 import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
+import { IAlertContext } from '../AcmAlert/AcmAlert'
+import { createDownloadFile } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
@@ -94,6 +97,9 @@ export interface IAcmTableColumn<T> {
 
   /** cell content, either on field name of using cell function */
   cell: CellFn<T> | string
+
+  /** exported value as a string, supported export: CSV*/
+  exportContent?: CellFn<T>
 
   transforms?: ITransform[]
 
@@ -468,6 +474,8 @@ export type AcmTableProps<T> = {
   filters?: ITableFilter<T>[]
   id?: string
   showColumManagement?: boolean
+  nonZeroCount?: boolean
+  indeterminateCount?: boolean
 }
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
@@ -486,6 +494,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     initialSelectedItems,
     onSelect: propsOnSelect,
     showColumManagement,
+    showExportButton,
+    exportFilePrefix,
     setRequestView,
     resultView,
   } = props
@@ -499,6 +509,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const { isPreProcessed, filterCounts, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
+  const toastContext = useContext(AcmToastContext)
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -723,22 +734,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
-      if (filters.length && Object.keys(filterSelections).length) {
-        const filterCategories = Object.keys(filterSelections)
-        filteredItems = items.filter((item: T) => {
-          let isFilterMatch = true
-          // Item must match 1 filter of each category
-          filterCategories.forEach((filter: string) => {
-            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-            /* istanbul ignore next */
-            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-            if (!isMatch) {
-              isFilterMatch = false
-            }
-          })
-          return isFilterMatch
+    if (filters.length && Object.keys(filterSelections).length) {
+      const filterCategories = Object.keys(filterSelections)
+      filteredItems = items.filter((item: T) => {
+        let isFilterMatch = true
+        // Item must match 1 filter of each category
+        filterCategories.forEach((filter: string) => {
+          const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
+          /* istanbul ignore next */
+          const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
+          if (!isMatch) {
+            isFilterMatch = false
+          }
         })
-      }
+        return isFilterMatch
+      })
+    }
     }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
@@ -816,10 +827,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // if using a result view from backend, actual page is determined by backend
     if (!isPreProcessed) {
-      const start = (page - 1) * perPage
-      if (start >= sorted.length) {
-        actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
-      }
+    const start = (page - 1) * perPage
+    if (start >= sorted.length) {
+      actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+    }
     }
     return actualPage
   }, [page, isPreProcessed, perPage, sorted.length])
@@ -830,11 +841,56 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [page, actualPage, setPage])
 
+  const exportTable = useCallback(
+    (toastContext: IAlertContext) => {
+      toastContext.addAlert({
+        title: t('Generating data. Download may take a moment to start.'),
+        type: 'info',
+        autoClose: true,
+      })
+
+      const fileNamePrefix = exportFilePrefix ?? 'table-values'
+      const headerString: string[] = []
+      const csvExportCellArray: string[] = []
+
+      selectedSortedCols.forEach(({ header }) => {
+        header && headerString.push(header)
+      })
+      csvExportCellArray.push(headerString.join(','))
+
+      sorted.forEach(({ item }) => {
+        let contentString: string[] = []
+        selectedSortedCols.forEach(({ header, exportContent }) => {
+          if (header) {
+            // if callback and its output exists, add to array, else add "-"
+            exportContent && exportContent(item)
+              ? contentString.push(exportContent(item) as string)
+              : contentString.push('-')
+          }
+        })
+        contentString = [contentString.join(',')]
+        contentString[0] && csvExportCellArray.push(contentString[0])
+      })
+
+      const exportString = csvExportCellArray.join('\n')
+      const fileName = `${fileNamePrefix}-${Date.now()}.csv`
+
+      createDownloadFile(fileName, exportString, 'text/csv')
+
+      toastContext.addAlert({
+        title: t('Export successful'),
+        type: 'success',
+        autoClose: true,
+      })
+    },
+    [selectedSortedCols, sorted, exportFilePrefix, t]
+  )
+
   const paged = useMemo<ITableItem<T>[]>(() => {
     // if using a result view from backend, the items have already been sliced and diced
     if (!isPreProcessed) {
-      const start = (actualPage - 1) * perPage
-      return sorted.slice(start, start + perPage)
+    const start = (actualPage - 1) * perPage
+    return sorted.slice(start, start + perPage)
     } else {
       return sorted
     }
@@ -1072,6 +1128,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasItems = items && items.length > 0 && filtered
   const showToolbar = props.showToolbar !== false ? hasItems || emptyResult || loading : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
   const translatedPaginationTitles = usePaginationTitles()
 
@@ -1160,13 +1217,55 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
+            {customTableAction && <ToolbarItem>{customTableAction}</ToolbarItem>}
             {showColumManagement && (
+                <ToolbarItem>
               <AcmManageColumn<T>
-                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                    {...{
+                      selectedColIds,
+                      setSelectedColIds,
+                      requiredColIds,
+                      defaultColIds,
+                      setColOrderIds,
+                      colOrderIds,
+                    }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
+                </ToolbarItem>
+              )}
+              {showExportButton && (
+                <ToolbarItem key={`export-toolbar-item`}>
+                  <Dropdown
+                    onSelect={(event) => {
+                      event?.stopPropagation()
+                      setIsExportMenuOpen(false)
+                    }}
+                    className="export-dropdownMenu"
+                    toggle={
+                      <DropdownToggle
+                        toggleIndicator={null}
+                        onToggle={(value, event) => {
+                          event.stopPropagation()
+                          setIsExportMenuOpen(value)
+                        }}
+                        aria-label="export-search-result"
+                        id="export-search-result"
+                      >
+                        <ExportIcon />
+                      </DropdownToggle>
+                    }
+                    isOpen={isExportMenuOpen}
+                    isPlain
+                    dropdownItems={[
+                      <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
+                        {t('Export as CSV')}
+                      </DropdownItem>,
+                    ]}
+                    position={'left'}
+                  />
+                </ToolbarItem>
             )}
-            {customTableAction}
+            {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
                 <Pagination

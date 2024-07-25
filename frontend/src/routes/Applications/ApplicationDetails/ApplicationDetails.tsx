@@ -2,7 +2,6 @@
 
 import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
-import { TFunction } from 'react-i18next'
 import {
   createContext,
   ElementType,
@@ -16,14 +15,15 @@ import {
   useRef,
   useState,
 } from 'react'
+import { TFunction } from 'react-i18next'
 import {
-  Link,
-  useLocation,
-  useParams,
-  useNavigate,
   generatePath,
-  useOutletContext,
+  Link,
   Outlet,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
 } from 'react-router-dom-v5-compat'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -47,9 +47,9 @@ import {
   AcmSecondaryNav,
   AcmSecondaryNavItem,
 } from '../../../ui-components'
-import { searchClient } from '../../Home/Search/search-sdk/search-client'
-import { useSearchCompleteQuery } from '../../Home/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { searchClient } from '../../Search/search-sdk/search-client'
+import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import {
   getAppChildResources,

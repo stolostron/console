@@ -6,7 +6,7 @@
   "exposedModules": {
     "welcome": "../../src/routes/Home/Welcome/WelcomePlugin.tsx",
     "overview": "../../src/routes/Home/Overview/OverviewPlugin.tsx",
-    "search": "../../src/routes/Home/Search/SearchPlugin.tsx",
+    "search": "../../src/routes/Search/SearchPlugin.tsx",
     "applications": "../../src/routes/Applications/ApplicationsPlugin.tsx",
     "governance": "../../src/routes/Governance/GovernancePlugin.tsx"
   },

@@ -6,9 +6,9 @@ import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../.
 import { DownloadConfigurationDropdown } from './DownloadConfigurationDropdown'
 import { clickByText } from '../../../../../lib/test-util'
 
-jest.mock('../../../../../resources/utils', () => ({
+jest.mock('../../../../../resources/utils/utils', () => ({
   __esModule: true,
-  ...jest.requireActual('../../../../../resources/utils'),
+  ...jest.requireActual('../../../../../resources/utils/utils'),
   createDownloadFile: jest.fn(),
 }))
 

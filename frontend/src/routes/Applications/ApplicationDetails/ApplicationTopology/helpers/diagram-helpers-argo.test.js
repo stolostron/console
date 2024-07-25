@@ -74,7 +74,7 @@ describe('showArgoApplicationSetLink', () => {
           action: 'show_resource_yaml',
           cluster: 'local-cluster',
           editLink:
-            '/multicloud/home/search/resources/yaml?apiversion=argoproj.io%2Fv1alpha1&cluster=local-cluster&kind=applicationset&name=nginx-sample&namespace=openshift-gitops',
+            '/multicloud/search/resources/yaml?apiversion=argoproj.io%2Fv1alpha1&cluster=local-cluster&kind=applicationset&name=nginx-sample&namespace=openshift-gitops',
         },
       },
       indent: true,

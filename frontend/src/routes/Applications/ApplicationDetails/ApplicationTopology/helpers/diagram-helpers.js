@@ -272,12 +272,12 @@ export const createResourceURL = (node, t, isLogURL = false) => {
 
   if (!isLogURL) {
     return (
-      '/multicloud/home/search/resources/yaml?' +
+      '/multicloud/search/resources/yaml?' +
       encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
     )
   }
   return (
-    '/multicloud/home/search/resources/logs?' +
+    '/multicloud/search/resources/logs?' +
     encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
   )
 }
@@ -668,7 +668,7 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
       targetLink = editLink
       break
     case 'show_search':
-      targetLink = `/multicloud/home/search?filters={"textsearch":"${kindData}${nsData} ${nameData}"}`
+      targetLink = `/multicloud/search?filters={"textsearch":"${kindData}${nsData} ${nameData}"}`
       break
     case 'open_argo_editor': {
       openArgoCDEditor(cluster, namespace, name, toggleLoading, t) // the editor opens here

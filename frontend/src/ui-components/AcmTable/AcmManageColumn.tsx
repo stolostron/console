@@ -17,7 +17,6 @@ import {
   DragDrop,
   Droppable,
   Draggable,
-  ToolbarItem,
 } from '@patternfly/react-core'
 import { IAcmTableColumn } from './AcmTable'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -50,7 +49,7 @@ export function AcmManageColumn<T>({
   }
 
   return (
-    <ToolbarItem>
+    <>
       <ManageColumnModal<T>
         {...{
           isModalOpen,
@@ -67,7 +66,7 @@ export function AcmManageColumn<T>({
       <Tooltip content={t('Manage columns')} enableFlip trigger="mouseenter" position="top" exitDelay={50}>
         <Button isInline variant="plain" onClick={toggleModal} icon={<ColumnsIcon />} aria-label="columns-management" />
       </Tooltip>
-    </ToolbarItem>
+    </>
   )
 }
 
