@@ -85,9 +85,6 @@ describe('Applications Page', () => {
   })
 
   test('should display info', async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
-
     // wait for page to load
     await waitForText('feng-remote-argo8')
 
