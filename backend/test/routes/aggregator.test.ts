@@ -2,7 +2,7 @@
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import { getAggregatedCache } from '../../src/routes/aggregator'
 import { aggregateApplications } from '../../src/routes/aggregators/applications'
-import { argoPageQueries } from '../../src/routes/aggregators/applicationsArgo'
+import { pagedSearchQueries } from '../../src/lib/search'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
@@ -18,7 +18,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    await aggregateApplications(getAggregatedCache(), 'applications')
+    await aggregateApplications(getAggregatedCache(), 'applications', 10)
 
     // NO FILTER
     const res = await request('POST', '/aggregate/applications', {
@@ -42,7 +42,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    await aggregateApplications(getAggregatedCache(), 'applications')
+    await aggregateApplications(getAggregatedCache(), 'applications', 10)
 
     // FILTERED
     const res = await request('POST', '/aggregate/applications', {
@@ -232,7 +232,7 @@ const responseFiltered = {
 function setupNocks() {
   //
   // REMOTE ARGO
-  argoPageQueries.forEach((query, inx) => {
+  pagedSearchQueries.forEach((query, inx) => {
     const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
       `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
