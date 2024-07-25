@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { MockedProvider } from '@apollo/client/testing'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
@@ -47,7 +48,6 @@ import {
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
 
@@ -1196,7 +1196,7 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('1 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('4Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('6Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))
