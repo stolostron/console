@@ -16,6 +16,7 @@ import {
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -48,7 +49,6 @@ import {
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
-import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 
 function renderSummaryLoading() {
   return [
@@ -406,7 +406,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     title={t('Cluster recommendations')}
                     summaryTotalHeader={{
                       num: `${clustersWithIssuesCount}`,
-                      text: clustersWithIssuesCount !== 1 ? 'clusters affected' : 'cluster affected',
+                      text: clustersWithIssuesCount !== 1 ? t('clusters affected') : t('cluster affected'),
                     }}
                     summaryData={[
                       { icon: <CriticalRiskIcon />, label: t('Critical'), count: policyReportCriticalCount },
@@ -479,7 +479,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                         title={t('Alerts')}
                         summaryTotalHeader={{
                           num: `${clustersAffectedAlerts.length}`,
-                          text: clustersAffectedAlerts.length !== 1 ? 'clusters affected' : 'cluster affected',
+                          text: clustersAffectedAlerts.length !== 1 ? t('clusters affected') : t('cluster affected'),
                         }}
                         loading={alertsLoading}
                         error={alertsError as string}
@@ -505,7 +505,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                         title={t('Failing operators')}
                         summaryTotalHeader={{
                           num: `${clustersAffectedOperator.length}`,
-                          text: clustersAffectedOperator.length !== 1 ? 'clusters affected' : 'cluster affected',
+                          text: clustersAffectedOperator.length !== 1 ? t('clusters affected') : t('cluster affected'),
                         }}
                         loading={operatorLoading}
                         error={operatorError as string}
@@ -566,7 +566,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 {!isObservabilityInstalled && (
                   <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
                     <Card isRounded isFullHeight>
-                      <CardTitle>{'Enable Observability to see more metrics'}</CardTitle>
+                      <CardTitle>{t('Enable Observability to see more metrics')}</CardTitle>
                       <CardBody isFilled={false}>
                         <AcmButton
                           variant={'link'}
