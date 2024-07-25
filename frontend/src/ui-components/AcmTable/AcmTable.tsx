@@ -474,8 +474,8 @@ export type AcmTableProps<T> = {
   filters?: ITableFilter<T>[]
   id?: string
   showColumManagement?: boolean
-  nonZeroCount?: boolean
-  indeterminateCount?: boolean
+  showExportButton?: boolean
+  exportFilePrefix?: string
 }
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
@@ -734,22 +734,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
-    if (filters.length && Object.keys(filterSelections).length) {
-      const filterCategories = Object.keys(filterSelections)
-      filteredItems = items.filter((item: T) => {
-        let isFilterMatch = true
-        // Item must match 1 filter of each category
-        filterCategories.forEach((filter: string) => {
-          const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-          /* istanbul ignore next */
-          const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-          if (!isMatch) {
-            isFilterMatch = false
-          }
+      if (filters.length && Object.keys(filterSelections).length) {
+        const filterCategories = Object.keys(filterSelections)
+        filteredItems = items.filter((item: T) => {
+          let isFilterMatch = true
+          // Item must match 1 filter of each category
+          filterCategories.forEach((filter: string) => {
+            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
+            /* istanbul ignore next */
+            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
+            if (!isMatch) {
+              isFilterMatch = false
+            }
+          })
+          return isFilterMatch
         })
-        return isFilterMatch
-      })
-    }
+      }
     }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
@@ -827,10 +827,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // if using a result view from backend, actual page is determined by backend
     if (!isPreProcessed) {
-    const start = (page - 1) * perPage
-    if (start >= sorted.length) {
-      actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
-    }
+      const start = (page - 1) * perPage
+      if (start >= sorted.length) {
+        actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+      }
     }
     return actualPage
   }, [page, isPreProcessed, perPage, sorted.length])
@@ -863,8 +863,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         selectedSortedCols.forEach(({ header, exportContent }) => {
           if (header) {
             // if callback and its output exists, add to array, else add "-"
-            exportContent && exportContent(item)
-              ? contentString.push(exportContent(item) as string)
+            exportContent && exportContent(item, '')
+              ? contentString.push(exportContent(item, '') as string)
               : contentString.push('-')
           }
         })
@@ -889,8 +889,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const paged = useMemo<ITableItem<T>[]>(() => {
     // if using a result view from backend, the items have already been sliced and diced
     if (!isPreProcessed) {
-    const start = (actualPage - 1) * perPage
-    return sorted.slice(start, start + perPage)
+      const start = (actualPage - 1) * perPage
+      return sorted.slice(start, start + perPage)
     } else {
       return sorted
     }
@@ -1217,55 +1217,45 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
-            {customTableAction && <ToolbarItem>{customTableAction}</ToolbarItem>}
             {showColumManagement && (
-                <ToolbarItem>
               <AcmManageColumn<T>
-                    {...{
-                      selectedColIds,
-                      setSelectedColIds,
-                      requiredColIds,
-                      defaultColIds,
-                      setColOrderIds,
-                      colOrderIds,
-                    }}
+                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
-                </ToolbarItem>
-              )}
-              {showExportButton && (
-                <ToolbarItem key={`export-toolbar-item`}>
-                  <Dropdown
-                    onSelect={(event) => {
-                      event?.stopPropagation()
-                      setIsExportMenuOpen(false)
-                    }}
-                    className="export-dropdownMenu"
-                    toggle={
-                      <DropdownToggle
-                        toggleIndicator={null}
-                        onToggle={(value, event) => {
-                          event.stopPropagation()
-                          setIsExportMenuOpen(value)
-                        }}
-                        aria-label="export-search-result"
-                        id="export-search-result"
-                      >
-                        <ExportIcon />
-                      </DropdownToggle>
-                    }
-                    isOpen={isExportMenuOpen}
-                    isPlain
-                    dropdownItems={[
-                      <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
-                        {t('Export as CSV')}
-                      </DropdownItem>,
-                    ]}
-                    position={'left'}
-                  />
-                </ToolbarItem>
             )}
-            {additionalToolbarItems}
+            {customTableAction}
+            {showExportButton && (
+              <ToolbarItem key={`export-toolbar-item`}>
+                <Dropdown
+                  onSelect={(event) => {
+                    event?.stopPropagation()
+                    setIsExportMenuOpen(false)
+                  }}
+                  className="export-dropdownMenu"
+                  toggle={
+                    <DropdownToggle
+                      toggleIndicator={null}
+                      onToggle={(value, event) => {
+                        event.stopPropagation()
+                        setIsExportMenuOpen(value)
+                      }}
+                      aria-label="export-search-result"
+                      id="export-search-result"
+                    >
+                      <ExportIcon />
+                    </DropdownToggle>
+                  }
+                  isOpen={isExportMenuOpen}
+                  isPlain
+                  dropdownItems={[
+                    <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
+                      {t('Export as CSV')}
+                    </DropdownItem>,
+                  ]}
+                  position={'left'}
+                />
+              </ToolbarItem>
+            )}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
                 <Pagination
