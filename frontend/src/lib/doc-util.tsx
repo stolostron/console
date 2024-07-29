@@ -7,9 +7,9 @@ import { useTranslation } from './acm-i18next'
 
 export const DOC_VERSION = '2.12'
 
-export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
+export const DOC_HOME = `https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
-export const OCP_DOC_BASE_PATH = 'https://access.redhat.com/documentation/en-us/openshift_container_platform'
+export const OCP_DOC_BASE_PATH = 'https://docs.redhat.com/en/documentation/openshift_container_platform'
 
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
@@ -57,11 +57,11 @@ export const DOC_LINKS = {
   HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#enable-or-disable-hosted-control-planes`,
   HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-overview`,
-  DEPRECATIONS_AND_REMOVALS: `${DOC_HOME}/html/release_notes/release-notes#deprecations-removals`,
-  ENABLE_OBSERVABILITY: `${DOC_HOME}/html/observability/observing-environments-intro#enabling-observability-service`,
-  ACCESSING_CONSOLE: `${DOC_HOME}/html/web_console/web-console#accessing-your-console`,
-  NUTANIX_POST_INSTALL: `https://access.redhat.com/documentation/en-us/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
-  ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_HOME}/html/clusters/cluster_mce_overview#import-discover-rosa`,
+  DEPRECATIONS_AND_REMOVALS: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations-removals`,
+  ENABLE_OBSERVABILITY: `${DOC_BASE_PATH}/observability/observing-environments-intro#enabling-observability-service`,
+  ACCESSING_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console#accessing-your-console`,
+  ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#import-discover-rosa`,
+  NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
 }
 
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {

@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 import { PageSection, Stack } from '@patternfly/react-core'
-import { get, isEqual } from 'lodash'
+import { isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../components/GetDiscoveredOCPApps'
 import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -12,9 +11,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
   AddonStatus,
-  Application,
-  ApplicationSet,
-  ApplicationSetKind,
+  ArgoApplication,
   Cluster,
   ClusterStatus,
   ManagedClusterInfo,
@@ -28,17 +25,16 @@ import {
   AcmDonutChart,
   AcmLoadingPage,
   AcmOverviewProviders,
-  AcmScrollable,
   AcmSummaryList,
   colorThemes,
   Provider,
 } from '../../../ui-components'
-import { getClusterList } from '../../Applications/helpers/resource-helper'
-import { localClusterStr } from '../../Applications/Overview'
+import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../../Search/search-sdk/search-sdk'
+import { getAppCount } from './overviewDataFunctions'
 
 function getClusterSummary(
   clusters: Cluster[],
@@ -135,7 +131,7 @@ function getClusterSummary(
   return clusterSummary
 }
 
-const searchQueries = (selectedClusters: Array<string>): Array<any> => {
+const searchQueries = (selectedClusters: Array<string>, clusters: Cluster[]): Array<any> => {
   const baseSearchQueries = [
     {
       keywords: [],
@@ -175,7 +171,7 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
     },
   ]
 
-  if (selectedClusters?.length > 0) {
+  if (selectedClusters?.length < clusters.length) {
     baseSearchQueries.forEach((query) => {
       query.filters.push({ property: 'cluster', values: selectedClusters })
     })
@@ -201,13 +197,14 @@ export default function OverviewPage() {
   const policies = usePolicies()
   const apps = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
-  const argoApps = useRecoilValue(argoApplicationsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
   const helmReleases = useRecoilValue(helmReleaseState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const [selectedCloud, setSelectedCloud] = useState<string>('')
   const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
+  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
   const subscriptions = useRecoilValue(subscriptionsState)
   const [summaryData, setSummaryData] = useState<any>({
     kubernetesTypes: new Set(),
@@ -227,52 +224,45 @@ export default function OverviewPage() {
   const { data: discoveredApplications = [] } = useDiscoveredArgoApps()
 
   const clusters = useAllClusters(true)
-  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
 
-  const ownerReferences: string[] = useMemo(() => {
-    const array: string[] = []
-    argoApps.forEach((argoApp) => {
-      const appSetOwnerReferences = argoApp.metadata.ownerReferences
-      if (appSetOwnerReferences && appSetOwnerReferences[0].kind === ApplicationSetKind) {
-        // check if OwnerReferences obj has it
-        const name = appSetOwnerReferences[0].name
-        if (!array.includes(name)) {
-          array.push(name)
-        }
-      }
-    })
-    return array
-  }, [argoApps])
+  const argoApps: ArgoApplication[] = useMemo(
+    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, clusters),
+    [clusters, argoApplications]
+  )
+  const discoveredArgoApps: ArgoApplication[] = useMemo(
+    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
+    [discoveredApplications]
+  )
+  const ocpAppResources: any[] = useMemo(
+    () => parseOcpAppResources(ocpApps, helmReleases, argoApplicationsHashSet),
+    [argoApplicationsHashSet, helmReleases, ocpApps]
+  )
 
-  const appSets: ApplicationSet[] = useMemo(() => {
-    const filteredAppSets = applicationSets.filter((appSet) => {
-      // Get the Placement name so we can find PlacementDecision
-      const placementName = get(
-        appSet,
-        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
-        ''
-      )
-      // filter for the correct PlacementDecision which lists the clusters that match the decision parameters.
-      const decision = placementDecisions.filter((decision) => {
-        const owner = decision.metadata.ownerReferences
-        return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
-      })[0]
-      // determine whether the matched decision has placed an appSet in the selected cluster.
-
-      const clusterMatch =
-        decision?.status?.decisions.findIndex((d) => selectedClusterNames.includes(d.clusterName)) ?? -1
-      return clusterMatch > -1
-    })
-    return filteredAppSets
-  }, [applicationSets, placementDecisions, selectedClusterNames])
-
-  const argoAppList = argoApps.filter((argoApp) => {
-    const isChildOfAppset =
-      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-    return !argoApp.metadata.ownerReferences || !isChildOfAppset
-  })
-
-  const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
+  const applicationCount = useMemo(() => {
+    return getAppCount(
+      apps,
+      applicationSets,
+      argoApps,
+      discoveredArgoApps,
+      ocpAppResources,
+      selectedClusterNames,
+      argoApplications,
+      clusters,
+      placementDecisions,
+      subscriptions
+    )
+  }, [
+    apps,
+    applicationSets,
+    argoApps,
+    discoveredArgoApps,
+    ocpAppResources,
+    selectedClusterNames,
+    argoApplications,
+    clusters,
+    placementDecisions,
+    subscriptions,
+  ])
 
   const allAddons = useClusterAddons()
 
@@ -316,9 +306,9 @@ export default function OverviewPage() {
 
   useEffect(() => {
     fireSearchQuery({
-      variables: { input: searchQueries(selectedClusterNames) },
+      variables: { input: searchQueries(selectedClusterNames, clusters) },
     })
-  }, [fireSearchQuery, selectedClusterNames])
+  }, [fireSearchQuery, selectedClusterNames, clusters])
   const searchResult = useMemo(() => searchData?.searchResult || [], [searchData?.searchResult])
 
   // Process data from API.
@@ -332,8 +322,8 @@ export default function OverviewPage() {
     setSummaryData({ kubernetesTypes, regions, ready, offline, addons, providers })
 
     if (selectedCloud === '') {
-      if (!isEqual(selectedClusterNames, [])) {
-        setSelectedClusterNames([])
+      if (selectedClusterNames.length !== clusters.map((cluster) => cluster.name).length) {
+        setSelectedClusterNames(clusters.map((cluster) => cluster.name))
       }
     } else if (!isEqual(selectedClusterNames, Array.from(clusterNames))) {
       setSelectedClusterNames(Array.from(clusterNames))
@@ -408,38 +398,12 @@ export default function OverviewPage() {
     [cloudLabelFilter, selectedCloud]
   )
 
-  const applicationList: Application[] = useMemo(() => {
-    const appList: Application[] = []
-    const localCluster = clusters.find((cls) => cls.name === localClusterStr)
-    apps.forEach((application) => {
-      const clusterList = getClusterList(
-        application,
-        argoApps,
-        placementDecisions,
-        subscriptions,
-        localCluster,
-        clusters
-      )
-      if (clusterList.filter((cluster) => selectedClusterNames.includes(cluster))) {
-        appList.push(application)
-      }
-    })
-    return appList
-  }, [apps, argoApps, clusters, placementDecisions, subscriptions, selectedClusterNames])
-
   const summary = useMemo(() => {
-    const allApplications = [...apps, ...ownerReferences, ...Object.values(filteredOCPApps), ...argoAppList]
-    const ocpAppsOnSelectedCluster = Object.values(filteredOCPApps).filter((ocpApp) =>
-      selectedClusterNames.includes(ocpApp.cluster)
-    )
-
-    const appsOnSelectedCluster = [...ocpAppsOnSelectedCluster, ...applicationList, ...appSets]
-
     let overviewSummary = [
       {
         isLoading: !apps || !argoApps || !ocpApps,
         description: t('Applications'),
-        count: selectedClusterNames.length > 0 ? appsOnSelectedCluster.length : allApplications.length || 0,
+        count: applicationCount || 0,
         href: NavigationPath.applications,
       },
       {
@@ -471,23 +435,19 @@ export default function OverviewPage() {
     }
     return overviewSummary
   }, [
-    applicationList,
     apps,
-    appSets,
     argoApps,
-    argoAppList,
     buildSummaryLinks,
     cloudLabelFilter,
     clusters,
-    filteredOCPApps,
     kubernetesTypes?.size,
     nodeCount,
     ocpApps,
-    ownerReferences,
     regions?.size,
     searchError,
     selectedClusterNames,
     t,
+    applicationCount,
   ])
 
   const podData = useMemo(() => {
@@ -623,7 +583,7 @@ export default function OverviewPage() {
   }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
 
   return (
-    <AcmScrollable>
+    <>
       {searchError && (
         <PageSection>
           <AcmAlert
@@ -642,7 +602,7 @@ export default function OverviewPage() {
           />
         </PageSection>
       )}
-      <PageSection>
+      <PageSection style={{ paddingTop: 0 }}>
         <Stack hasGutter>
           {!clusters ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
 
@@ -696,6 +656,6 @@ export default function OverviewPage() {
           </Stack>
         </Stack>
       </PageSection>
-    </AcmScrollable>
+    </>
   )
 }

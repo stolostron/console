@@ -30,7 +30,6 @@ import {
   ManagedClusterKind,
   Policy,
   PolicyReport,
-  SelfSubjectAccessReview,
 } from '../../../resources'
 import {
   mockApplications,
@@ -47,83 +46,14 @@ import {
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
+import {
+  getAddonRequest,
+  getAddonResponse,
+  mockGetSelfSubjectAccessRequest,
+  mockGetSelfSubjectAccessResponse,
+} from './Overview.sharedmocks'
 
 const queryClient = new QueryClient()
-
-const getAddonRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    namespace: 'local-cluster',
-    labels: {
-      viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    },
-  },
-  spec: {
-    scope: {
-      name: 'observability-controller',
-      resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
-    },
-  },
-}
-
-const getAddonResponse = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    namespace: 'local-cluster',
-    labels: {
-      viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    },
-  },
-  spec: {
-    scope: {
-      name: 'observability-controller',
-      resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
-    },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Watching resources successfully',
-        reason: 'GetResourceProcessing',
-        status: 'True',
-        type: 'Processing',
-      },
-    ],
-  },
-}
-
-const mockGetSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-  apiVersion: 'authorization.k8s.io/v1',
-  kind: 'SelfSubjectAccessReview',
-  metadata: {},
-  spec: {
-    resourceAttributes: {
-      resource: 'managedclusters',
-      verb: 'create',
-      group: 'cluster.open-cluster-management.io',
-    },
-  },
-}
-
-const mockGetSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-  apiVersion: 'authorization.k8s.io/v1',
-  kind: 'SelfSubjectAccessReview',
-  metadata: {},
-  spec: {
-    resourceAttributes: {
-      resource: 'managedclusters',
-      verb: 'create',
-      group: 'cluster.open-cluster-management.io',
-    },
-  },
-  status: {
-    allowed: true,
-  },
-}
 
 const managedClusterInfos: ManagedClusterInfo[] = [
   {
@@ -1195,7 +1125,7 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('1 Low')).toBeTruthy())
 
   // Check that Summary card totals are correct
-  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('4Applications'))
+  await waitFor(() => expect(container.querySelector('#applications-summary')).toHaveTextContent('6Applications'))
   await waitFor(() => expect(container.querySelector('#clusters-summary')).toHaveTextContent('2Clusters'))
   await waitFor(() => expect(container.querySelector('#kubernetes-type-summary')).toHaveTextContent('1Kubernetes type'))
   await waitFor(() => expect(container.querySelector('#region-summary')).toHaveTextContent('2Region'))

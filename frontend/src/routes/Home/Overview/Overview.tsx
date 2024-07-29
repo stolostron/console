@@ -1,17 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Switch } from '@patternfly/react-core'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { AcmPage, AcmPageHeader } from '../../../ui-components'
 import ReuseableSearchbar from '../../Search/components/ReuseableSearchbar'
-import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
-import OverviewPage from './OverviewPage'
-import OverviewPageBeta from './OverviewPageBeta'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { PluginContext } from '../../../lib/PluginContext'
+import ClustersTab from './ClustersTab'
 
 export default function Overview() {
-  const [isBetaView, setIsBetaView] = useState<boolean>(localStorage.getItem('overview-isBeta') === 'true')
-  const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
   const { t } = useTranslation()
+  const [selectedTab, setSelectedTab] = useState<string>()
+  const { acmExtensions } = useContext(PluginContext)
+
+  let content = <ClustersTab />
+  if (selectedTab) {
+    const Component = acmExtensions?.overviewTab?.find((o) => o.uid === selectedTab)?.properties.component
+    if (Component) {
+      content = <Component />
+    }
+  }
 
   return (
     <AcmPage
@@ -19,29 +25,28 @@ export default function Overview() {
         <div>
           <AcmPageHeader
             title={t('Overview')}
-            switches={
-              <Switch
-                label={t('Fleet view')}
-                isChecked={isBetaView}
-                onChange={() => {
-                  setIsBetaView(!isBetaView)
-                  localStorage.setItem('overview-isBeta', `${!isBetaView}`) // keep selection
-                }}
-              />
-            }
             searchbar={<ReuseableSearchbar />}
+            navigation={
+              <AcmSecondaryNav>
+                <AcmSecondaryNavItem isActive={!selectedTab} onClick={() => setSelectedTab(undefined)}>
+                  {t('Clusters')}
+                </AcmSecondaryNavItem>
+                {acmExtensions?.overviewTab?.map((tabExtension) => (
+                  <AcmSecondaryNavItem
+                    key={tabExtension.uid}
+                    isActive={selectedTab === tabExtension.uid}
+                    onClick={() => setSelectedTab(tabExtension.uid)}
+                  >
+                    {tabExtension.properties.tabTitle}
+                  </AcmSecondaryNavItem>
+                ))}
+              </AcmSecondaryNav>
+            }
           />
-          {/* Fleet view includes a cluster label filter */}
-          {isBetaView && (
-            <OverviewClusterLabelSelector
-              selectedClusterLabels={selectedClusterLabels}
-              setSelectedClusterLabels={setSelectedClusterLabels}
-            />
-          )}
         </div>
       }
     >
-      {isBetaView ? <OverviewPageBeta selectedClusterLabels={selectedClusterLabels} /> : <OverviewPage />}
+      {content}
     </AcmPage>
   )
 }

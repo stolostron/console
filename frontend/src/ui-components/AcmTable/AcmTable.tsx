@@ -75,7 +75,7 @@ import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
-import { createDownloadFile } from '../../resources/utils'
+import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
@@ -116,6 +116,9 @@ export interface IAcmTableColumn<T> {
   // isFirstVisitChecked=true, When users visit at the first time, users can see these columns.
   // unlike isDefualt columns, these columns can be controllable.
   isFirstVisitChecked?: boolean
+
+  // Used to supply export information for Sub Rows. If true, the table will include column item within the CSV export
+  isSubRowExport?: boolean
 }
 
 /* istanbul ignore next */
@@ -198,10 +201,18 @@ export type IAcmTableAction<T> =
   | IAcmTableActionSeperator
   | IAcmTableActionGroup<T>
 
+export interface ExportableIRow extends IRow {
+  // content from subrow to include in export document
+  exportSubRow?: {
+    header: string
+    exportContent: (item: any) => string
+  }[]
+}
+
 interface ITableItem<T> {
   item: T
   key: string
-  subRows?: IRow[]
+  subRows?: ExportableIRow[]
   [key: string]: unknown
 }
 
@@ -856,17 +867,28 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       selectedSortedCols.forEach(({ header }) => {
         header && headerString.push(header)
       })
+      sorted[0]?.subRows &&
+        sorted[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
+          header && headerString.push(header)
+        })
       csvExportCellArray.push(headerString.join(','))
 
-      sorted.forEach(({ item }) => {
+      sorted.forEach(({ item, subRows }) => {
         let contentString: string[] = []
         selectedSortedCols.forEach(({ header, exportContent }) => {
           if (header) {
             // if callback and its output exists, add to array, else add "-"
-            exportContent && exportContent(item, '')
-              ? contentString.push(exportContent(item, '') as string)
-              : contentString.push('-')
+            const exportvalue = exportContent?.(item, '')
+            exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
           }
+        })
+        subRows?.forEach(({ exportSubRow }) => {
+          exportSubRow?.forEach(({ header, exportContent }) => {
+            if (header) {
+              const exportvalue = exportContent?.(item)
+              exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+            }
+          })
         })
         contentString = [contentString.join(',')]
         contentString[0] && csvExportCellArray.push(contentString[0])
