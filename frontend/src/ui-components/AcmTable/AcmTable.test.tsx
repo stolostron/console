@@ -8,9 +8,10 @@ import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
-import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps } from './AcmTable'
+import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps, ExportableIRow } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { exportObjectString } from '../../resources/utils'
 const axe = configureAxe({
   rules: {
     'scope-attr-valid': { enabled: false },
@@ -48,6 +49,7 @@ describe('AcmTable', () => {
       transforms?: boolean
       gridBreakPoint?: TableGridBreakpoint
       useCustomTableAction?: boolean
+      addSubRows?: () => ExportableIRow[]
     } & Partial<AcmTableProps<IExampleData>>
   ) => {
     const {
@@ -56,6 +58,7 @@ describe('AcmTable', () => {
       useExtraToolbarControls = false,
       useSearch = true,
       useCustomTableAction = false,
+      addSubRows,
     } = props
     const [items, setItems] = useState<IExampleData[]>(testItems)
     return (
@@ -105,6 +108,7 @@ describe('AcmTable', () => {
                     transforms: props.transforms ? [fitContent] : undefined,
                   },
                 ]}
+                addSubRows={addSubRows}
                 keyFn={(item: IExampleData) => item.uid.toString()}
                 tableActionButtons={
                   useTableActions
@@ -254,6 +258,23 @@ describe('AcmTable', () => {
         </Routes>
       </MemoryRouter>
     )
+  }
+  const addSubRowsCallback = () => {
+    return [
+      {
+        cells: [
+          {
+            title: <>Status Labels</>,
+          },
+        ],
+        exportSubRow: [
+          {
+            header: 'Status Labels',
+            exportContent: () => exportObjectString({ Ready: 'true', Hibernating: 'false' }),
+          },
+        ],
+      },
+    ]
   }
 
   test('renders', () => {
@@ -936,10 +957,15 @@ describe('AcmTable', () => {
     expect(getByText('Export as CSV')).toBeInTheDocument()
   })
 
+  test('returns a csv safe string from export callback', () => {
+    const exportContent = addSubRowsCallback()[0].exportSubRow[0].exportContent()
+    expect(exportContent).toEqual("'Ready':'true','Hibernating':'false'")
+  })
+
   test('export button should produce a file for download', () => {
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const { getByTestId, getByText, container } = render(<Table showExportButton />)
+    const { getByTestId, getByText, container } = render(<Table showExportButton addSubRows={addSubRowsCallback} />)
 
     const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
     const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import get from 'get-value'
+import { ReactNode } from 'react'
 
 export function getLatest<T>(items: T[], key: string) {
   if (items.length === 0) {
@@ -43,4 +44,15 @@ export function getGroupFromApiVersion(apiVersion: string) {
     return { apiGroup: apiVersion.split('/')[0], version: apiVersion.split('/')[1] }
   }
   return { apiGroup: '', version: apiVersion }
+}
+
+export function exportObjectString(object: Record<string, string>) {
+  const keyValueMap = Object.keys(object).map((key) => {
+    return `'${key}':'${object[key]}'`
+  })
+  return keyValueMap.toString()
+}
+
+export function returnCSVSafeString(exportValue: string | ReactNode) {
+  return `"${exportValue}"`
 }
