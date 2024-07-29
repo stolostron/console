@@ -827,7 +827,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster) => {
       const addons = managedClusterAddons.filter((mca) => mca.metadata.namespace === cluster.namespace)
       const list = getAddons(addons, clusterManagementAddOns)
-      return list ? (
+      return addons.length && list ? (
         <AcmInlineStatusGroup
           healthy={list!.available}
           danger={list!.degraded}
