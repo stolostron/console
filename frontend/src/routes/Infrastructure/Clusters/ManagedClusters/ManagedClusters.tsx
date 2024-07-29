@@ -833,7 +833,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
           danger={list!.degraded}
           progress={list!.progressing}
           unknown={list!.unknown}
-          groupId="add-ons"
+          groupId="group-add-ons"
         />
       ) : (
         '-'
