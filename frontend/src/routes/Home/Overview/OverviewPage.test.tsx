@@ -30,7 +30,6 @@ import {
   ManagedClusterKind,
   Policy,
   PolicyReport,
-  SelfSubjectAccessReview,
 } from '../../../resources'
 import {
   mockApplications,
@@ -47,83 +46,14 @@ import {
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
+import {
+  getAddonRequest,
+  getAddonResponse,
+  mockGetSelfSubjectAccessRequest,
+  mockGetSelfSubjectAccessResponse,
+} from './Overview.sharedmocks'
 
 const queryClient = new QueryClient()
-
-const getAddonRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    namespace: 'local-cluster',
-    labels: {
-      viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    },
-  },
-  spec: {
-    scope: {
-      name: 'observability-controller',
-      resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
-    },
-  },
-}
-
-const getAddonResponse = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    namespace: 'local-cluster',
-    labels: {
-      viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-    },
-  },
-  spec: {
-    scope: {
-      name: 'observability-controller',
-      resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
-    },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Watching resources successfully',
-        reason: 'GetResourceProcessing',
-        status: 'True',
-        type: 'Processing',
-      },
-    ],
-  },
-}
-
-const mockGetSelfSubjectAccessRequest: SelfSubjectAccessReview = {
-  apiVersion: 'authorization.k8s.io/v1',
-  kind: 'SelfSubjectAccessReview',
-  metadata: {},
-  spec: {
-    resourceAttributes: {
-      resource: 'managedclusters',
-      verb: 'create',
-      group: 'cluster.open-cluster-management.io',
-    },
-  },
-}
-
-const mockGetSelfSubjectAccessResponse: SelfSubjectAccessReview = {
-  apiVersion: 'authorization.k8s.io/v1',
-  kind: 'SelfSubjectAccessReview',
-  metadata: {},
-  spec: {
-    resourceAttributes: {
-      resource: 'managedclusters',
-      verb: 'create',
-      group: 'cluster.open-cluster-management.io',
-    },
-  },
-  status: {
-    allowed: true,
-  },
-}
 
 const managedClusterInfos: ManagedClusterInfo[] = [
   {

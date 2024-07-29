@@ -25,7 +25,6 @@ import {
   AcmDonutChart,
   AcmLoadingPage,
   AcmOverviewProviders,
-  AcmScrollable,
   AcmSummaryList,
   colorThemes,
   Provider,
@@ -584,7 +583,7 @@ export default function OverviewPage() {
   }, [policyReportCriticalCount, policyReportImportantCount, policyReportLowCount, policyReportModerateCount, t])
 
   return (
-    <AcmScrollable>
+    <>
       {searchError && (
         <PageSection>
           <AcmAlert
@@ -603,7 +602,7 @@ export default function OverviewPage() {
           />
         </PageSection>
       )}
-      <PageSection>
+      <PageSection style={{ paddingTop: 0 }}>
         <Stack hasGutter>
           {!clusters ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
 
@@ -657,6 +656,6 @@ export default function OverviewPage() {
           </Stack>
         </Stack>
       </PageSection>
-    </AcmScrollable>
+    </>
   )
 }
