@@ -10,11 +10,16 @@ const POLLING_INTERVAL = process.env.NODE_ENV !== 'test' ? false : 15 * 1000
 
 const ocpAppCountQuery = () => queryOCPAppResources({ countOnly: true })
 
+type QueryEnabled = {
+  enabled?: boolean
+}
+
 export function useDiscoveredOCPApps({
   clusters = [],
   types = [],
   search: searchText,
-}: Omit<DiscoveredAppsParams, 'searchLimit'> = {}) {
+  enabled: callerEnabled = true,
+}: Omit<DiscoveredAppsParams, 'searchLimit'> & QueryEnabled = {}) {
   const { useQuery } = useSharedReactQuery()
   const { useAppOCPSearchResultLimit } = useSharedAtoms()
   const ocpSearchResultLimit = useAppOCPSearchResultLimit()
@@ -45,7 +50,8 @@ export function useDiscoveredOCPApps({
   const filtered = !!(clusters.length || types.length || search)
 
   const allTypes = types.length === 0
-  const enabled = allTypes || ['openshift', 'openshift-default', 'flux'].some((appType) => types.includes(appType))
+  const enabled =
+    callerEnabled && (allTypes || ['openshift', 'openshift-default', 'flux'].some((appType) => types.includes(appType)))
 
   const ocpAppFilteredCountQuery = useCallback(
     () => queryOCPAppResources({ searchLimit: ocpSearchResultLimit, clusters, types, search, countOnly: true }),
@@ -61,6 +67,7 @@ export function useDiscoveredOCPApps({
     queryKey: ['discovered-ocp-apps-count'],
     queryFn: ocpAppCountQuery,
     refetchInterval: POLLING_INTERVAL,
+    enabled: callerEnabled,
   })
 
   const initialFilteredCount = useRef(count)
@@ -100,7 +107,8 @@ export function useDiscoveredArgoApps({
   clusters = [],
   types = [],
   search: searchText,
-}: Omit<DiscoveredAppsParams, 'searchLimit'> = {}) {
+  enabled: callerEnabled = true,
+}: Omit<DiscoveredAppsParams, 'searchLimit'> & QueryEnabled = {}) {
   const { useQuery } = useSharedReactQuery()
   const { useAppArgoSearchResultLimit } = useSharedAtoms()
   const argoSearchResultLimit = useAppArgoSearchResultLimit()
@@ -131,7 +139,9 @@ export function useDiscoveredArgoApps({
   const filtered = !!(clusters.length || types.length || search)
 
   const allTypes = types.length === 0
-  const enabled = allTypes || (types.includes('argo') && !(clusters.length === 1 && clusters[0] === 'local-cluster'))
+  const enabled =
+    callerEnabled &&
+    (allTypes || (types.includes('argo') && !(clusters.length === 1 && clusters[0] === 'local-cluster')))
 
   const argoAppFilteredCountQuery = useCallback(
     () => queryRemoteArgoApps({ searchLimit: argoSearchResultLimit, clusters, types, search, countOnly: true }),
@@ -147,6 +157,7 @@ export function useDiscoveredArgoApps({
     queryKey: ['discovered-argo-apps-count'],
     queryFn: argoAppCountQuery,
     refetchInterval: POLLING_INTERVAL,
+    enabled: callerEnabled,
   })
 
   const initialFilteredCount = useRef(count)
