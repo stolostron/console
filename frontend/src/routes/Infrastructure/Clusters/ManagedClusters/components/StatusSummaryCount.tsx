@@ -38,13 +38,16 @@ export function StatusSummaryCount() {
   const policies = usePolicies()
   const { cluster } = useContext(ClusterContext)
 
+  const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
   const clustersFilter = cluster ? [cluster.name] : []
-  const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter })
-  const { data: discoveredApplications = [] } = useDiscoveredArgoApps({ clusters: clustersFilter })
+  const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter, enabled: isApplicationsAvailable })
+  const { data: discoveredApplications = [] } = useDiscoveredArgoApps({
+    clusters: clustersFilter,
+    enabled: isApplicationsAvailable,
+  })
   const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
-  const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
   const { push } = useHistory()
 
   const {
