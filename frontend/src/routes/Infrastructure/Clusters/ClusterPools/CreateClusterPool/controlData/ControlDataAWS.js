@@ -945,7 +945,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
           available: getAWSmasterInstanceTypes(t),
           active: 'm5.xlarge',
           validation: {
-            constraint: '[A-Za-z0-9.]+',
+            constraint: '[A-Za-z0-9.-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
@@ -1019,7 +1019,7 @@ export const getControlDataAWS = (t, handleModalToggle, includeAwsPrivate = true
           available: AWSworkerInstanceTypes(t),
           active: 'm5.xlarge',
           validation: {
-            constraint: '[A-Za-z0-9.]+',
+            constraint: '[A-Za-z0-9.-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
