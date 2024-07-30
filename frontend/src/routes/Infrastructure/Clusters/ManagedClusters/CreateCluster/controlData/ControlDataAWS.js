@@ -960,7 +960,7 @@ export const getControlDataAWS = (
           active: 'm5.xlarge',
           validation: {
             constraint: '[A-Za-z0-9.-]+',
-            notification: t('creation.ocp.cluster.valid.alphanumeric.period.dashes'),
+            notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
           cacheUserValueKey: 'create.cluster.master.type',
