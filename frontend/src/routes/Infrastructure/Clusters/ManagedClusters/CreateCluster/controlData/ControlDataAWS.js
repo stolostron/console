@@ -959,7 +959,7 @@ export const getControlDataAWS = (
           available: AWSmasterInstanceTypes(t),
           active: 'm5.xlarge',
           validation: {
-            constraint: '[A-Za-z0-9.]+',
+            constraint: '[A-Za-z0-9.-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
@@ -1033,7 +1033,7 @@ export const getControlDataAWS = (
           available: AWSworkerInstanceTypes(t),
           active: 'm5.xlarge',
           validation: {
-            constraint: '[A-Za-z0-9.]+',
+            constraint: '[A-Za-z0-9.-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
