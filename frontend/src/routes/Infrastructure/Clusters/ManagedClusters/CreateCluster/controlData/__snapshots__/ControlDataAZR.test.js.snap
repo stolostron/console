@@ -266,7 +266,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -1149,7 +1149,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -1730,7 +1730,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -2613,7 +2613,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -3219,7 +3219,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -4102,7 +4102,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -4590,7 +4590,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -5473,7 +5473,7 @@ Array [
         "tooltip": "The Azure VM instance type.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9_]+",
+          "constraint": "[A-Za-z0-9_-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
