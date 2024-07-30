@@ -8,12 +8,14 @@ import * as recoil from 'recoil'
 import * as selectors from '../selectors'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as reactQuery from '@tanstack/react-query'
+import { getBackendUrl } from '../resources'
 
 export type PluginData = {
   recoil: typeof recoil
   atoms: typeof atoms
   selectors: typeof selectors
   reactQuery: typeof reactQuery
+  backendUrl: string
   loaded: boolean
   startLoading: boolean
   setLoaded: Dispatch<SetStateAction<boolean>>
@@ -25,6 +27,7 @@ export const defaultContext = {
   atoms,
   selectors,
   reactQuery,
+  backendUrl: '',
   loaded: false,
   startLoading: false,
   setLoaded: () => {},
@@ -36,19 +39,21 @@ export const PluginDataContext = createContext<PluginData>(defaultContext)
 export const usePluginDataContextValue = () => {
   const [loaded, setLoaded] = useState(false)
   const [startLoading, setStartLoading] = useState(false)
+  const backendUrl = getBackendUrl()
 
   const contextValue = useMemo(
     () => ({
       recoil,
       atoms,
       selectors,
+      backendUrl,
       reactQuery,
       loaded,
       startLoading,
       setLoaded,
       load: () => setStartLoading(true),
     }),
-    [loaded, setLoaded, startLoading]
+    [backendUrl, loaded, startLoading]
   )
   return contextValue
 }

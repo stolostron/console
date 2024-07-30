@@ -2,7 +2,7 @@
 
 import { ButtonVariant, ToggleGroup, ToggleGroupItem, TooltipPosition } from '@patternfly/react-core'
 import { fitContent, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
@@ -736,9 +736,9 @@ describe('AcmTable', () => {
     userEvent.click(getByText('UID'))
     expect(setSort).toHaveBeenCalled()
   })
-  test('shows loading', () => {
+  test('shows loading', async () => {
     const { queryByText } = render(<Table items={undefined} useExtraToolbarControls={true} />)
-    expect(queryByText('Loading')).toBeVisible()
+    expect(screen.getAllByRole('progressbar')).toBeTruthy()
     expect(queryByText('View 1')).toBeVisible()
   })
   test('can have sort updated when all items filtered', () => {
