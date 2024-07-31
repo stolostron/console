@@ -216,7 +216,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     }
   }, [managedClusterIds])
 
-  const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, percentOfClustersWithRisk } = useMemo(() => {
+  const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, clustersWithRiskPredictors } = useMemo(() => {
     const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
       if (curr.body && curr.body.predictions) {
         return [...acc, ...curr.body.predictions]
@@ -451,8 +451,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                       </Popover>
                     }
                     summaryTotalHeader={{
-                      num: `${percentOfClustersWithRisk}%`,
-                      text: 'of clusters need to be reviewed before updating',
+                      num: `${clustersWithRiskPredictors}`,
+                      text:
+                        clustersWithRiskPredictors === 1
+                          ? t('cluster needs to be reviewed before updating')
+                          : t('clusters need to be reviewed before updating'),
                     }}
                     summaryData={[
                       { icon: <CriticalRiskIcon />, label: t('Critical'), count: criticalUpdateCount },
