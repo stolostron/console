@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
-import { waitForText } from '../../../lib/test-util'
+import { waitForText, clickByText, clickByLabel } from '../../../lib/test-util'
 import { ManagedCluster, Policy } from '../../../resources'
 import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 
@@ -109,5 +109,39 @@ describe('Policies Page', () => {
 
     await waitForText(rootPolicy0.metadata.name!)
     await waitForText(rootPolicy1.metadata.name!)
+  })
+})
+
+describe('Export from ClusterPolicySummarySidebar table', () => {
+  test('export button should produce a file for download', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPolicySummarySidebar cluster={mockCluster} compliance={'compliant'} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })
