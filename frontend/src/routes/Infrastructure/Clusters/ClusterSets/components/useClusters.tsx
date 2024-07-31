@@ -1,10 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
+  AgentClusterInstallK8sResource,
+  HostedClusterK8sResource,
+  NodePoolK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
+import {
+  CertificateSigningRequest,
+  ClusterClaim,
+  ClusterCurator,
   ClusterDeployment,
+  ClusterManagementAddOn,
   ClusterPool,
   ManagedCluster,
+  ManagedClusterAddOn,
+  ManagedClusterInfo,
   ManagedClusterSet,
   managedClusterSetLabel,
   mapClusters,
@@ -43,6 +53,41 @@ export function useClusters(
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
 
+  return getMappedClusterPoolClusterSetClusters(
+    managedClusters,
+    clusterDeployments,
+    managedClusterInfos,
+    certificateSigningRequests,
+    managedClusterAddons,
+    clusterManagementAddons,
+    clusterClaims,
+    clusterCurators,
+    agentClusterInstalls,
+    hostedClusters,
+    nodePools,
+    managedClusterSet,
+    clusterPool,
+    isGlobalClusterSet
+  )
+}
+
+// returns the clusters assigned to a ManagedClusterSet without invoking a react hook
+export function getMappedClusterPoolClusterSetClusters(
+  managedClusters: ManagedCluster[],
+  clusterDeployments: ClusterDeployment[],
+  managedClusterInfos: ManagedClusterInfo[],
+  certificateSigningRequests: CertificateSigningRequest[],
+  managedClusterAddons: ManagedClusterAddOn[],
+  clusterManagementAddons: ClusterManagementAddOn[],
+  clusterClaims: ClusterClaim[],
+  clusterCurators: ClusterCurator[],
+  agentClusterInstalls: AgentClusterInstallK8sResource[],
+  hostedClusters: HostedClusterK8sResource[],
+  nodePools: NodePoolK8sResource[],
+  managedClusterSet: ManagedClusterSet | undefined,
+  clusterPool: ClusterPool | undefined,
+  isGlobalClusterSet: boolean | undefined
+) {
   let groupManagedClusters: ManagedCluster[] = []
   let groupClusterDeployments: ClusterDeployment[] = []
 
@@ -91,7 +136,7 @@ export function useClusters(
 
   const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
 
-  const clusters: Cluster[] = mapClusters(
+  return mapClusters(
     groupClusterDeployments,
     groupManagedClusterInfos,
     certificateSigningRequests,
@@ -104,6 +149,4 @@ export function useClusters(
     groupHostedClusters,
     nodePools
   )
-
-  return clusters
 }

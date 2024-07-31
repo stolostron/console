@@ -25,6 +25,7 @@ import {
   IAcmTableButtonAction,
   Provider,
   StatusType,
+  ProviderLongTextMap,
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -46,12 +47,13 @@ import {
   ResourceErrorCode,
   isClusterPoolDeleting,
 } from '../../../../resources'
-import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
+import { ClusterStatuses, getClusterStatusCount } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
+import { getMappedClusterPoolClusterSetClusters } from '../ClusterSets/components/useClusters'
 
 export default function ClusterPoolsPage() {
   const alertContext = useContext(AcmAlertContext)
@@ -152,11 +154,14 @@ export default function ClusterPoolsPage() {
   )
 }
 
+function determineProvider(clusterPool: ClusterPool) {
+  if (clusterPool.spec?.platform?.aws) return Provider.aws
+  if (clusterPool.spec?.platform?.gcp) return Provider.gcp
+  if (clusterPool.spec?.platform?.azure) return Provider.azure
+}
+
 function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
-  let provider: Provider | undefined
-  if (props.clusterPool.spec?.platform?.aws) provider = Provider.aws
-  if (props.clusterPool.spec?.platform?.gcp) provider = Provider.gcp
-  if (props.clusterPool.spec?.platform?.azure) provider = Provider.azure
+  const provider: Provider | undefined = determineProvider(props.clusterPool)
 
   if (!provider) return <>-</>
 
@@ -170,9 +175,32 @@ export function ClusterPoolsTable(props: {
   tableActionButtons?: IAcmTableButtonAction[]
 }) {
   const { clusters } = props
-  const { clusterImageSetsState, clusterClaimsState } = useSharedAtoms()
+  const {
+    clusterImageSetsState,
+    clusterClaimsState,
+    certificateSigningRequestsState,
+    clusterDeploymentsState,
+    managedClusterAddonsState,
+    clusterManagementAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
+    agentClusterInstallsState,
+    clusterCuratorsState,
+    hostedClustersState,
+    nodePoolsState,
+  } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
+  const managedClusters = useRecoilValue(managedClustersState)
+  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
+  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const hostedClusters = useRecoilValue(hostedClustersState)
+  const nodePools = useRecoilValue(nodePoolsState)
 
   const { clusterPools } = props
   const { t } = useTranslation()
@@ -184,6 +212,30 @@ export function ClusterPoolsTable(props: {
   const [updateReleaseImageModalProps, setUpdateReleaseImageModalProps] = useState<
     UpdateReleaseImageModalProps | undefined
   >()
+  const clusterPoolClusters: Record<string, Cluster[]> = {}
+
+  props.clusterPools &&
+    props.clusterPools.forEach((clusterPool) => {
+      if (clusterPool.metadata.name) {
+        const clusters = getMappedClusterPoolClusterSetClusters(
+          managedClusters,
+          clusterDeployments,
+          managedClusterInfos,
+          certificateSigningRequests,
+          managedClusterAddons,
+          clusterManagementAddons,
+          clusterClaims,
+          clusterCurators,
+          agentClusterInstalls,
+          hostedClusters,
+          nodePools,
+          undefined,
+          clusterPool,
+          undefined
+        )
+        clusterPoolClusters[clusterPool.metadata.name] = clusters
+      }
+    })
 
   const modalColumns = useMemo(
     () => [
@@ -216,6 +268,15 @@ export function ClusterPoolsTable(props: {
 
   const deletingPools = clusterPools?.filter((clusterPool) => isClusterPoolDeleting(clusterPool))
 
+  const getDistributionVersion = (clusterPool: ClusterPool) => {
+    const imageSetRef = clusterPool.spec!.imageSetRef.name
+    const imageSet = clusterImageSets.find((cis) => cis.metadata.name === imageSetRef)
+    const releaseImage = imageSet?.spec?.releaseImage
+    const tagStartIndex = releaseImage?.indexOf(':') ?? 0
+    const version = releaseImage?.slice(tagStartIndex + 1, releaseImage.indexOf('-', tagStartIndex))
+    return version ? `OpenShift ${version}` : '-'
+  }
+
   return (
     <Fragment>
       <BulkActionModal<ClusterPool> {...modalProps} />
@@ -225,6 +286,8 @@ export function ClusterPoolsTable(props: {
       <AcmTable<ClusterPool>
         items={clusterPools}
         disabledItems={deletingPools}
+        showExportButton
+        exportFilePrefix="clusterpool"
         addSubRows={(clusterPool: ClusterPool) => {
           const clusterPoolClusters = clusters.filter(
             (cluster) =>
@@ -278,12 +341,18 @@ export function ClusterPoolsTable(props: {
             cell: (clusterPool: ClusterPool) => {
               return clusterPool.metadata.name
             },
+            exportContent: (clusterPool: ClusterPool) => {
+              return clusterPool.metadata.name
+            },
           },
           {
             header: t('table.namespace'),
             sort: 'metadata.namespace',
             search: 'metadata.namespace',
             cell: (clusterPool: ClusterPool) => {
+              return clusterPool.metadata.namespace
+            },
+            exportContent: (clusterPool: ClusterPool) => {
               return clusterPool.metadata.namespace
             },
           },
@@ -294,6 +363,28 @@ export function ClusterPoolsTable(props: {
                 return <AcmInlineStatus type={StatusType.progress} status={t('destroying')} />
               } else {
                 return <ClusterStatuses clusterPool={clusterPool} />
+              }
+            },
+            exportContent: (clusterPool: ClusterPool) => {
+              if (isClusterPoolDeleting(clusterPool)) {
+                return t('destroying')
+              } else {
+                const status = getClusterStatusCount(clusterPoolClusters[clusterPool.metadata.name!])
+                const clusterStatusAvailable =
+                  status &&
+                  Object.values(status).find((val) => {
+                    return typeof val === 'number' && val > 0
+                  })
+
+                if (clusterStatusAvailable) {
+                  return (
+                    `healthy: ${status?.healthy}, running: ${status?.running}, ` +
+                    `warning: ${status?.warning}, progress: ${status?.progress}, ` +
+                    `danger: ${status?.danger}, detached: ${status?.detached}, ` +
+                    `pending: ${status?.pending}, sleep: ${status?.sleep}, ` +
+                    `unknown: ${status?.unknown}`
+                  )
+                }
               }
             },
           },
@@ -312,11 +403,26 @@ export function ClusterPoolsTable(props: {
                 )
               }
             },
+            exportContent: (clusterPool: ClusterPool) => {
+              if (!isClusterPoolDeleting(clusterPool)) {
+                const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
+                return t('outOf', {
+                  firstNumber: ready,
+                  secondNumber: clusterPool.spec!.size,
+                })
+              }
+            },
           },
           {
             header: t('table.provider'),
             cell: (clusterPool: ClusterPool) => {
               return <ClusterPoolProvider clusterPool={clusterPool} />
+            },
+            exportContent: (clusterPool: ClusterPool) => {
+              const provider = determineProvider(clusterPool)
+              if (provider) {
+                return ProviderLongTextMap[provider]
+              }
             },
           },
           {
@@ -324,12 +430,10 @@ export function ClusterPoolsTable(props: {
             sort: 'spec.imageSetRef.name',
             search: 'spec.imageSetRef.name',
             cell: (clusterPool: ClusterPool) => {
-              const imageSetRef = clusterPool.spec!.imageSetRef.name
-              const imageSet = clusterImageSets.find((cis) => cis.metadata.name === imageSetRef)
-              const releaseImage = imageSet?.spec?.releaseImage
-              const tagStartIndex = releaseImage?.indexOf(':') ?? 0
-              const version = releaseImage?.slice(tagStartIndex + 1, releaseImage.indexOf('-', tagStartIndex))
-              return version ? `OpenShift ${version}` : '-'
+              return getDistributionVersion(clusterPool)
+            },
+            exportContent: (clusterPool: ClusterPool) => {
+              return getDistributionVersion(clusterPool)
             },
           },
           {
