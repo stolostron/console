@@ -221,6 +221,7 @@ describe('SavedSearchesCard', () => {
 
     // Check header strings
     await waitFor(() => expect(getByText('Saved searches')).toBeTruthy())
+    await new Promise((resolve) => setTimeout(resolve, 500))
     await waitFor(() => expect(getByText('This view is disabled with the current configuration.')).toBeTruthy())
     await waitFor(() => expect(getByText('Enable the search service to see this view.')).toBeTruthy())
   })

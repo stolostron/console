@@ -276,7 +276,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -1522,7 +1522,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -2115,7 +2115,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -3361,7 +3361,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -3979,7 +3979,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -5225,7 +5225,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -5754,7 +5754,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -7000,7 +7000,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -7714,7 +7714,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "combobox",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
@@ -8960,7 +8960,7 @@ Array [
         "tooltip": "The EC2 instance type for your compute machines.",
         "type": "treeselect",
         "validation": Object {
-          "constraint": "[A-Za-z0-9.]+",
+          "constraint": "[A-Za-z0-9.-]+",
           "notification": "Value must be alphanumeric, including periods.",
           "required": false,
         },
