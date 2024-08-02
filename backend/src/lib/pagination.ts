@@ -4,7 +4,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
-import { AggregateCache } from '../routes/aggregator'
+import { AggregateListCache } from '../routes/aggregator'
 
 export type FilterSelections = {
   [filter: string]: string[]
@@ -57,7 +57,7 @@ export function paginate(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  cache: AggregateCache,
+  cache: AggregateListCache,
   filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
 ): void {
   const chucks: string[] = []
@@ -66,7 +66,6 @@ export function paginate(
   })
   req.on('end', async () => {
     const body = chucks.join()
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { page, perPage, search, sortBy, filters } = JSON.parse(body) as IRequestListView
     const { filterCounts } = cache
     let { items } = cache

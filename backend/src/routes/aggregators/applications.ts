@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
-import { AggregatedCacheType } from '../aggregator'
+import { AggregatedCacheType, CacheKeys } from '../aggregator'
 import { getOCPApps } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
@@ -57,21 +57,17 @@ export function stopAggregatingApplications(): void {
 // 2nd pass, everything w/ 100 limit, 1s pause
 // 3rd pass, everything w/ 20000 limit, 3s pause
 // 4th pass, everything 10s
-export async function startAggregatingApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
-  aggregatedCache[key] = {
+export async function startAggregatingApplications(aggregatedCache: AggregatedCacheType): Promise<void> {
+  aggregatedCache[CacheKeys.applications] = {
     filterCounts: {},
     items: [],
   }
   let pass = 1
   while (!stopping) {
-    await aggregateApplications(aggregatedCache, key, pass++)
+    await aggregateApplications(aggregatedCache, pass++)
   }
 }
-export async function aggregateApplications(
-  aggregatedCache: AggregatedCacheType,
-  key: string,
-  pass: number
-): Promise<void> {
+export async function aggregateApplications(aggregatedCache: AggregatedCacheType, pass: number): Promise<void> {
   // ACM Apps
   const localSubscriptionApps = getKubeResources('Application', 'app.k8s.io/v1beta1')
 
@@ -97,7 +93,7 @@ export async function aggregateApplications(
       .concat(remoteOCPApps)
       .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions, true))
   )
-  aggregatedCache[key] = {
+  aggregatedCache[CacheKeys.applications] = {
     filterCounts,
     items,
   }
