@@ -192,7 +192,7 @@ test('Correctly returns parseUpgradeRiskPredictions with predictions', () => {
 
 test('Correctly returns getClustersSummary', () => {
   const t = i18next.t.bind(i18next)
-  const result = getClustersSummary(clusterData, filteredClusterNames, managedClusterInfos, 4, false, t)
+  const result = getClustersSummary(clusterData, filteredClusterNames, managedClusterInfos, 4, t)
   expect(result).toMatchSnapshot()
 })
 
