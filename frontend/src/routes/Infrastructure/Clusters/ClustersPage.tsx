@@ -6,7 +6,6 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
-import ReuseableSearchbar from '../../Home/Search/components/ReuseableSearchbar'
 import ClusterPoolsPage from './ClusterPools/ClusterPools'
 import ClusterSetsPage from './ClusterSets/ClusterSets'
 import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
@@ -82,7 +81,6 @@ export function ClustersPage() {
             </AcmSecondaryNav>
           }
           actions={actions}
-          searchbar={<ReuseableSearchbar />}
         />
       }
     >
