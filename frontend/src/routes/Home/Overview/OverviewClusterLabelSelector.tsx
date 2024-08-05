@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Chip, ChipGroup, Select, SelectOption, SelectVariant } from '@patternfly/react-core'
+import { Button, Chip, ChipGroup, PageSection, Select, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -89,80 +89,82 @@ export default function OverviewClusterLabelSelector(props: {
   }
 
   return (
-    <div>
-      <Select
-        id="cluster-label-key"
-        key="cluster-label-key"
-        aria-label="cluster-label-key"
-        toggleIcon={<FilterIcon />}
-        width={'auto'}
-        maxHeight={'400px'}
-        variant={SelectVariant.single}
-        onToggle={(isExpanded) => setLabelSelectIsOpen(isExpanded)}
-        hasInlineFilter
-        onSelect={(_, selection) => {
-          if (selectedClusterLabel === selection) {
-            setSelectedClusterLabel('')
-          } else {
-            setSelectedClusterLabel(selection as string)
-          }
-          setLabelSelectIsOpen(false)
-        }}
-        selections={selectedClusterLabel}
-        isOpen={labelSelectIsOpen}
-        placeholderText={t('Select cluster label')}
-        aria-labelledby={'cluster-label-key'}
-      >
-        {Object.keys(allClusterLabels).map((labelKey: string) => (
-          <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
-        ))}
-      </Select>
-      <Select
-        id="cluster-label-value"
-        aria-label="cluster-label-value"
-        width={'auto'}
-        maxHeight={'400px'}
-        variant={SelectVariant.checkbox}
-        onToggle={(isExpanded) => setValuesSelectIsOpen(isExpanded)}
-        onFilter={onFilter}
-        hasInlineFilter
-        onSelect={(_, selection) => {
-          const tempLabels = { ...selectedClusterLabels }
-          const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
-          if (tempValues?.includes(selection as string)) {
-            deleteChip(selectedClusterLabel, selection as string)
-          } else {
-            tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
-            setSelectedClusterLabels(tempLabels)
-          }
-        }}
-        selections={selectedClusterLabels[selectedClusterLabel ?? '']}
-        isOpen={valuesSelectIsOpen}
-        placeholderText={t('Select label value')}
-        aria-labelledby={'cluster-label-value'}
-      >
-        {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
-      </Select>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {Object.keys(selectedClusterLabels).map((label) => {
-          return (
-            <div key={label} style={{ marginTop: '0.5rem', marginRight: '.5rem' }}>
-              <ChipGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
-                {selectedClusterLabels[label].map((value) => (
-                  <Chip key={value} onClick={() => deleteChip(label, value)}>
-                    {value}
-                  </Chip>
-                ))}
-              </ChipGroup>
-            </div>
-          )
-        })}
-        {Object.values(selectedClusterLabels).length > 0 && (
-          <Button variant={'link'} onClick={() => deleteAllChips()} style={{ marginTop: '0.5rem' }}>
-            {t('Clear all labels')}
-          </Button>
-        )}
+    <PageSection variant={'light'}>
+      <div>
+        <Select
+          id="cluster-label-key"
+          key="cluster-label-key"
+          aria-label="cluster-label-key"
+          toggleIcon={<FilterIcon />}
+          width={'auto'}
+          maxHeight={'400px'}
+          variant={SelectVariant.single}
+          onToggle={(isExpanded) => setLabelSelectIsOpen(isExpanded)}
+          hasInlineFilter
+          onSelect={(_, selection) => {
+            if (selectedClusterLabel === selection) {
+              setSelectedClusterLabel('')
+            } else {
+              setSelectedClusterLabel(selection as string)
+            }
+            setLabelSelectIsOpen(false)
+          }}
+          selections={selectedClusterLabel}
+          isOpen={labelSelectIsOpen}
+          placeholderText={t('Select cluster label')}
+          aria-labelledby={'cluster-label-key'}
+        >
+          {Object.keys(allClusterLabels).map((labelKey: string) => (
+            <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
+          ))}
+        </Select>
+        <Select
+          id="cluster-label-value"
+          aria-label="cluster-label-value"
+          width={'auto'}
+          maxHeight={'400px'}
+          variant={SelectVariant.checkbox}
+          onToggle={(isExpanded) => setValuesSelectIsOpen(isExpanded)}
+          onFilter={onFilter}
+          hasInlineFilter
+          onSelect={(_, selection) => {
+            const tempLabels = { ...selectedClusterLabels }
+            const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
+            if (tempValues?.includes(selection as string)) {
+              deleteChip(selectedClusterLabel, selection as string)
+            } else {
+              tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
+              setSelectedClusterLabels(tempLabels)
+            }
+          }}
+          selections={selectedClusterLabels[selectedClusterLabel ?? '']}
+          isOpen={valuesSelectIsOpen}
+          placeholderText={t('Select label value')}
+          aria-labelledby={'cluster-label-value'}
+        >
+          {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
+        </Select>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {Object.keys(selectedClusterLabels).map((label) => {
+            return (
+              <div key={label} style={{ marginTop: '0.5rem', marginRight: '.5rem' }}>
+                <ChipGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
+                  {selectedClusterLabels[label].map((value) => (
+                    <Chip key={value} onClick={() => deleteChip(label, value)}>
+                      {value}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+              </div>
+            )
+          })}
+          {Object.values(selectedClusterLabels).length > 0 && (
+            <Button variant={'link'} onClick={() => deleteAllChips()} style={{ marginTop: '0.5rem' }}>
+              {t('Clear all labels')}
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </PageSection>
   )
 }
