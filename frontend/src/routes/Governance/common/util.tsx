@@ -289,7 +289,7 @@ export function getClustersSummaryForPolicySet(
 
 export function resolveExternalStatus(policy: Policy) {
   const knownExternalManagerPatterns = [/^multicluster-operators-subscription$/, /argocd/]
-  const managedFields = policy.metadata.managedFields ?? []
+  const managedFields = policy?.metadata?.managedFields ?? []
   return managedFields.some((mf) => knownExternalManagerPatterns.some((p) => p.test(mf.manager ?? 'none')))
 }
 
