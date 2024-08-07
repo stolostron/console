@@ -310,7 +310,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   return (
     <>
-      <PageSection style={{ paddingTop: 0 }}>
+      <PageSection>
         <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
           {clustersSummary
             ? clustersSummary.map(
@@ -601,7 +601,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
           {isClusterSectionOpen && (
             <CardBody isFilled={false}>
               <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
+                <GalleryItem key={'cluster-status-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <AcmDonutChart
                     title={t('Status')}
                     description={t('Overview of cluster status')}
@@ -610,7 +610,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     colorScale={colorThemes.criticalSuccess}
                   />
                 </GalleryItem>
-                <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
+                <GalleryItem key={'cluster-violations-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <AcmDonutChart
                     title={t('Violations')}
                     description={t('Overview of policy violation status')}
@@ -619,7 +619,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                     colorScale={colorThemes.criticalSuccess}
                   />
                 </GalleryItem>
-                <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
+                <GalleryItem key={'cluster-add-ons-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <AcmDonutChart
                     title={t('Cluster add-ons')}
                     description={t('Overview of cluster add-ons')}
@@ -645,10 +645,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
           {isCustomizationSectionOpen && (
             <CardBody isFilled={false}>
               <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <GalleryItem
-                  key={'cluster-recommendations-card'}
-                  style={{ flex: 1, minWidth: '375px', maxWidth: '50%' }}
-                >
+                <GalleryItem key={'saved-search-card'} style={{ flex: 1, minWidth: '375px', maxWidth: '50%' }}>
                   <SavedSearchesCard
                     isUserPreferenceLoading={isUserPreferenceLoading}
                     savedSearches={userSavedSearches}
