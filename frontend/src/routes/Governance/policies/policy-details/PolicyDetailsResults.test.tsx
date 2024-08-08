@@ -37,7 +37,7 @@ describe('Policy Details Results', () => {
 
     // wait for table cells to load correctly
     await waitForText('local-cluster')
-    await waitForText('Without violations')
+    await waitForText('No violations')
     await waitForText('policy-set-with-1-placement-policy-1', true)
     await waitForText(
       'notification - namespaces [test] found as specified, therefore this Object template is compliant'

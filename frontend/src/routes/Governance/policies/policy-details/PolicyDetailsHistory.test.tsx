@@ -120,7 +120,7 @@ describe('Policy Details History content', () => {
     await waitForText('Template: policy-set-with-1-placement-policy-1')
 
     // wait for template table load
-    await waitForText('Without violations')
+    await waitForText('No violations')
     await waitForText(
       'notification - namespaces [test] found as specified, therefore this Object template is compliant'
     )
