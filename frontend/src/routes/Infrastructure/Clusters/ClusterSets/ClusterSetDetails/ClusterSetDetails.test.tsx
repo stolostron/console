@@ -843,7 +843,7 @@ const mockManagedClusterRosaSubmarinerConfig: SubmarinerConfig = {
     namespace: mockManagedClusterRosa.metadata.name,
   },
   spec: {
-    gatewayConfig: {},
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
     IPSecNATTPort: submarinerConfigDefault.nattPort,
     airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
     NATTEnable: submarinerConfigDefault.nattEnable,
@@ -861,7 +861,7 @@ const mockManagedClusterAroSubmarinerConfig: SubmarinerConfig = {
     namespace: mockManagedClusterAro.metadata.name,
   },
   spec: {
-    gatewayConfig: {},
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
     IPSecNATTPort: submarinerConfigDefault.nattPort,
     airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
     NATTEnable: submarinerConfigDefault.nattEnable,
@@ -879,7 +879,7 @@ const mockManagedClusterRoksSubmarinerConfig: SubmarinerConfig = {
     namespace: mockManagedClusterRoks.metadata.name,
   },
   spec: {
-    gatewayConfig: {},
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
     IPSecNATTPort: submarinerConfigDefault.nattPort,
     airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
     NATTEnable: submarinerConfigDefault.nattEnable,
@@ -897,7 +897,7 @@ const mockManagedClusterRoksSateliteSubmarinerConfig: SubmarinerConfig = {
     namespace: mockManagedClusterRoksSatelite.metadata.name,
   },
   spec: {
-    gatewayConfig: {},
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
     IPSecNATTPort: submarinerConfigDefault.nattPort,
     airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
     NATTEnable: submarinerConfigDefault.nattEnable,
