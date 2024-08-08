@@ -69,13 +69,13 @@ export function PolicyDetailsHistory(props: {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
+                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
                 </div>
               )
             case 'pending':
@@ -98,9 +98,9 @@ export function PolicyDetailsHistory(props: {
           compliant = compliant ? compliant.trim().toLowerCase() : '-'
           switch (compliant) {
             case 'compliant':
-              return t('Without violations')
+              return t('No violations')
             case 'noncompliant':
-              return t('With violations')
+              return t('Violations')
             case 'pending':
               return t('Pending')
             default:
