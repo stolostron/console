@@ -95,5 +95,12 @@ export function usePolicySetClusterPolicyViolationsColumn(
       if (lhsViolations.compliant < rhsViolations.compliant) return 1
       return 0
     },
+    exportContent: (cluster: string) => {
+      const clusterViolationSummary = clusterViolationSummaryMap[cluster ?? '']
+      if (!clusterViolationSummary) {
+        return '-'
+      }
+      return `compliant: ${clusterViolationSummary.compliant}, noncompliant: ${clusterViolationSummary.noncompliant}, pending: ${clusterViolationSummary.pending}, unknown: ${clusterViolationSummary.unknown}`
+    },
   }
 }

@@ -10,7 +10,7 @@ import {
   placementRulesState,
   policiesState,
 } from '../../../../atoms'
-import { clickByText, waitForText } from '../../../../lib/test-util'
+import { clickByText, clickByLabel, waitForText } from '../../../../lib/test-util'
 import {
   PlacementBinding,
   PlacementDecision,
@@ -404,5 +404,80 @@ describe('PolicySets Page with Pending policyset', () => {
 
     // find the policy names in table
     await waitForText(mockPolicy.metadata.name!)
+  })
+})
+describe('Export from policy details results table', () => {
+  test('export button should produce a file for download', async () => {
+    const policySet: PolicySet = {
+      apiVersion: 'policy.open-cluster-management.io/v1beta1',
+      kind: 'PolicySet',
+      metadata: {
+        name: 'policy-set-with-1-placement-rule',
+        namespace: 'test',
+      },
+      spec: {
+        description: 'Policy set with a single PlacementRule and PlacementBinding.',
+        policies: ['policy-set-with-1-placement-rule-policy-1'],
+      },
+      status: {
+        compliant: 'Pending',
+        placement: [
+          {
+            placementBinding: 'policy-set-with-1-placement-rule',
+            placementRule: 'policy-set-with-1-placement-rule',
+          },
+        ],
+      },
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [mockPolicyPending])
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(placementRulesState, mockPlacementRules)
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecisions)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetDetailSidebar policySet={policySet} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Check policies with violation count
+    await waitForText('1 Cluster with pending policies')
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    // switch to the policies table
+    await clickByText('Policies')
+
+    // find the policy names in table
+    await waitForText(mockPolicy.metadata.name!)
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

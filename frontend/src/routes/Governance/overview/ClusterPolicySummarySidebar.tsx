@@ -47,6 +47,7 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
             </Link>
           )
         },
+        exportContent: (policy: ClusterPolicies) => policy.policyName,
       },
       {
         header: t('Cluster violation'),
@@ -73,6 +74,7 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
               )
           }
         },
+        exportContent: (policy: ClusterPolicies) => policy?.compliance?.toLowerCase(),
       },
     ],
     [t]
@@ -82,6 +84,8 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
     <div className={body}>
       <div className={sectionSeparator} />
       <AcmTable<ClusterPolicies>
+        showExportButton
+        exportFilePrefix="clusterpolicysummary"
         items={clusterPolicies}
         emptyState={undefined} // only shown when clusterPolicies count > 0
         initialSort={{

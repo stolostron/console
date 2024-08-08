@@ -4,7 +4,7 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText } from '../../../../lib/test-util'
+import { waitForText, clickByLabel, clickByText } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy, mockPendingPolicy, mockPolicyBinding } from '../../governance.sharedMocks'
 import { PolicyDetailsContext } from './PolicyDetailsPage'
@@ -132,5 +132,52 @@ describe('Policy Details Results with pending status', () => {
     await waitForText(
       'template-error; Dependencies were not satisfied: 1 dependencies are still pending (Policy default.policy-pod)'
     )
+  })
+})
+
+describe('Export from policy details results table', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  test('export button should produce a file for download', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // wait page load
+    await waitForText('Clusters')
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

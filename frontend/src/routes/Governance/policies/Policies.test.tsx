@@ -442,3 +442,43 @@ describe('Delete policy modal with shared placements and bindings', () => {
     screen.getByText('all-clusters, all-clusters-legacy')
   })
 })
+describe('Export from policy table', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  test('export button should produce a file for download', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(mockPolicy[0].metadata.name!)
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    screen.getByLabelText('export-search-result').click()
+    screen.getByText('Export as CSV').click()
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
+  })
+})
