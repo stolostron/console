@@ -3,7 +3,7 @@ import { Label, Switch } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import ReuseableSearchbar from '../../Search/components/ReuseableSearchbar'
 import ClustersTab from './ClustersTab'
 import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
@@ -21,7 +21,11 @@ export default function Overview() {
   if (selectedTab) {
     const Component = acmExtensions?.overviewTab?.find((o) => o.uid === selectedTab)?.properties.component
     if (Component) {
-      content = <Component />
+      content = (
+        <AcmErrorBoundary>
+          <Component />
+        </AcmErrorBoundary>
+      )
     }
   }
 
