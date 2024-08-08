@@ -145,4 +145,3 @@ it('should render overview page layout when extension tab crashes', async () => 
   await waitForText('Overview')
   await waitForNocks([metricNock, getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
 })
-
