@@ -100,6 +100,9 @@ function AnsibleJobTemplateTable() {
                 </Link>
               </span>
             ),
+            exportContent: (curator) => {
+              return curator.metadata.name!
+            },
           },
           {
             header: t('table.linkedCred'),
@@ -136,10 +139,16 @@ function AnsibleJobTemplateTable() {
                 )
               } else return clusterCurator.spec.install.towerAuthSecret
             },
+            exportContent: (clusterCurator) => {
+              return clusterCurator.spec?.install?.towerAuthSecret
+            },
           },
           {
             header: t('table.jobTemplate'),
             cell: (clusterCurator) => {
+              return getTemplateJobsNum(clusterCurator)
+            },
+            exportContent: (clusterCurator) => {
               return getTemplateJobsNum(clusterCurator)
             },
           },
@@ -292,6 +301,8 @@ function AnsibleJobTemplateTable() {
             }
           />
         }
+        showExportButton
+        exportFilePrefix="ansibleautomation"
       ></AcmTable>
     </Fragment>
   )
