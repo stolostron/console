@@ -359,7 +359,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('Related resources')
     await waitForText('test')
     await waitForText('v1')
-    await waitForText('No violations')
+    await waitForText('No violations', true)
     await waitForText('Resource found as expected')
   })
 

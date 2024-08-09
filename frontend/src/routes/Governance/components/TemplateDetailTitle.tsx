@@ -3,12 +3,15 @@
 import { Label, Tooltip } from '@patternfly/react-core'
 import { AsleepIcon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useMemo } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 export function TemplateDetailTitle({
   policyKind,
   templateName,
   compliant,
 }: Readonly<{ policyKind?: string; templateName: string; compliant: string }>) {
+  const { t } = useTranslation()
+
   const short = useMemo(() => {
     let newStr = ''
     if (policyKind) {
@@ -46,13 +49,13 @@ export function TemplateDetailTitle({
       case 'NonCompliant':
         return (
           <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
-            {compliant}
+            {t('Violations')}
           </Label>
         )
       case 'Compliant':
         return (
           <Label color="green" icon={<CheckCircleIcon />} style={{ verticalAlign: 'middle' }}>
-            {compliant}
+            {t('No violations')}
           </Label>
         )
       case 'UnknownCompliancy':
@@ -78,7 +81,7 @@ export function TemplateDetailTitle({
       default:
         return ''
     }
-  }, [compliant])
+  }, [compliant, t])
 
   return (
     <>

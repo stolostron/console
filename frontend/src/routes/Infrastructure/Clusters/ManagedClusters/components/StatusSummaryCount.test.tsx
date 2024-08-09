@@ -310,7 +310,7 @@ describe('StatusSummaryCount', () => {
       // click Policy violations
       await clickByText('1', 1)
       expect(push).toHaveBeenCalledTimes(2)
-      expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=with-violations')
+      expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=violations')
 
       await clickByText('6')
 

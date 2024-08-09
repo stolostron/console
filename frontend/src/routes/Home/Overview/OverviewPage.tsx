@@ -485,12 +485,12 @@ export default function OverviewPage() {
   const complianceData = useMemo(() => {
     return [
       {
-        key: t('With violations'),
+        key: t('Violations'),
         value: nonCompliantClusters.size,
         link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
       },
       {
-        key: t('Without violations'),
+        key: t('No violations'),
         value: compliantClusters.length,
         isPrimary: true,
         link: buildClusterComplianceLinks(compliantClusters),

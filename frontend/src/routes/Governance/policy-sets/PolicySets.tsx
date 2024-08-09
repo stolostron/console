@@ -107,8 +107,8 @@ export default function PolicySetsPage() {
         return true
       }
       let filterMatch =
-        violationFilters.includes('violation') ||
-        violationFilters.includes('no-violation') ||
+        violationFilters.includes('violations') ||
+        violationFilters.includes('no-violations') ||
         violationFilters.includes('pending') ||
         violationFilters.includes('no-status')
           ? false
@@ -116,12 +116,12 @@ export default function PolicySetsPage() {
 
       for (const filter of violationFilters) {
         switch (filter) {
-          case 'violation':
+          case 'violations':
             if (violationFilterFn(policySet)) {
               filterMatch = true
             }
             break
-          case 'no-violation':
+          case 'no-violations':
             if (nonViolationFilterFn(policySet)) {
               filterMatch = true
             }

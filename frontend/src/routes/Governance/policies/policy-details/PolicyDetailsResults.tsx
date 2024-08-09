@@ -120,7 +120,7 @@ export default function PolicyDetailsResults() {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
+                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
             case 'noncompliant':
@@ -151,7 +151,7 @@ export default function PolicyDetailsResults() {
           compliant = compliant ? compliant.trim().toLowerCase() : '-'
           switch (compliant) {
             case 'compliant':
-              return t('Without violations')
+              return t('No violations')
             case 'noncompliant':
               return t('Violations')
             case 'pending':

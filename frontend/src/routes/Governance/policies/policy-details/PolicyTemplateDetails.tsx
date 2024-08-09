@@ -120,10 +120,6 @@ export function PolicyTemplateDetails(
       value: template?.apiVersion ?? '-',
     },
     {
-      key: t('Violations'),
-      value: template?.status?.compliant ?? '-',
-    },
-    {
       key: t('Details'),
       value: JSON.stringify(details),
     },

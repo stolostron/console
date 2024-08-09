@@ -333,9 +333,9 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
-    // Check clusters with violation count
+    // Check clusters Violation count
     await waitForText('0 Clusters with policy violations')
-    // Check policies with violation count
+    // Check policies Violation count
     await waitForText('1 Cluster without policy violations')
 
     // Find the cluster names iin table
@@ -393,7 +393,7 @@ describe('PolicySets Page with Pending policyset', () => {
       </RecoilRoot>
     )
 
-    // Check policies with violation count
+    // Check policies Violation count
     await waitForText('1 Cluster with pending policies')
 
     // Find the cluster names iin table

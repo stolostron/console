@@ -280,15 +280,15 @@ export function getComplianceData(
   const compliantClusters = tempClusters.filter((c) => !nonCompliantClusters.has(c))
   return [
     {
-      key: t('With violations'),
+      key: t('Violations'),
       value: nonCompliantClusters.size,
-      link: `${NavigationPath.policies}?violations=with-violations`,
+      link: `${NavigationPath.policies}?violations=violations`,
     },
     {
-      key: t('Without violations'),
+      key: t('No violations'),
       value: compliantClusters.length,
       isPrimary: true,
-      link: `${NavigationPath.policies}?violations=without-violations&violations=no-status`,
+      link: `${NavigationPath.policies}?violations=no-violations&violations=no-status`,
     },
   ]
 }

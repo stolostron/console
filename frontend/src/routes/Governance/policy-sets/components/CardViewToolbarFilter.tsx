@@ -41,13 +41,13 @@ export default function CardViewToolbarFilter(props: {
       <SelectGroup key={'violation'} label={t('Violations')}>
         {[
           {
-            key: 'violation',
-            label: t('With violation'),
+            key: 'violations',
+            label: t('Violations'),
             complianceValue: 'NonCompliant',
           },
           {
-            key: 'no-violation',
-            label: t('Without violation'),
+            key: 'no-violations',
+            label: t('No violations'),
             complianceValue: 'Compliant',
           },
           {
