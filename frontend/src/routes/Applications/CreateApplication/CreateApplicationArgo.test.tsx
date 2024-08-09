@@ -268,6 +268,7 @@ const placementGit: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    numberOfClusters: 1,
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
@@ -279,6 +280,7 @@ const placementHelm: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    numberOfClusters: 1,
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }

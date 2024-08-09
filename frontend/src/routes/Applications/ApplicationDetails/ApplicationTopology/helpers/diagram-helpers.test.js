@@ -531,7 +531,7 @@ describe('createResourceSearchLink for PR', () => {
     value: {
       data: {
         action: 'show_search',
-        kind: 'placementrule',
+        kind: 'PlacementDecision',
         name: 'rule1',
         namespace: 'ns',
       },

@@ -21,6 +21,10 @@ const mockSearchQuery = {
             property: 'namespace',
             values: ['cluster-configs-rhacm'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster', 'dyna1203'],
+          },
         ],
         relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
       },

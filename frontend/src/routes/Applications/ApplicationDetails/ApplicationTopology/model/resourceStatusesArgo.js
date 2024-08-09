@@ -219,10 +219,11 @@ export const getArgoSecret = (appData, resourceStatuses = {}) => {
   return Promise.resolve()
 }
 
-export const getQueryStringForResource = (resourcename, name, namespace) => {
+export const getQueryStringForResource = (resourcename, name, namespace, cluster) => {
   let resource = ''
   const nameForQuery = name ? `name:${name}` : ''
   const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
+  const clusterForQuery = cluster ? ` cluster:${cluster}` : ''
   if (resourcename) {
     switch (resourcename) {
       case 'Subscription':
@@ -235,5 +236,5 @@ export const getQueryStringForResource = (resourcename, name, namespace) => {
         resource = `kind:${resourcename} `
     }
   }
-  return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery}`)
+  return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery} ${clusterForQuery}`)
 }
