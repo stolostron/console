@@ -368,7 +368,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     updateFilters({})
   }, [updateFilters])
 
-  return { filterSelections, addFilterValue, removeFilterValue, removeFilter, clearFilters }
+  return { filterSelections, addFilterValue, removeFilterValue, removeFilter, clearFilters, updateFilters }
 }
 
 function setLocalStorage(key: string | undefined, value: any) {
@@ -1389,11 +1389,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFilter<T>[]; items?: T[] }>) {
   const [isOpen, setIsOpen] = useState(false)
   const { id, filters, items } = props
-  const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
-    id,
-    filters,
-  })
+  const { filterSelections, addFilterValue, removeFilterValue, removeFilter, updateFilters } = useTableFilterSelections(
+    {
+      id,
+      filters,
+    }
+  )
   const { t } = useTranslation()
+  const { search: searchString } = useLocation()
 
   const onFilterSelect = useCallback(
     (selection: FilterSelectOptionObject) => {
@@ -1428,6 +1431,13 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
       []
     )
   }, [filterSelections])
+
+  useEffect(() => {
+    // search parameters need to be re-added (updated) when moving between pages
+    if (selections.length && !searchString) {
+      updateFilters(filterSelections)
+    }
+  }, [updateFilters, filterSelections, searchString, selections])
 
   const filterSelectGroups = useMemo(() => {
     const validFilters: {
