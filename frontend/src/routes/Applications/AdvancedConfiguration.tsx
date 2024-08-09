@@ -39,10 +39,14 @@ import {
 } from '../../resources'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
-import { ToggleSelector } from './components/ToggleSelector'
+import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
 import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 
-export default function AdvancedConfiguration() {
+export interface AdvancedConfigurationPageProps {
+  readonly defaultToggleOption?: ApplicationToggleOptions
+}
+
+export default function AdvancedConfiguration(props: AdvancedConfigurationPageProps) {
   const { t } = useTranslation()
   const {
     applicationsState,
@@ -339,6 +343,18 @@ export default function AdvancedConfiguration() {
     return actions
   }
 
+  const getTimeWindow = (resource: IResource, returnExportString?: boolean) => {
+    const timeWindow = _.get(resource, 'spec.timewindow.windowtype', '')
+    const timeWindowString = _.upperFirst(_.toLower(timeWindow))
+    if (['active', 'blocked'].includes(timeWindow)) {
+      if (returnExportString) {
+        return timeWindowString
+      }
+      return <span>{timeWindowString}</span>
+    }
+    return ''
+  }
+
   const table = {
     subscriptions: {
       columns: useMemo<IAcmTableColumn<IResource>[]>(
@@ -352,6 +368,9 @@ export default function AdvancedConfiguration() {
                 apiversion: _.get(resource, 'apiVersion') || SubscriptionApiVersion,
               })
             },
+            exportContent: (resource) => {
+              return resource.metadata?.name
+            },
             sort: 'metadata.name',
             search: 'metadata.name',
             transforms: [cellWidth(20)],
@@ -361,6 +380,9 @@ export default function AdvancedConfiguration() {
             cell: 'metadata.namespace',
             sort: 'metadata.namespace',
             transforms: [cellWidth(20)],
+            exportContent: (resource) => {
+              return resource.metadata?.namespace
+            },
           },
           {
             header: t('Channel'),
@@ -383,6 +405,11 @@ export default function AdvancedConfiguration() {
                 return <Link to={channelLink}>{name}</Link>
               }
               return '-'
+            },
+            exportContent: (resource) => {
+              const channel = _.get(resource, 'spec.channel')
+              const [, name] = channel.split('/')
+              return name
             },
             sort: 'spec.channel',
             transforms: [cellWidth(20)],
@@ -412,6 +439,10 @@ export default function AdvancedConfiguration() {
               }
               return appCount
             },
+            exportContent: (resource) => {
+              const appCount = _.get(resource, 'transformed.appCount')
+              return appCount
+            },
             sort: 'transformed.appCount',
             tooltip: t(
               'Displays the number of applications using the subscription. Click to search for all related applications.'
@@ -428,32 +459,41 @@ export default function AdvancedConfiguration() {
               if (remoteContext) {
                 return remoteContext
               }
-
               return getClusterCountString(t, clusterCount)
             },
             sort: 'transformed.clusterCount',
             tooltip: t(
               'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.'
             ),
+            exportContent: () => {
+              const clusterCount = {
+                localPlacement: false,
+                remoteCount: 0,
+              }
+              // will export the ClusterCountString, not the link
+              return getClusterCountString(t, clusterCount)
+            },
           },
           {
             header: t('Time window'),
             cell: (resource) => {
-              const timeWindow = _.get(resource, 'spec.timewindow.windowtype', '')
-              if (['active', 'blocked'].includes(timeWindow)) {
-                return <span>{_.upperFirst(_.toLower(timeWindow))}</span>
-              }
-              return ''
+              return getTimeWindow(resource)
             },
             sort: 'spec.timewindow.windowtype',
             tooltip: t(
               'Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.'
             ),
+            exportContent: (resource) => {
+              return getTimeWindow(resource, true)
+            },
           },
           {
             header: t('Created'),
             cell: (resource) => {
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+            },
+            exportContent: (resource) => {
+              return getAge(resource, '', 'metadata.creationTimestamp')
             },
             sort: 'metadata.creationTimestamp',
           },
@@ -478,12 +518,14 @@ export default function AdvancedConfiguration() {
             sort: 'metadata.name',
             search: 'metadata.name',
             transforms: [cellWidth(20)],
+            exportContent: (resource) => resource.metadata?.name,
           },
           {
             header: t('Namespace'),
             cell: 'metadata.namespace',
             sort: 'metadata.namespace',
             transforms: [cellWidth(20)],
+            exportContent: (resource) => resource.metadata?.namespace,
           },
           {
             header: t('Type'),
@@ -508,6 +550,12 @@ export default function AdvancedConfiguration() {
             },
             sort: 'spec.type',
             tooltip: t('Provides a link to the resource repository that is represented by the channel.'),
+            exportContent: (resource) => {
+              const channelType = _.get(resource, 'spec.type')
+              if (channelType) {
+                return channelType
+              }
+            },
           },
           {
             header: t('Subscriptions'),
@@ -533,6 +581,10 @@ export default function AdvancedConfiguration() {
             tooltip: t(
               'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.'
             ),
+            exportContent: (resource) => {
+              const subscriptionCount = _.get(resource, 'transformed.subscriptionCount')
+              return subscriptionCount
+            },
           },
           {
             header: t('Clusters'),
@@ -541,6 +593,10 @@ export default function AdvancedConfiguration() {
             tooltip: t(
               'Displays the number of remote and local clusters where resources from the channel are deployed.'
             ),
+            exportContent: (resource) => {
+              const clusters = _.get(resource, 'transformed.clusterCount')
+              return clusters
+            },
           },
           {
             header: t('Created'),
@@ -548,6 +604,7 @@ export default function AdvancedConfiguration() {
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
+            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
           },
         ],
         [t]
@@ -569,11 +626,13 @@ export default function AdvancedConfiguration() {
             },
             sort: 'metadata.name',
             search: 'metadata.name',
+            exportContent: (resource) => resource.metadata?.name,
           },
           {
             header: t('Namespace'),
             cell: 'metadata.namespace',
             sort: 'metadata.namespace',
+            exportContent: (resource) => resource.metadata?.namespace,
           },
           {
             header: t('Clusters'),
@@ -582,6 +641,10 @@ export default function AdvancedConfiguration() {
             tooltip: t(
               'Displays the number of remote and local clusters where resources are deployed because of the placement.'
             ),
+            exportContent: (resource) => {
+              const clusters = _.get(resource, 'transformed.clusterCount')
+              return clusters
+            },
           },
           {
             header: t('Created'),
@@ -589,6 +652,7 @@ export default function AdvancedConfiguration() {
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
+            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
           },
         ],
         [t]
@@ -610,11 +674,13 @@ export default function AdvancedConfiguration() {
             },
             sort: 'metadata.name',
             search: 'metadata.name',
+            exportContent: (resource) => resource.metadata?.name,
           },
           {
             header: t('Namespace'),
             cell: 'metadata.namespace',
             sort: 'metadata.namespace',
+            exportContent: (resource) => resource.metadata?.namespace,
           },
           {
             header: t('Clusters'),
@@ -623,6 +689,10 @@ export default function AdvancedConfiguration() {
             tooltip: t(
               'Displays the number of remote and local clusters where resources are deployed because of the placement rule.'
             ),
+            exportContent: (resource) => {
+              const clusters = _.get(resource, 'transformed.clusterCount')
+              return clusters
+            },
           },
           {
             header: t('Replicas'),
@@ -631,6 +701,10 @@ export default function AdvancedConfiguration() {
             tooltip: t(
               'Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.'
             ),
+            exportContent: (resource) => {
+              const clusterReplicas = _.get(resource, 'spec.clusterReplicas')
+              return clusterReplicas
+            },
           },
           {
             header: t('Created'),
@@ -638,6 +712,7 @@ export default function AdvancedConfiguration() {
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
+            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
           },
         ],
         [t]
@@ -733,7 +808,16 @@ export default function AdvancedConfiguration() {
           <ApplicationDeploymentHighlights />
         </StackItem>
         <StackItem>
-          {<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} namespaces={namespaces} />}
+          {
+            <ToggleSelector
+              modalProps={modalProps}
+              table={table}
+              keyFn={keyFn}
+              t={t}
+              namespaces={namespaces}
+              defaultToggleOption={props.defaultToggleOption}
+            />
+          }
         </StackItem>
       </Stack>
     </PageSection>
