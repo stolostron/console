@@ -6,8 +6,12 @@ import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/sea
 import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
 
 export async function getAppSetResourceStatuses(application, appData) {
-  const { name, namespace, appSetApps } = application
-  const resourceStatuses = await getResourceStatuses(name, namespace, appSetApps, appData)
+  const { name, namespace, appSetApps, appSetClusters } = application
+  const appSetClustersList = []
+  appSetClusters.forEach((cls) => {
+    appSetClustersList.push(cls.name)
+  })
+  const resourceStatuses = await getResourceStatuses(name, namespace, appSetApps, appData, appSetClustersList)
 
   const secret = await getArgoSecret(appData, resourceStatuses)
   if (secret) {
@@ -18,7 +22,7 @@ export async function getAppSetResourceStatuses(application, appData) {
   return { resourceStatuses }
 }
 
-async function getResourceStatuses(name, namespace, appSetApps, appData) {
+async function getResourceStatuses(name, namespace, appSetApps, appData, appSetClusters) {
   const targetNS = []
 
   appSetApps.forEach((argoApp) => {
@@ -57,7 +61,7 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
       })
     : null
 
-  query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString())
+  query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString(), appSetClusters.toString())
   if (kindsNotNamespaceScoped.length > 0) {
     kindsNotNamespaceScoped.forEach((item, i) => {
       queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i]))

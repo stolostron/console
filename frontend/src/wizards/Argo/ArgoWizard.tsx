@@ -337,6 +337,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             ...PlacementType,
             metadata: { name: '', namespace: '' },
             spec: {
+              numberOfClusters: 1,
               predicates: [
                 {
                   // ArgoCD pull model doesn't support local-cluster
@@ -400,7 +401,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
           {
             ...PlacementType,
             metadata: { name: '', namespace: '' },
-            spec: {},
+            spec: {
+              numberOfClusters: 1,
+            },
           },
         ]
   }
