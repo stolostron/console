@@ -4,12 +4,14 @@ import { PageSection, Stack } from '@patternfly/react-core'
 import { isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
   AddonStatus,
+  ArgoApplication,
   Cluster,
   ClusterStatus,
   ManagedClusterInfo,
@@ -27,11 +29,12 @@ import {
   colorThemes,
   Provider,
 } from '../../../ui-components'
+import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../../Search/search-sdk/search-sdk'
-import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
+import { getAppCount } from './overviewDataFunctions'
 
 function getClusterSummary(
   clusters: Cluster[],
@@ -179,13 +182,30 @@ const searchQueries = (selectedClusters: Array<string>, clusters: Cluster[]): Ar
 export default function OverviewPage() {
   usePageVisitMetricHandler(Pages.overview)
   const { t } = useTranslation()
-  const { managedClusterInfosState, policyreportState, usePolicies } = useSharedAtoms()
+  const {
+    applicationsState,
+    applicationSetsState,
+    argoApplicationsState,
+    helmReleaseState,
+    managedClusterInfosState,
+    placementDecisionsState,
+    policyreportState,
+    subscriptionsState,
+    usePolicies,
+  } = useSharedAtoms()
 
   const policies = usePolicies()
+  const apps = useRecoilValue(applicationsState)
+  const applicationSets = useRecoilValue(applicationSetsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
+  const helmReleases = useRecoilValue(helmReleaseState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const [selectedCloud, setSelectedCloud] = useState<string>('')
   const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])
+  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
+  const subscriptions = useRecoilValue(subscriptionsState)
   const [summaryData, setSummaryData] = useState<any>({
     kubernetesTypes: new Set(),
     regions: new Set(),
@@ -200,10 +220,49 @@ export default function OverviewPage() {
     },
     providers: [],
   })
+  const { data: ocpApps = [] } = useDiscoveredOCPApps()
+  const { data: discoveredApplications = [] } = useDiscoveredArgoApps()
 
   const clusters = useAllClusters(true)
 
-  const { applicationCount, loading } = useAggregate(SupportedAggregate.statuses, {})
+  const argoApps: ArgoApplication[] = useMemo(
+    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, clusters),
+    [clusters, argoApplications]
+  )
+  const discoveredArgoApps: ArgoApplication[] = useMemo(
+    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
+    [discoveredApplications]
+  )
+  const ocpAppResources: any[] = useMemo(
+    () => parseOcpAppResources(ocpApps, helmReleases, argoApplicationsHashSet),
+    [argoApplicationsHashSet, helmReleases, ocpApps]
+  )
+
+  const applicationCount = useMemo(() => {
+    return getAppCount(
+      apps,
+      applicationSets,
+      argoApps,
+      discoveredArgoApps,
+      ocpAppResources,
+      selectedClusterNames,
+      argoApplications,
+      clusters,
+      placementDecisions,
+      subscriptions
+    )
+  }, [
+    apps,
+    applicationSets,
+    argoApps,
+    discoveredArgoApps,
+    ocpAppResources,
+    selectedClusterNames,
+    argoApplications,
+    clusters,
+    placementDecisions,
+    subscriptions,
+  ])
 
   const allAddons = useClusterAddons()
 
@@ -342,7 +401,7 @@ export default function OverviewPage() {
   const summary = useMemo(() => {
     let overviewSummary = [
       {
-        isLoading: loading,
+        isLoading: !apps || !argoApps || !ocpApps,
         description: t('Applications'),
         count: applicationCount || 0,
         href: NavigationPath.applications,
@@ -376,17 +435,19 @@ export default function OverviewPage() {
     }
     return overviewSummary
   }, [
-    loading,
+    apps,
+    argoApps,
+    buildSummaryLinks,
+    cloudLabelFilter,
+    clusters,
+    kubernetesTypes?.size,
+    nodeCount,
+    ocpApps,
+    regions?.size,
+    searchError,
+    selectedClusterNames,
     t,
     applicationCount,
-    clusters,
-    selectedClusterNames,
-    cloudLabelFilter,
-    kubernetesTypes?.size,
-    regions?.size,
-    nodeCount,
-    buildSummaryLinks,
-    searchError,
   ])
 
   const podData = useMemo(() => {

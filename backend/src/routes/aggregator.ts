@@ -8,22 +8,13 @@ import {
   stopAggregatingApplications,
   filterApplications,
 } from './aggregators/applications'
-import { requestAggregatedStatuses, startAggregatingStatuses, stopAggregatingStatuses } from './aggregators/statuses'
 
-export type AggregateListCache = {
+export type AggregateCache = {
   items: ITransformedResource[]
   filterCounts: FilterCounts
 }
-export type AggregateStatusCache = {
-  applicationCount: number
-}
 export type AggregatedCacheType = {
-  [type: string]: AggregateListCache | AggregateStatusCache
-}
-
-export enum CacheKeys {
-  applications = 'applications',
-  statuses = 'statuses',
+  [type: string]: AggregateCache
 }
 
 const aggregatedCache: AggregatedCacheType = {}
@@ -33,13 +24,11 @@ export function getAggregatedCache(): AggregatedCacheType {
 }
 
 export function startAggregating(): void {
-  void startAggregatingApplications(aggregatedCache)
-  void startAggregatingStatuses(aggregatedCache)
+  void startAggregatingApplications(aggregatedCache, 'applications')
 }
 
 export function stopAggregating(): void {
   stopAggregatingApplications()
-  stopAggregatingStatuses()
 }
 
 export async function aggregate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -49,15 +38,7 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   if (type.length < 3) return notFound(req, res)
   switch (type[2]) {
     case 'applications':
-      return paginate(
-        req,
-        res,
-        token,
-        aggregatedCache[CacheKeys.applications] as AggregateListCache,
-        filterApplications
-      )
-    case 'statuses':
-      return requestAggregatedStatuses(req, res, token, aggregatedCache)
+      return paginate(req, res, token, aggregatedCache['applications'], filterApplications)
   }
   return notFound(req, res)
 }

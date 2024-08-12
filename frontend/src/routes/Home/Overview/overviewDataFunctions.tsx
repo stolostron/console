@@ -188,7 +188,6 @@ export function getClustersSummary(
   filteredClusterNames: string[],
   managedClusterInfos: ManagedClusterInfo[],
   applicationCount: number,
-  loading: boolean,
   t: TFunction<string, undefined>
 ) {
   const kubernetesTypes = new Set()
@@ -211,7 +210,6 @@ export function getClustersSummary(
       id: 'apps-count',
       title: t('Applications'),
       icon: undefined,
-      loading,
       count: applicationCount,
       link: NavigationPath.applications, // *Apps table has cluster name filter - select the matches.
     },

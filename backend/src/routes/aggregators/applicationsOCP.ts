@@ -41,7 +41,7 @@ export interface IOCPAppResource extends IResource {
 }
 
 export async function getOCPApps(argAppSet: Set<string>, pass: number) {
-  const ocpApps = (await getPagedSearchResources(query, 'remote ocp', pass)) as unknown as IOCPAppResource[]
+  const ocpApps = (await getPagedSearchResources(query, pass)) as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from search
