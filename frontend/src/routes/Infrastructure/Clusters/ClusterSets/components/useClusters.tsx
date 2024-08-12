@@ -21,6 +21,8 @@ export function useClusters(
     certificateSigningRequestsState,
     clusterClaimsState,
     clusterDeploymentsState,
+    managedClusterAddonsState,
+    clusterManagementAddonsState,
     managedClusterInfosState,
     managedClustersState,
     agentClusterInstallsState,
@@ -33,6 +35,8 @@ export function useClusters(
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
@@ -92,6 +96,8 @@ export function useClusters(
     groupManagedClusterInfos,
     certificateSigningRequests,
     groupManagedClusters,
+    managedClusterAddons,
+    clusterManagementAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,

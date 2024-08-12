@@ -94,7 +94,7 @@ describe('Clusters Page', () => {
 
   test('should render node column', () => {
     waitForText('Add-ons')
-    waitForTestId('add-ons', true)
+    waitForTestId('add-ons')
   })
 
   test('should be able to delete cluster using row action', async () => {
