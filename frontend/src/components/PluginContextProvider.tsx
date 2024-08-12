@@ -11,6 +11,8 @@ import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { OutlinedCommentsIcon } from '@patternfly/react-icons'
 import { AcmFeedbackModal, AcmFeedbackModalProvider } from './AcmFeedbackModal'
+import { useTranslation } from '../lib/acm-i18next'
+// import { getACMDistributionInfo } from '../resources'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
@@ -39,6 +41,11 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   const isACMAvailable = isOverviewAvailable
   const isSubmarinerAvailable = isOverviewAvailable
 
+  const { t } = useTranslation()
+
+  // const acmDistribution = getACMDistributionInfo()
+  // console.log('test-acmdistro', acmDistribution)
+
   useEffect(() => {
     const loadOCPAPI = async () => {
       try {
@@ -59,7 +66,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   // Feedback Modal Control
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
   const toggle = () => setToggleOpen(!toggleOpen)
-
   const AcmFeedbackModalButton = () => {
     return (
       <AcmButton
@@ -76,7 +82,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         id="feedback-trigger-button"
         onClick={toggle}
       >
-        Feedback
+        {t('Feedback')}
       </AcmButton>
     )
   }
@@ -98,7 +104,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
       <AcmFeedbackModalProvider>
         <AcmFeedbackModalButton />
         <AcmFeedbackModal
-          onShareFeedback="https://console.redhat.com/self-managed-feedback-form"
+          onShareFeedback="https://console.redhat.com/self-managed-feedback-form?source=acm&version="
           isOpen={toggleOpen}
           onClose={() => setToggleOpen(false)}
         />
