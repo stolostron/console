@@ -126,10 +126,31 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return t('Flux')
+    } else if (isSystemApp(resource.metadata?.namespace)) {
+      return 'System'
     }
     return 'OpenShift'
   }
   return '-'
+}
+
+// filter system apps unless selected
+function filterSystemApps(items: IResource[], filters: any) {
+  if (filters?.type !== 'system') {
+    const filtered = items.filter((item) => isSystemApp(item.metadata?.namespace))
+    if (filtered.length) return filtered
+  }
+  return items
+}
+
+function isSystemApp(namespace?: string) {
+  return (
+    namespace &&
+    (namespace.startsWith('openshift') ||
+      namespace.startsWith('open-cluster-management') ||
+      namespace.startsWith('hive') ||
+      namespace.startsWith('multicluster-engine'))
+  )
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -469,7 +490,7 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
-  const allApplications = resultView.items
+  const allApplications = filterSystemApps(resultView.items, requestedView?.filters)
 
   const tableItems: IResource[] = useMemo(
     () => [...allApplications.map((app) => generateTransformData(app))],
@@ -665,6 +686,10 @@ export default function ApplicationsOverview() {
         id: filterId,
         options: [
           {
+            label: t('System'),
+            value: 'openshift-default',
+          },
+          {
             label: t('Application set'),
             value: 'appset',
           },
@@ -689,7 +714,15 @@ export default function ApplicationsOverview() {
           return selectedValues.some((value) => {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
-              return (value === 'flux' && isFlux) || (value === 'openshift' && !isFlux)
+              const isSystem = isSystemApp(item.metadata?.namespace)
+              switch (value) {
+                case 'openshift':
+                  return !isFlux && !isSystem
+                case 'openshift-default':
+                  return !isFlux && isSystem
+                case 'flux':
+                  return isFlux
+              }
             } else {
               switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
                 case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
