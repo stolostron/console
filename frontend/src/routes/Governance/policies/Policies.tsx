@@ -547,12 +547,12 @@ export default function PoliciesPage() {
         label: 'Cluster violations',
         options: [
           {
-            label: t('Without violations'),
-            value: 'without-violations',
+            label: t('No violations'),
+            value: 'no-violations',
           },
           {
-            label: t('With violations'),
-            value: 'with-violations',
+            label: t('Violations'),
+            value: 'violations',
           },
           {
             label: t('Pending'),
@@ -774,8 +774,8 @@ function checkViolation(
 
 function violationFilterFn(selectedValues: string[], item: PolicyTableItem): boolean {
   const mapViolation: { violation: string; compliant: string }[] = [
-    { violation: 'with-violations', compliant: 'NonCompliant' },
-    { violation: 'without-violations', compliant: 'Compliant' },
+    { violation: 'violations', compliant: 'NonCompliant' },
+    { violation: 'no-violations', compliant: 'Compliant' },
     { violation: 'pending', compliant: 'Pending' },
   ]
 

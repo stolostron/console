@@ -60,7 +60,7 @@ describe('Overview Page', () => {
     )
 
     await waitForNock(metricNock)
-    expect(screen.getByText(/[1-9]+ without violations/i)).toBeTruthy()
+    expect(screen.getByText(/[1-9]+ No violations/i)).toBeTruthy()
   })
 
   test('Should render Overview page correctly with pending policies', async () => {

@@ -212,7 +212,7 @@ export function StatusSummaryCount() {
                 {
                   id: 'violations',
                   count: policyViolationCount ?? 0,
-                  countClick: () => navigate(NavigationPath.policies + '?violations=with-violations'),
+                  countClick: () => navigate(NavigationPath.policies + '?violations=violations'),
                   title: t('summary.violations'),
                   isDanger: true,
                 },

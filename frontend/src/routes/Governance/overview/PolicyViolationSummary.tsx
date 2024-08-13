@@ -71,14 +71,14 @@ export function ViolationsCard(props: {
         description={props.description}
         donutLabel={{
           title: props.noncompliant.toString(),
-          subTitle: t('Violation', { count: props.noncompliant }),
+          subTitle: t('Violations', { count: props.noncompliant }),
         }}
         data={[
           {
-            key: t('violation', { count: props.noncompliant }),
+            key: t('violations', { count: props.noncompliant }),
             value: props.noncompliant,
             isPrimary: true,
-            link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=with-violations` : undefined,
+            link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=violations` : undefined,
           },
           {
             key: t('pending'),
@@ -86,9 +86,9 @@ export function ViolationsCard(props: {
             link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
           },
           {
-            key: t('without violations'),
+            key: t('No violations'),
             value: props.compliant,
-            link: props.compliant > 0 ? `${NavigationPath.policies}?violations=without-violations` : undefined,
+            link: props.compliant > 0 ? `${NavigationPath.policies}?violations=no-violations` : undefined,
           },
         ]}
         colorScale={colorThemes.criticalLowSuccess}

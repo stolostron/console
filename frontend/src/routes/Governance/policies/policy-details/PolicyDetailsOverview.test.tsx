@@ -63,7 +63,7 @@ describe('Policy Details Results', () => {
 
     // verify placement table
     await waitForText('policy-set-with-1-placement')
-    await waitForText('Without violations:')
+    await waitForText('No violations:')
   })
 
   test.each([
