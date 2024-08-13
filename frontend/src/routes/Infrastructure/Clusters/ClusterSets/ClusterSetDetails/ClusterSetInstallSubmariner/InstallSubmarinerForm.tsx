@@ -416,7 +416,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             }
           }
         } else {
-          submarinerConfig.spec.gatewayConfig = {}
           submarinerConfig.spec.loadBalancerEnable = true
           // for ROKS IBM managed openshift on IBM Satelite we shouldn't use loadbalancer
           // ROKS on Satelite is identified by nodes label 'node.kubernetes.io/instance-type' equals to 'upi'
@@ -1056,7 +1055,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   placeholder: t('submariner.install.form.gateways.placeholder'),
                   labelHelp: t('submariner.install.form.gateways.labelHelp'),
                   value: gateways[clusterName] ?? submarinerConfigDefault.gateways,
-                  isHidden: cluster.distribution?.isManagedOpenShift,
                   onChange: (value: number) => {
                     const copy = { ...gateways }
                     copy[clusterName] = value
