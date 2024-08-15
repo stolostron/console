@@ -36,6 +36,7 @@ export interface ServerSideEventClient {
   compressionStream: Transform & Zlib
   eventQueue: Promise<ServerSideEvent | undefined>[]
   processing?: boolean
+  processingStart?: number
 }
 
 export class ServerSideEvents {
@@ -70,6 +71,7 @@ export class ServerSideEvents {
     const eventID = ++this.eventID
     event.id = eventID.toString()
     this.events[eventID] = event
+    this.purgeClients()
     this.broadcastEvent(event)
 
     this.removeEvent(this.lastLoadedID)
@@ -82,6 +84,18 @@ export class ServerSideEvents {
     this.broadcastEvent(loadedEvent)
 
     return eventID
+  }
+
+  // delete clients that have been streaming for more then 3 minutes
+  // could be a browser that's no longer there
+  private static purgeClients(): void {
+    const now = Date.now()
+    for (const clientID in this.clients) {
+      const client = this.clients[clientID]
+      if (!client || (client.processing && now - this.clients[clientID].processingStart > 3 * 60 * 1000)) {
+        delete this.clients[clientID]
+      }
+    }
   }
 
   private static broadcastEvent(event: ServerSideEvent): void {
@@ -112,6 +126,7 @@ export class ServerSideEvents {
     if (!client) return
     if (client.processing) return
     client.processing = true
+    client.processingStart = Date.now()
     while (client.eventQueue.length) {
       try {
         const event = await client.eventQueue.shift()

@@ -27,6 +27,7 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
+import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -65,6 +66,7 @@ router.all('/userpreference', userpreference)
 router.all('/metrics', metrics)
 router.get('/globalhub', globalHub)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
+router.post('/aggregate/*', aggregate)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -97,6 +99,7 @@ export function start(): Promise<Http2Server | undefined> {
   loadSettings()
   if (eventsEnabled) {
     startWatching()
+    startAggregating()
   }
   return startServer({ requestHandler })
 }
@@ -111,6 +114,7 @@ export async function stop(): Promise<void> {
   stopSettingsWatch()
   await ServerSideEvents.dispose()
   stopWatching()
+  stopAggregating()
   await stopServer()
   stopLogger()
 }
