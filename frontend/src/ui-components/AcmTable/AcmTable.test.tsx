@@ -963,6 +963,23 @@ describe('AcmTable', () => {
   })
 
   test('export button should produce a file for download', () => {
+    const addSubRowsCallback = () => {
+      return [
+        {
+          cells: [
+            {
+              title: <>Status Labels</>,
+            },
+          ],
+          exportSubRow: [
+            {
+              header: 'Status Labels',
+              exportContent: () => exportObjectString({ Ready: 'true' }),
+            },
+          ],
+        },
+      ]
+    }
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
     const { getByTestId, getByText, container } = render(<Table showExportButton addSubRows={addSubRowsCallback} />)

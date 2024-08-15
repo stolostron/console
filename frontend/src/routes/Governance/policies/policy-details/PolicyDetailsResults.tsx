@@ -101,6 +101,7 @@ export default function PolicyDetailsResults() {
           </Link>
         ),
         search: (item: ResultsTableData) => item.cluster,
+        exportContent: (item: ResultsTableData) => item.cluster,
       },
       {
         header: t('Violations'),
@@ -119,7 +120,7 @@ export default function PolicyDetailsResults() {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
+                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
             case 'noncompliant':
@@ -144,12 +145,28 @@ export default function PolicyDetailsResults() {
               )
           }
         },
+        exportContent: (item: ResultsTableData): string => {
+          const message = item.message ?? '-'
+          let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
+          compliant = compliant ? compliant.trim().toLowerCase() : '-'
+          switch (compliant) {
+            case 'compliant':
+              return t('No violations')
+            case 'noncompliant':
+              return t('Violations')
+            case 'pending':
+              return t('Pending')
+            default:
+              return t('No status')
+          }
+        },
       },
       {
         header: t('Template'),
         sort: 'templateName',
         cell: (item: ResultsTableData) => item.templateName,
         search: (item: ResultsTableData) => item.templateName,
+        exportContent: (item: ResultsTableData) => item.templateName,
       },
       {
         header: t('Message'),
@@ -199,17 +216,24 @@ export default function PolicyDetailsResults() {
           return '-'
         },
         search: (item: ResultsTableData) => item.message,
+        exportContent: (item: ResultsTableData) => {
+          const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart() || '-'
+          return prunedMessage
+        },
       },
       {
         header: t('Remediation'),
         sort: 'remediationAction',
         cell: (item: ResultsTableData) => item.remediationAction,
         search: (item: ResultsTableData) => item.remediationAction,
+        exportContent: (item: ResultsTableData) => item.remediationAction,
       },
       {
         header: t('Last report'),
         sort: 'timestamp',
         cell: (item: ResultsTableData) =>
+          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+        exportContent: (item: ResultsTableData) =>
           item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
       },
       {
@@ -240,6 +264,8 @@ export default function PolicyDetailsResults() {
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
+          showExportButton
+          exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
           items={policiesDeployedOnCluster}
           emptyState={
             <AcmEmptyState

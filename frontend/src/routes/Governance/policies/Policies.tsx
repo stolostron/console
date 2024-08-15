@@ -139,6 +139,7 @@ export default function PoliciesPage() {
         id: 'name',
         order: 1,
         isDefault: true,
+        exportContent: (item) => item.policy.metadata.name,
       },
       {
         header: t('Namespace'),
@@ -148,6 +149,7 @@ export default function PoliciesPage() {
         id: 'namespace',
         order: 2,
         isDefault: true,
+        exportContent: (item) => item.policy.metadata.namespace,
       },
       {
         header: t('Status'),
@@ -161,6 +163,9 @@ export default function PoliciesPage() {
         order: 3,
         isDefault: false,
         isFirstVisitChecked: false,
+        exportContent: (item) => {
+          return handleStatusCell(item, t, true)
+        },
       },
       {
         header: t('Remediation'),
@@ -174,6 +179,7 @@ export default function PoliciesPage() {
         order: 4,
         isDefault: false,
         isFirstVisitChecked: true,
+        exportContent: (item) => item.policy.remediationResult,
       },
       {
         header: t('Policy set'),
@@ -195,6 +201,7 @@ export default function PoliciesPage() {
         order: 5,
         isDefault: false,
         isFirstVisitChecked: true,
+        exportContent: (item) => handlePolicySetCell(item, policySets, true),
       },
       { ...policyClusterViolationsColumn, id: 'cv', isDefault: true, order: 6 },
       {
@@ -219,6 +226,9 @@ export default function PoliciesPage() {
         order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
+        exportContent: (item) => {
+          return item.source ? item.source : '-'
+        },
       },
       {
         header: t('Automation'),
@@ -247,6 +257,9 @@ export default function PoliciesPage() {
         id: 'automation',
         order: 8,
         isDefault: false,
+        exportContent: (item) => {
+          return item.source ? item.source : '-'
+        },
       },
       {
         header: t('Created'),
@@ -534,12 +547,12 @@ export default function PoliciesPage() {
         label: 'Cluster violations',
         options: [
           {
-            label: t('Without violations'),
-            value: 'without-violations',
+            label: t('No violations'),
+            value: 'no-violations',
           },
           {
-            label: t('With violations'),
-            value: 'with-violations',
+            label: t('Violations'),
+            value: 'violations',
           },
           {
             label: t('Pending'),
@@ -640,6 +653,8 @@ export default function PoliciesPage() {
         emptyState={undefined} // only shown when tableItems.length > 0
         tableActions={tableActions}
         filters={filters}
+        showExportButton
+        exportFilePrefix="rhacmallpolicies"
         tableActionButtons={[
           {
             isDisabled: !canCreatePolicy,
@@ -711,6 +726,24 @@ export default function PoliciesPage() {
                   ),
                 },
               ],
+              exportSubRow: [
+                {
+                  header: t('Description'),
+                  exportContent: () => desc ?? '-',
+                },
+                {
+                  header: t('Standards'),
+                  exportContent: () => standards ?? '-',
+                },
+                {
+                  header: t('Controls'),
+                  exportContent: () => controls ?? '-',
+                },
+                {
+                  header: t('Categories'),
+                  exportContent: () => categories ?? '-',
+                },
+              ],
             },
           ]
         }}
@@ -741,8 +774,8 @@ function checkViolation(
 
 function violationFilterFn(selectedValues: string[], item: PolicyTableItem): boolean {
   const mapViolation: { violation: string; compliant: string }[] = [
-    { violation: 'with-violations', compliant: 'NonCompliant' },
-    { violation: 'without-violations', compliant: 'Compliant' },
+    { violation: 'violations', compliant: 'NonCompliant' },
+    { violation: 'no-violations', compliant: 'Compliant' },
     { violation: 'pending', compliant: 'Pending' },
   ]
 
@@ -804,6 +837,18 @@ function usePolicyViolationsColumn(
       } else {
         return '-'
       }
+    },
+    exportContent: (item) => {
+      const clusterViolationSummary = policyClusterViolationSummaryMap[item.policy.metadata.uid ?? '']
+      if (
+        clusterViolationSummary.compliant ||
+        clusterViolationSummary.noncompliant ||
+        clusterViolationSummary.pending ||
+        clusterViolationSummary.unknown
+      ) {
+        return `compliant: ${clusterViolationSummary.compliant}, noncompliant: ${clusterViolationSummary.noncompliant}, pending: ${clusterViolationSummary.pending},unknown: ${clusterViolationSummary.unknown}`
+      }
+      return '-'
     },
     sort: (lhs, rhs) => {
       const lhsViolations = policyClusterViolationSummaryMap[lhs.policy.metadata.uid ?? '']

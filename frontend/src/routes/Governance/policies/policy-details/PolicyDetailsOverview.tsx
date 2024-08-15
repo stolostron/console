@@ -321,11 +321,11 @@ export default function PolicyDetailsOverview() {
             let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
             switch (status) {
               case 'noncompliant':
-                statusMsg = t(' With violations: ')
+                statusMsg = t(' Violations: ')
                 icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
                 break
               case 'compliant':
-                statusMsg = t(' Without violations: ')
+                statusMsg = t(' No violations: ')
                 icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
                 break
               case 'pending':

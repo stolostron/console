@@ -216,6 +216,7 @@ export function DiscoveredClustersTable(props: {
           </a>
         </span>
       ),
+      exportContent: (discoveredCluster) => discoveredCluster.spec.displayName,
     },
     {
       header: t('dcTbl.lastActive'),
@@ -229,6 +230,12 @@ export function DiscoveredClustersTable(props: {
                 .humanize()}
         </span>
       ),
+      exportContent: (discoveredCluster) =>
+        discoveredCluster.spec.activityTimestamp === undefined
+          ? 'N/A'
+          : moment
+              .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.activityTimestamp).getTime()))
+              .humanize(),
     },
     {
       header: t('dcTbl.namespace'),
@@ -236,6 +243,7 @@ export function DiscoveredClustersTable(props: {
         compareStrings(a?.metadata.namespace, b?.metadata.namespace),
       search: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
       cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
+      exportContent: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
     },
     {
       header: t('dcTbl.type'),
@@ -250,6 +258,8 @@ export function DiscoveredClustersTable(props: {
       },
       cell: (discoveredCluster) =>
         discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
+      exportContent: (discoveredCluster) =>
+        discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
     },
     {
       header: t('dcTbl.openShiftVersion'),
@@ -262,6 +272,7 @@ export function DiscoveredClustersTable(props: {
         }
       },
       cell: (discoveredCluster) => discoveredCluster.spec.openshiftVersion ?? '-',
+      exportContent: (discoveredCluster) => discoveredCluster.spec.openshiftVersion ?? '-',
     },
     {
       header: t('dcTbl.infrastructureProvider'),
@@ -274,6 +285,7 @@ export function DiscoveredClustersTable(props: {
         ) : (
           '-'
         ),
+      exportContent: (discoveredCluster) => getProvider(discoveredCluster?.spec.cloudProvider) || '-',
     },
     {
       header: t('dcTbl.created'),
@@ -287,6 +299,13 @@ export function DiscoveredClustersTable(props: {
                 .humanize()}
         </span>
       ),
+      exportContent: (discoveredCluster) => {
+        return discoveredCluster.spec.creationTimestamp === undefined
+          ? ['N/A']
+          : moment
+              .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.creationTimestamp).getTime()))
+              .humanize()
+      },
     },
     {
       header: t('dcTbl.discovered'),
@@ -304,6 +323,15 @@ export function DiscoveredClustersTable(props: {
                 .humanize()}
         </span>
       ),
+      exportContent: (discoveredCluster) => {
+        return discoveredCluster.spec.creationTimestamp === undefined
+          ? ['N/A']
+          : moment
+              .duration(
+                Math.abs(new Date().getTime() - new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime())
+              )
+              .humanize()
+      },
     },
   ]
 
@@ -361,6 +389,8 @@ export function DiscoveredClustersTable(props: {
         columns={discoveredClusterCols}
         keyFn={dckeyFn}
         key="tbl-discoveredclusters"
+        showExportButton
+        exportFilePrefix="discoveredclusters"
         tableActionButtons={[
           {
             id: 'configureDiscovery',

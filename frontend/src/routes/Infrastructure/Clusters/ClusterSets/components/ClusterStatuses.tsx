@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterPool, getClusterStatusType, ManagedClusterSet } from '../../../../../resources'
+import { Cluster, ClusterPool, getClusterStatusType, ManagedClusterSet } from '../../../../../resources'
 import { AcmInlineStatusGroup, StatusType } from '../../../../../ui-components'
 import { useClusters } from './useClusters'
 
@@ -10,6 +10,34 @@ export function ClusterStatuses(props: {
   isGlobalClusterSet?: boolean
 }) {
   const clusters = useClusters(props.managedClusterSet, props.clusterPool, props.isGlobalClusterSet)
+  const { healthy, running, warning, progress, danger, pending, sleep, unknown, detached } = getClusterStatusCount(
+    clusters,
+    props.managedClusterSet,
+    props.clusterPool
+  )
+
+  return clusters.length === 0 ? (
+    <>-</>
+  ) : (
+    <AcmInlineStatusGroup
+      healthy={healthy}
+      running={running}
+      warning={warning}
+      progress={progress}
+      danger={danger}
+      pending={pending}
+      sleep={sleep}
+      unknown={unknown}
+      detached={detached}
+    />
+  )
+}
+
+export function getClusterStatusCount(
+  clusters: Cluster[],
+  managedClusterSet?: ManagedClusterSet,
+  clusterPool?: ClusterPool
+) {
   let healthy = 0
   let running = 0
   let warning = 0
@@ -53,20 +81,17 @@ export function ClusterStatuses(props: {
         break
     }
   })
-
-  return clusters.length === 0 ? (
-    <>-</>
-  ) : (
-    <AcmInlineStatusGroup
-      healthy={healthy}
-      running={running}
-      warning={warning}
-      progress={progress}
-      danger={danger}
-      pending={pending}
-      sleep={sleep}
-      unknown={unknown}
-      detached={detached}
-    />
-  )
+  return {
+    healthy,
+    running,
+    warning,
+    progress,
+    danger,
+    pending,
+    sleep,
+    unknown,
+    detached,
+    managedClustername: managedClusterSet?.metadata.name,
+    clusterPoolName: clusterPool?.metadata.name,
+  }
 }

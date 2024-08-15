@@ -274,6 +274,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
 
   const { pathname, search } = useLocation()
   const navigate = useNavigate()
+  const [queuedSearch, setQueuedSearch] = useState<string | null>(null)
 
   const queryParams = useMemo(() => {
     return parse(search, { arrayFormat: 'comma' })
@@ -294,12 +295,17 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     (newFilters: FilterSelections, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
-      navigate(pathname + '?' + updatedSearch, { replace: true })
+      const newSearch = updatedSearch ? `?${updatedSearch}` : ''
+
+      if (search !== newSearch) {
+        setQueuedSearch(newSearch)
+      }
+
       if (saveFilters && tableFilterLocalStorageKey) {
         setLocalStorage(tableFilterLocalStorageKey, newFilters)
       }
     },
-    [filteredQueryParams, navigate, pathname, tableFilterLocalStorageKey]
+    [filteredQueryParams, search, tableFilterLocalStorageKey]
   )
 
   const filterSelections = useMemo(() => {
@@ -360,6 +366,13 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
   const clearFilters = useCallback(() => {
     updateFilters({})
   }, [updateFilters])
+
+  useEffect(() => {
+    if (queuedSearch !== null) {
+      navigate({ pathname, search: queuedSearch }, { replace: true })
+      setQueuedSearch(null)
+    }
+  }, [navigate, pathname, queuedSearch])
 
   return { filterSelections, addFilterValue, removeFilterValue, removeFilter, clearFilters }
 }

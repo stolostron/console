@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
   ButtonVariant,
@@ -31,6 +31,7 @@ import {
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterStatus,
+  exportObjectString,
   getAddonStatusLabel,
   getClusterStatusLabel,
   getRoles,
@@ -72,6 +73,7 @@ import { StatusField } from './components/StatusField'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { useAllClusters } from './components/useAllClusters'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
+import { TFunction } from 'react-i18next'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -592,6 +594,8 @@ export function ClustersTable(props: {
         emptyState={props.emptyState}
         filters={filters}
         id="managedClusters"
+        showExportButton
+        exportFilePrefix="managedclusters"
       />
     </Fragment>
   )
@@ -616,6 +620,7 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
         )}
       </>
     ),
+    exportContent: (cluster) => cluster.displayName,
   }
 }
 
@@ -669,6 +674,7 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     ),
     sort: 'namespace',
     cell: (cluster) => cluster.namespace || '-',
+    exportContent: (cluster) => cluster.namespace,
   }
 }
 
@@ -683,6 +689,9 @@ export function useClusterStatusColumn(): IAcmTableColumn<Cluster> {
         <StatusField cluster={cluster} />
       </span>
     ),
+    exportContent: (cluster) => {
+      return getClusterStatusLabel(cluster.status, t)
+    },
   }
 }
 
@@ -693,6 +702,39 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
     sort: 'provider',
     search: 'provider',
     cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
+    exportContent: (cluster) => {
+      return ProviderLongTextMap[cluster?.provider!]
+    },
+  }
+}
+
+const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
+  const clusterHasControlPlane = () => {
+    const nodeList = cluster.nodes?.nodeList
+    const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
+    const hasControlPlane = roleList?.filter((str) => {
+      return str.indexOf('control-plane') > -1
+    })
+    return hasControlPlane ? hasControlPlane.length > 0 : false
+  }
+
+  if (cluster.name === 'local-cluster') {
+    return t('Hub')
+  }
+  if (cluster.isRegionalHubCluster) {
+    if (cluster.isHostedCluster || cluster.isHypershift) {
+      return t('Hub, Hosted')
+    }
+    return t('Hub')
+  }
+  if (
+    cluster.isHostedCluster ||
+    cluster.isHypershift ||
+    (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
+  ) {
+    return t('Hosted')
+  } else {
+    return t('Standalone')
   }
 }
 
@@ -701,33 +743,10 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
   return {
     header: t('table.controlplane'),
     cell: (cluster) => {
-      const clusterHasControlPlane = () => {
-        const nodeList = cluster.nodes?.nodeList
-        const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
-        const hasControlPlane = roleList?.filter((str) => {
-          return str.indexOf('control-plane') > -1
-        })
-        return hasControlPlane ? hasControlPlane.length > 0 : false
-      }
-
-      if (cluster.name === 'local-cluster') {
-        return t('Hub')
-      }
-      if (cluster.isRegionalHubCluster) {
-        if (cluster.isHostedCluster || cluster.isHypershift) {
-          return t('Hub, Hosted')
-        }
-        return t('Hub')
-      }
-      if (
-        cluster.isHostedCluster ||
-        cluster.isHypershift ||
-        (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
-      ) {
-        return t('Hosted')
-      } else {
-        return t('Standalone')
-      }
+      return getControlPlaneString(cluster, t)
+    },
+    exportContent: (cluster) => {
+      return getControlPlaneString(cluster, t)
     },
   }
 }
@@ -737,6 +756,25 @@ export function useClusterDistributionColumn(
   hostedClusters: HostedClusterK8sResource[]
 ): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
+  const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const clusters = useAllClusters()
+  const agentClusterObject: Record<string, string> = {}
+
+  clusters.forEach((cluster) => {
+    const agentClusterInstall = agentClusterInstalls.find((aci) => {
+      return aci.metadata?.name === cluster?.name && aci.metadata?.namespace === cluster.namespace
+    })
+    const clusterImage = clusterImageSets.find(
+      (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
+    )
+    const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
+    if (version) {
+      agentClusterObject[cluster?.name] = version
+    }
+  })
+
   return {
     header: t('table.distribution'),
     sort: 'distribution.displayVersion',
@@ -749,6 +787,23 @@ export function useClusterDistributionColumn(
         resource={'managedclusterpage'}
       />
     ),
+    exportContent: (cluster) => {
+      let version
+      const openshiftText = 'OpenShift'
+      const microshiftText = 'MicroShift'
+
+      if (cluster?.provider === Provider.microshift) {
+        version = cluster?.microshiftDistribution?.version
+        return version ?? `${microshiftText} ${version}`
+      }
+      // use version from cluster image
+      const clusterImageVersion = agentClusterObject[cluster.name]
+      if (clusterImageVersion) {
+        return `${openshiftText} ${clusterImageVersion}`
+      }
+      // else use displayVersion
+      return cluster?.distribution?.displayVersion
+    },
   }
 }
 
@@ -793,6 +848,11 @@ export function useClusterLabelsColumn(): IAcmTableColumn<Cluster> {
         return '-'
       }
     },
+    exportContent: (cluster) => {
+      if (cluster.labels) {
+        return exportObjectString(cluster.labels)
+      }
+    },
   }
 }
 
@@ -811,6 +871,9 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
       ) : (
         '-'
       )
+    },
+    exportContent: (cluster) => {
+      return `healthy: ${cluster.nodes!.ready}, danger: ${cluster.nodes!.unhealthy}, unknown: ${cluster.nodes!.unknown}`
     },
   }
 }
@@ -833,7 +896,15 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
         '-'
       )
     },
+    exportContent: (cluster) => {
+      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing},  unknown: ${cluster.addons!.unknown}`
+    },
   }
+}
+
+const getCreationTimestampString = (cluster: Cluster) => {
+  const dateTimeCell = getDateTimeCell(cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-')
+  return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
 }
 
 export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
@@ -851,10 +922,10 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
     search: 'creationDate',
     cellTransforms: [nowrap],
     cell: (cluster) => {
-      const dateTimeCell = getDateTimeCell(
-        cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-'
-      )
-      return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
+      return getCreationTimestampString(cluster)
+    },
+    exportContent: (cluster) => {
+      return getCreationTimestampString(cluster)
     },
   }
 }

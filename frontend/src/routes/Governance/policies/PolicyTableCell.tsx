@@ -28,19 +28,25 @@ export function handleNameCell(item: PolicyTableItem) {
   )
 }
 
-export function handleStatusCell(item: PolicyTableItem, t: TFunction<string, undefined>) {
+export function handleStatusCell(item: PolicyTableItem, t: TFunction<string, undefined>, returnExportString?: boolean) {
   const disabled: string = t('Disabled')
   const enabled: string = t('Enabled')
+  if (returnExportString) {
+    return item.policy.spec.disabled === true ? disabled : enabled
+  }
   return <span>{item.policy.spec.disabled === true ? disabled : enabled}</span>
 }
 
-export function handlePolicySetCell(item: PolicyTableItem, policySets: PolicySet[]) {
+export function handlePolicySetCell(item: PolicyTableItem, policySets: PolicySet[], returnExportableList?: boolean) {
   const policySetsMatch = policySets.filter(
     (policySet: PolicySet) =>
       policySet.metadata.namespace === item.policy.metadata.namespace &&
       policySet.spec.policies.includes(item.policy.metadata.name!)
   )
   if (policySetsMatch.length > 0) {
+    if (returnExportableList) {
+      return policySetsMatch.map((policySet) => policySet.metadata.name).toString()
+    }
     return <PolicySetList policySets={policySetsMatch} />
   }
   return '-'

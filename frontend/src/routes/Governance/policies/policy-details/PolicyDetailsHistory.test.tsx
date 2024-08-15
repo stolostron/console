@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
-import { waitForText } from '../../../../lib/test-util'
+import { waitForText, clickByText, clickByLabel } from '../../../../lib/test-util'
 import { Policy } from '../../../../resources'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
 import { mockPendingPolicy } from '../../governance.sharedMocks'
@@ -120,7 +120,7 @@ describe('Policy Details History content', () => {
     await waitForText('Template: policy-set-with-1-placement-policy-1')
 
     // wait for template table load
-    await waitForText('Without violations')
+    await waitForText('No violations')
     await waitForText(
       'notification - namespaces [test] found as specified, therefore this Object template is compliant'
     )
@@ -152,5 +152,48 @@ describe('Policy Details History content', () => {
     await waitForText(
       'template-error; Dependencies were not satisfied: 1 dependencies are still pending (Policy default.policy-pod)'
     )
+  })
+})
+
+describe('Export from policy details history table', () => {
+  test('export button should produce a file for download', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter>
+          <PolicyDetailsHistory
+            policyName={'policy-set-with-1-placement-policy'}
+            policyNamespace={'test'}
+            clusterName={'local-cluster'}
+            templateName={'policy-set-with-1-placement-policy-1'}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // wait template name load
+    await waitForText('Template: policy-set-with-1-placement-policy-1')
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

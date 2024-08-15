@@ -1,45 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as React from 'react'
-import { AcmScrollable } from '../../../ui-components'
-import OverviewPageBeta from './OverviewPageBeta'
-import OverviewPage from './OverviewPage'
-import { Card, CardBody, Flex, FlexItem, PageSection, Switch } from '@patternfly/react-core'
-import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
+import { Alert, PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { AcmScrollable } from '../../../ui-components'
+import OverviewPage from './OverviewPage'
+import OverviewPageBeta from './OverviewPageBeta'
 
-const ClustersTab = () => {
+function ClustersTab(props: { isBetaView: boolean; selectedClusterLabels: Record<string, string[]> }) {
+  const { isBetaView, selectedClusterLabels } = props
   const { t } = useTranslation()
-  const [selectedClusterLabels, setSelectedClusterLabels] = React.useState<Record<string, string[]>>({})
-  const [isBetaView, setIsBetaView] = React.useState<boolean>(localStorage.getItem('overview-isBeta') === 'true')
 
   return (
     <AcmScrollable>
-      <PageSection>
-        <Card>
-          <CardBody>
-            <Flex alignItems={{ default: 'alignItemsBaseline' }} spacer={{ default: 'spacerMd' }}>
-              <FlexItem>
-                <Switch
-                  label={t('Fleet view')}
-                  isChecked={isBetaView}
-                  onChange={() => {
-                    setIsBetaView(!isBetaView)
-                    localStorage.setItem('overview-isBeta', `${!isBetaView}`) // keep selection
-                  }}
-                />
-              </FlexItem>
-              {isBetaView && (
-                <FlexItem>
-                  <OverviewClusterLabelSelector
-                    selectedClusterLabels={selectedClusterLabels}
-                    setSelectedClusterLabels={setSelectedClusterLabels}
-                  />
-                </FlexItem>
-              )}
-            </Flex>
-          </CardBody>
-        </Card>
-      </PageSection>
+      {!isBetaView ? (
+        <PageSection>
+          <Alert variant="warning" title={t('Feature deprecation')} isInline>
+            {t(
+              'The layout of this Overview page is deprecated. Enable the Fleet view switch to view the new default overview page.'
+            )}
+          </Alert>
+        </PageSection>
+      ) : undefined}
       {isBetaView ? <OverviewPageBeta selectedClusterLabels={selectedClusterLabels} /> : <OverviewPage />}
     </AcmScrollable>
   )

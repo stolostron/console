@@ -6,7 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
-import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
+import { clickByLabel, clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import {
@@ -119,5 +119,40 @@ describe('DiscoveredClusters', () => {
     await waitForText("You don't have any discovered clusters")
     await waitForText('Configure discovery settings')
     await waitForText('Create discovery settings')
+  })
+
+  test('export button should produce a file for download', () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(discoveredClusterState, [])
+          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+          snapshot.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    clickByLabel('export-search-result')
+    clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })
