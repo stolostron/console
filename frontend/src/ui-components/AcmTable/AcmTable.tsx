@@ -1,4 +1,4 @@
-/* Copyright Contributors to the Open Cluster Management project */
+/* Copyright Contributors to the Open Cluster Manakgement project */
 import { css } from '@emotion/css'
 import {
   Badge,
