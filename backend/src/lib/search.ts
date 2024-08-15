@@ -18,6 +18,7 @@ export type ISearchResult = {
       }[]
     }[]
   }
+  message?: string
 }
 
 export async function getServiceAccountOptions() {
@@ -52,47 +53,6 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   }
   return options
 }
-
-export function getSearchResults(options: string | RequestOptions | URL, variables: string) {
-  return new Promise<ISearchResult>((resolve, reject) => {
-    let body = ''
-    const req = request(options, (res) => {
-      res.on('data', (data) => {
-        body += data
-      })
-      res.on('end', () => {
-        resolve(JSON.parse(body) as ISearchResult)
-      })
-    })
-    req.on('error', (e) => {
-      console.error(e)
-      reject(e)
-    })
-    req.write(variables)
-    req.end()
-  })
-}
-
-// get argo apps from search api in three queries with a second apart
-// Search API mosquito bites -- just a few every n seconds
-export const pagedSearchQueries: string[][] = [
-  ['a*'],
-  ['i*'],
-  ['n*'],
-  ['e*'],
-  ['r*'],
-  ['o*'],
-  ['s*'],
-  ['t*'],
-  ['u*'],
-  ['l*'],
-  ['m*'],
-  ['c*'],
-  ['p*'],
-  ['z*'],
-  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*', '5*'],
-  ['h*', 'k*', 'y*', 'v*', 'w*', 'f*', '6*', '7*', '8*', '9*'],
-]
 export async function getPagedSearchResources(
   query: {
     operationName: string
@@ -103,24 +63,69 @@ export async function getPagedSearchResources(
 ) {
   const options = await getServiceAccountOptions()
   let resources: IResource[] = []
-  for (let i = 0; i < pagedSearchQueries.length; i++) {
-    const values = pagedSearchQueries[i]
+  for (let i = 0; i < 27; ) {
     const _query = structuredClone(query)
+    const values =
+      i < 26 ? [`${String.fromCharCode(i + 97)}*`] : ['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*']
     _query.variables.input[0].filters.push({
       property: 'name',
       values,
     })
-    if (pass === 2) {
+    if (pass === 1) {
       _query.variables.input[0].limit = 100
     }
-    const results: ISearchResult = await getSearchResults(options, JSON.stringify(_query))
+    let results: ISearchResult
+    try {
+      results = await getSearchResults(options, JSON.stringify(_query))
+    } catch (e) {
+      continue
+    }
     resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
     if (process.env.NODE_ENV !== 'test') {
       let timeout = 10000
-      if (pass === 2) timeout = 1000
-      if (pass === 3) timeout = 3000
+      if (pass === 1) timeout = 500
+      if (pass === 2) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))
     }
+    i++
   }
   return resources
+}
+
+export function getSearchResults(options: string | RequestOptions | URL, variables: string) {
+  return new Promise<ISearchResult>((resolve, reject) => {
+    let body = ''
+    const id = setTimeout(
+      () => {
+        console.error('request timeout')
+        reject(Error('request timeout'))
+      },
+      2 * 60 * 1000
+    )
+    const req = request(options, (res) => {
+      res.on('data', (data) => {
+        body += data
+      })
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(body) as ISearchResult
+          if (result.message) {
+            console.error(result.message)
+            reject(Error(result.message))
+          }
+          resolve(result)
+        } catch (e) {
+          console.error(e)
+          reject(e)
+        }
+        clearTimeout(id)
+      })
+    })
+    req.on('error', (e) => {
+      console.error(e)
+      reject(e)
+    })
+    req.write(variables)
+    req.end()
+  })
 }

@@ -97,6 +97,7 @@ export function useClusters(
     certificateSigningRequests,
     groupManagedClusters,
     managedClusterAddons,
+    false,
     clusterManagementAddons,
     clusterClaims,
     clusterCurators,

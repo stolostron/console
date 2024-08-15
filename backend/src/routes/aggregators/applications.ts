@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
-import { AggregatedCacheType } from '../aggregator'
-import { getOCPApps } from './applicationsOCP'
+import { getOCPApps, isSystemApp } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, FilterCounts, ITransformedResource } from '../../lib/pagination'
@@ -51,80 +50,117 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
-// takes time to fill in the cache, so when backend first starts up fill cache quickly
-// when backend first starts up, just fill in the resources that are the fastest to gather
-// 1st pass, just locals
-// 2nd pass, everything w/ 100 limit, 1s pause
-// 3rd pass, everything w/ 20000 limit, 3s pause
-// 4th pass, everything 10s
-export async function startAggregatingApplications(aggregatedCache: AggregatedCacheType, key: string): Promise<void> {
-  aggregatedCache[key] = {
-    filterCounts: {},
-    items: [],
-  }
-  let pass = 1
+export type ApplicationCache = {
+  items: ITransformedResource[]
+  filterCounts: FilterCounts
+}
+export type ApplicationCacheType = {
+  [type: string]: ApplicationCache
+}
+const applicationCache: ApplicationCacheType = {}
+const appKeys = ['subscription', 'appset', 'localArgoApps', 'remoteArgoApps', 'localOCPApps', 'remoteOCPApps']
+appKeys.forEach((key) => {
+  applicationCache[key] = { items: [], filterCounts: {} }
+})
+
+export function startAggregatingApplications() {
+  void localKubeLoop()
+  void searchAPILoop()
+}
+
+// aggregate local applications found in kube every 10 seconds
+async function localKubeLoop(): Promise<void> {
   while (!stopping) {
-    await aggregateApplications(aggregatedCache, key, pass++)
+    // ACM Apps
+    applicationCache['subscription'] = generateTransforms(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+
+    // AppSets
+    applicationCache['appset'] = generateTransforms(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+    await new Promise((r) => setTimeout(r, 5000))
   }
 }
-export async function aggregateApplications(
-  aggregatedCache: AggregatedCacheType,
-  key: string,
-  pass: number
-): Promise<void> {
-  // ACM Apps
-  const localSubscriptionApps = getKubeResources('Application', 'app.k8s.io/v1beta1')
 
-  // Argo Apps
-  const { localArgoApps, remoteArgoApps, argoAppSet } = await getArgoApps(pass)
+async function searchAPILoop(): Promise<void> {
+  let pass = 1
+  while (!stopping) {
+    // Argo Apps
+    const argoAppSet = await getArgoApps(applicationCache, pass)
 
-  // Argo AppSets
-  const localArgoAppSets = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
+    // OCP Apps/FLUX
+    await getOCPApps(applicationCache, argoAppSet, pass)
+    pass++
+  }
+}
 
-  // OCP Apps/FLUX
-  const { localOCPApps = [], remoteOCPApps = [] } = pass > 1 ? await getOCPApps(argoAppSet, pass) : {}
-
+export function generateTransforms(items: ITransformedResource[], isRemote?: boolean): ApplicationCache {
   const filterCounts: FilterCounts = {}
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
-  let items = localSubscriptionApps
-    .concat(localArgoApps)
-    .concat(localArgoAppSets)
-    .concat(localOCPApps)
-    .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions, false))
-  items = items.concat(
-    remoteArgoApps
-      .concat(remoteOCPApps)
-      .map((app) => generateTransformData(app, filterCounts, subscriptions, placementDecisions, true))
-  )
-  aggregatedCache[key] = {
-    filterCounts,
-    items,
-  }
+  items.forEach((app) => {
+    const type = getApplicationType(app)
+    const clusters = getApplicationClusters(app, type, subscriptions, placementDecisions)
+    app.transform = [
+      [app.metadata.name],
+      [type],
+      [getAppNamespace(app)],
+      clusters,
+      ['r'],
+      ['t'],
+      [app.metadata.creationTimestamp as string],
+    ]
+    app.isRemote = isRemote
+    incFilterCounts(filterCounts, 'type', [type])
+    incFilterCounts(filterCounts, 'cluster', clusters)
+  })
+  return { items, filterCounts }
 }
 
-function generateTransformData(
-  app: ITransformedResource,
-  filterCounts: FilterCounts,
-  subscriptions: IResource[],
-  placementDecisions: IResource[],
-  isRemote: boolean
-): IResource {
-  const type = getApplicationType(app)
-  const clusters = getApplicationClusters(app, type, subscriptions, placementDecisions)
-  app.transform = [
-    [app.metadata.name],
-    [type],
-    [getAppNamespace(app)],
-    clusters,
-    ['repos'],
-    ['timewindow'],
-    [app.metadata.creationTimestamp as string],
-  ]
-  app.isRemote = isRemote
-  incFilterCounts(filterCounts, 'type', [type])
-  incFilterCounts(filterCounts, 'cluster', clusters)
-  return app
+export function getApplications() {
+  const items: ITransformedResource[] = []
+  const filterCounts: FilterCounts = {}
+  Object.keys(applicationCache).forEach((key) => {
+    items.push(...applicationCache[key].items)
+    const cnts = applicationCache[key].filterCounts
+    Object.keys(cnts).forEach((parent) => {
+      let category = filterCounts[parent]
+      if (!category) {
+        category = filterCounts[parent] = {}
+      }
+      const types = cnts[parent] //type/cluster
+      Object.keys(types).forEach((child: string) => {
+        let allCnt = category[child]
+        if (!allCnt) {
+          allCnt = category[child] = 0
+        }
+        category[child] += types[child]
+      })
+    })
+  })
+  return { items, filterCounts }
+}
+
+export function filterApplications(filters: FilterSelections, items: ITransformedResource[]) {
+  const filterCategories = Object.keys(filters)
+  items = items.filter((item) => {
+    let isFilterMatch = true
+    // Item must match 1 filter of each category
+    filterCategories.forEach((filter: string) => {
+      let isMatch = true
+      switch (filter) {
+        case 'type':
+          isMatch = filters['type'].some((value: string) => value === item.transform[1][0])
+          break
+        case 'cluster':
+          isMatch = filters['cluster'].some((value: string) => item.transform[3].indexOf(value) !== -1)
+          break
+      }
+      if (!isMatch) {
+        isFilterMatch = false
+      }
+    })
+    return isFilterMatch
+  })
+  return items
 }
 
 // add to filters count that appears in filter dropdown
@@ -163,6 +199,8 @@ function getApplicationType(resource: IResource | IOCPApplication) {
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return 'flux'
+    } else if (isSystemApp(resource.metadata?.namespace)) {
+      return 'openshift-default'
     }
     return 'openshift'
   }
@@ -194,6 +232,7 @@ function getApplicationClusters(
   switch (type) {
     case 'flux':
     case 'openshift':
+    case 'openshift-default':
       if ('status' in resource) {
         return [resource?.status?.cluster]
       }
@@ -325,27 +364,4 @@ function getArgoDestinationCluster(
     }
   }
   return clusterName
-}
-
-export function filterApplications(filters: FilterSelections, items: ITransformedResource[]) {
-  const filterCategories = Object.keys(filters)
-  return items.filter((item) => {
-    let isFilterMatch = true
-    // Item must match 1 filter of each category
-    filterCategories.forEach((filter: string) => {
-      let isMatch = true
-      switch (filter) {
-        case 'type':
-          isMatch = filters['type'].some((value: string) => value === item.transform[1][0])
-          break
-        case 'cluster':
-          isMatch = filters['cluster'].some((value: string) => item.transform[3].indexOf(value) !== -1)
-          break
-      }
-      if (!isMatch) {
-        isFilterMatch = false
-      }
-    })
-    return isFilterMatch
-  })
 }

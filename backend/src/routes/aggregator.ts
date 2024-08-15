@@ -2,29 +2,16 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { FilterCounts, ITransformedResource, paginate } from '../lib/pagination'
+import { paginate } from '../lib/pagination'
 import {
   startAggregatingApplications,
   stopAggregatingApplications,
+  getApplications,
   filterApplications,
 } from './aggregators/applications'
 
-export type AggregateCache = {
-  items: ITransformedResource[]
-  filterCounts: FilterCounts
-}
-export type AggregatedCacheType = {
-  [type: string]: AggregateCache
-}
-
-const aggregatedCache: AggregatedCacheType = {}
-
-export function getAggregatedCache(): AggregatedCacheType {
-  return aggregatedCache
-}
-
 export function startAggregating(): void {
-  void startAggregatingApplications(aggregatedCache, 'applications')
+  void startAggregatingApplications()
 }
 
 export function stopAggregating(): void {
@@ -38,7 +25,7 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   if (type.length < 3) return notFound(req, res)
   switch (type[2]) {
     case 'applications':
-      return paginate(req, res, token, aggregatedCache['applications'], filterApplications)
+      return paginate(req, res, token, getApplications, filterApplications)
   }
   return notFound(req, res)
 }

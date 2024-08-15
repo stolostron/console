@@ -68,7 +68,7 @@ export function ApplicationOverviewPageContent() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
 
-  const managedClusters = useAllClusters(true)
+  const managedClusters = useAllClusters(true, true)
   const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,

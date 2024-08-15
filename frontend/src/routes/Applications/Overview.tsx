@@ -400,7 +400,7 @@ export default function ApplicationsOverview() {
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const managedClusters = useAllClusters(true)
+  const managedClusters = useAllClusters(true, true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
