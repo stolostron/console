@@ -143,13 +143,10 @@ export function parseUpgradeRiskPredictions(upgradeRiskPredictions: any) {
   let criticalUpdateCount = 0
   let warningUpdateCount = 0
   let infoUpdateCount = 0
-  let percentOfClustersWithRisk = 0
-  let totalClusters = 0
   let clustersWithRiskPredictors = 0
 
   if (upgradeRiskPredictions.length > 0) {
     upgradeRiskPredictions.forEach((cluster: any) => {
-      totalClusters++
       if (
         cluster.upgrade_risks_predictors &&
         cluster.upgrade_risks_predictors.alerts &&
@@ -172,14 +169,12 @@ export function parseUpgradeRiskPredictions(upgradeRiskPredictions: any) {
       }
     })
   }
-  if (totalClusters > 0) {
-    percentOfClustersWithRisk = parseFloat(((clustersWithRiskPredictors / totalClusters) * 100).toFixed(1))
-  }
+
   return {
     criticalUpdateCount,
     warningUpdateCount,
     infoUpdateCount,
-    percentOfClustersWithRisk,
+    clustersWithRiskPredictors,
   }
 }
 
@@ -285,15 +280,15 @@ export function getComplianceData(
   const compliantClusters = tempClusters.filter((c) => !nonCompliantClusters.has(c))
   return [
     {
-      key: t('With violations'),
+      key: t('Violations'),
       value: nonCompliantClusters.size,
-      link: `${NavigationPath.policies}?violations=with-violations`,
+      link: `${NavigationPath.policies}?violations=violations`,
     },
     {
-      key: t('Without violations'),
+      key: t('No violations'),
       value: compliantClusters.length,
       isPrimary: true,
-      link: `${NavigationPath.policies}?violations=without-violations&violations=no-status`,
+      link: `${NavigationPath.policies}?violations=no-violations&violations=no-status`,
     },
   ]
 }

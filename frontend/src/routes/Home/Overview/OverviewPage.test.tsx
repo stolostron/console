@@ -1115,7 +1115,7 @@ it('should render overview page with expected data', async () => {
 
   // Check Cluster violations chart rendered
   await waitFor(() => expect(getAllByText('Cluster violations')).toHaveLength(2))
-  await waitFor(() => expect(getByText('1 Without violations')).toBeTruthy())
+  await waitFor(() => expect(getByText('1 With no violations')).toBeTruthy())
   await waitFor(() => expect(getByText('1 With violations')).toBeTruthy())
 
   // Check PolicyReport chart

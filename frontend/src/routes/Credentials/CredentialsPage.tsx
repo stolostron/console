@@ -118,10 +118,25 @@ export function CredentialsTable(props: {
     return inUse
   }
 
+  const getAdditionalActionsText = (item: Secret) => {
+    const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
+    if (label === Provider.redhatcloud) {
+      if (CredentialIsInUseByDiscovery(item)) {
+        return t('Configure cluster discovery')
+      } else {
+        return t('Create cluster discovery')
+      }
+    } else {
+      return '-'
+    }
+  }
+
   return (
     <Fragment>
       <BulkActionModal<Secret> {...modalProps} />
       <AcmTable<Secret>
+        showExportButton
+        exportFilePrefix="credentials"
         emptyState={
           <AcmEmptyState
             title={t(`You don't have any credentials`)}
@@ -164,6 +179,7 @@ export function CredentialsTable(props: {
                 </Link>
               </span>
             ),
+            exportContent: (secret) => secret.metadata.name,
           },
           {
             header: t('Credential type'),
@@ -178,12 +194,18 @@ export function CredentialsTable(props: {
             search: (item: Secret) => {
               return getProviderName(item.metadata?.labels)
             },
+            exportContent: (item: Secret) => {
+              return getProviderName(item.metadata.labels)
+            },
           },
           {
             header: t('Namespace'),
             sort: 'metadata.namespace',
             search: 'metadata.namespace',
             cell: 'metadata.namespace',
+            exportContent: (item: Secret) => {
+              return item.metadata.namespace
+            },
           },
           {
             header: t('Additional actions'),
@@ -202,6 +224,9 @@ export function CredentialsTable(props: {
                 return <span>-</span>
               }
             },
+            exportContent: (item: Secret) => {
+              return getAdditionalActionsText(item)
+            },
             sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
               return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
             },
@@ -214,6 +239,11 @@ export function CredentialsTable(props: {
                 {resource.metadata.creationTimestamp && moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
               </span>
             ),
+            exportContent: (item: Secret) => {
+              if (item.metadata.creationTimestamp) {
+                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
+              }
+            },
           },
           {
             header: '',

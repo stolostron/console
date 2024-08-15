@@ -69,13 +69,13 @@ export function PolicyDetailsHistory(props: {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Without violations')}
+                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('With violations')}
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
                 </div>
               )
             case 'pending':
@@ -92,19 +92,39 @@ export function PolicyDetailsHistory(props: {
               )
           }
         },
+        exportContent: (item: any): string => {
+          const message = item.message ?? '-'
+          let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
+          compliant = compliant ? compliant.trim().toLowerCase() : '-'
+          switch (compliant) {
+            case 'compliant':
+              return t('No violations')
+            case 'noncompliant':
+              return t('Violations')
+            case 'pending':
+              return t('Pending')
+            default:
+              return t('No status')
+          }
+        },
       },
       {
         header: t('Message'),
         cell: (item: any) => {
+          const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart() || '-'
+          return prunedMessage
+        },
+        search: (item: any) => item.message,
+        exportContent: (item: any) => {
           const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
           return prunedMessage ? prunedMessage : '-'
         },
-        search: (item: any) => item.message,
       },
       {
         header: t('Last report'),
         sort: 'index',
         cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
+        exportContent: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
       },
     ],
     [t]
@@ -116,6 +136,8 @@ export function PolicyDetailsHistory(props: {
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
         <AcmTable<HistoryTableData>
+          showExportButton
+          exportFilePrefix={`${policyName}-${policyNamespace}-${clusterName}-${templateName}`}
           items={statusItems}
           emptyState={
             <AcmEmptyState

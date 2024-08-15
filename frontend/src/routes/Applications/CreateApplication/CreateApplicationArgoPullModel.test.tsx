@@ -284,6 +284,7 @@ const placementGit: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    numberOfClusters: 1,
     predicates: [
       {
         requiredClusterSelector: {
@@ -311,6 +312,7 @@ const placementHelm: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
+    numberOfClusters: 1,
     predicates: [
       {
         requiredClusterSelector: {

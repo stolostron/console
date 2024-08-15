@@ -603,7 +603,7 @@ export const getControlDataAZR = (
           available: masterInstanceTypes(t),
           active: 'Standard_D4s_v3',
           validation: {
-            constraint: '[A-Za-z0-9_]+',
+            constraint: '[A-Za-z0-9_-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },
@@ -680,7 +680,7 @@ export const getControlDataAZR = (
           available: ApplicationCreationPage(t),
           active: 'Standard_D2s_v3',
           validation: {
-            constraint: '[A-Za-z0-9_]+',
+            constraint: '[A-Za-z0-9_-]+',
             notification: t('creation.ocp.cluster.valid.alphanumeric.period'),
             required: false,
           },

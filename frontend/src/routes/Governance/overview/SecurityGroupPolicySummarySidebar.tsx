@@ -65,6 +65,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
             </Link>
           )
         },
+        exportContent: (policy: Policy) => policy.metadata.name,
       },
       {
         header: t('Cluster violation'),
@@ -91,6 +92,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
               )
           }
         },
+        exportContent: (policy: Policy) => policy.status?.compliant?.toLowerCase(),
       },
     ],
     [t]
@@ -100,6 +102,8 @@ export function SecurityGroupPolicySummarySidebar(props: {
     <div className={body}>
       <div className={sectionSeparator} />
       <AcmTable<Policy>
+        showExportButton
+        exportFilePrefix="securitygrouppolicysummary"
         items={secGroupPolicies}
         emptyState={undefined} // only shown when secGroupPolicies count > 0
         initialSort={{

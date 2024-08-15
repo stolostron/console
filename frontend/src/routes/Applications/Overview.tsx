@@ -134,15 +134,6 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
   return '-'
 }
 
-// filter system apps unless selected
-function filterSystemApps(items: IResource[], filters: any) {
-  if (filters?.type !== 'system') {
-    const filtered = items.filter((item) => isSystemApp(item.metadata?.namespace))
-    if (filtered.length) return filtered
-  }
-  return items
-}
-
 function isSystemApp(namespace?: string) {
   return (
     namespace &&
@@ -490,7 +481,7 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
-  const allApplications = filterSystemApps(resultView.items, requestedView?.filters)
+  const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
     () => [...allApplications.map((app) => generateTransformData(app))],
@@ -569,6 +560,9 @@ export default function ApplicationsOverview() {
             </span>
           )
         },
+        exportContent: (application) => {
+          return application.metadata?.name
+        },
       },
       {
         header: t('Type'),
@@ -598,6 +592,9 @@ export default function ApplicationsOverview() {
         ),
         transforms: [cellWidth(15)],
         // probably don't need search if we have a type filter
+        exportContent: (resource) => {
+          return getApplicationType(resource, t)
+        },
       },
       {
         header: t('Namespace'),
@@ -610,6 +607,9 @@ export default function ApplicationsOverview() {
           'Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.'
         ),
         transforms: [cellWidth(20)],
+        exportContent: (resource) => {
+          return getAppNamespace(resource)
+        },
       },
       {
         header: t('Clusters'),
@@ -632,6 +632,18 @@ export default function ApplicationsOverview() {
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
+        exportContent: (resource) => {
+          const clusterList = getClusterList(
+            resource,
+            argoApplications,
+            placementDecisions,
+            subscriptions,
+            localCluster,
+            managedClusters
+          )
+          const clusterCount = getClusterCount(clusterList)
+          return getClusterCountString(t, clusterCount, clusterList, resource)
+        },
       },
       {
         header: t('Repository'),
@@ -647,6 +659,14 @@ export default function ApplicationsOverview() {
           )
         },
         tooltip: t('Provides links to each of the resource repositories used by the application.'),
+        sort: 'transformed.resourceText',
+        search: 'transformed.resourceText',
+        exportContent: (resource) => {
+          const appRepos = getApplicationRepos(resource, subscriptions, channels)
+          if (appRepos) {
+            return appRepos.map((repo) => repo.type).toString()
+          }
+        },
       },
       {
         header: t('Time window'),
@@ -656,6 +676,9 @@ export default function ApplicationsOverview() {
         tooltip: t('Indicates if updates to any of the application resources are subject to a deployment time window.'),
         sort: 'transformed.timeWindow',
         search: 'transformed.timeWindow',
+        exportContent: (resource) => {
+          return getTimeWindow(resource)
+        },
       },
       ...extensionColumns,
       {
@@ -665,6 +688,9 @@ export default function ApplicationsOverview() {
         },
         sort: 'metadata.creationTimestamp',
         search: 'transformed.createdText',
+        exportContent: (resource) => {
+          return getAge(resource, '', 'metadata.creationTimestamp')
+        },
       },
     ],
     [
@@ -1104,6 +1130,8 @@ export default function ApplicationsOverview() {
             {compareAppTypesLink(false)}
           </>
         }
+        showExportButton
+        exportFilePrefix="applicationsoverview"
         emptyState={
           <AcmEmptyState
             key="appOverviewEmptyState"

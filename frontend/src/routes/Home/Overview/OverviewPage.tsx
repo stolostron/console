@@ -490,7 +490,7 @@ export default function OverviewPage() {
         link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
       },
       {
-        key: t('Without violations'),
+        key: t('With no violations'),
         value: compliantClusters.length,
         isPrimary: true,
         link: buildClusterComplianceLinks(compliantClusters),
