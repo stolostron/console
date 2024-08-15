@@ -486,7 +486,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
   }
 
-  // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
+  // If all data not loaded (!loaded) & eventz data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
   if (!loaded && eventsLoaded && !globalHubLoading) {
     setLoaded(true)
   }
