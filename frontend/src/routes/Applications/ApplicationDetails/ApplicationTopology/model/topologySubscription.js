@@ -424,11 +424,30 @@ const createIngressRouteChild = (parentObject, clustersNames, links, nodes) => {
   }
 }
 
-const createControllerRevisionChild = (parentObject, clustersNames, links, nodes) => {
+export const createControllerRevisionChild = (parentObject, clustersNames, links, nodes) => {
   const parentType = get(parentObject, 'type', '')
-  if (parentType === 'daemonset' || parentType === 'statefulset') {
-    // create only for daemonset or statefulset types
+  if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
+    // create only for daemonset or statefulset or virtualmachine types
     const pNode = createChildNode(parentObject, clustersNames, 'controllerrevision', links, nodes)
+    if (parentType != 'virtualmachine') {
+      return createChildNode(pNode, clustersNames, 'pod', links, nodes)
+    }
+    return pNode
+  }
+}
+
+export const createDataVolumeChild = (parentObject, clustersNames, links, nodes) => {
+  const parentType = get(parentObject, 'type', '')
+  if (parentType === 'virtualmachine') {
+    const pNode = createChildNode(parentObject, clustersNames, 'datavolume', links, nodes)
+    return createChildNode(pNode, clustersNames, 'persistentvolumeclaim', links, nodes)
+  }
+}
+
+export const createVirtualMachineInstance = (parentObject, clustersNames, links, nodes) => {
+  const parentType = get(parentObject, 'type', '')
+  if (parentType === 'virtualmachine') {
+    const pNode = createChildNode(parentObject, clustersNames, 'virtualmachineinstance', links, nodes)
     return createChildNode(pNode, clustersNames, 'pod', links, nodes)
   }
 }
