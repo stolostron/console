@@ -429,7 +429,7 @@ export const createControllerRevisionChild = (parentObject, clustersNames, links
   if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
     // create only for daemonset or statefulset or virtualmachine types
     const pNode = createChildNode(parentObject, clustersNames, 'controllerrevision', links, nodes)
-    if (parentType != 'virtualmachine') {
+    if (parentType !== 'virtualmachine') {
       return createChildNode(pNode, clustersNames, 'pod', links, nodes)
     }
     return pNode
@@ -442,6 +442,7 @@ export const createDataVolumeChild = (parentObject, clustersNames, links, nodes)
     const pNode = createChildNode(parentObject, clustersNames, 'datavolume', links, nodes)
     return createChildNode(pNode, clustersNames, 'persistentvolumeclaim', links, nodes)
   }
+  return parentObject
 }
 
 export const createVirtualMachineInstance = (parentObject, clustersNames, links, nodes) => {
@@ -450,6 +451,7 @@ export const createVirtualMachineInstance = (parentObject, clustersNames, links,
     const pNode = createChildNode(parentObject, clustersNames, 'virtualmachineinstance', links, nodes)
     return createChildNode(pNode, clustersNames, 'pod', links, nodes)
   }
+  return parentObject
 }
 
 const createPodChild = (parentObject, clustersNames, links, nodes) => {

@@ -404,13 +404,13 @@ export const isResourceNamespaceScoped = (node) => {
   return false
 }
 
-export const getNameWithVolumePostfix = (name) => {
+export const getNameWithoutVolumePostfix = (name) => {
   return name.substr(0, name.lastIndexOf('-volume'))
 }
 
 export const getNameWithoutVMTypeHash = (resource) => {
-  let nameNoHash = resource.name,
-    vmType
+  const nameNoHash = resource.name
+  let vmType
   const labelsList = resource.label ? R.split(';')(resource.label) : []
 
   for (let i = 0; i < labelsList.length; i++) {
@@ -428,7 +428,7 @@ export const getNameWithoutVMTypeHash = (resource) => {
 }
 
 export const getVMNameWithoutPodHash = (resource) => {
-  let nameNoHash = resource.name
+  const nameNoHash = resource.name
   const labelsList = resource.label ? R.split(';')(resource.label) : []
 
   for (let i = 0; i < labelsList.length; i++) {

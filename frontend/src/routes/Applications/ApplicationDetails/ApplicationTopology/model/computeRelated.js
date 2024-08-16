@@ -14,7 +14,7 @@ import {
   getRouteNameWithoutIngressHash,
   updateAppClustersMatchingSearch,
   getResourcesClustersForApp,
-  getNameWithVolumePostfix,
+  getNameWithoutVolumePostfix,
   getNameWithoutVMTypeHash,
   getVMNameWithoutPodHash,
 } from '../helpers/diagram-helpers-utils'
@@ -113,7 +113,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
         switch (kind) {
           case 'PersistentVolumeClaim':
           case 'DataVolume':
-            nameNoHash = getNameWithVolumePostfix(nameNoHash)
+            nameNoHash = getNameWithoutVolumePostfix(nameNoHash)
             break
           case 'ControllerRevision':
             nameNoHash = getNameWithoutVMTypeHash(relatedKindList[i])
