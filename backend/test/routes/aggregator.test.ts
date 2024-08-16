@@ -63,10 +63,17 @@ describe(`aggregator Route`, function () {
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseFiltered))
   })
 })
-
 const responseNoFilter = {
   page: 1,
   items: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name: 'argoapplication-1',
+        namespace: 'openshift-gitops',
+      },
+    },
     {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
@@ -88,14 +95,6 @@ const responseNoFilter = {
         syncPolicy: {},
       },
       status: {},
-    },
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'ApplicationSet',
-      metadata: {
-        name: 'argoapplication-1',
-        namespace: 'openshift-gitops',
-      },
     },
     {
       apiVersion: 'apps/v1',
@@ -177,8 +176,8 @@ const responseNoFilter = {
   filterCounts: {
     type: {
       subscription: 1,
-      argo: 2,
       appset: 1,
+      argo: 2,
       openshift: 2,
       flux: 1,
     },
@@ -191,6 +190,14 @@ const responseNoFilter = {
   },
   emptyResult: false,
   isPreProcessed: true,
+  request: {
+    page: 1,
+    perPage: 10,
+    sortBy: {
+      index: 0,
+      direction: 'asc',
+    },
+  },
 }
 
 const responseFiltered = {
@@ -214,8 +221,8 @@ const responseFiltered = {
   filterCounts: {
     type: {
       subscription: 1,
-      argo: 2,
       appset: 1,
+      argo: 2,
       openshift: 2,
       flux: 1,
     },
@@ -228,6 +235,18 @@ const responseFiltered = {
   },
   emptyResult: false,
   isPreProcessed: true,
+  request: {
+    page: 1,
+    perPage: 10,
+    search: 'tes',
+    filters: {
+      type: ['subscription'],
+    },
+    sortBy: {
+      index: 0,
+      direction: 'desc',
+    },
+  },
 }
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
