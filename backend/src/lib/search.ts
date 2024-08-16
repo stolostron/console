@@ -53,6 +53,14 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   }
   return options
 }
+
+// generate programmatically
+export const pagedSearchQueries: string[][] = []
+for (let i = 0; i < 27; i++) {
+  pagedSearchQueries[i] =
+    i < 26 ? [`${String.fromCharCode(i + 97)}*`] : ['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*']
+}
+
 export async function getPagedSearchResources(
   query: {
     operationName: string
@@ -65,8 +73,7 @@ export async function getPagedSearchResources(
   let resources: IResource[] = []
   for (let i = 0; i < 27; ) {
     const _query = structuredClone(query)
-    const values =
-      i < 26 ? [`${String.fromCharCode(i + 97)}*`] : ['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*']
+    const values = pagedSearchQueries[i]
     _query.variables.input[0].filters.push({
       property: 'name',
       values,

@@ -68,14 +68,10 @@ export function startAggregatingApplications() {
   void searchAPILoop()
 }
 
-// aggregate local applications found in kube every 10 seconds
+// aggregate local applications found in kube every 5 seconds
 async function localKubeLoop(): Promise<void> {
   while (!stopping) {
-    // ACM Apps
-    applicationCache['subscription'] = generateTransforms(getKubeResources('Application', 'app.k8s.io/v1beta1'))
-
-    // AppSets
-    applicationCache['appset'] = generateTransforms(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+    aggregateKubeApplications()
     await new Promise((r) => setTimeout(r, 5000))
   }
 }
@@ -83,13 +79,25 @@ async function localKubeLoop(): Promise<void> {
 async function searchAPILoop(): Promise<void> {
   let pass = 1
   while (!stopping) {
-    // Argo Apps
-    const argoAppSet = await getArgoApps(applicationCache, pass)
-
-    // OCP Apps/FLUX
-    await getOCPApps(applicationCache, argoAppSet, pass)
+    await aggregatSearchAPIApplications(pass)
     pass++
   }
+}
+
+export function aggregateKubeApplications() {
+  // ACM Apps
+  applicationCache['subscription'] = generateTransforms(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+
+  // AppSets
+  applicationCache['appset'] = generateTransforms(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+}
+
+export async function aggregatSearchAPIApplications(pass: number) {
+  // Argo Apps
+  const argoAppSet = await getArgoApps(applicationCache, pass)
+
+  // OCP Apps/FLUX
+  await getOCPApps(applicationCache, argoAppSet, pass)
 }
 
 export function generateTransforms(items: ITransformedResource[], isRemote?: boolean): ApplicationCache {
