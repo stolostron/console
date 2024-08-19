@@ -42,9 +42,9 @@ export function ClusterDestroy({
   cluster,
   agentClusterInstall,
 }: {
-  isLoading: boolean
-  cluster: Cluster
-  agentClusterInstall?: AgentClusterInstallK8sResource
+  readonly isLoading: boolean
+  readonly cluster: Cluster
+  readonly agentClusterInstall?: AgentClusterInstallK8sResource
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -97,7 +97,7 @@ export function ClusterDestroy({
                 variant="link"
                 icon={<ExternalLinkAltIcon />}
                 iconPosition="right"
-                onClick={() => launchLogs(cluster!, configMaps)}
+                onClick={() => launchLogs(cluster, configMaps)}
               >
                 {t('view.logs')}
               </AcmButton>
