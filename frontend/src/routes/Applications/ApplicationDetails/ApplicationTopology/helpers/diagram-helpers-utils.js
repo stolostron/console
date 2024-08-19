@@ -405,7 +405,7 @@ export const isResourceNamespaceScoped = (node) => {
 }
 
 export const getNameWithoutVolumePostfix = (name) => {
-  return name.substr(0, name.lastIndexOf('-volume'))
+  return name.substring(0, name.lastIndexOf('-volume'))
 }
 
 export const getNameWithoutVMTypeHash = (resource) => {
@@ -419,7 +419,7 @@ export const getNameWithoutVMTypeHash = (resource) => {
       const labelKey = values[0].trim()
       if (labelKey === 'instancetype.kubevirt.io/object-name') {
         vmType = values[1].trim()
-        return nameNoHash.substr(0, nameNoHash.indexOf(`-${vmType}`))
+        return nameNoHash.substring(0, nameNoHash.indexOf(`-${vmType}`))
       }
     }
   }
