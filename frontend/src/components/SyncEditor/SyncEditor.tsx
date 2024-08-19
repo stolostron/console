@@ -204,13 +204,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
           editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
         }
-        const selections = editorRef.current.getSelections()
         // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
         if (
           autoCreateNs && // make sure resource has namespace
-          selections.length === 1 &&
-          selections[0].startColumn === 1 &&
-          selections[0].endLineNumber === model.getLineCount()
+          selection.startColumn === 1 &&
+          selection.endLineNumber === model.getLineCount()
         ) {
           let nameInx
           let hasMetadata = false

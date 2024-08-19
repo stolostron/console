@@ -117,7 +117,10 @@ const MonacoEditor = (props: {
         past: ['past'],
       },
       forceTokenization: () => {},
-      getLineCount: () => {},
+      getLineCount: () => {
+        const text = editorMockRef.current.editorContent
+        return text.trim().split('\n').length
+      },
       getFullModelRange: () => {},
       canUndo: () => true,
       canRedo: () => true,

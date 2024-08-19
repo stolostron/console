@@ -354,7 +354,6 @@ describe('SyncEditor component', () => {
         kind: 'Policy',
         metadata: {
           name: 'test',
-          namespace: 'default',
         },
         spec: {
           disabled: false,
@@ -369,15 +368,15 @@ describe('SyncEditor component', () => {
     }) as HTMLTextAreaElement
 
     await waitFor(() => expect(input).toHaveTextContent('apiVersion'))
-    // remove namespace
-    const text = `namespace: default`
-    input.focus()
-    const i = input.value.indexOf(text)
-    input.setSelectionRange(i, i + text.length)
-    userEvent.type(input, ' ')
-    await new Promise((resolve) => setTimeout(resolve, 700)) // wait for debounce
-    const metadata = get(onEditorChange.mock.calls, '0.0.resources.0.metadata')
-    expect(metadata['namespace']).not.toBeUndefined()
+    input.setSelectionRange(0, 1000)
+    const paste = createEvent.paste(input, {
+      clipboardData: {
+        getData: () => pastedWONSResource,
+      },
+    })
+    fireEvent(input, paste)
+    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
+    expect(input).toHaveMultilineValue(pastedWNSResource)
   })
 
   it.skip('keyboard', async () => {
@@ -712,6 +711,11 @@ const certificate =
 
 const pastedResource =
   'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: "|"\n    -----BEGIN CERTIFICATE-----\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllJustFun\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\n    FakeCertificateContentsFinalLine==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  clusterSelector:\n    matchExpressions:\n      - key: name\n        operator: In\n        values:\n          - local-cluster\n  clusterConditions: []\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: apps.open-cluster-management.io\n  kind: PlacementRule\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
+
+const pastedWONSResource =
+  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\nspec:\n  disabled: false'
+const pastedWNSResource =
+  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: ""\nspec:\n  disabled: false'
 
 const newResourceYaml =
   'apiVersion: policy.open-cluster-management.io/v1\n' +
