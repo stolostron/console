@@ -47,6 +47,10 @@ export const nodeMustHavePods = (node) => {
     ])
   ) {
     //pod deployables must have pods
+    if (node.type === 'controllerrevision' && node.specs.parent && node.specs.parent.parentType === 'virtualmachine') {
+      // exception for controllerrevision created by VMs
+      return false
+    }
     return true
   }
   const hasContainers = R.pathOr([], ['specs', 'raw', 'spec', 'template', 'spec', 'containers'])(node).length > 0
@@ -398,4 +402,44 @@ export const isResourceNamespaceScoped = (node) => {
   }
 
   return false
+}
+
+export const getNameWithoutVolumePostfix = (name) => {
+  return name.substring(0, name.lastIndexOf('-volume'))
+}
+
+export const getNameWithoutVMTypeHash = (resource) => {
+  const nameNoHash = resource.name
+  let vmType
+  const labelsList = resource.label ? R.split(';')(resource.label) : []
+
+  for (let i = 0; i < labelsList.length; i++) {
+    const values = R.split('=')(labelsList[i])
+    if (values.length === 2) {
+      const labelKey = values[0].trim()
+      if (labelKey === 'instancetype.kubevirt.io/object-name') {
+        vmType = values[1].trim()
+        return nameNoHash.substring(0, nameNoHash.indexOf(`-${vmType}`))
+      }
+    }
+  }
+
+  return nameNoHash
+}
+
+export const getVMNameWithoutPodHash = (resource) => {
+  const nameNoHash = resource.name
+  const labelsList = resource.label ? R.split(';')(resource.label) : []
+
+  for (let i = 0; i < labelsList.length; i++) {
+    const values = R.split('=')(labelsList[i])
+    if (values.length === 2) {
+      const labelKey = values[0].trim()
+      if (labelKey === 'vm.kubevirt.io/name') {
+        return values[1].trim()
+      }
+    }
+  }
+
+  return nameNoHash
 }

@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get, uniq, uniqBy } from 'lodash'
 import { getClusterName, addClusters, processMultiples } from './utils'
-import { createReplicaChild } from './topologySubscription'
+import {
+  createReplicaChild,
+  createControllerRevisionChild,
+  createDataVolumeChild,
+  createVirtualMachineInstance,
+} from './topologySubscription'
 
 export function getArgoTopology(application, argoData, managedClusters) {
   const { topology, cluster } = argoData
@@ -136,6 +141,12 @@ export function getArgoTopology(application, argoData, managedClusters) {
     const template = { metadata: {} }
     // create replica subobject, if this object defines a replicas
     createReplicaChild(deployableObj, clusterNames, template, links, nodes)
+
+    createControllerRevisionChild(deployableObj, clusterNames, links, nodes)
+
+    createDataVolumeChild(deployableObj, clusterNames, links, nodes)
+
+    createVirtualMachineInstance(deployableObj, clusterNames, links, nodes)
   })
 
   return { nodes: uniqBy(nodes, 'uid'), links }

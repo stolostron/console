@@ -5,7 +5,12 @@ import { fireManagedClusterView, getResource, listNamespacedResources } from '..
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
-import { createReplicaChild } from './topologySubscription'
+import {
+  createReplicaChild,
+  createControllerRevisionChild,
+  createDataVolumeChild,
+  createVirtualMachineInstance,
+} from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
 
 export function getAppSetTopology(application) {
@@ -167,6 +172,12 @@ export function getAppSetTopology(application) {
     const template = { metadata: {} }
     // create replica subobject, if this object defines a replicas
     createReplicaChild(deployableObj, clusterNames, template, links, nodes)
+
+    createControllerRevisionChild(deployableObj, clusterNames, links, nodes)
+
+    createDataVolumeChild(deployableObj, clusterNames, links, nodes)
+
+    createVirtualMachineInstance(deployableObj, clusterNames, links, nodes)
   })
 
   return { nodes: uniqBy(nodes, 'uid'), links }

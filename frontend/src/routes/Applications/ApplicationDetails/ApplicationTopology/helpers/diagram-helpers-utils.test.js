@@ -17,6 +17,9 @@ import {
   getResourcesClustersForApp,
   allClustersAreOnline,
   mustRefreshTopologyMap,
+  getNameWithoutVolumePostfix,
+  getNameWithoutVMTypeHash,
+  getVMNameWithoutPodHash,
 } from './diagram-helpers-utils'
 
 import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
@@ -656,6 +659,20 @@ describe('nodeMustHavePods node with pods POD object', () => {
   })
 })
 
+describe('nodeMustHavePods controllerrevision node with VM parent type', () => {
+  const node = {
+    specs: {
+      parent: {
+        parentType: 'virtualmachine',
+      },
+    },
+    type: 'controllerrevision',
+  }
+  it('nodeMustHavePods controllerrevision object with VM parent type', () => {
+    expect(nodeMustHavePods(node)).toEqual(false)
+  })
+})
+
 describe('isDeployableResource for regular subscription', () => {
   const node = {
     id: 'member--subscription--default--mortgagedc-subscription',
@@ -1193,5 +1210,51 @@ describe('namespaceMatchTargetServer', () => {
 
   it('should match the target server', () => {
     expect(namespaceMatchTargetServer(relatedKind, resourceMapForObject)).toEqual(true)
+  })
+})
+
+describe('getNameWithoutVolumePostfix', () => {
+  it('getNameWithoutVolumePostfix VM name', () => {
+    expect(getNameWithoutVolumePostfix('fedora-plum-walrus-98-volume')).toEqual('fedora-plum-walrus-98')
+  })
+})
+
+describe('getNameWithoutVMTypeHash', () => {
+  const resource = {
+    name: 'fedora-plum-walrus-98-u1.nano-8c88fd46-b8eb-44cd-b27f-62b78bb46494-1',
+    label:
+      'instancetype.kubevirt.io/object-generation=1; instancetype.kubevirt.io/object-kind=VirtualMachineClusterInstancetype; instancetype.kubevirt.io/object-name=u1.nano; instancetype.kubevirt.io/object-uid=8c88fd46-b8eb-44cd-b27f-62b78bb46494; instancetype.kubevirt.io/object-version=v1beta1',
+  }
+  it('getNameWithoutVMTypeHash controllerrevision name', () => {
+    expect(getNameWithoutVMTypeHash(resource)).toEqual('fedora-plum-walrus-98')
+  })
+})
+
+describe('getNameWithoutVMTypeHash no label', () => {
+  const resource = {
+    name: 'fedora-plum-walrus-98-u1.nano-8c88fd46-b8eb-44cd-b27f-62b78bb46494-1',
+  }
+  it('getNameWithoutVMTypeHash controllerrevision no label', () => {
+    expect(getNameWithoutVMTypeHash(resource)).toEqual(resource.name)
+  })
+})
+
+describe('getVMNameWithoutPodHash', () => {
+  const resource = {
+    name: 'virt-launcher-fedora-plum-walrus-98-xn828',
+    label:
+      'kubevirt.io=virt-launcher; kubevirt.io/created-by=f70fabbc-1d94-4a8e-ab8b-164cb66dce9c; kubevirt.io/nodeName=fog28.acm.lab.eng.rdu2.redhat.com; vm.kubevirt.io/name=fedora-plum-walrus-98',
+  }
+  it('getVMNameWithoutPodHash pod name', () => {
+    expect(getVMNameWithoutPodHash(resource)).toEqual('fedora-plum-walrus-98')
+  })
+})
+
+describe('getVMNameWithoutPodHash', () => {
+  const resource = {
+    name: 'virt-launcher-fedora-plum-walrus-98-xn828',
+  }
+  it('getVMNameWithoutPodHash pod name', () => {
+    expect(getVMNameWithoutPodHash(resource)).toEqual(resource.name)
   })
 })
