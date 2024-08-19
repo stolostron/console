@@ -12,7 +12,7 @@ import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { OutlinedCommentsIcon } from '@patternfly/react-icons'
 import { AcmFeedbackModal, AcmFeedbackModalProvider } from './AcmFeedbackModal'
 import { useTranslation } from '../lib/acm-i18next'
-// import { getACMDistributionInfo } from '../resources'
+import { DOC_VERSION } from '../lib/doc-util'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
@@ -42,9 +42,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   const isSubmarinerAvailable = isOverviewAvailable
 
   const { t } = useTranslation()
-
-  // const acmDistribution = getACMDistributionInfo()
-  // console.log('test-acmdistro', acmDistribution)
 
   useEffect(() => {
     const loadOCPAPI = async () => {
@@ -104,7 +101,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
       <AcmFeedbackModalProvider>
         <AcmFeedbackModalButton />
         <AcmFeedbackModal
-          onShareFeedback="https://console.redhat.com/self-managed-feedback-form?source=acm&version="
+          onShareFeedback={`https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`}
           isOpen={toggleOpen}
           onClose={() => setToggleOpen(false)}
         />

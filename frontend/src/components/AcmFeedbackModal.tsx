@@ -24,7 +24,7 @@ export const AcmFeedbackModal = (props: FeedbackModalProps) => {
   const i18nStrings = {
     getSupport: t('Get support'),
     cancel: t('Cancel'),
-    helpUsImproveHCC: t('Help us improve Advanced Cluster Security.'),
+    helpUsImproveHCC: t('Help us improve Red Hat Advanced Cluster Management for Kubernetes.'),
     howIsConsoleExperience: t('What has your console experience been like so far?'),
     openSupportCase: t('Support Case'),
     problemProcessingRequest: t(
@@ -38,7 +38,7 @@ export const AcmFeedbackModal = (props: FeedbackModalProps) => {
   return (
     <>
       <FeedbackModal
-        feedbackLocale={i18nStrings as FeedbackLocale}
+        feedbackLocale={i18nStrings as unknown as FeedbackLocale}
         email="test@redhat.com"
         onShareFeedback={props.onShareFeedback}
         onOpenSupportCase="https://access.redhat.com/support/cases/#/case/new/open-case?caseCreate=true"
