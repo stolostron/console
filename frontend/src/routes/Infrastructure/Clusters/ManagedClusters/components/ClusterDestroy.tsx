@@ -9,7 +9,6 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 import { ButtonVariant } from '@patternfly/react-core'
-import { useClusterDetailsContext } from '../../../../../routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 
 const getLoadingMsgI18nKey = (
@@ -38,43 +37,50 @@ const getLoadingMsgI18nKey = (
   return `${cluster?.status}.inprogress.message`
 }
 
-export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) {
+export function ClusterDestroy({
+  isLoading,
+  cluster,
+  agentClusterInstall,
+}: {
+  isLoading: boolean
+  cluster: Cluster
+  agentClusterInstall?: AgentClusterInstallK8sResource
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { configMapsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
   const isHybrid =
-    props.cluster?.provider &&
-    [Provider.hostinventory, Provider.nutanix].includes(props.cluster?.provider) &&
-    !props.cluster?.isHypershift
-  const { agentClusterInstall } = useClusterDetailsContext()
+    cluster?.provider &&
+    [Provider.hostinventory, Provider.nutanix].includes(cluster?.provider) &&
+    !cluster?.isHypershift
 
   const { loadingTitle, successTitle } =
-    props.cluster.status === ClusterStatus.detaching
+    cluster.status === ClusterStatus.detaching
       ? {
-          loadingTitle: t('detaching.inprogress', { clusterName: props.cluster?.displayName }),
-          successTitle: t('detaching.success', { clusterName: props.cluster?.displayName }),
+          loadingTitle: t('detaching.inprogress', { clusterName: cluster?.displayName }),
+          successTitle: t('detaching.success', { clusterName: cluster?.displayName }),
         }
       : {
-          loadingTitle: t('destroying.inprogress', { clusterName: props.cluster?.displayName }),
-          successTitle: t('destroying.success', { clusterName: props.cluster?.displayName }),
+          loadingTitle: t('destroying.inprogress', { clusterName: cluster?.displayName }),
+          successTitle: t('destroying.success', { clusterName: cluster?.displayName }),
         }
   return (
     <AcmPageProcess
-      isLoading={props.isLoading}
+      isLoading={isLoading}
       loadingTitle={loadingTitle}
       loadingMessage={
         <Trans
-          i18nKey={getLoadingMsgI18nKey(props.cluster, agentClusterInstall)}
-          values={{ clusterName: props.cluster?.displayName }}
+          i18nKey={getLoadingMsgI18nKey(cluster, agentClusterInstall)}
+          values={{ clusterName: cluster?.displayName }}
           components={{ bold: <strong /> }}
         />
       }
       successTitle={successTitle}
       successMessage={
         <Trans
-          i18nKey={`${props.cluster?.status}.success.message`}
-          values={{ clusterName: props.cluster?.displayName }}
+          i18nKey={`${cluster?.status}.success.message`}
+          values={{ clusterName: cluster?.displayName }}
           components={{ bold: <strong /> }}
         />
       }
@@ -85,13 +91,13 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster: Cluster }) 
       }
       loadingSecondaryActions={
         <>
-          {props.cluster?.status === ClusterStatus.destroying &&
+          {cluster?.status === ClusterStatus.destroying &&
             (!isHybrid ? (
               <AcmButton
                 variant="link"
                 icon={<ExternalLinkAltIcon />}
                 iconPosition="right"
-                onClick={() => launchLogs(props.cluster!, configMaps)}
+                onClick={() => launchLogs(cluster!, configMaps)}
               >
                 {t('view.logs')}
               </AcmButton>
