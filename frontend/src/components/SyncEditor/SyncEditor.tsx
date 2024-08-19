@@ -189,11 +189,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
         const selection = editorRef.current.getSelection()
         const pasteText = (event.originalEvent || event).clipboardData.getData('text/plain').trim()
+        const model = editorRef.current.getModel()
+        const lines = pasteText.split(/\r?\n/)
+
         if (selection.selectionStartLineNumber - 1 > 0 && pasteText.startsWith('-----BEGIN')) {
           event.stopPropagation()
           event.preventDefault()
           const lines = pasteText.split(/\r?\n/)
-          const model = editorRef.current.getModel()
           const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
           const leadSpaces = spaces - selection.selectionStartColumn + 1
           const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
@@ -201,6 +203,42 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const joint = `\r\n${spacer}`
           const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
           editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+        }
+        const selections = editorRef.current.getSelections()
+        // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
+        if (
+          autoCreateNs && // make sure resource has namespace
+          selections.length === 1 &&
+          selections[0].startColumn === 1 &&
+          selections[0].endLineNumber === model.getLineCount()
+        ) {
+          let nameInx
+          let hasMetadata = false
+          let hasNamespace = false
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('metadata:')) {
+              hasMetadata = true
+            }
+            if (hasMetadata) {
+              if (lines[i].includes(' name:')) {
+                nameInx = i
+              }
+              if (lines[i].includes(' namespace:')) {
+                hasNamespace = true
+              }
+            }
+            if (hasNamespace || lines[i].startsWith('spec:')) {
+              break
+            }
+          }
+          if (nameInx && !hasNamespace) {
+            // add missing namespace
+            event.stopPropagation()
+            event.preventDefault()
+            lines.splice(nameInx + 1, 0, '  namespace: ""')
+            const text = lines.join('\r\n')
+            editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+          }
         }
       },
       true
@@ -445,7 +483,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         comparison: userComparison,
         change,
         unredactedChange,
-        yaml,
       } = processUser(
         monacoRef,
         value,
@@ -458,12 +495,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly === true,
         validationRef.current,
         value,
-        editableUidSiblings,
-        autoCreateNs
+        editableUidSiblings
       )
       setLastUnredactedChange(unredactedChange)
       setProhibited(protectedRanges)
       setFilteredRows(filteredRows)
+
       // determine what changes were made by user so we can decorate
       // and know what form changes to block
       const allErrors = [...errors.validation, ...errors.syntax]
@@ -518,19 +555,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       const editStack = model['_commandManager']
       setHasRedo(editStack?.future.length > 0)
       setHasUndo(editStack?.currentOpenStackElement || editStack?.past.length > 0)
-
-      // update yaml in editor
-      if (autoCreateNs) {
-        const model = editorRef.current?.getModel()
-        model.resources = cloneDeep(change.resources)
-        const saveDecorations = getResourceEditorDecorations(editorRef, false)
-        const viewState = editorRef.current?.saveViewState()
-        model.setValue(yaml)
-        // restore cursor position
-        editorRef.current?.restoreViewState(viewState)
-        // display Warnings, errors
-        editorRef.current.deltaDecorations([], saveDecorations)
-      }
     }
   }
 
