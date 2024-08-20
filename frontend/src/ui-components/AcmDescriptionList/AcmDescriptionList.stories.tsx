@@ -4,7 +4,7 @@ import { Fragment } from 'react'
 import { AcmDescriptionList } from './AcmDescriptionList'
 import { AcmLabels } from '../AcmLabels/AcmLabels'
 import { CheckCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Button, ButtonVariant } from '@patternfly/react-core'
+import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
 
 export default {
   title: 'DescriptionList',
@@ -17,7 +17,10 @@ const leftItems = [
     key: 'Status',
     value: (
       <Fragment>
-        <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> Ready
+        <Icon status="success">
+          <CheckCircleIcon />
+        </Icon>{' '}
+        Ready
       </Fragment>
     ),
   },

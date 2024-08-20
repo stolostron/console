@@ -187,7 +187,7 @@ function DetailsView(props: {
     <div className={body}>
       <Flex className={backAction}>
         <FlexItem spacer={{ default: 'spacerSm' }}>
-          <AngleLeftIcon color={'var(--pf-v5-global--palette--black-500)'} />
+          <AngleLeftIcon />
         </FlexItem>
         <FlexItem>
           <Button variant="link" isInline component="span" onClick={() => setDetailsView(false)}>

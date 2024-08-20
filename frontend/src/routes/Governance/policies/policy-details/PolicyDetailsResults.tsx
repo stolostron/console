@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Title, Tooltip } from '@patternfly/react-core'
+import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
@@ -168,13 +168,18 @@ export default function PolicyDetailsResults() {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>{' '}
+                  {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div style={{ width: 'max-content' }}>
-                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                   <div style={{ display: 'inline' }}> {t('Violations')}</div>
                   {message.includes('found but not as specified') && <ViewDiffApiCall {...{ item }} />}
                 </div>
@@ -182,13 +187,19 @@ export default function PolicyDetailsResults() {
             case 'pending':
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Pending')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('Pending')}
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('No status')}
                 </div>
               )
           }

@@ -2,7 +2,7 @@
 'use strict'
 
 import React, { ReactNode } from 'react'
-import { FormGroup, Popover } from '@patternfly/react-core'
+import { Button, FormGroup, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 import { TFunction } from 'react-i18next'
@@ -35,14 +35,15 @@ const ControlPanelFormGroup = (props: {
             tooltip ? (
               <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
                 <>
-                  <button
+                  <Button
+                    variant="plain"
                     id={`${controlId}-label-help-button`}
                     aria-label={i18n('More info')}
                     onClick={(e) => e.preventDefault()}
                     className="pf-v5-c-form__group-label-help"
-                  >
-                    <HelpIcon noVerticalAlign />
-                  </button>
+                    style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+                    icon={<HelpIcon />}
+                  />
                   {icon ? <div style={{ display: 'inline-block', marginLeft: '20px' }}>{icon}</div> : null}
                 </>
               </Popover>

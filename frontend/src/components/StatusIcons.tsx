@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, ButtonVariant, Divider, Flex, FlexItem, Tooltip } from '@patternfly/react-core'
+import { Button, ButtonVariant, Divider, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
@@ -36,7 +36,11 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'compliant',
       count: props.compliant,
-      icon: <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />,
+      icon: (
+        <Icon status="success">
+          <CheckCircleIcon />
+        </Icon>
+      ),
       tooltip: props.compliantTooltip,
       href: props.compliantHref,
       onClick: props.compliantOnClick,
@@ -47,7 +51,11 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'violations',
       count: props.violations,
-      icon: <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />,
+      icon: (
+        <Icon status="danger">
+          <ExclamationCircleIcon />
+        </Icon>
+      ),
       tooltip: props.violationsTooltip,
       href: props.violationHref,
       onClick: props.violationOnClick,
@@ -58,7 +66,11 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'pending',
       count: props.pending,
-      icon: <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
+      icon: (
+        <Icon status="warning">
+          <ExclamationTriangleIcon />
+        </Icon>
+      ),
       tooltip: props.pendingTooltip,
       href: props.pendingHref,
       onClick: props.pendingOnClick,
@@ -69,7 +81,11 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'unknown',
       count: props.unknown,
-      icon: <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
+      icon: (
+        <Icon status="warning">
+          <ExclamationTriangleIcon />
+        </Icon>
+      ),
       tooltip: props.unknownTooltip,
       href: props.unknownHref,
       onClick: props.unknownOnClick,

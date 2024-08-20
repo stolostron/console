@@ -68,9 +68,9 @@ export function AcmTextArea(props: AcmTextAreaProps) {
               onClick={(e) => e.preventDefault()}
               // aria-describedby="simple-form-name"
               className="pf-v5-c-form__group-label-help"
-            >
-              <HelpIcon noVerticalAlign />
-            </Button>
+              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+              icon={<HelpIcon />}
+            />
           </Popover>
         ) : (
           <Fragment />

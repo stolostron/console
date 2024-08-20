@@ -11,6 +11,7 @@ import { ManagedCluster } from '../../../resources'
 import { ClusterPolicies, getPolicyForCluster } from '../common/util'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { body, sectionSeparator } from '../common/policySidebarStyles'
+import { Icon } from '@patternfly/react-core'
 
 export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; compliance: string }) {
   const { cluster, compliance } = props
@@ -57,19 +58,25 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
                 </div>
               )
           }

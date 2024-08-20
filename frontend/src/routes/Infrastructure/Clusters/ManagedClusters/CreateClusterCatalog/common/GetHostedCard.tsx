@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { CatalogCardItemType, getPatternflyColor, ICatalogCard, PatternFlyColor } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard } from '@stolostron/react-data-view'
 import { TFunction } from 'react-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { Icon } from '@patternfly/react-core'
 
 function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean): ICatalogCard {
   return {
@@ -18,7 +19,11 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
       {
         type: CatalogCardItemType.List,
         title: t(''),
-        icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
+        icon: (
+          <Icon status="success">
+            <CheckIcon />
+          </Icon>
+        ),
         items: [
           {
             text: t('Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'),

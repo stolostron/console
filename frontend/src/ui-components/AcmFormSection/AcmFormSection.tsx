@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMediaQuery } from '@mui/material'
-import { Button, Popover, Split, SplitItem, Title, TitleProps } from '@patternfly/react-core'
+import { Button, Icon, Popover, Split, SplitItem, Title, TitleProps } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -36,9 +36,13 @@ export function AcmFormSection(props: AcmFormSectionProps) {
                 aria-label={t('More info')}
                 onClick={/* istanbul ignore next */ (e) => e.preventDefault()}
                 className="pf-v5-c-form__group-label-help"
-              >
-                <HelpIcon noVerticalAlign size="sm" />
-              </Button>
+                style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+                icon={
+                  <Icon size="sm">
+                    <HelpIcon />
+                  </Icon>
+                }
+              />
             </Popover>
           </Fragment>
         </SplitItem>
