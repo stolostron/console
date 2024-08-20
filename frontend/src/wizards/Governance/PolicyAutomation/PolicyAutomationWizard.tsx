@@ -6,9 +6,9 @@ import {
   EditMode,
   WizKeyValue,
   Section,
-  Select,
   Step,
   WizardCancel,
+  WizSelect,
   WizardSubmit,
   WizCheckbox,
   WizNumberInput,
@@ -121,7 +121,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               </Alert>
             </WizDetailsHidden>
           )}
-          <Select
+          <WizSelect
             id="secret"
             label={t('Ansible credential')}
             path="spec.automationDef.secret"
@@ -169,7 +169,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
             required
           />
           <>
-            <Select
+            <WizSelect
               id="job"
               label={t('Ansible job')}
               path="spec.automationDef.name"
@@ -209,7 +209,7 @@ export function PolicyAutomationWizard(props: PolicyAutomationWizardProps) {
               'The maximum number of non-compliant cluster policy details that pass to the Ansible platform as extra variables. When it is set to 0, it means no limit. The default value is 1000.'
             )}
           />
-          <Select
+          <WizSelect
             id="mode"
             label={t('Schedule')}
             labelHelp={

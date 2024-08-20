@@ -22,9 +22,9 @@ import {
   EditMode,
   WizItemSelector,
   Section,
-  Select,
   Step,
   WizardCancel,
+  WizSelect,
   WizardSubmit,
   WizCheckbox,
   WizTextInput,
@@ -483,7 +483,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 validation={validateAppSetName}
                 disabled={disableForm}
               />
-              <Select
+              <WizSelect
                 id="namespace"
                 path="metadata.namespace"
                 label={t('Argo server')}
@@ -543,7 +543,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   }
                 }}
               />
-              <Select
+              <WizSelect
                 path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
                 label={t('Requeue time')}
                 options={requeueTimes}
@@ -665,7 +665,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
                 pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
               >
-                <Select
+                <WizSelect
                   label={t('Propagation policy')}
                   options={[
                     { label: t('foreground'), value: 'foreground' },
@@ -944,7 +944,7 @@ function ArgoWizardPlacementSection(props: {
         </WizItemSelector>
       ) : (
         <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-          <Select
+          <WizSelect
             path="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
             label={t('Existing placement')}
             placeholder={t('Select the existing placement')}
