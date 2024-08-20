@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Title } from '@patternfly/react-core'
+import { Icon, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import moment from 'moment'
 import { useMemo } from 'react'
@@ -69,25 +69,37 @@ export function PolicyDetailsHistory(props: {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>{' '}
+                  {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> {t('Violations')}
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>{' '}
+                  {t('Violations')}
                 </div>
               )
             case 'pending':
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Pending')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('Pending')}
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('No status')}
                 </div>
               )
           }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Spinner } from '@patternfly/react-core'
+import { Icon, Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
@@ -27,13 +27,21 @@ const mockClusterImageSet0: ClusterImageSetK8sResource = {
 }
 
 const resultPending = {
-  icon: <InProgressIcon color="currentColor" noVerticalAlign={false} size="sm" />,
+  icon: (
+    <Icon size="sm">
+      <InProgressIcon color="currentColor" />
+    </Icon>
+  ),
   text: 'Not ready',
   type: 'pending',
 }
 
 const resultOK = {
-  icon: <CheckCircleIcon color="#3e8635" noVerticalAlign={false} size="sm" />,
+  icon: (
+    <Icon size="sm" status="success">
+      <CheckCircleIcon />
+    </Icon>
+  ),
   text: 'Ready',
   type: 'ok',
 }
@@ -279,7 +287,11 @@ describe('NodePoolsProgress getNodePoolsStatus ready', () => {
     },
   ]
   it('should process nodepools', async () => {
-    expect(getNodePoolsStatus(nps, t)).toEqual(<CheckCircleIcon color="#3e8635" />)
+    expect(getNodePoolsStatus(nps, t)).toEqual(
+      <Icon status="success">
+        <CheckCircleIcon />
+      </Icon>
+    )
   })
 })
 

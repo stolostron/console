@@ -1407,6 +1407,7 @@
   "External": "External",
   "External infrastructure": "External infrastructure",
   "Extra variables": "Extra variables",
+  "Failed": "Failed",
   "Failed to communicate with the server because of a network timeout.": "Failed to communicate with the server because of a network timeout.",
   "Failed to fetch kubeconfig": "Failed to fetch kubeconfig",
   "Failed to get job names from Ansible": "Failed to get job names from Ansible",

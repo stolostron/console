@@ -6,6 +6,7 @@ import {
   CardBody,
   CardTitle,
   ExpandableSection,
+  Icon,
   PageSection,
   Stack,
   Tooltip,
@@ -161,57 +162,57 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                   <span>{violation.name}</span>
                   {violation.compliant ? (
                     <Tooltip content={t('policies.noviolations', { count: violation.compliant })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'compliant')}
-                          >
-                            {violation.compliant}
-                          </Button>{' '}
-                          &nbsp;
-                          <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'compliant')}
+                        >
+                          {violation.compliant}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="success">
+                          <CheckCircleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
                   )}
                   {violation.noncompliant ? (
                     <Tooltip content={t('policy.violations', { count: violation.noncompliant })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'noncompliant')}
-                          >
-                            {violation.noncompliant}
-                          </Button>{' '}
-                          &nbsp;
-                          <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'noncompliant')}
+                        >
+                          {violation.noncompliant}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="danger">
+                          <ExclamationCircleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
                   )}
                   {violation.pending ? (
                     <Tooltip content={t('policies.pending', { count: violation.pending })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'pending')}
-                          >
-                            {violation.pending}
-                          </Button>{' '}
-                          &nbsp;
-                          <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'pending')}
+                        >
+                          {violation.pending}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="warning">
+                          <ExclamationTriangleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
@@ -355,19 +356,25 @@ function ClustersCard() {
           {renderClusterList(topClustersList, onClick, t)}
           {renderExtraClusterList(
             remainingNoncompliant,
-            <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />,
+            <Icon status="danger">
+              <ExclamationCircleIcon />
+            </Icon>,
             onToggleNon,
             isExpandedNon
           )}
           {renderExtraClusterList(
             remainingUnknown,
-            <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>,
             onToggleUnk,
             isExpandedUnk
           )}
           {renderExtraClusterList(
             remainingCompliant,
-            <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />,
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>,
             onToggleCom,
             isExpandedCom
           )}
@@ -403,7 +410,9 @@ function renderClusterList(
                       {violations.compliant}
                     </Button>{' '}
                     &nbsp;
-                    <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
+                    <Icon status="success">
+                      <CheckCircleIcon />
+                    </Icon>
                   </Fragment>
                 </span>
               </Tooltip>
@@ -421,7 +430,9 @@ function renderClusterList(
                     {violations.noncompliant}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                 </span>
               </Tooltip>
             ) : (
@@ -439,7 +450,9 @@ function renderClusterList(
                       {violations.pending}
                     </Button>{' '}
                     &nbsp;
-                    <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
+                    <Icon status="warning">
+                      <ExclamationTriangleIcon />
+                    </Icon>
                   </Fragment>
                 </span>
               </Tooltip>
@@ -457,7 +470,9 @@ function renderClusterList(
                     {violations.unknown}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
                 </span>
               </Tooltip>
             ) : (

@@ -375,9 +375,9 @@ const ClusterSelector = (props: {
                     aria-label="More info"
                     onClick={(e) => e.preventDefault()}
                     className="pf-v5-c-form__group-label-help"
-                  >
-                    <HelpIcon noVerticalAlign />
-                  </Button>
+                    style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+                    icon={<HelpIcon />}
+                  />
                 </Popover>
               }
               fieldId={'clusterSelector-container'}

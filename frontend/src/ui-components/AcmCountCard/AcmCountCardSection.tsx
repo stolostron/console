@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { Grid, GridItem, gridItemSpanValueShape, Skeleton } from '@patternfly/react-core'
+import { Grid, GridItem, gridItemSpanValueShape, Icon, Skeleton } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 
 import { AcmExpandableCard } from '../AcmExpandable'
@@ -103,7 +103,9 @@ export const AcmCountCardSection = (props: AcmCountCardSection) => {
                   <div className={title}>
                     <span>
                       {card.isDanger && card.count > 0 && (
-                        <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" className={titleIcon} />
+                        <Icon status="danger">
+                          <ExclamationCircleIcon className={titleIcon} />
+                        </Icon>
                       )}
                       {card.title}
                     </span>
