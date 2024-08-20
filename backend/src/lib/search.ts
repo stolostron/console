@@ -54,12 +54,13 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   return options
 }
 
-// generate programmatically
+// create array of [a*] to [z*] programmatically
 export const pagedSearchQueries: string[][] = []
-for (let i = 0; i < 27; i++) {
-  pagedSearchQueries[i] =
-    i < 26 ? [`${String.fromCharCode(i + 97)}*`] : ['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*']
+for (let i = 0; i < 26; i++) {
+  pagedSearchQueries[i] = [`${String.fromCharCode(i + 97)}*`]
 }
+// append with [0*] to [9*]
+pagedSearchQueries.push(['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*'])
 
 export async function getPagedSearchResources(
   query: {
@@ -71,7 +72,7 @@ export async function getPagedSearchResources(
 ) {
   const options = await getServiceAccountOptions()
   let resources: IResource[] = []
-  for (let i = 0; i < 27; ) {
+  for (let i = 0; i < pagedSearchQueries.length; ) {
     const _query = structuredClone(query)
     const values = pagedSearchQueries[i]
     _query.variables.input[0].filters.push({
@@ -122,8 +123,8 @@ export function getSearchResults(options: string | RequestOptions | URL, variabl
           }
           resolve(result)
         } catch (e) {
-          console.error(e)
-          reject(e)
+          console.error(body)
+          reject(Error(body))
         }
         clearTimeout(id)
       })

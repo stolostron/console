@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+  PageSection,
+  Popover,
+  Stack,
+  StackItem,
+  Text,
+  TextContent,
+  TextVariants,
+  ToolbarItem,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
@@ -35,6 +44,7 @@ import {
   Subscription,
 } from '../../resources'
 import {
+  AcmButton,
   AcmDropdown,
   AcmEmptyState,
   AcmTable,
@@ -1040,8 +1050,8 @@ export default function ApplicationsOverview() {
     [canCreateApplication, navigate, t]
   )
 
-  const compareAppTypesLink = useCallback(
-    (isEmptyState: boolean) => (
+  const compareAppTypesLink = useMemo(
+    () => (
       <Popover
         headerContent={t('Compare application types')}
         bodyContent={
@@ -1087,28 +1097,33 @@ export default function ApplicationsOverview() {
         position="bottom"
         maxWidth="850px"
       >
-        <Text
-          component={TextVariants.a}
-          isVisitedLink
-          style={
-            isEmptyState
-              ? {
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  paddingTop: '20px',
-                }
-              : {
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  paddingLeft: '20px',
-                }
-          }
-        >
+        <AcmButton variant="link" isInline>
           {t('Compare application types')}
-        </Text>
+        </AcmButton>
       </Popover>
     ),
     [t]
+  )
+
+  const additionalToolbarItems = useMemo(
+    () => (
+      <>
+        <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>
+      </>
+    ),
+    [compareAppTypesLink]
+  )
+  const emptyStateActions = useMemo(
+    () => (
+      <Stack hasGutter>
+        <StackItem>{appCreationButton}</StackItem>
+        <StackItem>{compareAppTypesLink}</StackItem>
+        <StackItem>
+          <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
+        </StackItem>
+      </Stack>
+    ),
+    [appCreationButton, compareAppTypesLink]
   )
 
   return (
@@ -1124,12 +1139,8 @@ export default function ApplicationsOverview() {
         filters={filters}
         setRequestView={setRequestView}
         resultView={resultView}
-        customTableAction={
-          <>
-            {appCreationButton}
-            {compareAppTypesLink(false)}
-          </>
-        }
+        customTableAction={appCreationButton}
+        additionalToolbarItems={additionalToolbarItems}
         showExportButton
         exportFilePrefix="applicationsoverview"
         emptyState={
@@ -1144,13 +1155,7 @@ export default function ApplicationsOverview() {
                 />
               </Text>
             }
-            action={
-              <>
-                {appCreationButton}
-                <div>{compareAppTypesLink(true)}</div>
-                <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
-              </>
-            }
+            action={emptyStateActions}
           />
         }
         rowActionResolver={rowActionResolver}

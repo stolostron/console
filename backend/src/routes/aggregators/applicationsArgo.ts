@@ -4,6 +4,8 @@ import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 import { ApplicationCacheType, generateTransforms } from './applications'
 
+// query limit per letter
+const ARGO_APP_QUERY_LIMIT = 20000
 const query = {
   operationName: 'searchResult',
   variables: {
@@ -23,7 +25,7 @@ const query = {
             values: ['!local-cluster'],
           },
         ],
-        limit: 20000,
+        limit: ARGO_APP_QUERY_LIMIT,
       },
     ],
   },

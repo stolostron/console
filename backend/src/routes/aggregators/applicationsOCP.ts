@@ -4,6 +4,8 @@ import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 import { ApplicationCacheType, generateTransforms } from './applications'
 
+// query limit per letter
+const OCP_APP_QUERY_LIMIT = 200000
 const query = {
   operationName: 'searchResult',
   variables: {
@@ -15,7 +17,7 @@ const query = {
             values: ['Deployment'],
           },
         ],
-        limit: 200000,
+        limit: OCP_APP_QUERY_LIMIT,
       },
     ],
   },

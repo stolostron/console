@@ -11,6 +11,7 @@ import {
   DropdownToggleCheckbox,
   PageSection,
   Pagination,
+  PaginationProps,
   PaginationVariant,
   PerPageOptions,
   SearchInput,
@@ -474,6 +475,7 @@ export type AcmTableProps<T> = {
   rowActions?: IAcmRowAction<T>[]
   rowActionResolver?: (item: T) => IAcmRowAction<T>[]
   extraToolbarControls?: ReactNode
+  additionalToolbarItems?: ReactNode
   emptyState: ReactNode
   onSelect?: (items: T[]) => void
   initialPage?: number
@@ -513,6 +515,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     rowActions = [],
     rowActionResolver,
     customTableAction,
+    additionalToolbarItems,
     filters = [],
     gridBreakPoint,
     initialSelectedItems,
@@ -1167,6 +1170,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const translatedPaginationTitles = usePaginationTitles()
 
+  const commonPaginationProps: Partial<Omit<PaginationProps, 'ref'>> = {
+    titles: translatedPaginationTitles,
+    itemCount,
+    perPage,
+    page: isPreProcessed ? resultView?.page : page,
+    onSetPage: (_event, page) => setPage(page),
+    onPerPageSelect: (_event, perPage) => updatePerPage(perPage),
+  }
+
   return (
     <Fragment>
       {props.extraToolbarControls && (
@@ -1291,19 +1303,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 />
               </ToolbarItem>
             )}
+            {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
-                <Pagination
-                  titles={translatedPaginationTitles}
-                  itemCount={itemCount}
-                  perPage={perPage}
-                  page={isPreProcessed ? resultView?.page : page}
-                  variant={PaginationVariant.top}
-                  onSetPage={(_event, page) => setPage(page)}
-                  onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                  aria-label={t('Pagination top')}
-                  isCompact
-                />
+                <Pagination {...commonPaginationProps} aria-label={t('Pagination top')} isCompact />
               </ToolbarItem>
             )}
           </ToolbarContent>
@@ -1393,13 +1396,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           )}
           {(!props.autoHidePagination || filtered.length > perPage) && (
             <Pagination
-              titles={translatedPaginationTitles}
-              itemCount={itemCount}
-              perPage={perPage}
-              page={isPreProcessed ? resultView?.page : page}
+              {...commonPaginationProps}
               variant={PaginationVariant.bottom}
-              onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
-              onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
               aria-label={t('Pagination bottom')}
             />
           )}

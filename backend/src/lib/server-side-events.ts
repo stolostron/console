@@ -11,6 +11,10 @@ import { randomString } from './random-string'
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
 
+// If a client hasn't finished receiving a broadcast in over an hour
+// assume the browser has been refreshed or closed
+const PURGE_CLIENT_TIMEOUT = 60 * 60 * 1000
+
 const instanceID = randomString(8)
 
 const {
@@ -92,7 +96,7 @@ export class ServerSideEvents {
     const now = Date.now()
     for (const clientID in this.clients) {
       const client = this.clients[clientID]
-      if (!client || (client.processing && now - this.clients[clientID].processingStart > 3 * 60 * 1000)) {
+      if (!client || (client.processing && now - this.clients[clientID].processingStart > PURGE_CLIENT_TIMEOUT)) {
         delete this.clients[clientID]
       }
     }
