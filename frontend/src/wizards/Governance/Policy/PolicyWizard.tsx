@@ -21,7 +21,6 @@ import {
   useEditMode,
   Radio,
   Section,
-  Select,
   Step,
   StringsMapInput,
   Sync,
@@ -34,6 +33,7 @@ import {
   WizItemSelector,
   WizKeyValue,
   WizRadioGroup,
+  WizSelect,
   WizSingleSelect,
   WizStringsInput,
   WizTextArea,
@@ -507,7 +507,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             />
           </WizRadioGroup>
 
-          <Select
+          <WizSelect
             path="objectDefinition.spec.severity"
             label={t('Severity')}
             placeholder={t('Select severity')}
