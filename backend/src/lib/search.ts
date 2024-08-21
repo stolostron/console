@@ -123,8 +123,12 @@ export function getSearchResults(options: string | RequestOptions | URL, variabl
           }
           resolve(result)
         } catch (e) {
-          console.error(body)
-          reject(Error(body))
+          // search might be overwhelmed
+          // pause before next request
+          setTimeout(() => {
+            console.error(body)
+            reject(Error(body))
+          }, 2 * 1000)
         }
         clearTimeout(id)
       })

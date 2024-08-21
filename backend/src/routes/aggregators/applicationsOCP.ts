@@ -6,6 +6,14 @@ import { ApplicationCacheType, generateTransforms } from './applications'
 
 // query limit per letter
 const OCP_APP_QUERY_LIMIT = 200000
+
+const labelArr: string[] = [
+  'kustomize.toolkit.fluxcd.io/name=',
+  'helm.toolkit.fluxcd.io/name=',
+  'app=',
+  'app.kubernetes.io/part-of=',
+]
+
 const query = {
   operationName: 'searchResult',
   variables: {
@@ -16,6 +24,10 @@ const query = {
             property: 'kind',
             values: ['Deployment'],
           },
+          {
+            property: 'label',
+            values: [...labelArr.map((label) => `${label}*`)],
+          },
         ],
         limit: OCP_APP_QUERY_LIMIT,
       },
@@ -23,13 +35,6 @@ const query = {
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
-
-const labelArr: string[] = [
-  'kustomize.toolkit.fluxcd.io/name=',
-  'helm.toolkit.fluxcd.io/name=',
-  'app=',
-  'app.kubernetes.io/part-of=',
-]
 
 export interface IOCPAppResource extends IResource {
   apigroup: string
@@ -47,7 +52,7 @@ export async function getOCPApps(applicationCache: ApplicationCacheType, argAppS
   const ocpApps = (await getPagedSearchResources(query, pass)) as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
-  // filter ocp apps from search
+  // filter ocp apps from this search
   const openShiftAppResourceMaps: Record<string, IOCPAppResource> = {}
   ocpApps.forEach((ocpApp: IOCPAppResource) => {
     if (ocpApp._hostingSubscription) {
