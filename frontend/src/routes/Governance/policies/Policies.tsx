@@ -228,7 +228,7 @@ export default function PoliciesPage() {
         isDefault: false,
         isFirstVisitChecked: true,
         exportContent: (item) => {
-          return item.source ? item.source : '-'
+          return item.source ?? '-'
         },
       },
       {
@@ -262,7 +262,7 @@ export default function PoliciesPage() {
           const policyAutomationMatch = policyAutomations.find(
             (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name
           )
-          return policyAutomationMatch?.metadata.name ? policyAutomationMatch?.metadata.name : '-'
+          return policyAutomationMatch?.metadata.name ?? '-'
         },
       },
       {
@@ -856,7 +856,7 @@ function usePolicyViolationsColumn(
         clusterViolationSummary.pending ||
         clusterViolationSummary.unknown
       ) {
-        return `compliant: ${clusterViolationSummary.compliant}, noncompliant: ${clusterViolationSummary.noncompliant}, pending: ${clusterViolationSummary.pending},unknown: ${clusterViolationSummary.unknown}`
+        return `${t('no violations: {{count}} cluster', { count: clusterViolationSummary.compliant })}, ${t('violations: {{count}} cluster', { count: clusterViolationSummary.noncompliant })}, ${t('pending: {{count}} cluster', { count: clusterViolationSummary.pending })}, ${t('unknown: {{count}} cluster', { count: clusterViolationSummary.unknown })}`
       }
       return '-'
     },
