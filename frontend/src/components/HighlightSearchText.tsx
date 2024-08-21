@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-export function HighlightSearchText(props: { text?: string; searchText?: string }) {
+export function HighlightSearchText(props: Readonly<{ text?: string; searchText?: string }>) {
   const { text, searchText } = props
   return (
     <>
-      {getSlicedText(text, searchText).map((idSplit, index) => (
-        <span key={`slice-${index}`} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
+      {getSlicedText(text, searchText).map((idSplit) => (
+        <span key={idSplit.text} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
           {idSplit.text}
         </span>
       ))}

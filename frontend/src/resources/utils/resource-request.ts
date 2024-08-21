@@ -67,7 +67,7 @@ export function getBackendUrl() {
     return value
   }
   /* istanbul ignore next */
-  return process.env.REACT_APP_BACKEND_PATH || ''
+  return process.env.REACT_APP_BACKEND_PATH ?? ''
 }
 
 export async function reconcileResources(

@@ -11,7 +11,7 @@ import {
 } from './aggregators/applications'
 
 export function startAggregating(): void {
-  void startAggregatingApplications()
+  startAggregatingApplications()
 }
 
 export function stopAggregating(): void {
@@ -23,9 +23,9 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   if (!token) return unauthorized(req, res)
   const type = req.url.split('?')[0].split('/')
   if (type.length < 3) return notFound(req, res)
-  switch (type[2]) {
-    case 'applications':
-      return paginate(req, res, token, getApplications, filterApplications)
+  if (type[2] === 'applications') {
+    return paginate(req, res, token, getApplications, filterApplications)
   }
+
   return notFound(req, res)
 }

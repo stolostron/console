@@ -77,10 +77,8 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 
     // cache Argo app signature for filtering OCP apps later
     argoAppSet.add(
-      `${argoApp.metadata.name}-${
-        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
-      }-local-cluster)}`
-      // }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}` //TODO
+      `${argoApp.metadata.name}-${definedNamespace || argoApp.spec.destination.namespace}-local-cluster)}`
+      // }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}`
     )
     const isChildOfAppset =
       argoApp.metadata.ownerReferences && argoApp.metadata?.ownerReferences[0].kind === 'ApplicationSet'

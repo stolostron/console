@@ -407,7 +407,7 @@ export default function ApplicationsOverview() {
     open: false,
   })
 
-  const [requestedView, setRequestView] = useState<IRequestListView>()
+  const [requestedView, setRequesedtView] = useState<IRequestListView>()
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -1106,11 +1106,7 @@ export default function ApplicationsOverview() {
   )
 
   const additionalToolbarItems = useMemo(
-    () => (
-      <>
-        <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>
-      </>
-    ),
+    () => <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>,
     [compareAppTypesLink]
   )
   const emptyStateActions = useMemo(
@@ -1137,7 +1133,7 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        setRequestView={setRequestView}
+        setRequestView={setRequesedtView}
         resultView={resultView}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}

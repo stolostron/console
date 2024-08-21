@@ -136,9 +136,8 @@ export function getApplications() {
       }
       const types = cnts[parent] //type/cluster
       Object.keys(types).forEach((child: string) => {
-        let allCnt = category[child]
-        if (!allCnt) {
-          allCnt = category[child] = 0
+        if (!category[child]) {
+          category[child] = 0
         }
         category[child] += types[child]
       })
