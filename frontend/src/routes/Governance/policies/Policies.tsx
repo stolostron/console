@@ -16,6 +16,7 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import moment from 'moment'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmAlert,
@@ -258,7 +259,10 @@ export default function PoliciesPage() {
         order: 8,
         isDefault: false,
         exportContent: (item) => {
-          return item.source ? item.source : '-'
+          const policyAutomationMatch = policyAutomations.find(
+            (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name
+          )
+          return policyAutomationMatch?.metadata.name ? policyAutomationMatch?.metadata.name : '-'
         },
       },
       {
@@ -269,6 +273,12 @@ export default function PoliciesPage() {
         order: 9,
         isDefault: false,
         isFirstVisitChecked: false,
+        exportContent: (item) => {
+          if (item.policy.metadata?.creationTimestamp) {
+            return moment(new Date(item.policy.metadata?.creationTimestamp)).fromNow()
+          }
+          return '-'
+        },
       },
       {
         header: '',
