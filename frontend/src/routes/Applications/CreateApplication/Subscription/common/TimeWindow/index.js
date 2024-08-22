@@ -479,7 +479,7 @@ export class TimeWindow extends Component {
     handleChange(control)
   }
 
-  handleChange(checked, event) {
+  handleChange(event, checked) {
     const { control, handleChange } = this.props
     const { timezoneCache } = this.state
 

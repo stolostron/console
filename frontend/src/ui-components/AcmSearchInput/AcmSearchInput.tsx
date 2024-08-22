@@ -241,7 +241,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         placeholder={t('Enter a value')}
                         id="search-value"
                         value={constraint.value}
-                        onChange={(newValue) => {
+                        onChange={(_event, newValue) => {
                           const newConstraintArray = [...pendingConstraints]
                           newConstraintArray[index].value = newValue
                           setPendingConstraints(newConstraintArray)

@@ -18,7 +18,13 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, DropdownSeparator, KebabToggle } from '@patternfly/react-core/deprecated'
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+  KebabToggle,
+  KebabToggleProps,
+} from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
@@ -72,10 +78,7 @@ export default function PolicySetCard(props: {
     }, 400)
   }
 
-  function onToggle(
-    isOpen: boolean,
-    event: MouseEvent | KeyboardEvent | React.KeyboardEvent<any> | React.MouseEvent<HTMLButtonElement>
-  ) {
+  const onToggle: KebabToggleProps['onToggle'] = (event, isOpen) => {
     event.stopPropagation()
     setIsKebabOpen(isOpen)
   }
@@ -111,19 +114,7 @@ export default function PolicySetCard(props: {
               <>
                 <Dropdown
                   onSelect={onSelectOverflow}
-                  toggle={
-                    <KebabToggle
-                      onToggle={(
-                        _event,
-                        isOpen: boolean,
-                        event:
-                          | MouseEvent
-                          | KeyboardEvent
-                          | React.KeyboardEvent<any>
-                          | React.MouseEvent<HTMLButtonElement>
-                      ) => onToggle(isOpen, event)}
-                    />
-                  }
+                  toggle={<KebabToggle onToggle={onToggle} />}
                   isOpen={isKebabOpen}
                   isPlain
                   dropdownItems={[

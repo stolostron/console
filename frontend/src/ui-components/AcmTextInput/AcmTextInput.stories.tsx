@@ -14,7 +14,7 @@ export const TextInput = () => {
 
   return (
     <AcmForm>
-      <AcmTextInput label="Label" id="123" value={value} onChange={setValue} />
+      <AcmTextInput label="Label" id="123" value={value} onChange={(_event, value) => setValue(value)} />
     </AcmForm>
   )
 }
