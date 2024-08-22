@@ -175,7 +175,7 @@ const EditAICluster: React.FC = () => {
             <Switch
               label={`YAML: ${isPreviewOpen ? 'On' : 'Off'}`}
               isChecked={isPreviewOpen}
-              onChange={(checked) => {
+              onChange={(_event, checked) => {
                 setPreviewOpen(checked)
                 if (checked) {
                   localStorage.setItem(TEMPLATE_EDITOR_OPEN_COOKIE, 'true')

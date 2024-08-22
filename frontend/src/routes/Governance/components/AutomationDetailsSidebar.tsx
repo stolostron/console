@@ -169,7 +169,7 @@ export function AutomationDetailsSidebar(props: {
         ),
       },
     ],
-    []
+    [t]
   )
 
   return (

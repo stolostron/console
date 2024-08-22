@@ -42,11 +42,6 @@ import {
   Page,
   PageSection,
   Popover,
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectProps,
   Split,
   SplitItem,
   Stack,
@@ -58,11 +53,19 @@ import {
   TextInput,
   Tile,
   Title,
+  InputGroupItem,
+} from '@patternfly/react-core'
+import {
+  Select,
+  SelectGroup,
+  SelectOption,
+  SelectOptionObject,
+  SelectProps,
   Wizard,
   WizardContextConsumer,
   WizardFooter,
   WizardStep,
-} from '@patternfly/react-core'
+} from '@patternfly/react-core/deprecated'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import {
   EditIcon,
@@ -982,13 +985,15 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       const { isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
       return (
         <InputGroup>
-          <TextInput
-            {...textInputProps}
-            validated={validated}
-            spellCheck="false"
-            isReadOnly={isReadOnly}
-            type={!isSecret || showSecrets ? 'text' : 'password'}
-          />
+          <InputGroupItem isFill>
+            <TextInput
+              {...textInputProps}
+              validated={validated}
+              spellCheck="false"
+              type={!isSecret || showSecrets ? 'text' : 'password'}
+              readOnlyVariant="default"
+            />
+          </InputGroupItem>
           {value === '' ? (
             <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
           ) : (
@@ -1004,15 +1009,17 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       const { onChange, ...inputProps } = input
       return (
         <InputGroup>
-          <TextInput
-            {...inputProps}
-            validated={validated}
-            isReadOnly={isReadOnly}
-            type={'number'}
-            onChange={(value) => {
-              onChange(Number(value))
-            }}
-          />
+          <InputGroupItem isFill>
+            <TextInput
+              {...inputProps}
+              validated={validated}
+              type={'number'}
+              onChange={(_event, value) => {
+                onChange(Number(value))
+              }}
+              readOnlyVariant="default"
+            />
+          </InputGroupItem>
         </InputGroup>
       )
     }
@@ -1021,15 +1028,21 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       return (
         <InputGroup>
           {hideSecretInput ? (
-            <TextInput {...input} value={'**************'} validated={validated} isReadOnly={true} type={'password'} />
+            <TextInput
+              {...input}
+              value={'**************'}
+              validated={validated}
+              type={'password'}
+              readOnlyVariant="default"
+            />
           ) : (
             <TextArea
               {...input}
               validated={validated}
-              isReadOnly={isReadOnly}
               spellCheck="false"
               resizeOrientation="vertical"
               autoResize={true}
+              readOnlyVariant="default"
             />
           )}
 
@@ -1498,20 +1511,7 @@ function OrderedItemsInput(props: {
   const { input, isReadOnly } = props
   return (
     <Fragment>
-      <DataList
-        aria-label="draggable data list example"
-        isCompact
-        onDragFinish={(itemOrder) => {
-          if (itemOrder.length) {
-            const newItems = itemOrder
-              .map((key) => input.value.find((item, index) => key === input.keyFn(item, index)))
-              .filter((newItem) => newItem != undefined)
-            input.onChange(newItems)
-          }
-        }}
-        itemOrder={input.value.map((item, index) => input.keyFn(item, index))}
-        style={{ borderTop: '0' }}
-      >
+      <DataList aria-label="draggable data list example" isCompact style={{ borderTop: '0' }}>
         {input.value.map((item, index) => {
           const key = input.keyFn(item, index)
           return (
@@ -1565,7 +1565,7 @@ function OrderedItemsInput(props: {
       <Button
         style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
         variant="link"
-        isSmall
+        size="sm"
         onClick={() => input.onCreate?.()}
         icon={<PlusCircleIcon />}
       >

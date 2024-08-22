@@ -116,7 +116,13 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
   return (
     <ToggleGroup>
       {options.map(({ id, contents }) => (
-        <ToggleGroupItem key={id} buttonId={id} isSelected={isSelected(id)} onChange={handleChange} text={contents} />
+        <ToggleGroupItem
+          key={id}
+          buttonId={id}
+          isSelected={isSelected(id)}
+          onChange={(event, _: any) => handleChange(_, event)}
+          text={contents}
+        />
       ))}
     </ToggleGroup>
   )

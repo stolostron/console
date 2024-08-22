@@ -6,16 +6,14 @@ import {
   CardBody,
   CardTitle,
   Divider,
-  Dropdown,
-  DropdownItem,
   Gallery,
   GalleryItem,
-  KebabToggle,
   PageSection,
   Popover,
   Skeleton,
   TextVariants,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'

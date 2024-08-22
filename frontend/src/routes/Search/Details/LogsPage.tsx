@@ -2,16 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import {
-  Button,
-  Checkbox,
-  PageSection,
-  Select,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
-  Tooltip,
-} from '@patternfly/react-core'
+import { Button, Checkbox, PageSection, Tooltip } from '@patternfly/react-core'
+import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
@@ -204,7 +196,7 @@ export function LogsToolbar(props: {
           id="wrapLogLines"
           isChecked={wrapLines}
           data-checked-state={wrapLines}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             toggleWrapLines(checked)
           }}
         />

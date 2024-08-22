@@ -9,14 +9,12 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  Select,
-  SelectOption,
-  SelectVariant,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import {
   InfraEnvFormPage,
   EnvironmentStepFormValues,
@@ -153,7 +151,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
-                  onToggle={setCredentialsOpen}
+                  onToggle={(_event, val) => setCredentialsOpen(val)}
                   onSelect={(_, v) => {
                     setCredentialsUID(v as string)
                     setCredentialsOpen(false)

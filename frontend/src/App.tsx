@@ -1,21 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { useMediaQuery } from '@mui/material'
+import { Nav, NavExpandable, NavItem, NavList, Page, PageSidebar, Title, PageSidebarBody } from '@patternfly/react-core'
 import {
   ApplicationLauncher,
   ApplicationLauncherItem,
-  Nav,
-  NavExpandable,
-  NavItem,
-  NavList,
-  Page,
   PageHeader,
   PageHeaderTools,
   PageHeaderToolsGroup,
   PageHeaderToolsItem,
-  PageSidebar,
-  Title,
-} from '@patternfly/react-core'
+} from '@patternfly/react-core/deprecated'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
@@ -348,8 +342,8 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
   const { routes } = props
   const location = useLocation()
   return (
-    <PageSidebar
-      nav={
+    <PageSidebar>
+      <PageSidebarBody>
         <Nav>
           <NavList>
             {routes.map((route) =>
@@ -374,7 +368,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
             )}
           </NavList>
         </Nav>
-      }
-    />
+      </PageSidebarBody>
+    </PageSidebar>
   )
 }

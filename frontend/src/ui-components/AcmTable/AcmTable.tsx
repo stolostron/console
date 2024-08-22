@@ -4,22 +4,11 @@ import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
-  Dropdown,
-  DropdownGroup,
-  DropdownItem,
-  DropdownSeparator,
-  DropdownToggle,
-  DropdownToggleCheckbox,
   PageSection,
   Pagination,
   PaginationProps,
   PaginationVariant,
   PerPageOptions,
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
   Skeleton,
   Toolbar,
   ToolbarChip,
@@ -30,6 +19,19 @@ import {
   Tooltip,
   TooltipProps,
 } from '@patternfly/react-core'
+import {
+  Dropdown,
+  DropdownGroup,
+  DropdownItem,
+  DropdownSeparator,
+  DropdownToggle,
+  DropdownToggleCheckbox,
+  Select,
+  SelectGroup,
+  SelectOption,
+  SelectOptionObject,
+  SelectVariant,
+} from '@patternfly/react-core/deprecated'
 import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
@@ -45,12 +47,10 @@ import {
   RowWrapperProps,
   sortable,
   SortByDirection,
-  Table,
-  TableBody,
   TableGridBreakpoint,
-  TableHeader,
   TableVariant,
 } from '@patternfly/react-table'
+import { Table, TableBody, TableHeader } from '@patternfly/react-table/deprecated'
 import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
@@ -1277,7 +1277,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       {props.extraToolbarControls && (
         <Toolbar style={topToolbarStyle} inset={{ default: 'insetMd', xl: 'insetLg' }}>
           <ToolbarContent>
-            <ToolbarGroup alignment={{ default: 'alignRight' }}>
+            <ToolbarGroup align={{ default: 'alignRight' }}>
               <ToolbarItem>{props.extraToolbarControls}</ToolbarItem>
             </ToolbarGroup>
           </ToolbarContent>
@@ -1386,7 +1386,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     toggle={
                       <DropdownToggle
                         toggleIndicator={null}
-                        onToggle={(value, event) => {
+                        onToggle={(_event, value, event) => {
                           event.stopPropagation()
                           setIsExportMenuOpen(value)
                         }}
@@ -1877,7 +1877,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
             {toggleText}
           </DropdownToggleCheckbox>,
         ]}
-        onToggle={(isOpen) => setIsOpen(isOpen)}
+        onToggle={(_event, isOpen) => setIsOpen(isOpen)}
       />
     )
   }, [t, selectedCount, onToggleCheckbox, toggleText])

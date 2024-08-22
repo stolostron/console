@@ -3,7 +3,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, Wizard, WizardFooter, WizardContextConsumer, Title, Stack, StackItem } from '@patternfly/react-core'
+import { Button, Title, Stack, StackItem } from '@patternfly/react-core'
+import { Wizard, WizardFooter, WizardContextConsumer } from '@patternfly/react-core/deprecated'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'

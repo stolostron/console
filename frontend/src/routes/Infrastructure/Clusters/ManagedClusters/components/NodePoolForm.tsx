@@ -22,10 +22,10 @@ import {
   Panel,
   PanelMain,
   PanelMainBody,
-  SelectOption,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import {
   ClusterImageSetK8sResource,
   getOCPVersions,

@@ -11,7 +11,8 @@ import {
   AcmTextInput,
   Provider,
 } from '../../../../../ui-components'
-import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Checkbox, ModalVariant } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
@@ -88,7 +89,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
               id="natt-enable"
               label={t('submariner.install.form.nattenable')}
               isChecked={nattEnable}
-              onChange={setNattEnable}
+              onChange={(_event, val) => setNattEnable(val)}
             />
             <AcmSelect
               id="cable-driver"

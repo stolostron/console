@@ -2,9 +2,6 @@
 import {
   Button,
   Divider,
-  Dropdown,
-  DropdownItem,
-  DropdownToggle,
   Menu,
   MenuContent,
   MenuItem,
@@ -15,6 +12,7 @@ import {
   TextInputGroupUtilities,
   Tooltip,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
@@ -542,7 +540,7 @@ export function Searchbar(props: SearchbarProps) {
             toggle={
               <DropdownToggle
                 toggleIndicator={null}
-                onToggle={(value, event) => {
+                onToggle={(_event, value, event) => {
                   event.stopPropagation()
                   setIsExportMenuOpen(value)
                 }}
