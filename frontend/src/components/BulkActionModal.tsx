@@ -159,7 +159,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     id="delete-pull-secret"
                     label={t('Delete pull-secret resource', { count: columns?.length })}
                     isChecked={deletePullSecret}
-                    onChange={setDeletePullSecret}
+                    onChange={(_event, val) => setDeletePullSecret(val)}
                     isDisabled={progress > 0}
                   />
                 </StackItem>

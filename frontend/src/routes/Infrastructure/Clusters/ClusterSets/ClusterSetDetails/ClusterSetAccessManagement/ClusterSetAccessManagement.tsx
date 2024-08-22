@@ -34,12 +34,12 @@ import {
   ModalVariant,
   PageSection,
   Popover,
-  SelectOption,
   Split,
   SplitItem,
   ToggleGroup,
   ToggleGroupItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'

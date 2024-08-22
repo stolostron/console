@@ -3,7 +3,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Select, SelectOption, SelectVariant, Spinner } from '@patternfly/react-core'
+import { Spinner } from '@patternfly/react-core'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 

@@ -59,7 +59,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
         </List>
       </Card>
       {onCancel && onBack ? (
-        <PageGroup sticky="bottom" style={{ height: '68px' }}>
+        <PageGroup style={{ height: '68px' }}>
           <DocPageToolbar onBack={onBack} onCancel={onCancel} />
         </PageGroup>
       ) : (

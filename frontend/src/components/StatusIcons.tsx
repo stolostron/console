@@ -81,7 +81,7 @@ export function StatusIcons(props: {
       return <Link to={href}>{count}</Link>
     } else if (onClick) {
       return (
-        <Button isSmall isInline variant={ButtonVariant.link} onClick={onClick}>
+        <Button size="sm" isInline variant={ButtonVariant.link} onClick={onClick}>
           {count}
         </Button>
       )
@@ -94,7 +94,7 @@ export function StatusIcons(props: {
     <Flex display={{ default: 'inlineFlex' }}>
       {statuses.map(({ key, icon, count, tooltip, href, onClick }, index) => (
         <Fragment key={key}>
-          {index !== 0 && <Divider key={`${key}_d`} isVertical />}
+          {index !== 0 && <Divider key={`${key}_d`} orientation={{ default: 'vertical' }} />}
           <Tooltip content={tooltip}>
             <Flex spaceItems={{ default: 'spaceItemsSm' }}>
               <FlexItem>{icon}</FlexItem>

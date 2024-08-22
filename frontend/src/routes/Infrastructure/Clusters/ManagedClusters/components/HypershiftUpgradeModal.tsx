@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
-import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
+import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import {
   AgentK8sResource,
   AgentMachineK8sResource,
@@ -501,7 +502,7 @@ export function HypershiftUpgradeModal(props: {
             {t(
               'Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.'
             )}
-            <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
+            <Table aria-label={t('Hypershift upgrade table')} variant="compact">
               <Thead>
                 <Tr>
                   <Th>{columnNamesTranslated.name}</Th>
@@ -621,7 +622,7 @@ export function HypershiftUpgradeModal(props: {
                           expandable={true}
                           id="nodepoolgroup"
                         >
-                          <TableComposable
+                          <Table
                             aria-label={t('Hypershift upgrade node pools table')}
                             borders={false}
                             variant="compact"
@@ -686,7 +687,7 @@ export function HypershiftUpgradeModal(props: {
                                 )
                               })}
                             </Tbody>
-                          </TableComposable>
+                          </Table>
                         </AcmExpandableCheckbox>
                       </Td>
                       {!nodepoolsExpanded && (
@@ -703,7 +704,7 @@ export function HypershiftUpgradeModal(props: {
                   </Fragment>
                 )}
               </Tbody>
-            </TableComposable>
+            </Table>
             <ActionGroup>
               <AcmSubmit
                 key="submit-hypershift-upgrade-action"

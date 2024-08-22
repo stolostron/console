@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, FormGroup, Popover, Select, SelectProps, SelectVariant } from '@patternfly/react-core'
+import { Button, FormGroup, Popover } from '@patternfly/react-core'
+import { Select, SelectProps, SelectVariant } from '@patternfly/react-core/deprecated'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useState } from 'react'
 import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmMultiSelect } from './AcmMultiSelect'

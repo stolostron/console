@@ -262,7 +262,7 @@ export function CreateClusterCatalog() {
                 <ExpandableSection
                   style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
                   isExpanded={isAdditionalProvidersExpanded}
-                  onToggle={onAdditionalProvidersToggle}
+                  onToggle={(_event, isExpanded: boolean) => onAdditionalProvidersToggle(isExpanded)}
                   toggleContent={
                     <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Additional providers')}</span>
                   }

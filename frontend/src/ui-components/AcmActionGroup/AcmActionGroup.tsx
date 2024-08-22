@@ -22,7 +22,7 @@ export function AcmActionGroup(props: { children: React.ReactNode[] }) {
           } else {
             return (
               <Fragment key={i}>
-                <Divider isVertical />
+                <Divider orientation={{ default: 'vertical' }} />
                 <FlexItem>{child}</FlexItem>
               </Fragment>
             )

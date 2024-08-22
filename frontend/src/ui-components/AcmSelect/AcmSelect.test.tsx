@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption, SelectVariant } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'

@@ -13,8 +13,8 @@ import {
   PageSection,
   Stack,
   StackItem,
-  Title,
   Tooltip,
+  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
@@ -262,10 +262,11 @@ export default function SearchResults(props: {
     return (
       <PageSection>
         <EmptyState>
-          <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
-          <Title size="lg" headingLevel="h4">
-            {t('Error querying search results')}
-          </Title>
+          <EmptyStateHeader
+            titleText={<>{t('Error querying search results')}</>}
+            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />}
+            headingLevel="h4"
+          />
           <EmptyStateBody>
             <Stack>
               <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
@@ -281,10 +282,11 @@ export default function SearchResults(props: {
     return (
       <PageSection>
         <EmptyState>
-          <EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />
-          <Title size="lg" headingLevel="h4">
-            {t('No results found for the current search criteria.')}
-          </Title>
+          <EmptyStateHeader
+            titleText={<>{t('No results found for the current search criteria.')}</>}
+            icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />}
+            headingLevel="h4"
+          />
         </EmptyState>
       </PageSection>
     )

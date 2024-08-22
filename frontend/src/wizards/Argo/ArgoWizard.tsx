@@ -738,7 +738,7 @@ export function ExternalLinkButton(props: { id: string; href?: string; icon?: Re
         <Button
           id={props.id}
           icon={props.icon}
-          isSmall={true}
+          size="sm"
           variant="link"
           component="a"
           href={props.href}

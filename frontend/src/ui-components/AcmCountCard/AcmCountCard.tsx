@@ -3,23 +3,19 @@
 import { css } from '@emotion/css'
 import {
   Card,
-  CardActions,
   CardActionsProps,
   CardBody,
   CardFooter,
   CardHeader,
-  CardHeaderMain,
   CardProps,
   CardTitle,
-  Dropdown,
-  DropdownItem,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
-  KebabToggle,
   Skeleton,
-  Title,
+  EmptyStateHeader,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -185,17 +181,28 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
       onKeyPress={props.onKeyPress}
     >
       {cardHeader && (
-        <CardHeader>
-          {cardHeader.actions && cardHeader.actions.length > 0 && (
-            <CardActions className={classes.actions}>
-              <CardDropdown dropdownItems={cardHeader.actions} />
-            </CardActions>
-          )}
-          <CardHeaderMain className={classes.cardHeader}>
-            {cardHeader.hasIcon && <AcmIcon icon={AcmIconVariant.template} />}
-            <CardTitle>{cardHeader.title}</CardTitle>
-            <p className={classes.headerDescription}>{cardHeader.description}</p>
-          </CardHeaderMain>
+        <CardHeader
+          {...(cardHeader.actions &&
+            cardHeader.actions.length > 0 && {
+              actions: {
+                actions: (
+                  <>
+                    <CardDropdown dropdownItems={cardHeader.actions} />
+                  </>
+                ),
+                hasNoOffset: false,
+                className: 'undefined',
+              },
+            })}
+        >
+          actions=
+          {
+            <>
+              {cardHeader.hasIcon && <AcmIcon icon={AcmIconVariant.template} />}
+              <CardTitle>{cardHeader.title}</CardTitle>
+              <p className={classes.headerDescription}>{cardHeader.description}</p>
+            </>
+          }
         </CardHeader>
       )}
       {!props.error ? (
@@ -211,16 +218,23 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
         </CardBody>
       ) : (
         <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-          <EmptyStateIcon
-            style={{ fontSize: '36px', marginBottom: '1rem' }}
-            icon={ExclamationCircleIcon}
-            color={'var(--pf-global--danger-color--100)'}
+          <EmptyStateHeader
+            titleText={
+              <>
+                {t('Error occurred while getting the result count.', {
+                  searchName: cardHeader?.title,
+                })}
+              </>
+            }
+            icon={
+              <EmptyStateIcon
+                style={{ fontSize: '36px', marginBottom: '1rem' }}
+                icon={ExclamationCircleIcon}
+                color={'var(--pf-global--danger-color--100)'}
+              />
+            }
+            headingLevel="h4"
           />
-          <Title size="md" headingLevel="h4">
-            {t('Error occurred while getting the result count.', {
-              searchName: cardHeader?.title,
-            })}
-          </Title>
           <EmptyStateBody>{props.errorMessage}</EmptyStateBody>
         </EmptyState>
       )}

@@ -2,7 +2,7 @@
 
 import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { css } from '@emotion/css'
 
 const DEFAULTS = {

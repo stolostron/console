@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { OptionsMenu, OptionsMenuItem, OptionsMenuToggleWithText } from '@patternfly/react-core'
+import { OptionsMenu, OptionsMenuItem, OptionsMenuToggleWithText } from '@patternfly/react-core/deprecated'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'

@@ -1,18 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useState } from 'react'
+import { Label, LabelProps, TooltipPosition } from '@patternfly/react-core'
 import {
   Dropdown,
   DropdownToggle,
   DropdownItem,
   DropdownPosition,
   KebabToggle,
-  Label,
-  LabelProps,
   DropdownProps,
-  TooltipPosition,
   DropdownSeparator,
-} from '@patternfly/react-core'
+} from '@patternfly/react-core/deprecated'
 import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
 

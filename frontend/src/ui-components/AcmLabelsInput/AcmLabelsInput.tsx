@@ -88,7 +88,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
             id={props.id}
             placeholder={props.placeholder}
             isDisabled={/* istanbul ignore next */ props.isDisabled || ValidationContext.isReadOnly}
-            onChange={(value) => {
+            onChange={(_event, value) => {
               setInputValue(value)
             }}
             onKeyDown={(e) => {
