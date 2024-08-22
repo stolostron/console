@@ -159,7 +159,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
             />
           ) : (
             <DropdownToggle
-              isPrimary={props.isPrimary}
+              toggleVariant={props.isPrimary ? 'primary' : undefined}
               id={props.id}
               isDisabled={props.isDisabled}
               onToggle={() => {

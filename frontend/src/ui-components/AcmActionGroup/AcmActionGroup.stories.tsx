@@ -86,7 +86,7 @@ const CreateDropdown = () => {
         <DropdownToggle
           onToggle={() => setOpen(!isOpen)}
           toggleIndicator={CaretDownIcon}
-          isPrimary
+          toggleVariant="primary"
           id="cluster-actions"
         >
           Add cluster
