@@ -297,7 +297,7 @@ function setupNocks() {
   pagedSearchQueries.forEach((query, inx) => {
     const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":200000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":200000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
     )
     if (inx === 0) {
       nocked.reply(200, {
