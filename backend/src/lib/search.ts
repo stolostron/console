@@ -13,7 +13,7 @@ export type ISearchResult = {
       items?: any
       count?: number
       related?: {
-        count: number
+        count?: number
         kind: string
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items?: any
