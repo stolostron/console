@@ -22,7 +22,6 @@ const mockUser1: User = {
     uid: 'e3d73187-dcf4-49a2-b0fb-d2805c5dd584',
   },
   identities: ['myuser:mock-user1'],
-  groups: null,
 }
 
 const mockUser2: User = {
@@ -33,7 +32,6 @@ const mockUser2: User = {
     uid: '',
   },
   identities: [],
-  groups: null,
 }
 
 const mockGroup1: Group = {
