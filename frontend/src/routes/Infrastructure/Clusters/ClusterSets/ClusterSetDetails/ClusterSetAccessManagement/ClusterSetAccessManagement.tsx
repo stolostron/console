@@ -458,7 +458,7 @@ function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
     <div>
       <Popover
         headerContent={t('access.usersInGroup')}
-        bodyContent={props.group.users ? <AcmLabels labels={props.group.users} /> : 'No users in group'}
+        bodyContent={props.group.users ? <AcmLabels labels={props.group.users} /> : t('No users in group')}
       >
         <AcmButton
           style={{ padding: props.useIcon ? 0 : undefined, paddingLeft: '4px' }}
