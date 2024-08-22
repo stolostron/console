@@ -376,7 +376,7 @@ function createSyncButton(
         rel="noreferrer"
         icon={<SyncAltIcon />}
         iconPosition="left"
-        isSmall
+        size="sm"
         onClick={() => {
           setModalProps({
             open: true,
@@ -579,7 +579,7 @@ function createSubsCards(
                       component="a"
                       variant={ButtonVariant.link}
                       rel="noreferrer"
-                      isSmall
+                      size="sm"
                     >
                       {t('Set time window')}
                     </AcmButton>

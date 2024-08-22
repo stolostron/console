@@ -113,7 +113,7 @@ function AnsibleJobTemplateTable() {
                   <AcmButton
                     isInline
                     variant="link"
-                    isSmall
+                    size="sm"
                     tooltip={<Trans i18nKey="template.modal.noCredentials" components={{ bold: <strong /> }} />}
                     isDisabled={ansibleCredentials.length === 0}
                     onClick={() => {
