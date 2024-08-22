@@ -477,7 +477,7 @@ export function AcmDataFormWizard(props: {
           <SplitItem isFilled>{section.title}</SplitItem>
           {hasError && section.type === 'Section' && (
             <span style={{ paddingLeft: '8px' }}>
-              <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+              <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
             </span>
           )}
         </Split>
@@ -698,14 +698,14 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
               {wizardSummary && (
                 <span
                   style={{
-                    backgroundColor: 'var(--pf-c-wizard__nav-link--before--BackgroundColor)',
-                    borderRadius: 'var(--pf-c-wizard__nav-link--before--BorderRadius)',
-                    width: 'var(--pf-c-wizard__nav-link--before--Width)',
-                    height: 'var(--pf-c-wizard__nav-link--before--Height)',
+                    backgroundColor: 'var(--pf-v5-c-wizard__nav-link--before--BackgroundColor)',
+                    borderRadius: 'var(--pf-v5-c-wizard__nav-link--before--BorderRadius)',
+                    width: 'var(--pf-v5-c-wizard__nav-link--before--Width)',
+                    height: 'var(--pf-v5-c-wizard__nav-link--before--Height)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 'var(--pf-c-wizard__nav-link--before--FontSize)',
+                    fontSize: 'var(--pf-v5-c-wizard__nav-link--before--FontSize)',
                   }}
                 >
                   {i.toString()}
@@ -917,7 +917,7 @@ export function AcmDataFormInputs(props: {
                 helperTextInvalid={
                   <Split>
                     <SplitItem isFilled>
-                      <span className="pf-c-form__helper-text pf-m-error">{error}</span>
+                      <span className="pf-v5-c-form__helper-text pf-m-error">{error}</span>
                     </SplitItem>
                     {input.prompt && (
                       <SplitItem>
@@ -941,7 +941,7 @@ export function AcmDataFormInputs(props: {
                 helperText={
                   <Split>
                     <SplitItem isFilled>
-                      <span className="pf-c-form__helper-text">{input.helperText}</span>
+                      <span className="pf-v5-c-form__helper-text">{input.helperText}</span>
                     </SplitItem>
                     {input.prompt && (
                       <SplitItem>
@@ -1433,7 +1433,7 @@ function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: str
         id={`${props.id}-label-help-button`}
         aria-label="More info"
         onClick={(e) => e.preventDefault()}
-        className="pf-c-form__group-label-help"
+        className="pf-v5-c-form__group-label-help"
       >
         <HelpIcon noVerticalAlign />
       </Button>

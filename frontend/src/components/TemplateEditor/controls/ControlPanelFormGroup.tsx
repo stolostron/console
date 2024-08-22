@@ -39,7 +39,7 @@ const ControlPanelFormGroup = (props: {
                     id={`${controlId}-label-help-button`}
                     aria-label={i18n('More info')}
                     onClick={(e) => e.preventDefault()}
-                    className="pf-c-form__group-label-help"
+                    className="pf-v5-c-form__group-label-help"
                   >
                     <HelpIcon noVerticalAlign />
                   </button>

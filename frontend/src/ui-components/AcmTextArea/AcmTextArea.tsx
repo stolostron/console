@@ -67,7 +67,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
               // aria-describedby="simple-form-name"
-              className="pf-c-form__group-label-help"
+              className="pf-v5-c-form__group-label-help"
             >
               <HelpIcon noVerticalAlign />
             </Button>

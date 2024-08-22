@@ -169,7 +169,7 @@ class ControlPanelComboBox extends React.Component {
       'tf--list-box__menu-icon--open': isOpen,
     })
     const inputClasses = classNames({
-      'pf-c-form-control': true,
+      'pf-v5-c-form-control': true,
       input: true,
       disabled: disabled,
     })
@@ -185,7 +185,7 @@ class ControlPanelComboBox extends React.Component {
         <div className="creation-view-controls-combobox">
           <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
             {isLoading || isRefetching ? (
-              <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
+              <div className="creation-view-controls-singleselect-loading  pf-v5-c-form-control">
                 <Spinner size="md" />
                 <div>{active}</div>
               </div>
@@ -206,7 +206,7 @@ class ControlPanelComboBox extends React.Component {
                   >
                     <div className={inputClasses}>
                       <input
-                        className="pf-c-combo-control pf-c-form-control"
+                        className="pf-v5-c-combo-control pf-v5-c-form-control"
                         aria-label={i18n('ListBox input field')}
                         spellCheck="false"
                         role="combobox"

@@ -1,21 +1,21 @@
-.pf-c-content {
-  --pf-c-page__main-wizard--BorderTopWidth: 0;
+.pf-v5-c-content {
+  --pf-v5-c-page__main-wizard--BorderTopWidth: 0;
 }
 
-.pf-c-content .temptifly.showEditor,
+.pf-v5-c-content .temptifly.showEditor,
 .temptifly.showWizard {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.pf-c-content .temptifly .creation-view-split-container.showEditor {
+.pf-v5-c-content .temptifly .creation-view-split-container.showEditor {
   margin: 0;
   padding: 0;
 }
 
-.pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
-.pf-c-content .temptifly.showWizard .creation-view-controls-container {
+.pf-v5-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
+.pf-v5-c-content .temptifly.showWizard .creation-view-controls-container {
   padding: 0;
   margin: 0 -10px 0 0;
   height: 100%;
@@ -28,7 +28,7 @@
   margin-left: 16px;
 }
 
-.pf-c-content .pf-c-wizard__main-body {
+.pf-v5-c-content .pf-v5-c-wizard__main-body {
   height: 100%;
 }
 
@@ -44,10 +44,10 @@
 .temptifly-controls-labels-container,
 .creation-view-controls-labels-container {
   border-style: solid;
-  border-width: var(--pf-global--BorderWidth--sm);
-  border-top-color: var(--pf-global--BorderColor--300);
-  border-right-color: var(--pf-global--BorderColor--300);
-  border-bottom-color: var(--pf-global--BorderColor--200);
-  border-left-color: var(--pf-global--BorderColor--300);
+  border-width: var(--pf-v5-global--BorderWidth--sm);
+  border-top-color: var(--pf-v5-global--BorderColor--300);
+  border-right-color: var(--pf-v5-global--BorderColor--300);
+  border-bottom-color: var(--pf-v5-global--BorderColor--200);
+  border-left-color: var(--pf-v5-global--BorderColor--300);
   box-shadow: unset !important;
 }

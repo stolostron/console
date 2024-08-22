@@ -440,7 +440,7 @@ const tableClass = css({
   '& tbody.pf-m-expanded > tr': {
     borderBottom: 0,
     '&:last-of-type': {
-      borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
+      borderBottom: 'var(--pf-v5-c-table--border-width--base) solid var(--pf-v5-c-table--BorderColor)',
     },
   },
 })

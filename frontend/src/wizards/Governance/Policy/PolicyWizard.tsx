@@ -921,7 +921,7 @@ function PolicyPolicySets() {
               : t('This policy is placed by the policy sets: ')}
             <b>{policySets.join(', ')}</b>
           </p>
-          <p className="pf-c-form__helper-text">
+          <p className="pf-v5-c-form__helper-text">
             {t(
               'Only add placement to this policy if you want it to be placed in addition to the policy set placement.'
             )}

@@ -32,20 +32,20 @@ describe('AcmMultiSelect', () => {
   test('can apply and clear selections', () => {
     const { container, getByRole } = render(<Select />)
 
-    expect(container.querySelector<HTMLSpanElement>('.pf-c-badge')).toBeNull()
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
 
-    container.querySelectorAll<HTMLInputElement>('.pf-c-check__input')[0].click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-c-badge')).toHaveTextContent('1')
+    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[0].click()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
 
-    container.querySelectorAll<HTMLInputElement>('.pf-c-check__input')[1].click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-c-badge')).toHaveTextContent('2')
+    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[1].click()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('2')
 
-    container.querySelectorAll<HTMLInputElement>('.pf-c-check__input')[1].click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-c-badge')).toHaveTextContent('1')
+    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[1].click()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
 
     userEvent.click(getByRole('button', { name: 'Clear all' }))
-    expect(container.querySelector<HTMLSpanElement>('.pf-c-badge')).toBeNull()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
   })
 
   test('has zero accessibility defects', async () => {
@@ -73,8 +73,8 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-    container.querySelector<HTMLInputElement>('.pf-c-check__input')?.click()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
 
@@ -99,10 +99,10 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
-    container.querySelector<HTMLInputElement>('.pf-c-check__input')?.click()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    container.querySelector<HTMLInputElement>('.pf-c-check__input')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
   })
 

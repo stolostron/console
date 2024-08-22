@@ -47,7 +47,7 @@ const select = css({
   },
 })
 const table = css({
-  '& .pf-c-toolbar': {
+  '& .pf-v5-c-toolbar': {
     display: 'none',
   },
 })

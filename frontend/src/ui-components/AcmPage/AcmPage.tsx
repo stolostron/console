@@ -69,7 +69,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                 variant={PageSectionVariants.light}
                 style={{
                   paddingBottom: props.navigation ? 'inherit' : undefined,
-                  paddingTop: props.breadcrumb ? 'var(--pf-c-page__main-breadcrumb--PaddingTop)' : undefined,
+                  paddingTop: props.breadcrumb ? 'var(--pf-v5-c-page__main-breadcrumb--PaddingTop)' : undefined,
                 }}
               >
                 <Stack hasGutter>
@@ -201,11 +201,11 @@ export function AcmBreadcrumb(props: { breadcrumb?: { text: string; to?: string 
           <BreadcrumbItem key={i}>
             {breadcrumb.length > 1 && i === breadcrumb.length - 1 ? (
               // eslint-disable-next-line jsx-a11y/anchor-is-valid
-              <a aria-current="page" className="pf-c-breadcrumb__link pf-m-current">
+              <a aria-current="page" className="pf-v5-c-breadcrumb__link pf-m-current">
                 {crumb.text}
               </a>
             ) : (
-              <Link to={crumb.to as string} className="pf-c-breadcrumb__link">
+              <Link to={crumb.to as string} className="pf-v5-c-breadcrumb__link">
                 {crumb.text}
               </Link>
             )}

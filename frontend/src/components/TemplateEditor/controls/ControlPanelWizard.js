@@ -102,7 +102,7 @@ class ControlPanelWizard extends React.Component {
             <div>{title}</div>
             {hasErrors && (
               <span style={{ paddingLeft: '8px' }}>
-                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
               </span>
             )}
           </div>

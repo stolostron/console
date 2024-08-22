@@ -13,7 +13,7 @@ describe('AcmExpandableSection', () => {
       </AcmExpandableSection>
     )
     expect(getByText('Expandable Label - Summary about this section')).toBeInTheDocument()
-    expect(container.querySelector('.pf-c-expandable-section__content')).not.toBeVisible()
+    expect(container.querySelector('.pf-v5-c-expandable-section__content')).not.toBeVisible()
   })
   test('can be expanded', () => {
     const { getByRole, container } = render(
@@ -22,7 +22,7 @@ describe('AcmExpandableSection', () => {
       </AcmExpandableSection>
     )
     userEvent.click(getByRole('button'))
-    expect(container.querySelector('.pf-c-expandable-section__content')).toBeVisible()
+    expect(container.querySelector('.pf-v5-c-expandable-section__content')).toBeVisible()
   })
   test('has zero accessibility defects', async () => {
     const { getByRole, container } = render(
@@ -48,12 +48,12 @@ describe('AcmExpandableSection', () => {
         Section content
       </AcmExpandableSection>
     )
-    expect(container.querySelector('.pf-c-expandable-section.pf-m-expanded')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v5-c-expandable-section.pf-m-expanded')).toBeInTheDocument()
     rerender(
       <AcmExpandableSection expanded={false} label="Expandable Label" summary="Summary about this section">
         Section content
       </AcmExpandableSection>
     )
-    expect(container.querySelector('.pf-c-expandable-section.pf-m-expanded')).not.toBeInTheDocument()
+    expect(container.querySelector('.pf-v5-c-expandable-section.pf-m-expanded')).not.toBeInTheDocument()
   })
 })

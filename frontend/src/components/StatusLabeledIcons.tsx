@@ -21,7 +21,7 @@ export function StatusLabeledIcons(props: {
     statuses.push({
       key: 'high',
       count: props.violations,
-      icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+      icon: <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />,
       status: props.violationStatus,
       subtitle: props.violationSubtitle,
     })
@@ -31,7 +31,7 @@ export function StatusLabeledIcons(props: {
     statuses.push({
       key: 'ready',
       count: props.compliant,
-      icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+      icon: <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />,
       status: props.compliantStatus,
       subtitle: props.compliantSubtitle,
     })
@@ -41,7 +41,7 @@ export function StatusLabeledIcons(props: {
     statuses.push({
       key: 'ready',
       count: props.unknown,
-      icon: <ExclamationTriangleIcon color="var(--pf-global--icon--Color--light)" />,
+      icon: <ExclamationTriangleIcon color="var(--pf-v5-global--icon--Color--light)" />,
       status: props.unknownStatus,
       subtitle: props.unknownSubtitle,
     })

@@ -23,20 +23,20 @@ const containerSelect = css({
   'max-width': 'max-content',
 })
 const logWindow = css({
-  color: 'var(--pf-global--palette--black-150)',
-  backgroundColor: 'var(--pf-global--palette--black-1000)',
+  color: 'var(--pf-v5-global--palette--black-150)',
+  backgroundColor: 'var(--pf-v5-global--palette--black-1000)',
 })
 const logWindowHeader = css({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: 'var(--pf-global--palette--black-900)',
+  backgroundColor: 'var(--pf-v5-global--palette--black-900)',
   marginTop: '1rem',
 })
 const logWindowHeaderItem = css({
   display: 'flex',
   alignItems: 'center',
   height: '36px',
-  backgroundColor: 'var(--pf-global--palette--black-900)',
+  backgroundColor: 'var(--pf-v5-global--palette--black-900)',
   padding: '8px 10px 5px 10px',
   borderRight: '1px solid #4f5255',
 })
@@ -44,7 +44,7 @@ const logWindowHeaderItemLabel = css({
   paddingRight: '.5rem',
 })
 const logWindowBody = css({
-  backgroundColor: 'var(--pf-global--palette--black-1000)',
+  backgroundColor: 'var(--pf-v5-global--palette--black-1000)',
   fontFamily: 'Menlo,Monaco,Consolas,monospace',
 })
 const logWindowScrollPane = css({

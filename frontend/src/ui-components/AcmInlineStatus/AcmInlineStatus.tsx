@@ -97,27 +97,27 @@ export function AcmInlineStatus(props: { type: StatusType; status: string | Reac
 function StatusIcon(props: { type: StatusType }) {
   switch (props.type) {
     case StatusType.healthy:
-      return <CheckCircleIcon className={iconMargin} color="var(--pf-global--success-color--100)" />
+      return <CheckCircleIcon className={iconMargin} color="var(--pf-v5-global--success-color--100)" />
     case StatusType.danger:
-      return <ExclamationCircleIcon className={iconMargin} color="var(--pf-global--danger-color--100)" />
+      return <ExclamationCircleIcon className={iconMargin} color="var(--pf-v5-global--danger-color--100)" />
     case StatusType.warning:
-      return <ExclamationTriangleIcon className={iconMargin} color="var(--pf-global--warning-color--100)" />
+      return <ExclamationTriangleIcon className={iconMargin} color="var(--pf-v5-global--warning-color--100)" />
     case StatusType.progress:
       return <Spinner size="md" style={{ verticalAlign: 'middle' }} />
     case StatusType.detached:
       return <AcmIcon icon={AcmIconVariant.brokenlink} />
     case StatusType.pending:
-      return <MinusCircleIcon className={iconMargin} color="var(--pf-global--disabled-color--100)" />
+      return <MinusCircleIcon className={iconMargin} color="var(--pf-v5-global--disabled-color--100)" />
     case StatusType.sleep:
-      return <AsleepIcon className={iconMargin} color="var(--pf-global--palette--purple-500)" />
+      return <AsleepIcon className={iconMargin} color="var(--pf-v5-global--palette--purple-500)" />
     case StatusType.empty:
-      return <ResourcesEmptyIcon className={iconMargin} color="var(--pf-global--disabled-color--100)" />
+      return <ResourcesEmptyIcon className={iconMargin} color="var(--pf-v5-global--disabled-color--100)" />
     case StatusType.draft:
-      return <FileAltIcon className={iconMargin} color="var(--pf-global--disabled-color--100)" />
+      return <FileAltIcon className={iconMargin} color="var(--pf-v5-global--disabled-color--100)" />
     case StatusType.running:
-      return <RunningIcon className={iconMargin} color="var(--pf-global--success-color--100)" />
+      return <RunningIcon className={iconMargin} color="var(--pf-v5-global--success-color--100)" />
     case 'unknown':
     default:
-      return <UnknownIcon className={iconMargin} color="var(--pf-global--disabled-color--100)" />
+      return <UnknownIcon className={iconMargin} color="var(--pf-v5-global--disabled-color--100)" />
   }
 }

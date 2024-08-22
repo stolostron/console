@@ -105,7 +105,7 @@ export default function PolicyDetailsOverview() {
             <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
           ) : (
             <div>
-              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+              <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
             </div>
           ),
       },
@@ -311,19 +311,19 @@ export default function PolicyDetailsOverview() {
           const statusList = []
           for (const status of Object.keys(clusterList)) {
             let statusMsg = t(' No status: ')
-            let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+            let icon = <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
             switch (status) {
               case 'noncompliant':
                 statusMsg = t(' Violations: ')
-                icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                icon = <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
                 break
               case 'compliant':
                 statusMsg = t(' No violations: ')
-                icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                icon = <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
                 break
               case 'pending':
                 statusMsg = ' Pending: '
-                icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                icon = <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
                 break
             }
             statusList.push(
@@ -375,7 +375,7 @@ export default function PolicyDetailsOverview() {
           if (statusList.length === 0) {
             return (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
               </div>
             )
           }

@@ -25,7 +25,7 @@ const emptyState = css({
   height: '100%',
   width: '100%',
   maxWidth: 'unset',
-  '& .pf-c-empty-state__content': {
+  '& .pf-v5-c-empty-state__content': {
     width: '100%',
     maxWidth: 'unset',
   },

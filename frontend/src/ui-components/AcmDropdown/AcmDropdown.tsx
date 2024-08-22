@@ -55,18 +55,18 @@ const getStyles = (props: AcmDropdownProps) => {
   let backgroundColor: string | undefined = undefined
   if (!props.isKebab) {
     if (props.isDisabled) {
-      backgroundColor = 'var(--pf-global--disabled-color--200)'
+      backgroundColor = 'var(--pf-v5-global--disabled-color--200)'
     } else if (!props.isDisabled && props.isPrimary) {
-      backgroundColor = 'var(--pf-c-dropdown__toggle--BackgroundColor)'
+      backgroundColor = 'var(--pf-v5-c-dropdown__toggle--BackgroundColor)'
     } else {
       backgroundColor = 'transparent'
     }
   }
-  let color: string | undefined = 'var(--pf-global--primary-color--100)'
+  let color: string | undefined = 'var(--pf-v5-global--primary-color--100)'
   if (props.isDisabled) {
-    color = 'var(--pf-global--Color--100)'
+    color = 'var(--pf-v5-global--Color--100)'
   } else if (props.isPrimary) {
-    color = 'var(--pf-global--Color--light-100)'
+    color = 'var(--pf-v5-global--Color--light-100)'
   } else if (props.isKebab) {
     color = undefined
   }
@@ -79,16 +79,16 @@ const getStyles = (props: AcmDropdownProps) => {
         },
         '&:hover, &:focus': {
           '& span': {
-            color: props.isKebab ? undefined : 'var(--pf-global--primary-color--100)',
+            color: props.isKebab ? undefined : 'var(--pf-v5-global--primary-color--100)',
           },
-          '& span.pf-c-dropdown__toggle-text': {
-            color: props.isPrimary ? 'var(--pf-global--Color--light-100)' : undefined,
+          '& span.pf-v5-c-dropdown__toggle-text': {
+            color: props.isPrimary ? 'var(--pf-v5-global--Color--light-100)' : undefined,
           },
-          '& span.pf-c-dropdown__toggle-icon': {
-            color: props.isPrimary ? 'var(--pf-global--Color--light-100)' : undefined,
+          '& span.pf-v5-c-dropdown__toggle-icon': {
+            color: props.isPrimary ? 'var(--pf-v5-global--Color--light-100)' : undefined,
           },
         },
-        '& span.pf-c-dropdown__toggle-text': {
+        '& span.pf-v5-c-dropdown__toggle-text': {
           // centers dropdown text in plain dropdown button
           paddingLeft: props.isPlain ? '8px' : undefined,
         },

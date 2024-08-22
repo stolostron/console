@@ -86,7 +86,7 @@ const styles = {
     },
   }),
   headerDescription: css({
-    fontSize: 'var(--pf-global--FontSize--sm)',
+    fontSize: 'var(--pf-v5-global--FontSize--sm)',
     lineHeight: '1.4',
     overflowWrap: 'anywhere',
     display: '-webkit-box',
@@ -102,7 +102,7 @@ const styles = {
     },
   }),
   countTitle: css({
-    fontSize: 'var(--pf-global--FontSize--sm)',
+    fontSize: 'var(--pf-v5-global--FontSize--sm)',
     fontWeight: 700,
   }),
   footer: css({
@@ -208,11 +208,11 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
       {!props.error ? (
         <CardBody className={classes.body}>
           {props.count !== 0 ? (
-            <div style={{ color: 'var(--pf-global--link--Color)', fontSize: 'var(--pf-global--FontSize--3xl)' }}>
+            <div style={{ color: 'var(--pf-v5-global--link--Color)', fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>
               {count}
             </div>
           ) : (
-            <div style={{ fontSize: 'var(--pf-global--FontSize--3xl)' }}>{count}</div>
+            <div style={{ fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>{count}</div>
           )}
           <div className={classes.countTitle}>{countTitle}</div>
         </CardBody>
@@ -230,7 +230,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
               <EmptyStateIcon
                 style={{ fontSize: '36px', marginBottom: '1rem' }}
                 icon={ExclamationCircleIcon}
-                color={'var(--pf-global--danger-color--100)'}
+                color={'var(--pf-v5-global--danger-color--100)'}
               />
             }
             headingLevel="h4"

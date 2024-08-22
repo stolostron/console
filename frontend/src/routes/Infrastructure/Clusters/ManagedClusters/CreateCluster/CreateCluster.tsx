@@ -81,7 +81,7 @@ const Portals = Object.freeze({
 })
 
 const wizardBody = css({
-  '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
+  '& .pf-v5-c-wizard__outer-wrap .pf-v5-c-wizard__main .pf-v5-c-wizard__main-body': {
     height: '100%',
   },
 })

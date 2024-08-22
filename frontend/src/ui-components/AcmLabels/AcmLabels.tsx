@@ -7,7 +7,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 
 const acmLabel = css({
   display: 'inline-grid',
-  '--pf-c-label__text--MaxWidth': 'unset',
+  '--pf-v5-c-label__text--MaxWidth': 'unset',
 })
 
 export function AcmLabels(props: {

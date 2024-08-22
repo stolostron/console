@@ -115,7 +115,7 @@ class ControlPanelAccordion extends React.Component {
                           e.preventDefault()
                           e.stopPropagation()
                         }}
-                        className="pf-c-form__group-label-help"
+                        className="pf-v5-c-form__group-label-help"
                       >
                         <HelpIcon noVerticalAlign />
                       </button>

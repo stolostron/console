@@ -75,19 +75,19 @@ export function SecurityGroupPolicySummarySidebar(props: {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
                 </div>
               )
           }

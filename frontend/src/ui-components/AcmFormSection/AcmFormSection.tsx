@@ -35,7 +35,7 @@ export function AcmFormSection(props: AcmFormSectionProps) {
                 id={`${props.id}-label-help-button`}
                 aria-label={t('More info')}
                 onClick={/* istanbul ignore next */ (e) => e.preventDefault()}
-                className="pf-c-form__group-label-help"
+                className="pf-v5-c-form__group-label-help"
               >
                 <HelpIcon noVerticalAlign size="sm" />
               </Button>

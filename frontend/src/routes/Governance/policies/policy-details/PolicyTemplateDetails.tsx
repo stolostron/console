@@ -174,14 +174,14 @@ export function PolicyTemplateDetails() {
           case 'compliant':
             violationCell = (
               <div>
-                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
               </div>
             )
             break
           case 'noncompliant':
             violationCell = (
               <div>
-                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> {t('Violations')}{' '}
                 <DiffModal
                   diff={item.properties?.diff}
                   kind={item.object?.kind}
@@ -194,7 +194,7 @@ export function PolicyTemplateDetails() {
           case 'inapplicable':
             violationCell = (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
               </div>
             )
             break
@@ -204,14 +204,14 @@ export function PolicyTemplateDetails() {
                 case 'Deployment':
                   violationCell = (
                     <div>
-                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
                   break
                 case 'CustomResourceDefinition':
                   violationCell = (
                     <div>
-                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
                   break
@@ -222,7 +222,7 @@ export function PolicyTemplateDetails() {
           default:
             violationCell = (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
               </div>
             )
         }

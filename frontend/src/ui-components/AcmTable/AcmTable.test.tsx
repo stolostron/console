@@ -314,7 +314,7 @@ describe('AcmTable', () => {
   test('renders without actions', () => {
     const { container } = render(<Table useTableActions={false} useRowActions={false} />)
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-c-dropdown__toggle')).toBeNull()
+    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeNull()
   })
   test('renders actions given an actionResolver', () => {
     const tableActionResolver = (item: IExampleData) => {
@@ -335,7 +335,7 @@ describe('AcmTable', () => {
       <Table useTableActions={false} useRowActions={false} rowActionResolver={tableActionResolver} />
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-c-dropdown__toggle')).toBeInTheDocument()
+    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
   })
   test('renders actions given an actionResolver with an expandable table', () => {
     const tableActionResolver = (item: IExampleData) => {
@@ -410,15 +410,15 @@ describe('AcmTable', () => {
       </MemoryRouter>
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-c-dropdown__toggle')).toBeInTheDocument()
+    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
   })
   test('renders pagination with autoHidePagination when more that perPage items', () => {
     const { container } = render(<Table items={exampleData} autoHidePagination />)
-    expect(container.querySelector('.pf-c-pagination')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v5-c-pagination')).toBeInTheDocument()
   })
   test('hides pagination with autoHidePagination when less than perPage items', () => {
     const { container } = render(<Table items={exampleData.slice(0, 8)} autoHidePagination />)
-    expect(container.querySelector('.pf-c-pagination')).toBeNull()
+    expect(container.querySelector('.pf-v5-c-pagination')).toBeNull()
   })
   test('renders with transforms', () => {
     const { container } = render(<Table transforms={true} />)
@@ -426,8 +426,8 @@ describe('AcmTable', () => {
   })
   test('renders table with gridbreakpoint override', () => {
     const { container } = render(<Table items={exampleData.slice(0, 8)} gridBreakPoint={TableGridBreakpoint.none} />)
-    expect(container.querySelector('.pf-c-pagination')).toBeInTheDocument()
-    expect(container.querySelector('.pf-c-table__sort-indicator')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v5-c-pagination')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v5-c-table__sort-indicator')).toBeInTheDocument()
   })
   test('renders table with pre-selected items', () => {
     const { getByText } = render(
@@ -460,15 +460,15 @@ describe('AcmTable', () => {
     )
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-c-dropdown__menu-item')[1]) // Select page
+    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[1]) // Select page
     expect(getByText('10 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-c-dropdown__menu-item')[2]) // Select all
+    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[2]) // Select all
     expect(getByText('105 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-c-dropdown__menu-item')[0]) // Select None
+    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[0]) // Select None
     expect(queryAllByText('105 selected')).toHaveLength(0)
 
     userEvent.click(getAllByRole('checkbox')[0]) // Select all by checkbox
@@ -554,7 +554,7 @@ describe('AcmTable', () => {
   test('can customize search placeholder', () => {
     const customPlaceholder = 'Other placeholder'
     const { container } = render(<Table searchPlaceholder={customPlaceholder} />)
-    expect(container.querySelector('div.pf-c-toolbar .pf-m-search-filter input')).toHaveAttribute(
+    expect(container.querySelector('div.pf-v5-c-toolbar .pf-m-search-filter input')).toHaveAttribute(
       'placeholder',
       customPlaceholder
     )
@@ -948,15 +948,15 @@ describe('AcmTable', () => {
 
     // Filtering works
     userEvent.click(getByTestId('gender-male'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(1)
     userEvent.click(getByTestId('gender-female'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(2)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(2)
 
     // Unselect current options
     userEvent.click(getByTestId('gender-female'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(1)
     userEvent.click(getByTestId('gender-male'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
   test('renders with filtering and successfully deletes selected filters', async () => {
@@ -985,7 +985,7 @@ describe('AcmTable', () => {
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getByTestId('gender-female'))
     userEvent.click(getByLabelText('Close chip group'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
 
     // test deleting single chip
     expect(getByText('Filter')).toBeInTheDocument()
@@ -993,16 +993,16 @@ describe('AcmTable', () => {
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getByTestId('gender-female'))
     userEvent.click(getAllByLabelText('close')[1])
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(1)
     userEvent.click(getAllByLabelText('close')[0])
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
 
     // test deleting all selected filters
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getAllByText('Clear all filters')[1])
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
   test('renders with customTableAction', () => {
@@ -1010,7 +1010,7 @@ describe('AcmTable', () => {
       <Table useCustomTableAction={true} useTableActions={false} useRowActions={false} />
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('div .pf-c-dropdown__toggle')).toBeInTheDocument()
+    expect(container.querySelector('div .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
     userEvent.click(getByTestId('create'))
   })
 

@@ -1,9 +1,9 @@
-.temptifly .pf-c-number-input,
-.creation-view .pf-c-number-input {
+.temptifly .pf-v5-c-number-input,
+.creation-view .pf-v5-c-number-input {
   width: 180px;
 }
-.temptifly .pf-c-number-input .pf-c-form-control,
-.creation-view .pf-c-number-input .pf-c-form-control {
+.temptifly .pf-v5-c-number-input .pf-v5-c-form-control,
+.creation-view .pf-v5-c-number-input .pf-v5-c-form-control {
   text-align: right;
 }
 .temptifly input[type='number']::-webkit-inner-spin-button,

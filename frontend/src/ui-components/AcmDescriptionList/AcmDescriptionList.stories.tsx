@@ -17,7 +17,7 @@ const leftItems = [
     key: 'Status',
     value: (
       <Fragment>
-        <CheckCircleIcon color="var(--pf-global--success-color--100)" /> Ready
+        <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> Ready
       </Fragment>
     ),
   },
@@ -34,7 +34,7 @@ const leftItems = [
     key: 'Labels',
     keyAction: (
       <Button variant={ButtonVariant.plain} aria-label="pencil">
-        <PencilAltIcon color="var(--pf-global--primary-color--100)" />
+        <PencilAltIcon color="var(--pf-v5-global--primary-color--100)" />
       </Button>
     ),
     value: (

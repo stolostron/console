@@ -30,7 +30,7 @@ describe('ControlPanelLabels component', () => {
     userEvent.type(getByTestId('controlId'), 'label=test{enter}')
     expect(control.active).toEqual([{ key: 'label', value: 'test' }])
     userEvent.type(getByTestId('controlId'), 'label=test2{enter}')
-    container.querySelector('.pf-c-button').click()
+    container.querySelector('.pf-v5-c-button').click()
     expect(control.active).toEqual([])
     userEvent.type(getByTestId('controlId'), 'label=test,')
     userEvent.type(getByTestId('controlId'), 'label={esc}')

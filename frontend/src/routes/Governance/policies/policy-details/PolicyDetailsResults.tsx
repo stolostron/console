@@ -168,13 +168,13 @@ export default function PolicyDetailsResults() {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div style={{ width: 'max-content' }}>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
                   <div style={{ display: 'inline' }}> {t('Violations')}</div>
                   {message.includes('found but not as specified') && <ViewDiffApiCall {...{ item }} />}
                 </div>
@@ -182,13 +182,13 @@ export default function PolicyDetailsResults() {
             case 'pending':
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Pending')}
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
                 </div>
               )
           }
