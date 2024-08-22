@@ -83,7 +83,7 @@ const ControlPanelMultiTextInput = (props: {
                           <TextInput
                             id={`text-${innerControlId}`}
                             value={multitextObject.active || ''}
-                            onChange={(value) => onKeyChange(index, value)}
+                            onChange={(_event, value) => onKeyChange(index, value)}
                             required
                             validated={validated}
                             placeholder={placeholder}

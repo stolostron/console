@@ -1386,7 +1386,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     toggle={
                       <DropdownToggle
                         toggleIndicator={null}
-                        onToggle={(_event, value, event) => {
+                        onToggle={(event, value) => {
                           event.stopPropagation()
                           setIsExportMenuOpen(value)
                         }}

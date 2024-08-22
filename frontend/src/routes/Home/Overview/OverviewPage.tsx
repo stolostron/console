@@ -352,7 +352,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 {t('Worker core count')}
                 <Dropdown
                   onSelect={() => setIsOpen(!isOpen)}
-                  toggle={<KebabToggle id="toggle-kebab" onToggle={(value: boolean) => setIsOpen(value)} />}
+                  toggle={<KebabToggle id="toggle-kebab" onToggle={(_event, isOpen: boolean) => setIsOpen(isOpen)} />}
                   isOpen={isOpen}
                   isPlain
                   dropdownItems={[

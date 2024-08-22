@@ -65,7 +65,7 @@ export const SaveAndEditSearchModal = (props: {
 
   const suggestedQueryTemplates = useSuggestedQueryTemplates().templates ?? ([] as SavedSearch[])
 
-  function onChange(value: string, e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) {
+  function onChange(e: React.FormEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>, value: string) {
     const allSavedQueryNames = [...suggestedQueryTemplates, ...savedSearchQueries].map(
       (savedQuery: SavedSearch) => savedQuery.name?.toLowerCase() || ''
     )

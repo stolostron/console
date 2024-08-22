@@ -339,7 +339,7 @@ function ClustersCard() {
               {icon}
             </div>
           }
-          onToggle={xtraToggle}
+          onToggle={(_event, isExpanded) => xtraToggle?.(isExpanded)}
           isExpanded={isXtraExpanded}
         >
           {renderClusterList(xtraList, onClick, t)}

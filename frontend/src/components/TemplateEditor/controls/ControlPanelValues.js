@@ -70,7 +70,7 @@ class ControlPanelValues extends React.Component {
     handleChange(control)
   }
 
-  handleChange(value = '') {
+  handleChange(_event, value = '') {
     const { control } = this.props
     const { validation } = control
     if (value.endsWith(',')) {

@@ -74,7 +74,7 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
               label={t(`type.to.confirm`, { confirm: props.nodepool.metadata.name })}
               id="confirm"
               value={confirm}
-              onChange={setConfirm}
+              onChange={(_event, value) => setConfirm(value)}
               autoComplete="off"
             />
             <ActionGroup>

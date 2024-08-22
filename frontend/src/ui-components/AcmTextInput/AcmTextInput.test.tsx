@@ -26,7 +26,13 @@ describe('AcmTextInput', () => {
       const [value, setValue] = useState<string | undefined>(undefined)
       return (
         <AcmForm>
-          <AcmTextInput id="input" label="label" value={value} onChange={setValue} isRequired />
+          <AcmTextInput
+            id="input"
+            label="label"
+            value={value}
+            onChange={(_event, value) => setValue(value)}
+            isRequired
+          />
           <AcmSubmit>Submit</AcmSubmit>
         </AcmForm>
       )
@@ -48,7 +54,7 @@ describe('AcmTextInput', () => {
             id="input"
             label="label"
             value={value}
-            onChange={setValue}
+            onChange={(_event, value) => setValue(value)}
             validation={(value: string) => {
               if (value.length < 8) return 'Field must be at least 8 characters.'
               return undefined

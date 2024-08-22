@@ -170,7 +170,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     label={t(`type.to.confirm`, { confirm: confirmText })}
                     id="confirm"
                     value={confirm}
-                    onChange={setConfirm}
+                    onChange={(_event, val) => setConfirm(val)}
                     autoComplete="off"
                   />
                 </StackItem>
