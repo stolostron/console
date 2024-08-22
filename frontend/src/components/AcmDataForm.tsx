@@ -294,7 +294,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
               )}
             </Fragment>
           }
-          groupProps={{ sticky: 'top' }}
+          groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
         >
           {drawerContent()}
         </Page>
