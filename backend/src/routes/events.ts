@@ -14,6 +14,7 @@ import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
+import { ITransformedResource } from '../lib/pagination'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -39,14 +40,82 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 let requests: { cancel: () => void }[] = []
 
-const resourceCache: {
+export function getKubeResources(kind: string, apiVersion: string) {
+  const option = { apiVersion, kind }
+  const apiVersionPlural = apiVersionPluralFn(option)
+  return Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
+    return event.resource
+  })
+}
+
+// because rbac checks are expensive,
+// run them only on the resources requested by the UI
+export async function getAuthorizedResources(
+  token: string,
+  resources: IResource[],
+  startInx: number,
+  stopInx: number
+): Promise<IResource[]> {
+  const authorized: IResource[] = []
+
+  // check every resource until we have reached just the requested number of items
+  // anything more is a waste of response time
+  let inx = 0
+  const chunkSize = stopInx > 100 ? 100 : 50
+  while (resources.length > inx && authorized.length < stopInx) {
+    // perform it in item chunks
+    const _resources = resources.slice(inx, inx + chunkSize)
+    const queue = (_resources as ITransformedResource[]).map((resource) => {
+      return (resource.isRemote ? canListResources(token, resource) : canAccessRemoteResource(token, resource))
+        .then((allowResource) => (allowResource ? resource : undefined))
+        .catch((err: unknown) => undefined) as Promise<IResource>
+    })
+    while (queue.length) {
+      const resource = await queue.shift()
+      if (resource) {
+        authorized.push(resource)
+      }
+    }
+    inx += chunkSize
+  }
+  return authorized.slice(startInx, stopInx)
+}
+
+function canListResources(token: string, resource: IResource): Promise<boolean> {
+  return canListClusterScopedKind(resource, token).then((allowed) => {
+    if (allowed) return true
+    return canListNamespacedScopedKind(resource, token)
+  })
+}
+
+function canAccessRemoteResource(token: string, resource: IResource): Promise<boolean> {
+  if (!resource.metadata?.namespace) return Promise.resolve(false)
+  return canAccess(
+    {
+      kind: 'ManagedClusterView',
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      metadata: { namespace: resource.metadata.namespace },
+    },
+    'create',
+    token
+  )
+}
+
+export interface ResourceCache {
   [apiVersionKind: string]: {
     [uid: string]: {
       resource: IResource
       eventID: number
     }
   }
-} = {}
+}
+
+// for testing
+export function initResourceCache(cache: ResourceCache) {
+  resourceCache = cache
+}
+
+export let resourceCache: ResourceCache = {}
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
@@ -564,7 +633,7 @@ function canGetResource(resource: IResource, token: string): Promise<boolean> {
 
 function canAccess(
   resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  verb: 'get' | 'list',
+  verb: 'get' | 'list' | 'create',
   token: string
 ): Promise<boolean> {
   // TODO make sure old cache items get cleaned up

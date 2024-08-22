@@ -9,8 +9,6 @@ import {
   DropdownSeparator,
   DropdownToggle,
   DropdownToggleCheckbox,
-  EmptyState,
-  EmptyStateIcon,
   PageSection,
   Pagination,
   PaginationProps,
@@ -22,8 +20,7 @@ import {
   SelectOption,
   SelectOptionObject,
   SelectVariant,
-  Spinner,
-  Title,
+  Skeleton,
   Toolbar,
   ToolbarChip,
   ToolbarContent,
@@ -80,9 +77,10 @@ import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
+import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
-type CellFn<T> = (item: T) => ReactNode
+type CellFn<T> = (item: T, search: string) => ReactNode
 type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[] | number[]
 
 /* istanbul ignore next */
@@ -220,11 +218,7 @@ interface ITableItem<T> {
 }
 
 type FilterOptionValueT = string
-type TableFilterOption<FilterOptionValueT> = {
-  label: ReactNode
-  value: FilterOptionValueT
-  indeterminateCount?: boolean
-}
+type TableFilterOption<FilterOptionValueT> = { label: ReactNode; value: FilterOptionValueT }
 export type TableFilterFn<T> = (selectedValues: string[], item: T) => boolean
 /**
  * Interface defining required params for table filtering property "filterItems"
@@ -429,10 +423,6 @@ const tableClass = css({
       borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
     },
   },
-  '&& tbody .pf-c-table__check input': {
-    marginTop: 0,
-    verticalAlign: 'middle',
-  },
 })
 
 function OuiaIdRowWrapper(props: RowWrapperProps) {
@@ -491,6 +481,8 @@ export type AcmTableProps<T> = {
   initialPage?: number
   page?: number
   setPage?: (page: number) => void
+  setRequestView?: (requestedView: IRequestListView) => void
+  resultView?: IResultListView
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -508,8 +500,6 @@ export type AcmTableProps<T> = {
   filters?: ITableFilter<T>[]
   id?: string
   showColumManagement?: boolean
-  nonZeroCount?: boolean
-  indeterminateCount?: boolean
   showExportButton?: boolean
   exportFilePrefix?: string
 }
@@ -531,10 +521,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     initialSelectedItems,
     onSelect: propsOnSelect,
     showColumManagement,
-    nonZeroCount,
-    indeterminateCount,
     showExportButton,
     exportFilePrefix,
+    setRequestView,
+    resultView,
   } = props
 
   const defaultSort = {
@@ -543,6 +533,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
+  const { isPreProcessed, filterCounts, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
@@ -745,6 +736,21 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     })
   }, [items, keyFn])
 
+  // when paging items from backend
+  // send request to backend
+  const filterSelectionsStr = JSON.stringify(filterSelections)
+  useEffect(() => {
+    if (setRequestView && isPreProcessed) {
+      setRequestView({
+        page,
+        perPage,
+        search: internalSearch,
+        filters: JSON.parse(filterSelectionsStr),
+        sortBy: sort,
+      })
+    }
+  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
+
   const { tableItems, totalCount } = useMemo<{
     tableItems: ITableItem<T>[]
     totalCount: number
@@ -752,21 +758,25 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     /* istanbul ignore if */
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
-    if (filters.length && Object.keys(filterSelections).length) {
-      const filterCategories = Object.keys(filterSelections)
-      filteredItems = items.filter((item: T) => {
-        let isFilterMatch = true
-        // Item must match 1 filter of each category
-        filterCategories.forEach((filter: string) => {
-          const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-          /* istanbul ignore next */
-          const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-          if (!isMatch) {
-            isFilterMatch = false
-          }
+
+    // if using a result view from backend, the items have already been filtered
+    if (!isPreProcessed) {
+      if (filters.length && Object.keys(filterSelections).length) {
+        const filterCategories = Object.keys(filterSelections)
+        filteredItems = items.filter((item: T) => {
+          let isFilterMatch = true
+          // Item must match 1 filter of each category
+          filterCategories.forEach((filter: string) => {
+            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
+            /* istanbul ignore next */
+            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
+            if (!isMatch) {
+              isFilterMatch = false
+            }
+          })
+          return isFilterMatch
         })
-        return isFilterMatch
-      })
+      }
     }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
@@ -787,8 +797,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: tableItems.length }
-  }, [items, selectedSortedCols, addSubRows, keyFn, filters, filterSelections])
+    return { tableItems, totalCount: (isPreProcessed && resultView?.itemCount) || tableItems.length }
+  }, [items, isPreProcessed, resultView?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -798,11 +808,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     if (props.fuseThreshold != undefined) {
       threshold = props.fuseThreshold
     }
-    if (internalSearch && internalSearch !== '') {
+    // if using a result view from backend, the items have already been searched
+    if (!isPreProcessed && internalSearch && internalSearch !== '') {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
-        keys: selectedSortedCols
+        keys: columns
           .map((column, i) => (column.search ? `column-${i}` : undefined))
           .filter((value) => value !== undefined) as string[],
         // TODO use FuseOptionKeyObject to allow for weights
@@ -812,14 +823,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, internalSearch, tableItems, totalCount, selectedSortedCols])
+  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
 
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number
   }>(() => {
     const sorted: ITableItem<T>[] = [...filtered]
-    if (sort && sort.index !== undefined) {
+
+    // if using a result view from backend, the items have already been sorted
+    if (!isPreProcessed && sort && sort.index !== undefined) {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -833,17 +846,21 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         sorted.reverse()
       }
     }
-    return { sorted, itemCount: sorted.length }
-  }, [filtered, sort, selectedSortedCols])
+    return { sorted, itemCount: (isPreProcessed && resultView?.itemCount) || sorted.length }
+  }, [filtered, isPreProcessed, sort, resultView?.itemCount, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
-    const start = (page - 1) * perPage
     let actualPage = page
-    if (start >= sorted.length) {
-      actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+
+    // if using a result view from backend, actual page is determined by backend
+    if (!isPreProcessed) {
+      const start = (page - 1) * perPage
+      if (start >= sorted.length) {
+        actualPage = Math.max(1, Math.ceil(sorted.length / perPage))
+      }
     }
     return actualPage
-  }, [sorted, page, perPage])
+  }, [page, isPreProcessed, perPage, sorted.length])
 
   useEffect(() => {
     if (page !== actualPage) {
@@ -877,7 +894,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         selectedSortedCols.forEach(({ header, exportContent }) => {
           if (header) {
             // if callback and its output exists, add to array, else add "-"
-            const exportvalue = exportContent?.(item)
+            const exportvalue = exportContent?.(item, '')
             exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
           }
         })
@@ -908,9 +925,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   )
 
   const paged = useMemo<ITableItem<T>[]>(() => {
-    const start = (actualPage - 1) * perPage
-    return sorted.slice(start, start + perPage)
-  }, [sorted, actualPage, perPage])
+    // if using a result view from backend, the items have already been sliced and diced
+    if (!isPreProcessed) {
+      const start = (actualPage - 1) * perPage
+      return sorted.slice(start, start + perPage)
+    } else {
+      return sorted
+    }
+  }, [isPreProcessed, actualPage, perPage, sorted])
 
   const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
     const newRows: IRow[] = []
@@ -918,7 +940,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
           ? get(item as Record<string, unknown>, column.cell)
-          : { title: <Fragment key={key}>{column.cell(item)}</Fragment> }
+          : { title: <Fragment key={key}>{column.cell(item, internalSearch)}</Fragment> }
       })
     let addedSubRowCount = 0
     paged.forEach((tableItem, i) => {
@@ -938,7 +960,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     })
     return { rows: newRows, addedSubRowCount }
-  }, [paged, selectedSortedCols, expanded, selected, disabled])
+  }, [paged, selectedSortedCols, internalSearch, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {
@@ -1141,8 +1163,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
-  const hasItems = (items && items.length > 0 && filtered) || nonZeroCount || indeterminateCount
-  const showToolbar = props.showToolbar !== false ? hasItems : false
+  const hasItems = items && items.length > 0 && filtered
+  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult || loading : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
@@ -1151,18 +1173,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const commonPaginationProps: Partial<Omit<PaginationProps, 'ref'>> = {
     titles: translatedPaginationTitles,
     itemCount,
-    toggleTemplate: indeterminateCount
-      ? ({ firstIndex, lastIndex }: { firstIndex?: number; lastIndex?: number }) => (
-          <>
-            <b>
-              {firstIndex} - {Math.min(lastIndex ?? 0, itemCount)}
-            </b>{' '}
-            {translatedPaginationTitles.ofWord} <b>{itemCount}+</b>
-          </>
-        )
-      : undefined,
-    perPage: perPage,
-    page: page,
+    perPage,
+    page: isPreProcessed ? resultView?.page : page,
     onSetPage: (_event, page) => setPage(page),
     onPerPageSelect: (_event, perPage) => updatePerPage(perPage),
   }
@@ -1232,12 +1244,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       value={search}
                       onChange={updateSearch}
                       onClear={clearSearch}
+                      spellCheck={false}
                       resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
                       style={{ flexGrow: 1 }}
                     />
                   </ToolbarItem>
                 )}
-                {hasFilter && <TableColumnFilters id={id} filters={filters} items={items} />}
+                {hasFilter && (
+                  <TableColumnFilters id={id} filters={filters} filterCounts={filterCounts} items={items} />
+                )}
               </ToolbarGroup>
             )}
             {props.tableActionButtons && props.tableActionButtons.length > 0 && (
@@ -1249,56 +1264,45 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
-            {customTableAction && <ToolbarItem>{customTableAction}</ToolbarItem>}
-            <ToolbarGroup spaceItems={{ default: 'spaceItemsNone' }}>
-              {showColumManagement && (
-                <ToolbarItem>
-                  <AcmManageColumn<T>
-                    {...{
-                      selectedColIds,
-                      setSelectedColIds,
-                      requiredColIds,
-                      defaultColIds,
-                      setColOrderIds,
-                      colOrderIds,
-                    }}
-                    allCols={columns.filter((col) => !col.isActionCol)}
-                  />
-                </ToolbarItem>
-              )}
-              {showExportButton && (
-                <ToolbarItem key={`export-toolbar-item`}>
-                  <Dropdown
-                    onSelect={(event) => {
-                      event?.stopPropagation()
-                      setIsExportMenuOpen(false)
-                    }}
-                    className="export-dropdownMenu"
-                    toggle={
-                      <DropdownToggle
-                        toggleIndicator={null}
-                        onToggle={(value, event) => {
-                          event.stopPropagation()
-                          setIsExportMenuOpen(value)
-                        }}
-                        aria-label="export-search-result"
-                        id="export-search-result"
-                      >
-                        <ExportIcon />
-                      </DropdownToggle>
-                    }
-                    isOpen={isExportMenuOpen}
-                    isPlain
-                    dropdownItems={[
-                      <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
-                        {t('Export as CSV')}
-                      </DropdownItem>,
-                    ]}
-                    position={'left'}
-                  />
-                </ToolbarItem>
-              )}
-            </ToolbarGroup>
+            {showColumManagement && (
+              <AcmManageColumn<T>
+                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                allCols={columns.filter((col) => !col.isActionCol)}
+              />
+            )}
+            {customTableAction}
+            {showExportButton && (
+              <ToolbarItem key={`export-toolbar-item`}>
+                <Dropdown
+                  onSelect={(event) => {
+                    event?.stopPropagation()
+                    setIsExportMenuOpen(false)
+                  }}
+                  className="export-dropdownMenu"
+                  toggle={
+                    <DropdownToggle
+                      toggleIndicator={null}
+                      onToggle={(value, event) => {
+                        event.stopPropagation()
+                        setIsExportMenuOpen(value)
+                      }}
+                      aria-label="export-search-result"
+                      id="export-search-result"
+                    >
+                      <ExportIcon />
+                    </DropdownToggle>
+                  }
+                  isOpen={isExportMenuOpen}
+                  isPlain
+                  dropdownItems={[
+                    <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
+                      {t('Export as CSV')}
+                    </DropdownItem>,
+                  ]}
+                  position={'left'}
+                />
+              </ToolbarItem>
+            )}
             {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
@@ -1308,16 +1312,20 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </ToolbarContent>
         </Toolbar>
       )}
-      {!items || !rows || !filtered || !paged ? (
+      {!items || !rows || !filtered || !paged || loading ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
-          <EmptyState>
-            <EmptyStateIcon variant="container" component={Spinner} />
-            <Title size="lg" headingLevel="h4">
-              {t('Loading')}
-            </Title>
-          </EmptyState>
+          <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'padding' }}>
+            <Fragment>
+              {Array(10).fill(
+                <>
+                  <Skeleton width="100%" role="progressbar" screenreaderText="Loading" />
+                  <br />
+                </>
+              )}
+            </Fragment>
+          </PageSection>
         </PageSection>
-      ) : !hasItems ? (
+      ) : items.length === 0 && !emptyResult ? (
         props.emptyState && (
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
             {props.emptyState}
@@ -1399,9 +1407,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   )
 }
 
-function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFilter<T>[]; items?: T[] }>) {
+function TableColumnFilters<T>(
+  props: Readonly<{ id?: string; filters: ITableFilter<T>[]; filterCounts: FilterCounts | undefined; items?: T[] }>
+) {
   const [isOpen, setIsOpen] = useState(false)
-  const { id, filters, items } = props
+  const { id, filters, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
     id,
     filters,
@@ -1451,11 +1461,12 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
       const options: { option: TableFilterOption<string>; count: number }[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
-        const count = items?.filter((item) => filter.tableFilterFn([option.value], item)).length
+        const count = filterCounts
+          ? filterCounts[filter.id][option.value]
+          : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
         /* istanbul ignore next */
         if (
           filter.showEmptyOptions ||
-          option.indeterminateCount ||
           (count !== undefined && count > 0) ||
           // if option is selected, it may be impacting results, so always show it even if options with 0 matches are being filtered
           selections.find((selection) => selection.filterId === filter.id && selection.value === option.value)
@@ -1483,7 +1494,6 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
                 {option.option.label}
                 <Badge className={filterOptionBadge} key={key} isRead>
                   {option.count}
-                  {option.option.indeterminateCount ? '+' : ''}
                 </Badge>
               </div>
             </SelectOption>
@@ -1491,7 +1501,7 @@ function TableColumnFilters<T>(props: Readonly<{ id?: string; filters: ITableFil
         })}
       </SelectGroup>
     ))
-  }, [filters, items, selections])
+  }, [filterCounts, filters, items, selections])
 
   return (
     <ToolbarItem>

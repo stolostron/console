@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources'
 
 export function useQuery<T>(
-  restFunc: () => IRequestResult<T | T[]>,
+  restFunc: () => IRequestResult<T | T[]> | undefined,
   initialData?: T[],
   options?: { pollInterval?: number }
 ) {
@@ -39,8 +39,12 @@ export function useQuery<T>(
         clearTimeout(dataRef.current.timeout)
         dataRef.current.timeout = undefined
       }
-      const requestResult = restFunc()
+      // supporting the undefined case allows the component using this
+      // to conditionally use this hook
+      const requestResult = restFunc ? restFunc() : undefined
       dataRef.current.requestResult = requestResult
+      if (!requestResult) return
+      if (!dataRef.current.requestResult) return
       let aborted = false
       dataRef.current.requestResult.promise
         .then((data) => {

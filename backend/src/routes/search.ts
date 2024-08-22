@@ -1,13 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { request, RequestOptions } from 'https'
+import { request } from 'https'
 import { pipeline } from 'stream'
-import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { notFound } from '../lib/respond'
-import { getNamespace, getServiceCACertificate } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
+import { getSearchOptions } from '../lib/search'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -24,26 +22,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     for (const header of proxyHeaders) {
       if (req.headers[header]) headers[header] = req.headers[header]
     }
-
-    const mch = await getMultiClusterHub()
-    const namespace = getNamespace()
-    const searchService = `https://search-search-api.${mch?.metadata?.namespace || namespace}.svc.cluster.local:4010`
-
-    const searchUrl = process.env.SEARCH_API_URL || searchService
-    const endpoint = process.env.globalSearchFeatureFlag === 'enabled' ? '/federated' : '/searchapi/graphql'
-    const url = new URL(searchUrl + endpoint)
-    headers.authorization = `Bearer ${token}`
-    headers.host = url.hostname
-    const options: RequestOptions = {
-      protocol: url.protocol,
-      hostname: url.hostname,
-      port: url.port,
-      path: url.pathname,
-      method: req.method,
-      headers,
-      ca: getServiceCACertificate(),
-    }
-
+    const options = await getSearchOptions(headers)
     pipeline(
       req,
       request(options, (response) => {
