@@ -127,14 +127,14 @@ export function PolicyTemplateDetails() {
             case 'compliant':
               compliant = (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
                 </div>
               )
               break
             case 'noncompliant':
               compliant = (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> {t('Violations')}{' '}
                   <DiffModal
                     diff={item.properties?.diff}
                     kind={item.object?.kind}
@@ -150,21 +150,21 @@ export function PolicyTemplateDetails() {
                   case 'Deployment':
                     compliant = (
                       <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                        <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
                       </div>
                     )
                     break
                   case 'CustomResourceDefinition':
                     compliant = (
                       <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                        <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
                       </div>
                     )
                     break
                   default:
                     compliant = (
                       <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                        <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
                       </div>
                     )
                     break
@@ -172,7 +172,7 @@ export function PolicyTemplateDetails() {
               } else {
                 compliant = (
                   <div>
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                    <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
                   </div>
                 )
               }
@@ -180,7 +180,7 @@ export function PolicyTemplateDetails() {
             default:
               compliant = (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
                 </div>
               )
               break

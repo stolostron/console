@@ -189,7 +189,7 @@ export function Searchbar(props: SearchbarProps) {
     const mark = (
       <mark
         style={{
-          color: 'var(--pf-global--link--Color)',
+          color: 'var(--pf-v5-global--link--Color)',
           textDecoration: 'underline',
           background: 'none',
           fontWeight: 600,
@@ -511,7 +511,7 @@ export function Searchbar(props: SearchbarProps) {
         </Button>
         <Divider orientation={{ default: 'vertical' }} />
         <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
-          <HelpIcon color={'var(--pf-global--active-color--100)'} />
+          <HelpIcon color={'var(--pf-v5-global--active-color--100)'} />
         </Button>
         <Divider orientation={{ default: 'vertical' }} />
         <AcmButton

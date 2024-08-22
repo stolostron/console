@@ -64,7 +64,7 @@ const Divider = () => {
         x2="100"
         y1="10"
         y2="10"
-        stroke="#D2D2D2" // --pf-global--palette--black-300
+        stroke="#D2D2D2" // --pf-v5-global--palette--black-300
         strokeWidth="2"
         strokeLinecap="square"
         strokeDasharray="1, 3"

@@ -16,7 +16,7 @@ import { TrashIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../lib/acm-i18next'
 
 const container = css({
-  '& .pf-c-card': {
+  '& .pf-v5-c-card': {
     height: '100vh',
   },
 })

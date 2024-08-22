@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 function toggleTheme() {
-  if (document.documentElement.classList.contains('pf-theme-dark')) {
+  if (document.documentElement.classList.contains('pf-v5-theme-dark')) {
     setLightTheme(true)
   } else {
     setDarkTheme(true)
@@ -29,26 +29,26 @@ function toggleTheme() {
 }
 
 export function setLightTheme(save?: boolean) {
-  document.documentElement.classList.remove('pf-theme-dark')
+  document.documentElement.classList.remove('pf-v5-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'light')
   }
 }
 
 function setDarkTheme(save?: boolean) {
-  document.documentElement.classList.add('pf-theme-dark')
+  document.documentElement.classList.add('pf-v5-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'dark')
   }
 }
 
 export function ThemeSwitcher(props: { style?: CSSProperties }) {
-  const [light, setLight] = useState(!document.documentElement.classList.contains('pf-theme-dark'))
+  const [light, setLight] = useState(!document.documentElement.classList.contains('pf-v5-theme-dark'))
   return (
     <Button
       onClick={() => {
         toggleTheme()
-        setLight(!document.documentElement.classList.contains('pf-theme-dark'))
+        setLight(!document.documentElement.classList.contains('pf-v5-theme-dark'))
       }}
       variant="plain"
       icon={light ? <SunIcon /> : <MoonIcon />}

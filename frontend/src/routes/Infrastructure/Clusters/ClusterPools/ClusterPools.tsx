@@ -599,7 +599,7 @@ export function ClusterPoolsTable(props: {
 }
 
 const table = css({
-  '& .pf-c-table tr > *:first-child': {
+  '& .pf-v5-c-table tr > *:first-child': {
     paddingLeft: '0 !important',
   },
 })

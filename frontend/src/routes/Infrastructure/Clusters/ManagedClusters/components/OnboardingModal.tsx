@@ -72,15 +72,15 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         </GridItem>
         <GridItem span={9}>
           <div>
-            <span className="pf-u-color-100" style={{ fontSize: '24px' }}>
+            <span className="pf-v5-u-color-100" style={{ fontSize: '24px' }}>
               <Trans i18nKey="Managing clusters <bold>just got easier</bold>" components={{ bold: <strong /> }} />
             </span>
           </div>
-          <div className="pf-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
+          <div className="pf-v5-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
             <Text>{t('Create and manage a fleet of clusters with ease using this all clusters view. ')}</Text>
             <Text>{t('To access a single cluster you can select it from the cluster list table.')}</Text>
           </div>
-          <div className="pf-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
+          <div className="pf-v5-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
             {t('How would you like to create your cluster?')}
           </div>
         </GridItem>
@@ -92,7 +92,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
               <Card id={card.id} key={card.id} isSelectable isFlat>
                 <CardBody style={{ minHeight: '160px' }}>
                   <div
-                    className="pf-u-color-100"
+                    className="pf-v5-u-color-100"
                     style={{
                       position: 'absolute',
                       top: '50%',
@@ -108,7 +108,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             </Link>
           </GridItem>
         ))}
-        <GridItem style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)' }}>
+        <GridItem style={{ backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)' }}>
           <div className="onboarding-modal-footer">
             <AcmExpandableSection
               label={t('Want to learn more?')}
@@ -138,7 +138,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 <li>
                   <AcmButton
                     variant="link"
-                    icon={<ExternalLinkAltIcon className="pf-u-font-size-xs" style={{ padding: '0.5px' }} />}
+                    icon={<ExternalLinkAltIcon className="pf-v5-u-font-size-xs" style={{ padding: '0.5px' }} />}
                     iconPosition="right"
                     isInline
                     onClick={() =>

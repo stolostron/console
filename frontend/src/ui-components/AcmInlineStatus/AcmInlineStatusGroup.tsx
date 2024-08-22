@@ -75,7 +75,7 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
         </Label>
       )}
       {show(props.pending) && (
-        <Label variant="outline" icon={<MinusCircleIcon color="var(--pf-global--disabled-color--100)" />}>
+        <Label variant="outline" icon={<MinusCircleIcon color="var(--pf-v5-global--disabled-color--100)" />}>
           {props.pending}
         </Label>
       )}

@@ -50,11 +50,11 @@ import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const actionGroup = css({
-  backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-  paddingRight: 'var(--pf-c-page__main-section--PaddingRight)',
-  paddingLeft: 'var(--pf-c-page__main-section--PaddingLeft)',
-  paddingBottom: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
-  paddingTop: 'var(--pf-c-page__header-sidebar-toggle__c-button--PaddingTop)',
+  backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
+  paddingRight: 'var(--pf-v5-c-page__main-section--PaddingRight)',
+  paddingLeft: 'var(--pf-v5-c-page__main-section--PaddingLeft)',
+  paddingBottom: 'var(--pf-v5-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
+  paddingTop: 'var(--pf-v5-c-page__header-sidebar-toggle__c-button--PaddingTop)',
 })
 const dropdown = css({
   '& ul': {
@@ -79,7 +79,7 @@ function HandleErrors(
       <EmptyState>
         <EmptyStateHeader
           titleText={<>{t('search.filter.info.title')}</>}
-          icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-global--info-color--100)'} />}
+          icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-v5-global--info-color--100)'} />}
           headingLevel="h4"
         />
         <EmptyStateBody>{schemaError?.message || completeError?.message}</EmptyStateBody>
@@ -96,7 +96,7 @@ function HandleErrors(
       <EmptyState>
         <EmptyStateHeader
           titleText={<>{t('search.filter.errors.title')}</>}
-          icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />}
+          icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-v5-global--danger-color--100)'} />}
           headingLevel="h4"
         />
         <EmptyStateBody>

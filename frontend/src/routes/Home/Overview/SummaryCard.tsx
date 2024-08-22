@@ -115,7 +115,7 @@ export default function SummaryCard(props: {
                 <EmptyStateIcon
                   style={{ fontSize: '36px', marginBottom: '1rem' }}
                   icon={ExclamationCircleIcon}
-                  color={'var(--pf-global--danger-color--100)'}
+                  color={'var(--pf-v5-global--danger-color--100)'}
                 />
               }
               headingLevel="h4"

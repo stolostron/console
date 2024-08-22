@@ -28,8 +28,8 @@ const icon = css({
 })
 const providerTitle = css({
   marginTop: '4px',
-  fontSize: 'var(--pf-c-title--m-3xl--FontSize)',
-  lineHeight: 'var(--pf-c-title--m-3xl--LineHeight)',
+  fontSize: 'var(--pf-v5-c-title--m-3xl--FontSize)',
+  lineHeight: 'var(--pf-v5-c-title--m-3xl--LineHeight)',
 })
 const dangerIcon = css({
   width: '16px',
@@ -98,7 +98,7 @@ export function AcmProviderCard(props: ProviderCardProps) {
                   {ProviderShortTextMap[props.provider]}
                   {props.danger && (
                     <ExclamationCircleIcon
-                      color="var(--pf-global--palette--red-100)"
+                      color="var(--pf-v5-global--palette--red-100)"
                       className={`${dangerIcon} danger-icon`}
                     />
                   )}
