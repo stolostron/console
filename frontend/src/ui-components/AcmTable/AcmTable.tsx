@@ -1780,7 +1780,7 @@ function TableActionsDropdown<T>(props: {
           id="toggle-id"
           onToggle={() => setOpen(!open)}
           toggleIndicator={CaretDownIcon}
-          isPrimary={Object.keys(selections).length > 0}
+          toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
         >
           {t('Actions')}
         </DropdownToggle>
