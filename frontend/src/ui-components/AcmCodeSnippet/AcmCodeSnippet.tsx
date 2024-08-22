@@ -22,10 +22,10 @@ export function AcmCodeSnippet(props: {
     }
   }, [copied])
   return (
-    <div className="pf-c-code-editor pf-m-read-only" style={{ display: 'flex' }} id={props.id}>
-      <div className="pf-c-code-editor__main" style={{ width: '100%' }}>
-        <div className="pf-c-code-editor__code">
-          <pre className="pf-c-code-editor__code-pre">{props.fakeCommand ?? props.command}</pre>
+    <div className="pf-v5-c-code-editor pf-m-read-only" style={{ display: 'flex' }} id={props.id}>
+      <div className="pf-v5-c-code-editor__main" style={{ width: '100%' }}>
+        <div className="pf-v5-c-code-editor__code">
+          <pre className="pf-v5-c-code-editor__code-pre">{props.fakeCommand ?? props.command}</pre>
         </div>
       </div>
       <ClipboardCopyButton

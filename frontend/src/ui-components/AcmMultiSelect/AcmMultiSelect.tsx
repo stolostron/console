@@ -127,7 +127,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
               id={`${props.id}-label-help-button`}
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
-              className="pf-c-form__group-label-help"
+              className="pf-v5-c-form__group-label-help"
             >
               <HelpIcon noVerticalAlign />
             </Button>

@@ -120,26 +120,26 @@ export function AutomationDetailsSidebar(props: {
             case 'successful':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {'Successful'}
+                  <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {'Successful'}
                 </div>
               )
             case 'error':
             case 'failed':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {'Failed'}
+                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> {'Failed'}
                 </div>
               )
             case '-':
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
                 </div>
               )
           }
@@ -194,7 +194,7 @@ export function AutomationDetailsSidebar(props: {
                 <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
               ) : (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
                 </div>
               )}
             </DescriptionListDescription>

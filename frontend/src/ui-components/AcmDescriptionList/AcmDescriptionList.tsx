@@ -16,9 +16,9 @@ import { AcmExpandableCard } from '../AcmExpandable'
 const leftCol = css({
   'margin-bottom': '0px',
   ['@media (max-width:768px)']: {
-    'margin-bottom': 'var(--pf-global--gutter--md)',
+    'margin-bottom': 'var(--pf-v5-global--gutter--md)',
   },
-  'margin-right': 'var(--pf-global--gutter--md)',
+  'margin-right': 'var(--pf-v5-global--gutter--md)',
 })
 
 export type ListItems = {

@@ -202,19 +202,19 @@ export default function PolicySetCard(props: {
                     <DescriptionListDescription>
                       {policySet.status?.compliant === 'Compliant' && (
                         <div>
-                          <CheckCircleIcon color="var(--pf-global--success-color--100)" /> &nbsp;
+                          <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> &nbsp;
                           {t('No violations')}
                         </div>
                       )}
                       {policySet.status?.compliant === 'NonCompliant' && (
                         <div>
-                          <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> &nbsp;
+                          <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> &nbsp;
                           {t('Violations')}
                         </div>
                       )}
                       {policySet.status?.compliant === 'Pending' && (
                         <div>
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> &nbsp;
+                          <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> &nbsp;
                           {t('Pending')}
                         </div>
                       )}

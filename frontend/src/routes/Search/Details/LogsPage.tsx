@@ -30,7 +30,7 @@ const toolbarContainerFullscreen = css({
   flexWrap: 'wrap',
   justifyContent: 'space-between',
   marginBottom: '5px',
-  backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+  backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
   padding: '0 10px',
 })
 const toolbarGroup = css({
@@ -51,7 +51,7 @@ const logWindowHeader = css({
   display: 'flex',
   alignItems: 'center',
   color: '#f5f5f5',
-  backgroundColor: 'var(--pf-global--BackgroundColor--dark-300)',
+  backgroundColor: 'var(--pf-v5-global--BackgroundColor--dark-300)',
   fontSize: '14px',
 })
 const logWindowHeaderItem = css({

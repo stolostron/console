@@ -171,7 +171,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                             {violation.compliant}
                           </Button>{' '}
                           &nbsp;
-                          <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                          <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
                         </span>
                       </Fragment>
                     </Tooltip>
@@ -190,7 +190,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                             {violation.noncompliant}
                           </Button>{' '}
                           &nbsp;
-                          <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                          <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
                         </span>
                       </Fragment>
                     </Tooltip>
@@ -209,7 +209,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                             {violation.pending}
                           </Button>{' '}
                           &nbsp;
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                          <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
                         </span>
                       </Fragment>
                     </Tooltip>
@@ -355,19 +355,19 @@ function ClustersCard() {
           {renderClusterList(topClustersList, onClick, t)}
           {renderExtraClusterList(
             remainingNoncompliant,
-            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+            <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />,
             onToggleNon,
             isExpandedNon
           )}
           {renderExtraClusterList(
             remainingUnknown,
-            <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+            <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
             onToggleUnk,
             isExpandedUnk
           )}
           {renderExtraClusterList(
             remainingCompliant,
-            <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+            <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />,
             onToggleCom,
             isExpandedCom
           )}
@@ -403,7 +403,7 @@ function renderClusterList(
                       {violations.compliant}
                     </Button>{' '}
                     &nbsp;
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                    <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />
                   </Fragment>
                 </span>
               </Tooltip>
@@ -421,7 +421,7 @@ function renderClusterList(
                     {violations.noncompliant}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
                 </span>
               </Tooltip>
             ) : (
@@ -439,7 +439,7 @@ function renderClusterList(
                       {violations.pending}
                     </Button>{' '}
                     &nbsp;
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                    <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
                   </Fragment>
                 </span>
               </Tooltip>
@@ -457,7 +457,7 @@ function renderClusterList(
                     {violations.unknown}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
                 </span>
               </Tooltip>
             ) : (

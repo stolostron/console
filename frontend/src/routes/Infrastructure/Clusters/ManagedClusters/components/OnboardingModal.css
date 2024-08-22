@@ -1,11 +1,11 @@
-.onboarding-modal-footer .pf-c-expandable-section__content {
+.onboarding-modal-footer .pf-v5-c-expandable-section__content {
   margin: 0px;
 }
 
-.pf-c-modal-box.onboarding-modal-class > .pf-c-button + * {
+.pf-v5-c-modal-box.onboarding-modal-class > .pf-v5-c-button + * {
   margin-right: 0px;
 }
 
-.onboarding-modal-footer .pf-c-expandable-section__toggle-text {
-  color: var(--pf-global--Color--100);
+.onboarding-modal-footer .pf-v5-c-expandable-section__toggle-text {
+  color: var(--pf-v5-global--Color--100);
 }

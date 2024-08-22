@@ -274,13 +274,13 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
               case 'Compliant':
                 return (
                   <div>
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                    <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" /> {t('No violations')}
                   </div>
                 )
               case 'NonCompliant':
                 return (
                   <div>
-                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                    <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" /> {t('Violations')}
                   </div>
                 )
               default:

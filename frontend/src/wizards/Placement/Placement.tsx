@@ -212,7 +212,7 @@ export function PredicateSummary() {
     <div style={{ display: 'flex', gap: 16, flexDirection: 'column' }}>
       {labelSelectors.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-c-form__label pf-c-form__label-text">{t('Label selectors')}</div>
+          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Label selectors')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {labelSelectors.map((labelSelector) => (
               <span key={labelSelector}>{labelSelector}</span>
@@ -222,7 +222,7 @@ export function PredicateSummary() {
       )}
       {labelSelectorExpressions.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-c-form__label pf-c-form__label-text">{t('Label expressions')}</div>
+          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Label expressions')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {labelSelectorExpressions.map((expression, index) => (
               <MatchExpressionSummary key={index} expression={expression} />
@@ -232,7 +232,7 @@ export function PredicateSummary() {
       )}
       {claimSelectorExpressions.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-c-form__label pf-c-form__label-text">{t('Cluster claim expressions')}</div>
+          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Cluster claim expressions')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {claimSelectorExpressions.map((expression, index) => (
               <MatchExpressionSummary key={index} expression={expression} />

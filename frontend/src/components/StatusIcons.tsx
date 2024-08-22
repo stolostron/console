@@ -36,7 +36,7 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'compliant',
       count: props.compliant,
-      icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+      icon: <CheckCircleIcon color="var(--pf-v5-global--success-color--100)" />,
       tooltip: props.compliantTooltip,
       href: props.compliantHref,
       onClick: props.compliantOnClick,
@@ -47,7 +47,7 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'violations',
       count: props.violations,
-      icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+      icon: <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />,
       tooltip: props.violationsTooltip,
       href: props.violationHref,
       onClick: props.violationOnClick,
@@ -58,7 +58,7 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'pending',
       count: props.pending,
-      icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+      icon: <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
       tooltip: props.pendingTooltip,
       href: props.pendingHref,
       onClick: props.pendingOnClick,
@@ -69,7 +69,7 @@ export function StatusIcons(props: {
     statuses.push({
       key: 'unknown',
       count: props.unknown,
-      icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+      icon: <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />,
       tooltip: props.unknownTooltip,
       href: props.unknownHref,
       onClick: props.unknownOnClick,

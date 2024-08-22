@@ -8,8 +8,8 @@ export const CriticalRiskIcon = () => {
         <g
           id="Clusters-Insights-2---disable"
           transform="translate(-1048.000000, -261.000000)"
-          fill="var(--pf-global--danger-color--100)"
-          stroke="var(--pf-global--danger-color--100)"
+          fill="var(--pf-v5-global--danger-color--100)"
+          stroke="var(--pf-v5-global--danger-color--100)"
         >
           <g id="Group" transform="translate(1049.000000, 261.000000)">
             <path
@@ -32,7 +32,7 @@ export const ImportantRiskIcon = () => {
         <g
           id="Clusters-Insights-2---disable"
           transform="translate(-1049.000000, -291.000000)"
-          fill="var(--pf-global--palette--orange-300)"
+          fill="var(--pf-v5-global--palette--orange-300)"
         >
           <g id="Group" transform="translate(1049.000000, 261.000000)">
             <g
@@ -57,7 +57,7 @@ export const ModerateRiskIcon = () => {
         <g
           id="Clusters-Insights-2---disable"
           transform="translate(-1049.000000, -321.000000)"
-          fill="var(--pf-global--palette--orange-200)"
+          fill="var(--pf-v5-global--palette--orange-200)"
           fillRule="nonzero"
         >
           <g id="Group" transform="translate(1049.000000, 261.000000)">
@@ -82,7 +82,7 @@ export const LowRiskIcon = () => {
         <g
           id="Clusters-Insights-2---disable"
           transform="translate(-1050.000000, -348.000000)"
-          fill="var(--pf-global--info-color--100)"
+          fill="var(--pf-v5-global--info-color--100)"
         >
           <g id="Group" transform="translate(1049.000000, 261.000000)">
             <g

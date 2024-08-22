@@ -61,14 +61,14 @@ describe('OverviewClusterLabelSelector', () => {
     const { container, getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    await waitFor(() => expect(container.querySelectorAll('.pf-c-select__toggle')[0]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-c-select__toggle')[0] as TargetElement)
+    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[0]).toBeTruthy())
+    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[0] as TargetElement)
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
     userEvent.click(getByText('cloud'))
 
     // pick the label value - Amazon
-    await waitFor(() => expect(container.querySelectorAll('.pf-c-select__toggle')[1]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-c-select__toggle')[1] as TargetElement)
+    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[1]).toBeTruthy())
+    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[1] as TargetElement)
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
 

@@ -999,12 +999,12 @@ describe('Import Discovered Cluster', () => {
     const { container } = render(<Component />) // Render component
     expect(
       container.querySelector(
-        `[data-ouia-component-id=${mockDiscoveredClusters[0].metadata.uid!}] td.pf-c-table__action`
+        `[data-ouia-component-id=${mockDiscoveredClusters[0].metadata.uid!}] td.pf-v5-c-table__action`
       )?.innerHTML
     ).toBeDefined()
     expect(
       container.querySelector(
-        `[data-ouia-component-id=${mockDiscoveredClusters[4].metadata.uid!}] td.pf-c-table__action`
+        `[data-ouia-component-id=${mockDiscoveredClusters[4].metadata.uid!}] td.pf-v5-c-table__action`
       )
     ).toBeEmptyDOMElement()
   })

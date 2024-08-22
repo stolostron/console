@@ -30,7 +30,7 @@ const getStyles = (props: StyleProps) => ({
     maxHeight: '259px',
     minWidth: props.viewWidth > 376 ? '376px' : undefined,
     maxWidth: props.viewWidth < 376 ? '376px' : undefined,
-    '& .pf-c-chart > svg g path:last-of-type': {
+    '& .pf-v5-c-chart > svg g path:last-of-type': {
       fill: props.danger ? '#E62325 !important' : undefined,
     },
   }),

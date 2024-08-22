@@ -85,9 +85,9 @@ function UserDropdownToggle() {
   }, [])
 
   return (
-    <span className="pf-c-dropdown__toggle">
+    <span className="pf-v5-c-dropdown__toggle">
       <span data-test="username">{name}</span>
-      <CaretDownIcon className="pf-c-dropdown__toggle-icon" />
+      <CaretDownIcon className="pf-v5-c-dropdown__toggle-icon" />
     </span>
   )
 }

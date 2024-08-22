@@ -24,7 +24,7 @@ describe('AcmLabels', () => {
   })
   test('returns null when no labels are provided', () => {
     const { container } = render(<AcmLabels labels={[]} />)
-    expect(container.querySelector('.pf-c-label')).toBeNull()
+    expect(container.querySelector('.pf-v5-c-label')).toBeNull()
   })
   test('has zero accessibility defects', async () => {
     const { container } = render(<AcmLabels labels={['foo=bar', 'cluster=management']} />)

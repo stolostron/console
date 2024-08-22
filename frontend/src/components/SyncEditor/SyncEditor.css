@@ -17,46 +17,46 @@
   overflow: hidden;
 }
 
-.sync-editor__container .pf-c-code-editor__header {
+.sync-editor__container .pf-v5-c-code-editor__header {
   font-size: 14px;
   font-weight: 600;
   color: #ededed;
   background-color: #25282c;
 }
 
-.sync-editor__container .pf-c-code-editor__controls {
+.sync-editor__container .pf-v5-c-code-editor__controls {
   width: 100%;
   justify-content: space-between;
 }
 
-.sync-editor__container .pf-c-code-editor__header::before {
+.sync-editor__container .pf-v5-c-code-editor__header::before {
   border: none;
 }
 
-.sync-editor__container .pf-c-code-editor__controls .pf-c-button.pf-m-control {
+.sync-editor__container .pf-v5-c-code-editor__controls .pf-v5-c-button.pf-m-control {
   background-color: #25282c;
 }
 
-.sync-editor__container .sy-toolbar-buttons .pf-c-button.pf-m-plain,
-.pf-c-code-editor__controls .pf-c-button.pf-m-control:not([disabled]) {
+.sync-editor__container .sy-toolbar-buttons .pf-v5-c-button.pf-m-plain,
+.pf-v5-c-code-editor__controls .pf-v5-c-button.pf-m-control:not([disabled]) {
   color: #ededed;
 }
 
-.sync-editor__container .pf-c-button::after {
+.sync-editor__container .pf-v5-c-button::after {
   border: none;
   border-left: 1px solid #55585c;
 }
 
-.sync-editor__container .pf-c-button:hover {
+.sync-editor__container .pf-v5-c-button:hover {
   color: #ededed;
   background-color: #25282c;
 }
 
-.sync-editor__container .pf-c-code-editor__main {
+.sync-editor__container .pf-v5-c-code-editor__main {
   border: none;
 }
 
-.sync-editor__container .pf-c-code-editor__code {
+.sync-editor__container .pf-v5-c-code-editor__code {
   padding: var(--sy-c-code-editor__code--PaddingTop) var(--sy-c-code-editor__code--PaddingRight)
     var(--sy-c-code-editor__code--PaddingBottom) var(--sy-c-code-editor__code--PaddingLeft);
 }

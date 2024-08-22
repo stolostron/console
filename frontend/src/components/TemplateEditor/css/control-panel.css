@@ -24,12 +24,12 @@
   display: flex;
   flex-direction: column;
   row-gap: 0;
-  padding: var(--pf-global--spacer--lg);
+  padding: var(--pf-v5-global--spacer--lg);
 }
 .temptifly .showWizard .creation-view-controls,
 .creation-view .creation-view-controls {
-  padding: var(--pf-c-wizard__main-body--PaddingTop) var(--pf-c-wizard__main-body--PaddingRight)
-    var(--pf-c-wizard__main-body--PaddingBottom) var(--pf-c-wizard__main-body--PaddingLeft);
+  padding: var(--pf-v5-c-wizard__main-body--PaddingTop) var(--pf-v5-c-wizard__main-body--PaddingRight)
+    var(--pf-v5-c-wizard__main-body--PaddingBottom) var(--pf-v5-c-wizard__main-body--PaddingLeft);
 }
 .temptifly .creation-view-controls div:focus,
 .creation-view .creation-view-controls div:focus {
@@ -52,8 +52,8 @@
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
-.temptifly .creation-view-controls-section.shadowed .pf-c-form-control,
-.creation-view .creation-view-controls-section.shadowed .pf-c-form-control {
+.temptifly .creation-view-controls-section.shadowed .pf-v5-c-form-control,
+.creation-view .creation-view-controls-section.shadowed .pf-v5-c-form-control {
   background-color: #f4f7fb;
 }
 .temptifly .creation-view-controls-section.shadowed.collapsed,
@@ -68,29 +68,29 @@
   overflow: hidden;
   max-height: 0;
 }
-.temptifly .pf-c-wizard__footer,
-.creation-view .pf-c-wizard__footer {
+.temptifly .pf-v5-c-wizard__footer,
+.creation-view .pf-v5-c-wizard__footer {
   box-shadow: rgba(3, 3, 3, 0.16) 0px -2px 4px -1px;
 }
-.temptifly .pf-c-skeleton,
-.creation-view .pf-c-skeleton {
+.temptifly .pf-v5-c-skeleton,
+.creation-view .pf-v5-c-skeleton {
   height: 40px;
   background-color: #e0e0e0;
 }
-.temptifly .pf-c-form-control.input,
-.creation-view .pf-c-form-control.input {
+.temptifly .pf-v5-c-form-control.input,
+.creation-view .pf-v5-c-form-control.input {
   padding: 0;
 }
-.temptifly .pf-c-form-control .pf-c-combo-control,
-.creation-view .pf-c-form-control .pf-c-combo-control {
+.temptifly .pf-v5-c-form-control .pf-v5-c-combo-control,
+.creation-view .pf-v5-c-form-control .pf-v5-c-combo-control {
   height: 100%;
   width: 100%;
   border: none;
   text-overflow: ellipsis;
   padding-left: 6px;
 }
-.temptifly .pf-c-alert h4,
-.creation-view .pf-c-alert h4 {
+.temptifly .pf-v5-c-alert h4,
+.creation-view .pf-v5-c-alert h4 {
   margin: 0;
 }
 .temptifly-controls,
@@ -171,7 +171,7 @@
   margin: 0 6px;
   width: 16px;
   height: 16px;
-  fill: var(--pf-global--Color--100);
+  fill: var(--pf-v5-global--Color--100);
   transition: all 100ms;
   transform: rotate(90deg);
 }
@@ -239,12 +239,12 @@
   height: 36px;
   border-bottom: 1px solid #8a8d90;
 }
-.temptifly-controls-singleselect-loading .pf-c-spinner,
-.creation-view-controls-singleselect-loading .pf-c-spinner,
-.temptifly-controls-combobox-loading .pf-c-spinner,
-.creation-view-controls-combobox-loading .pf-c-spinner,
-.temptifly-controls-treeselect-loading .pf-c-spinner,
-.creation-view-controls-treeselect-loading .pf-c-spinner {
+.temptifly-controls-singleselect-loading .pf-v5-c-spinner,
+.creation-view-controls-singleselect-loading .pf-v5-c-spinner,
+.temptifly-controls-combobox-loading .pf-v5-c-spinner,
+.creation-view-controls-combobox-loading .pf-v5-c-spinner,
+.temptifly-controls-treeselect-loading .pf-v5-c-spinner,
+.creation-view-controls-treeselect-loading .pf-v5-c-spinner {
   position: absolute;
   top: 6px;
   left: 4px;
@@ -353,14 +353,14 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu {
-  box-shadow: var(--pf-global--BoxShadow--md);
+  box-shadow: var(--pf-v5-global--BoxShadow--md);
   position: absolute;
   left: 0;
   right: 0;
   top: 2.5rem;
   width: 100%;
   overflow-y: auto;
-  background-color: var(--pf-global--BackgroundColor--100);
+  background-color: var(--pf-v5-global--BackgroundColor--100);
   z-index: 500;
   cursor: pointer;
 }
@@ -478,8 +478,8 @@
   margin-bottom: 8px;
   position: relative;
 }
-.temptifly-controls-add-combobox .pf-c-select,
-.creation-view-controls-add-combobox .pf-c-select {
+.temptifly-controls-add-combobox .pf-v5-c-select,
+.creation-view-controls-add-combobox .pf-v5-c-select {
   background-color: white;
 }
 .temptifly-controls-table-container,
@@ -509,12 +509,12 @@
 .creation-view-controls-table-delete-button:focus {
   outline: none;
 }
-.temptifly-controls-table .pf-c-toolbar__content-section,
-.creation-view-controls-table .pf-c-toolbar__content-section {
+.temptifly-controls-table .pf-v5-c-toolbar__content-section,
+.creation-view-controls-table .pf-v5-c-toolbar__content-section {
   justify-content: space-between;
 }
-.temptifly-controls-table .pf-c-table tr > *,
-.creation-view-controls-table .pf-c-table tr > * {
+.temptifly-controls-table .pf-v5-c-table tr > *,
+.creation-view-controls-table .pf-v5-c-table tr > * {
   padding: 14px;
 }
 .temptifly-controls-table .tf-table-button-container,
@@ -571,8 +571,8 @@
 .creation-view-controls-labels-tag-container {
   padding: 6px 0 0 7px;
 }
-.temptifly-controls-labels-tag-container .pf-c-label,
-.creation-view-controls-labels-tag-container .pf-c-label {
+.temptifly-controls-labels-tag-container .pf-v5-c-label,
+.creation-view-controls-labels-tag-container .pf-v5-c-label {
   margin-right: 5px;
 }
 .temptifly-controls-labels-edit-container,
@@ -632,53 +632,53 @@
   font-size: 0.875rem;
   padding-bottom: 0.5rem;
 }
-.temptifly-controls-textbox .pf-c-select,
-.creation-view-controls-textbox .pf-c-select,
-.temptifly-controls-multiselect .pf-c-select,
-.creation-view-controls-multiselect .pf-c-select,
-.temptifly-controls-singleselect .pf-c-select,
-.creation-view-controls-singleselect .pf-c-select,
-.temptifly-controls-combobox .pf-c-select,
-.creation-view-controls-combobox .pf-c-select,
-.temptifly-controls-treeselect .pf-c-select,
-.creation-view-controls-treeselect .pf-c-select,
-.temptifly-controls-select .pf-c-select,
-.creation-view-controls-select .pf-c-select,
-.temptifly-controls-textarea .pf-c-select,
-.creation-view-controls-textarea .pf-c-select,
-.temptifly-controls-number .pf-c-select,
-.creation-view-controls-number .pf-c-select,
-.temptifly-controls-cards .pf-c-select,
-.creation-view-controls-cards .pf-c-select,
-.temptifly-controls-skeleton .pf-c-select,
-.creation-view-controls-skeleton .pf-c-select {
+.temptifly-controls-textbox .pf-v5-c-select,
+.creation-view-controls-textbox .pf-v5-c-select,
+.temptifly-controls-multiselect .pf-v5-c-select,
+.creation-view-controls-multiselect .pf-v5-c-select,
+.temptifly-controls-singleselect .pf-v5-c-select,
+.creation-view-controls-singleselect .pf-v5-c-select,
+.temptifly-controls-combobox .pf-v5-c-select,
+.creation-view-controls-combobox .pf-v5-c-select,
+.temptifly-controls-treeselect .pf-v5-c-select,
+.creation-view-controls-treeselect .pf-v5-c-select,
+.temptifly-controls-select .pf-v5-c-select,
+.creation-view-controls-select .pf-v5-c-select,
+.temptifly-controls-textarea .pf-v5-c-select,
+.creation-view-controls-textarea .pf-v5-c-select,
+.temptifly-controls-number .pf-v5-c-select,
+.creation-view-controls-number .pf-v5-c-select,
+.temptifly-controls-cards .pf-v5-c-select,
+.creation-view-controls-cards .pf-v5-c-select,
+.temptifly-controls-skeleton .pf-v5-c-select,
+.creation-view-controls-skeleton .pf-v5-c-select {
   background-color: white;
 }
-.temptifly-controls-textbox .pf-c-select .pf-c-select__menu,
-.creation-view-controls-textbox .pf-c-select .pf-c-select__menu,
-.temptifly-controls-multiselect .pf-c-select .pf-c-select__menu,
-.creation-view-controls-multiselect .pf-c-select .pf-c-select__menu,
-.temptifly-controls-singleselect .pf-c-select .pf-c-select__menu,
-.creation-view-controls-singleselect .pf-c-select .pf-c-select__menu,
-.temptifly-controls-combobox .pf-c-select .pf-c-select__menu,
-.creation-view-controls-combobox .pf-c-select .pf-c-select__menu,
-.temptifly-controls-treeselect .pf-c-select .pf-c-select__menu,
-.creation-view-controls-treeselect .pf-c-select .pf-c-select__menu,
-.temptifly-controls-select .pf-c-select .pf-c-select__menu,
-.creation-view-controls-select .pf-c-select .pf-c-select__menu,
-.temptifly-controls-textarea .pf-c-select .pf-c-select__menu,
-.creation-view-controls-textarea .pf-c-select .pf-c-select__menu,
-.temptifly-controls-number .pf-c-select .pf-c-select__menu,
-.creation-view-controls-number .pf-c-select .pf-c-select__menu,
-.temptifly-controls-cards .pf-c-select .pf-c-select__menu,
-.creation-view-controls-cards .pf-c-select .pf-c-select__menu,
-.temptifly-controls-skeleton .pf-c-select .pf-c-select__menu,
-.creation-view-controls-skeleton .pf-c-select .pf-c-select__menu {
+.temptifly-controls-textbox .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-textbox .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-multiselect .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-multiselect .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-singleselect .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-singleselect .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-combobox .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-combobox .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-treeselect .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-treeselect .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-select .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-select .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-textarea .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-textarea .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-number .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-number .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-cards .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-cards .pf-v5-c-select .pf-v5-c-select__menu,
+.temptifly-controls-skeleton .pf-v5-c-select .pf-v5-c-select__menu,
+.creation-view-controls-skeleton .pf-v5-c-select .pf-v5-c-select__menu {
   padding-left: 0;
   margin-left: 0;
 }
-.temptifly-controls textarea.pf-c-form-control,
-.creation-view-controls textarea.pf-c-form-control {
+.temptifly-controls textarea.pf-v5-c-form-control,
+.creation-view-controls textarea.pf-v5-c-form-control {
   min-height: 100px;
 }
 .temptifly-controls-treeselect .tf--list-box__menu-branch,
@@ -710,27 +710,27 @@
   font-size: 0.875rem;
   position: relative;
 }
-.temptifly-controls-checkbox .pf-c-form__group-label,
-.creation-view-controls-checkbox .pf-c-form__group-label,
-.creation-view-controls-custom .pf-c-form__group-label {
+.temptifly-controls-checkbox .pf-v5-c-form__group-label,
+.creation-view-controls-checkbox .pf-v5-c-form__group-label,
+.creation-view-controls-custom .pf-v5-c-form__group-label {
   padding: 0 0 0 5px;
 }
-.temptifly-controls-checkbox .pf-c-check__input,
-.creation-view-controls-checkbox .pf-c-check__input {
+.temptifly-controls-checkbox .pf-v5-c-check__input,
+.creation-view-controls-checkbox .pf-v5-c-check__input {
   margin-right: 6px;
 }
 .temptifly-controls .creation-view-group-container,
 .creation-view-controls .creation-view-group-container {
   position: relative;
-  border: 1px solid var(--pf-global--BorderColor--300);
-  background-color: var(--pf-global--BackgroundColor--light-200);
+  border: 1px solid var(--pf-v5-global--BorderColor--300);
+  background-color: var(--pf-v5-global--BackgroundColor--light-200);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   padding: 10px;
   margin: 10px 0;
 }
 .creation-view-controls .creation-view-group-subcontainer {
-  border: 1px solid var(--pf-global--BorderColor--300);
-  background-color: var(--pf-global--BackgroundColor--light-100);
+  border: 1px solid var(--pf-v5-global--BorderColor--300);
+  background-color: var(--pf-v5-global--BackgroundColor--light-100);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
   padding: 10px;
   margin-bottom: 3px;
@@ -740,18 +740,18 @@
   font-weight: bold;
 }
 
-.creation-view-controls .creation-view-group-subcontainer .pf-c-form__label-text {
+.creation-view-controls .creation-view-group-subcontainer .pf-v5-c-form__label-text {
   font-weight: normal;
   font-size: 16px;
 }
 
-.creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-c-form__label-text {
+.creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-v5-c-form__label-text {
   font-weight: bold;
 }
-.temptifly-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,
-.creation-view-controls .creation-view-group-container .pf-c-select__toggle .pf-c-badge.pf-m-read,
-.temptifly-controls .creation-view-group-container .pf-c-form-control .pf-c-badge.pf-m-read,
-.creation-view-controls .creation-view-group-container .pf-c-form-control .pf-c-badge.pf-m-read {
+.temptifly-controls .creation-view-group-container .pf-v5-c-select__toggle .pf-v5-c-badge.pf-m-read,
+.creation-view-controls .creation-view-group-container .pf-v5-c-select__toggle .pf-v5-c-badge.pf-m-read,
+.temptifly-controls .creation-view-group-container .pf-v5-c-form-control .pf-v5-c-badge.pf-m-read,
+.creation-view-controls .creation-view-group-container .pf-v5-c-form-control .pf-v5-c-badge.pf-m-read {
   background-color: darkgray;
 }
 .temptifly-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button,
@@ -795,7 +795,7 @@
   margin-bottom: 20px;
 }
 
-.creation-view-controls-card-container .pf-c-tile.pf-m-display-lg {
+.creation-view-controls-card-container .pf-v5-c-tile.pf-m-display-lg {
   min-height: 140px;
   display: flex;
   justify-content: center;
@@ -803,34 +803,34 @@
   flex-direction: column;
 }
 
-.temptifly .pf-c-wizard .pf-c-wizard__main-body,
-.creation-view .pf-c-wizard .pf-c-wizard__main-body {
+.temptifly .pf-v5-c-wizard .pf-v5-c-wizard__main-body,
+.creation-view .pf-v5-c-wizard .pf-v5-c-wizard__main-body {
   padding: 0;
   height: 100%;
 }
-.temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name,
-.creation-view .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name {
+.temptifly .pf-v5-c-wizard .creation-view-controls .creation-view-controls-title-main-name,
+.creation-view .pf-v5-c-wizard .creation-view-controls .creation-view-controls-title-main-name {
   font-weight: bold;
   margin-left: -30px;
 }
-.temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button,
-.creation-view .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button {
+.temptifly .pf-v5-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button,
+.creation-view .pf-v5-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button {
   left: -25px;
 }
-.temptifly .pf-c-wizard .creation-view-controls .creation-view-group-container,
-.creation-view .pf-c-wizard .creation-view-controls .creation-view-group-container {
+.temptifly .pf-v5-c-wizard .creation-view-controls .creation-view-group-container,
+.creation-view .pf-v5-c-wizard .creation-view-controls .creation-view-group-container {
   border: none;
   box-shadow: none;
   padding: 0 0 0 22px;
   margin-left: 0px;
 }
 
-.temptifly .pf-c-wizard .pf-c-tile {
-  --pf-c-tile--TranslateY: none;
-  --pf-c-tile--Transition: none;
+.temptifly .pf-v5-c-wizard .pf-v5-c-tile {
+  --pf-v5-c-tile--TranslateY: none;
+  --pf-v5-c-tile--Transition: none;
 }
 
-.temptifly .pf-c-wizard .pf-c-tile::after {
+.temptifly .pf-v5-c-wizard .pf-v5-c-tile::after {
   transition: none;
   transform: none;
 }
