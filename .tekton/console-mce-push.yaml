@@ -155,7 +155,7 @@ spec:
       runAfter:
       - clone-repository
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies:0.1@sha256:eea8bd511343b4014dab46a77e7215510f7a63820937d1267c6dc428e10ffbe4
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-prefetch-dependencies:0.1@sha256:1b75828f2b7193ec9c567b907fdc0b2c1bb08cca4ab2dfcecbe9ff84f836cfc8
         name: prefetch-dependencies
       when:
       - input: $(params.hermetic)
@@ -182,7 +182,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:224bcc583d26e7ecac54afc0b94fc78fad480234434de842b60fe4ea1cb0bcb0
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:697120b854f64fabd1acb8f47629dec4cea9498b2a1ef3a407454a4058615edd
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
