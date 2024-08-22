@@ -66,12 +66,12 @@ export function AcmLabels(props: {
   return (
     <LabelGroup numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
       {labels.map((label) => (
-        <Label key={label} className={acmLabel} isTruncated>
+        <Label key={label} className={acmLabel}>
           {label}
         </Label>
       ))}
       {hidden.map((label) => (
-        <Label key={label} className={acmLabel} isTruncated>
+        <Label key={label} className={acmLabel}>
           {label}
         </Label>
       ))}

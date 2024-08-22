@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Flex, FlexItem } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon, InProgressIcon } from '@patternfly/react-icons'
-import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { global_palette_green_500 as okColor, global_danger_color_100 as dangerColor } from '@patternfly/react-tokens'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -40,7 +40,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
   })
 
   return (
-    <TableComposable variant="compact">
+    <Table variant="compact">
       <Thead>
         <Tr>
           <Th width={25}>{t('Condition')}</Th>
@@ -85,7 +85,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
           )
         })}
       </Tbody>
-    </TableComposable>
+    </Table>
   )
 }
 

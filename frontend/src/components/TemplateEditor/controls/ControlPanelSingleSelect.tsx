@@ -2,7 +2,8 @@
 'use strict'
 
 import React, { SyntheticEvent, useCallback, useState } from 'react'
-import { Select, SelectOption, SelectOptionObject, SelectVariant, Spinner } from '@patternfly/react-core'
+import { Spinner } from '@patternfly/react-core'
+import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 import { TFunction } from 'react-i18next'

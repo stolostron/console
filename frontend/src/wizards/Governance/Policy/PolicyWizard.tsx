@@ -639,7 +639,7 @@ function OperatorPolicy() {
           name="operator-namespaces"
           label={t('All namespaces on the cluster (default)')}
           checked={allNamespacesMode}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             setAllNamespacesMode(checked)
 
             if (checked) {
@@ -652,7 +652,7 @@ function OperatorPolicy() {
           name="operator-namespaces"
           label={t('A specific namespace on the cluster')}
           checked={!allNamespacesMode}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             setAllNamespacesMode(!checked)
           }}
         />

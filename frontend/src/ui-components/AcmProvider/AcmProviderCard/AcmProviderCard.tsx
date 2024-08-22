@@ -5,7 +5,6 @@ import {
   Card,
   CardFooter,
   CardHeader,
-  CardHeaderMain,
   Gallery,
   GalleryItem,
   Stack,
@@ -89,20 +88,23 @@ export function AcmProviderCard(props: ProviderCardProps) {
       <Stack>
         <StackItem>
           <CardHeader>
-            <CardHeaderMain>
-              <div className={icon}>
-                <AcmIcon icon={ProviderIconMap[props.provider]} />
-              </div>
-              <Title headingLevel="h2" size="3xl" className={providerTitle} style={{ fontWeight: 300 }}>
-                {ProviderShortTextMap[props.provider]}
-                {props.danger && (
-                  <ExclamationCircleIcon
-                    color="var(--pf-global--palette--red-100)"
-                    className={`${dangerIcon} danger-icon`}
-                  />
-                )}
-              </Title>
-            </CardHeaderMain>
+            actions=
+            {
+              <>
+                <div className={icon}>
+                  <AcmIcon icon={ProviderIconMap[props.provider]} />
+                </div>
+                <Title headingLevel="h2" size="3xl" className={providerTitle} style={{ fontWeight: 300 }}>
+                  {ProviderShortTextMap[props.provider]}
+                  {props.danger && (
+                    <ExclamationCircleIcon
+                      color="var(--pf-global--palette--red-100)"
+                      className={`${dangerIcon} danger-icon`}
+                    />
+                  )}
+                </Title>
+              </>
+            }
           </CardHeader>
         </StackItem>
         <StackItem isFilled></StackItem>
