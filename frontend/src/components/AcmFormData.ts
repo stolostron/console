@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
+import { AlertProps } from '@patternfly/react-core'
 import { ReactNode } from 'react'
 
 export interface FormData {
@@ -72,7 +73,7 @@ export interface InputBase<T> {
 
 export interface AlertInput extends InputBase<string> {
   reactNode?: ReactNode
-  variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
+  variant?: AlertProps['variant']
   type: 'Alert'
 }
 

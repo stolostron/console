@@ -25,6 +25,7 @@ import {
   Stack,
   StackItem,
   Checkbox,
+  AlertProps,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -42,7 +43,7 @@ export type BulkActionModalProps<T = undefined> = {
   disableSubmitButton?: boolean
   hasExternalResources?: boolean
   hideTableAfterSubmit?: boolean
-  icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+  icon?: AlertProps['variant']
   isDanger?: boolean
   isValidError?: (error: Error) => boolean
   onCancel?: () => void
