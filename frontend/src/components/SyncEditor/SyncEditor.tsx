@@ -614,7 +614,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               id="undo-button"
               icon={<UndoIcon />}
               aria-label={t('Undo')}
-              toolTipText={t('Undo')}
+              tooltipProps={{ content: t('Undo') }}
               isDisabled={!hasUndo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'undo')
@@ -627,7 +627,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               id="redo-button"
               icon={<RedoIcon />}
               aria-label={t('Redo')}
-              toolTipText={t('Redo')}
+              tooltipProps={{ content: t('Redo') }}
               isDisabled={!hasRedo}
               onClick={() => {
                 editorRef?.current.trigger('source', 'redo')
@@ -639,7 +639,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             id="search-button"
             icon={<SearchIcon />}
             aria-label={t('Find')}
-            toolTipText={t('Find')}
+            tooltipProps={{ content: t('Find') }}
             onClick={() => {
               editorRef?.current.trigger('source', 'actions.find')
             }}
@@ -650,7 +650,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               id="secret-button"
               icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
               aria-label={t('Show Secrets')}
-              toolTipText={t('Show Secrets')}
+              tooltipProps={{ content: t('Show Secrets') }}
               onClick={() => {
                 setShowSecrets(!showSecrets)
               }}
@@ -679,7 +679,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <CodeEditorControl
               icon={<CloseIcon />}
               aria-label={t('Close')}
-              toolTipText={t('Close')}
+              tooltipProps={{ content: t('Close') }}
               onClick={onClose || noop}
             />
           )}
