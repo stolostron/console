@@ -117,7 +117,7 @@ const ControlPanelMultiTextInput = (props: {
           style={{ padding: '.5em 0 .5em 0' }}
           id="add-button"
           variant="link"
-          isSmall
+          size="sm"
           onClick={onNewKey}
           icon={<PlusCircleIcon />}
         >

@@ -99,7 +99,7 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
                   id={step.stepID && `${step.stepID}-link`}
                   className={button}
                   variant="link"
-                  isSmall
+                  size="sm"
                   icon={<ExternalLinkAltIcon />}
                   iconPosition="right"
                   isDisabled={step.link.isDisabled}
