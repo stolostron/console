@@ -982,12 +982,13 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
   switch (input.type) {
     case 'Text': {
       const value = input.value
-      const { isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
+      const { onChange, isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
       return (
         <InputGroup>
           <InputGroupItem isFill>
             <TextInput
               {...textInputProps}
+              onChange={(_event, value) => onChange(value)}
               validated={validated}
               spellCheck="false"
               type={!isSecret || showSecrets ? 'text' : 'password'}
@@ -1014,9 +1015,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               {...inputProps}
               validated={validated}
               type={'number'}
-              onChange={(_event, value) => {
-                onChange(Number(value))
-              }}
+              onChange={(_event, value) => onChange(Number(value))}
               readOnlyVariant="default"
             />
           </InputGroupItem>
@@ -1025,11 +1024,13 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     }
     case 'TextArea': {
       const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
+      const { onChange, ...inputProps } = input
       return (
         <InputGroup>
           {hideSecretInput ? (
             <TextInput
-              {...input}
+              {...inputProps}
+              onChange={(_event, value) => onChange(value)}
               value={'**************'}
               validated={validated}
               type={'password'}
@@ -1037,7 +1038,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             />
           ) : (
             <TextArea
-              {...input}
+              {...inputProps}
+              onChange={(_event, value) => onChange(value)}
               validated={validated}
               spellCheck="false"
               resizeOrientation="vertical"
@@ -1058,8 +1060,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       )
     }
     case 'Checkbox': {
-      const { value, ...inputProps } = input
-      return <Checkbox {...inputProps} isChecked={value} />
+      const { onChange, value, ...inputProps } = input
+      return <Checkbox {...inputProps} onChange={(_event, value) => onChange(value)} isChecked={value} />
     }
 
     case 'Select':
