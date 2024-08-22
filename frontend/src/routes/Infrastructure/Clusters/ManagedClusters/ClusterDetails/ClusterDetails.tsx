@@ -214,7 +214,7 @@ export default function ClusterDetailsPage() {
     (prevCluster?.isHive && prevCluster?.status === ClusterStatus.destroying) ||
     (!prevCluster?.isHive && prevCluster?.status === ClusterStatus.detaching)
   ) {
-    return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} />
+    return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} agentClusterInstall={agentClusterInstall} />
   }
 
   if (!clusterExists && !selectedCluster) {

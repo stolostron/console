@@ -91,17 +91,6 @@ export function PolicyTemplateDetails(
     }
   }, [])
 
-  let details = '-'
-  if (template?.status?.compliancyDetails) {
-    details = template?.status?.compliancyDetails
-  } else if (template?.status?.violations) {
-    details = template?.status?.violations
-  } else if (template?.status?.conditions) {
-    // Find the 'Compliant' condition from the list of conditions
-    const cond = template.status.conditions.find((c: any) => c.type === 'Compliant')
-    details = cond?.message || '-'
-  }
-
   const descriptionItems = [
     {
       key: t('Name'),
@@ -118,10 +107,6 @@ export function PolicyTemplateDetails(
     {
       key: t('API groups'),
       value: template?.apiVersion ?? '-',
-    },
-    {
-      key: t('Details'),
-      value: JSON.stringify(details),
     },
   ]
 

@@ -345,9 +345,6 @@ describe('Policy Template Details Page', () => {
 
     await waitForText('test-cluster')
     await waitForText('ConfigurationPolicy')
-    await waitForText(
-      '[{"Compliant":"Compliant","Validity":{},"conditions":[{"lastTransitionTime":"2022-02-22T13:32:41Z","message":"namespaces [test] found as specified, therefore this Object template is compliant","reason":"K8s `must have` object already exists","status":"True","type":"notification"}]}]'
-    )
 
     // wait for template yaml to load correctly
     await waitForText('ConfigurationPolicy YAML')
@@ -440,9 +437,6 @@ describe('Policy Template Details Page', () => {
     // Ensure the hosting cluster name isn't shown as the cluster name
     await waitForText(clusterName)
     await waitForText('ConfigurationPolicy')
-    await waitForText(
-      '[{"Compliant":"Compliant","Validity":{},"conditions":[{"lastTransitionTime":"2022-02-22T13:32:41Z","message":"namespaces [test] found as specified, therefore this Object template is compliant","reason":"K8s `must have` object already exists","status":"True","type":"notification"}]}]'
-    )
     const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
@@ -571,9 +565,6 @@ describe('Policy Template Details Page', () => {
     // Verify the template description section
     await waitForText('ns-must-have-gk', true)
     await waitForText('K8sRequiredLabels')
-    screen.getByText(
-      /\[\{"enforcementaction":"warn","group":"","kind":"namespace","message":"you must provide labels: \{\\"gatekeeper\\"\}","name":"default","version":"v1"\},\{"enforcementaction":"warn","group":"","kind":"namespace","message":"you must provide labels: \{\\"gatekeeper\\"\}","name":"default-broker","version":"v1"\}\]/i
-    )
 
     const row = screen.getByRole('row', {
       name: /default-broker - namespace v1 violations you must provide labels: \{"gatekeeper"\} view yaml/i,
@@ -614,9 +605,6 @@ describe('Policy Template Details Page', () => {
     // Verify the template description section
     await waitForText('oppol-no-group', true)
     await waitForText('OperatorPolicy')
-    screen.getByText(
-      /Compliant; the OperatorGroup matches what is required by the policy, the Subscription matches what is required by the policy, no InstallPlans requiring approval were found, ClusterServiceVersion - install strategy completed with no errors, all operator Deployments have their minimum availability, CatalogSource was found/i
-    )
 
     const row = screen.getByRole('row', {
       name: /Deployment Available/i,
@@ -766,9 +754,6 @@ describe('Policy Template Details Page', () => {
     // Verify the template description section
     await waitForText('oppol-no-group', true)
     await waitForText('OperatorPolicy')
-    screen.getByText(
-      /Compliant; the OperatorGroup matches what is required by the policy, the Subscription matches what is required by the policy, no InstallPlans requiring approval were found, ClusterServiceVersion - install strategy completed with no errors, all operator Deployments have their minimum availability, CatalogSource was found/i
-    )
 
     // Verify that 'Inapplicable' is displayed for certain relatedObjects
     await waitForText('Inapplicable', true)

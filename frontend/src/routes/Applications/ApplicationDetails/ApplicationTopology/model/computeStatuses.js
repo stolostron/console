@@ -486,6 +486,7 @@ const getStateNames = (t) => {
     'healthy',
     'active',
     'available',
+    'running',
   ]
   return { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates }
 }
