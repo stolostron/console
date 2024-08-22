@@ -29,7 +29,10 @@ import { AcmErrorBoundary } from '../AcmErrorBoundary/AcmErrorBoundary'
 
 export function AcmPage(props: { header: ReactNode; children: ReactNode; hasDrawer?: boolean }) {
   const page = (
-    <Page additionalGroupedContent={<Fragment>{props.header}</Fragment>} groupProps={{ sticky: 'top' }}>
+    <Page
+      additionalGroupedContent={<Fragment>{props.header}</Fragment>}
+      groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
+    >
       {props.children}
     </Page>
   )
