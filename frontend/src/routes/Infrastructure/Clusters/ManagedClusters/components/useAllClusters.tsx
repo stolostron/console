@@ -8,7 +8,7 @@ import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
  * Hook to retrieve aggregated list of all clusters
  * @param excludeUnclaimed Excludes unclaimed clusters in cluster pools (or claimed clusters for which the user can not see the claim)
  */
-export function useAllClusters(excludeUnclaimed?: boolean) {
+export function useAllClusters(excludeUnclaimed?: boolean, excludeAddons?: boolean) {
   const {
     managedClustersState,
     clusterDeploymentsState,
@@ -43,6 +43,7 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
         certificateSigningRequests,
         managedClusters,
         managedClusterAddons,
+        excludeAddons,
         clusterManagementAddOns,
         clusterClaims,
         clusterCurators,
@@ -63,6 +64,7 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
       certificateSigningRequests,
       managedClusters,
       managedClusterAddons,
+      excludeAddons,
       clusterManagementAddOns,
       clusterClaims,
       clusterCurators,

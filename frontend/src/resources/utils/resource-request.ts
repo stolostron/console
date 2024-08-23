@@ -66,7 +66,8 @@ export function getBackendUrl() {
     const value = proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : ''
     return value
   }
-  return process.env.REACT_APP_BACKEND_PATH
+  /* istanbul ignore next */
+  return process.env.REACT_APP_BACKEND_PATH ?? ''
 }
 
 export async function reconcileResources(

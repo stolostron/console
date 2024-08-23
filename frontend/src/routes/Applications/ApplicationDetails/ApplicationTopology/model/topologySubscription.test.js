@@ -2,7 +2,13 @@
 
 import { PlacementKind } from '../../../../../resources'
 import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
-import { createReplicaChild, getSubscriptionTopology } from './topologySubscription'
+import {
+  createReplicaChild,
+  getSubscriptionTopology,
+  createControllerRevisionChild,
+  createDataVolumeChild,
+  createVirtualMachineInstance,
+} from './topologySubscription'
 
 const clustersNames = ['local-cluster']
 const parentObject = {
@@ -12639,5 +12645,190 @@ describe('getSubscriptionTopology', () => {
   }
   it('returns subscriptionTopology', () => {
     expect(getSubscriptionTopology(application, managedClusters, undefined)).toEqual(result)
+  })
+})
+
+describe('createControllerRevisionChild', () => {
+  const node = {
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    type: 'virtualmachine',
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    specs: {
+      isDesign: false,
+      raw: {
+        metadata: {
+          name: 'fedora-plum-walrus-98',
+          namespace: 'feng-vm',
+        },
+        group: 'kubevirt.io',
+        health: {
+          message: 'Running',
+          status: 'Healthy',
+        },
+        kind: 'VirtualMachine',
+        name: 'fedora-plum-walrus-98',
+        namespace: 'feng-vm',
+        status: 'OutOfSync',
+        version: 'v1',
+        cluster: 'local-cluster',
+        apiVersion: 'kubevirt.io/v1',
+      },
+      clustersNames: ['local-cluster'],
+      parent: {
+        clusterId: 'member--clusters--',
+      },
+      resourceCount: 1,
+    },
+  }
+
+  const result = {
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--controllerrevision--fedora-plum-walrus-98',
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    specs: {
+      clustersNames: ['local-cluster'],
+      isDesign: false,
+      parent: {
+        parentId: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+        parentName: 'fedora-plum-walrus-98',
+        parentSpecs: undefined,
+        parentType: 'virtualmachine',
+        resources: undefined,
+      },
+      replicaCount: 1,
+      resourceCount: 1,
+      resources: undefined,
+    },
+    type: 'controllerrevision',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--controllerrevision--fedora-plum-walrus-98',
+  }
+  it('createControllerRevisionChild', () => {
+    expect(createControllerRevisionChild(node, ['local-cluster'], [], [])).toEqual(result)
+  })
+})
+
+describe('createDataVolumeChild', () => {
+  const node = {
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    type: 'virtualmachine',
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    specs: {
+      isDesign: false,
+      raw: {
+        metadata: {
+          name: 'fedora-plum-walrus-98',
+          namespace: 'feng-vm',
+        },
+        group: 'kubevirt.io',
+        health: {
+          message: 'Running',
+          status: 'Healthy',
+        },
+        kind: 'VirtualMachine',
+        name: 'fedora-plum-walrus-98',
+        namespace: 'feng-vm',
+        status: 'OutOfSync',
+        version: 'v1',
+        cluster: 'local-cluster',
+        apiVersion: 'kubevirt.io/v1',
+      },
+      clustersNames: ['local-cluster'],
+      parent: {
+        clusterId: 'member--clusters--',
+      },
+      resourceCount: 1,
+    },
+  }
+
+  const result = {
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--datavolume--fedora-plum-walrus-98--persistentvolumeclaim--fedora-plum-walrus-98',
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    specs: {
+      clustersNames: ['local-cluster'],
+      isDesign: false,
+      parent: {
+        parentId:
+          'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--datavolume--fedora-plum-walrus-98',
+        parentName: 'fedora-plum-walrus-98',
+        parentSpecs: undefined,
+        parentType: 'datavolume',
+        resources: undefined,
+      },
+      replicaCount: 1,
+      resourceCount: 1,
+      resources: undefined,
+    },
+    type: 'persistentvolumeclaim',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--datavolume--fedora-plum-walrus-98--persistentvolumeclaim--fedora-plum-walrus-98',
+  }
+  it('createDataVolumeChild', () => {
+    expect(createDataVolumeChild(node, ['local-cluster'], [], [])).toEqual(result)
+  })
+})
+
+describe('createVirtualMachineInstance', () => {
+  const node = {
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    type: 'virtualmachine',
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98',
+    specs: {
+      isDesign: false,
+      raw: {
+        metadata: {
+          name: 'fedora-plum-walrus-98',
+          namespace: 'feng-vm',
+        },
+        group: 'kubevirt.io',
+        health: {
+          message: 'Running',
+          status: 'Healthy',
+        },
+        kind: 'VirtualMachine',
+        name: 'fedora-plum-walrus-98',
+        namespace: 'feng-vm',
+        status: 'OutOfSync',
+        version: 'v1',
+        cluster: 'local-cluster',
+        apiVersion: 'kubevirt.io/v1',
+      },
+      clustersNames: ['local-cluster'],
+      parent: {
+        clusterId: 'member--clusters--',
+      },
+      resourceCount: 1,
+    },
+  }
+
+  const result = {
+    id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--virtualmachineinstance--fedora-plum-walrus-98--pod--fedora-plum-walrus-98',
+    name: 'fedora-plum-walrus-98',
+    namespace: 'feng-vm',
+    specs: {
+      clustersNames: ['local-cluster'],
+      isDesign: false,
+      parent: {
+        parentId:
+          'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--virtualmachineinstance--fedora-plum-walrus-98',
+        parentName: 'fedora-plum-walrus-98',
+        parentSpecs: undefined,
+        parentType: 'virtualmachineinstance',
+        resources: undefined,
+      },
+      replicaCount: 1,
+      resourceCount: 1,
+      resources: undefined,
+    },
+    type: 'pod',
+    uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--virtualmachineinstance--fedora-plum-walrus-98--pod--fedora-plum-walrus-98',
+  }
+  it('createVirtualMachineInstance', () => {
+    expect(createVirtualMachineInstance(node, ['local-cluster'], [], [])).toEqual(result)
   })
 })

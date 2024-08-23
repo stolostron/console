@@ -528,6 +528,14 @@ export function nockPostRequest(pathname: string, response: object, statusCode =
     .reply(statusCode, response)
 }
 
+export function nockAggegateRequest(pathname: string, request: object, response: object, statusCode = 200) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .post(`/aggregate/${pathname}`, (body) => {
+      return isEqual(body, request)
+    })
+    .reply(statusCode, response)
+}
+
 export const mockBadRequestStatus = {
   kind: StatusKind,
   apiVersion: StatusApiVersion,

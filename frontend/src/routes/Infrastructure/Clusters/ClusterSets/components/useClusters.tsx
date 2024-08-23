@@ -142,6 +142,7 @@ export function getMappedClusterPoolClusterSetClusters(
     certificateSigningRequests,
     groupManagedClusters,
     managedClusterAddons,
+    false,
     clusterManagementAddons,
     clusterClaims,
     clusterCurators,

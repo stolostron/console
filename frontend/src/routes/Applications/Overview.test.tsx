@@ -4,19 +4,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { placementDecisionsState, subscriptionsState } from '../../atoms'
 import {
-  applicationSetsState,
-  applicationsState,
-  argoApplicationsState,
-  channelsState,
-  managedClusterInfosState,
-  managedClustersState,
-  namespacesState,
-  placementDecisionsState,
-  placementRulesState,
-  subscriptionsState,
-} from '../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockSearch } from '../../lib/nock-util'
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockPostRequest,
+  nockSearch,
+  nockAggegateRequest,
+} from '../../lib/nock-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { PluginDataContext } from '../../lib/PluginDataContext'
 import { ocpApi, waitForText } from '../../lib/test-util'
@@ -24,76 +19,67 @@ import { ApplicationKind, ApplicationSetKind, SubscriptionKind } from '../../res
 import {
   acmExtension,
   mockApplication0,
-  mockApplications,
   mockApplicationSet0,
   mockApplicationSet1,
-  mockApplicationSets,
   mockArgoApplication1,
-  mockArgoApplications,
-  mockChannels,
+  mockArgoApplication2,
   mockFluxApplication0,
-  mockManagedClusterInfos,
-  mockManagedClusters,
-  mockNamespaces,
   mockOCPApplication0,
-  mockPlacementrules,
   mockPlacementsDecisions,
-  mockSearchQueryArgoApps,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplications,
-  mockSearchQueryOCPApplicationsCount,
   mockSearchQueryOCPApplicationsFiltered,
   mockSearchQueryOCPApplicationsFilteredCount,
-  mockSearchResponseArgoApps,
-  mockSearchResponseArgoAppsCount,
   mockSearchResponseOCPApplications,
   mockSearchResponseOCPApplicationsCount,
   mockSubscriptions,
 } from './Application.sharedmocks'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Overview from './Overview'
 
-const queryClient = new QueryClient()
+const applicationAggregate = {
+  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
+  res: {
+    page: 1,
+    items: [
+      mockApplication0,
+      mockApplicationSet0,
+      mockApplicationSet1,
+      mockArgoApplication1,
+      mockArgoApplication2,
+      mockOCPApplication0,
+      mockFluxApplication0,
+    ],
+    itemCount: 42,
+    filterCounts: undefined,
+    emptyResult: false,
+    isPreProcessed: false,
+  },
+}
 
 describe('Applications Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockPostRequest('/metrics?application', {})
-    nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-    nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+    nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(applicationsState, mockApplications)
           snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
-          snapshot.set(placementRulesState, mockPlacementrules)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(applicationSetsState, mockApplicationSets)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
-          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-          snapshot.set(namespacesState, mockNamespaces)
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <PluginContext.Provider
-              value={{
-                acmExtensions: acmExtension,
-                dataContext: PluginDataContext,
-                ocpApi,
-              }}
-            >
-              <Routes>
-                <Route path="*" element={<Overview />} />
-              </Routes>
-            </PluginContext.Provider>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <PluginContext.Provider
+            value={{
+              acmExtensions: acmExtension,
+              dataContext: PluginDataContext,
+              ocpApi,
+            }}
+          >
+            <Routes>
+              <Route path="*" element={<Overview />} />
+            </Routes>
+          </PluginContext.Provider>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -118,7 +104,7 @@ describe('Applications Page', () => {
     // argo app
     expect(screen.getByText(mockArgoApplication1.metadata.name!)).toBeTruthy()
     expect(screen.getByText('feng-remote-argo8')).toBeTruthy()
-    expect(screen.getAllByText('Discovered')).toHaveLength(2)
+    expect(screen.getAllByText('Argo CD')).toHaveLength(2)
 
     // ocp app
     expect(screen.getByText(mockOCPApplication0.name!)).toBeTruthy()
@@ -137,6 +123,7 @@ describe('Applications Page', () => {
 
     // Open filter
     userEvent.click(screen.getByText('Filter'))
+
     expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
     userEvent.click(screen.getByRole('checkbox', { name: /subscription/i }))
 
@@ -161,7 +148,7 @@ describe('Applications Page', () => {
     expect(screen.queryByRole('checkbox', { name: /argo cd/i })).toBeNull()
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText(ApplicationSetKind)).toBeNull()
-    expect(screen.getAllByText('Discovered')).toBeTruthy()
+    expect(screen.getAllByText('Argo CD')).toBeTruthy()
 
     // clear argo filter
     userEvent.click(screen.getByRole('button', { name: /close argo cd/i }))
