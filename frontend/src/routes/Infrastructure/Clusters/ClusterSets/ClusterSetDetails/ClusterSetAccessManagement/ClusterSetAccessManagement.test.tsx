@@ -22,7 +22,7 @@ const mockUser1: User = {
     uid: 'e3d73187-dcf4-49a2-b0fb-d2805c5dd584',
   },
   identities: ['myuser:mock-user1'],
-  groups: null,
+  groups: [],
 }
 
 const mockUser2: User = {
@@ -33,7 +33,7 @@ const mockUser2: User = {
     uid: '',
   },
   identities: [],
-  groups: null,
+  groups: [],
 }
 
 const mockGroup1: Group = {
@@ -143,7 +143,7 @@ describe('Cluster Sets User management', () => {
     await waitForText(mockGroup.metadata.name!)
   }
 
-  const verifyModalContent = async (expectedText) => {
+  const verifyModalContent = async (expectedText: string) => {
     const button = screen.getByRole('button', { name: 'View users in group' })
     userEvent.click(button)
     const modal = await waitFor(() => screen.getByRole('dialog'))
