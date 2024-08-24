@@ -153,11 +153,28 @@ describe('Cluster Sets User management', () => {
     expect(within(modal).getByText(expectedText)).toBeInTheDocument()
   }
 
-  test.each`
-    testCase                                                                          | mockUser     | mockGroup               | mockClusterRoleBinding     | expectedText
-    ${'user name in the AcmLabel when users are available in the group'}              | ${mockUser1} | ${mockGroupWithUsers}   | ${mockClusterRoleBinding1} | ${mockUser1.metadata.name}
-    ${'"No users in group" in the AcmLabel when no users are available in the group'} | ${mockUser2} | ${mockGroupWithNoUsers} | ${mockClusterRoleBinding2} | ${'No users in group'}
-  `('displays $testCase', async ({ mockUser, mockGroup, mockClusterRoleBinding, expectedText }) => {
+  test('displays user name in the AcmLabel when users are available in the group', async () => {
+    const mockUser = mockUser1
+    const mockGroup = {
+      ...mockGroupWithUsers,
+      users: mockGroupWithUsers.users.filter((user): user is string => user !== undefined),
+    }
+    const mockClusterRoleBinding = mockClusterRoleBinding1
+    const expectedText = mockUser1.metadata.name ?? 'default-name'
+
+    await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
+    await verifyModalContent(expectedText)
+  })
+
+  test('displays "No users in group" in the AcmLabel when no users are available in the group', async () => {
+    const mockUser = mockUser2
+    const mockGroup = {
+      ...mockGroupWithNoUsers,
+      users: [],
+    }
+    const mockClusterRoleBinding = mockClusterRoleBinding2
+    const expectedText = 'No users in group'
+
     await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
     await verifyModalContent(expectedText)
   })
