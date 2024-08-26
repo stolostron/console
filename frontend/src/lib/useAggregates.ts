@@ -3,8 +3,8 @@
 import { ISortBy } from '@patternfly/react-table'
 import { IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
-import { useCallback, useEffect, useMemo } from 'react'
-import { usePluginDataContextValue } from './PluginDataContext'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
+import { PluginDataContext } from './PluginDataContext'
 import isEqual from 'lodash/isEqual'
 
 const apiUrl = '/aggregate'
@@ -60,7 +60,7 @@ export function useAggregate(
     }),
     []
   )
-  const { backendUrl } = usePluginDataContextValue()
+  const { backendUrl } = useContext(PluginDataContext)
   const queryFunc = useCallback(() => {
     return requestedView
       ? postRequest<IRequestListView, IResultListView>(`${backendUrl}${apiUrl}/${aggregate}`, requestedView)
