@@ -46,7 +46,7 @@ const config: Config.InitialOptions = {
     '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
+    'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
   ],
   ci: true,
   collectCoverage: true,
