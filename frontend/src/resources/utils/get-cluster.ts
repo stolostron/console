@@ -359,7 +359,7 @@ export function mapClusters(
   clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
-  agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
+  agentClusterInstalls: Map<string, AgentClusterInstallK8sResource> = new Map(),
   hostedClusters: HostedClusterK8sResource[] = [],
   nodePools: NodePoolK8sResource[] = []
 ) {
@@ -387,10 +387,8 @@ export function mapClusters(
     const addons: ManagedClusterAddOn[] = managedClusterAddOns.get(cluster || '') || []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
-      agentClusterInstalls.find(
-        (aci) =>
-          aci.metadata?.namespace === clusterDeployment.metadata.namespace &&
-          aci.metadata?.name === clusterDeployment?.spec?.clusterInstallRef?.name
+      agentClusterInstalls.get(
+        `${clusterDeployment!.metadata.namespace}/${clusterDeployment?.spec?.clusterInstallRef?.name}`
       )
     const hostedCluster = hostedClusters.find((hc) => hc.metadata?.name === cluster)
     return getCluster(

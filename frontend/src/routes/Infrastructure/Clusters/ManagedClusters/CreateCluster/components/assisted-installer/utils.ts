@@ -384,10 +384,9 @@ export const useAgentClusterInstall = ({
 }): AgentClusterInstallK8sResource | undefined => {
   const { agentClusterInstallsState } = useSharedAtoms()
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  return useMemo(
-    () => agentClusterInstalls.find((aci) => aci.metadata?.name === name && aci.metadata?.namespace === namespace),
-    [name, namespace, agentClusterInstalls]
-  )
+  return useMemo(() => {
+    return agentClusterInstalls.get(`${namespace}/${name}`)
+  }, [name, namespace, agentClusterInstalls])
 }
 
 export const useInfraEnv = ({ name, namespace }: { name: string; namespace: string }) => {

@@ -53,7 +53,7 @@ const Component = () => {
         snapshot.set(agentsState, mockAgents)
         snapshot.set(configMapsState, [mockConfigMapAI])
         snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI as ClusterDeployment])
-        snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
+        snapshot.set(agentClusterInstallsState, mockAgentClusterInstall)
         snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
       }}
     >

@@ -130,11 +130,8 @@ export default function ClusterDetailsPage() {
 
   const clusterCurator = clusterCurators.find((cc) => cc.metadata?.namespace === namespace)
 
-  const agentClusterInstall = agentClusterInstalls.find(
-    (aci) =>
-      aci.metadata?.name === clusterDeployment?.spec?.clusterInstallRef?.name &&
-      clusterDeployment?.spec?.clusterInstallRef?.kind === 'AgentClusterInstall' &&
-      clusterDeployment?.metadata?.namespace === aci.metadata?.namespace
+  const agentClusterInstall = agentClusterInstalls.get(
+    `${clusterDeployment!.metadata.namespace}/${clusterDeployment?.spec?.clusterInstallRef?.name}`
   )
 
   const hostedCluster = hostedClusters.find((hc) => hc.metadata?.name === name && hc.metadata?.namespace === namespace)

@@ -81,7 +81,7 @@ export function getMappedClusterPoolClusterSetClusters(
   clusterManagementAddons: ClusterManagementAddOn[],
   clusterClaims: ClusterClaim[],
   clusterCurators: ClusterCurator[],
-  agentClusterInstalls: AgentClusterInstallK8sResource[],
+  agentClusterInstalls: Map<string, AgentClusterInstallK8sResource>,
   hostedClusters: HostedClusterK8sResource[],
   nodePools: NodePoolK8sResource[],
   managedClusterSet: ManagedClusterSet | undefined,

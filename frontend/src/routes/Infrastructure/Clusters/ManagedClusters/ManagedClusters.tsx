@@ -763,9 +763,8 @@ export function useClusterDistributionColumn(
   const agentClusterObject: Record<string, string> = {}
 
   clusters.forEach((cluster) => {
-    const agentClusterInstall = agentClusterInstalls.find((aci) => {
-      return aci.metadata?.name === cluster?.name && aci.metadata?.namespace === cluster.namespace
-    })
+    const agentClusterInstall = agentClusterInstalls.get(`${cluster.namespace}/${cluster?.name}`)
+
     const clusterImage = clusterImageSets.find(
       (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
     )
