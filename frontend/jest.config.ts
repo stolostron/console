@@ -12,8 +12,8 @@ const config: Config.InitialOptions = {
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
     '\\.(svg)$': '<rootDir>/src/svg.mock.js',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/src/file.mock.js',
-    '\\.(css|less)$': 'identity-obj-proxy',
+    '\\.(css|less|jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/src/file.mock.js',
     '@patternfly/react-topology': '<rootDir>/node_modules/@patternfly/react-topology',
     'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
@@ -24,7 +24,7 @@ const config: Config.InitialOptions = {
   watchAll: false,
   slowTestThreshold: 30,
   watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
-  moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
+  moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx', 'css'],
   transform: {
     '^.+\\.[jt]sx?$': [
       'ts-jest',
@@ -40,7 +40,7 @@ const config: Config.InitialOptions = {
     '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
+    'node_modules/(?!d3*|internmap|robust-predicates|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
   ],
   modulePathIgnorePatterns: ['<rootDir>/plugins'],
   ci: true,
