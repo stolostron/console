@@ -355,8 +355,7 @@ export function mapClusters(
   managedClusterInfos: ManagedClusterInfo[] = [],
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
-  managedClusterAddOns: ManagedClusterAddOn[] = [],
-  excludeAddons: boolean = false,
+  managedClusterAddOns: Map<string, ManagedClusterAddOn[]> = new Map(),
   clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
@@ -385,9 +384,7 @@ export function mapClusters(
     const clusterCurator = clusterCurators.find(
       (cc) => cc.metadata.namespace === cluster || cc.metadata.name === cluster
     )
-    const addons: ManagedClusterAddOn[] = !excludeAddons
-      ? managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
-      : []
+    const addons: ManagedClusterAddOn[] = managedClusterAddOns.get(cluster || '') || []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstalls.find(

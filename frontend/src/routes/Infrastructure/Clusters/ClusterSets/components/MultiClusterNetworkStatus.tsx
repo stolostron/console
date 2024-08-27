@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterSet } from '../../../../../resources'
+import { ManagedClusterAddOn, ManagedClusterSet } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -17,9 +17,12 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
   const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
 
   const clusters = useClusters(clusterSet)
-  const submarinerAddons = managedClusterAddons.filter(
-    (mca) => mca.metadata.name === 'submariner' && clusters?.find((c) => c.namespace === mca.metadata.namespace)
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  let submarinerAddons: ManagedClusterAddOn[] = []
+  clusters.forEach((cluster) => {
+    const addons = managedClusterAddons.get(cluster.namespace || '') || []
+    submarinerAddons = [...submarinerAddons, ...addons.filter((mca) => mca.metadata.name === 'submariner')]
+  })
 
   let type: StatusType = StatusType.pending
   let status = ''

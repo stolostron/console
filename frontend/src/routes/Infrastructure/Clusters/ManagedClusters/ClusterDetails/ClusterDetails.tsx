@@ -31,6 +31,7 @@ import {
   getCluster,
   getResource,
   ManagedCluster,
+  ManagedClusterAddOn,
   mapAddons,
   ResourceError,
   ResourceErrorCode,
@@ -117,7 +118,8 @@ export default function ClusterDetailsPage() {
   const managedClusterInfo = managedClusterInfos.find(
     (mci) => mci.metadata?.name === name && mci.metadata?.namespace === name
   )
-  const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata?.namespace === name)
+
+  const clusterAddons: ManagedClusterAddOn[] = managedClusterAddons.get(name || '') || []
   const addons = mapAddons(clusterManagementAddons, clusterAddons)
 
   const clusterClaim = clusterClaims.find(

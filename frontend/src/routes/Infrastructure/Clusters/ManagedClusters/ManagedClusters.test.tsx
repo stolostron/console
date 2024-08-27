@@ -79,7 +79,7 @@ describe('Clusters Page', () => {
           snapshot.set(clusterDeploymentsState, mockClusterDeployments)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
-          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddon])
+          snapshot.set(managedClusterAddonsState, mockManagedClusterAddon)
           snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
         }}
       >
@@ -279,7 +279,7 @@ describe('Clusters Page export', () => {
           snapshot.set(clusterDeploymentsState, mockClusterDeployments)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
-          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddon])
+          snapshot.set(managedClusterAddonsState, mockManagedClusterAddon)
           snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
         }}
       >
