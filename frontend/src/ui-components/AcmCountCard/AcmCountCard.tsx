@@ -3,7 +3,6 @@
 import { css } from '@emotion/css'
 import {
   Card,
-  CardActionsProps,
   CardBody,
   CardFooter,
   CardHeader,
@@ -14,6 +13,7 @@ import {
   EmptyStateIcon,
   Skeleton,
   EmptyStateHeader,
+  Icon,
 } from '@patternfly/react-core'
 import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
@@ -69,18 +69,8 @@ type SkeletonCard = CardProps & {
 }
 
 const styles = {
-  cardHeader: css({
-    '& > div:first-child': {
-      padding: '0',
-      marginBottom: '8px',
-      overflowWrap: 'anywhere',
-      lineHeight: '19px',
-      display: '-webkit-box',
-      '-webkit-line-clamp': '3',
-      '-webkit-box-orient': 'vertical',
-      overflow: 'hidden',
-    },
-    '& > svg': {
+  icon: css({
+    '& svg': {
       width: '32px',
       height: '32px',
     },
@@ -121,7 +111,7 @@ const getStyles = (props: AcmCountCardProps) => ({
   ...styles,
 })
 
-export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
+export function CardDropdown(props: CardDropdownProps) {
   const [isOpen, setOpen] = useState<boolean>(false)
 
   return (
@@ -176,7 +166,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
       id={id}
       className={classes.card}
       onClick={props.onCardClick}
-      isSelectable={!!props.onCardClick}
+      isClickable={!!props.onCardClick}
       isFlat={!props.onCardClick}
       onKeyPress={props.onKeyPress}
     >
@@ -185,24 +175,22 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
+                className: classes.actions,
                 actions: (
                   <>
                     <CardDropdown dropdownItems={cardHeader.actions} />
                   </>
                 ),
-                hasNoOffset: false,
-                className: 'undefined',
               },
             })}
         >
-          actions=
-          {
-            <>
-              {cardHeader.hasIcon && <AcmIcon icon={AcmIconVariant.template} />}
-              <CardTitle>{cardHeader.title}</CardTitle>
-              <p className={classes.headerDescription}>{cardHeader.description}</p>
-            </>
-          }
+          {cardHeader.hasIcon && (
+            <Icon size="lg" className={classes.icon}>
+              <AcmIcon icon={AcmIconVariant.template} />
+            </Icon>
+          )}
+          <CardTitle>{cardHeader.title}</CardTitle>
+          <p className={classes.headerDescription}>{cardHeader.description}</p>
         </CardHeader>
       )}
       {!props.error ? (
