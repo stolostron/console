@@ -70,7 +70,6 @@ import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constan
 import {
   EditIcon,
   ExclamationCircleIcon,
-  ExternalLinkAltIcon,
   EyeIcon,
   EyeSlashIcon,
   HelpIcon,
@@ -84,19 +83,19 @@ import { Fragment, ReactNode, useCallback, useContext, useRef, useState } from '
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
-import { AcmButton, AcmPageHeader } from '../ui-components'
+import { AcmPageHeader } from '../ui-components'
 import {
   FormData,
   FormDataOrderedInput,
   Input,
   InputBase,
-  LinkType,
   Section,
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
+import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -914,58 +913,18 @@ export function AcmDataFormInputs(props: {
                 fieldId={input.id}
                 label={input?.title ?? input.label}
                 isRequired={input.isRequired}
-                helperTextInvalid={
-                  <Split>
-                    <SplitItem isFilled>
-                      <span className="pf-v5-c-form__helper-text pf-m-error">{error}</span>
-                    </SplitItem>
-                    {input.prompt && (
-                      <SplitItem>
-                        <AcmButton
-                          variant="link"
-                          style={{ paddingRight: '0px' }}
-                          onClick={input.prompt.callback}
-                          isDisabled={input.prompt.isDisabled}
-                        >
-                          {input.prompt.text}
-                          {input.prompt.linkType === LinkType.external ||
-                          input.prompt.linkType === LinkType.internalNewTab ? (
-                            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                          ) : null}
-                        </AcmButton>
-                      </SplitItem>
-                    )}
-                  </Split>
-                }
-                validated={validated}
-                helperText={
-                  <Split>
-                    <SplitItem isFilled>
-                      <span className="pf-v5-c-form__helper-text">{input.helperText}</span>
-                    </SplitItem>
-                    {input.prompt && (
-                      <SplitItem>
-                        <AcmButton
-                          variant="link"
-                          style={{ paddingRight: '0px' }}
-                          onClick={input.prompt.callback}
-                          isDisabled={input.prompt.isDisabled}
-                        >
-                          {input.prompt.text}
-                          {input.prompt.linkType === LinkType.external ||
-                          input.prompt.linkType === LinkType.internalNewTab ? (
-                            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                          ) : null}
-                        </AcmButton>
-                      </SplitItem>
-                    )}
-                  </Split>
-                }
                 labelIcon={
                   <LabelHelp id={input.id} labelHelp={input.labelHelp} labelHelpTitle={input.labelHelpTitle} />
                 }
               >
                 <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
+                <AcmHelperText
+                  controlId={input.id}
+                  helperText={input.helperText}
+                  validated={validated}
+                  error={error}
+                  prompt={input.prompt}
+                />
               </FormGroup>
             )}
           </Fragment>
