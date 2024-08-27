@@ -5,6 +5,7 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
+import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmTextInputProps = TextInputProps & {
   id: string
@@ -54,9 +55,6 @@ export function AcmTextInput(props: AcmTextInputProps) {
       isRequired={props.isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      helperTextInvalid={error}
-      validated={validated}
-      helperText={helperText}
       labelIcon={
         /* istanbul ignore next */
         props.labelHelp ? (
@@ -82,6 +80,7 @@ export function AcmTextInput(props: AcmTextInputProps) {
         validated={validated}
         isDisabled={props.isDisabled || ValidationContext.isReadOnly}
       />
+      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )
 }

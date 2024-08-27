@@ -6,6 +6,7 @@ import { Button, FormGroup, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 import { TFunction } from 'react-i18next'
+import { AcmHelperText } from '../../../ui-components/AcmHelperText/AcmHelperText'
 
 const ControlPanelFormGroup = (props: {
   children: ReactNode
@@ -27,9 +28,6 @@ const ControlPanelFormGroup = (props: {
           label={!hideLabel && name}
           isRequired={validation.required}
           fieldId={controlId}
-          helperText={info}
-          helperTextInvalid={exception}
-          validated={exception ? 'error' : info ? 'default' : undefined}
           labelIcon={
             /* istanbul ignore next */
             tooltip ? (
@@ -54,6 +52,12 @@ const ControlPanelFormGroup = (props: {
         >
           {children}
           {(showTip === undefined || showTip === true) && tip && <div style={{ fontSize: '14px' }}>{tip}</div>}
+          <AcmHelperText
+            controlId={controlId}
+            helperText={info}
+            validated={exception ? 'error' : info ? 'default' : undefined}
+            error={exception}
+          />
         </FormGroup>
       </div>
     </React.Fragment>

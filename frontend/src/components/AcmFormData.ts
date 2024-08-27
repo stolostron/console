@@ -48,6 +48,7 @@ export enum LinkType {
   internalNoNewTab = 'internalNoNewTab',
 }
 
+export type Prompt = { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
 export interface InputBase<T> {
   id: string
 
@@ -68,7 +69,7 @@ export interface InputBase<T> {
   labelHelp?: string
   labelHelpTitle?: string
 
-  prompt?: { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
+  prompt?: Prompt
 }
 
 export interface AlertInput extends InputBase<string> {

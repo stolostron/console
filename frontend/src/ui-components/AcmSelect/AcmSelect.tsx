@@ -6,6 +6,7 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
+import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmSelectProps = Pick<
   SelectProps,
@@ -77,9 +78,6 @@ export function AcmSelect(props: AcmSelectProps) {
       isRequired={isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      helperTextInvalid={error}
-      validated={validated}
-      helperText={helperText}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           event.preventDefault()
@@ -144,6 +142,7 @@ export function AcmSelect(props: AcmSelectProps) {
       ) : (
         <Fragment />
       )}
+      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )
 }
