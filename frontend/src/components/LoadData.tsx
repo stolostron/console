@@ -255,11 +255,6 @@ export function LoadData(props: { children?: ReactNode }) {
       if (!mappers[groupVersion]) mappers[groupVersion] = {}
       mappers[groupVersion][kind] = { setter, keyBy }
     }
-    // function addRecorder(apiVersion: string, kind: string, setter: SetterOrUpdater<Map<string, any>>, keyBy: string[]) {
-    //   const groupVersion = apiVersion.split('/')[0]
-    //   if (!recorders[groupVersion]) recorders[groupVersion] = {}
-    //   recorders[groupVersion][kind] = { setter, keyBy }
-    // }
 
     // mappers (key=>[values])
     addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
@@ -452,31 +447,6 @@ export function LoadData(props: { children?: ReactNode }) {
                     return map
                   })
                 }
-                // } else {
-                //   const recorder = recorders[groupVersion]?.[kind]
-                //   if (recorder) {
-                //     const { setter, keyBy } = recorder
-                //     for (const watchEvent of watchEvents) {
-                //       const key = keyBy
-                //         .reduce((keys, partKey) => {
-                //           keys.push(get(watchEvent.object, partKey))
-                //           return keys
-                //         }, [] as string[])
-                //         .join('/')
-                //       setter((map) => {
-                //         switch (watchEvent.type) {
-                //           case 'ADDED':
-                //           case 'MODIFIED':
-                //             map.set(key, watchEvent.object)
-                //             break
-                //           case 'DELETED':
-                //             map.delete(key)
-                //             break
-                //         }
-                //         return map
-                //       })
-                //     }
-                //   }
               }
             }
           }
