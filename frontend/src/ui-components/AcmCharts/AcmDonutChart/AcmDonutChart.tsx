@@ -144,17 +144,17 @@ export function AcmDonutChart(props: {
   )
 }
 
-const criticalColorClass = 'var(--pf-global--palette--red-100)'
-const importantColorClass = 'var(--pf-chart-color-orange-300)'
-const moderateColorClass = 'var(--pf-chart-color-gold-300)'
-const lowColorClass = 'var(--pf-chart-color-blue-200)'
-const successColorClass = 'var(--pf-chart-color-black-100)'
-const unknownColorClass = 'var(--pf-chart-color-black-300)'
+const criticalColorClass = 'var(--pf-v5-global--palette--red-200)'
+const importantColorClass = 'var(--pf-v5-global--palette--orange-400)'
+const moderateColorClass = 'var(--pf-v5-global--palette--gold-400)'
+const lowColorClass = 'var(--pf-v5-global--palette--black-500)'
+const successColorClass = 'var(--pf-v5-global--palette--blue-300)'
+const unknownColorClass = 'var(--pf-v5-global--palette--black-300)'
 
 export const colorThemes = {
   criticalImportantSuccess: [criticalColorClass, importantColorClass, successColorClass],
   criticalSuccess: [criticalColorClass, successColorClass],
-  criticalLowSuccess: [criticalColorClass, moderateColorClass, successColorClass],
+  criticalLowSuccess: [criticalColorClass, lowColorClass, successColorClass],
   criticalImportantModerateLow: [criticalColorClass, importantColorClass, moderateColorClass, lowColorClass],
   criticalLowUnknownSuccess: [criticalColorClass, lowColorClass, unknownColorClass, successColorClass],
   criticalSuccessUnknown: [criticalColorClass, successColorClass, unknownColorClass],
