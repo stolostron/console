@@ -75,7 +75,7 @@ export const getNodeStatusLabel = (status: StatusType, t: TFunction) => {
 
 export function AcmInlineStatus(props: { type: StatusType; status: string | React.ReactNode; popover?: PopoverProps }) {
   return (
-    <div className={container}>
+    <div className={container} style={{ alignItems: 'baseline' }}>
       <div className={icon}>
         <StatusIcon type={props.type} />
       </div>

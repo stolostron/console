@@ -111,7 +111,7 @@ export function ClusterSetManageResourcesContent() {
   const clusterProviderColumn = useClusterProviderColumn()
   const clusterDistributionColumn = useClusterDistributionColumn(clusters, clusterCurators, hostedClusters)
   const clusterNodesColumn = useClusterNodesColumn()
-  const clusterLabelsColumn = useClusterLabelsColumn()
+  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10)
 
   const columns = useMemo<IAcmTableColumn<Cluster>[]>(
     () => [

@@ -75,6 +75,7 @@ import { useAllClusters } from './components/useAllClusters'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
 import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
+import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -220,7 +221,7 @@ export function ClustersTable(props: {
   const clusterProviderColumn = useClusterProviderColumn()
   const clusterControlPlaneColumn = useClusterControlPlaneColumn()
   const clusterDistributionColumn = useClusterDistributionColumn(props.clusters!, clusterCurators, hostedClusters)
-  const clusterLabelsColumn = useClusterLabelsColumn()
+  const clusterLabelsColumn = useClusterLabelsColumn(props.clusters!.length > 10)
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
@@ -609,10 +610,12 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
     tooltip: t('table.name.helperText.noBold'),
     sort: 'displayName',
     search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-    cell: (cluster) => (
+    cell: (cluster, search) => (
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
-          <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>{cluster.displayName}</Link>
+          <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
+            <HighlightSearchText text={cluster.displayName} searchText={search} />
+          </Link>
         </span>
         {cluster.hive.clusterClaimName && (
           <TextContent>
@@ -674,7 +677,9 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
       'Standalone clusters will display the namespace used by the ManagedCluster resource. Hosted clusters will display the hosting namespace when the status is "Pending import" and the ManagedCluster namespace when the status is "Ready".'
     ),
     sort: 'namespace',
-    cell: (cluster) => cluster.namespace || '-',
+    cell: (cluster, search) => {
+      return <HighlightSearchText text={cluster.namespace || '-'} searchText={search} />
+    },
     exportContent: (cluster) => cluster.namespace,
   }
 }
@@ -810,7 +815,7 @@ export function useClusterDistributionColumn(
   }
 }
 
-export function useClusterLabelsColumn(): IAcmTableColumn<Cluster> {
+export function useClusterLabelsColumn(isLarge: boolean): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
     header: t('table.labels'),
@@ -819,25 +824,30 @@ export function useClusterLabelsColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster) => {
       if (cluster.labels) {
         const labelKeys = Object.keys(cluster.labels)
-        const collapse =
-          [
-            'cloud',
-            'clusterID',
-            'installer.name',
-            'installer.namespace',
-            'name',
-            'vendor',
-            'managed-by',
-            'local-cluster',
-            'openshiftVersion',
-          ].filter((label) => {
-            return labelKeys.includes(label)
-          }) ?? []
-        labelKeys.forEach((label) => {
-          if (label.includes('open-cluster-management.io')) {
-            collapse.push(label)
-          }
-        })
+        let collapse
+        if (isLarge) {
+          collapse = labelKeys
+        } else {
+          collapse =
+            [
+              'cloud',
+              'clusterID',
+              'installer.name',
+              'installer.namespace',
+              'name',
+              'vendor',
+              'managed-by',
+              'local-cluster',
+              'openshiftVersion',
+            ].filter((label) => {
+              return labelKeys.includes(label)
+            }) ?? []
+          labelKeys.forEach((label) => {
+            if (label.includes('open-cluster-management.io')) {
+              collapse.push(label)
+            }
+          })
+        }
         return (
           <AcmLabels
             labels={cluster.labels}
