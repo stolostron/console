@@ -46,7 +46,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
       <DeleteResourceModal {...props.modalProps} />
       <AcmTable<IResource>
         showExportButton
-        exportFilePrefix="applicationadvancedconfiguration"
+        exportFilePrefix={`applicationadvancedconfiguration-${selectedId}`}
         columns={selectedResources.columns}
         keyFn={props.keyFn}
         items={selectedResources.items}
