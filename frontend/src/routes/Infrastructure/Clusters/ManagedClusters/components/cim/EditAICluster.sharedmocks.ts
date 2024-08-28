@@ -96,30 +96,25 @@ export const mockClusterDeploymentAI: ClusterDeploymentK8sResource = {
   },
 }
 
-export const mockAgentClusterInstall: Map<string, AgentClusterInstallK8sResource> = new Map([
-  [
-    `${clusterName}/${clusterName}`,
-    {
-      apiVersion: 'extensions.hive.openshift.io/v1beta1',
-      kind: 'AgentClusterInstall',
-      metadata: {
-        name: clusterName,
-        namespace: clusterName,
-      },
-      spec: {
-        clusterDeploymentRef: { name: clusterName },
-        holdInstallation: true,
-        provisionRequirements: { controlPlaneAgents: 3 },
-        imageSetRef: { name: 'ocp-release48' },
-        networking: {
-          clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
-          serviceNetwork: ['172.30.0.0/16'],
-        },
-        platformType: 'None',
-      },
+export const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
+  apiVersion: 'extensions.hive.openshift.io/v1beta1',
+  kind: 'AgentClusterInstall',
+  metadata: {
+    name: clusterName,
+    namespace: clusterName,
+  },
+  spec: {
+    clusterDeploymentRef: { name: clusterName },
+    holdInstallation: true,
+    provisionRequirements: { controlPlaneAgents: 3 },
+    imageSetRef: { name: 'ocp-release48' },
+    networking: {
+      clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
+      serviceNetwork: ['172.30.0.0/16'],
     },
-  ],
-])
+    platformType: 'None',
+  },
+}
 
 export const mockConfigMapAI: ConfigMap = {
   apiVersion: 'v1',

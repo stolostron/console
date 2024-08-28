@@ -74,6 +74,7 @@ import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { useAllClusters } from './components/useAllClusters'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
 import { TFunction } from 'react-i18next'
+import keyBy from 'lodash/keyBy'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -218,7 +219,7 @@ export function ClustersTable(props: {
   const clusterStatusColumn = useClusterStatusColumn()
   const clusterProviderColumn = useClusterProviderColumn()
   const clusterControlPlaneColumn = useClusterControlPlaneColumn()
-  const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
+  const clusterDistributionColumn = useClusterDistributionColumn(props.clusters!, clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn()
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
@@ -752,6 +753,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
 }
 
 export function useClusterDistributionColumn(
+  allClusters: Cluster[] = [],
   clusterCurators: ClusterCurator[],
   hostedClusters: HostedClusterK8sResource[]
 ): IAcmTableColumn<Cluster> {
@@ -759,12 +761,14 @@ export function useClusterDistributionColumn(
   const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const clusters = useAllClusters()
   const agentClusterObject: Record<string, string> = {}
 
-  clusters.forEach((cluster) => {
-    const agentClusterInstall = agentClusterInstalls.get(`${cluster.namespace}/${cluster?.name}`)
+  const agentClusterInstallsMap = keyBy(agentClusterInstalls, (install) => {
+    return `${install.metadata?.namespace}/${install.metadata?.name}`
+  })
 
+  allClusters.forEach((cluster) => {
+    const agentClusterInstall = agentClusterInstallsMap[`${cluster.namespace}/${cluster.name}`]
     const clusterImage = clusterImageSets.find(
       (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
     )

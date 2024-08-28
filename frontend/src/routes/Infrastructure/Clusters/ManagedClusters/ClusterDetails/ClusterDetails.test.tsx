@@ -279,63 +279,58 @@ mockAIClusterDeployment.spec!.clusterInstallRef = {
   version: AgentClusterInstallVersion,
 }
 
-const mockAgentClusterInstall: Map<string, AgentClusterInstallK8sResource> = new Map([
-  [
-    `${clusterName}/${clusterName}`,
-    {
-      apiVersion: AgentClusterInstallApiVersion,
-      kind: AgentClusterInstallKind,
-      metadata: {
-        name: clusterName,
-        namespace: clusterName,
-        // skip ownerReference to CD for now
-      },
-      spec: {
-        apiVIP: '192.168.122.152',
-        ingressVIP: '192.168.122.155',
-        clusterDeploymentRef: {
-          name: clusterName,
-        },
-        clusterMetadata: {
-          clusterID: '6aa9cdfe-a13c-4e8c-b7e3-0219fad10163',
-          /* Add when actually needed
-             adminKubeconfigSecretRef: {
-                 name: `${clusterName}-admin-kubeconfig`,
-             },
-             adminPasswordSecretRef: {
-                 name: `${clusterName}-admin-password`,
-             },
-             */
-          // infraID: '570004e6-c97c-428a-92b7-2d1f7c4adc0f',
-        },
-        imageSetRef: {
-          name: 'img4.8.13-x86-64-appsub',
-        },
-        networking: {
-          clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
-          serviceNetwork: ['172.30.0.0/16'],
-        },
-        provisionRequirements: {
-          controlPlaneAgents: 3,
-        },
-        platformType: 'None',
-      },
-      status: {
-        conditions: [],
-        debugInfo: {
-          // eventsUrl: '',
-          // logsURL: '',
-          state: 'adding-hosts',
-          stateInfo: '',
-        },
-        progress: {
-          totalPercentage: 0,
-        },
-        validationsInfo: { network: [] },
-      },
+const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
+  apiVersion: AgentClusterInstallApiVersion,
+  kind: AgentClusterInstallKind,
+  metadata: {
+    name: clusterName,
+    namespace: clusterName,
+    // skip ownerReference to CD for now
+  },
+  spec: {
+    apiVIP: '192.168.122.152',
+    ingressVIP: '192.168.122.155',
+    clusterDeploymentRef: {
+      name: clusterName,
     },
-  ],
-])
+    clusterMetadata: {
+      clusterID: '6aa9cdfe-a13c-4e8c-b7e3-0219fad10163',
+      /* Add when actually needed
+            adminKubeconfigSecretRef: {
+                name: `${clusterName}-admin-kubeconfig`,
+            },
+            adminPasswordSecretRef: {
+                name: `${clusterName}-admin-password`,
+            },
+            */
+      // infraID: '570004e6-c97c-428a-92b7-2d1f7c4adc0f',
+    },
+    imageSetRef: {
+      name: 'img4.8.13-x86-64-appsub',
+    },
+    networking: {
+      clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
+      serviceNetwork: ['172.30.0.0/16'],
+    },
+    provisionRequirements: {
+      controlPlaneAgents: 3,
+    },
+    platformType: 'None',
+  },
+  status: {
+    conditions: [],
+    debugInfo: {
+      // eventsUrl: '',
+      // logsURL: '',
+      state: 'adding-hosts',
+      stateInfo: '',
+    },
+    progress: {
+      totalPercentage: 0,
+    },
+    validationsInfo: { network: [] },
+  },
+}
 
 const mockHiveProvisionPods: PodList = {
   kind: 'PodList',
@@ -1279,7 +1274,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
       snapshot.set(clusterProvisionsState, [mockClusterProvisions])
       snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
       snapshot.set(clusterCuratorsState, [mockClusterCurator])
-      snapshot.set(agentClusterInstallsState, mockAgentClusterInstall)
+      snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
       snapshot.set(clusterClaimsState, [mockClusterClaim])
     }}
   >

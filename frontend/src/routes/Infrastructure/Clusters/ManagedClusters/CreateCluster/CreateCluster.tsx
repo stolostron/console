@@ -229,7 +229,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
       // return error if cluster name is already used
       const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
-      const matchedAgentClusterInstall = agentClusterInstalls.get(`${clusterName}/${clusterName}`)
+      const matchedAgentClusterInstall = agentClusterInstalls.find((mc) => mc.metadata?.name === clusterName)
 
       if (matchedManagedCluster || matchedAgentClusterInstall) {
         setCreationStatus({

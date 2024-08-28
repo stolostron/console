@@ -109,7 +109,7 @@ export function ClusterSetManageResourcesContent() {
 
   const clusterNameColumn = useClusterNameColumn()
   const clusterProviderColumn = useClusterProviderColumn()
-  const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators, hostedClusters)
+  const clusterDistributionColumn = useClusterDistributionColumn(clusters, clusterCurators, hostedClusters)
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterLabelsColumn = useClusterLabelsColumn()
 

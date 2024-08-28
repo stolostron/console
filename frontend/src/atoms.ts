@@ -66,16 +66,16 @@ function AtomArray<T>() {
 function AtomMap<T>() {
   return atom<Map<string, T[]>>({ key: (++atomArrayKey).toString(), default: new Map() })
 }
-function AtomRecord<T>() {
-  return atom<Map<string, T>>({ key: (++atomArrayKey).toString(), default: new Map() })
-}
+// function AtomRecord<T>() {
+//   return atom<Map<string, T>>({ key: (++atomArrayKey).toString(), default: new Map() })
+// }
 
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
 
 export const managedClusterAddonsState = AtomMap<ManagedClusterAddOn>()
-export const agentClusterInstallsState = AtomRecord<AgentClusterInstallK8sResource>()
 
+export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()

@@ -238,10 +238,10 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
 
-  const { setters, mappers, recorders, caches } = useMemo(() => {
+  const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
     const mappers: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any[]>>; keyBy: string[] }>> = {}
-    const recorders: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any>>; keyBy: string[] }>> = {}
+    // const recorders: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any>>; keyBy: string[] }>> = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
@@ -255,22 +255,17 @@ export function LoadData(props: { children?: ReactNode }) {
       if (!mappers[groupVersion]) mappers[groupVersion] = {}
       mappers[groupVersion][kind] = { setter, keyBy }
     }
-    function addRecorder(apiVersion: string, kind: string, setter: SetterOrUpdater<Map<string, any>>, keyBy: string[]) {
-      const groupVersion = apiVersion.split('/')[0]
-      if (!recorders[groupVersion]) recorders[groupVersion] = {}
-      recorders[groupVersion][kind] = { setter, keyBy }
-    }
+    // function addRecorder(apiVersion: string, kind: string, setter: SetterOrUpdater<Map<string, any>>, keyBy: string[]) {
+    //   const groupVersion = apiVersion.split('/')[0]
+    //   if (!recorders[groupVersion]) recorders[groupVersion] = {}
+    //   recorders[groupVersion][kind] = { setter, keyBy }
+    // }
 
     // mappers (key=>[values])
     addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
 
-    // recorders (key=>value)
-    addRecorder(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls, [
-      'metadata.namespace',
-      'metadata.name',
-    ])
-
     // setters
+    addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
     addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
     addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
@@ -326,7 +321,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    return { setters, mappers, recorders, caches }
+    return { setters, mappers, caches }
   }, [
     setAgentClusterInstalls,
     setAgents,
@@ -457,31 +452,31 @@ export function LoadData(props: { children?: ReactNode }) {
                     return map
                   })
                 }
-              } else {
-                const recorder = recorders[groupVersion]?.[kind]
-                if (recorder) {
-                  const { setter, keyBy } = recorder
-                  for (const watchEvent of watchEvents) {
-                    const key = keyBy
-                      .reduce((keys, partKey) => {
-                        keys.push(get(watchEvent.object, partKey))
-                        return keys
-                      }, [] as string[])
-                      .join('/')
-                    setter((map) => {
-                      switch (watchEvent.type) {
-                        case 'ADDED':
-                        case 'MODIFIED':
-                          map.set(key, watchEvent.object)
-                          break
-                        case 'DELETED':
-                          map.delete(key)
-                          break
-                      }
-                      return map
-                    })
-                  }
-                }
+                // } else {
+                //   const recorder = recorders[groupVersion]?.[kind]
+                //   if (recorder) {
+                //     const { setter, keyBy } = recorder
+                //     for (const watchEvent of watchEvents) {
+                //       const key = keyBy
+                //         .reduce((keys, partKey) => {
+                //           keys.push(get(watchEvent.object, partKey))
+                //           return keys
+                //         }, [] as string[])
+                //         .join('/')
+                //       setter((map) => {
+                //         switch (watchEvent.type) {
+                //           case 'ADDED':
+                //           case 'MODIFIED':
+                //             map.set(key, watchEvent.object)
+                //             break
+                //           case 'DELETED':
+                //             map.delete(key)
+                //             break
+                //         }
+                //         return map
+                //       })
+                //     }
+                //   }
               }
             }
           }
@@ -542,7 +537,7 @@ export function LoadData(props: { children?: ReactNode }) {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [caches, mappers, setters, recorders, setSettings])
+  }, [caches, mappers, setters, setSettings])
 
   const {
     data: globalHubRes,
