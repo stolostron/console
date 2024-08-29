@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Alert,
   Button,
   Card,
   CardBody,
   CardTitle,
   Divider,
-  FlexItem,
   Gallery,
   GalleryItem,
   PageSection,
@@ -14,19 +14,20 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predictions'
-import { ObservabilityEndpoint, useObservabilityPoll } from '../../../lib/useObservabilityPoll'
+import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
 import { NavigationPath } from '../../../NavigationPath'
 import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, colorThemes } from '../../../ui-components'
 import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
+import { useAddRemediationPolicies } from '../../Governance/common/useCustom'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
   CriticalRiskIcon,
@@ -35,41 +36,26 @@ import {
   ModerateRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { SummaryClustersCard } from './components/SummaryClustersCard'
+import { Data, SummaryStatusCard } from './components/SummaryStatusCard'
 import {
   getAddonHealth,
-  getAppCount,
-  getClustersSummary,
+  getAppTypeSummary,
+  getClusterProviderSummary,
   getClusterStatus,
+  getClusterVersionSummary,
   getComplianceData,
   getFilteredClusters,
+  getNodeSummary,
   getPolicyReport,
+  getPolicySummary,
+  getWorkerCoreTotal,
   parseAlertsMetric,
   parseOperatorMetric,
   parseUpgradeRiskPredictions,
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
-
-function renderSummaryLoading() {
-  return [
-    'clustersSummary-loading-1',
-    'clustersSummary-loading-2',
-    'clustersSummary-loading-3',
-    'clustersSummary-loading-4',
-    'clustersSummary-loading-5',
-  ].map((id) => (
-    <GalleryItem key={id} style={{ flex: 1, minWidth: '180px' }}>
-      <Card isRounded>
-        <CardTitle>
-          <Skeleton width="25%" />
-        </CardTitle>
-        <CardBody>
-          <Skeleton width="100%" />
-        </CardBody>
-      </Card>
-    </GalleryItem>
-  ))
-}
 
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
@@ -84,16 +70,13 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     policyreportState,
     placementDecisionsState,
     subscriptionsState,
-    usePolicies,
-    managedClusterInfosState,
   } = useSharedAtoms()
 
-  const policies = usePolicies()
+  const policies = useAddRemediationPolicies()
   const allAddons = useClusterAddons()
   const applications = useRecoilValue(applicationsState)
   const applicationSets = useRecoilValue(applicationSetsState)
   const argoApplications = useRecoilValue(argoApplicationsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const helmReleases = useRecoilValue(helmReleaseState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
@@ -160,36 +143,6 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     [argoApplicationsHashSet, helmReleases, ocpApps]
   )
 
-  const applicationCount = useMemo(() => {
-    return getAppCount(
-      applications,
-      applicationSets,
-      argoApps,
-      discoveredArgoApps,
-      ocpAppResources,
-      filteredClusterNames,
-      argoApplications,
-      allClusters,
-      placementDecisions,
-      subscriptions
-    )
-  }, [
-    applications,
-    applicationSets,
-    argoApps,
-    discoveredArgoApps,
-    ocpAppResources,
-    filteredClusterNames,
-    argoApplications,
-    allClusters,
-    placementDecisions,
-    subscriptions,
-  ])
-
-  const clustersSummary = useMemo(() => {
-    return getClustersSummary(filteredClusters, filteredClusterNames, managedClusterInfos, applicationCount, t)
-  }, [applicationCount, filteredClusters, filteredClusterNames, managedClusterInfos, t])
-
   const {
     policyReportCriticalCount,
     policyReportImportantCount,
@@ -218,7 +171,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, clustersWithRiskPredictors } = useMemo(() => {
     const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
-      if (curr.body && curr.body.predictions) {
+      if (curr?.body && curr.body.predictions) {
         return [...acc, ...curr.body.predictions]
       }
       return acc
@@ -259,7 +212,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     return ''
   }, [selectedClusterLabels])
 
-  const [clusterOperators, operatorError, operatorLoading] = useObservabilityPoll({
+  const [clusterOperators, operatorError, operatorLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
     query: 'cluster_operator_conditions',
     skip: !isObservabilityInstalled,
@@ -274,7 +227,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
       return parseOperatorMetric(clusterOperators, filteredClusterNames)
     }, [clusterOperators, filteredClusterNames])
 
-  const [alertsResult, alertsError, alertsLoading] = useObservabilityPoll({
+  const [alertsResult, alertsError, alertsLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
     query: 'ALERTS',
     skip: !isObservabilityInstalled,
@@ -308,44 +261,124 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     return userPreference?.spec?.savedSearches ?? []
   }, [userPreference])
 
+  const clusterProviderSummary = useMemo(() => {
+    return getClusterProviderSummary(filteredClusters)
+  }, [filteredClusters])
+
+  const clusterVersionSummary = useMemo(() => {
+    return getClusterVersionSummary(filteredClusters)
+  }, [filteredClusters])
+
+  const [workerCoreCountMetric, workerCoreCountError, workerCoreCountLoading] = useMetricsPoll({
+    endpoint: PrometheusEndpoint.QUERY,
+    query: 'acm_managed_cluster_worker_cores',
+    skip: false,
+  })
+  const workerCoreTotal = useMemo(() => {
+    return getWorkerCoreTotal(workerCoreCountMetric, filteredClusters)
+  }, [workerCoreCountMetric, filteredClusters])
+
+  const nodeSummary: Data = useMemo(() => {
+    return getNodeSummary(filteredClusters, t)
+  }, [filteredClusters])
+
+  const appTypeSummary: Data = useMemo(() => {
+    return getAppTypeSummary(
+      applications,
+      applicationSets,
+      argoApps,
+      discoveredArgoApps,
+      ocpAppResources,
+      filteredClusterNames,
+      allClusters,
+      placementDecisions,
+      subscriptions,
+      t
+    )
+  }, [
+    applications,
+    applicationSets,
+    argoApps,
+    discoveredArgoApps,
+    ocpAppResources,
+    filteredClusterNames,
+    allClusters,
+    placementDecisions,
+    subscriptions,
+    t,
+  ])
+
+  const policySummary = useMemo(() => {
+    return getPolicySummary(policies, filteredClusterNames, allClusters.length, t)
+  }, [policies, filteredClusterNames, allClusters.length])
+
+  // Min width is determined based on how many legend items are in the child donut charts because the legend wraps at 6 items
+  const minLegendCardWidth = useMemo(() => {
+    const largestlegendSet = Math.max(clusterProviderSummary.length, clusterVersionSummary.length)
+    const columns = Math.trunc(largestlegendSet / 6)
+    const remainder = largestlegendSet % 6 > 0 ? 150 : 0
+    // 150 length per legend columns plus 150 for donut width
+    const legendCardWidth = columns * 150 + remainder + 150
+    return legendCardWidth > 400 ? legendCardWidth : 400
+  }, [clusterProviderSummary, clusterVersionSummary])
+
+  const workerCoreLaunchLink = useCallback((text: string, isLarge: boolean) => {
+    return (
+      <AcmButton
+        variant="link"
+        isInline
+        icon={<ExternalLinkAltIcon style={{ fontSize: 12 }} />}
+        iconPosition="right"
+        onClick={() =>
+          window.open(
+            `${window.location.origin}/monitoring/query-browser?query0=acm_managed_cluster_worker_cores`,
+            '_blank'
+          )
+        }
+        style={isLarge ? { fontSize: 24 } : {}}
+      >
+        {text}
+      </AcmButton>
+    )
+  }, [])
+
   return (
     <>
       <PageSection>
-        <Gallery hasGutter style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {clustersSummary
-            ? clustersSummary.map(
-                (summaryItem: { id: string; title: string; icon?: any; count: number; link?: string }) => {
-                  return (
-                    <GalleryItem key={summaryItem.id} style={{ flex: 1, minWidth: '180px' }}>
-                      <Card isRounded>
-                        {summaryItem.icon ? (
-                          <CardTitle>
-                            {
-                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                {summaryItem.title}
-                                {summaryItem.icon}
-                              </div>
-                            }
-                          </CardTitle>
-                        ) : (
-                          <CardTitle>{summaryItem.title}</CardTitle>
-                        )}
-                        <CardBody isFilled={false}>
-                          {summaryItem.link ? (
-                            <Link style={{ fontSize: 24 }} to={summaryItem.link}>
-                              {summaryItem.count}
-                            </Link>
-                          ) : (
-                            <FlexItem style={{ fontSize: 24 }}>{summaryItem.count}</FlexItem>
-                          )}
-                        </CardBody>
-                      </Card>
-                    </GalleryItem>
-                  )
-                }
-              )
-            : renderSummaryLoading()}
-        </Gallery>
+        <AcmDynamicGrid minSize={minLegendCardWidth}>
+          <SummaryClustersCard
+            title={t('Clusters')}
+            chartLabel={{
+              title: `${filteredClusterNames.length}`,
+              subTitle: t('total clusters'),
+            }}
+            data={clusterProviderSummary}
+          />
+          <SummaryStatusCard key={'application-type-summary'} title={t('Application types')} data={appTypeSummary} />
+          <SummaryStatusCard key={'policies-status-summary'} title={t('Policies')} data={policySummary} />
+          <SummaryClustersCard isPieChart title={t('Cluster version')} data={clusterVersionSummary} />
+          <SummaryStatusCard key={'node-summary'} title={t('Nodes')} data={nodeSummary} />
+          <Card isRounded style={{ height: '200px' }}>
+            <CardTitle>{t('Worker core count')}</CardTitle>
+            <CardBody isFilled={false}>
+              <>
+                {workerCoreCountError && (
+                  <Alert
+                    isInline={true}
+                    title={
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {t('An unexpected error occurred while retrieving metrics.')}
+                        {workerCoreLaunchLink(t('Launch to metric'), false)}
+                      </div>
+                    }
+                    variant={'danger'}
+                  />
+                )}
+                {workerCoreCountLoading ? <Skeleton width="50%" /> : workerCoreLaunchLink(`${workerCoreTotal}`, true)}
+              </>
+            </CardBody>
+          </Card>
+        </AcmDynamicGrid>
       </PageSection>
 
       <PageSection style={{ paddingTop: 0 }}>
@@ -605,7 +638,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                   <AcmDonutChart
                     title={t('Status')}
                     description={t('Overview of cluster status')}
-                    loading={!clusterStatusData}
+                    loading={!clusterStatusData} // Add an unknown state
                     data={clusterStatusData}
                     colorScale={colorThemes.criticalSuccess}
                   />

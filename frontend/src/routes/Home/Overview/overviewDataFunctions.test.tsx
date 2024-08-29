@@ -3,21 +3,33 @@ import i18next from 'i18next'
 import { Cluster, ClusterStatus } from '../../../resources'
 import { Provider } from '../../../ui-components'
 import {
+  mockApplications,
+  mockApplicationSets,
+  mockArgoApplications,
+  mockOCPApplications,
+  mockPlacementsDecisions,
+  mockSubscriptions,
+} from '../../Applications/Application.sharedmocks'
+import {
   getAddonHealth,
-  getClustersSummary,
+  getAppTypeSummary,
+  getClusterProviderSummary,
   getClusterStatus,
+  getClusterVersionSummary,
   getComplianceData,
   getFilteredClusters,
-  getNodeCount,
+  getNodeSummary,
   getPolicyReport,
+  getPolicySummary,
+  getWorkerCoreTotal,
   parseAlertsMetric,
   parseOperatorMetric,
   parseUpgradeRiskPredictions,
 } from './overviewDataFunctions'
 import {
-  managedClusterInfos,
   mockAlertMetrics,
   mockOperatorMetrics,
+  mockWorkerCoreCountMetrics,
   parsedAddons,
   policies,
   policyReports,
@@ -63,6 +75,10 @@ const clusterData: Cluster[] = [
     uid: 'a23a4032-0ba7-42fd-9439-f7b7667c9f77',
     status: ClusterStatus.ready,
     provider: Provider.aws,
+    distribution: {
+      isManagedOpenShift: false,
+      displayVersion: 'OpenShift 4.15.19',
+    },
     labels: {
       cloud: 'Amazon',
       'cluster.open-cluster-management.io/clusterset': 'default',
@@ -73,6 +89,7 @@ const clusterData: Cluster[] = [
       'openshiftVersion-major-minor': '4.13',
       'velero.io/exclude-from-backup': 'true',
       vendor: 'OpenShift',
+      clusterID: 'local-cluster',
     },
     nodes: {
       nodeList: [
@@ -117,8 +134,52 @@ test('Correctly returns getFilteredClusters', () => {
   expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns getNodeCount', () => {
-  const result = getNodeCount(managedClusterInfos, filteredClusterNames)
+test('Correctly returns getClusterProviderSummary', () => {
+  const result = getClusterProviderSummary(clusterData)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns getClusterVersionSummary', () => {
+  const result = getClusterVersionSummary(clusterData)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns getAppTypeSummary', () => {
+  const t = i18next.t.bind(i18next)
+  const result = getAppTypeSummary(
+    mockApplications,
+    mockApplicationSets,
+    mockArgoApplications,
+    [],
+    mockOCPApplications,
+    filteredClusterNames,
+    clusterData,
+    mockPlacementsDecisions,
+    mockSubscriptions,
+    t
+  )
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns getPolicySummary', () => {
+  const t = i18next.t.bind(i18next)
+  const result = getPolicySummary(policies, filteredClusterNames, 2, t)
+  expect(result).toMatchSnapshot()
+})
+test('Correctly returns getPolicySummary with filtered clusters', () => {
+  const t = i18next.t.bind(i18next)
+  const result = getPolicySummary(policies, [filteredClusterNames[1]], 2, t)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns getNodeSummary', () => {
+  const t = i18next.t.bind(i18next)
+  const result = getNodeSummary(clusterData, t)
+  expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns getWorkerCoreTotal', () => {
+  const result = getWorkerCoreTotal(mockWorkerCoreCountMetrics, clusterData)
   expect(result).toMatchSnapshot()
 })
 
@@ -187,12 +248,6 @@ test('Correctly returns parseUpgradeRiskPredictions with predictions', () => {
       last_checked_at: '2024-03-27T14:00:19.137279+00:00',
     },
   ])
-  expect(result).toMatchSnapshot()
-})
-
-test('Correctly returns getClustersSummary', () => {
-  const t = i18next.t.bind(i18next)
-  const result = getClustersSummary(clusterData, filteredClusterNames, managedClusterInfos, 4, t)
   expect(result).toMatchSnapshot()
 })
 
