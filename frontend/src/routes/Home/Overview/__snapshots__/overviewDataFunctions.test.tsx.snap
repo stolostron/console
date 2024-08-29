@@ -46,12 +46,12 @@ Object {
     },
     Object {
       "count": 2,
-      "link": "/multicloud/applications",
+      "link": "/multicloud/applications?type=argo",
       "title": "Argo CD",
     },
     Object {
       "count": 1,
-      "link": "/multicloud/applications",
+      "link": "/multicloud/applications?type=openshift,openshift-default",
       "title": "OpenShift",
     },
     Object {
