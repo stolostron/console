@@ -16,6 +16,8 @@ import PolicyDetailsResults from './policies/policy-details/PolicyDetailsResults
 import GovernanceOverview from './overview/Overview'
 import PolicySetsPage from './policy-sets/PolicySets'
 import PoliciesPage from './policies/Policies'
+import { PolicyTemplateDetails } from './policies/policy-details/PolicyTemplateDetails'
+import PolicyTemplateYaml from './policies/policy-details/PolicyTemplateYaml'
 
 const governanceChildPath = createRoutePathFunction(NavigationPath.governance)
 
@@ -26,8 +28,11 @@ export default function Governance() {
       <Route path={governanceChildPath(NavigationPath.editPolicy)} element={<EditPolicy />} />
       <Route path={governanceChildPath(NavigationPath.createPolicyAutomation)} element={<CreatePolicyAutomation />} />
       <Route path={governanceChildPath(NavigationPath.editPolicyAutomation)} element={<EditPolicyAutomation />} />
-      <Route path={governanceChildPath(NavigationPath.policyTemplateDetails)} element={<PolicyTemplateDetailsPage />} />
       <Route path={governanceChildPath(NavigationPath.policyDetailsHistory)} element={<PolicyDetailsHistoryPage />} />
+      <Route element={<PolicyTemplateDetailsPage />}>
+        <Route path={governanceChildPath(NavigationPath.policyTemplateDetails)} element={<PolicyTemplateDetails />} />
+        <Route path={governanceChildPath(NavigationPath.policyTemplateYaml)} element={<PolicyTemplateYaml />} />
+      </Route>
       <Route element={<PolicyDetailsPage />}>
         <Route path={governanceChildPath(NavigationPath.policyDetails)} element={<PolicyDetailsOverview />} />
         <Route path={governanceChildPath(NavigationPath.policyDetailsResults)} element={<PolicyDetailsResults />} />

@@ -1,15 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { AcmAlert, AcmPage, AcmPageHeader } from '../../../../ui-components'
-import { Fragment, Suspense, useEffect, useState } from 'react'
-import { generatePath, useParams } from 'react-router-dom-v5-compat'
+import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
+import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
 import { PageSection } from '@patternfly/react-core'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import { TemplateDetailTitle } from '../../components/TemplateDetailTitle'
+
+export type TemplateDetailsContext = {
+  clusterName: string
+  template: any
+}
 
 export function PolicyTemplateDetailsPage() {
   const { t } = useTranslation()
@@ -26,7 +29,25 @@ export function PolicyTemplateDetailsPage() {
   const apiVersion = urlParams.apiVersion ?? ''
   const kind = urlParams.kind ?? ''
   const templateName = urlParams.templateName ?? ''
-
+  const isYamlTab = location.pathname.endsWith('/yaml')
+  const detailsUrl = generatePath(NavigationPath.policyTemplateDetails, {
+    namespace: policyNamespace,
+    name: policyName,
+    clusterName,
+    apiGroup,
+    apiVersion,
+    kind,
+    templateName,
+  })
+  const yamlUrl = generatePath(NavigationPath.policyTemplateYaml, {
+    namespace: policyNamespace,
+    name: policyName,
+    clusterName,
+    apiGroup,
+    apiVersion,
+    kind,
+    templateName,
+  })
   let templateClusterName = clusterName
   let templateNamespace = clusterName
 
@@ -77,6 +98,14 @@ export function PolicyTemplateDetailsPage() {
       })
   }, [t, clusterName, kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
 
+  const templateDetailsContext = useMemo<TemplateDetailsContext>(
+    () => ({
+      template,
+      clusterName,
+    }),
+    [template, clusterName]
+  )
+
   return (
     <AcmPage
       header={
@@ -98,6 +127,16 @@ export function PolicyTemplateDetailsPage() {
           ]}
           popoverAutoWidth={false}
           popoverPosition="bottom"
+          navigation={
+            <AcmSecondaryNav>
+              <AcmSecondaryNavItem isActive={!isYamlTab}>
+                <Link to={detailsUrl}>{t('Details')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isYamlTab}>
+                <Link to={yamlUrl}>{t('YAML')}</Link>
+              </AcmSecondaryNavItem>
+            </AcmSecondaryNav>
+          }
         />
       }
     >
@@ -107,9 +146,13 @@ export function PolicyTemplateDetailsPage() {
             <AcmAlert variant="danger" title={templateError} isInline noClose />
           </PageSection>
         ) : (
-          <PolicyTemplateDetails clusterName={clusterName} template={template} />
+          <Outlet context={templateDetailsContext} />
         )}
       </Suspense>
     </AcmPage>
   )
+}
+
+export function useTemplateDetailsContext() {
+  return useOutletContext<TemplateDetailsContext>()
 }
