@@ -86,12 +86,7 @@ export async function observabilityProxy(req: Http2ServerRequest, res: Http2Serv
   metricsProxy(req, res, token, observabilityProxyRoute)
 }
 
-async function metricsProxy(
-  req: Http2ServerRequest,
-  res: Http2ServerResponse,
-  token: string,
-  route: string
-): Promise<void> {
+function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: string, route: string): void {
   const path = req.url.replace('/observability', '/api/v1').replace('/prometheus', '/api/v1')
   const headers: OutgoingHttpHeaders = { authorization: `Bearer ${token}` }
   for (const header of proxyHeaders) {

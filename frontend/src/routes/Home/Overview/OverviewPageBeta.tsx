@@ -280,7 +280,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const nodeSummary: Data = useMemo(() => {
     return getNodeSummary(filteredClusters, t)
-  }, [filteredClusters])
+  }, [filteredClusters, t])
 
   const appTypeSummary: Data = useMemo(() => {
     return getAppTypeSummary(
@@ -310,7 +310,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const policySummary = useMemo(() => {
     return getPolicySummary(policies, filteredClusterNames, allClusters.length, t)
-  }, [policies, filteredClusterNames, allClusters.length])
+  }, [policies, filteredClusterNames, allClusters.length, t])
 
   // Min width is determined based on how many legend items are in the child donut charts because the legend wraps at 6 items
   const minLegendCardWidth = useMemo(() => {
