@@ -951,7 +951,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               validated={validated}
               spellCheck="false"
               type={!isSecret || showSecrets ? 'text' : 'password'}
-              readOnlyVariant="default"
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           </InputGroupItem>
           {value === '' ? (
@@ -975,7 +975,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               validated={validated}
               type={'number'}
               onChange={(_event, value) => onChange(Number(value))}
-              readOnlyVariant="default"
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           </InputGroupItem>
         </InputGroup>
@@ -993,7 +993,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               value={'**************'}
               validated={validated}
               type={'password'}
-              readOnlyVariant="default"
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           ) : (
             <TextArea
@@ -1003,7 +1003,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               spellCheck="false"
               resizeOrientation="vertical"
               autoResize={true}
-              readOnlyVariant="default"
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           )}
 
