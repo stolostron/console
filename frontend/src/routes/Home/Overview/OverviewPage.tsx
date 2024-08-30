@@ -487,6 +487,7 @@ export default function OverviewPage() {
       {
         key: t('With violations'),
         value: nonCompliantClusters.size,
+        useForTitleCount: true,
         link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
       },
       {
@@ -616,7 +617,6 @@ export default function OverviewPage() {
                 loading={!complianceData}
                 data={complianceData}
                 colorScale={colorThemes.criticalSuccess}
-                countViolationsOnly={true}
               />
               {!searchError ? (
                 <AcmDonutChart
