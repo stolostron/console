@@ -78,6 +78,7 @@ export function ViolationsCard(props: {
             key: t('violation', { count: props.noncompliant }),
             value: props.noncompliant,
             isPrimary: true,
+            useForTitleCount: true,
             link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=with-violations` : undefined,
           },
           {
@@ -92,7 +93,6 @@ export function ViolationsCard(props: {
           },
         ]}
         colorScale={colorThemes.criticalLowSuccess}
-        countViolationsOnly={true}
       />
     </Card>
   )

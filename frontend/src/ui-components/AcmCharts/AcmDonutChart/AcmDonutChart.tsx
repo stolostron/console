@@ -17,6 +17,7 @@ type Data = {
   isPrimary?: boolean
   isDanger?: boolean
   link?: string
+  useForTitleCount?: boolean
 }
 type LegendData = {
   name?: string
@@ -84,18 +85,12 @@ export function AcmDonutChart(props: {
     title: string
     subTitle: string
   }
-  countViolationsOnly?: boolean
 }) {
   const chartData = props.data.map((d) => ({ x: d.key, y: d.value }))
   const legendData: Array<LegendData> = props.data.map((d) => ({ name: `${d.value} ${d.key}`, link: d.link }))
+  const total = props.data.reduce((a, b) => a + b.value, 0)
   /* istanbul ignore next */
   const primary = props.data.find((d) => d.isPrimary) || { key: '', value: 0 }
-  let total = 0
-  if (props.countViolationsOnly) {
-    total = props.data[0].value
-  } else {
-    total = props.data.reduce((a, b) => a + b.value, 0)
-  }
   let donutLabel = ''
   if (props.donutLabel) {
     donutLabel = props.donutLabel.title
@@ -105,6 +100,16 @@ export function AcmDonutChart(props: {
     donutLabel = `${Math.round((primary.value / total) * 100)}%`
   }
 
+  let badgeTotal = total
+
+  for (const val of props.data) {
+    if (val.useForTitleCount) {
+      badgeTotal = val.value
+
+      break
+    }
+  }
+
   const { viewWidth } = useViewport()
   const classes = getStyles({ ...props, danger: props.data.some((d) => d.isDanger), viewWidth } as StyleProps)
 
@@ -112,7 +117,7 @@ export function AcmDonutChart(props: {
   return (
     <Card className={classes.card} id={`${props.title.toLowerCase().replace(/\s+/g, '-')}-chart`}>
       <CardTitle className={classes.cardTitle}>
-        {props.title} <Badge isRead>{total}</Badge>
+        {props.title} <Badge isRead>{badgeTotal}</Badge>
       </CardTitle>
       <div className={classes.chartContainer}>
         <ChartDonut
