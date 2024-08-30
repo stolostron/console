@@ -75,6 +75,7 @@ exports[`renders clusters disabled message 1`] = `
         >
           <div
             class="css-k008qs"
+            style="align-items: baseline;"
           >
             <div
               class="css-19gc7lg"
@@ -227,7 +228,7 @@ exports[`renders unknown message 1`] = `
                             >
                               <h1
                                 class="pf-c-title pf-m-2xl"
-                                data-ouia-component-id="OUIA-Generated-Title-3"
+                                data-ouia-component-id="OUIA-Generated-Title-1"
                                 data-ouia-component-type="PF4/Title"
                                 data-ouia-safe="true"
                               >
@@ -247,7 +248,7 @@ exports[`renders unknown message 1`] = `
       </div>
       <article
         class="pf-c-card"
-        data-ouia-component-id="OUIA-Generated-Card-2"
+        data-ouia-component-id="OUIA-Generated-Card-1"
         data-ouia-component-type="PF4/Card"
         data-ouia-safe="true"
         id=""
@@ -258,6 +259,7 @@ exports[`renders unknown message 1`] = `
         >
           <div
             class="css-k008qs"
+            style="align-items: baseline;"
           >
             <div
               class="css-19gc7lg"
@@ -283,7 +285,7 @@ exports[`renders unknown message 1`] = `
               <button
                 aria-disabled="false"
                 class="pf-c-button pf-m-link css-1dkl6e6"
-                data-ouia-component-id="OUIA-Generated-Button-link-2"
+                data-ouia-component-id="OUIA-Generated-Button-link-1"
                 data-ouia-component-type="PF4/Button"
                 data-ouia-safe="true"
                 type="button"
