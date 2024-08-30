@@ -27,7 +27,7 @@ export async function events(req: Http2ServerRequest, res: Http2ServerResponse):
 }
 
 interface WatchEvent {
-  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR' | 'EOP'
   object: IResource
 }
 
@@ -583,6 +583,7 @@ function matchesSelector(target: object | undefined, selector: Record<string, st
 function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideEventData>): Promise<boolean> {
   switch (serverSideEvent.data?.type) {
     case 'START':
+    case 'EOP':
     case 'LOADED':
     case 'SETTINGS':
       return Promise.resolve(true)

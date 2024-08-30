@@ -3,12 +3,13 @@ import {
   PageSection,
   Pagination,
   PaginationVariant,
+  Skeleton,
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -23,6 +24,7 @@ import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmp
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import PolicySetCard from './components/PolicySetCard'
+import { PluginContext } from '../../../lib/PluginContext'
 
 function violationFilterFn(policySet: PolicySet) {
   if (!policySet.status) {
@@ -80,6 +82,8 @@ export default function PolicySetsPage() {
   const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
   const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
   const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
+  const { dataContext } = useContext(PluginContext)
+  const { loaded, receivedFirstPacket } = useContext(dataContext)
 
   const translatedPaginationTitles = usePaginationTitles()
 
@@ -204,12 +208,14 @@ export default function PolicySetsPage() {
   }
   const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
-  if (!policySets || policySets.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
-      </PageSection>
-    )
+  if (receivedFirstPacket) {
+    if (loaded && (!policySets || policySets.length === 0)) {
+      return (
+        <PageSection isFilled>
+          <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
+        </PageSection>
+      )
+    }
   }
 
   return (
@@ -261,7 +267,20 @@ export default function PolicySetsPage() {
             </Fragment>
           </ToolbarContent>
         </Toolbar>
-        {filteredPolicySets.length === 0 ? (
+        {!receivedFirstPacket ? (
+          <div
+            style={{
+              backgroundColor: 'var(--pf-global--BackgroundColor--light-100)',
+              boxShadow: 'var(--pf-c-card--BoxShadow)',
+              width: '390px',
+              height: '108px',
+              margin: '24px',
+              padding: '24px',
+            }}
+          >
+            <Skeleton screenreaderText="Loading" />
+          </div>
+        ) : filteredPolicySets.length === 0 ? (
           <AcmEmptyState title={t('No resources match the current filter')} showSearchIcon={true} />
         ) : (
           <PageSection isFilled>
