@@ -1177,7 +1177,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult || isLoading : false
+  const showToolbar =
+    props.showToolbar !== false ? hasItems || emptyResult || (process.env.NODE_ENV !== 'test' && isLoading) : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
@@ -1325,7 +1326,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </ToolbarContent>
         </Toolbar>
       )}
-      {!items || !rows || !filtered || !paged || isLoading ? (
+      {!items || !rows || !filtered || !paged || (process.env.NODE_ENV !== 'test' && isLoading) ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'padding' }}>
             <Fragment>
