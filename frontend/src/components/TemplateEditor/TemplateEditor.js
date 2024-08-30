@@ -826,6 +826,7 @@ export default class TemplateEditor extends React.Component {
     if (editorIndex < 0) {
       editorIndex = this.editors.push(editor) - 1
     } else {
+      // update to latest object for this editor ID
       this.editors[editorIndex] = editor
     }
     if (editorIndex >= 1) {
@@ -871,12 +872,14 @@ export default class TemplateEditor extends React.Component {
         break
       case 'copyAll':
         if (editor) {
-          const save = editor.getSelection()
-          const range = editor.getModel().getFullModelRange()
-          editor.setSelection(range)
-          editor.focus()
-          document.execCommand('copy')
-          editor.setSelection(save)
+          if (editor && editor.getModel()) {
+            const model = editor.getModel()
+            const selection = editor.getSelection()
+            if (model && selection) {
+              const selectedText = model.getValueInRange(selection)
+              navigator.clipboard.writeText(selectedText || editor.getValue() || '')
+            }
+          }
         }
         break
       case 'undo':
