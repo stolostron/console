@@ -7,7 +7,7 @@ import { AcmDonutChart } from './AcmDonutChart'
 
 const complianceData = [
   { key: 'Compliant', value: 1, isPrimary: true, link: '/linkToCompiantResources' },
-  { key: 'Non-compliant', value: 1, isDanger: true },
+  { key: 'Non-compliant', value: 2, isDanger: true, useForTitleCount: true },
 ]
 const zeroData = [
   { key: 'Key1', value: 0, isPrimary: true },
@@ -21,7 +21,7 @@ const podData = [
 
 describe('AcmDonutChart', () => {
   test('renders', () => {
-    const { queryAllByText } = render(
+    const { container, getByText } = render(
       <MemoryRouter>
         <AcmDonutChart
           title="Cluster violations"
@@ -31,7 +31,8 @@ describe('AcmDonutChart', () => {
       </MemoryRouter>
     )
 
-    expect(queryAllByText('Cluster violations').length).toBeGreaterThan(0)
+    expect(getByText('33%')).toBeInTheDocument()
+    expect(container.querySelector('#cluster-violations-chart-title')?.textContent).toEqual('Cluster violations 2')
   })
 
   test('renders skeleton', () => {

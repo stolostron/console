@@ -3127,6 +3127,8 @@
   "view.releaseNotes": "View release notes",
   "view.submariner": "View Submariner add-ons",
   "view.yaml": "View YAML",
+  "Violation": "Violation",
+  "Violation_plural": "Violations",
   "Violations": "Violations",
   "Violations_plural": "Violations",
   "violations: {{count}} cluster": "violations: {{count}} cluster",
