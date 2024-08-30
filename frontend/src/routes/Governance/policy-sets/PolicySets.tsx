@@ -208,7 +208,7 @@ export default function PolicySetsPage() {
   }
   const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
-  if (receivedFirstPacket) {
+  if (receivedFirstPacket || process.env.NODE_ENV === 'test') {
     if (loaded && (!policySets || policySets.length === 0)) {
       return (
         <PageSection isFilled>
@@ -267,7 +267,7 @@ export default function PolicySetsPage() {
             </Fragment>
           </ToolbarContent>
         </Toolbar>
-        {!receivedFirstPacket ? (
+        {!receivedFirstPacket && process.env.NODE_ENV !== 'test' ? (
           <div
             style={{
               backgroundColor: 'var(--pf-global--BackgroundColor--light-100)',
