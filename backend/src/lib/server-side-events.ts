@@ -5,7 +5,6 @@ import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
 import { getEncodeStream } from './compression'
 import { setCookie } from './cookies'
-import { WatchEvent } from './../../../frontend/src/atoms'
 import { logger } from './logger'
 import { randomString } from './random-string'
 
@@ -31,6 +30,18 @@ export interface ServerSideEvent<DataT = unknown> {
   name?: string
   namespace?: string
   data?: DataT
+}
+export interface WatchEvent {
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'EOP'
+  object: {
+    kind: string
+    apiVersion: string
+    metadata: {
+      name: string
+      namespace: string
+      resourceVersion: string
+    }
+  }
 }
 
 export interface ServerSideEventClient {
