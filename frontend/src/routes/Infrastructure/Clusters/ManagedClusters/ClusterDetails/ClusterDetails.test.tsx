@@ -875,7 +875,7 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
 
 export const mockManagedClusterAddOns: Map<string, ManagedClusterAddOn[]> = new Map([
   [
-    'hostedcluster1',
+    'test-cluster',
     [
       mockManagedClusterAddOnApp,
       mockManagedClusterAddOnWork,

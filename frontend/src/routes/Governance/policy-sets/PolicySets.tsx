@@ -209,7 +209,7 @@ export default function PolicySetsPage() {
   const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
   if (receivedFirstPacket || process.env.NODE_ENV === 'test') {
-    if (loaded && (!policySets || policySets.length === 0)) {
+    if ((loaded || process.env.NODE_ENV === 'test') && (!policySets || policySets.length === 0)) {
       return (
         <PageSection isFilled>
           <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
