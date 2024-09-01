@@ -1,0 +1,6 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "baseBranches": ["main", "release-2.11", "release-2.10", "release-2.9"],
+  "schedule": ["every weekend"],
+  "timezone": "America/New_York"
+}

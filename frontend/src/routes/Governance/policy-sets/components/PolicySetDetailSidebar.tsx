@@ -318,8 +318,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             policySetClusterContext?.filter((status) => status.compliant === 'Compliant').length ?? 0
           const pendingCount = policySetClusterContext?.filter((status) => status.compliant === 'Pending').length ?? 0
           const unknownCount = policySetClusterContext?.filter((status) => !status.compliant).length ?? 0
-
-          return `compliant: ${compliantCount}, noncompliant: ${violationCount}, pending: ${pendingCount}, unknown: ${unknownCount}`
+          return `${t('no violations: {{count}} cluster', { count: compliantCount })}, ${t('violations: {{count}} cluster', { count: violationCount })}, ${t('pending: {{count}} cluster', { count: pendingCount })}, ${t('unknown: {{count}} cluster', { count: unknownCount })}`
         },
       },
       {
