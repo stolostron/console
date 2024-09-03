@@ -34,6 +34,8 @@ export interface Section extends SectionBase {
   wizardTitle?: string
   inputs?: Input[]
   alerts?: ReactNode
+  isHidden?: boolean
+  isRequired?: boolean
 }
 
 export interface SectionGroup extends SectionBase {
