@@ -1292,8 +1292,6 @@ export function CredentialsForm(
             options: [
               { id: 'offline-token', value: 'offline-token', text: t('API Token') },
               { id: 'service-account', value: 'service-account', text: t('Service Account') },
-              // { id: 'offline-token', value: 'offline-token', text: OCMClusterManagerOptions.OCMAPIToken}, t('Service Account')
-              // { id: 'service-account', value: 'service-account', text: OCMClusterManagerOptions.OCMServiceAccount }, //this is working
             ],
             isRequired: true,
           },
