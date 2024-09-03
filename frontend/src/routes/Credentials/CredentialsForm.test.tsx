@@ -8,7 +8,7 @@ import {
   ProviderConnectionKind,
   ProviderConnectionStringData,
 } from '../../resources'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -92,7 +92,10 @@ describe('add credentials page', () => {
     render(<Component credentialsType={Provider.aws} />)
     const providerConnection = createProviderConnection(
       'aws',
-      { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
+      {
+        aws_access_key_id: 'aws_access_key_id',
+        aws_secret_access_key: 'aws_secret_access_key',
+      },
       true
     )
 
@@ -417,10 +420,11 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
   })
 
-  it('should create rhocm credentials', async () => {
+  it('should create rhocm credentials with ocm API Token (default) option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
+      auth_method: 'offline-token',
       ocmAPIToken: 'ocmAPIToken',
     })
 
@@ -428,8 +432,50 @@ describe('add credentials page', () => {
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
+    // Open the dropdown
+    const dropdownToggle = screen.getByLabelText('Options menu')
+    fireEvent.click(dropdownToggle)
+
+    // Select the "API Token" option
+    const apiTokenOption = screen.getByText('API Token')
+    fireEvent.click(apiTokenOption)
+
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
+    await clickByText('Next')
+
+    // Add Credentials
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
+  })
+
+  it('should create rhocm credentials with Service Account option', async () => {
+    render(<Component credentialsType={Provider.redhatcloud} />)
+
+    const providerConnection = createProviderConnection('rhocm', {
+      auth_method: 'service-account',
+      client_id: 'serviceAccountClientId',
+      client_secret: 'serviceAccountClientSecret',
+    })
+
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // Open the dropdown
+    const dropdownToggle = screen.getByLabelText('Options menu')
+    fireEvent.click(dropdownToggle)
+
+    // Select the "Service Account" option
+    const serviceAccountOption = screen.getByText('Service Account')
+    fireEvent.click(serviceAccountOption)
+
+    await clickByText('Next')
+
+    // rhocm credentials
+    await typeByTestId('client_id', providerConnection.stringData?.client_id!)
+    await typeByTestId('client_secret', providerConnection.stringData?.client_secret!)
     await clickByText('Next')
 
     // Add Credentials
