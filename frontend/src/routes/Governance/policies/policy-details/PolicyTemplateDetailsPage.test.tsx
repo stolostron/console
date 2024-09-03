@@ -345,7 +345,6 @@ describe('Policy Template Details Page', () => {
     await waitForText('config-policy', true) // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
 
     await waitForText('ConfigurationPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     await waitForText('test-cluster')
     await waitForText('ConfigurationPolicy')
@@ -440,7 +439,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('ConfigurationPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     // Ensure the hosting cluster name isn't shown as the cluster name
@@ -572,7 +570,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('K8sRequiredLabels details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('ns-must-have-gk', true)
@@ -617,7 +614,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('OperatorPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('oppol-no-group', true)
@@ -771,7 +767,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('OperatorPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('oppol-no-group', true)
