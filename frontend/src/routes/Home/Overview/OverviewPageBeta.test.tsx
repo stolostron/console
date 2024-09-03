@@ -52,6 +52,7 @@ import {
   mockClusterManagementAddons,
   mockManagedClusterAddons,
   mockOperatorMetrics,
+  mockWorkerCoreCountMetrics,
   placementDecisions,
   policies,
   policyReports,
@@ -146,6 +147,10 @@ it('should render overview page with expected data', async () => {
     '/observability/query?query=cluster_operator_conditions',
     mockOperatorMetrics
   )
+  const mockWorkerCoreCountMetricsNock = nockRequest(
+    '/prometheus/query?query=acm_managed_cluster_worker_cores',
+    mockWorkerCoreCountMetrics
+  )
   const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
   const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
     '/upgrade-risks-prediction',
@@ -210,6 +215,7 @@ it('should render overview page with expected data', async () => {
     metricNock,
     mockAlertMetricsNock,
     mockOperatorMetricsNock,
+    mockWorkerCoreCountMetricsNock,
     getUserPreferenceNock,
     getUpgradeRisksPredictionsNock,
   ])

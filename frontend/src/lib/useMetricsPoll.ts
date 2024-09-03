@@ -3,6 +3,13 @@ import _ from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchGet, getBackendUrl } from '../resources'
 
+export enum PrometheusEndpoint {
+  LABEL = 'prometheus/label',
+  QUERY = 'prometheus/query',
+  QUERY_RANGE = 'prometheus/query_range',
+  RULES = 'prometheus/rules',
+  TARGETS = 'prometheus/targets',
+}
 export enum ObservabilityEndpoint {
   LABEL = 'observability/label',
   QUERY = 'observability/query',
@@ -10,9 +17,9 @@ export enum ObservabilityEndpoint {
   RULES = 'observability/rules',
   TARGETS = 'observability/targets',
 }
-type ObservabilityURLProps = {
+type URLProps = {
   skip?: boolean
-  endpoint: ObservabilityEndpoint
+  endpoint: ObservabilityEndpoint | PrometheusEndpoint
   endTime?: number
   namespace?: string
   query?: string
@@ -20,7 +27,7 @@ type ObservabilityURLProps = {
   timeout?: string
   timespan?: number
 }
-type ObservabilityResponse = {
+export type Response = {
   status: string
   data: {
     resultType: 'matrix' | 'vector' | 'scalar' | 'string'
@@ -34,7 +41,7 @@ type ObservabilityResponse = {
   error?: string
   warnings?: string[]
 }
-type UseObservabilityPoll = (props: ObservabilityURLProps, delay?: number) => [ObservabilityResponse, unknown, boolean]
+type UsePoll = (props: URLProps, delay?: number) => [Response, unknown, boolean]
 
 // Range vector queries require end, start, and step search params
 const getRangeVectorSearchParams = (
@@ -49,13 +56,16 @@ const getRangeVectorSearchParams = (
   return params
 }
 
-const getObservabilityURL = (props: ObservabilityURLProps): string => {
-  const { skip, endpoint, endTime, timespan, samples, ...params }: ObservabilityURLProps = props
-  if (skip || (props.endpoint !== ObservabilityEndpoint.RULES && !props.query)) {
+const getURL = (props: URLProps): string => {
+  const { skip, endpoint, endTime, timespan, samples, ...params }: URLProps = props
+  if (
+    skip ||
+    (props.endpoint !== ObservabilityEndpoint.RULES && props.endpoint !== PrometheusEndpoint.RULES && !props.query)
+  ) {
     return ''
   }
   const searchParams =
-    endpoint === ObservabilityEndpoint.QUERY_RANGE
+    endpoint === ObservabilityEndpoint.QUERY_RANGE || endpoint === PrometheusEndpoint.QUERY_RANGE
       ? getRangeVectorSearchParams(endTime, samples, timespan)
       : new URLSearchParams()
   _.each(params, (value, key) => value && searchParams.append(key, value.toString()))
@@ -86,13 +96,13 @@ const usePoll = (callback: () => void, skip?: boolean, delay?: number) => {
   }, [pollDelay, skip])
 }
 
-export const useObservabilityPoll: UseObservabilityPoll = (
+export const useMetricsPoll: UsePoll = (
   { skip, endpoint, endTime, namespace, query, samples = 60, timeout, timespan = 60 * 60 * 1000 },
   delay
 ) => {
-  const observabilityURLProps = { skip, endpoint, endTime, namespace, query, samples, timeout, timespan }
+  const URLProps = { skip, endpoint, endTime, namespace, query, samples, timeout, timespan }
 
-  const url = getObservabilityURL(observabilityURLProps)
+  const url = getURL(URLProps)
   const [error, setError] = useState<unknown>()
   const [response, setResponse] = useState<any>()
   const [loading, setLoading] = useState(true)

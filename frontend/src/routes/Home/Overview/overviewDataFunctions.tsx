@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PrometheusResponse } from '@openshift-console/dynamic-plugin-sdk'
+import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 
-import { CubesIcon, DatabaseIcon, MapPinIcon } from '@patternfly/react-icons'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
@@ -11,14 +11,15 @@ import {
   ApplicationSet,
   ArgoApplication,
   Cluster,
-  ManagedClusterInfo,
   PlacementDecision,
   Policy,
   PolicyReport,
   PolicyReportResults,
   Subscription,
 } from '../../../resources'
+import { Provider, ProviderShortTextMap } from '../../../ui-components'
 import { getClusterList } from '../../Applications/helpers/resource-helper'
+import { getApplicationType } from '../../Applications/Overview'
 import {
   CriticalRiskIcon,
   ImportantRiskIcon,
@@ -52,17 +53,251 @@ export function getFilteredClusters(allClusters: Cluster[], selectedClusterLabel
   })
 }
 
-export function getNodeCount(managedClusterInfos: ManagedClusterInfo[], filteredClusterNames: string[]) {
-  let count = 0
-  managedClusterInfos.forEach((managedClusterInfo: ManagedClusterInfo) => {
-    if (
-      filteredClusterNames.length === 0 ||
-      (managedClusterInfo.metadata.name && filteredClusterNames.includes(managedClusterInfo.metadata.name))
-    ) {
-      count = count + (managedClusterInfo.status?.nodeList?.length ?? 0)
+export function getClusterProviderSummary(filteredClusters: Cluster[]) {
+  const providerSums: Record<string, number> = {}
+  filteredClusters.forEach((cluster) => {
+    const provider = cluster?.provider ?? Provider.other
+    providerSums[provider] > 0 ? providerSums[provider]++ : (providerSums[provider] = 1)
+  })
+  return Object.keys(providerSums).map((sum) => ({
+    key: ProviderShortTextMap[sum as Provider],
+    value: providerSums[sum],
+    link: `${NavigationPath.managedClusters}?provider=${sum}`,
+  }))
+}
+
+export function getClusterVersionSummary(filteredClusters: Cluster[]) {
+  const versionSums: Record<string, number> = {}
+  filteredClusters.forEach((cluster) => {
+    const version = cluster.distribution?.displayVersion?.split('.', 2).join('.') ?? 'unknown'
+    versionSums[version] > 0 ? versionSums[version]++ : (versionSums[version] = 1)
+  })
+  return Object.keys(versionSums).map((version) => ({
+    key: version,
+    value: versionSums[version],
+  }))
+}
+
+export function getWorkerCoreTotal(workerCoreCountMetric: PrometheusResponse | undefined, filteredClusters: Cluster[]) {
+  let totalCoreWorkerCount = 0
+  if (workerCoreCountMetric?.data?.result) {
+    const clusterIDs = filteredClusters.map((cluster) => {
+      // acm_managed_cluster_worker_cores metric uses cluster id if available if not uses cluster name
+      return cluster.labels?.['clusterID'] ?? cluster.name
+    })
+    const filteredCoreWorkerCounts =
+      clusterIDs.length === 0 // TODO check this...
+        ? workerCoreCountMetric.data.result
+        : workerCoreCountMetric.data.result.filter((alert) => clusterIDs.includes(alert.metric.managed_cluster_id))
+    filteredCoreWorkerCounts.forEach((coreWorker) => {
+      totalCoreWorkerCount = totalCoreWorkerCount + parseInt(coreWorker?.value?.[1] ?? '0')
+    })
+  }
+  return totalCoreWorkerCount
+}
+
+export function getNodeSummary(filteredClusters: Cluster[], t: TFunction<string, undefined>) {
+  const nodeSums: Record<string, number> = {
+    ready: 0,
+    unhealthy: 0,
+    unknown: 0,
+  }
+  filteredClusters.forEach((cluster) => {
+    if (cluster.nodes) {
+      nodeSums['ready'] = nodeSums['ready'] + cluster.nodes.ready
+      nodeSums['unhealthy'] = nodeSums['unhealthy'] + cluster.nodes.unhealthy
+      nodeSums['unknown'] = nodeSums['unknown'] + cluster.nodes.unknown
     }
   })
-  return count
+  return {
+    mainSection: {
+      title: `${nodeSums['ready'] + nodeSums['unhealthy'] + nodeSums['unknown']}`,
+      description: t('total nodes'),
+    },
+    statusSection: [
+      {
+        title: t('Ready'),
+        count: nodeSums['ready'],
+        icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+        link: nodeSums['ready'] > 0 ? `${NavigationPath.managedClusters}?nodes=healthy` : undefined,
+      },
+      {
+        title: t('Unhealthy'),
+        count: nodeSums['unhealthy'],
+        icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+        link: nodeSums['unhealthy'] > 0 ? `${NavigationPath.managedClusters}?nodes=danger` : undefined,
+      },
+      {
+        title: t('Unknown'),
+        count: nodeSums['unknown'],
+        icon: <UnknownIcon />,
+        link: nodeSums['unknown'] > 0 ? `${NavigationPath.managedClusters}?nodes=unknown` : undefined,
+      },
+    ],
+  }
+}
+
+function getApps(
+  applications: Application[],
+  applicationSets: ApplicationSet[],
+  argoApps: ArgoApplication[],
+  discoveredApps: ArgoApplication[],
+  ocpAppResources: any[],
+  filteredClusterNames: string[],
+  allClusters: Cluster[],
+  placementDecisions: PlacementDecision[],
+  subscriptions: Subscription[]
+) {
+  const apps = [...applications, ...applicationSets, ...argoApps, ...discoveredApps, ...ocpAppResources]
+  // If no cluster labels are selected we default to the filteredClusterNames containing all cluster names
+  if (allClusters.length > filteredClusterNames.length) {
+    // filter apps by clusters from label selection.
+    return apps.filter((app) => {
+      const localCluster = allClusters.find((cls) => cls.name === 'local-cluster')
+      const clusterList = getClusterList(app, argoApps, placementDecisions, subscriptions, localCluster, allClusters)
+
+      return filteredClusterNames.some((value) => {
+        return clusterList.includes(value)
+      })
+    })
+  }
+  return apps
+}
+
+export function getAppTypeSummary(
+  applications: Application[],
+  applicationSets: ApplicationSet[],
+  argoApps: ArgoApplication[],
+  discoveredArgoApps: ArgoApplication[],
+  ocpAppResources: any[],
+  filteredClusterNames: string[],
+  allClusters: Cluster[],
+  placementDecisions: PlacementDecision[],
+  subscriptions: Subscription[],
+  t: TFunction<string, undefined>
+) {
+  const appTypes = getApps(
+    applications,
+    applicationSets,
+    argoApps,
+    discoveredArgoApps,
+    ocpAppResources,
+    filteredClusterNames,
+    allClusters,
+    placementDecisions,
+    subscriptions
+  ).map((app) => getApplicationType(app, t))
+  const typeTotals: Record<string, number> = {}
+  appTypes.forEach((app) => {
+    if (typeof typeTotals[app] === 'undefined') {
+      typeTotals[app] = 1
+    } else {
+      typeTotals[app] += 1
+    }
+  })
+
+  const getAppTypeLink = (type: string) => {
+    // handle cases from getApplicationType
+    switch (type) {
+      case t('Subscription'):
+        return `${NavigationPath.applications}?type=subscription`
+      case t('Argo CD'):
+      case t('Discovered'):
+        return `${NavigationPath.applications}?type=argo`
+      case t('Application set'):
+        return `${NavigationPath.applications}?type=appset`
+      case t('Flux'):
+        return `${NavigationPath.applications}?type=flux`
+      case 'System':
+      case 'OpenShift':
+        return `${NavigationPath.applications}?type=openshift,openshift-default`
+      default:
+        return NavigationPath.applications
+    }
+  }
+
+  return {
+    mainSection: {
+      title: `${appTypes.length}`,
+      description: t('total applications'),
+      link: NavigationPath.applications,
+    },
+    statusSection: Object.keys(typeTotals).map((type) => ({
+      title: type,
+      count: typeTotals[type],
+      link: getAppTypeLink(type),
+    })),
+  }
+}
+
+export function getPolicySummary(
+  policies: Policy[],
+  filteredClusterNames: string[],
+  allClustersLength: number,
+  t: TFunction<string, undefined>
+) {
+  let totalPolicies = 0
+  let compliant = 0
+  let noncompliant = 0
+  let pending = 0
+  let unknown = 0
+  const filteredPolicies = policies.filter((policy: Policy) => {
+    if (filteredClusterNames.length === allClustersLength) {
+      return true
+    }
+    return (
+      policy.status?.status &&
+      policy.status.status.filter((i: { clustername: string }) => {
+        return filteredClusterNames.includes(i.clustername)
+      }).length > 0
+    )
+  })
+  filteredPolicies.forEach((policy: Policy) => {
+    if (!policy.spec.disabled) {
+      totalPolicies++
+      switch (policy.status?.compliant) {
+        case 'Compliant':
+          compliant++
+          break
+        case 'NonCompliant':
+          noncompliant++
+          break
+        case 'Pending':
+          pending++
+          break
+        default:
+          unknown++
+          break
+      }
+    }
+  })
+  return {
+    mainSection: {
+      title: `${totalPolicies}`,
+      description: 'enabled policies',
+      link: `${NavigationPath.policies}?enabled=True`,
+    },
+    statusSection: [
+      {
+        title: t('With no violations'),
+        count: compliant,
+        link: `${NavigationPath.policies}?enabled=True&violations=no-violations`,
+        icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+      },
+      {
+        title: t('With violations'),
+        count: noncompliant,
+        link: `${NavigationPath.policies}?enabled=True&violations=violations`,
+        icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+      },
+      {
+        title: t('No status'),
+        count: pending + unknown,
+        link: `${NavigationPath.policies}?enabled=True&violations=no-status`,
+        icon: <UnknownIcon />,
+      },
+    ],
+  }
 }
 
 export function getAppCount(
@@ -176,60 +411,6 @@ export function parseUpgradeRiskPredictions(upgradeRiskPredictions: any) {
     infoUpdateCount,
     clustersWithRiskPredictors,
   }
-}
-
-export function getClustersSummary(
-  filteredClusters: Cluster[],
-  filteredClusterNames: string[],
-  managedClusterInfos: ManagedClusterInfo[],
-  applicationCount: number,
-  t: TFunction<string, undefined>
-) {
-  const kubernetesTypes = new Set()
-  const regions = new Set()
-  filteredClusters.forEach((curr: Cluster) => {
-    kubernetesTypes.add(curr.labels?.vendor ?? 'Other')
-    regions.add(curr.labels?.region ?? 'Other')
-  })
-  const nodeCount = getNodeCount(managedClusterInfos, filteredClusterNames)
-
-  return [
-    {
-      id: 'total-clusters',
-      title: t('Clusters'),
-      icon: undefined,
-      count: filteredClusterNames.length,
-      link: NavigationPath.managedClusters, // *Clusters table does not have ability to filter by labels - could nav to search with the label filter
-    },
-    {
-      id: 'apps-count',
-      title: t('Applications'),
-      icon: undefined,
-      count: applicationCount,
-      link: NavigationPath.applications, // *Apps table has cluster name filter - select the matches.
-    },
-    {
-      id: 'kube-types',
-      title: t('Kubernetes type'),
-      icon: <DatabaseIcon />,
-      count: kubernetesTypes.size,
-      link: undefined, // No where to route for kube types
-    },
-    {
-      id: 'cluster-regions',
-      title: t('Region'),
-      icon: <MapPinIcon />,
-      count: regions.size,
-      link: undefined, // No where to route for regions
-    },
-    {
-      id: 'nodes-count',
-      title: t('Nodes'),
-      icon: <CubesIcon />,
-      count: nodeCount,
-      link: `${NavigationPath.search}?filters={"textsearch":"kind%3ANode"}`, // add cluster label filter
-    },
-  ]
 }
 
 export function getClusterStatus(
