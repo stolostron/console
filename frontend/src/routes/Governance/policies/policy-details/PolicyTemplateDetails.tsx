@@ -21,7 +21,6 @@ export function PolicyTemplateDetails() {
   const urlParams = useParams()
   const kind = urlParams.kind ?? ''
   const { clusterName, template } = useTemplateDetailsContext()
-  const isCertPolicy = kind === 'CertificatePolicy'
   const [relatedObjects, setRelatedObjects] = useState<any>()
 
   useEffect(() => {
@@ -231,7 +230,7 @@ export function PolicyTemplateDetails() {
               id={'template-details-section'}
               title={kind + ' ' + t('details')}
               leftItems={descriptionItems}
-              defaultOpen={isCertPolicy}
+              defaultOpen
             />
           </GridItem>
         </Grid>
