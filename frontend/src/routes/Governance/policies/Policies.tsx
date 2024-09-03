@@ -16,32 +16,14 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import moment from 'moment'
 import { fitContent } from '@patternfly/react-table'
-import {
-  AcmAlert,
-  AcmDrawerContext,
-  AcmSelect,
-  AcmTable,
-  compareStrings,
-  IAcmTableAction,
-  IAcmTableColumn,
-  ITableFilter,
-} from '../../../ui-components'
+import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import {
-  formatDescriptionForDropdown,
-  hasInformOnlyPolicies,
-  getPlacementBindingsForResource,
-  getPlacementsForResource,
-  getPolicySource,
-} from '../common/util'
-import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacPatch, rbacUpdate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   patchResource,
@@ -54,14 +36,32 @@ import {
   PolicySet,
   replaceResource,
 } from '../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import {
+  AcmAlert,
+  AcmDrawerContext,
+  AcmSelect,
+  AcmTable,
+  compareStrings,
+  IAcmTableAction,
+  IAcmTableColumn,
+  ITableFilter,
+} from '../../../ui-components'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
+import { useAddRemediationPolicies } from '../common/useCustom'
+import {
+  formatDescriptionForDropdown,
+  getPlacementBindingsForResource,
+  getPlacementsForResource,
+  getPolicySource,
+  hasInformOnlyPolicies,
+} from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import {
   PolicyClusterViolationSummaryMap,
   usePolicyClusterViolationSummaryMap,
 } from '../overview/PolicyViolationSummary'
-import { useAddRemediationPolicies } from '../common/useCustom'
 import {
   handleActionGroupCell,
   handleAutomationCell,
@@ -772,7 +772,7 @@ function checkViolation(
 
   if (selectedValues.includes(violation)) {
     for (let i = 0; i < statusLength; i++) {
-      const cp = item?.policy?.status?.status?.[i]?.compliant ?? ''
+      const cp = item?.policy?.status?.compliant ?? ''
       if (cp == matchStatusCompliant) {
         return true
       }

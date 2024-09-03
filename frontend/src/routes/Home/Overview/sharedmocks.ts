@@ -1403,3 +1403,40 @@ export const mockOperatorMetrics: any = {
     ],
   },
 }
+
+export const mockWorkerCoreCountMetrics: any = {
+  status: 'success',
+  data: {
+    resultType: 'vector',
+    result: [
+      {
+        metric: {
+          __name__: 'acm_managed_cluster_worker_cores',
+          endpoint: 'https',
+          hub_cluster_id: '1234-abcd',
+          instance: '10.130.2.160:8443',
+          job: 'clusterlifecycle-state-metrics-v2',
+          managed_cluster_id: 'local-cluster',
+          namespace: 'multicluster-engine',
+          pod: 'clusterlifecycle-state-metrics-v2',
+          service: 'clusterlifecycle-state-metrics-v2',
+        },
+        value: [1724872986.629, '2'],
+      },
+      {
+        metric: {
+          __name__: 'acm_managed_cluster_worker_cores',
+          endpoint: 'https',
+          hub_cluster_id: '1234-abcd',
+          instance: '10.130.2.160:8443',
+          job: 'clusterlifecycle-state-metrics-v2',
+          managed_cluster_id: 'managed-1',
+          namespace: 'multicluster-engine',
+          pod: 'clusterlifecycle-state-metrics-v2',
+          service: 'clusterlifecycle-state-metrics-v2',
+        },
+        value: [1724872986.629, '6'],
+      },
+    ],
+  },
+}
