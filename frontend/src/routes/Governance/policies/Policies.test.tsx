@@ -473,7 +473,7 @@ describe('Export from policy table', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     screen.getByLabelText('export-search-result').click()
-    screen.getByText('Export as CSV').click()
+    screen.getByText('Export all to CSV').click()
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

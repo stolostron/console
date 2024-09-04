@@ -954,7 +954,7 @@ describe('AcmTable', () => {
     const { getByTestId, getByText, container } = render(<Table showExportButton />)
     expect(container.querySelector('#export-search-result')).toBeInTheDocument()
     userEvent.click(getByTestId('export-search-result'))
-    expect(getByText('Export as CSV')).toBeInTheDocument()
+    expect(getByText('Export all to CSV')).toBeInTheDocument()
   })
 
   test('returns a csv safe string from export callback', () => {
@@ -991,8 +991,8 @@ describe('AcmTable', () => {
 
     expect(container.querySelector('#export-search-result')).toBeInTheDocument()
     userEvent.click(getByTestId('export-search-result'))
-    expect(getByText('Export as CSV')).toBeInTheDocument()
-    userEvent.click(getByText('Export as CSV'))
+    expect(getByText('Export all to CSV')).toBeInTheDocument()
+    userEvent.click(getByText('Export all to CSV'))
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

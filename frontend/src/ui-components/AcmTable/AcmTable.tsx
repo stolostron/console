@@ -1296,7 +1296,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   isPlain
                   dropdownItems={[
                     <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
-                      {t('Export as CSV')}
+                      {t('Export all to CSV')}
                     </DropdownItem>,
                   ]}
                   position={'left'}
