@@ -118,9 +118,7 @@ export function unpackProviderConnection(secret: ProviderConnection | Secret) {
     ...secret,
   } as ProviderConnection
   if (providerConnection.data) {
-    if (!providerConnection.stringData) {
-      providerConnection.stringData = {} as ProviderConnectionStringData
-    }
+    if (!providerConnection.stringData) providerConnection.stringData = {}
     const data = providerConnection.data as Record<string, string>
     const stringData = providerConnection.stringData as Record<string, string>
     for (const key in providerConnection.data) {
@@ -132,9 +130,7 @@ export function unpackProviderConnection(secret: ProviderConnection | Secret) {
 }
 
 export function packProviderConnection(providerConnection: ProviderConnection) {
-  if (!providerConnection.data) {
-    providerConnection.data = {} as ProviderConnectionStringData
-  }
+  if (!providerConnection.data) providerConnection.data = {}
   const data = providerConnection.data as Record<string, string>
   const stringData = providerConnection.stringData as Record<string, string>
   if (stringData !== undefined) {
