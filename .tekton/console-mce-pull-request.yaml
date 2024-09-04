@@ -185,7 +185,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:697120b854f64fabd1acb8f47629dec4cea9498b2a1ef3a407454a4058615edd
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:816de3d691e6371ebd6eab17c7cc8a955d8b02826686050134b68150787b9c12
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
@@ -307,22 +307,6 @@ spec:
       taskRef:
         bundle: quay.io/redhat-appstudio-tekton-catalog/task-clamav-scan:0.1@sha256:4c1a1cd74eecfcd93222903ea28319a8068f2d5c9678e4db14e2c605831ad90c
         name: clamav-scan
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
-    - name: sbom-json-check
-      params:
-      - name: IMAGE_URL
-        value: $(tasks.build-container.results.IMAGE_URL)
-      - name: IMAGE_DIGEST
-        value: $(tasks.build-container.results.IMAGE_DIGEST)
-      runAfter:
-      - build-container
-      taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-sbom-json-check:0.1@sha256:1726e5553530c16de7c060437b1fa52e6d5bbd50d2acf42ac7d45680aa75afb9
-        name: sbom-json-check
       when:
       - input: $(params.skip-checks)
         operator: in
