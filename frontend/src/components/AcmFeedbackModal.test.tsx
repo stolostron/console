@@ -7,14 +7,6 @@ import { AcmFeedbackModal } from './AcmFeedbackModal'
 import { OutlinedCommentsIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components/AcmButton'
 
-// Feedback Modal Control
-// const realUseState = React.useState
-
-// const stubInitialState = false
-
-// jest.spyOn(React, 'useState').mockImplementationOnce(() => realUseState(stubInitialState))
-// const [toggleOpen, setToggleOpen] = React.useState
-// const stub
 const isOpen = true
 const toggle = () => !isOpen
 const AcmFeedbackModalButton = () => {
@@ -53,9 +45,7 @@ describe('AcmFeedbackModal', () => {
     const { getByRole, queryByText } = render(<Component isOpen={true} />)
     expect(getByRole('button', { name: /Cancel/i })).toBeInTheDocument()
     expect(queryByText('Tell us about your experience')).toBeInTheDocument()
-
     userEvent.click(screen.getByRole('button', { name: /cancel/i }))
-    screen.logTestingPlaygroundURL()
   })
   it('modal does not render when in a closed state, but feedback button remains', () => {
     const { queryByText, getByRole } = render(<Component isOpen={false} />)
