@@ -1430,7 +1430,7 @@ export function CredentialsForm(
           // In Editing mode, extract the new values from the form `formData` and merge them with the existing `stringData` object
           formData.sections.forEach((section: Section | SectionGroup) => {
             if (section.title === 'OpenShift Cluster Manager' && 'inputs' in section) {
-              ;(section as Section).inputs?.forEach((input: Input) => {
+              (section as Section).inputs?.forEach((input: Input) => {
                 if (typeof input.value === 'string') {
                   switch (input.id) {
                     case 'client_id':
