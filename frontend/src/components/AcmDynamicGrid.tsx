@@ -20,7 +20,7 @@ export function AcmDynamicGrid(props: { children: ReactNode; minSize?: number; m
   const spanPerColumn = useMemo(() => Math.floor(12 / columnCount) as gridSpans, [columnCount])
 
   return (
-    <div ref={ref} style={{ display: 'flex', width: '100%' }}>
+    <div ref={ref}>
       <Grid hasGutter>
         {Children.map(props.children, (child, index) => (
           <GridItem key={index} span={spanPerColumn}>

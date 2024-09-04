@@ -100,7 +100,7 @@ export function usePolicySetClusterPolicyViolationsColumn(
       if (!clusterViolationSummary) {
         return '-'
       }
-      return `compliant: ${clusterViolationSummary.compliant}, noncompliant: ${clusterViolationSummary.noncompliant}, pending: ${clusterViolationSummary.pending}, unknown: ${clusterViolationSummary.unknown}`
+      return `${t('no violations: {{count}} cluster', { count: clusterViolationSummary.compliant })}, ${t('violations: {{count}} cluster', { count: clusterViolationSummary.noncompliant })}, ${t('pending: {{count}} cluster', { count: clusterViolationSummary.pending })}, ${t('unknown: {{count}} cluster', { count: clusterViolationSummary.unknown })}`
     },
   }
 }

@@ -77,7 +77,7 @@ export function paginate(
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
-    let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
+    let isPreProcessed = false // if false, we pass all data and frontend does the filter/search/sort
     const backendLimit = process.env.NODE_ENV === 'test' ? 0 : PREPROCESS_BREAKPOINT
     let startIndex = 0
     let endIndex = itemCount

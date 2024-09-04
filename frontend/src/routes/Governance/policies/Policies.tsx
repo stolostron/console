@@ -16,32 +16,14 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import moment from 'moment'
 import { fitContent } from '@patternfly/react-table'
-import {
-  AcmAlert,
-  AcmDrawerContext,
-  AcmSelect,
-  AcmTable,
-  compareStrings,
-  IAcmTableAction,
-  IAcmTableColumn,
-  ITableFilter,
-} from '../../../ui-components'
+import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import {
-  formatDescriptionForDropdown,
-  hasInformOnlyPolicies,
-  getPlacementBindingsForResource,
-  getPlacementsForResource,
-  getPolicySource,
-} from '../common/util'
-import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacPatch, rbacUpdate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   patchResource,
@@ -54,14 +36,32 @@ import {
   PolicySet,
   replaceResource,
 } from '../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import {
+  AcmAlert,
+  AcmDrawerContext,
+  AcmSelect,
+  AcmTable,
+  compareStrings,
+  IAcmTableAction,
+  IAcmTableColumn,
+  ITableFilter,
+} from '../../../ui-components'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
+import { useAddRemediationPolicies } from '../common/useCustom'
+import {
+  formatDescriptionForDropdown,
+  getPlacementBindingsForResource,
+  getPlacementsForResource,
+  getPolicySource,
+  hasInformOnlyPolicies,
+} from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import {
   PolicyClusterViolationSummaryMap,
   usePolicyClusterViolationSummaryMap,
 } from '../overview/PolicyViolationSummary'
-import { useAddRemediationPolicies } from '../common/useCustom'
 import {
   handleActionGroupCell,
   handleAutomationCell,
@@ -228,7 +228,7 @@ export default function PoliciesPage() {
         isDefault: false,
         isFirstVisitChecked: true,
         exportContent: (item) => {
-          return item.source ? item.source : '-'
+          return item.source ?? '-'
         },
       },
       {
@@ -262,7 +262,7 @@ export default function PoliciesPage() {
           const policyAutomationMatch = policyAutomations.find(
             (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name
           )
-          return policyAutomationMatch?.metadata.name ? policyAutomationMatch?.metadata.name : '-'
+          return policyAutomationMatch?.metadata.name ?? '-'
         },
       },
       {
@@ -764,7 +764,7 @@ function checkViolation(
 
   if (selectedValues.includes(violation)) {
     for (let i = 0; i < statusLength; i++) {
-      const cp = item?.policy?.status?.status?.[i]?.compliant ?? ''
+      const cp = item?.policy?.status?.compliant ?? ''
       if (cp == matchStatusCompliant) {
         return true
       }
@@ -848,7 +848,7 @@ function usePolicyViolationsColumn(
         clusterViolationSummary.pending ||
         clusterViolationSummary.unknown
       ) {
-        return `compliant: ${clusterViolationSummary.compliant}, noncompliant: ${clusterViolationSummary.noncompliant}, pending: ${clusterViolationSummary.pending},unknown: ${clusterViolationSummary.unknown}`
+        return `${t('no violations: {{count}} cluster', { count: clusterViolationSummary.compliant })}, ${t('violations: {{count}} cluster', { count: clusterViolationSummary.noncompliant })}, ${t('pending: {{count}} cluster', { count: clusterViolationSummary.pending })}, ${t('unknown: {{count}} cluster', { count: clusterViolationSummary.unknown })}`
       }
       return '-'
     },

@@ -10,6 +10,7 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
+import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
 import { configure } from './routes/configure'
@@ -17,8 +18,8 @@ import { events, startWatching, stopWatching } from './routes/events'
 import { globalHub } from './routes/globalHub'
 import { liveness } from './routes/liveness'
 import { metrics } from './routes/metrics'
+import { observabilityProxy, prometheusProxy } from './routes/metricsProxy'
 import { login, loginCallback, logout } from './routes/oauth'
-import { observabilityProxy } from './routes/observabilityProxy'
 import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
@@ -27,7 +28,6 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
-import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -48,6 +48,7 @@ router.get('/version', proxy)
 router.get('/version/', proxy)
 router.post('/operatorCheck', operatorCheck)
 router.get('/observability/*', observabilityProxy)
+router.get('/prometheus/*', prometheusProxy)
 if (!isProduction) {
   router.get('/configure', configure)
   router.get('/login', login)

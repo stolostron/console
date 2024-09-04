@@ -15,13 +15,15 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
+import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
 import { NavigationPath } from '../../NavigationPath'
 import {
   ApplicationApiVersion,
@@ -43,6 +45,7 @@ import {
   OCPAppResource,
   Subscription,
 } from '../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmButton,
   AcmDropdown,
@@ -74,9 +77,6 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
-import { HighlightSearchText } from '../../components/HighlightSearchText'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -121,7 +121,7 @@ function isFluxApplication(label: string) {
 }
 
 // Map resource kind to type column
-function getApplicationType(resource: IApplicationResource, t: TFunction) {
+export function getApplicationType(resource: IApplicationResource, t: TFunction) {
   if (resource.apiVersion === ApplicationApiVersion) {
     if (resource.kind === ApplicationKind) {
       return t('Subscription')

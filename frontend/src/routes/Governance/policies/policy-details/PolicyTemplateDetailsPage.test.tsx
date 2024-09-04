@@ -9,11 +9,13 @@ import { waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-
 import { NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
+import { PolicyTemplateDetails } from './PolicyTemplateDetails'
+import PolicyTemplateYaml from './PolicyTemplateYaml'
 
 jest.mock('../../../../components/YamlEditor', () => {
   // TODO replace with actual YAML Page when Monaco editor is imported correctly
   return function YamlEditor() {
-    return <div />
+    return <div>Yaml Editor Open</div>
   }
 })
 
@@ -326,12 +328,14 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
-
     // Wait for delete resource requests to finish
     await waitForNocks([getResourceNock])
 
@@ -341,16 +345,9 @@ describe('Policy Template Details Page', () => {
     await waitForText('config-policy', true) // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
 
     await waitForText('ConfigurationPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     await waitForText('test-cluster')
     await waitForText('ConfigurationPolicy')
-
-    // wait for template yaml to load correctly
-    await waitForText('ConfigurationPolicy YAML')
-    const yamlButton = container.querySelector('#template-yaml-section > div:nth-child(1) > button')
-    expect(yamlButton).not.toBeNull()
-    userEvent.click(yamlButton as Element)
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
@@ -358,6 +355,15 @@ describe('Policy Template Details Page', () => {
     await waitForText('v1')
     await waitForText('No violations', true)
     await waitForText('Resource found as expected')
+
+    // wait for template yaml to load correctly
+    await waitForText('YAML')
+    const yamlButton = container.querySelectorAll('.pf-c-nav__link')
+    expect(yamlButton).not.toBeNull()
+
+    userEvent.click(yamlButton[1])
+
+    await waitForText('Yaml Editor Open')
   })
 
   test('Should render Policy Template Details Page content correctly in hosted mode', async () => {
@@ -424,7 +430,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -434,8 +443,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('ConfigurationPolicy details')
-    const configDetail = screen.getAllByRole('button')[0]
-    userEvent.click(configDetail)
 
     // Verify the template description section
     // Ensure the hosting cluster name isn't shown as the cluster name
@@ -554,7 +561,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -564,17 +574,18 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('K8sRequiredLabels details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('ns-must-have-gk', true)
     await waitForText('K8sRequiredLabels')
 
-    const row = screen.getByRole('row', {
-      name: /default-broker - namespace v1 violations you must provide labels: \{"gatekeeper"\} view yaml/i,
-    })
-    const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
-    expect(viewYamlLink.getAttribute('href')).toEqual(
+    await waitForText('View YAML', true)
+
+    const viewYamlLinks = screen.getAllByText('View YAML')
+    expect(viewYamlLinks[0].getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default`
+    )
+    expect(viewYamlLinks[1].getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
   })
@@ -594,7 +605,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -604,11 +618,12 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('OperatorPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('oppol-no-group', true)
     await waitForText('OperatorPolicy')
+
+    await waitForText('View YAML', true)
 
     const row = screen.getByRole('row', {
       name: /Deployment Available/i,
@@ -743,7 +758,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -753,7 +771,6 @@ describe('Policy Template Details Page', () => {
     await waitForNocks([getResourceNock])
 
     await waitForText('OperatorPolicy details')
-    screen.getByRole('button', { name: /toggle details/i }).click()
 
     // Verify the template description section
     await waitForText('oppol-no-group', true)
@@ -790,7 +807,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -833,7 +853,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -865,7 +888,10 @@ describe('Policy Template Details Page', () => {
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
-            <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetailsPage />} />
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>

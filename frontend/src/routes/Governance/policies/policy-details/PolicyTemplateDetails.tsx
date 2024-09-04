@@ -1,19 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import {
-  Card,
-  CardExpandableContent,
-  CardHeader,
-  CardTitle,
-  Grid,
-  GridItem,
-  PageSection,
-  Title,
-} from '@patternfly/react-core'
+import { Grid, GridItem, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import jsYaml from 'js-yaml'
 import { useEffect, useMemo, useState } from 'react'
-import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 
@@ -25,21 +13,15 @@ import {
   compareStrings,
 } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
+import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
+import { useParams } from 'react-router-dom-v5-compat'
 
-export function PolicyTemplateDetails(
-  props: Readonly<{
-    clusterName: string
-    template: any
-  }>
-) {
+export function PolicyTemplateDetails() {
   const { t } = useTranslation()
-  const { clusterName, template } = props
-  const isCertPolicy = template?.kind === 'CertificatePolicy'
+  const urlParams = useParams()
+  const kind = urlParams.kind ?? ''
+  const { clusterName, template } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>()
-  const [isExpanded, setIsExpanded] = useState<boolean>(isCertPolicy)
-  const [editorHeight, setEditorHeight] = useState<number>(250)
-
-  const kind = template?.kind
 
   useEffect(() => {
     if (template?.status?.relatedObjects?.length) {
@@ -82,15 +64,6 @@ export function PolicyTemplateDetails(
     setRelatedObjects([])
   }, [clusterName, template])
 
-  // Hook to get the height of the template details section so both details and editor sections are the same height
-  /* istanbul ignore next */
-  useEffect(() => {
-    const detailsElementHeight = document.getElementById('template-details-section')?.offsetHeight
-    if (detailsElementHeight && detailsElementHeight > 250) {
-      setEditorHeight(detailsElementHeight)
-    }
-  }, [])
-
   const descriptionItems = [
     {
       key: t('Name'),
@@ -102,7 +75,7 @@ export function PolicyTemplateDetails(
     },
     {
       key: t('Kind'),
-      value: template?.kind ?? '-',
+      value: kind ?? '-',
     },
     {
       key: t('API groups'),
@@ -252,23 +225,13 @@ export function PolicyTemplateDetails(
     <div>
       <PageSection style={{ paddingBottom: '0' }}>
         <Grid hasGutter>
-          <GridItem span={6}>
+          <GridItem span={12}>
             <AcmDescriptionList
               id={'template-details-section'}
               title={kind + ' ' + t('details')}
               leftItems={descriptionItems}
-              defaultOpen={isCertPolicy}
+              defaultOpen
             />
-          </GridItem>
-          <GridItem span={6}>
-            <Card isExpanded={isExpanded}>
-              <CardHeader id={'template-yaml-section'} onExpand={() => setIsExpanded(!isExpanded)}>
-                <CardTitle id="titleId">{kind + ' ' + t('YAML')}</CardTitle>
-              </CardHeader>
-              <CardExpandableContent>
-                <YamlEditor resourceYAML={jsYaml.dump(template, { indent: 2 })} readOnly={true} height={editorHeight} />
-              </CardExpandableContent>
-            </Card>
           </GridItem>
         </Grid>
       </PageSection>
