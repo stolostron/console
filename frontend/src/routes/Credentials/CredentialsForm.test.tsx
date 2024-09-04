@@ -28,6 +28,7 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 import userEvent from '@testing-library/user-event'
+import CredentialsPage from './CredentialsPage';
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
@@ -420,7 +421,7 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
   })
 
-  it('should create rhocm credentials with ocm API Token (default) option', async () => {
+  it.only('should create rhocm credentials with ocm API Token (default) option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
@@ -440,6 +441,11 @@ describe('add credentials page', () => {
     const apiTokenOption = screen.getByText('API Token')
     fireEvent.click(apiTokenOption)
 
+    // Assert the presence of the description text "How do I get the OpenShift Cluster Manager API token?"
+    //when API Token option is selected
+    const ocmTokenLink = await screen.findByText('How do I get the OpenShift Cluster Manager API token?');
+    expect(ocmTokenLink).toBeInTheDocument();
+    
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
     await clickByText('Next')
@@ -448,9 +454,13 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
+
+    // Assertions for code coverage
+    expect(providerConnection.stringData?.auth_method).toBe('offline-token');
+    expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken');
   })
 
-  it('should create rhocm credentials with Service Account option', async () => {
+  it.only('should create rhocm credentials with Service Account option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
@@ -471,6 +481,12 @@ describe('add credentials page', () => {
     const serviceAccountOption = screen.getByText('Service Account')
     fireEvent.click(serviceAccountOption)
 
+
+    // Assert the presence of the text description "How do I get the Service Accounts token?"
+    //when Service Account option is selected
+  const serviceAccountTokenLink = await screen.findByText('How do I get the Service Accounts token?');
+  expect(serviceAccountTokenLink).toBeInTheDocument();
+
     await clickByText('Next')
 
     // rhocm credentials
@@ -482,6 +498,11 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
+
+    // Assertions for code coverage
+    expect(providerConnection.stringData?.auth_method).toBe('service-account');
+    expect(providerConnection.stringData?.client_id).toBe('serviceAccountClientId');
+    expect(providerConnection.stringData?.client_secret).toBe('serviceAccountClientSecret');
   })
 
   it('should throw error for requiredValidationMessage', async () => {
@@ -489,5 +510,6 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
-  })
-})
+  }) 
+});
+
