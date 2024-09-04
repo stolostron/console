@@ -421,7 +421,7 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
   })
 
-  it.only('should create rhocm credentials with ocm API Token (default) option', async () => {
+  it('should create rhocm credentials with ocm API Token (default) option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
@@ -460,7 +460,7 @@ describe('add credentials page', () => {
     expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken');
   })
 
-  it.only('should create rhocm credentials with Service Account option', async () => {
+  it('should create rhocm credentials with Service Account option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
