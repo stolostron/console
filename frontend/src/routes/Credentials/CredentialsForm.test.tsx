@@ -432,19 +432,22 @@ describe('add credentials page', () => {
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
+    // Assert the presence of the title and description text
+
+    const credentialTitle = await screen.findByText('Enter the OpenShift Cluster Manager credentials')
+    expect(credentialTitle).toBeInTheDocument()
+
+    const ocmTokenLink = await screen.findByText('How do I get OpenShift Cluster Manager credentials?')
+    expect(ocmTokenLink).toBeInTheDocument()
+
     // Open the dropdown
     const dropdownToggle = screen.getByLabelText('Options menu')
     fireEvent.click(dropdownToggle)
 
     // Select the "API Token" option
-    const apiTokenOption = screen.getByText('API Token')
+    const apiTokenOption = screen.getByRole('option', { name: 'API token' })
     fireEvent.click(apiTokenOption)
 
-    // Assert the presence of the description text "How do I get the OpenShift Cluster Manager API token?"
-    //when API Token option is selected
-    const ocmTokenLink = await screen.findByText('How do I get the OpenShift Cluster Manager API token?');
-    expect(ocmTokenLink).toBeInTheDocument();
-    
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
     await clickByText('Next')
@@ -455,8 +458,8 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
 
     // Assertions for code coverage
-    expect(providerConnection.stringData?.auth_method).toBe('offline-token');
-    expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken');
+    expect(providerConnection.stringData?.auth_method).toBe('offline-token')
+    expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken')
   })
 
   it('should create rhocm credentials with Service Account option', async () => {
@@ -472,19 +475,20 @@ describe('add credentials page', () => {
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
+    // Assert the presence of the tile and description
+
+    const credentialTitle = await screen.findByText('Enter the OpenShift Cluster Manager credentials')
+    expect(credentialTitle).toBeInTheDocument()
+    const serviceAccountTokenLink = await screen.findByText('How do I get OpenShift Cluster Manager credentials?')
+    expect(serviceAccountTokenLink).toBeInTheDocument()
+
     // Open the dropdown
     const dropdownToggle = screen.getByLabelText('Options menu')
     fireEvent.click(dropdownToggle)
 
     // Select the "Service Account" option
-    const serviceAccountOption = screen.getByText('Service Account')
+    const serviceAccountOption = screen.getByText('Service accounts')
     fireEvent.click(serviceAccountOption)
-
-
-    // Assert the presence of the text description "How do I get the Service Accounts token?"
-    //when Service Account option is selected
-  const serviceAccountTokenLink = await screen.findByText('How do I get the Service Accounts token?');
-  expect(serviceAccountTokenLink).toBeInTheDocument();
 
     await clickByText('Next')
 
@@ -499,9 +503,9 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
 
     // Assertions for code coverage
-    expect(providerConnection.stringData?.auth_method).toBe('service-account');
-    expect(providerConnection.stringData?.client_id).toBe('serviceAccountClientId');
-    expect(providerConnection.stringData?.client_secret).toBe('serviceAccountClientSecret');
+    expect(providerConnection.stringData?.auth_method).toBe('service-account')
+    expect(providerConnection.stringData?.client_id).toBe('serviceAccountClientId')
+    expect(providerConnection.stringData?.client_secret).toBe('serviceAccountClientSecret')
   })
 
   it('should throw error for requiredValidationMessage', async () => {
@@ -509,6 +513,5 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
-  }) 
-});
-
+  })
+})

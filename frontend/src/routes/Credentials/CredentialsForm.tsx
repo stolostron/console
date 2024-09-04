@@ -6,7 +6,7 @@ import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom
 import YAML from 'yaml'
 import set from 'lodash/set'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
-import { FormData, Input, Section, SectionGroup } from '../../components/AcmFormData'
+import { FormData, Input } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { LostChangesContext } from '../../components/LostChanges'
@@ -141,15 +141,19 @@ export function CredentialsForm(
   const { back, cancel } = useBackCancelNavigation()
 
   // Red Hat Cloud
-  type OCMClusterManagerOptions = 'API Token' | 'Service Account'
-
-  const handleAuthMethodChange = (value: OCMClusterManagerOptions) => {
-    setAuthMethod(value as 'offline-token' | 'service-account')
+  enum OCMAuthMethod {
+    API_TOKEN = 'offline-token',
+    SERVICE_ACCOUNT = 'service-account',
   }
 
-  const [auth_method, setAuthMethod] = useState<'service-account' | 'offline-token'>(
-    providerConnection?.stringData?.auth_method ?? 'offline-token'
+  const handleAuthMethodChange = (value: OCMAuthMethod) => {
+    setAuthMethod(value)
+  }
+
+  const [auth_method, setAuthMethod] = useState<OCMAuthMethod>(
+    (providerConnection?.stringData?.auth_method as OCMAuthMethod) ?? OCMAuthMethod.API_TOKEN
   )
+
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
   const [client_id, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
   const [client_secret, setServiceAccClientSecret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
@@ -1265,33 +1269,28 @@ export function CredentialsForm(
       },
       {
         type: 'Section',
-        isRequired: true,
-        isHidden: credentialsType !== Provider.redhatcloud,
+        // isRequired: true,
+        //isHidden: credentialsType !== Provider.redhatcloud,
         title: t('OpenShift Cluster Manager'),
-        wizardTitle: t('Configure the credential using the OpenShift Cluster Manager options'),
-        description:
-          auth_method === 'offline-token' ? (
-            <a href={DOC_LINKS.CREATE_CONNECTION_REDHATCLOUD_API_TOKEN} target="_blank" rel="noreferrer">
-              {t('How do I get the OpenShift Cluster Manager API token?')}
-            </a>
-          ) : auth_method === 'service-account' ? (
-            <a href={DOC_LINKS.CREATE_CONNECTION_REDHATCLOUD_SERVICE_ACCOUNT} target="_blank" rel="noreferrer">
-              {t('How do I get the Service Accounts token?')}
-            </a>
-          ) : null,
+        wizardTitle: t('Enter the OpenShift Cluster Manager credentials'),
+        description: (
+          <a href={DOC_LINKS.CREATE_CONNECTION_REDHATCLOUD} target="_blank" rel="noreferrer">
+            {t('How do I get OpenShift Cluster Manager credentials?')}
+          </a>
+        ),
         inputs: [
           {
-            id: 'ocmClusterManagerOptions',
+            id: 'ocmAPIToken',
             label: t('Authentication method'),
             isHidden: credentialsType !== Provider.redhatcloud,
-            labelHelp: t('The options to create a credential using an API token or Service account.'),
+            labelHelp: t('The authentication method to use to connect to OpenShift Cluster Manager.'),
             type: 'Select',
-            placeholder: t('Select an OpenShift Cluster Manager option'),
+            placeholder: t('Select an authentication method'),
             value: auth_method,
             onChange: handleAuthMethodChange,
             options: [
-              { id: 'offline-token', value: 'offline-token', text: t('API Token') },
-              { id: 'service-account', value: 'service-account', text: t('Service Account') },
+              { id: 'offline-token', value: 'offline-token', text: t('API token') },
+              { id: 'service-account', value: 'service-account', text: t('Service accounts') },
             ],
             isRequired: true,
           },
@@ -1313,13 +1312,12 @@ export function CredentialsForm(
             value: client_id,
             onChange: setServiceAccClientId,
             isRequired: true,
-            isSecret: true,
           },
           (auth_method === 'service-account' || isViewing) && {
             id: 'client_secret',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
-            label: t('Client Secret'),
+            label: t('Client secret'),
             value: client_secret,
             onChange: setServiceAccClientSecret,
             isRequired: true,
@@ -1421,48 +1419,13 @@ export function CredentialsForm(
         const secret = credentialData as Secret
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
 
-        if (secret.stringData) {
-          let client_id = ''
-          let client_secret = ''
-          let ocmClusterManagerOptions = ''
-          let ocmAPIToken = ''
-
-          // In Editing mode, extract the new values from the form `formData` and merge them with the existing `stringData` object
-          formData.sections.forEach((section: Section | SectionGroup) => {
-            if (section.title === 'OpenShift Cluster Manager' && 'inputs' in section) {
-              section.inputs?.forEach((input: Input) => {
-                if (typeof input.value === 'string') {
-                  switch (input.id) {
-                    case 'client_id':
-                      client_id = input.value
-                      break
-                    case 'client_secret':
-                      client_secret = input.value
-                      break
-                    case 'ocmClusterManagerOptions':
-                      ocmClusterManagerOptions = input.value
-                      break
-                    case 'ocmAPIToken':
-                      ocmAPIToken = input.value
-                      break
-                    default:
-                      break
-                  }
-                }
-              })
-            }
-          })
-          // Merge existing stringData with new values
-          const updatedStringData = {
-            ...secret.stringData,
-            // Add or overwrite with new values from the form
-            client_id,
-            client_secret,
-            ocmClusterManagerOptions,
-            ocmAPIToken,
+        const data: Secret['data'] = {}
+        Object.keys(secret.stringData ?? {}).forEach((key) => {
+          if (secret.stringData?.[key]) {
+            data[key] = Buffer.from(secret.stringData[key], 'ascii').toString('base64')
           }
-          patch.push({ op: 'replace', path: `/stringData`, value: updatedStringData })
-        }
+        })
+        patch.push({ op: 'replace', path: `/data`, value: data })
         return patchResource(secret, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Credentials updated'),
@@ -1527,7 +1490,6 @@ export function CredentialsForm(
         '*.stringData.password',
         '*.stringData.token',
         '*.stringData.ocmAPIToken',
-        '*.stringData.client_id',
         '*.stringData.client_secret',
         '*.stringData.additionalTrustBundle',
         '*.stringData.disconnectedAdditionalTrustBundle',
