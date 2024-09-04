@@ -294,6 +294,8 @@ export class ServerSideEvents {
     const end = parts.pop()
     const clusters: ServerSideEvent<unknown>[] = []
     const policies: ServerSideEvent<unknown>[] = []
+    const agents: ServerSideEvent<unknown>[] = []
+    const infos: ServerSideEvent<unknown>[] = []
     const addons: ServerSideEvent<unknown>[] = []
     const remainder: ServerSideEvent<unknown>[] = []
     parts.forEach((event) => {
@@ -307,6 +309,12 @@ export class ServerSideEvents {
         case 'Policy':
         case 'PolicySet':
           policies.push(event)
+          break
+        case 'AgentClusterInstall':
+          agents.push(event)
+          break
+        case 'ManagedClusterInfo':
+          infos.push(event)
           break
         case 'ManagedClusterAddOn':
           addons.push(event)
@@ -333,12 +341,17 @@ export class ServerSideEvents {
     // send packets of resources
     const sending = start
     do {
-      sending.push(...clusters.splice(0, 300))
-      sending.push(...policies.splice(0, 300))
-      sending.push(...addons.splice(0, 900))
+      sending.push(...clusters.splice(0, 200))
+      sending.push(...agents.splice(0, 200))
+      sending.push(...infos.splice(0, 200))
+      sending.push(...policies.splice(0, 200))
+      sending.push(...addons.splice(0, 400))
       sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
     } while (clusters.length || policies.length || addons.length)
-    sending.push(...remainder)
+    do {
+      sending.push(...remainder.splice(0, 2000))
+      sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
+    } while (clusters.length || policies.length || addons.length)
     sending.push(end)
     sending.forEach((event) => {
       this.sendEvent(clientID, event)

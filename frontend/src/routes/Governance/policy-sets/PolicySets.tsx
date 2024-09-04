@@ -208,14 +208,35 @@ export default function PolicySetsPage() {
   }
   const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
-  if (receivedFirstPacket || process.env.NODE_ENV === 'test') {
-    if ((loaded || process.env.NODE_ENV === 'test') && (!policySets || policySets.length === 0)) {
-      return (
-        <PageSection isFilled>
-          <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
-        </PageSection>
-      )
-    }
+  // show waiting
+  if (
+    process.env.NODE_ENV !== 'test' &&
+    (!receivedFirstPacket || (!loaded && (!policySets || policySets.length === 0)))
+  ) {
+    return (
+      <div
+        style={{
+          backgroundColor: 'var(--pf-global--BackgroundColor--light-100)',
+          boxShadow: 'var(--pf-c-card--BoxShadow)',
+          width: '390px',
+          height: '108px',
+          margin: '24px',
+          padding: '24px',
+        }}
+      >
+        <Skeleton style={{ marginBottom: '12px' }} screenreaderText="Loading" />
+        <Skeleton screenreaderText="Loading" />
+      </div>
+    )
+  }
+
+  // show empty
+  if (!policySets || policySets.length === 0) {
+    return (
+      <PageSection isFilled>
+        <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
+      </PageSection>
+    )
   }
 
   return (
@@ -267,20 +288,7 @@ export default function PolicySetsPage() {
             </Fragment>
           </ToolbarContent>
         </Toolbar>
-        {!receivedFirstPacket && process.env.NODE_ENV !== 'test' ? (
-          <div
-            style={{
-              backgroundColor: 'var(--pf-global--BackgroundColor--light-100)',
-              boxShadow: 'var(--pf-c-card--BoxShadow)',
-              width: '390px',
-              height: '108px',
-              margin: '24px',
-              padding: '24px',
-            }}
-          >
-            <Skeleton screenreaderText="Loading" />
-          </div>
-        ) : filteredPolicySets.length === 0 ? (
+        {filteredPolicySets.length === 0 ? (
           <AcmEmptyState title={t('No resources match the current filter')} showSearchIcon={true} />
         ) : (
           <PageSection isFilled>
