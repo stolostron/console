@@ -7,6 +7,8 @@ import { AcmFeedbackModal } from './AcmFeedbackModal'
 import { OutlinedCommentsIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components/AcmButton'
 
+window.open = jest.fn()
+
 const isOpen = true
 const toggle = () => !isOpen
 const AcmFeedbackModalButton = () => {
@@ -55,5 +57,19 @@ describe('AcmFeedbackModal', () => {
   it('has zero accessibility defects', async () => {
     const { container } = render(<Component isOpen={true} />)
     expect(await axe(container)).toHaveNoViolations()
+  })
+  it('opens share feedback and support case links', () => {
+    const { getByText } = render(<Component isOpen={true} />)
+    screen.logTestingPlaygroundURL()
+    userEvent.click(getByText(/share feedback/i))
+    expect(window.open).toHaveBeenCalledWith(
+      'https://console.redhat.com/self-managed-feedback-form?source=acm&version=2.6',
+      '_blank'
+    )
+    userEvent.click(getByText(/support case/i))
+    expect(window.open).toHaveBeenCalledWith(
+      'https://access.redhat.com/support/cases/#/case/new/open-case?caseCreate=true',
+      '_blank'
+    )
   })
 })
