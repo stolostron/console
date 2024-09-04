@@ -28,7 +28,6 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 import userEvent from '@testing-library/user-event'
-import CredentialsPage from './CredentialsPage';
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
