@@ -151,9 +151,7 @@ describe('HiveNotification', () => {
     await waitForNock(podScope)
     await waitFor(() =>
       expect(window.open).toHaveBeenCalledWith(
-        `${
-          mockOpenShiftConsoleConfigMap.data!.consoleURL
-        }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+        `${mockOpenShiftConsoleConfigMap.data!.consoleURL}/k8s/ns/test-cluster/pods/test-cluster-pod/logs`
       )
     )
   })
@@ -176,9 +174,7 @@ describe('HiveNotification', () => {
     await waitForNock(podScope)
     await waitFor(() =>
       expect(window.open).toHaveBeenCalledWith(
-        `${
-          mockOpenShiftConsoleConfigMap.data!.consoleURL
-        }/k8s/ns/test-cluster/pods/test-cluster-pod/logs?container=hive`
+        `${mockOpenShiftConsoleConfigMap.data!.consoleURL}/k8s/ns/test-cluster/pods/test-cluster-pod/logs`
       )
     )
   })
