@@ -547,9 +547,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     if (resultView) {
       setIsLoading(loading as boolean)
     } else {
-      setIsLoading(!receivedFirstPacket)
+      setIsLoading(!receivedFirstPacket || (!loaded && (!items || items.length === 0)))
     }
-  }, [loading, receivedFirstPacket, resultView])
+  }, [items, loaded, loading, receivedFirstPacket, resultView])
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
