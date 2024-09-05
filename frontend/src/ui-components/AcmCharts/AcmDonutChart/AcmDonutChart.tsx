@@ -64,10 +64,10 @@ const LegendLabel = ({ ...props }: { datum?: Data }) => {
   const link = props.datum?.link
   return link ? (
     <Link to={link}>
-      <ChartLabel {...props} />
+      <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
     </Link>
   ) : (
-    <ChartLabel {...props} />
+    <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
   )
 }
 
@@ -87,7 +87,10 @@ export function AcmDonutChart(props: {
   }
 }) {
   const chartData = props.data.map((d) => ({ x: d.key, y: d.value }))
-  const legendData: Array<LegendData> = props.data.map((d) => ({ name: `${d.value} ${d.key}`, link: d.link }))
+  const legendData: Array<LegendData> = props.data.map((d) => ({
+    name: `${d.value} ${d.key}`,
+    link: d.link,
+  }))
   const total = props.data.reduce((a, b) => a + b.value, 0)
   /* istanbul ignore next */
   const primary = props.data.find((d) => d.isPrimary) || { key: '', value: 0 }
@@ -127,7 +130,6 @@ export function AcmDonutChart(props: {
           legendPosition="right"
           constrainToVisibleArea={true}
           data={chartData}
-          legendData={legendData}
           legendComponent={buildLegendWithLinks(legendData, props.colorScale)}
           labels={({ datum }) => `${datum.x}: ${((datum.y / total) * 100).toFixed(2)}%`}
           padding={{
@@ -137,6 +139,19 @@ export function AcmDonutChart(props: {
             top: 20,
           }}
           title={donutLabel}
+          titleComponent={
+            <ChartLabel
+              style={[
+                {
+                  fontSize: '24px',
+                  fill: 'var(--pf-v5-global--Color--100)', // title color
+                },
+                {
+                  fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color
+                },
+              ]}
+            />
+          }
           subTitle={props.donutLabel?.subTitle ?? primary.key}
           width={/* istanbul ignore next */ viewWidth < 376 ? viewWidth : 376}
           height={/* istanbul ignore next */ viewWidth < 376 ? 150 : 200}

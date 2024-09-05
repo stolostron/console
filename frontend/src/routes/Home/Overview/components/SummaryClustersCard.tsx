@@ -19,10 +19,10 @@ const LegendLabel = ({ ...props }) => {
   const link = props.datum?.link
   return link ? (
     <Link to={link}>
-      <ChartLabel {...props} style={{ fontSize: 12 }} />
+      <ChartLabel {...props} style={{ fontSize: 12, fill: 'var(--pf-v5-global--Color--100)' }} />
     </Link>
   ) : (
-    <ChartLabel {...props} style={{ fontSize: 12 }} />
+    <ChartLabel {...props} style={{ fontSize: 12, fill: 'var(--pf-v5-global--Color--100)' }} />
   )
 }
 
@@ -66,7 +66,24 @@ export function SummaryClustersCard(props: {
     const component = isPieChart ? (
       <ChartPie {...commonProps} />
     ) : (
-      <ChartDonut {...commonProps} subTitle={chartLabel?.subTitle ?? ''} title={chartLabel?.title} />
+      <ChartDonut
+        {...commonProps}
+        subTitle={chartLabel?.subTitle ?? ''}
+        title={chartLabel?.title}
+        titleComponent={
+          <ChartLabel
+            style={[
+              {
+                fontSize: '24px',
+                fill: 'var(--pf-v5-global--Color--100)', // title color
+              },
+              {
+                fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color
+              },
+            ]}
+          />
+        }
+      />
     )
 
     return component
