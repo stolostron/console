@@ -21,7 +21,6 @@ export function useClusterAddons(clusterName?: string) {
   const hostedClusters = useRecoilValue(hostedClustersState)
   const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const clusterManagementAddonsMap = keyBy(clusterManagementAddons, 'metadata.name')
 
   const addons = useMemo(() => {
     let uniqueClusterNames
@@ -39,6 +38,7 @@ export function useClusterAddons(clusterName?: string) {
       uniqueClusterNames = [clusterName]
     }
     const result: { [id: string]: Addon[] } = {}
+    const clusterManagementAddonsMap = keyBy(clusterManagementAddons, 'metadata.name')
     uniqueClusterNames.forEach((cluster) => {
       if (cluster) {
         const clusterAddons = managedClusterAddons.get(cluster || '') || []
@@ -47,13 +47,13 @@ export function useClusterAddons(clusterName?: string) {
     })
     return result
   }, [
+    clusterManagementAddons,
     clusterName,
     managedClusters,
     clusterDeployments,
     managedClusterInfos,
     hostedClusters,
     managedClusterAddons,
-    clusterManagementAddonsMap,
   ])
   return addons
 }
