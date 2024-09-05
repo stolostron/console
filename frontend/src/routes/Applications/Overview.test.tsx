@@ -203,7 +203,7 @@ describe('Applications Page', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     userEvent.click(screen.getByLabelText('export-search-result'))
-    userEvent.click(screen.getByText('Export as CSV'))
+    userEvent.click(screen.getByText('Export all to CSV'))
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

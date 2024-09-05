@@ -386,7 +386,7 @@ describe('Export from application tables', () => {
 
     // download for subscriptions
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
@@ -409,7 +409,7 @@ describe('Export from application tables', () => {
 
     //download for channels
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
@@ -432,7 +432,7 @@ describe('Export from application tables', () => {
 
     // downloads for placements
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
@@ -455,7 +455,7 @@ describe('Export from application tables', () => {
 
     // downloads for placements
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
