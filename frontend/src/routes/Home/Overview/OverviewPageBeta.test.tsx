@@ -221,7 +221,7 @@ it('should render overview page with expected data', async () => {
   ])
 
   // Test that the component has rendered correctly
-  await waitFor(() => expect(getAllByText(/powered by insights/i)).toHaveLength(3))
+  await waitFor(() => expect(getAllByText(/insights/i)).toHaveLength(3))
   await waitFor(() => expect(getByText(/cluster health/i)).toBeTruthy())
 
   // Check saved search card header strings
