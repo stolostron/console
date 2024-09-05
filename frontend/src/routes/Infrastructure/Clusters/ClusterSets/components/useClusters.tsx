@@ -20,6 +20,7 @@ import {
   mapClusters,
 } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import keyBy from 'lodash/keyBy'
 
 // returns the clusters assigned to a ManagedClusterSet
 export function useClusters(
@@ -98,10 +99,12 @@ export function getMappedClusterPoolClusterSetClusters(
         : managedClusters.filter(
             (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
           )
+
+    const groupManagedClustersMap = keyBy(groupManagedClusters, 'metadata.name')
     groupClusterDeployments = clusterDeployments.filter(
       (cd) =>
         cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
-        groupManagedClusters.find((mc) => mc.metadata.name === cd.metadata.namespace)
+        groupManagedClustersMap[cd.metadata.namespace!]
     )
 
     // prevent the unclaimed clusters from showing up in cluster set clusters

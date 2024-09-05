@@ -54,6 +54,7 @@ import { DownloadConfigurationDropdown } from '../components/DownloadConfigurati
 import { useAllClusters } from '../components/useAllClusters'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import keyBy from 'lodash/keyBy'
 
 export type ClusterDetailsContext = {
   readonly cluster?: Cluster
@@ -110,6 +111,7 @@ export default function ClusterDetailsPage() {
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
+  const clusterManagementAddOnMap = keyBy(clusterManagementAddons, 'metadata.name')
 
   const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
   const clusterDeployment = clusterDeployments.find(
@@ -120,7 +122,7 @@ export default function ClusterDetailsPage() {
   )
 
   const clusterAddons: ManagedClusterAddOn[] = managedClusterAddons.get(name || '') || []
-  const addons = mapAddons(clusterManagementAddons, clusterAddons)
+  const addons = mapAddons(clusterManagementAddOnMap, clusterAddons)
 
   const clusterClaim = clusterClaims.find(
     (cc) =>
@@ -158,7 +160,7 @@ export default function ClusterDetailsPage() {
     certificateSigningRequests,
     managedCluster,
     clusterAddons,
-    clusterManagementAddons,
+    clusterManagementAddOnMap,
     clusterClaim,
     clusterCurator,
     agentClusterInstall,

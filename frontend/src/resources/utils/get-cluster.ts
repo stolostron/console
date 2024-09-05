@@ -37,6 +37,7 @@ import {
   getConditionReason,
 } from './status-conditions'
 import keyBy from 'lodash/keyBy'
+import { Dictionary } from 'lodash'
 
 export enum ClusterStatus {
   'pending' = 'pending',
@@ -390,6 +391,7 @@ export function mapClusters(
   const clusterDeploymentsMap = keyBy(clusterDeployments, 'metadata.name')
   const managedClusterInfosMap = keyBy(managedClusterInfos, 'metadata.name')
   const hostedClusterMap = keyBy(hostedClusters, 'metadata.name')
+  const clusterManagementAddOnMap = keyBy(clusterManagementAddOn, 'metadata.name')
 
   return uniqueClusterNames.map((cluster) => {
     const clusterDeployment = clusterDeploymentsMap[cluster!]
@@ -411,7 +413,7 @@ export function mapClusters(
       certificateSigningRequests,
       managedCluster,
       addons,
-      clusterManagementAddOn,
+      clusterManagementAddOnMap,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -428,7 +430,7 @@ export function getCluster(
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
   managedClusterAddOns: ManagedClusterAddOn[],
-  clusterManagementAddOns: ClusterManagementAddOn[],
+  clusterManagementAddOns: Dictionary<ClusterManagementAddOn>,
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -1057,7 +1059,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
   return { nodeList, ready, unhealthy, unknown }
 }
 
-export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: ClusterManagementAddOn[]) {
+export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: Dictionary<ClusterManagementAddOn>) {
   let available = 0
   let progressing = 0
   let degraded = 0
