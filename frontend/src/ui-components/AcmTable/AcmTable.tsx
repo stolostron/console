@@ -832,7 +832,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sorted: ITableItem<T>[] = [...filtered]
 
     // if using a result view from backend, the items have already been sorted
-    if (!isPreProcessed && sort && sort.index !== undefined) {
+    if (!isPreProcessed && sort?.index !== undefined) {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
