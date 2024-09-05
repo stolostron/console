@@ -129,15 +129,14 @@ export function getMappedClusterPoolClusterSetClusters(
     )
   }
 
-  const clusterNames = Array.from(
-    new Set([
-      ...groupManagedClusters.map((mc) => mc.metadata.name),
-      ...groupClusterDeployments.map((cd) => cd.metadata.name),
-    ])
-  )
-  const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
+  const clusterNameSet = new Set([
+    ...groupManagedClusters.map((mc) => mc.metadata.name),
+    ...groupClusterDeployments.map((cd) => cd.metadata.name),
+  ])
 
-  const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
+  const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNameSet.has(mci.metadata.namespace))
+
+  const groupHostedClusters = hostedClusters.filter((hc) => clusterNameSet.has(hc.metadata?.name))
 
   return mapClusters(
     groupClusterDeployments,
