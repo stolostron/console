@@ -265,7 +265,7 @@ const mockPolicies: Policy[] = [
 const statusAggregate = {
   req: { clusters: ['test-cluster'] },
   res: {
-    itemCount: 42,
+    itemCount: 1,
     filterCounts: undefined,
   },
 }
