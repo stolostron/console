@@ -372,7 +372,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('ready', t('Ready')),
         {
-          header: t('Launch to console'),
+          header: t('Console URL'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
