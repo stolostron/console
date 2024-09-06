@@ -101,7 +101,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     for (let i = 0; i < relatedKindList.length; i++) {
       const { kind, cluster } = relatedKindList[i]
 
-      if (kind.toLowerCase() === 'replicaset' && relatedKindList[i].desired === 0) {
+      if (kind.toLowerCase() === 'replicaset' && relatedKindList[i].desired === '0') {
         // skip old replicasets
         continue
       }
@@ -183,6 +183,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
 
   // need to preprocess and sync up podStatusMap for controllerrevision to parent
   syncControllerRevisionPodStatusMap(resourceMap)
+  syncReplicaSetCountToPodNode(resourceMap)
   return resourceMap
 }
 
@@ -265,6 +266,32 @@ export const syncControllerRevisionPodStatusMap = (resourceMap) => {
             parentModel[Object.keys(parentModel)[0]][0].name = currentModel[Object.keys(currentModel)[0]][0].name
           }
           _.set(controllerRevision, 'specs.controllerrevisionModel', parentModel)
+        }
+      }
+    }
+  })
+}
+
+export const syncReplicaSetCountToPodNode = (resourceMap) => {
+  Object.keys(resourceMap).forEach((resourceName) => {
+    if (resourceName.startsWith('pod-')) {
+      const pod = resourceMap[resourceName]
+      const parentName = _.get(pod, 'specs.parent.parentName', '')
+      const parentType = _.get(pod, 'specs.parent.parentType', '')
+      const clusterName = _.get(pod, 'specs.clustersNames', '').toString()
+      const parentResource =
+        resourceMap[`${parentType}-${parentName}-${clusterName}`] || resourceMap[`${parentType}-${parentName}-`]
+
+      if (parentResource) {
+        const parentModel = _.get(parentResource, `specs.${parentResource.type}Model`, {})
+        if (parentModel && Object.keys(parentModel).length > 0) {
+          const replicaSetValueArr = Object.values(parentModel)[0]
+          if (replicaSetValueArr.length > 0) {
+            const replicaSet = replicaSetValueArr[0]
+            const desiredCount = replicaSet.desired || 1
+            _.set(pod, 'specs.replicaCount', desiredCount)
+            _.set(pod, 'specs.resourceCount', desiredCount * _.get(pod, 'specs.clustersNames', []).length)
+          }
         }
       }
     }
