@@ -19,7 +19,13 @@ import {
   nodePoolsState,
   policyreportState,
 } from '../../../../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import {
+  nockAggegateRequest,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockSearch,
+} from '../../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
@@ -122,6 +128,13 @@ const kubeAdminPassSecret: Secret = {
   },
   stringData: {},
 }
+const statusAggregate = {
+  req: { clusters: ['feng-hypershift-test'] },
+  res: {
+    itemCount: 42,
+    filterCounts: undefined,
+  },
+}
 
 describe('ClusterOverview with AWS hypershift cluster', () => {
   beforeEach(() => {
@@ -134,6 +147,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
