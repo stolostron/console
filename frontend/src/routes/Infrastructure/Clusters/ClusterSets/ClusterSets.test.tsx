@@ -24,6 +24,7 @@ import {
   waitForNotText,
   typeByTestId,
   ocpApi,
+  clickByLabel,
 } from '../../../../lib/test-util'
 import {
   mockClusterDeployments,
@@ -102,5 +103,37 @@ describe('ClusterSets page without Submariner', () => {
   test('renders', async () => {
     await waitForText(mockManagedClusterSet.metadata.name!)
     await waitForNotText('Submariner')
+  })
+})
+
+describe('ClusterSets page with csv export', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+        <Component />
+      </PluginContext.Provider>
+    )
+  })
+  test('export button should produce a file for download', async () => {
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

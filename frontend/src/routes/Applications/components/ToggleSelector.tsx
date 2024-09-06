@@ -20,11 +20,13 @@ export interface IToggleSelectorProps<T = any> {
   table: any
   t: TFunction
   namespaces: Namespace[]
+  defaultToggleOption?: ApplicationToggleOptions
 }
+export type ApplicationToggleOptions = 'subscriptions' | 'channels' | 'placements' | 'placementrules'
 
 export function ToggleSelector(props: IToggleSelectorProps) {
   const t = props.t
-  const defaultOption = 'subscriptions'
+  const defaultOption = props.defaultToggleOption ?? 'subscriptions'
   const options = [
     { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions") },
     { id: 'channels', title: t('Channels'), emptyMessage: t("You don't have any channels") },
@@ -43,6 +45,8 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
       <DeleteResourceModal {...props.modalProps} />
       <AcmTable<IResource>
+        showExportButton
+        exportFilePrefix="applicationadvancedconfiguration"
         columns={selectedResources.columns}
         keyFn={props.keyFn}
         items={selectedResources.items}

@@ -5,6 +5,7 @@ import { IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
 import { useCallback, useEffect, useMemo } from 'react'
 import { usePluginDataContextValue } from './PluginDataContext'
+import isEqual from 'lodash/isEqual'
 
 const apiUrl = '/aggregate'
 
@@ -28,6 +29,7 @@ export interface IResultListView {
   filterCounts: FilterCounts | undefined
   emptyResult: boolean
   isPreProcessed: boolean
+  request?: IRequestListView
 }
 
 export enum SupportedAggregate {
@@ -50,6 +52,11 @@ export function useAggregate(
       filterCounts: undefined,
       emptyResult: false,
       isPreProcessed: true,
+      request: {
+        page: 0,
+        perPage: 0,
+        sortBy: undefined,
+      },
     }),
     []
   )
@@ -72,9 +79,10 @@ export function useAggregate(
   }, [startPolling, stopPolling])
 
   const response = { ...(data?.[0] ?? defaultResponse) }
+  const isLoading = process.env.NODE_ENV !== 'test' && (loading || !isEqual(response.request, requestedView))
   return {
     page: response.page,
-    loading,
+    loading: isLoading,
     items: response.items,
     itemCount: response.itemCount,
     filterCounts: response.filterCounts,

@@ -2,6 +2,7 @@
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
+import { ApplicationCacheType, generateTransforms } from './applications'
 
 const query = {
   operationName: 'searchResult',
@@ -58,11 +59,11 @@ interface IArgoAppRemoteResource {
   cluster: string
 }
 
-export async function getArgoApps(pass: number) {
+export async function getArgoApps(applicationCache: ApplicationCacheType, pass: number) {
   const argoAppSet = new Set<string>()
-  const localArgoApps = getLocalArgoApps(argoAppSet)
-  const remoteArgoApps = pass > 1 ? await getRemoteArgoApps(argoAppSet, pass) : []
-  return { localArgoApps, remoteArgoApps, argoAppSet }
+  applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet))
+  applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
+  return argoAppSet
 }
 
 function getLocalArgoApps(argoAppSet: Set<string>) {

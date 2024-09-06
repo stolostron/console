@@ -126,10 +126,22 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return t('Flux')
+    } else if (isSystemApp(resource.metadata?.namespace)) {
+      return 'System'
     }
     return 'OpenShift'
   }
   return '-'
+}
+
+function isSystemApp(namespace?: string) {
+  return (
+    namespace &&
+    (namespace.startsWith('openshift') ||
+      namespace.startsWith('open-cluster-management') ||
+      namespace.startsWith('hive') ||
+      namespace.startsWith('multicluster-engine'))
+  )
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -379,7 +391,7 @@ export default function ApplicationsOverview() {
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const managedClusters = useAllClusters(true)
+  const managedClusters = useAllClusters(true, true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
@@ -548,6 +560,9 @@ export default function ApplicationsOverview() {
             </span>
           )
         },
+        exportContent: (application) => {
+          return application.metadata?.name
+        },
       },
       {
         header: t('Type'),
@@ -577,6 +592,9 @@ export default function ApplicationsOverview() {
         ),
         transforms: [cellWidth(15)],
         // probably don't need search if we have a type filter
+        exportContent: (resource) => {
+          return getApplicationType(resource, t)
+        },
       },
       {
         header: t('Namespace'),
@@ -589,6 +607,9 @@ export default function ApplicationsOverview() {
           'Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.'
         ),
         transforms: [cellWidth(20)],
+        exportContent: (resource) => {
+          return getAppNamespace(resource)
+        },
       },
       {
         header: t('Clusters'),
@@ -611,6 +632,18 @@ export default function ApplicationsOverview() {
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
+        exportContent: (resource) => {
+          const clusterList = getClusterList(
+            resource,
+            argoApplications,
+            placementDecisions,
+            subscriptions,
+            localCluster,
+            managedClusters
+          )
+          const clusterCount = getClusterCount(clusterList)
+          return getClusterCountString(t, clusterCount, clusterList, resource)
+        },
       },
       {
         header: t('Repository'),
@@ -626,6 +659,14 @@ export default function ApplicationsOverview() {
           )
         },
         tooltip: t('Provides links to each of the resource repositories used by the application.'),
+        sort: 'transformed.resourceText',
+        search: 'transformed.resourceText',
+        exportContent: (resource) => {
+          const appRepos = getApplicationRepos(resource, subscriptions, channels)
+          if (appRepos) {
+            return appRepos.map((repo) => repo.type).toString()
+          }
+        },
       },
       {
         header: t('Time window'),
@@ -635,6 +676,9 @@ export default function ApplicationsOverview() {
         tooltip: t('Indicates if updates to any of the application resources are subject to a deployment time window.'),
         sort: 'transformed.timeWindow',
         search: 'transformed.timeWindow',
+        exportContent: (resource) => {
+          return getTimeWindow(resource)
+        },
       },
       ...extensionColumns,
       {
@@ -644,6 +688,9 @@ export default function ApplicationsOverview() {
         },
         sort: 'metadata.creationTimestamp',
         search: 'transformed.createdText',
+        exportContent: (resource) => {
+          return getAge(resource, '', 'metadata.creationTimestamp')
+        },
       },
     ],
     [
@@ -664,6 +711,10 @@ export default function ApplicationsOverview() {
         label: t('Type'),
         id: filterId,
         options: [
+          {
+            label: t('System'),
+            value: 'openshift-default',
+          },
           {
             label: t('Application set'),
             value: 'appset',
@@ -689,7 +740,15 @@ export default function ApplicationsOverview() {
           return selectedValues.some((value) => {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
-              return (value === 'flux' && isFlux) || (value === 'openshift' && !isFlux)
+              const isSystem = isSystemApp(item.metadata?.namespace)
+              switch (value) {
+                case 'openshift':
+                  return !isFlux && !isSystem
+                case 'openshift-default':
+                  return !isFlux && isSystem
+                case 'flux':
+                  return isFlux
+              }
             } else {
               switch (`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`) {
                 case `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`:
@@ -1071,6 +1130,8 @@ export default function ApplicationsOverview() {
             {compareAppTypesLink(false)}
           </>
         }
+        showExportButton
+        exportFilePrefix="applicationsoverview"
         emptyState={
           <AcmEmptyState
             key="appOverviewEmptyState"

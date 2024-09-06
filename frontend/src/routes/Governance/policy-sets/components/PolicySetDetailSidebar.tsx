@@ -26,7 +26,7 @@ import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy, PolicySet } from '../../../../resources'
+import { exportObjectString, Policy, PolicySet } from '../../../../resources'
 import {
   getClustersSummaryForPolicySet,
   getPlacementDecisionsForResource,
@@ -176,6 +176,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         cell: (cluster: string) => (
           <a href={`/multicloud/infrastructure/clusters/details/${cluster}/${cluster}/overview`}>{cluster}</a>
         ),
+        exportContent: (cluster: string) => cluster,
       },
       clusterPolicyViolationsColumn,
       {
@@ -215,6 +216,12 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           } else {
             /* istanbul ignore next */
             return '-'
+          }
+        },
+        exportContent: (cluster: string) => {
+          const clusterMatch = managedClusters.find((c) => c.metadata.name === cluster)
+          if (clusterMatch?.metadata.labels) {
+            return exportObjectString(clusterMatch?.metadata.labels)
           }
         },
       },
@@ -264,6 +271,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             </Link>
           )
         },
+        exportContent: (policy: Policy) => policy.metadata.name ?? '',
       },
       {
         header: t('Cluster violations'),
@@ -302,6 +310,17 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           }
           return '-'
         },
+        exportContent: (policy: Policy) => {
+          const policySetClusterContext = getClusterContext(policy)
+          const violationCount =
+            policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+          const compliantCount =
+            policySetClusterContext?.filter((status) => status.compliant === 'Compliant').length ?? 0
+          const pendingCount = policySetClusterContext?.filter((status) => status.compliant === 'Pending').length ?? 0
+          const unknownCount = policySetClusterContext?.filter((status) => !status.compliant).length ?? 0
+
+          return `compliant: ${compliantCount}, noncompliant: ${violationCount}, pending: ${pendingCount}, unknown: ${unknownCount}`
+        },
       },
       {
         header: t('Status'),
@@ -313,6 +332,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         cell: (policy: Policy) => {
           return <span>{policy?.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
         },
+        exportContent: (policy: Policy) => {
+          return policy?.spec.disabled === true ? t('Disabled') : t('Enabled')
+        },
       },
       {
         header: t('Remediation'),
@@ -322,6 +344,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           return compareStrings(policyARemediation, policyBRemediation)
         },
         cell: (policy: Policy) => {
+          return policy.remediationResult
+        },
+        exportContent: (policy: Policy) => {
           return policy.remediationResult
         },
       },
@@ -376,6 +401,8 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       </Split>
       {type === 'Clusters' ? (
         <AcmTable<string>
+          showExportButton
+          exportFilePrefix="policysetdetails"
           items={policySetClusters}
           emptyState={
             <AcmEmptyState
@@ -397,6 +424,8 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         />
       ) : (
         <AcmTable<Policy>
+          showExportButton
+          exportFilePrefix="policysetdetails"
           items={policySetPolicies}
           emptyState={
             <AcmEmptyState title={t('No polices found')} message={t('There are no policies in the policy set.')} />

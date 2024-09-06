@@ -4,7 +4,6 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
-import { AggregateCache } from '../routes/aggregator'
 
 export type FilterSelections = {
   [filter: string]: string[]
@@ -34,6 +33,7 @@ export interface IResultListView {
   filterCounts: FilterCounts
   emptyResult: boolean
   isPreProcessed: boolean
+  request: IRequestListView
 }
 
 export interface ITransformedResource extends IResource {
@@ -53,11 +53,13 @@ export interface PaginatedResults {
   results?: IResource[]
 }
 
+export const PREPROCESS_BREAKPOINT = 500
+
 export function paginate(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  cache: AggregateCache,
+  getItems: () => { items: ITransformedResource[]; filterCounts: FilterCounts },
   filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
 ): void {
   const chucks: string[] = []
@@ -67,14 +69,16 @@ export function paginate(
   req.on('end', async () => {
     const body = chucks.join()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { page, perPage, search, sortBy, filters } = JSON.parse(body) as IRequestListView
+    const request = JSON.parse(body) as IRequestListView
+    const { page, perPage, search, sortBy, filters } = request
+    const cache = getItems()
     const { filterCounts } = cache
     let { items } = cache
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
     let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
-    const backendLimit = process.env.NODE_ENV === 'test' ? 0 : 500
+    const backendLimit = process.env.NODE_ENV === 'test' ? 0 : PREPROCESS_BREAKPOINT
     let startIndex = 0
     let endIndex = itemCount
     if (itemCount > backendLimit) {
@@ -140,6 +144,7 @@ export function paginate(
       filterCounts: isPreProcessed ? filterCounts : undefined,
       emptyResult,
       isPreProcessed,
+      request,
     }
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(results))

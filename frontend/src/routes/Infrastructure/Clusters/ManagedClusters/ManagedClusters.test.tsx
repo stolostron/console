@@ -94,7 +94,7 @@ describe('Clusters Page', () => {
 
   test('should render node column', () => {
     waitForText('Add-ons')
-    waitForTestId('add-ons', true)
+    waitForTestId('add-ons')
   })
 
   test('should be able to delete cluster using row action', async () => {
@@ -264,5 +264,51 @@ describe('Clusters Page regional hub cluster', () => {
     await waitForNock(metricNock)
     await waitForText(mockManagedCluster8.metadata.name!, true)
     await waitForText('Hub')
+  })
+})
+
+describe('Clusters Page export', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
+          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
+          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddon])
+          snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedCluster0.metadata.name!, true)
+  })
+  test('export button should produce a file for download', async () => {
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

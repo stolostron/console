@@ -57,6 +57,7 @@ const mockProviderConnection2: ProviderConnection = {
   metadata: {
     name: 'provider-connection-2',
     namespace: 'provider-connection-namespace',
+    creationTimestamp: '2024-06-28T03:06:13Z',
     labels: {
       'cluster.open-cluster-management.io/type': '',
       'cluster.open-cluster-management.io/credentials': '',
@@ -133,6 +134,7 @@ const getSecrets1 = {
     metadata: {
       name: 'provider-connection-1',
       namespace: 'provider-connection-namespace',
+      createTimestamp: '2024-06-28T03:06:13Z',
       labels: {
         'cluster.open-cluster-management.io/credentials': '',
         'cluster.open-cluster-management.io/type': 'aws',
@@ -261,5 +263,32 @@ describe('provider connections page RBAC', () => {
     await waitForText(mockProviderConnection1.metadata!.name!)
     await clickByLabel('Actions', 0) // Click the action button on the first table row
     await waitForNocks(rbacNocks)
+  })
+})
+
+describe('Export from clusterpool table', () => {
+  test('export button should produce a file for download', async () => {
+    nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
+    render(
+      <TestProviderConnectionsPage providerConnections={[...mockProviderConnections, cloudRedHatProviderConnection]} />
+    )
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
   })
 })

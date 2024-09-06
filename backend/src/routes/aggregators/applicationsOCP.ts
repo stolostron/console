@@ -2,6 +2,7 @@
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
+import { ApplicationCacheType, generateTransforms } from './applications'
 
 const query = {
   operationName: 'searchResult',
@@ -40,7 +41,7 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
-export async function getOCPApps(argAppSet: Set<string>, pass: number) {
+export async function getOCPApps(applicationCache: ApplicationCacheType, argAppSet: Set<string>, pass: number) {
   const ocpApps = (await getPagedSearchResources(query, pass)) as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
@@ -96,7 +97,12 @@ export async function getOCPApps(argAppSet: Set<string>, pass: number) {
     const semicolon = value.label?.indexOf(';', labelIdx)
     const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
     const resourceName = value.name
-    const apps = value.cluster === 'local-cluster' ? localOCPApps : remoteOCPApps
+    let apps
+    if (value.cluster === 'local-cluster') {
+      apps = localOCPApps
+    } else {
+      apps = remoteOCPApps
+    }
     apps.push({
       apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
       kind: value.kind,
@@ -112,8 +118,8 @@ export async function getOCPApps(argAppSet: Set<string>, pass: number) {
       },
     } as unknown as IResource)
   })
-
-  return { localOCPApps, remoteOCPApps }
+  applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
+  applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,4 +150,14 @@ function getValues(labels: { annotation: any; value: any }[]) {
     isManagedByHelm,
     argoInstanceLabelValue,
   }
+}
+
+export function isSystemApp(namespace?: string) {
+  return (
+    namespace &&
+    (namespace.startsWith('openshift') ||
+      namespace.startsWith('open-cluster-management') ||
+      namespace.startsWith('hive') ||
+      namespace.startsWith('multicluster-engine'))
+  )
 }

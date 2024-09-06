@@ -545,6 +545,38 @@ describe('ClusterPools page', () => {
   })
 })
 
+describe('Export from clusterpool table', () => {
+  test('export button should produce a file for download', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const documentBody = document.body.appendChild
+    const documentCreate = document.createElement('a').dispatchEvent
+
+    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
+    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
+    document.body.appendChild = jest.fn()
+    document.createElement('a').dispatchEvent = jest.fn()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export as CSV')
+
+    expect(createElementSpyOn).toHaveBeenCalledWith('a')
+    expect(anchorMocked.download).toContain('table-values')
+
+    document.body.appendChild = documentBody
+    document.createElement('a').dispatchEvent = documentCreate
+  })
+})
+
 describe('Destroy ClusterPool with claimed clusters', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()

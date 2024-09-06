@@ -355,6 +355,9 @@ export function mapClusters(
   managedClusterInfos: ManagedClusterInfo[] = [],
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
+  managedClusterAddOns: ManagedClusterAddOn[] = [],
+  excludeAddons: boolean = false,
+  clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
   agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
@@ -382,6 +385,9 @@ export function mapClusters(
     const clusterCurator = clusterCurators.find(
       (cc) => cc.metadata.namespace === cluster || cc.metadata.name === cluster
     )
+    const addons: ManagedClusterAddOn[] = !excludeAddons
+      ? managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
+      : []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstalls.find(
@@ -395,6 +401,8 @@ export function mapClusters(
       clusterDeployment,
       certificateSigningRequests,
       managedCluster,
+      addons,
+      clusterManagementAddOn,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -410,6 +418,8 @@ export function getCluster(
   clusterDeployment: ClusterDeployment | undefined,
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
+  managedClusterAddOns: ManagedClusterAddOn[],
+  clusterManagementAddOns: ClusterManagementAddOn[],
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -475,6 +485,7 @@ export function getCluster(
     acmDistribution,
     microshiftDistribution: getMicroshiftDistributionInfo(managedCluster),
     acmConsoleURL: getACMConsoleURL(acmDistribution.version, consoleURL),
+    addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),

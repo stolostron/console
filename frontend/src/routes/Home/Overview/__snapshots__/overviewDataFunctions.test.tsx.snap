@@ -97,14 +97,14 @@ Array [
 exports[`Correctly returns getComplianceData 1`] = `
 Array [
   Object {
-    "key": "With violations",
-    "link": "/multicloud/governance/policies?violations=with-violations",
+    "key": "Violations",
+    "link": "/multicloud/governance/policies?violations=violations",
     "value": 1,
   },
   Object {
     "isPrimary": true,
-    "key": "Without violations",
-    "link": "/multicloud/governance/policies?violations=without-violations&violations=no-status",
+    "key": "No violations",
+    "link": "/multicloud/governance/policies?violations=no-violations&violations=no-status",
     "value": 1,
   },
 ]
@@ -168,18 +168,18 @@ Object {
 
 exports[`Correctly returns parseUpgradeRiskPredictions with no predictions 1`] = `
 Object {
+  "clustersWithRiskPredictors": 0,
   "criticalUpdateCount": 0,
   "infoUpdateCount": 0,
-  "percentOfClustersWithRisk": 0,
   "warningUpdateCount": 0,
 }
 `;
 
 exports[`Correctly returns parseUpgradeRiskPredictions with predictions 1`] = `
 Object {
+  "clustersWithRiskPredictors": 2,
   "criticalUpdateCount": 1,
   "infoUpdateCount": 1,
-  "percentOfClustersWithRisk": 50,
   "warningUpdateCount": 1,
 }
 `;

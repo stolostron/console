@@ -8,12 +8,14 @@ import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
  * Hook to retrieve aggregated list of all clusters
  * @param excludeUnclaimed Excludes unclaimed clusters in cluster pools (or claimed clusters for which the user can not see the claim)
  */
-export function useAllClusters(excludeUnclaimed?: boolean) {
+export function useAllClusters(excludeUnclaimed?: boolean, excludeAddons?: boolean) {
   const {
     managedClustersState,
     clusterDeploymentsState,
     managedClusterInfosState,
     certificateSigningRequestsState,
+    managedClusterAddonsState,
+    clusterManagementAddonsState,
     clusterClaimsState,
     clusterCuratorsState,
     agentClusterInstallsState,
@@ -25,6 +27,8 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
+  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
@@ -38,6 +42,9 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
         managedClusterInfos,
         certificateSigningRequests,
         managedClusters,
+        managedClusterAddons,
+        excludeAddons,
+        clusterManagementAddOns,
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
@@ -56,6 +63,9 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
       managedClusterInfos,
       certificateSigningRequests,
       managedClusters,
+      managedClusterAddons,
+      excludeAddons,
+      clusterManagementAddOns,
       clusterClaims,
       clusterCurators,
       agentClusterInstalls,
