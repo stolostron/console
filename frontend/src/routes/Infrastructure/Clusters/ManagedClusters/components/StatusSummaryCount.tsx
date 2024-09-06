@@ -1,51 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get } from 'lodash'
 import { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { GetArgoApplicationsHashSet, GetOpenShiftAppResourceMaps } from '../../../../../components/GetDiscoveredOCPApps'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { Application, ApplicationSet, ApplicationSetKind } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
-import { getClusterList } from '../../../../Applications/helpers/resource-helper'
-import { localClusterStr } from '../../../../Applications/Overview'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { useAllClusters } from './useAllClusters'
-import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../../../hooks/application-queries'
+import { SupportedAggregate, useAggregate } from '../../../../../lib/useAggregates'
 
 export function StatusSummaryCount() {
-  const {
-    applicationsState,
-    applicationSetsState,
-    argoApplicationsState,
-    helmReleaseState,
-    placementDecisionsState,
-    policyreportState,
-    subscriptionsState,
-    usePolicies,
-  } = useSharedAtoms()
-  const applications = useRecoilValue(applicationsState)
-  const applicationSets = useRecoilValue(applicationSetsState)
-  const argoApps = useRecoilValue(argoApplicationsState)
-  const helmReleases = useRecoilValue(helmReleaseState)
+  const { policyreportState, usePolicies } = useSharedAtoms()
   const policyReports = useRecoilValue(policyreportState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
-  const subscriptions = useRecoilValue(subscriptionsState)
   const policies = usePolicies()
   const { cluster } = useClusterDetailsContext()
 
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
-  const clustersFilter = cluster ? [cluster.name] : []
-  const { data: ocpApps = [] } = useDiscoveredOCPApps({ clusters: clustersFilter, enabled: isApplicationsAvailable })
-  const { data: discoveredApplications = [] } = useDiscoveredArgoApps({
-    clusters: clustersFilter,
-    enabled: isApplicationsAvailable,
-  })
-  const clusters = useAllClusters(true)
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { t } = useTranslation()
 
@@ -77,35 +49,6 @@ export function StatusSummaryCount() {
     }
   }, [policyReports, cluster?.name])
 
-  const argoAppList = argoApps.filter((argoApp) => {
-    const isChildOfAppset =
-      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-
-    const localCluster = clusters.find((cls) => cls.name === localClusterStr)
-    const clusterList = getClusterList(argoApp, argoApps, placementDecisions, subscriptions, localCluster, clusters)
-    return (!argoApp.metadata.ownerReferences || !isChildOfAppset) && clusterList.includes(cluster.name)
-  })
-
-  const argoApplicationsHashSet = GetArgoApplicationsHashSet(discoveredApplications, argoApps, clusters)
-  const applicationList: Application[] = useMemo(() => {
-    const appList: Application[] = []
-    const localCluster = clusters.find((cls) => cls.name === localClusterStr)
-    applications.forEach((application) => {
-      const clusterList = getClusterList(
-        application,
-        argoApps,
-        placementDecisions,
-        subscriptions,
-        localCluster,
-        clusters
-      )
-      if (clusterList.includes(cluster.name)) {
-        appList.push(application)
-      }
-    })
-    return appList
-  }, [applications, argoApps, cluster?.name, clusters, placementDecisions, subscriptions])
-
   // Show cluster issues sidebar by default if showClusterIssues url param is present
   // This will be true if we are redirected to this page via search results table.
   useEffect(() => {
@@ -120,46 +63,7 @@ export function StatusSummaryCount() {
     }
   }, [policyReport, policyReportViolationsCount, setDrawerContext])
 
-  const filteredOCPApps = GetOpenShiftAppResourceMaps(ocpApps, helmReleases, argoApplicationsHashSet)
-  const clusterOcpApps = useMemo(() => {
-    const tempApps = []
-    for (const [, value] of Object.entries(filteredOCPApps)) {
-      if (value.cluster === cluster?.name) {
-        tempApps.push(value)
-      }
-    }
-    return tempApps
-  }, [filteredOCPApps, cluster?.name])
-
-  const appSets: ApplicationSet[] = useMemo(() => {
-    const filteredAppSets = applicationSets.filter((appSet) => {
-      // Get the Placement name so we can find PlacementDecision
-      const placementName = get(
-        appSet,
-        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
-        ''
-      )
-      // find the correct PlacementDecision which lists the clusters that match the decision parameters.
-      const decision = placementDecisions.find((decision) => {
-        const owner = decision.metadata.ownerReferences
-        return owner ? owner.find((o) => o.kind === 'Placement' && o.name === placementName) : false
-      })
-      // determine whether the matched decision has placed an appSet in the current cluster.
-      const clusterMatch = decision?.status?.decisions.findIndex((d) => d.clusterName === cluster?.name) ?? -1
-      return clusterMatch > -1
-    })
-    return filteredAppSets
-  }, [applicationSets, placementDecisions, cluster?.name])
-
-  const appsCount = useMemo(
-    () =>
-      applicationList.length +
-      discoveredApplications.length +
-      clusterOcpApps.length +
-      appSets.length +
-      argoAppList.length,
-    [applicationList, argoAppList, discoveredApplications, clusterOcpApps, appSets]
-  )
+  const { applicationCount } = useAggregate(SupportedAggregate.statuses, { clusters: [cluster.name] })
 
   const nodesCount = useMemo(() => (cluster?.nodes?.nodeList ?? []).length, [cluster])
 
@@ -201,7 +105,7 @@ export function StatusSummaryCount() {
             ? [
                 {
                   id: 'applications',
-                  count: appsCount,
+                  count: applicationCount,
                   countClick: () => navigate(NavigationPath.applications + `?cluster=${cluster?.name}`),
                   title: t('summary.applications'),
                 },

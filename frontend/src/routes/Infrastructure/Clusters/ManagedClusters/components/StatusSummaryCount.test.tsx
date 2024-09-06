@@ -4,23 +4,11 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
-import { nockSearch } from '../../../../../lib/nock-util'
+import { nockAggegateRequest } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
-import {
-  mockSearchQueryArgoAppsStatusSummary,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryArgoAppsStatusSummaryFilteredCount,
-  mockSearchQueryOCPApplicationsStatusSummary,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchQueryOCPApplicationsStatusSummaryFilteredCount,
-  mockSearchResponseArgoApps1,
-  mockSearchResponseArgoAppsCount1,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../../../Applications/Application.sharedmocks'
 import { StatusSummaryCount } from './StatusSummaryCount'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -265,12 +253,7 @@ const mockPolicies: Policy[] = [
 
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
-    nockSearch(mockSearchQueryOCPApplicationsStatusSummary, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsStatusSummaryFilteredCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsStatusSummary, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsStatusSummaryFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount1)
+    nockAggegateRequest('statuses', { clusters: ['test-cluster'] }, { applicationCount: 1 }, 200, true)
   })
 
   const Component = () => {

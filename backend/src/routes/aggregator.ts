@@ -9,6 +9,7 @@ import {
   getApplications,
   filterApplications,
 } from './aggregators/applications'
+import { requestAggregatedStatuses } from './aggregators/statuses'
 
 export function startAggregating(): void {
   void startAggregatingApplications()
@@ -26,6 +27,8 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   switch (type[2]) {
     case 'applications':
       return paginate(req, res, token, getApplications, filterApplications)
+    case 'statuses':
+      return requestAggregatedStatuses(req, res, token, getApplications)
   }
   return notFound(req, res)
 }

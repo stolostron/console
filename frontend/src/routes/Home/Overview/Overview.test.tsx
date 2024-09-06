@@ -8,23 +8,13 @@ import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MockedProvider } from '@apollo/client/testing'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest, nockSearch } from '../../../lib/nock-util'
+import { nockAggegateRequest, nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import {
   getAddonRequest,
   getAddonResponse,
   mockGetSelfSubjectAccessRequest,
   mockGetSelfSubjectAccessResponse,
 } from './Overview.sharedmocks'
-import {
-  mockSearchQueryArgoApps,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplications,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../Applications/Application.sharedmocks'
 
 const queryClient = new QueryClient()
 
@@ -33,10 +23,8 @@ it('should render overview page with extension', async () => {
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  nockAggegateRequest('statuses', {}, { applicationCount: 33 }, 200, true)
+
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
@@ -91,10 +79,7 @@ it('should render overview page layout when extension tab crashes', async () => 
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  nockAggegateRequest('statuses', {}, { applicationCount: 33 }, 200, true)
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>

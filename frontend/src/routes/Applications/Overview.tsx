@@ -481,7 +481,9 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
+  const { applicationCount } = useAggregate(SupportedAggregate.statuses, {})
   const allApplications = resultView.items
+  resultView.itemCount = applicationCount
 
   const tableItems: IResource[] = useMemo(
     () => [...allApplications.map((app) => generateTransformData(app))],

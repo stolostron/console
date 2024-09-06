@@ -22,26 +22,15 @@ import {
   subscriptionsState,
 } from '../../../atoms'
 import {
+  nockAggegateRequest,
   nockIgnoreApiPaths,
   nockPostRequest,
   nockRequest,
-  nockSearch,
   nockUpgradeRiskRequest,
 } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { ManagedClusterInfo, UserPreference } from '../../../resources'
-import {
-  mockApplications,
-  mockArgoApplications,
-  mockSearchQueryArgoApps,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplications,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../Applications/Application.sharedmocks'
+import { mockApplications, mockArgoApplications } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPageBeta from './OverviewPageBeta'
 import {
@@ -136,10 +125,6 @@ const savedSearchesMock = [
 
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
   const metricNock = nockPostRequest('/metrics?overview-fleet', {})
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
@@ -151,6 +136,13 @@ it('should render overview page with expected data', async () => {
     '/upgrade-risks-prediction',
     { clusterIds: ['1234-abcd'] },
     mockUpgradeRisksPredictions
+  )
+  nockAggegateRequest(
+    'statuses',
+    { clusters: ['managed-1', 'local-cluster', 'managed-2', 'managed-cluster'] },
+    { applicationCount: 33 },
+    200,
+    true
   )
 
   const { getAllByText, getByText } = render(

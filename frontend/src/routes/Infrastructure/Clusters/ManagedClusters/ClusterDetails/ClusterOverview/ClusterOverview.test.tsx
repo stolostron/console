@@ -19,7 +19,13 @@ import {
   nodePoolsState,
   policyreportState,
 } from '../../../../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import {
+  nockAggegateRequest,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockSearch,
+} from '../../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
@@ -41,19 +47,6 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
-import {
-  mockSearchQueryArgoAppsClusterOverview,
-  mockSearchQueryArgoAppsClusterOverviewFilteredCount,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplicationsClusterOverview,
-  mockSearchQueryOCPApplicationsClusterOverviewFilteredCount,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps1,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseArgoAppsCount1,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../../../../Applications/Application.sharedmocks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ClusterDetailsContext } from '../ClusterDetails'
 
@@ -127,13 +120,8 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
@@ -180,15 +168,10 @@ describe('ClusterOverview with BM hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockBMHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
@@ -235,15 +218,10 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockBMHypershiftClusterNoNamespace,
       hostedCluster: mockAWSHostedCluster,
@@ -290,15 +268,10 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftClusterNoHypershift,
       hostedCluster: mockAWSHostedCluster,
@@ -345,13 +318,8 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster }
     render(
       <RecoilRoot
@@ -395,13 +363,8 @@ describe('ClusterOverview with regional hub cluster information', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
       <RecoilRoot
@@ -447,13 +410,8 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     mockRegionalHubCluster.isHostedCluster = true
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
       <RecoilRoot
@@ -710,13 +668,8 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
 
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: ['feng-hypershift-test'] }, { applicationCount: 33 }, 200, true)
     nockGet(getSecrets1.req, getSecrets1.req) // get 'secrets' in 'clusters' namespace
     nockGet(getSecrets2.req, getSecrets2.req)
   })

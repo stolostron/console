@@ -3,9 +3,8 @@
 import { ISortBy } from '@patternfly/react-table'
 import { IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 import { usePluginDataContextValue } from './PluginDataContext'
-import isEqual from 'lodash/isEqual'
 
 const apiUrl = '/aggregate'
 
@@ -31,41 +30,69 @@ export interface IResultListView {
   isPreProcessed: boolean
   request?: IRequestListView
 }
+export interface IRequestStatuses {
+  clusters?: string[]
+}
+
+export interface IResultStatuses {
+  applicationCount: number
+  loading: boolean
+}
 
 export enum SupportedAggregate {
   applications = 'applications',
   applicationDetails = 'applicationDetails',
   clusters = 'clusters',
   clusterDetails = 'cluster-details',
+  statuses = 'statuses',
 }
 
+const defaultListResponse: IResultListView = {
+  page: 1,
+  loading: true,
+  items: [],
+  itemCount: 0,
+  filterCounts: undefined,
+  emptyResult: false,
+  isPreProcessed: true,
+}
+
+const defaultStatusResponse: IResultStatuses = {
+  applicationCount: 0,
+  loading: true,
+}
+
+type RequestStatusesType = IRequestStatuses | undefined
+type RequestListType = IRequestListView | undefined
+type RequestViewType = RequestStatusesType | RequestListType
+type ResultViewType = IResultStatuses | IResultListView | undefined
+export function useAggregate(aggregate: SupportedAggregate, requestedView: RequestStatusesType): IResultStatuses
+export function useAggregate(aggregate: SupportedAggregate, requestedView: RequestListType): IResultListView
 export function useAggregate(
   aggregate: SupportedAggregate,
-  requestedView: IRequestListView | undefined
-): IResultListView {
-  const defaultResponse = useMemo<IResultListView>(
-    () => ({
-      page: 1,
-      loading: true,
-      items: [],
-      itemCount: 0,
-      filterCounts: undefined,
-      emptyResult: false,
-      isPreProcessed: true,
-      request: {
-        page: 0,
-        perPage: 0,
-        sortBy: undefined,
-      },
-    }),
-    []
-  )
+  requestedView: IRequestStatuses | IRequestListView | undefined
+): ResultViewType {
+  let defaultResponse: ResultViewType = undefined
+
+  switch (aggregate) {
+    case SupportedAggregate.applications:
+      defaultResponse = defaultListResponse
+      break
+    case SupportedAggregate.statuses:
+      defaultResponse = defaultStatusResponse
+      break
+  }
+
   const { backendUrl } = usePluginDataContextValue()
+  const requestedViewStr = requestedView && JSON.stringify(requestedView)
   const queryFunc = useCallback(() => {
-    return requestedView
-      ? postRequest<IRequestListView, IResultListView>(`${backendUrl}${apiUrl}/${aggregate}`, requestedView)
+    return requestedViewStr
+      ? postRequest<RequestViewType, IResultListView>(
+          `${backendUrl}${apiUrl}/${aggregate}`,
+          JSON.parse(requestedViewStr)
+        )
       : undefined
-  }, [aggregate, backendUrl, requestedView])
+  }, [aggregate, backendUrl, requestedViewStr])
 
   const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {
     pollInterval: 15,
@@ -78,15 +105,26 @@ export function useAggregate(
     }
   }, [startPolling, stopPolling])
 
-  const response = { ...(data?.[0] ?? defaultResponse) }
-  const isLoading = process.env.NODE_ENV !== 'test' && (loading || !isEqual(response.request, requestedView))
-  return {
-    page: response.page,
-    loading: isLoading,
-    items: response.items,
-    itemCount: response.itemCount,
-    filterCounts: response.filterCounts,
-    emptyResult: response.emptyResult,
-    isPreProcessed: response.isPreProcessed,
+  const result = { ...(data?.[0] ?? defaultResponse) }
+
+  let response
+  switch (aggregate) {
+    case SupportedAggregate.applications:
+      response = result as IResultListView
+      return {
+        page: response.page,
+        loading,
+        items: response.items,
+        itemCount: response.itemCount,
+        filterCounts: response.filterCounts,
+        emptyResult: response.emptyResult,
+        isPreProcessed: response.isPreProcessed,
+      }
+    case SupportedAggregate.statuses:
+      response = result as IResultStatuses
+      return {
+        applicationCount: response.applicationCount,
+        loading,
+      }
   }
 }

@@ -263,6 +263,11 @@ function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: Fil
           }
           return matchedOption
         }) as string[]
+
+        // if none left
+        if (validSelections[key].length === 0) {
+          delete validSelections[key]
+        }
       }
     }
   })
