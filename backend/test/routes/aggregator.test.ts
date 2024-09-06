@@ -172,22 +172,6 @@ const responseNoFilter = {
       },
     },
   ],
-  itemCount: 7,
-  filterCounts: {
-    type: {
-      subscription: 1,
-      appset: 1,
-      argo: 2,
-      openshift: 2,
-      flux: 1,
-    },
-    cluster: {
-      'local-cluster': 3,
-      unknown: 1,
-      'feng-managed': 1,
-      'test-cluster': 2,
-    },
-  },
   emptyResult: false,
   isPreProcessed: true,
   request: {
@@ -217,22 +201,6 @@ const responseFiltered = {
       },
     },
   ],
-  itemCount: 1,
-  filterCounts: {
-    type: {
-      subscription: 1,
-      appset: 1,
-      argo: 2,
-      openshift: 2,
-      flux: 1,
-    },
-    cluster: {
-      'local-cluster': 3,
-      unknown: 1,
-      'feng-managed': 1,
-      'test-cluster': 2,
-    },
-  },
   emptyResult: false,
   isPreProcessed: true,
   request: {
