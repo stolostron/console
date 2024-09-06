@@ -29,8 +29,6 @@ export interface IRequestListView {
 export interface IResultListView {
   page: number
   items: IResource[]
-  itemCount: number
-  filterCounts: FilterCounts
   emptyResult: boolean
   isPreProcessed: boolean
   request: IRequestListView
@@ -59,7 +57,7 @@ export function paginate(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  getItems: () => { items: ITransformedResource[]; filterCounts: FilterCounts },
+  getItems: () => ITransformedResource[],
   filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
 ): void {
   const chucks: string[] = []
@@ -71,13 +69,11 @@ export function paginate(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = JSON.parse(body) as IRequestListView
     const { page, perPage, search, sortBy, filters } = request
-    const cache = getItems()
-    const { filterCounts } = cache
-    let { items } = cache
+    let items = getItems()
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
-    let isPreProcessed = false // if false, we pass all data and frontend does the filter/search/sort
+    let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
     const backendLimit = process.env.NODE_ENV === 'test' ? 0 : PREPROCESS_BREAKPOINT
     let startIndex = 0
     let endIndex = itemCount
@@ -140,8 +136,6 @@ export function paginate(
     const results: IResultListView = {
       page: rpage,
       items,
-      itemCount,
-      filterCounts: isPreProcessed ? filterCounts : undefined,
       emptyResult,
       isPreProcessed,
       request,

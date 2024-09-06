@@ -2,14 +2,7 @@
 import i18next from 'i18next'
 import { Cluster, ClusterStatus } from '../../../resources'
 import { Provider } from '../../../ui-components'
-import {
-  mockApplications,
-  mockApplicationSets,
-  mockArgoApplications,
-  mockOCPApplications,
-  mockPlacementsDecisions,
-  mockSubscriptions,
-} from '../../Applications/Application.sharedmocks'
+import { mockRequestedCounts } from '../../Applications/Application.sharedmocks'
 import {
   getAddonHealth,
   getAppTypeSummary,
@@ -146,18 +139,7 @@ test('Correctly returns getClusterVersionSummary', () => {
 
 test('Correctly returns getAppTypeSummary', () => {
   const t = i18next.t.bind(i18next)
-  const result = getAppTypeSummary(
-    mockApplications,
-    mockApplicationSets,
-    mockArgoApplications,
-    [],
-    mockOCPApplications,
-    filteredClusterNames,
-    clusterData,
-    mockPlacementsDecisions,
-    mockSubscriptions,
-    t
-  )
+  const result = getAppTypeSummary(mockRequestedCounts, t)
   expect(result).toMatchSnapshot()
 })
 

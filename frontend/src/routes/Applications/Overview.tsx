@@ -491,6 +491,7 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
+  const resultCounts = useAggregate(SupportedAggregate.statuses, {})
   const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
@@ -1135,6 +1136,7 @@ export default function ApplicationsOverview() {
         filters={filters}
         setRequestView={setRequesedView}
         resultView={resultView}
+        resultCounts={resultCounts}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}
         showExportButton

@@ -42,6 +42,7 @@ import {
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
 import { ApplicationActionProps } from '../../plugin-extensions/properties'
+import { IResultStatuses } from '../../lib/useAggregates'
 
 export const mockArgoCD: IResource = {
   apiVersion: 'argoproj.io/v1alpha1',
@@ -461,6 +462,15 @@ export const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespa
   kind: NamespaceKind,
   metadata: { name },
 }))
+export const mockRequestedCounts: IResultStatuses = {
+  itemCount: 123,
+  filterCounts: {
+    type: {
+      argo: 4,
+    },
+  },
+  loading: false,
+}
 export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0, mockApplicationSet1]
 export const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
 export const mockOCPApplications: OCPAppResource[] = [mockOCPApplication0, mockFluxApplication0]

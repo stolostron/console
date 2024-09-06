@@ -77,7 +77,7 @@ import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
-import { FilterCounts, IRequestListView, IResultListView } from '../../lib/useAggregates'
+import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -264,6 +264,11 @@ function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: Fil
           }
           return matchedOption
         }) as string[]
+
+        // if none left
+        if (validSelections[key].length === 0) {
+          delete validSelections[key]
+        }
       }
     }
   })
@@ -483,6 +488,7 @@ export type AcmTableProps<T> = {
   setPage?: (page: number) => void
   setRequestView?: (requestedView: IRequestListView) => void
   resultView?: IResultListView
+  resultCounts?: IResultStatuses
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -525,6 +531,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     exportFilePrefix,
     setRequestView,
     resultView,
+    resultCounts,
   } = props
 
   const defaultSort = {
@@ -533,7 +540,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }
   const initialSort = props.initialSort || defaultSort
   const initialSearch = props.initialSearch || ''
-  const { isPreProcessed, filterCounts, loading, emptyResult } = resultView || {}
+  const { isPreProcessed, loading, emptyResult } = resultView || {}
+  const { filterCounts } = resultCounts || {}
 
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
@@ -797,8 +805,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: (isPreProcessed && resultView?.itemCount) || tableItems.length }
-  }, [items, isPreProcessed, resultView?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
+    return { tableItems, totalCount: (isPreProcessed && resultCounts?.itemCount) || tableItems.length }
+  }, [items, isPreProcessed, resultCounts?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -846,8 +854,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         sorted.reverse()
       }
     }
-    return { sorted, itemCount: (isPreProcessed && resultView?.itemCount) || sorted.length }
-  }, [filtered, isPreProcessed, sort, resultView?.itemCount, selectedSortedCols])
+    return { sorted, itemCount: (isPreProcessed && resultCounts?.itemCount) || sorted.length }
+  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
     let actualPage = page

@@ -63,6 +63,14 @@ appKeys.forEach((key) => {
   applicationCache[key] = { items: [], filterCounts: {} }
 })
 
+export function getApplications() {
+  const items: ITransformedResource[] = []
+  Object.keys(applicationCache).forEach((key) => {
+    items.push(...applicationCache[key].items)
+  })
+  return items
+}
+
 export function startAggregatingApplications() {
   void localKubeLoop()
   void searchAPILoop()
@@ -117,31 +125,6 @@ export function generateTransforms(items: ITransformedResource[], isRemote?: boo
       [app.metadata.creationTimestamp as string],
     ]
     app.isRemote = isRemote
-    incFilterCounts(filterCounts, 'type', [type])
-    incFilterCounts(filterCounts, 'cluster', clusters)
-  })
-  return { items, filterCounts }
-}
-
-export function getApplications() {
-  const items: ITransformedResource[] = []
-  const filterCounts: FilterCounts = {}
-  Object.keys(applicationCache).forEach((key) => {
-    items.push(...applicationCache[key].items)
-    const cnts = applicationCache[key].filterCounts
-    Object.keys(cnts).forEach((parent) => {
-      let category = filterCounts[parent]
-      if (!category) {
-        category = filterCounts[parent] = {}
-      }
-      const types = cnts[parent] //type/cluster
-      Object.keys(types).forEach((child: string) => {
-        if (!category[child]) {
-          category[child] = 0
-        }
-        category[child] += types[child]
-      })
-    })
   })
   return { items, filterCounts }
 }
@@ -168,19 +151,6 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
     return isFilterMatch
   })
   return items
-}
-
-// add to filters count that appears in filter dropdown
-function incFilterCounts(mapmap: FilterCounts, id: string, keys: string[]) {
-  let map = mapmap[id]
-  if (!map) map = mapmap[id] = {}
-  keys.forEach((key) => {
-    if (key in map) {
-      map[key]++
-    } else {
-      map[key] = 1
-    }
-  })
 }
 
 function getAppNamespace(resource: IResource): string {
