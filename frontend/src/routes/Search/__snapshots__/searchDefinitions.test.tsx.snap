@@ -223,6 +223,24 @@ exports[`Correctly returns CreateExternalLink from consoleURL 1`] = `
 </a>
 `;
 
+exports[`Correctly returns CreateExternalVMLink 1`] = `
+<body>
+  <div>
+    <a
+      aria-disabled="false"
+      class="pf-c-button pf-m-link pf-m-inline"
+      data-ouia-component-id="OUIA-Generated-Button-link-7"
+      data-ouia-component-type="PF4/Button"
+      data-ouia-safe="true"
+      href="https://testCluster.com/k8s/ns/testVM/kubevirt.io~v1~VirtualMachine/testVM"
+      target="_blank"
+    >
+      Launch
+    </a>
+  </div>
+</body>
+`;
+
 exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster Application resource 1`] = `
 <body>
   <div>
@@ -2387,6 +2405,23 @@ Array [
     "sort": "ready",
   },
   Object {
+    "cell": <CreateExternalVMLink
+      item={
+        Object {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+      t={[Function]}
+    />,
+    "header": "Launch to console",
+  },
+  Object {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
@@ -2430,6 +2465,14 @@ exports[`Correctly returns empty CreateApplicationTopologyLink 1`] = `
 `;
 
 exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
+
+exports[`Correctly returns empty CreateExternalVMLink 1`] = `
+<body>
+  <div>
+    -
+  </div>
+</body>
+`;
 
 exports[`Correctly returns empty labels 1`] = `"-"`;
 
