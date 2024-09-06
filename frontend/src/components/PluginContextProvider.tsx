@@ -10,7 +10,7 @@ import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { OutlinedCommentsIcon } from '@patternfly/react-icons'
-import { AcmFeedbackModal, AcmFeedbackModalProvider } from './AcmFeedbackModal'
+import { AcmFeedbackModal } from './AcmFeedbackModal'
 import { useTranslation } from '../lib/acm-i18next'
 import { DOC_VERSION } from '../lib/doc-util'
 
@@ -67,9 +67,11 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     return (
       <AcmButton
         style={{
-          position: 'absolute',
-          bottom: 0,
-          right: 'var(--pf-global--spacer--xl)',
+          position: 'fixed',
+          transformOrigin: '50% -70%',
+          transform: 'rotate(270deg)',
+          bottom: '2em',
+          right: 0,
           zIndex: 20000,
           color: 'var(--pf-global--palette--white)',
         }}
@@ -98,24 +100,22 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         ocpApi,
       }}
     >
-      <AcmFeedbackModalProvider>
-        <AcmFeedbackModalButton />
-        <AcmFeedbackModal
-          onShareFeedback={`https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`}
-          isOpen={toggleOpen}
-          onClose={() => setToggleOpen(false)}
-        />
-        <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-          <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
-            <AcmToastProvider>
-              <AcmToastGroup />
-              <AcmTablePaginationContextProvider localStorageKey="clusters">
-                {props.children}
-              </AcmTablePaginationContextProvider>
-            </AcmToastProvider>
-          </div>
+      <AcmFeedbackModalButton />
+      <AcmFeedbackModal
+        onShareFeedback={`https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`}
+        isOpen={toggleOpen}
+        onClose={() => setToggleOpen(false)}
+      />
+      <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+        <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
+          <AcmToastProvider>
+            <AcmToastGroup />
+            <AcmTablePaginationContextProvider localStorageKey="clusters">
+              {props.children}
+            </AcmTablePaginationContextProvider>
+          </AcmToastProvider>
         </div>
-      </AcmFeedbackModalProvider>
+      </div>
     </PluginContext.Provider>
   ) : (
     <LoadingPage />

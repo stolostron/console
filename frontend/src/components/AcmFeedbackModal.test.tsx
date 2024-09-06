@@ -60,7 +60,6 @@ describe('AcmFeedbackModal', () => {
   })
   it('opens share feedback and support case links', () => {
     const { getByText } = render(<Component isOpen={true} />)
-    screen.logTestingPlaygroundURL()
     userEvent.click(getByText(/share feedback/i))
     expect(window.open).toHaveBeenCalledWith(
       'https://console.redhat.com/self-managed-feedback-form?source=acm&version=2.6',
