@@ -353,7 +353,7 @@ function getArgoDestinationCluster(
   const serverApi = destination?.server
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster || 'local-cluster'
+      clusterName = cluster ? cluster : 'local-cluster'
     } else {
       // const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
       // clusterName = server ? server.name : 'unknown'
