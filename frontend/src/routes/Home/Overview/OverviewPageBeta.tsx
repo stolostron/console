@@ -387,7 +387,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  {t('Powered by Insights')}
+                  {t('Insights')}
                   <Popover
                     headerContent={t('Insights data')}
                     bodyContent={

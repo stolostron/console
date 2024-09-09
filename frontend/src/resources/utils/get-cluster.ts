@@ -728,11 +728,11 @@ export function getDistributionInfo(
   let ocp: OpenShiftDistributionInfo | undefined
   let displayVersion: string | undefined
 
-  const isManagedOpenShiftUpgradeable = () => {
+  const hasControlPlaneNodes = () => {
     const { nodeList } = getNodes(managedClusterInfo)
     const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
-    const hasControlPlane = roleList.filter((str) => {
-      return str.indexOf('control-plane') > -1
+    const hasControlPlane = roleList.filter((roles) => {
+      return roles.includes('control-plane') || roles.includes('master')
     })
     return hasControlPlane.length > 0
   }
@@ -749,10 +749,13 @@ export function getDistributionInfo(
       isManagedOpenShift = true
       break
     case 'ROSA':
-      distributionValue = isManagedOpenShiftUpgradeable() ? 'ROSA Classic' : 'ROSA'
+      distributionValue = hasControlPlaneNodes() ? 'ROSA Classic' : 'ROSA'
       isManagedOpenShift = true
       break
     case 'ARO':
+      distributionValue = 'ARO'
+      isManagedOpenShift = true
+      break
     case 'ROKS':
       isManagedOpenShift = true
       break
@@ -921,7 +924,7 @@ export function getDistributionInfo(
       upgradeInfo.availableUpdates &&
       upgradeInfo.availableUpdates.length > 0 &&
       !upgradeInfo.upgradeFailed &&
-      (!isManagedOpenShift || isManagedOpenShiftUpgradeable()) &&
+      (!isManagedOpenShift || productClaim === 'ARO') &&
       !upgradeInfo.isUpgrading &&
       curatorIsIdle
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
@@ -930,7 +933,7 @@ export function getDistributionInfo(
     const isReadySelectChannels =
       upgradeInfo.availableChannels &&
       upgradeInfo.availableChannels.length > 0 &&
-      (!isManagedOpenShift || isManagedOpenShiftUpgradeable()) &&
+      (!isManagedOpenShift || productClaim == 'ARO') &&
       !upgradeInfo.isSelectingChannel &&
       curatorIsIdle
     upgradeInfo.isReadySelectChannels = !!isReadySelectChannels

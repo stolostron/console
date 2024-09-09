@@ -147,7 +147,7 @@ describe('DiscoveredClusters', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     clickByLabel('export-search-result')
-    clickByText('Export as CSV')
+    clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

@@ -368,7 +368,16 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
       ]),
     },
     virtualmachine: {
-      columns: AddDefaultColumns(t, [AddColumn('status', t('Status')), AddColumn('ready', t('Ready'))]),
+      columns: AddDefaultColumns(t, [
+        AddColumn('status', t('Status')),
+        AddColumn('ready', t('Ready')),
+        {
+          header: t('Console URL'),
+          cell: (item: any) => {
+            return <CreateExternalVMLink item={item} t={t} />
+          },
+        },
+      ]),
     },
   }
 }
@@ -732,4 +741,26 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
         cell: key,
       }
   }
+}
+
+export function CreateExternalVMLink(props: { item: any; t: TFunction }) {
+  const { item, t } = props
+  const allClusters = useAllClusters(true)
+  const vmCluster = item.cluster
+  const clusterURL = allClusters.filter((c) => c.name === vmCluster)?.[0]?.consoleURL
+
+  if (clusterURL) {
+    return (
+      <AcmButton
+        variant="link"
+        component="a"
+        target="_blank"
+        isInline={true}
+        href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`}
+      >
+        {t('Launch')}
+      </AcmButton>
+    )
+  }
+  return <>{'-'}</>
 }
