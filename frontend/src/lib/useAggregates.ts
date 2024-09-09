@@ -8,6 +8,12 @@ import { usePluginDataContextValue } from './PluginDataContext'
 
 const apiUrl = '/aggregate'
 
+// save response for next query for performance
+// last response expires after 5 mins
+const LISTVIEWKEY = 'useAggregate-ListView'
+const STATUSESKEY = 'useAggregate-Statuses'
+const EXPIRATION = 5 * 60 * 1000
+
 export type FilterCounts = {
   [id: string]: { [filter: string]: number }
 }
@@ -72,15 +78,21 @@ export function useAggregate(
 ): ResultViewType {
   let defaultResponse: ResultViewType = undefined
 
+  // get default response until backend replies
+  // or if there's something stored from last query use that
   switch (aggregate) {
     case SupportedAggregate.applications:
       defaultResponse = defaultListResponse
+      if (requestedView && 'page' in requestedView && requestedView.page === 1) {
+        defaultResponse = getWithExpiry(LISTVIEWKEY)
+      }
       break
     case SupportedAggregate.statuses:
-      defaultResponse = defaultStatusResponse
+      defaultResponse = getWithExpiry(STATUSESKEY) || defaultStatusResponse
       break
   }
 
+  // make request to backend
   const { backendUrl } = usePluginDataContextValue()
   const requestedViewStr = requestedView && JSON.stringify(requestedView)
   const queryFunc = useCallback(() => {
@@ -109,19 +121,47 @@ export function useAggregate(
   switch (aggregate) {
     case SupportedAggregate.applications:
       response = result as IResultListView
-      return {
+      response = {
         page: response.page,
         loading,
         items: response.items,
         emptyResult: response.emptyResult,
         isPreProcessed: response.isPreProcessed,
       }
+      // save response for next time if on page 1
+      if (!loading && response.page === 1) setWithExpiry(LISTVIEWKEY, response)
+      return response
     case SupportedAggregate.statuses:
       response = result as IResultStatuses
-      return {
+      response = {
         itemCount: response.itemCount,
         filterCounts: response.filterCounts,
         loading,
       }
+      // save response for next time
+      if (!loading) setWithExpiry(STATUSESKEY, response)
+      return response
   }
+}
+
+function getWithExpiry(key: string) {
+  const itemStr = localStorage.getItem(key)
+  if (!itemStr) {
+    return null
+  }
+  const item = JSON.parse(itemStr)
+  const now = new Date()
+  if (now.getTime() > item.expiry) {
+    localStorage.removeItem(key)
+    return null
+  }
+  return item.value
+}
+function setWithExpiry(key: string, value: any) {
+  const now = new Date()
+  const item = {
+    value: value,
+    expiry: now.getTime() + EXPIRATION,
+  }
+  localStorage.setItem(key, JSON.stringify(item))
 }

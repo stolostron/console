@@ -22,6 +22,7 @@ import {
   subscriptionsState,
 } from '../../../atoms'
 import {
+  nockAggegateRequest,
   nockIgnoreApiPaths,
   nockPostRequest,
   nockRequest,
@@ -134,9 +135,19 @@ const savedSearchesMock = [
     },
   },
 ]
+const statusAggregate = {
+  req: {
+    clusters: ['managed-1', 'local-cluster', 'managed-2', 'managed-cluster'],
+  },
+  res: {
+    itemCount: 42,
+    filterCounts: undefined,
+  },
+}
 
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
