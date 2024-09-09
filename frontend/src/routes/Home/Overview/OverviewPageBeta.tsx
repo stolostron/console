@@ -143,7 +143,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [managedClusterIds])
 
   const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, clustersWithRiskPredictors } = useMemo(() => {
-    const reducesetRequestedViewions.reduce((acc: any[], curr: any) => {
+    const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
       if (curr?.body && curr.body.predictions) {
         return [...acc, ...curr.body.predictions]
       }
