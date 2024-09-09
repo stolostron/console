@@ -17,7 +17,7 @@ import {
   PolicyReportResults,
   Subscription,
 } from '../../../resources'
-import { Provider, ProviderShortTextMap } from '../../../ui-components'
+import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import { getClusterList } from '../../Applications/helpers/resource-helper'
 import { getApplicationType } from '../../Applications/Overview'
 import {
@@ -59,7 +59,11 @@ export function getClusterProviderSummary(filteredClusters: Cluster[]) {
     const provider = cluster?.provider ?? Provider.other
     providerSums[provider] > 0 ? providerSums[provider]++ : (providerSums[provider] = 1)
   })
-  return Object.keys(providerSums).map((sum) => ({
+  // sort alphabetically
+  const orderedProviders = Object.keys(providerSums).sort((a, b) =>
+    compareStrings(ProviderShortTextMap[a as Provider], ProviderShortTextMap[b as Provider])
+  )
+  return orderedProviders.map((sum) => ({
     key: ProviderShortTextMap[sum as Provider],
     value: providerSums[sum],
     link: `${NavigationPath.managedClusters}?provider=${sum}`,
@@ -72,7 +76,9 @@ export function getClusterVersionSummary(filteredClusters: Cluster[]) {
     const version = cluster.distribution?.displayVersion?.split('.', 2).join('.') ?? 'unknown'
     versionSums[version] > 0 ? versionSums[version]++ : (versionSums[version] = 1)
   })
-  return Object.keys(versionSums).map((version) => ({
+  // sort alphabetically
+  const orderedVersions = Object.keys(versionSums).sort((a, b) => compareStrings(a, b))
+  return orderedVersions.map((version) => ({
     key: version,
     value: versionSums[version],
   }))
@@ -196,6 +202,9 @@ export function getAppTypeSummary(
     }
   })
 
+  // sort alphabetically
+  const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
+
   const getAppTypeLink = (type: string) => {
     // handle cases from getApplicationType
     switch (type) {
@@ -222,7 +231,7 @@ export function getAppTypeSummary(
       description: t('total applications'),
       link: NavigationPath.applications,
     },
-    statusSection: Object.keys(typeTotals).map((type) => ({
+    statusSection: orderedAppTypes.map((type) => ({
       title: type,
       count: typeTotals[type],
       link: getAppTypeLink(type),
