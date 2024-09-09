@@ -19,14 +19,7 @@ import {
   policiesState,
   policyreportState,
 } from '../../../atoms'
-import {
-  nockAggegateRequest,
-  nockCreate,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockPostRequest,
-  nockSearch,
-} from '../../../lib/nock-util'
+import { nockAggegateRequest, nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
   ClusterManagementAddOn,
@@ -38,19 +31,7 @@ import {
   Policy,
   PolicyReport,
 } from '../../../resources'
-import {
-  mockApplications,
-  mockApplicationSets,
-  mockArgoApplications,
-  mockSearchQueryArgoApps,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplications,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../Applications/Application.sharedmocks'
+import { mockApplications, mockApplicationSets, mockArgoApplications } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 import {

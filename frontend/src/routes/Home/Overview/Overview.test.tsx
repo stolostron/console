@@ -8,14 +8,7 @@ import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MockedProvider } from '@apollo/client/testing'
-import {
-  nockAggegateRequest,
-  nockCreate,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockPostRequest,
-  nockSearch,
-} from '../../../lib/nock-util'
+import { nockAggegateRequest, nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import {
   getAddonRequest,
   getAddonResponse,

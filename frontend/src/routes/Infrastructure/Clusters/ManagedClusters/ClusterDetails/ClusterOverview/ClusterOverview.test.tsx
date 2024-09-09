@@ -19,13 +19,7 @@ import {
   nodePoolsState,
   policyreportState,
 } from '../../../../../../atoms'
-import {
-  nockAggegateRequest,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockIgnoreRBAC,
-  nockSearch,
-} from '../../../../../../lib/nock-util'
+import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
@@ -47,19 +41,6 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
-import {
-  mockSearchQueryArgoAppsClusterOverview,
-  mockSearchQueryArgoAppsClusterOverviewFilteredCount,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplicationsClusterOverview,
-  mockSearchQueryOCPApplicationsClusterOverviewFilteredCount,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps1,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseArgoAppsCount1,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../../../../Applications/Application.sharedmocks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ClusterDetailsContext } from '../ClusterDetails'
 
@@ -73,41 +54,6 @@ jest.mock('react-router-dom-v5-compat', () => ({
     push: mockHistoryPush,
   }),
 }))
-
-const mockSearchQuery = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          { property: 'compliant', values: ['!Compliant'] },
-          { property: 'kind', values: ['Policy'] },
-          { property: 'namespace', values: ['feng-hypershift-test'] },
-          { property: 'cluster', values: ['local-cluster'] },
-        ],
-      },
-    ],
-  },
-  query:
-    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
-}
-
-const mockSearchResponse = {
-  data: {
-    searchResult: [
-      {
-        count: 0,
-        related: [],
-        __typename: 'SearchResult',
-      },
-      {
-        count: 0,
-        related: [],
-        __typename: 'SearchResult',
-      },
-    ],
-  },
-}
 
 const kubeConfigSecret: Secret = {
   apiVersion: SecretApiVersion,
