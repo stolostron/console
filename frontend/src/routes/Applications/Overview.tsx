@@ -407,7 +407,7 @@ export default function ApplicationsOverview() {
     open: false,
   })
 
-  const [requestedView, setRequesedView] = useState<IRequestListView>()
+  const [requestedView, setRequestedView] = useState<IRequestListView>()
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -1134,7 +1134,7 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        setRequestView={setRequesedView}
+        setRequestView={setRequestedView}
         resultView={resultView}
         resultCounts={resultCounts}
         customTableAction={appCreationButton}
