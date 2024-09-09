@@ -57,7 +57,8 @@ export function getClusterProviderSummary(filteredClusters: Cluster[]) {
   const providerSums: Record<string, number> = {}
   filteredClusters.forEach((cluster) => {
     const provider = cluster?.provider ?? Provider.other
-    providerSums[provider] > 0 ? providerSums[provider]++ : (providerSums[provider] = 1)
+    const sum = providerSums[provider] > 0 ? providerSums[provider] + 1 : 1
+    providerSums[provider] = sum
   })
   // sort alphabetically
   const orderedProviders = Object.keys(providerSums).sort((a, b) =>
@@ -74,7 +75,8 @@ export function getClusterVersionSummary(filteredClusters: Cluster[]) {
   const versionSums: Record<string, number> = {}
   filteredClusters.forEach((cluster) => {
     const version = cluster.distribution?.displayVersion?.split('.', 2).join('.') ?? 'unknown'
-    versionSums[version] > 0 ? versionSums[version]++ : (versionSums[version] = 1)
+    const sum = versionSums[version] > 0 ? versionSums[version] + 1 : 1
+    versionSums[version] = sum
   })
   // sort alphabetically
   const orderedVersions = Object.keys(versionSums).sort((a, b) => compareStrings(a, b))
@@ -92,7 +94,7 @@ export function getWorkerCoreTotal(workerCoreCountMetric: PrometheusResponse | u
       return cluster.labels?.['clusterID'] ?? cluster.name
     })
     const filteredCoreWorkerCounts =
-      clusterIDs.length === 0 // TODO check this...
+      clusterIDs.length === 0
         ? workerCoreCountMetric.data.result
         : workerCoreCountMetric.data.result.filter((alert) => clusterIDs.includes(alert.metric.managed_cluster_id))
     filteredCoreWorkerCounts.forEach((coreWorker) => {
