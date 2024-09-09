@@ -58,9 +58,12 @@ export default function ClusterSetDetails() {
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
   )
 
-  const submarinerAddons = managedClusterAddons.filter(
-    (mca) => mca.metadata.name === 'submariner' && clusters?.find((c) => c.namespace === mca.metadata.namespace)
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  let submarinerAddons: ManagedClusterAddOn[] = []
+  clusters.forEach((cluster) => {
+    const addons = managedClusterAddons.get(cluster.namespace || '') || []
+    submarinerAddons = [...submarinerAddons, ...addons.filter((mca) => mca.metadata.name === 'submariner')]
+  })
 
   const clusterSetBindings = useClusterSetBindings(clusterSet)
   const [clusterRoleBindingsCache, setClusterRoleBindingsCache] = useState<ClusterRoleBinding[]>([])

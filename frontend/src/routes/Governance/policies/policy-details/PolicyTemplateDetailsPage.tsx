@@ -53,11 +53,8 @@ export function PolicyTemplateDetailsPage() {
 
   // Determine if the policy framework is deployed in hosted mode. If so, the policy template needs to be retrieved
   // from the hosting cluster instead of the managed cluster.
-  for (const addon of managedClusterAddOns) {
-    if (addon.metadata.namespace !== clusterName) {
-      continue
-    }
-
+  const addons = managedClusterAddOns.get(clusterName) || []
+  for (const addon of addons) {
     if (addon.metadata.name !== 'governance-policy-framework') {
       continue
     }

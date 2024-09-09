@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Addon, mapAddons } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import keyBy from 'lodash/keyBy'
 
 export function useClusterAddons(clusterName?: string) {
   const {
@@ -37,21 +38,22 @@ export function useClusterAddons(clusterName?: string) {
       uniqueClusterNames = [clusterName]
     }
     const result: { [id: string]: Addon[] } = {}
+    const clusterManagementAddonsMap = keyBy(clusterManagementAddons, 'metadata.name')
     uniqueClusterNames.forEach((cluster) => {
       if (cluster) {
-        const clusterAddons = managedClusterAddons.filter((mca) => mca.metadata?.namespace === cluster)
-        result[cluster] = mapAddons(clusterManagementAddons, clusterAddons)
+        const clusterAddons = managedClusterAddons.get(cluster || '') || []
+        result[cluster] = mapAddons(clusterManagementAddonsMap, clusterAddons)
       }
     })
     return result
   }, [
+    clusterManagementAddons,
     clusterName,
     managedClusters,
     clusterDeployments,
     managedClusterInfos,
     hostedClusters,
     managedClusterAddons,
-    clusterManagementAddons,
   ])
   return addons
 }

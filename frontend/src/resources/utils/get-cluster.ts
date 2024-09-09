@@ -36,6 +36,8 @@ import {
   checkForCondition,
   getConditionReason,
 } from './status-conditions'
+import keyBy from 'lodash/keyBy'
+import { Dictionary } from 'lodash'
 
 export enum ClusterStatus {
   'pending' = 'pending',
@@ -355,8 +357,7 @@ export function mapClusters(
   managedClusterInfos: ManagedClusterInfo[] = [],
   certificateSigningRequests: CertificateSigningRequest[] = [],
   managedClusters: ManagedCluster[] = [],
-  managedClusterAddOns: ManagedClusterAddOn[] = [],
-  excludeAddons: boolean = false,
+  managedClusterAddOns: Map<string, ManagedClusterAddOn[]> = new Map(),
   clusterManagementAddOn: ClusterManagementAddOn[] = [],
   clusterClaims: ClusterClaim[] = [],
   clusterCurators: ClusterCurator[] = [],
@@ -377,32 +378,42 @@ export function mapClusters(
       ...hostedClusters.map((hc) => hc.metadata?.name),
     ])
   )
+
+  // create maps so we don't do a linear find on each of these
+  // destroying performance on an environment with lots of clusters
+  const agentClusterInstallsMap = keyBy(agentClusterInstalls, (install) => {
+    return `${install.metadata?.namespace}/${install.metadata?.name}`
+  })
+  const clusterCuratorsMap1 = keyBy(clusterCurators, 'metadata.name')
+  const clusterCuratorsMap2 = keyBy(clusterCurators, 'metadata.namespace')
+  const managedClusterMap = keyBy(managedClusters, 'metadata.name')
+  const clusterClaimsMap = keyBy(clusterClaims, 'metadata.name')
+  const clusterDeploymentsMap = keyBy(clusterDeployments, 'metadata.name')
+  const managedClusterInfosMap = keyBy(managedClusterInfos, 'metadata.name')
+  const hostedClusterMap = keyBy(hostedClusters, 'metadata.name')
+  const clusterManagementAddOnMap = keyBy(clusterManagementAddOn, 'metadata.name')
+
   return uniqueClusterNames.map((cluster) => {
-    const clusterDeployment = clusterDeployments?.find((cd) => cd.metadata?.name === cluster)
-    const managedClusterInfo = managedClusterInfos?.find((mc) => mc.metadata?.name === cluster)
-    const managedCluster = managedClusters?.find((mc) => mc.metadata?.name === cluster)
-    const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
-    const clusterCurator = clusterCurators.find(
-      (cc) => cc.metadata.namespace === cluster || cc.metadata.name === cluster
-    )
-    const addons: ManagedClusterAddOn[] = !excludeAddons
-      ? managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
-      : []
+    const clusterDeployment = clusterDeploymentsMap[cluster!]
+    const managedCluster = managedClusterMap[cluster!]
+    const clusterClaim = clusterClaimsMap[cluster!]
+    const managedClusterInfo = managedClusterInfosMap[cluster!]
+    const hostedCluster = hostedClusterMap[cluster!]
+    const clusterCurator = clusterCuratorsMap2[cluster!] || clusterCuratorsMap1[cluster!]
+    const addons: ManagedClusterAddOn[] = managedClusterAddOns.get(cluster || '') || []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
-      agentClusterInstalls.find(
-        (aci) =>
-          aci.metadata?.namespace === clusterDeployment.metadata.namespace &&
-          aci.metadata?.name === clusterDeployment?.spec?.clusterInstallRef?.name
-      )
-    const hostedCluster = hostedClusters.find((hc) => hc.metadata?.name === cluster)
+      agentClusterInstallsMap[
+        `${clusterDeployment.metadata.namespace}/${clusterDeployment?.spec?.clusterInstallRef?.name}`
+      ]
+
     return getCluster(
       managedClusterInfo,
       clusterDeployment,
       certificateSigningRequests,
       managedCluster,
       addons,
-      clusterManagementAddOn,
+      clusterManagementAddOnMap,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
@@ -419,7 +430,7 @@ export function getCluster(
   certificateSigningRequests: CertificateSigningRequest[] | undefined,
   managedCluster: ManagedCluster | undefined,
   managedClusterAddOns: ManagedClusterAddOn[],
-  clusterManagementAddOns: ClusterManagementAddOn[],
+  clusterManagementAddOns: Dictionary<ClusterManagementAddOn>,
   clusterClaim: ClusterClaim | undefined,
   clusterCurator: ClusterCurator | undefined,
   agentClusterInstall: AgentClusterInstallK8sResource | undefined,
@@ -1051,7 +1062,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
   return { nodeList, ready, unhealthy, unknown }
 }
 
-export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: ClusterManagementAddOn[]) {
+export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons: Dictionary<ClusterManagementAddOn>) {
   let available = 0
   let progressing = 0
   let degraded = 0
