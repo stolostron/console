@@ -17,12 +17,11 @@ import { DOC_VERSION } from '../lib/doc-util'
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
 
-const { t } = useTranslation()
-
 // Feedback Modal Control
 const [toggleOpen, setToggleOpen] = useState<boolean>(false)
 const toggle = () => setToggleOpen(!toggleOpen)
 const AcmFeedbackModalButton = () => {
+  const { t } = useTranslation()
   return (
     <AcmButton
       style={{
