@@ -38,6 +38,8 @@ export function useClusterAddons(clusterName?: string) {
       uniqueClusterNames = [clusterName]
     }
     const result: { [id: string]: Addon[] } = {}
+
+    // use maps to speed up this search
     const clusterManagementAddonsMap = keyBy(clusterManagementAddons, 'metadata.name')
     uniqueClusterNames.forEach((cluster) => {
       if (cluster) {

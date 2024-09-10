@@ -380,7 +380,7 @@ export function mapClusters(
   )
 
   // create maps so we don't do a linear find on each of these
-  // destroying performance on an environment with lots of clusters
+  // affecting performance on an environment with lots of clusters
   const agentClusterInstallsMap = keyBy(agentClusterInstalls, (install) => {
     return `${install.metadata?.namespace}/${install.metadata?.name}`
   })
