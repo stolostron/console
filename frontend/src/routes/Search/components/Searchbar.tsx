@@ -13,6 +13,7 @@ import {
   TextInputGroup,
   TextInputGroupMain,
   TextInputGroupUtilities,
+  Tooltip,
 } from '@patternfly/react-core'
 import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
@@ -509,39 +510,41 @@ export function Searchbar(props: SearchbarProps) {
           {t('Save search')}
         </AcmButton>
         <Divider orientation={{ default: 'vertical' }} />
-        <Dropdown
-          onSelect={(event) => {
-            event?.stopPropagation()
-            setIsExportMenuOpen(false)
-          }}
-          className="export-dropdownMenu"
-          toggle={
-            <DropdownToggle
-              toggleIndicator={null}
-              onToggle={(value, event) => {
-                event.stopPropagation()
-                setIsExportMenuOpen(value)
-              }}
-              aria-label="export-search-result"
-              id="export-search-result"
-            >
-              <ExportIcon />
-            </DropdownToggle>
-          }
-          isOpen={isExportMenuOpen}
-          isPlain
-          dropdownItems={[
-            <DropdownItem
-              style={{ width: '10rem' }}
-              key={'item.text'}
-              onClick={() => generateSearchResultExport(searchResultData, searchDefinitions, toast, t)}
-              isDisabled={window.location.search === ''}
-            >
-              {t('Export as CSV')}
-            </DropdownItem>,
-          ]}
-          position={'right'}
-        />
+        <Tooltip content={t('Export search results')}>
+          <Dropdown
+            onSelect={(event) => {
+              event?.stopPropagation()
+              setIsExportMenuOpen(false)
+            }}
+            className="export-dropdownMenu"
+            toggle={
+              <DropdownToggle
+                toggleIndicator={null}
+                onToggle={(value, event) => {
+                  event.stopPropagation()
+                  setIsExportMenuOpen(value)
+                }}
+                aria-label="export-search-result"
+                id="export-search-result"
+              >
+                <ExportIcon />
+              </DropdownToggle>
+            }
+            isOpen={isExportMenuOpen}
+            isPlain
+            dropdownItems={[
+              <DropdownItem
+                style={{ width: '10rem' }}
+                key={'item.text'}
+                onClick={() => generateSearchResultExport(searchResultData, searchDefinitions, toast, t)}
+                isDisabled={window.location.search === ''}
+              >
+                {t('Export as CSV')}
+              </DropdownItem>,
+            ]}
+            position={'right'}
+          />
+        </Tooltip>
       </TextInputGroup>
     </div>
   )
