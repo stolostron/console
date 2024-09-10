@@ -17,6 +17,34 @@ import { DOC_VERSION } from '../lib/doc-util'
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
 
+const { t } = useTranslation()
+
+// Feedback Modal Control
+const [toggleOpen, setToggleOpen] = useState<boolean>(false)
+const toggle = () => setToggleOpen(!toggleOpen)
+const AcmFeedbackModalButton = () => {
+  return (
+    <AcmButton
+      style={{
+        position: 'fixed',
+        transformOrigin: '50% -70%',
+        transform: 'rotate(270deg)',
+        bottom: '2em',
+        right: 0,
+        zIndex: 20000,
+        color: 'var(--pf-global--palette--white)',
+      }}
+      icon={<OutlinedCommentsIcon />}
+      iconPosition="left"
+      variant="danger"
+      id="feedback-trigger-button"
+      onClick={toggle}
+    >
+      {t('Feedback')}
+    </AcmButton>
+  )
+}
+
 export function PluginContextProvider(props: { children?: ReactNode }) {
   const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
     useK8sWatchResource: () => [[] as any, false, undefined],
@@ -41,8 +69,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   const isACMAvailable = isOverviewAvailable
   const isSubmarinerAvailable = isOverviewAvailable
 
-  const { t } = useTranslation()
-
   useEffect(() => {
     const loadOCPAPI = async () => {
       try {
@@ -59,32 +85,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
 
   // ACM Custom extensions
   const acmExtensions = useAcmExtension()
-
-  // Feedback Modal Control
-  const [toggleOpen, setToggleOpen] = useState<boolean>(false)
-  const toggle = () => setToggleOpen(!toggleOpen)
-  const AcmFeedbackModalButton = () => {
-    return (
-      <AcmButton
-        style={{
-          position: 'fixed',
-          transformOrigin: '50% -70%',
-          transform: 'rotate(270deg)',
-          bottom: '2em',
-          right: 0,
-          zIndex: 20000,
-          color: 'var(--pf-global--palette--white)',
-        }}
-        icon={<OutlinedCommentsIcon />}
-        iconPosition="left"
-        variant="danger"
-        id="feedback-trigger-button"
-        onClick={toggle}
-      >
-        {t('Feedback')}
-      </AcmButton>
-    )
-  }
 
   return pluginDataContext ? (
     <PluginContext.Provider
