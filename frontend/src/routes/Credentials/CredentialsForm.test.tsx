@@ -487,7 +487,7 @@ describe('add credentials page', () => {
     fireEvent.click(dropdownToggle)
 
     // Select the "Service Account" option
-    const serviceAccountOption = screen.getByText('Service accounts')
+    const serviceAccountOption = screen.getByText('Service account')
     fireEvent.click(serviceAccountOption)
 
     await clickByText('Next')

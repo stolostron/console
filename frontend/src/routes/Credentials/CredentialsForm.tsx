@@ -1287,12 +1287,12 @@ export function CredentialsForm(
             value: auth_method,
             onChange: handleAuthMethodChange,
             options: [
-              { id: 'offline-token', value: 'offline-token', text: t('API token') },
-              { id: 'service-account', value: 'service-account', text: t('Service accounts') },
+              { id: OCMAuthMethod.API_TOKEN, value: OCMAuthMethod.API_TOKEN, text: t('API token') },
+              { id: OCMAuthMethod.SERVICE_ACCOUNT, value: OCMAuthMethod.SERVICE_ACCOUNT, text: t('Service account') },
             ],
             isRequired: true,
           },
-          (auth_method === 'offline-token' || isViewing) && {
+          (auth_method === OCMAuthMethod.API_TOKEN || isViewing) && {
             id: 'ocmAPIToken',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
@@ -1302,7 +1302,7 @@ export function CredentialsForm(
             isRequired: true,
             isSecret: true,
           },
-          (auth_method === 'service-account' || isViewing) && {
+          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_id',
             isHidden: credentialsType !== Provider.redhatcloud,
             type: 'Text',
@@ -1311,7 +1311,7 @@ export function CredentialsForm(
             onChange: setServiceAccClientId,
             isRequired: true,
           },
-          (auth_method === 'service-account' || isViewing) && {
+          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_secret',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
