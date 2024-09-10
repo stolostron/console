@@ -443,6 +443,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 </div>
 
                 <Button
+                  id={'insights-section-toggle'}
                   onClick={() => {
                     localStorage.setItem('insights-section-toggle', `${!isInsightsSectionOpen}`)
                     setIsInsightsSectionOpen(!isInsightsSectionOpen)
@@ -647,6 +648,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               {t('Cluster health')}
               <Button
+                id={'cluster-section-toggle'}
                 onClick={() => {
                   localStorage.setItem('cluster-section-toggle', `${!isClusterSectionOpen}`)
                   setIsClusterSectionOpen(!isClusterSectionOpen)
@@ -694,6 +696,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               {t('Your view')}
               <Button
+                id={'saved-search-section-toggle'}
                 onClick={() => {
                   localStorage.setItem('saved-search-section-toggle', `${!isCustomizationSectionOpen}`)
                   setIsCustomizationSectionOpen(!isCustomizationSectionOpen)
