@@ -197,25 +197,16 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [upgradeRiskPredictions])
 
   const clusterStatusData = useMemo(() => {
-    if (isClusterSectionOpen) {
-      return getClusterStatus(filteredClusters, clusterLabelsSearchFilter, t)
-    }
-    return []
-  }, [isClusterSectionOpen, filteredClusters, clusterLabelsSearchFilter, t])
+    return getClusterStatus(filteredClusters, clusterLabelsSearchFilter, t)
+  }, [filteredClusters, clusterLabelsSearchFilter, t])
 
   const complianceData: any = useMemo(() => {
-    if (isClusterSectionOpen) {
-      return getComplianceData(allClusters, filteredClusterNames, policies, t)
-    }
-    return []
-  }, [isClusterSectionOpen, allClusters, filteredClusterNames, policies, t])
+    return getComplianceData(allClusters, filteredClusterNames, policies, t)
+  }, [allClusters, filteredClusterNames, policies, t])
 
   const clusterAddonData = useMemo(() => {
-    if (isClusterSectionOpen) {
-      return getAddonHealth(allAddons, filteredClusterNames, t)
-    }
-    return []
-  }, [isClusterSectionOpen, allAddons, filteredClusterNames, t])
+    return getAddonHealth(allAddons, filteredClusterNames, t)
+  }, [allAddons, filteredClusterNames, t])
 
   const grafanaLinkClusterLabelCondition = useMemo(() => {
     const filteredSelectedClusterLabels = { ...selectedClusterLabels }
