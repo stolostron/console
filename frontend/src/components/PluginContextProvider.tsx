@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions, UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { AcmButton, AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useMemo, useEffect, useState } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
@@ -9,40 +9,10 @@ import { LoadingPage } from './LoadingPage'
 import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
-import { OutlinedCommentsIcon } from '@patternfly/react-icons'
 import { AcmFeedbackModal } from './AcmFeedbackModal'
-import { useTranslation } from '../lib/acm-i18next'
-import { DOC_VERSION } from '../lib/doc-util'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
-
-// Feedback Modal Control
-const [toggleOpen, setToggleOpen] = useState<boolean>(false)
-const toggle = () => setToggleOpen(!toggleOpen)
-const AcmFeedbackModalButton = () => {
-  const { t } = useTranslation()
-  return (
-    <AcmButton
-      style={{
-        position: 'fixed',
-        transformOrigin: '50% -70%',
-        transform: 'rotate(270deg)',
-        bottom: '2em',
-        right: 0,
-        zIndex: 20000,
-        color: 'var(--pf-global--palette--white)',
-      }}
-      icon={<OutlinedCommentsIcon />}
-      iconPosition="left"
-      variant="danger"
-      id="feedback-trigger-button"
-      onClick={toggle}
-    >
-      {t('Feedback')}
-    </AcmButton>
-  )
-}
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
   const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
@@ -99,12 +69,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         ocpApi,
       }}
     >
-      <AcmFeedbackModalButton />
-      <AcmFeedbackModal
-        onShareFeedback={`https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`}
-        isOpen={toggleOpen}
-        onClose={() => setToggleOpen(false)}
-      />
+      <AcmFeedbackModal />
       <div style={{ position: 'relative', height: '100%', width: '100%' }}>
         <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
