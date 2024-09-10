@@ -201,7 +201,7 @@ describe('Export from host inventory table', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     userEvent.click(getByLabelText('export-search-result'))
-    userEvent.click(getByText('Export as CSV'))
+    userEvent.click(getByText('Export all to CSV'))
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

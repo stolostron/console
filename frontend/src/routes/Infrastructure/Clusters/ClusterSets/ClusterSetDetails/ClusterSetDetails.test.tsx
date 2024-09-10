@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import * as YAML from 'yaml'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
@@ -13,6 +14,7 @@ import {
   managedClusterSetsState,
   managedClustersState,
   submarinerConfigsState,
+  hostedClustersState,
 } from '../../../../../atoms'
 import {
   nockClusterList,
@@ -53,6 +55,8 @@ import {
   ManagedClusterInfoKind,
   ManagedClusterKind,
   managedClusterSetLabel,
+  HostedClusterApiVersion,
+  HostedClusterKind,
   RbacApiVersion,
   Secret,
   SecretApiVersion,
@@ -380,6 +384,46 @@ const mockManagedClusterIBMZ: ManagedCluster = {
   },
 }
 
+const mockManagedClusterKubeVirtHosted: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'managed-cluster-kubevirthosted-clusterset',
+    labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+    annotations: {
+      'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+    },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'Other' }],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
+const mockManagedClusterBaremetalHosted: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'managed-cluster-baremetalhosted-clusterset',
+    labels: { [managedClusterSetLabel]: mockManagedClusterSet.metadata.name! },
+    annotations: {
+      'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+    },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'Other' }],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
 const mockManagedClusterInfoIBMPower: ManagedClusterInfo = {
   apiVersion: ManagedClusterInfoApiVersion,
   kind: ManagedClusterInfoKind,
@@ -409,6 +453,52 @@ const mockManagedClusterInfoIBMZ: ManagedClusterInfo = {
   metadata: {
     name: mockManagedClusterIBMZ.metadata.name!,
     namespace: mockManagedClusterIBMZ.metadata.name!,
+  },
+  status: {
+    conditions: [],
+    version: '1.17',
+    distributionInfo: {
+      type: 'ocp',
+      ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5'],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+        versionAvailableUpdates: [],
+      },
+    },
+  },
+}
+
+const mockManagedClusterInfoKubeVirtHosted: ManagedClusterInfo = {
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
+  metadata: {
+    name: mockManagedClusterKubeVirtHosted.metadata.name!,
+    namespace: mockManagedClusterKubeVirtHosted.metadata.name!,
+  },
+  status: {
+    conditions: [],
+    version: '1.17',
+    distributionInfo: {
+      type: 'ocp',
+      ocp: {
+        version: '1.2.3',
+        availableUpdates: ['1.2.4', '1.2.5'],
+        desiredVersion: '1.2.4',
+        upgradeFailed: false,
+        versionAvailableUpdates: [],
+      },
+    },
+  },
+}
+
+const mockManagedClusterInfoBaremetalHosted: ManagedClusterInfo = {
+  apiVersion: ManagedClusterInfoApiVersion,
+  kind: ManagedClusterInfoKind,
+  metadata: {
+    name: mockManagedClusterBaremetalHosted.metadata.name!,
+    namespace: mockManagedClusterBaremetalHosted.metadata.name!,
   },
   status: {
     conditions: [],
@@ -983,6 +1073,40 @@ const mockManagedClusterIBMZSubmarinerConfig: SubmarinerConfig = {
   },
 }
 
+const mockManagedClusterKubeVirtHostedSubmarinerConfig: SubmarinerConfig = {
+  apiVersion: SubmarinerConfigApiVersion,
+  kind: SubmarinerConfigKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterKubeVirtHosted.metadata.name,
+  },
+  spec: {
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
+    airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
+    IPSecNATTPort: submarinerConfigDefault.nattPort,
+    NATTEnable: submarinerConfigDefault.nattEnable,
+    cableDriver: submarinerConfigDefault.cableDriver,
+    globalCIDR: '',
+  },
+}
+
+const mockManagedClusterBaremetalHostedSubmarinerConfig: SubmarinerConfig = {
+  apiVersion: SubmarinerConfigApiVersion,
+  kind: SubmarinerConfigKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterBaremetalHosted.metadata.name,
+  },
+  spec: {
+    gatewayConfig: { gateways: submarinerConfigDefault.gateways },
+    airGappedDeployment: submarinerConfigDefault.airGappedDeployment,
+    IPSecNATTPort: submarinerConfigDefault.nattPort,
+    NATTEnable: submarinerConfigDefault.nattEnable,
+    cableDriver: submarinerConfigDefault.cableDriver,
+    globalCIDR: '',
+  },
+}
+
 const mockManagedClusterAzureSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
   kind: SubmarinerConfigKind,
@@ -1155,6 +1279,30 @@ const mockSubmarinerAddonIBMZ: ManagedClusterAddOn = {
   },
 }
 
+const mockSubmarinerAddonKubeVirtHosted: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterKubeVirtHosted.metadata.name,
+  },
+  spec: {
+    installNamespace: 'submariner-operator',
+  },
+}
+
+const mockSubmarinerAddonBaremetalHosted: ManagedClusterAddOn = {
+  apiVersion: ManagedClusterAddOnApiVersion,
+  kind: ManagedClusterAddOnKind,
+  metadata: {
+    name: 'submariner',
+    namespace: mockManagedClusterBaremetalHosted.metadata.name,
+  },
+  spec: {
+    installNamespace: 'submariner-operator',
+  },
+}
+
 const mockSubmarinerAddonAzure: ManagedClusterAddOn = {
   apiVersion: ManagedClusterAddOnApiVersion,
   kind: ManagedClusterAddOnKind,
@@ -1253,6 +1401,53 @@ const mockManagedClusterNoCredentialsSubmarinerConfigOpenstack: SubmarinerConfig
   },
 }
 
+const mockHostedClusterKubeVirt: HostedClusterK8sResource = {
+  apiVersion: HostedClusterApiVersion,
+  kind: HostedClusterKind,
+  metadata: {
+    name: mockManagedClusterKubeVirtHosted.metadata.name!,
+    namespace: 'clusters',
+  },
+  spec: {
+    dns: {
+      baseDomain: 'dev06.red-chesterfield.com',
+    },
+    release: {
+      image: 'randomimage',
+    },
+    services: [],
+    platform: {
+      type: 'KubeVirt',
+    },
+    pullSecret: { name: 'psecret' },
+    sshKey: { name: 'thekey' },
+  },
+}
+
+const mockHostedClusterBaremetal: HostedClusterK8sResource = {
+  apiVersion: HostedClusterApiVersion,
+  kind: HostedClusterKind,
+  metadata: {
+    name: mockManagedClusterBaremetalHosted.metadata.name!,
+    namespace: 'clusters',
+  },
+  spec: {
+    services: [],
+    dns: {
+      baseDomain: 'test.com',
+    },
+    pullSecret: { name: 'local-cluster-pull-secret' },
+    release: { image: 'quay.io/openshift-release-dev/ocp-release:4.10.15-x86_64' },
+    sshKey: { name: 'feng-hypershift-test-ssh-key' },
+    platform: {
+      agent: {
+        agentNamespace: 'hostedCluster1',
+      },
+      type: 'Agent',
+    },
+  },
+}
+
 const Component = (props: { isGlobal?: boolean }) => (
   <RecoilRoot
     initializeState={(snapshot) => {
@@ -1269,6 +1464,8 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterInfoBareMetal,
         mockManagedClusterInfoIBMPower,
         mockManagedClusterInfoIBMZ,
+        mockManagedClusterInfoKubeVirtHosted,
+        mockManagedClusterInfoBaremetalHosted,
         mockManagedClusterInfoNoCredentials,
         mockManagedClusterInfoNoCredentialsAzure,
         mockManagedClusterInfoOpenstack,
@@ -1285,6 +1482,8 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterBareMetal,
         mockManagedClusterIBMPower,
         mockManagedClusterIBMZ,
+        mockManagedClusterKubeVirtHosted,
+        mockManagedClusterBaremetalHosted,
         mockManagedClusterNoCredentials,
         mockManagedClusterNoCredentialsAzure,
         mockManagedClusterOpenstack,
@@ -1294,6 +1493,7 @@ const Component = (props: { isGlobal?: boolean }) => (
       snapshot.set(managedClusterAddonsState, [mockSubmarinerAddon])
       snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
       snapshot.set(clusterPoolsState, [])
+      snapshot.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
     }}
   >
     <MemoryRouter
@@ -1436,6 +1636,8 @@ describe('ClusterSetDetails page', () => {
     await clickByText(mockManagedClusterBareMetal!.metadata.name!)
     await clickByText(mockManagedClusterIBMPower!.metadata.name!)
     await clickByText(mockManagedClusterIBMZ!.metadata.name!)
+    await clickByText(mockManagedClusterKubeVirtHosted!.metadata.name!)
+    await clickByText(mockManagedClusterBaremetalHosted!.metadata.name!)
     await clickByLabel('Enable Globalnet')
     await typeByTestId('broker-globalnet-cidr', '243.0.0.333/16')
     await clickByText('Next')
@@ -1563,6 +1765,16 @@ describe('ClusterSetDetails page', () => {
     const nockSCIBMZ = nockCreate(mockManagedClusterIBMZSubmarinerConfig)
     await clickByText('Next')
 
+    // mockManagedClusterKubeVirtHosted
+    const nockMCAKubeVirtHosted = nockCreate(mockSubmarinerAddonKubeVirtHosted)
+    const nockSCKubeVirtHosted = nockCreate(mockManagedClusterKubeVirtHostedSubmarinerConfig)
+    await clickByText('Next')
+
+    // mockManagedClusterBaremetalHosted
+    const nockMCABaremetalHosted = nockCreate(mockSubmarinerAddonBaremetalHosted)
+    const nockSCBaremetalHosted = nockCreate(mockManagedClusterBaremetalHostedSubmarinerConfig)
+    await clickByText('Next')
+
     // mockBroker
     const nockBroker = nockCreate(mockBroker)
 
@@ -1576,6 +1788,10 @@ describe('ClusterSetDetails page', () => {
       nockSCIBMPower,
       nockMCAIBMZ,
       nockSCIBMZ,
+      nockMCAKubeVirtHosted,
+      nockSCKubeVirtHosted,
+      nockMCABaremetalHosted,
+      nockSCBaremetalHosted,
       nockMCANoCreds,
       nockSecretNoCreds,
       nockSCNoCreds,

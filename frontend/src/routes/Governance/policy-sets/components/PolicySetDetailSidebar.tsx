@@ -401,7 +401,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       {type === 'Clusters' ? (
         <AcmTable<string>
           showExportButton
-          exportFilePrefix="policysetdetails"
+          exportFilePrefix={`${policySet.metadata.name}-clusterdetails`}
           items={policySetClusters}
           emptyState={
             <AcmEmptyState
@@ -424,7 +424,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       ) : (
         <AcmTable<Policy>
           showExportButton
-          exportFilePrefix="policysetdetails"
+          exportFilePrefix={`${policySet.metadata.name}-policiesdetails`}
           items={policySetPolicies}
           emptyState={
             <AcmEmptyState title={t('No polices found')} message={t('There are no policies in the policy set.')} />

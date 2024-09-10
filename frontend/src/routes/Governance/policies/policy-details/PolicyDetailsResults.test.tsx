@@ -39,6 +39,7 @@ describe('Policy Details Results', () => {
     await waitForText('local-cluster')
     await waitForText('No violations')
     await waitForText('policy-set-with-1-placement-policy-1', true)
+    expect(screen.getByTestId('template-name-link-disabled')).toBeInTheDocument()
     await waitForText(
       'notification - namespaces [test] found as specified, therefore this Object template is compliant'
     )
@@ -172,7 +173,7 @@ describe('Export from policy details results table', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')

@@ -188,7 +188,7 @@ describe('Export from policy details history table', () => {
     document.createElement('a').dispatchEvent = jest.fn()
 
     await clickByLabel('export-search-result')
-    await clickByText('Export as CSV')
+    await clickByText('Export all to CSV')
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
