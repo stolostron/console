@@ -37,7 +37,7 @@ Object {
   "statusSection": Array [
     Object {
       "count": 4,
-      "link": "/multicloud/applications",
+      "link": "/multicloud/applications?type=argo",
       "title": "Argo CD",
     },
   ],
@@ -73,11 +73,11 @@ Array [
 exports[`Correctly returns getClusterVersionSummary 1`] = `
 Array [
   Object {
-    "key": "unknown",
+    "key": "OpenShift 4.15",
     "value": 1,
   },
   Object {
-    "key": "OpenShift 4.15",
+    "key": "unknown",
     "value": 1,
   },
 ]

@@ -10,7 +10,6 @@ const apiUrl = '/aggregate'
 
 // save response for next query for performance
 // last response expires after 5 mins
-const LISTVIEWKEY = 'useAggregate-ListView'
 const STATUSESKEY = 'useAggregate-Statuses'
 const EXPIRATION = 5 * 60 * 1000
 
@@ -77,19 +76,22 @@ export function useAggregate(
   requestedView: IRequestStatuses | IRequestListView | undefined
 ): ResultViewType {
   let defaultResponse: ResultViewType = undefined
+  let storedResponse: ResultViewType = undefined
 
   // get default response until backend replies
   // or if there's something stored from last query use that
   switch (aggregate) {
     case SupportedAggregate.applications:
       defaultResponse = defaultListResponse
-      if (requestedView && 'page' in requestedView && requestedView.page === 1) {
-        defaultResponse = getWithExpiry(LISTVIEWKEY)
-      }
       break
     case SupportedAggregate.statuses:
-      defaultResponse = getWithExpiry(STATUSESKEY) || defaultStatusResponse
+      storedResponse = getWithExpiry(STATUSESKEY)
+      defaultResponse = defaultStatusResponse
       break
+  }
+  const usingStoredResponse = !!storedResponse
+  if (usingStoredResponse) {
+    defaultResponse = storedResponse
   }
 
   // make request to backend
@@ -123,20 +125,18 @@ export function useAggregate(
       response = result as IResultListView
       response = {
         page: response.page,
-        loading,
+        loading: loading && !usingStoredResponse,
         items: response.items,
         emptyResult: response.emptyResult,
         isPreProcessed: response.isPreProcessed,
       }
-      // save response for next time if on page 1
-      if (!loading && response.page === 1) setWithExpiry(LISTVIEWKEY, response)
       return response
     case SupportedAggregate.statuses:
       response = result as IResultStatuses
       response = {
         itemCount: response.itemCount,
         filterCounts: response.filterCounts,
-        loading,
+        loading: loading && !usingStoredResponse,
       }
       // save response for next time
       if (!loading) setWithExpiry(STATUSESKEY, response)

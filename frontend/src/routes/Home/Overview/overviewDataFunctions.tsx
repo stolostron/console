@@ -166,6 +166,12 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
         return t('Application')
     }
   }
+  const typeTotals: Record<string, number> = {}
+  Object.keys(filterCounts.type).forEach((type) => {
+    typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
+  })
+  // sort alphabetically
+  const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
 
   const getAppTypeLink = (type: string) => {
     // handle cases from getApplicationType
@@ -193,9 +199,9 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
       description: t('total applications'),
       link: NavigationPath.applications,
     },
-    statusSection: Object.keys(filterCounts.type).map((type) => ({
-      title: getAppTypeLabel(type),
-      count: filterCounts.type[type],
+    statusSection: orderedAppTypes.map((type) => ({
+      title: type,
+      count: typeTotals[type],
       link: getAppTypeLink(type),
     })),
     loading,
