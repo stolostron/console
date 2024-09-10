@@ -27,6 +27,7 @@ import {
   ToolbarFilter,
   ToolbarGroup,
   ToolbarItem,
+  Tooltip,
   TooltipProps,
 } from '@patternfly/react-core'
 import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
@@ -1280,36 +1281,38 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             )}
             {customTableAction}
             {showExportButton && (
-              <ToolbarItem key={`export-toolbar-item`}>
-                <Dropdown
-                  onSelect={(event) => {
-                    event?.stopPropagation()
-                    setIsExportMenuOpen(false)
-                  }}
-                  className="export-dropdownMenu"
-                  toggle={
-                    <DropdownToggle
-                      toggleIndicator={null}
-                      onToggle={(value, event) => {
-                        event.stopPropagation()
-                        setIsExportMenuOpen(value)
-                      }}
-                      aria-label="export-search-result"
-                      id="export-search-result"
-                    >
-                      <ExportIcon />
-                    </DropdownToggle>
-                  }
-                  isOpen={isExportMenuOpen}
-                  isPlain
-                  dropdownItems={[
-                    <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
-                      {t('Export all to CSV')}
-                    </DropdownItem>,
-                  ]}
-                  position={'left'}
-                />
-              </ToolbarItem>
+              <Tooltip content={t('Export all table data')}>
+                <ToolbarItem key={`export-toolbar-item`}>
+                  <Dropdown
+                    onSelect={(event) => {
+                      event?.stopPropagation()
+                      setIsExportMenuOpen(false)
+                    }}
+                    className="export-dropdownMenu"
+                    toggle={
+                      <DropdownToggle
+                        toggleIndicator={null}
+                        onToggle={(value, event) => {
+                          event.stopPropagation()
+                          setIsExportMenuOpen(value)
+                        }}
+                        aria-label="export-search-result"
+                        id="export-search-result"
+                      >
+                        <ExportIcon />
+                      </DropdownToggle>
+                    }
+                    isOpen={isExportMenuOpen}
+                    isPlain
+                    dropdownItems={[
+                      <DropdownItem key="export-csv" onClick={() => exportTable(toastContext)}>
+                        {t('Export all to CSV')}
+                      </DropdownItem>,
+                    ]}
+                    position={'left'}
+                  />
+                </ToolbarItem>
+              </Tooltip>
             )}
             {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (

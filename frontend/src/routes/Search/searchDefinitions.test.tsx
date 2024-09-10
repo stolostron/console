@@ -11,6 +11,7 @@ import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
   CreateExternalLink,
+  CreateExternalVMLink,
   CreateGlobalSearchDetailsLink,
   FormatLabels,
   FormatPolicyReportCategories,
@@ -624,4 +625,54 @@ test('Correctly returns url search params with 0 params', () => {
   }
   const result = GetUrlSearchParam(item)
   expect(result).toMatchSnapshot()
+})
+
+test('Correctly returns CreateExternalVMLink', () => {
+  const item = {
+    cluster: 'testCluster',
+    name: 'testVM',
+    namespace: 'testVM',
+  }
+  const { baseElement } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(managedClusterInfosState, [
+          {
+            apiVersion: ManagedClusterInfoApiVersion,
+            kind: ManagedClusterInfoKind,
+            metadata: {
+              name: 'testCluster',
+              namespace: 'testCluster',
+            },
+            status: {
+              consoleURL: 'https://testCluster.com',
+              conditions: [],
+              version: '1.17',
+            },
+          },
+        ])
+      }}
+    >
+      <MemoryRouter>
+        <CreateExternalVMLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns empty CreateExternalVMLink', () => {
+  const item = {
+    cluster: 'testCluster',
+    name: 'testVM',
+    namespace: 'testVM',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <CreateExternalVMLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
 })
