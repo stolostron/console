@@ -241,7 +241,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
     const mappers: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any[]>>; keyBy: string[] }>> = {}
-    // const recorders: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any>>; keyBy: string[] }>> = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
