@@ -6,7 +6,6 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Box } from '@mui/material'
 import { ByClusterCols, DiscoveredViolationsCard, policyViolationSummary } from './common'
-import { useMemo } from 'react'
 
 export default function DiscoveredByCluster({
   policies = [],
@@ -19,47 +18,43 @@ export default function DiscoveredByCluster({
   const channels = useRecoilValue(channelsState)
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''
-  const cols = useMemo(
-    () =>
-      ByClusterCols(
-        t,
-        helmReleases,
-        subscriptions,
-        channels,
-        kindHead == 'operator'
-          ? [
-              {
-                header: t('Deployment available'),
-                cell: (item: DiscoveredPolicyItem) => {
-                  if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
-                  return item.deploymentAvailable ? 'yes' : 'no'
-                },
-                sort: 'deploymentAvailable',
-                search: 'deploymentAvailable',
-                id: 'deploymentAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => {
-                  if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
-                  return item.deploymentAvailable ? 'yes' : 'no'
-                },
-              },
-              {
-                header: t('Upgrade available'),
-                cell: (item: DiscoveredPolicyItem) => {
-                  if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
-                  return item.upgradeAvailable ? 'yes' : 'no'
-                },
-                sort: 'upgradeAvailable',
-                search: 'upgradeAvailable',
-                id: 'upgradeAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => {
-                  if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
-                  return item.upgradeAvailable ? 'yes' : 'no'
-                },
-              },
-            ]
-          : []
-      ),
-    [channels, helmReleases, kindHead, subscriptions, t]
+  const cols = ByClusterCols(
+    t,
+    helmReleases,
+    subscriptions,
+    channels,
+    kindHead == 'operator'
+      ? [
+          {
+            header: t('Deployment available'),
+            cell: (item: DiscoveredPolicyItem) => {
+              if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
+              return item.deploymentAvailable ? 'yes' : 'no'
+            },
+            sort: 'deploymentAvailable',
+            search: 'deploymentAvailable',
+            id: 'deploymentAvailable',
+            exportContent: (item: DiscoveredPolicyItem) => {
+              if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
+              return item.deploymentAvailable ? 'yes' : 'no'
+            },
+          },
+          {
+            header: t('Upgrade available'),
+            cell: (item: DiscoveredPolicyItem) => {
+              if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
+              return item.upgradeAvailable ? 'yes' : 'no'
+            },
+            sort: 'upgradeAvailable',
+            search: 'upgradeAvailable',
+            id: 'upgradeAvailable',
+            exportContent: (item: DiscoveredPolicyItem) => {
+              if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
+              return item.upgradeAvailable ? 'yes' : 'no'
+            },
+          },
+        ]
+      : []
   )
 
   return (
