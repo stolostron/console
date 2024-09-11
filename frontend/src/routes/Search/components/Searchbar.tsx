@@ -535,8 +535,21 @@ export function Searchbar(props: SearchbarProps) {
             dropdownItems={[
               <DropdownItem
                 style={{ width: '10rem' }}
-                key={'item.text'}
-                onClick={() => generateSearchResultExport(searchResultData, searchDefinitions, toast, t)}
+                key={'csv-export'}
+                onClick={() => {
+                  const existingSavedSearch =
+                    savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery)
+                      ?.name ?? undefined
+                  generateSearchResultExport(
+                    existingSavedSearch
+                      ? `${existingSavedSearch.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+                      : `search-result-${Date.now()}`,
+                    searchResultData,
+                    searchDefinitions,
+                    toast,
+                    t
+                  )
+                }}
                 isDisabled={window.location.search === ''}
               >
                 {t('Export as CSV')}
