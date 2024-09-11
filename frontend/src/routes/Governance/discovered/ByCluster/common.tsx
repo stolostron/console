@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoverdPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn } from '../../../../ui-components'
