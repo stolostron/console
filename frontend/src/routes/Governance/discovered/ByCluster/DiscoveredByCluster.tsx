@@ -5,7 +5,7 @@ import { AcmEmptyState, AcmTable } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Box } from '@mui/material'
-import { ByClusterCols, DiscoveredViolationsCard, policyViolationSummary } from './common'
+import { byClusterCols, DiscoveredViolationsCard, policyViolationSummary } from './common'
 import { useMemo } from 'react'
 
 export default function DiscoveredByCluster({
@@ -21,7 +21,7 @@ export default function DiscoveredByCluster({
   const policyName = policies?.[0]?.name ?? ''
   const cols = useMemo(
     () =>
-      ByClusterCols(
+      byClusterCols(
         t,
         helmReleases,
         subscriptions,

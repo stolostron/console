@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoverdPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn } from '../../../../ui-components'
@@ -36,106 +35,103 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   return { noncompliant, compliant, pending, unknown }
 }
 
-export const ByClusterCols = (
+export const byClusterCols = (
   t: TFunction<string, undefined>,
   helmReleases: HelmRelease[],
   subscriptions: Subscription[],
   channels: Channel[],
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
-): IAcmTableColumn<DiscoveredPolicyItem>[] =>
-  useMemo(() => {
-    return [
-      {
-        header: t('Cluster'),
-        cell: (item: DiscoveredPolicyItem) => {
+): IAcmTableColumn<DiscoveredPolicyItem>[] => [
+  {
+    header: t('Cluster'),
+    cell: (item: DiscoveredPolicyItem) => {
+      return (
+        <Link
+          to={generatePath(NavigationPath.discoveredPolicyDetails, {
+            clusterName: item.cluster,
+            apiVersion: item.apiversion,
+            apiGroup: item.apigroup,
+            kind: item.kind,
+            // discovered policy name
+            templateName: item.name,
+            templateNamespace: item.namespace,
+          })}
+        >
+          {item.cluster}
+        </Link>
+      )
+    },
+    sort: 'cluster',
+    search: 'cluster',
+    id: 'cluster',
+    exportContent: (item) => item.cluster,
+  },
+  ...(moreCols ?? []),
+  {
+    header: t('Response action'),
+    cell: 'remediationAction',
+    sort: 'remediationAction',
+    search: 'remediationAction',
+    id: 'responseAction',
+    exportContent: (item: DiscoveredPolicyItem) => item.remediationAction,
+  },
+  {
+    header: t('Severity'),
+    // TODO Add severity icon
+    cell: severityCell,
+    sort: 'severity',
+    id: 'severity',
+    exportContent: (item) => item.severity,
+  },
+  {
+    header: t('Violations'),
+    cell: (item: DiscoveredPolicyItem) => {
+      const compliant = item?.compliant?.toLowerCase()
+      switch (compliant) {
+        case 'compliant':
           return (
-            <Link
-              to={generatePath(NavigationPath.discoveredPolicyDetails, {
-                clusterName: item.cluster,
-                apiVersion: item.apiversion,
-                apiGroup: item.apigroup,
-                kind: item.kind,
-                // discovered policy name
-                templateName: item.name,
-                templateNamespace: item.namespace,
-              })}
-            >
-              {item.cluster}
-            </Link>
+            <div>
+              <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+            </div>
           )
-        },
-        sort: 'cluster',
-        search: 'cluster',
-        id: 'cluster',
-        exportContent: (item) => item.cluster,
-      },
-      ...(moreCols ?? []),
-      {
-        header: t('Response action'),
-        cell: 'remediationAction',
-        sort: 'remediationAction',
-        search: 'remediationAction',
-        id: 'responseAction',
-        exportContent: (item: DiscoveredPolicyItem) => item.remediationAction,
-      },
-      {
-        header: t('Severity'),
-        // TODO Add severity icon
-        cell: severityCell,
-        sort: 'severity',
-        id: 'severity',
-        exportContent: (item) => item.severity,
-      },
-      {
-        header: t('Violations'),
-        cell: (item: DiscoveredPolicyItem) => {
-          const compliant = item?.compliant?.toLowerCase()
-          switch (compliant) {
-            case 'compliant':
-              return (
-                <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-                </div>
-              )
-            case 'noncompliant':
-              return (
-                <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
-                </div>
-              )
-            case 'pending':
-              return (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
-                </div>
-              )
-            default:
-              return (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                </div>
-              )
-          }
-        },
-        sort: 'compliant',
-        id: 'violations',
-        exportContent: (item: DiscoveredPolicyItem) => item.compliant || '-',
-      },
-      {
-        header: t('Source'),
-        cell: (item: DiscoveredPolicyItem) => {
-          if (item.source?.type === 'Policy') {
-            return discoveredSourceCell(t, item.source)
-          }
-          return getPolicySource(item, helmReleases, channels, subscriptions, t)
-        },
-        sort: (a: DiscoveredPolicyItem, b: DiscoveredPolicyItem) => compareStrings(a.source?.type, b.source?.type),
-        search: (item: DiscoveredPolicyItem) => item.source?.type ?? '',
-        id: 'source',
-        exportContent: (item) => item.source?.type ?? '-',
-      },
-    ]
-  }, [channels, helmReleases, moreCols, subscriptions, t])
+        case 'noncompliant':
+          return (
+            <div>
+              <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+            </div>
+          )
+        case 'pending':
+          return (
+            <div>
+              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+            </div>
+          )
+        default:
+          return (
+            <div>
+              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+            </div>
+          )
+      }
+    },
+    sort: 'compliant',
+    id: 'violations',
+    exportContent: (item: DiscoveredPolicyItem) => item.compliant || '-',
+  },
+  {
+    header: t('Source'),
+    cell: (item: DiscoveredPolicyItem) => {
+      if (item.source?.type === 'Policy') {
+        return discoveredSourceCell(t, item.source)
+      }
+      return getPolicySource(item, helmReleases, channels, subscriptions, t)
+    },
+    sort: (a: DiscoveredPolicyItem, b: DiscoveredPolicyItem) => compareStrings(a.source?.type, b.source?.type),
+    search: (item: DiscoveredPolicyItem) => item.source?.type ?? '',
+    id: 'source',
+    exportContent: (item) => item.source?.type ?? '-',
+  },
+]
 
 export function DiscoveredViolationsCard(
   props: Readonly<{ policyKind: string; policyViolationSummary: ViolationSummary }>
