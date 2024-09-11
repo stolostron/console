@@ -205,7 +205,53 @@ describe('SavedSearchQueries Page', () => {
       },
     }
 
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
+    const mockSuggestedSearchQuery = {
+      operationName: 'searchResultItems',
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              {
+                property: 'kind',
+                values: ['DaemonSet', 'Deployment', 'Job', 'StatefulSet', 'ReplicaSet'],
+              },
+            ],
+            limit: -1,
+          },
+        ],
+      },
+      query:
+        'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}',
+    }
+
+    const mockSuggestedSearchResponse = {
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                apiversion: 'v1',
+                cluster: 'local-cluster',
+                container: 'test-container',
+                created: '2024-08-01T21:27:06Z',
+                kind: 'Deployment',
+                kind_plural: 'deployments',
+                name: 'test-deployment',
+                namespace: 'test-deployment-ns',
+                restarts: '1',
+                startedAt: '2024-08-01T21:27:06Z',
+                status: 'Running',
+              },
+            ],
+            __typename: 'SearchResult',
+          },
+        ],
+      },
+    }
+
+    const savedSearch = nockSearch(mockSearchQuery, mockSearchResponse)
+    const suggestedSearch = nockSearch(mockSuggestedSearchQuery, mockSuggestedSearchResponse)
     const mocks = [
       {
         request: {
@@ -222,12 +268,26 @@ describe('SavedSearchQueries Page', () => {
                 ],
                 limit: -1,
               },
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['DaemonSet', 'Deployment', 'Job', 'StatefulSet', 'ReplicaSet'],
+                  },
+                ],
+                limit: 1000,
+              },
             ],
           },
         },
         result: {
           data: {
             searchResult: [
+              {
+                count: 1,
+                __typename: 'SearchResult',
+              },
               {
                 count: 1,
                 __typename: 'SearchResult',
@@ -257,7 +317,14 @@ describe('SavedSearchQueries Page', () => {
               ]}
               setSelectedSearch={() => {}}
               setUserPreference={() => {}}
-              suggestedSearches={[]}
+              suggestedSearches={[
+                {
+                  id: 'search.suggested.workloads.name',
+                  name: 'Workloads',
+                  description: 'A pre-defined search to help you review your workloads',
+                  searchText: 'kind:DaemonSet,Deployment,Job,StatefulSet,ReplicaSet',
+                },
+              ]}
             />
           </MockedProvider>
         </MemoryRouter>
@@ -271,18 +338,35 @@ describe('SavedSearchQueries Page', () => {
     await waitFor(() => expect(screen.queryByText('testSavedQuery1')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('testSavedQueryDesc1')).toBeTruthy())
 
-    // open action menu
-    const actionBtn = screen.getByRole('button', {
+    // open action menu for saved search
+    const savedActionBtn = screen.getAllByRole('button', {
       name: /actions/i,
     })
-    expect(actionBtn).toBeTruthy()
-    userEvent.click(actionBtn)
+    expect(savedActionBtn[0]).toBeTruthy()
+    userEvent.click(savedActionBtn[0])
 
     // click export
-    const actionItemBtns = screen.getAllByRole('menuitem')
-    expect(actionItemBtns[2]).toBeTruthy()
-    userEvent.click(actionItemBtns[2])
+    const savedActionItemBtns = screen.getAllByRole('menuitem')
+    expect(savedActionItemBtns[2]).toBeTruthy()
+    userEvent.click(savedActionItemBtns[2])
 
-    await waitForNocks([search])
+    await waitForNocks([savedSearch])
+    // hide saved search menu
+    userEvent.click(savedActionBtn[0])
+    expect(savedActionItemBtns[2]).not.toBeVisible()
+
+    // open action menu for suggested search
+    const suggestedActionBtn = screen.getAllByRole('button', {
+      name: /actions/i,
+    })
+    expect(suggestedActionBtn[1]).toBeTruthy()
+    userEvent.click(suggestedActionBtn[1])
+
+    // click export
+    const suggestedActionItemBtns = screen.getAllByRole('menuitem')
+    expect(suggestedActionItemBtns[5]).toBeTruthy()
+    userEvent.click(suggestedActionItemBtns[5])
+
+    await waitForNocks([suggestedSearch])
   })
 })

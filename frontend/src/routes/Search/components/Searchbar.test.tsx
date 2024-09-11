@@ -350,4 +350,22 @@ describe('Searchbar tests', () => {
     expect(screen.queryByText('name:name1,name2')).not.toBeInTheDocument()
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
   })
+
+  test('renders Dropdown component and handles csv export', async () => {
+    render(<PrefilledSearchbar />)
+
+    // Check if the toggle button is present
+    const toggleButton = screen.getByLabelText('export-search-result')
+    expect(toggleButton).toBeInTheDocument()
+    userEvent.click(toggleButton)
+
+    // Check if the dropdown item is present
+    const dropdownItem = screen.getByRole('menuitem', {
+      name: /export as csv/i,
+    })
+    expect(dropdownItem).toBeInTheDocument()
+    await waitFor(() => {
+      fireEvent.click(dropdownItem)
+    })
+  })
 })
