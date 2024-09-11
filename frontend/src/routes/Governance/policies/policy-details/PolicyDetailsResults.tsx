@@ -14,6 +14,8 @@ import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails }
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
+import { fromNow } from '../../../../resources/utils/datetime'
+// import { formatRelativeTime } from '../../../../lib/localize-date-time'
 
 export interface ResultsTableData {
   templateName: string
@@ -256,13 +258,22 @@ export default function PolicyDetailsResults() {
         exportContent: (item: ResultsTableData) => item.remediationAction,
       },
       {
-        header: t('Last report'),
-        sort: 'timestamp',
-        cell: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
-        exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
-      },
+  header: t('Last report'),
+  sort: 'timestamp',
+  cell: (item: ResultsTableData) => 
+    item.timestamp && fromNow(item.timestamp),
+  exportContent: (item: ResultsTableData) =>
+          item.timestamp && fromNow(item.timestamp),
+},
+
+      // {
+      //   header: t('Last report'),
+      //   sort: 'timestamp',
+      //   cell: (item: ResultsTableData) =>
+      //     item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+      //   exportContent: (item: ResultsTableData) =>
+      //     item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+      // },
       {
         header: t('History'),
         cell: (item: ResultsTableData) => {

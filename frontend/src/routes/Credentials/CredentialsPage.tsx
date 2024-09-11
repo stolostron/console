@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import i18n from 'i18next'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
+// import { formatRelativeTime, formatDateTime } from '../../lib/localize-date-time'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmButton,
@@ -31,6 +33,7 @@ import {
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
+import { fromNow } from '../../resources/utils/datetime'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -76,7 +79,7 @@ export function CredentialsTable(props: {
   discoveryConfigs?: DiscoveryConfig[]
   secrets?: Secret[]
 }) {
-  const { t } = useTranslation()
+    const { t } = useTranslation()
   const navigate = useNavigate()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
     open: false,
@@ -90,7 +93,6 @@ export function CredentialsTable(props: {
   }, [namespaces])
 
   sessionStorage.removeItem('DiscoveryCredential')
-
   function getAdditionalActions(item: Secret) {
     const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
     if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {
@@ -231,20 +233,36 @@ export function CredentialsTable(props: {
               return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
             },
           },
-          {
-            header: t('Created'),
-            sort: 'metadata.creationTimestamp',
-            cell: (resource) => (
-              <span style={{ whiteSpace: 'nowrap' }}>
-                {resource.metadata.creationTimestamp && moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
-              </span>
-            ),
-            exportContent: (item: Secret) => {
-              if (item.metadata.creationTimestamp) {
-                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
-              }
-            },
-          },
+        {
+  header: t('Created'),
+  sort: 'metadata.creationTimestamp',
+  cell: (resource) => (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      {resource.metadata.creationTimestamp && fromNow(resource.metadata.creationTimestamp)}
+    </span>
+  ),
+  exportContent: (item: Secret) => {
+    if (item.metadata.creationTimestamp) {
+      return fromNow(item.metadata.creationTimestamp);
+    }
+  },
+},
+
+
+          // {
+          //   header: t('Created'),
+          //   sort: 'metadata.creationTimestamp',
+          //   cell: (resource) => (
+          //     <span style={{ whiteSpace: 'nowrap' }}>
+          //       {resource.metadata.creationTimestamp && moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
+          //     </span>
+          //   ),
+          //   exportContent: (item: Secret) => {
+          //     if (item.metadata.creationTimestamp) {
+          //       return moment(new Date(item.metadata.creationTimestamp)).fromNow()
+          //     }
+          //   },
+          // },
           {
             header: '',
             cellTransforms: [fitContent],

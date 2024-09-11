@@ -8,6 +8,7 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
+import { getLastLanguage } from '../resources/utils/getLastLanguage'
 
 i18n
   // pass the i18n instance to react-i18next
@@ -33,6 +34,21 @@ i18n
     nsSeparator: '~',
     supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
     simplifyPluralSuffix: true,
+    interpolation: {
+      format: function (value, format, lng, options) {
+        if (format === 'number') {
+          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat#Browser_compatibility
+          return new Intl.NumberFormat(lng).format(value)
+        }
+        if (value instanceof Date) {
+          if (format === 'fromNow') {
+            return fromNow(value, null, options)
+          }
+          return dateTimeFormatter.format(value)
+        }
+        return value
+      },
+    },
   })
 
 export default i18n
