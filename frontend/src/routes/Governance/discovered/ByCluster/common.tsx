@@ -161,7 +161,8 @@ export function discoveredSourceCell(t: TFunction, source: ISourceType | undefin
             borderRadius: '20px',
             fontSize: '0.75rem',
             marginRight: '10px',
-            minWidth: 18,
+            width: 20,
+            textAlign: 'center',
           }}
         >
           P
