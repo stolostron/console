@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
@@ -13,7 +13,6 @@ import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import PolicyTemplateYaml from './PolicyTemplateYaml'
 
 jest.mock('../../../../components/YamlEditor', () => {
-  // TODO replace with actual YAML Page when Monaco editor is imported correctly
   return function YamlEditor() {
     return <div>Yaml Editor Open</div>
   }
@@ -894,5 +893,66 @@ describe('Policy Template Details Page', () => {
     )
 
     await waitForText('IamPolicy is no longer supported')
+  })
+
+  test('Should render discovered policy detail page successfully', async () => {
+    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'policy.open-cluster-management.io',
+              apiVersion: 'v1',
+              kind: 'ConfigurationPolicy',
+              templateName: 'config-policy',
+              templateNamespace: 'test-cluster',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for page load - looking for breadcrumb items
+    await waitForText('Discovered policies')
+
+    expect(screen.getByRole('link', { name: 'config-policy' })).toBeInTheDocument()
+
+    await waitForText('ConfigurationPolicy details')
+
+    // wait for related resources table to load correctly
+    await waitForText('Related resources')
+    await waitForText('Resource found as expected')
+
+    // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
+    await waitForText('test-cluster', true)
+
+    await waitForText('config-policy', true)
+    await waitForText('ConfigurationPolicy', true)
+
+    // wait for template yaml to load correctly
+    await waitForText('YAML')
+    const yamlButton = container.querySelectorAll('.pf-c-nav__link')
+    expect(yamlButton).not.toBeNull()
+
+    userEvent.click(yamlButton[1])
+
+    await waitForText('Yaml Editor Open')
   })
 })

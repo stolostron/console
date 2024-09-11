@@ -6,7 +6,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 
-export function PolicyViolationsCard(props: { policyViolationSummary: ViolationSummary }) {
+export function PolicyViolationsCard(props: Readonly<{ policyViolationSummary: ViolationSummary }>) {
   const { t } = useTranslation()
   return (
     <ViolationsCard
@@ -55,14 +55,16 @@ export function usePolicyViolationSummary(policies: Policy[]): ViolationSummary 
   return violations
 }
 
-export function ViolationsCard(props: {
-  title: string
-  description: string
-  noncompliant: number
-  compliant: number
-  pending: number
-  unknown?: number
-}) {
+export function ViolationsCard(
+  props: Readonly<{
+    title: string
+    description: string
+    noncompliant: number
+    compliant: number
+    pending: number
+    unknown?: number
+  }>
+) {
   const { t } = useTranslation()
   return (
     <Card>

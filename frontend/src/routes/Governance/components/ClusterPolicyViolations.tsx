@@ -4,12 +4,14 @@ import { StatusIcons } from '../../../components/StatusIcons'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { IPolicyRisks } from '../useGovernanceData'
 
-export function ClusterPolicyViolationIcons(props: {
-  risks: IPolicyRisks
-  compliantHref?: string
-  violationHref?: string
-  unknownHref?: string
-}) {
+export function ClusterPolicyViolationIcons(
+  props: Readonly<{
+    risks: IPolicyRisks
+    compliantHref?: string
+    violationHref?: string
+    unknownHref?: string
+  }>
+) {
   const { risks, compliantHref, violationHref, unknownHref } = props
   const violations = risks.critical + risks.high + risks.medium + risks.low
   const { t } = useTranslation()
@@ -28,15 +30,17 @@ export function ClusterPolicyViolationIcons(props: {
   )
 }
 
-export function ClusterPolicyViolationIcons2(props: {
-  compliant: number
-  noncompliant: number
-  pending?: number
-  unknown?: number
-  compliantHref?: string
-  violationHref?: string
-  pendingHref?: string
-}) {
+export function ClusterPolicyViolationIcons2(
+  props: Readonly<{
+    compliant: number
+    noncompliant: number
+    pending?: number
+    unknown?: number
+    compliantHref?: string
+    violationHref?: string
+    pendingHref?: string
+  }>
+) {
   const { t } = useTranslation()
   return (
     <StatusIcons
