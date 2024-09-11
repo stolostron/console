@@ -98,7 +98,7 @@ export default function SavedSearchQueries(props: {
           query: SearchResultItemsDocument,
           variables: {
             // limit set to -1 to allow all results
-            input: convertStringToQuery(query.searchText, -1),
+            input: [convertStringToQuery(query.searchText, -1)],
             limit: 1000,
           },
           fetchPolicy: 'network-only',
