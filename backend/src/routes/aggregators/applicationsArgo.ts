@@ -90,7 +90,7 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 }
 
 async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
-  const argoApps = (await getPagedSearchResources(query, pass)) as unknown as IArgoAppRemoteResource[]
+  const argoApps = (await getPagedSearchResources(query, true, pass)) as unknown as IArgoAppRemoteResource[]
 
   const apps: IResource[] = []
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {

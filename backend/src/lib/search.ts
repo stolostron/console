@@ -55,14 +55,14 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   }
   return options
 }
-
-// create array of [a*] to [z*] programmatically
-export const pagedSearchQueries: string[][] = []
-for (let i = 0; i < 26; i++) {
-  pagedSearchQueries[i] = [`${String.fromCharCode(i + 97)}*`]
-}
-// append with [0*] to [9*]
-pagedSearchQueries.push(['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*'])
+export const pagedSearchQueries: string[][] = [
+  ['a*', 'i*', 'n*'],
+  ['e*', 'r*', 'o*'],
+  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
+  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
+  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
+  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
+]
 
 export async function getPagedSearchResources(
   query: {
@@ -70,17 +70,22 @@ export async function getPagedSearchResources(
     variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
     query: string
   },
+  pageResults: boolean,
   pass: number
 ) {
   const options = await getServiceAccountOptions()
   let resources: IResource[] = []
   for (let i = 0; i < pagedSearchQueries.length; ) {
     const _query = structuredClone(query)
-    const values = pagedSearchQueries[i]
-    _query.variables.input[0].filters.push({
-      property: 'name',
-      values,
-    })
+    // should we limit the results by groupings of apps that
+    // begin with certain letters?
+    if (pageResults) {
+      const values = pagedSearchQueries[i]
+      _query.variables.input[0].filters.push({
+        property: 'name',
+        values,
+      })
+    }
     if (pass === 1) {
       _query.variables.input[0].limit = 100
     }
@@ -91,8 +96,9 @@ export async function getPagedSearchResources(
       continue
     }
     resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
+    if (!pageResults) break
     if (process.env.NODE_ENV !== 'test') {
-      let timeout = 10000
+      let timeout = 5000
       if (pass === 1) timeout = 500
       if (pass === 2) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))
