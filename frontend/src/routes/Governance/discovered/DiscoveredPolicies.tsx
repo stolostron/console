@@ -236,7 +236,7 @@ export default function DiscoveredPolicies() {
         columns={discoveredPoliciesCols}
         keyFn={(item) => item.id}
         items={data}
-        emptyState={<AcmEmptyState title={t(`You don't have any policies`)} message={t('There are no policies')} />}
+        emptyState={<AcmEmptyState title={t(`You don't have any policies.`)} message={t('There are no policies.')} />}
         filters={filters}
         showExportButton
         exportFilePrefix="discoveredPolicies"
