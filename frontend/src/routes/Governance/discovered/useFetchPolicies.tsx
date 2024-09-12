@@ -31,8 +31,8 @@ export interface DiscoveredPolicyItem {
   name: string
   disabled: boolean
   // These are only for Operator policy
-  deploymentAvailable?: boolean | 'yes' | 'no'
-  upgradeAvailable?: boolean | 'yes' | 'no'
+  deploymentAvailable?: boolean
+  upgradeAvailable?: boolean
   // Not from search-collector. Attached in grouping function
   source?: ISourceType
 }

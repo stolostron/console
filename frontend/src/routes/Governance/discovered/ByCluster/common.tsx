@@ -206,3 +206,9 @@ export function translateSource(source: string, t: TFunction): any {
       return source
   }
 }
+
+export const convertYesNoCell = (val: string | boolean | undefined | null): string => {
+  if (val == null || val == undefined) return '-'
+  if (typeof val !== 'boolean') return JSON.parse(val) ? 'yes' : 'no'
+  return val === true ? 'yes' : 'no'
+}
