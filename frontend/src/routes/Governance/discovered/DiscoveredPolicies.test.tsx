@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from './useFetchPolicies'
-import DiscoveredPolicies from './DiscoveredPolicies'
+import DiscoveredPolicies, { getSourceFilter } from './DiscoveredPolicies'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
@@ -196,5 +196,95 @@ describe('useFetchPolicies custom hook', () => {
       </MemoryRouter>
     )
     expect(baseElement.querySelector('td[data-label=Severity]')?.textContent).toBe('-')
+  })
+
+  test('Should get source filter list properly', () => {
+    const data: useFetchPolicies.DiscoverdPolicyTableItem[] = [
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports',
+        kind: 'ConfigurationPolicy',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Multiple',
+          parentName: '',
+          parentNs: '',
+        },
+      },
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports',
+        kind: 'ConfigurationPolicy',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Policy',
+          parentName: 'parent-name',
+          parentNs: 'parent-ns',
+        },
+      },
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports2',
+        kind: 'ConfigurationPolicy2',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Policy',
+          parentName: 'parent-name',
+          parentNs: 'parent-ns',
+        },
+      },
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports2',
+        kind: 'ConfigurationPolicy2',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Policy',
+          parentName: 'parent-name2',
+          parentNs: 'parent-ns2',
+        },
+      },
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports2',
+        kind: 'ConfigurationPolicy2',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Local',
+          parentName: '',
+          parentNs: '',
+        },
+      },
+      {
+        id: 'check-policy-reportsConfigurationPolicy',
+        name: 'check-policy-reports2',
+        kind: 'ConfigurationPolicy2',
+        severity: 'critical',
+        responseAction: 'inform/enforce',
+        policies: [],
+        source: {
+          type: 'Managed externally',
+          parentName: '',
+          parentNs: '',
+        },
+      },
+    ]
+    expect(getSourceFilter(data)).toBe([
+      { label: 'Multiple', value: 'Multiple' },
+      { label: 'parent-ns.parent-name', value: 'parent-ns.parent-name' },
+      { label: 'parent-ns2.parent-name2', value: 'parent-ns2.parent-name2' },
+      { label: 'Local', value: 'Local' },
+      { label: 'Managed externally', value: 'Managed externally' },
+    ])
   })
 })
