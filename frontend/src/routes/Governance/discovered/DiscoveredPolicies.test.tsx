@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies, { getSourceFilter } from './DiscoveredPolicies'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { waitForText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
@@ -60,9 +60,9 @@ describe('useFetchPolicies custom hook', () => {
             },
           ],
           source: {
-            type: 'Multiple',
-            parentName: '',
-            parentNs: '',
+            type: 'Policy',
+            parentName: 'p-name',
+            parentNs: 'p-ns',
           },
         },
       ],
@@ -91,7 +91,12 @@ describe('useFetchPolicies custom hook', () => {
     await waitForText('Critical')
 
     await waitForText('Source')
-    await waitForText('Multiple')
+    await waitForText('p-name')
+
+    // tooltip test
+    fireEvent.mouseEnter(screen.getByText('p-name'))
+    await waitForText('Namespace: p-ns')
+    await waitForText('Name: p-name')
   })
 
   test('Should render error page', async () => {
@@ -279,12 +284,14 @@ describe('useFetchPolicies custom hook', () => {
         },
       },
     ]
-    expect(getSourceFilter(data)).toBe([
-      { label: 'Multiple', value: 'Multiple' },
-      { label: 'parent-ns.parent-name', value: 'parent-ns.parent-name' },
-      { label: 'parent-ns2.parent-name2', value: 'parent-ns2.parent-name2' },
-      { label: 'Local', value: 'Local' },
-      { label: 'Managed externally', value: 'Managed externally' },
-    ])
+    expect(JSON.stringify(getSourceFilter(data))).toBe(
+      JSON.stringify([
+        { label: 'Multiple', value: 'Multiple' },
+        { label: 'parent-ns/parent-name', value: 'parent-ns/parent-name' },
+        { label: 'parent-ns2/parent-name2', value: 'parent-ns2/parent-name2' },
+        { label: 'Local', value: 'Local' },
+        { label: 'Managed externally', value: 'Managed externally' },
+      ])
+    )
   })
 })

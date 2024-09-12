@@ -21,7 +21,7 @@ export const getSourceFilter = (data: DiscoverdPolicyTableItem[]): ISourceFilter
   const uniqMap: { [key: string]: ISourceType } = {}
   data?.forEach((data: DiscoverdPolicyTableItem) => {
     if (data.source?.type) {
-      const key = data.source.type + data.source.parentName + data.source.parentNs
+      const key = data.source.type + '_' + data.source.parentName + '_' + data.source.parentNs
       uniqMap[key] = data.source
     }
   })
@@ -31,7 +31,7 @@ export const getSourceFilter = (data: DiscoverdPolicyTableItem[]): ISourceFilter
   for (const key in uniqMap) {
     const source = uniqMap[key]
     if (source.type.toLowerCase() === 'policy') {
-      const nsName = source.parentNs + '.' + source.parentName
+      const nsName = source.parentNs + '/' + source.parentName
       result.push({ label: nsName, value: nsName })
     } else if (source.type) {
       result.push({ label: source.type, value: source.type })
@@ -206,7 +206,7 @@ export default function DiscoveredPolicies() {
         options: data ? getSourceFilter(data) : [],
         tableFilterFn: (selectedValues, item) => {
           if (item.source?.type.toLowerCase() === 'policy') {
-            return selectedValues.includes(item.source.parentNs + '.' + item.source.parentName)
+            return selectedValues.includes(item.source.parentNs + '/' + item.source.parentName)
           }
 
           return item.source?.type ? selectedValues.includes(item.source?.type) : false
