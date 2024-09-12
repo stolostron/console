@@ -741,7 +741,7 @@ export function getEngineWithSvg(kind: string): JSX.Element {
 /* istanbul ignore next */
 export const parseDiscoveredPolicies = (data: any): any => {
   return JSON.parse(JSON.stringify(data), (k, v: string) => {
-    if (['disabled', '_isExternal', '_hubClusterResource'].includes(k)) {
+    if (['disabled', '_isExternal', '_hubClusterResource', 'deploymentAvailable', 'upgradeAvailable'].includes(k)) {
       if (v === 'true') return true
       return v === 'false' ? false : v
     }

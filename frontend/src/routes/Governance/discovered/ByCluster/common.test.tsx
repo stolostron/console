@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
-import { DiscoveredViolationsCard, policyViolationSummary } from './common'
+import { convertYesNoCell, DiscoveredViolationsCard, policyViolationSummary } from './common'
 import { waitForText } from '../../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 
@@ -137,5 +137,13 @@ describe('ByCluster common component test', () => {
     await waitForText('1 with no violations')
     await waitForText('1 pending')
     await waitForText('1 with violations')
+  })
+
+  test('convertYesNoCell should work properly', () => {
+    expect(convertYesNoCell('true')).toBe('yes')
+    expect(convertYesNoCell('false')).toBe('no')
+    expect(convertYesNoCell(false)).toBe('no')
+    expect(convertYesNoCell(true)).toBe('yes')
+    expect(convertYesNoCell(undefined)).toBe('-')
   })
 })
