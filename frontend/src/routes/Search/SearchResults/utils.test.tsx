@@ -205,7 +205,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   }
 
   const searchDefinitions = getSearchDefinitions((key) => key)
-  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
+  generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
     title: 'Generating data. Download may take a moment to start.',
@@ -293,7 +293,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   }
 
   const searchDefinitions = getSearchDefinitions((key) => key)
-  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
+  generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
     title: 'Generating data. Download may take a moment to start.',
