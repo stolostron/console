@@ -7,8 +7,16 @@ import userEvent from '@testing-library/user-event'
 import { useMemo, useState } from 'react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { getSearchDefinitions } from '../searchDefinitions'
+import { generateSearchResultExport } from '../SearchResults/utils'
 import { updateBrowserUrl } from '../urlQuery'
-import { convertStringToTags, DropdownSuggestionsProps, Searchbar } from './Searchbar'
+import { convertStringToTags, DropdownSuggestionsProps, handleCSVExport, Searchbar } from './Searchbar'
+
+jest.mock('../SearchResults/utils')
+const toastContextMock: any = {
+  addAlert: jest.fn(),
+}
+const t = jest.fn()
 
 export const BlankSearchbar = () => {
   const [currentQuery, setCurrentQuery] = useState('')
@@ -367,5 +375,80 @@ describe('Searchbar tests', () => {
     await waitFor(() => {
       fireEvent.click(dropdownItem)
     })
+  })
+
+  it('should call generateSearchResultExport using name from saved search', () => {
+    window.URL.createObjectURL = jest.fn()
+    Date.now = jest.fn(() => 1234)
+    const searchDefinitions = getSearchDefinitions(t)
+    const currentQuery = 'kind:Pod'
+    const savedSearchQueries = [{ id: '1234', searchText: 'kind:Pod', name: 'saved-search' }]
+    const searchResultData = {
+      searchResult: [
+        {
+          items: [
+            {
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              kind: 'Pod',
+              kind_plural: 'pods',
+              label: 'app=search; component=search-v2-operator; name=search-indexer; pod-template-hash=6bb544d4f7',
+              name: 'search-pod',
+              namespace: 'open-cluster-management',
+              startedAt: '2024-08-29T16:30:18Z',
+              status: 'Running',
+            },
+          ],
+          __typename: 'SearchResult',
+        },
+      ],
+    }
+
+    handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toastContextMock, t)
+
+    expect(generateSearchResultExport).toHaveBeenCalledWith(
+      `saved-search-1234`,
+      searchResultData,
+      searchDefinitions,
+      toastContextMock,
+      t
+    )
+  })
+
+  it('should call generateSearchResultExport using default file name', () => {
+    window.URL.createObjectURL = jest.fn()
+    Date.now = jest.fn(() => 1234)
+    const searchDefinitions = getSearchDefinitions(t)
+    const currentQuery = 'kind:Pod'
+    const searchResultData = {
+      searchResult: [
+        {
+          items: [
+            {
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              kind: 'Pod',
+              kind_plural: 'pods',
+              label: 'app=search; component=search-v2-operator; name=search-indexer; pod-template-hash=6bb544d4f7',
+              name: 'search-pod',
+              namespace: 'open-cluster-management',
+              startedAt: '2024-08-29T16:30:18Z',
+              status: 'Running',
+            },
+          ],
+          __typename: 'SearchResult',
+        },
+      ],
+    }
+
+    handleCSVExport(currentQuery, [], searchResultData, searchDefinitions, toastContextMock, t)
+
+    expect(generateSearchResultExport).toHaveBeenCalledWith(
+      `search-result-1234`,
+      searchResultData,
+      searchDefinitions,
+      toastContextMock,
+      t
+    )
   })
 })

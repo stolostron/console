@@ -20,14 +20,15 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 import TimesIcon from '@patternfly/react-icons/dist/js/icons/times-icon'
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { TFunction } from 'react-i18next'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch } from '../../../resources/userpreference'
 import { useSharedAtoms } from '../../../shared-recoil'
-import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext } from '../../../ui-components'
+import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext, IAlertContext } from '../../../ui-components'
 import { operators } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
-import { useSearchDefinitions } from '../searchDefinitions'
+import { ResourceDefinitions, useSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
 import { transformBrowserUrlToSearchString } from '../urlQuery'
 
@@ -76,6 +77,27 @@ const stripOperators = (text: string) => {
     return text.substring(operators[idx].length)
   }
   return text
+}
+
+export const handleCSVExport = (
+  currentQuery: string,
+  savedSearchQueries: SavedSearch[],
+  searchResultData: SearchResultItemsQuery | undefined,
+  searchDefinitions: ResourceDefinitions,
+  toast: IAlertContext,
+  t: TFunction<string, undefined>
+) => {
+  const existingSavedSearch =
+    savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery)?.name ?? undefined
+  generateSearchResultExport(
+    existingSavedSearch
+      ? `${existingSavedSearch.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+      : `search-result-${Date.now()}`,
+    searchResultData,
+    searchDefinitions,
+    toast,
+    t
+  )
 }
 
 export function Searchbar(props: SearchbarProps) {
@@ -536,20 +558,17 @@ export function Searchbar(props: SearchbarProps) {
               <DropdownItem
                 style={{ width: '10rem' }}
                 key={'csv-export'}
-                onClick={() => {
-                  const existingSavedSearch =
-                    savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery)
-                      ?.name ?? undefined
-                  generateSearchResultExport(
-                    existingSavedSearch
-                      ? `${existingSavedSearch.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
-                      : `search-result-${Date.now()}`,
+                onClick={() =>
+                  handleCSVExport(
+                    currentQuery,
+
+                    savedSearchQueries,
                     searchResultData,
                     searchDefinitions,
                     toast,
                     t
                   )
-                }}
+                }
                 isDisabled={window.location.search === ''}
               >
                 {t('Export as CSV')}
