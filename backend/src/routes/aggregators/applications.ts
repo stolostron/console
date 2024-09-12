@@ -86,10 +86,14 @@ async function searchAPILoop(): Promise<void> {
 
 export function aggregateKubeApplications() {
   // ACM Apps
-  applicationCache['subscription'] = generateTransforms(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+  applicationCache['subscription'] = generateTransforms(
+    structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+  )
 
   // AppSets
-  applicationCache['appset'] = generateTransforms(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+  applicationCache['appset'] = generateTransforms(
+    structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+  )
 }
 
 export async function aggregatSearchAPIApplications(pass: number) {
