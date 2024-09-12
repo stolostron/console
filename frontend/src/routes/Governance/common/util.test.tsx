@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus } from './util'
+import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus, parseStringMap } from './util'
 import { PolicyTableItem } from '../policies/Policies'
 import { Policy, PolicyTemplate, REMEDIATION_ACTION } from '../../../resources'
 import { cloneDeep } from 'lodash'
@@ -882,5 +882,22 @@ describe('Test hasInformOnlyPolicies', () => {
       source: 'Local',
     }
     expect(hasInformOnlyPolicies([policyItem])).toBe(false)
+  })
+})
+
+describe('Test parseStringValue', () => {
+  test('parseStringMap should correctly parse the annotation string.', () => {
+    expect(
+      JSON.stringify(
+        parseStringMap(
+          'apps.open-cluster-management.io/hosting-subscription=no-type-sub-ns/no-type-sub; cluster-namespace=managed3'
+        )
+      )
+    ).toEqual(
+      JSON.stringify({
+        'apps.open-cluster-management.io/hosting-subscription': 'no-type-sub-ns/no-type-sub',
+        'cluster-namespace': 'managed3',
+      })
+    )
   })
 })

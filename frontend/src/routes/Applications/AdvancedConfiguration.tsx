@@ -465,11 +465,13 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             tooltip: t(
               'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.'
             ),
-            exportContent: () => {
+            exportContent: (resource) => {
               const clusterCount = {
                 localPlacement: false,
                 remoteCount: 0,
               }
+              // mutates clusterCount object
+              getSubscriptionClusterCount(resource, clusterCount, true)
               // will export the ClusterCountString, not the link
               return getClusterCountString(t, clusterCount)
             },

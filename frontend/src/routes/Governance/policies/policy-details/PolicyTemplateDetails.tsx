@@ -15,6 +15,7 @@ import {
 import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
+import { getEngineWithSvg } from '../../common/util'
 
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
@@ -68,6 +69,10 @@ export function PolicyTemplateDetails() {
     {
       key: t('Name'),
       value: template?.metadata?.name ?? '-',
+    },
+    {
+      key: t('Engine'),
+      value: kind ? getEngineWithSvg(kind) : '-',
     },
     {
       key: t('Cluster'),

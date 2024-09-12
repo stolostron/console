@@ -99,7 +99,7 @@ export function EditPolicy() {
 
     const isExternal = resolveExternalStatus(policy)
     if (isExternal) {
-      const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+      const policySource = resolveSource(policy.metadata.annotations ?? {}, helmReleases, channels, subscriptions)
       setGitSource(policySource?.pathName ?? '')
     }
 
