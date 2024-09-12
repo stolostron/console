@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
 import { AcmEmptyState, compareStrings, ITableFilter, IAcmTableColumn, AcmAlert } from '../../../ui-components'
-import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
+import { DiscoverdPolicyTableItem, ISourceType, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
@@ -11,6 +11,35 @@ import { discoveredSourceCell, policyViolationSummary, severityCell } from './By
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { AcmTableWithEngine } from '../common/AcmTableWithEngine'
 import { uniq } from 'lodash'
+
+interface ISourceFilter {
+  label: string
+  value: string
+}
+
+export const getSourceFilter = (data: DiscoverdPolicyTableItem[]): ISourceFilter[] => {
+  const uniqMap: { [key: string]: ISourceType } = {}
+  data?.forEach((data: DiscoverdPolicyTableItem) => {
+    if (data.source?.type) {
+      const key = data.source.type + '_' + data.source.parentName + '_' + data.source.parentNs
+      uniqMap[key] = data.source
+    }
+  })
+
+  const result: ISourceFilter[] = []
+
+  for (const key in uniqMap) {
+    const source = uniqMap[key]
+    if (source.type.toLowerCase() === 'policy') {
+      const nsName = source.parentNs + '/' + source.parentName
+      result.push({ label: nsName, value: nsName })
+    } else if (source.type) {
+      result.push({ label: source.type, value: source.type })
+    }
+  }
+
+  return result
+}
 
 export default function DiscoveredPolicies() {
   const { isFetching, data, err } = useFetchPolicies()
@@ -141,11 +170,13 @@ export default function DiscoveredPolicies() {
           },
         ],
         tableFilterFn: (selectedValues, item) => {
-          const { noncompliant, compliant } = policyViolationSummary(item.policies)
+          const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
 
-          if (selectedValues.includes('no-violations') && noncompliant == 0) {
+          const total = noncompliant + compliant + unknown + pending
+
+          if (selectedValues.includes('no-violations') && total == compliant) {
             return true
-          } else if (selectedValues.includes('violations') && compliant > 0) return true
+          } else if (selectedValues.includes('violations') && noncompliant > 0) return true
           return false
         },
       },
@@ -167,6 +198,18 @@ export default function DiscoveredPolicies() {
         ],
         tableFilterFn: (selectedValues, item) => {
           return selectedValues.includes(item.responseAction)
+        },
+      },
+      {
+        id: 'Source',
+        label: t('Source'),
+        options: data ? getSourceFilter(data) : [],
+        tableFilterFn: (selectedValues, item) => {
+          if (item.source?.type.toLowerCase() === 'policy') {
+            return selectedValues.includes(item.source.parentNs + '/' + item.source.parentName)
+          }
+
+          return item.source?.type ? selectedValues.includes(item.source?.type) : false
         },
       },
     ],

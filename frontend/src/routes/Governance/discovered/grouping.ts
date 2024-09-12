@@ -6,7 +6,7 @@ type TGetSourceText = (policySource: any, isExternal: boolean, t: any) => string
 type TParseStringMap = (anoString: string) => { [key: string]: string }
 
 type TParseDiscoveredPolicies = (data: any) => any
-interface ISourceType {
+export interface ISourceType {
   type: any //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
   parentName: string
