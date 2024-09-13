@@ -62,6 +62,7 @@ type ProviderConnectionOrCredentialsType =
 
 export function CreateCredentialsFormPage(props: { credentialsType: CredentialsType }) {
   const { t } = useTranslation()
+
   const { credentialsType } = props
 
   const { projects, error } = useProjects()
@@ -93,6 +94,7 @@ export function ViewEditCredentialsFormPage() {
   const { name = '', namespace = '' } = params
   const isEditing = !!useMatch(NavigationPath.editCredentials)
   const isViewing = !isEditing
+
   const [error, setError] = useState<Error>()
 
   const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
@@ -106,6 +108,7 @@ export function ViewEditCredentialsFormPage() {
       .catch(setError)
     return result.abort
   }, [name, namespace])
+
   if (error) return <ErrorPage error={error} />
 
   if (!providerConnection) return <LoadingPage />
@@ -135,7 +138,6 @@ export function CredentialsForm(
     props
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
-
   const toastContext = useContext(AcmToastContext)
   const navigate = useNavigate()
   const { back, cancel } = useBackCancelNavigation()
@@ -312,6 +314,9 @@ export function CredentialsForm(
   const [ansibleHost, setAnsibleHost] = useState(() => providerConnection?.stringData?.host ?? '')
   const [ansibleToken, setAnsibleToken] = useState(() => providerConnection?.stringData?.token ?? '')
 
+  // Red Hat Cloud
+  const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
+
   // AWS S3 bucket
   const s3values = useMemo(
     () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
@@ -443,14 +448,7 @@ export function CredentialsForm(
         stringData.token = ansibleToken
         break
       case Provider.redhatcloud:
-        stringData.auth_method = auth_method
-        if (auth_method === 'offline-token') {
-          stringData.ocmAPIToken = ocmAPIToken
-        }
-        if (auth_method === 'service-account') {
-          stringData.client_id = client_id
-          stringData.client_secret = client_secret
-        }
+        stringData.ocmAPIToken = ocmAPIToken
         break
       case Provider.hostinventory:
       case Provider.hybrid:
@@ -528,10 +526,7 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
       { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
-      { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
-      { path: 'Secret[0].stringData.client_id', setState: setClient_Id },
-      { path: 'Secret[0].stringData.client_secret', setState: setClient_Secret },
     ]
     return syncs
   }
@@ -1296,9 +1291,10 @@ export function CredentialsForm(
           },
           (auth_method === 'offline-token' || isViewing) && {
             id: 'ocmAPIToken',
-            type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
-            label: t('API token'),
+            type: 'Text',
+            label: t('OpenShift Cluster Manager API token'),
+            placeholder: t('Enter the OpenShift Cluster Manager API token'),
             value: ocmAPIToken,
             onChange: setOcmAPIToken,
             isRequired: true,
