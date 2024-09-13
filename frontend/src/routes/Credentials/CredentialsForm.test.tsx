@@ -8,7 +8,7 @@ import {
   ProviderConnectionKind,
   ProviderConnectionStringData,
 } from '../../resources'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -92,10 +92,7 @@ describe('add credentials page', () => {
     render(<Component credentialsType={Provider.aws} />)
     const providerConnection = createProviderConnection(
       'aws',
-      {
-        aws_access_key_id: 'aws_access_key_id',
-        aws_secret_access_key: 'aws_secret_access_key',
-      },
+      { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
       true
     )
 
@@ -425,7 +422,6 @@ describe('add credentials page', () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
-      auth_method: 'offline-token',
       ocmAPIToken: 'ocmAPIToken',
     })
 
