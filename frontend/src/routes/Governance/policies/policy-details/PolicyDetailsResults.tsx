@@ -2,7 +2,6 @@
 import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
-import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -14,6 +13,7 @@ import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails }
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
+import { fromNow } from '../../../../resources/utils/datetime'
 
 export interface ResultsTableData {
   templateName: string
@@ -23,7 +23,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: moment.MomentInput
+  timestamp: string | number | Date;
   policyName: string
   policyNamespace: string
   remediationAction: string
@@ -92,7 +92,7 @@ export default function PolicyDetailsResults() {
             kind: template?.objectDefinition.kind ?? '-',
             status: detail.compliant ?? 'no-status',
             message: (detail?.history && detail.history[0]?.message) ?? '-',
-            timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
+            timestamp: (detail?.history && detail?.history[0]?.lastTimestamp) ?? new Date().toISOString(),
             policyName,
             policyNamespace,
             remediationAction: getPolicyTempRemediation(policyResponse, template),
@@ -255,14 +255,20 @@ export default function PolicyDetailsResults() {
         search: (item: ResultsTableData) => item.remediationAction,
         exportContent: (item: ResultsTableData) => item.remediationAction,
       },
-      {
-        header: t('Last report'),
-        sort: 'timestamp',
-        cell: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
-        exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
-      },
+     {
+  header: t('Last report'),
+  sort: 'timestamp',
+  cell: (item: ResultsTableData) => {
+    const timestamp = item.timestamp;
+    const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp;
+    return formattedTimestamp && fromNow(formattedTimestamp);
+  },
+  exportContent: (item: ResultsTableData) => {
+    const timestamp = item.timestamp;
+    const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp;
+    return formattedTimestamp && fromNow(formattedTimestamp);
+  },
+},
       {
         header: t('History'),
         cell: (item: ResultsTableData) => {
