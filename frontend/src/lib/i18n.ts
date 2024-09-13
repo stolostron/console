@@ -8,6 +8,7 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
+import { dateTimeFormatter, fromNow } from '../resources/utils/datetime'
 
 i18n
   // pass the i18n instance to react-i18next
@@ -28,6 +29,23 @@ i18n
     keySeparator: false, // this repo will use single level json
     interpolation: {
       escapeValue: false, // react handles this already
+      format: function (value, format, lng, options) {
+        if (format === 'number') {
+          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat#Browser_compatibility
+          return new Intl.NumberFormat(lng).format(value)
+        }
+        if (value instanceof Date) {
+          if (format === 'fromNow') {
+            const fromNowOptions = {
+              includeSeconds: options?.includeSeconds || false, // Extract or set defaults
+              addSuffix: options?.addSuffix || false,
+            }
+            return fromNow(value, undefined, fromNowOptions)
+          }
+          return dateTimeFormatter(lng).format(value)
+        }
+        return value
+      },
     },
     defaultNS: 'translation', // the default file for strings when using useTranslation, etc
     nsSeparator: '~',
