@@ -7,4 +7,4 @@ export enum HypershiftCloudPlatformType {
   KubeVirt = 'KubeVirt',
 }
 
-export const LAST_LANGUAGE_LOCAL_STORAGE_KEY = 'i18nextLng'  // Key for storing the last selected language in local storage.
+export const LAST_LANGUAGE_LOCAL_STORAGE_KEY = 'i18nextLng' // Key for storing the last selected language in local storage.

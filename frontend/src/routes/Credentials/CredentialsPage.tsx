@@ -232,19 +232,19 @@ export function CredentialsTable(props: {
             },
           },
           {
-  header: t('Created'),
-  sort: 'metadata.creationTimestamp',
-  cell: (resource) => (
-    <span style={{ whiteSpace: 'nowrap' }}>
-      {resource.metadata.creationTimestamp && fromNow(resource.metadata.creationTimestamp)}
-    </span>
-  ),
-  exportContent: (item: Secret) => {
-    if (item.metadata.creationTimestamp) {
-      return fromNow(item.metadata.creationTimestamp);
-    }
-  },
-},
+            header: t('Created'),
+            sort: 'metadata.creationTimestamp',
+            cell: (resource) => (
+              <span style={{ whiteSpace: 'nowrap' }}>
+                {resource.metadata.creationTimestamp && fromNow(resource.metadata.creationTimestamp)}
+              </span>
+            ),
+            exportContent: (item: Secret) => {
+              if (item.metadata.creationTimestamp) {
+                return fromNow(item.metadata.creationTimestamp)
+              }
+            },
+          },
           {
             header: '',
             cellTransforms: [fitContent],

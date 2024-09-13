@@ -23,7 +23,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: string | number | Date;
+  timestamp: string | number | Date
   policyName: string
   policyNamespace: string
   remediationAction: string
@@ -255,20 +255,20 @@ export default function PolicyDetailsResults() {
         search: (item: ResultsTableData) => item.remediationAction,
         exportContent: (item: ResultsTableData) => item.remediationAction,
       },
-     {
-  header: t('Last report'),
-  sort: 'timestamp',
-  cell: (item: ResultsTableData) => {
-    const timestamp = item.timestamp;
-    const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp;
-    return formattedTimestamp && fromNow(formattedTimestamp);
-  },
-  exportContent: (item: ResultsTableData) => {
-    const timestamp = item.timestamp;
-    const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp;
-    return formattedTimestamp && fromNow(formattedTimestamp);
-  },
-},
+      {
+        header: t('Last report'),
+        sort: 'timestamp',
+        cell: (item: ResultsTableData) => {
+          const timestamp = item.timestamp
+          const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp
+          return formattedTimestamp && fromNow(formattedTimestamp)
+        },
+        exportContent: (item: ResultsTableData) => {
+          const timestamp = item.timestamp
+          const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp
+          return formattedTimestamp && fromNow(formattedTimestamp)
+        },
+      },
       {
         header: t('History'),
         cell: (item: ResultsTableData) => {
