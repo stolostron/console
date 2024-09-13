@@ -28,7 +28,6 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 import userEvent from '@testing-library/user-event'
-import CredentialsPage from './CredentialsPage';
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
   apiVersion: NamespaceApiVersion,
@@ -422,6 +421,7 @@ describe('add credentials page', () => {
   })
 
   it('should create rhocm credentials with ocm API Token (default) option', async () => {
+  it('should create rhocm credentials with ocm API Token (default) option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
@@ -449,6 +449,7 @@ describe('add credentials page', () => {
     const apiTokenOption = screen.getByRole('option', { name: 'API token' })
     fireEvent.click(apiTokenOption)
 
+
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
     await clickByText('Next')
@@ -463,6 +464,7 @@ describe('add credentials page', () => {
     expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken')
   })
 
+  it('should create rhocm credentials with Service Account option', async () => {
   it('should create rhocm credentials with Service Account option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
@@ -514,5 +516,7 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
+  })
+})
   })
 })
