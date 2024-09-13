@@ -8,7 +8,7 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
-import { getLastLanguage } from '../resources/utils/getLastLanguage'
+import { dateTimeFormatter, fromNow } from '../resources/utils/datetime'
 
 i18n
   // pass the i18n instance to react-i18next
@@ -27,14 +27,12 @@ i18n
     compatibilityJSON: 'v3',
     fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
     keySeparator: false, // this repo will use single level json
-    interpolation: {
-      escapeValue: false, // react handles this already
-    },
     defaultNS: 'translation', // the default file for strings when using useTranslation, etc
     nsSeparator: '~',
     supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
     simplifyPluralSuffix: true,
     interpolation: {
+      escapeValue: false, // react handles this already
       format: function (value, format, lng, options) {
         if (format === 'number') {
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat#Browser_compatibility
@@ -42,9 +40,13 @@ i18n
         }
         if (value instanceof Date) {
           if (format === 'fromNow') {
-            return fromNow(value, null, options)
+            const fromNowOptions = {
+              includeSeconds: options?.includeSeconds || false, // Extract or set defaults
+              addSuffix: options?.addSuffix || false,
+            }
+            return fromNow(value, undefined, fromNowOptions)
           }
-          return dateTimeFormatter.format(value)
+          return dateTimeFormatter(lng).format(value)
         }
         return value
       },
