@@ -59,7 +59,7 @@ export default function DiscoveredByClusterPage() {
               <Grid item>{policyName}</Grid>
               <Grid item>
                 <Box fontWeight={300} fontSize={14}>
-                  {getEngineWithSvg(policyKind)}{' '}
+                  {getEngineWithSvg(apiGroup)}{' '}
                 </Box>
               </Grid>
             </Grid>

@@ -93,10 +93,8 @@ export function PolicyTemplateDetailsPage() {
     if (apiGroup.endsWith('gatekeeper.sh')) {
       // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
       templateNamespace = ''
-    }
-
-    // For discovered Policies
-    if (!hasParentPolicy) {
+    } else if (!hasParentPolicy) {
+      // For discovered Policies
       templateNamespace = urlParams.templateNamespace || clusterName
     }
 
@@ -169,7 +167,6 @@ export function PolicyTemplateDetailsPage() {
                       apiGroup,
                       apiVersion,
                       policyName: templateName,
-                      policyNamespace: urlParams.templateNamespace || clusterName,
                     }),
                   },
                   { text: clusterName, to: '' },
