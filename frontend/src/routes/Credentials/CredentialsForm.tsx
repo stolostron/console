@@ -1269,6 +1269,8 @@ export function CredentialsForm(
       },
       {
         type: 'Section',
+        // isRequired: true,
+        //isHidden: credentialsType !== Provider.redhatcloud,
         title: t('OpenShift Cluster Manager'),
         wizardTitle: t('Enter the OpenShift Cluster Manager credentials'),
         description: (
