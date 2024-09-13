@@ -184,6 +184,7 @@ export function GetRowActions(
 }
 
 export function generateSearchResultExport(
+  exportFileName: string,
   searchResultData: SearchResultItemsQuery | undefined,
   searchDefinitions: any,
   toastContext: IAlertContext,
@@ -264,7 +265,7 @@ export function generateSearchResultExport(
   // Create download
   const CSVFile = new Blob([csv_string], { type: 'text/csv' })
   const temp_link = document.createElement('a')
-  temp_link.download = `search_result_${Date.now()}.csv`
+  temp_link.download = exportFileName
   const url = window.URL.createObjectURL(CSVFile)
   temp_link.href = url
   // This link should not be displayed

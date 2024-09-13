@@ -9,6 +9,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { Tooltip } from '@patternfly/react-core'
 
 export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyItem[]): ViolationSummary => {
   let compliant = 0
@@ -167,17 +168,26 @@ export function discoveredSourceCell(t: TFunction, source: ISourceType | undefin
         >
           P
         </span>
-        <Link
-          to={generatePath(NavigationPath.policyDetails, {
-            namespace: source.parentNs,
-            name: source.parentName,
-          })}
-          state={{
-            from: NavigationPath.policies,
-          }}
+        <Tooltip
+          content={
+            <>
+              <div>{`Namespace: ${source.parentNs}`} </div>
+              <div>{`Name: ${source.parentName}`}</div>
+            </>
+          }
         >
-          {source.parentName}
-        </Link>
+          <Link
+            to={generatePath(NavigationPath.policyDetails, {
+              namespace: source.parentNs,
+              name: source.parentName,
+            })}
+            state={{
+              from: NavigationPath.policies,
+            }}
+          >
+            {source.parentName}
+          </Link>
+        </Tooltip>
       </>
     )
   }
@@ -205,4 +215,10 @@ export function translateSource(source: string, t: TFunction): any {
     default:
       return source
   }
+}
+
+export const convertYesNoCell = (val: string | boolean | undefined | null): string => {
+  if (val == null || val == undefined) return '-'
+  if (typeof val !== 'boolean') return JSON.parse(val) ? 'yes' : 'no'
+  return val === true ? 'yes' : 'no'
 }

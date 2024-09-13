@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
 import { AcmEmptyState, compareStrings, ITableFilter, IAcmTableColumn, AcmAlert } from '../../../ui-components'
-import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
+import { DiscoverdPolicyTableItem, ISourceType, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { getEngineString, getEngineWithSvg } from '../common/util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -11,6 +11,79 @@ import { discoveredSourceCell, policyViolationSummary, severityCell } from './By
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { AcmTableWithEngine } from '../common/AcmTableWithEngine'
 import { uniq } from 'lodash'
+
+interface ISourceFilter {
+  label: string
+  value: string
+}
+
+export const getSourceFilter = (data: DiscoverdPolicyTableItem[]): ISourceFilter[] => {
+  const uniqMap: { [key: string]: ISourceType } = {}
+  data?.forEach((data: DiscoverdPolicyTableItem) => {
+    if (data.source?.type) {
+      const key = data.source.type + '_' + data.source.parentName + '_' + data.source.parentNs
+      uniqMap[key] = data.source
+    }
+  })
+
+  const result: ISourceFilter[] = []
+
+  for (const key in uniqMap) {
+    const source = uniqMap[key]
+    if (source.type.toLowerCase() === 'policy') {
+      const nsName = source.parentNs + '/' + source.parentName
+      result.push({ label: nsName, value: nsName })
+    } else if (source.type) {
+      result.push({ label: source.type, value: source.type })
+    }
+  }
+
+  return result
+}
+
+function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
+  return (
+    <Link
+      to={generatePath(NavigationPath.discoveredByCluster, {
+        kind: item.kind,
+        policyName: item.name,
+        apiGroup: item.policies[0].apigroup,
+        apiVersion: item.policies[0].apiversion,
+        policyNamespace: item.policies[0].cluster,
+      })}
+      state={{
+        from: NavigationPath.policies,
+      }}
+    >
+      {item.name}
+    </Link>
+  )
+}
+
+function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
+  const { noncompliant, compliant, pending, unknown } = policyViolationSummary(item.policies)
+  const path = generatePath(NavigationPath.discoveredByCluster, {
+    apiGroup: item.policies[0].apigroup,
+    apiVersion: item.policies[0].apiversion,
+    kind: item.kind,
+    policyName: item.name,
+    policyNamespace: item.policies[0].cluster,
+  })
+  if (noncompliant !== 0 || compliant !== 0 || pending != 0 || unknown !== 0) {
+    return (
+      <ClusterPolicyViolationIcons2
+        compliant={compliant}
+        compliantHref={path}
+        noncompliant={noncompliant}
+        violationHref={path}
+        pending={pending}
+        pendingHref={path}
+        unknown={unknown}
+      />
+    )
+  }
+  return '-'
+}
 
 export default function DiscoveredPolicies() {
   const { isFetching, data, err } = useFetchPolicies()
@@ -20,22 +93,7 @@ export default function DiscoveredPolicies() {
     () => [
       {
         header: t('Name'),
-        cell: (item: DiscoverdPolicyTableItem) => (
-          <Link
-            to={generatePath(NavigationPath.discoveredByCluster, {
-              kind: item.kind,
-              policyName: item.name,
-              apiGroup: item.policies[0].apigroup,
-              apiVersion: item.policies[0].apiversion,
-              policyNamespace: item.policies[0].cluster,
-            })}
-            state={{
-              from: NavigationPath.policies,
-            }}
-          >
-            {item.name}
-          </Link>
-        ),
+        cell: nameCell,
         // Policy name
         sort: 'name',
         search: 'name',
@@ -70,7 +128,6 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Severity'),
-        // TODO Add severity icon
         cell: severityCell,
         sort: 'severity',
         search: 'severity',
@@ -79,30 +136,7 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Cluster violations'),
-        cell: (item: DiscoverdPolicyTableItem) => {
-          const { noncompliant, compliant, pending, unknown } = policyViolationSummary(item.policies)
-          const path = generatePath(NavigationPath.discoveredByCluster, {
-            apiGroup: item.policies[0].apigroup,
-            apiVersion: item.policies[0].apiversion,
-            kind: item.kind,
-            policyName: item.name,
-            policyNamespace: item.policies[0].cluster,
-          })
-          if (noncompliant !== 0 || compliant !== 0 || pending != 0 || unknown !== 0) {
-            return (
-              <ClusterPolicyViolationIcons2
-                compliant={compliant}
-                compliantHref={path}
-                noncompliant={noncompliant}
-                violationHref={path}
-                pending={pending}
-                pendingHref={path}
-                unknown={unknown}
-              />
-            )
-          }
-          return '-'
-        },
+        cell: clusterCell,
         tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
         sort: 'violations',
         search: 'violations',
@@ -141,11 +175,13 @@ export default function DiscoveredPolicies() {
           },
         ],
         tableFilterFn: (selectedValues, item) => {
-          const { noncompliant, compliant } = policyViolationSummary(item.policies)
+          const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
 
-          if (selectedValues.includes('no-violations') && noncompliant == 0) {
+          const total = noncompliant + compliant + unknown + pending
+
+          if (selectedValues.includes('no-violations') && total == compliant) {
             return true
-          } else if (selectedValues.includes('violations') && compliant > 0) return true
+          } else if (selectedValues.includes('violations') && noncompliant > 0) return true
           return false
         },
       },
@@ -167,6 +203,18 @@ export default function DiscoveredPolicies() {
         ],
         tableFilterFn: (selectedValues, item) => {
           return selectedValues.includes(item.responseAction)
+        },
+      },
+      {
+        id: 'Source',
+        label: t('Source'),
+        options: data ? getSourceFilter(data) : [],
+        tableFilterFn: (selectedValues, item) => {
+          if (item.source?.type.toLowerCase() === 'policy') {
+            return selectedValues.includes(item.source.parentNs + '/' + item.source.parentName)
+          }
+
+          return item.source?.type ? selectedValues.includes(item.source?.type) : false
         },
       },
     ],
@@ -193,7 +241,7 @@ export default function DiscoveredPolicies() {
         columns={discoveredPoliciesCols}
         keyFn={(item) => item.id}
         items={data}
-        emptyState={<AcmEmptyState title={t(`You don't have any policies`)} message={t('There are no policies')} />}
+        emptyState={<AcmEmptyState title={t(`You don't have any policies.`)} message={t('There are no policies.')} />}
         filters={filters}
         showExportButton
         exportFilePrefix="discoveredPolicies"

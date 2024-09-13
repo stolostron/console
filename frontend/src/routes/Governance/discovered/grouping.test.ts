@@ -187,6 +187,8 @@ const mockpolicy: any[] = [
     compliant: 'Compliant',
     remediationAction: 'enforce',
     severity: 'low',
+    deploymentAvailable: 'false',
+    upgradeAvailable: 'false',
     disabled: 'false',
     _isExternal: 'true',
     annotation:
@@ -206,6 +208,8 @@ const mockpolicy: any[] = [
     name: 'op-policy',
     namespace: 'managed2',
     compliant: 'Compliant',
+    deploymentAvailable: 'true',
+    upgradeAvailable: 'false',
     remediationAction: 'enforce',
     severity: '',
     disabled: 'false',

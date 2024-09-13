@@ -42,7 +42,7 @@ describe('Policies Page', () => {
       </RecoilRoot>
     )
 
-    await waitForText("You don't have any policies")
+    await waitForText("You don't have any policies.")
   })
 
   test('Should render Policies page correctly', async () => {
