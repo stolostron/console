@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import i18n from 'i18next'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-// import { formatRelativeTime, formatDateTime } from '../../lib/localize-date-time'
 import { fitContent } from '@patternfly/react-table'
 import {
   AcmButton,
@@ -15,7 +13,6 @@ import {
   Provider,
   ProviderLongTextMap,
 } from '../../ui-components'
-import moment from 'moment'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
