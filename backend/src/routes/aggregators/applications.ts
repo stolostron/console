@@ -119,7 +119,7 @@ export async function aggregatSearchAPIApplications(pass: number) {
   await getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass)
 
   // system apps -- because system apps shouldn't change much, don't do it every time
-  if (pass === 1 || pass % 20 === 0) {
+  if (pass <= 3 || pass % 10 === 0) {
     await getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass)
   }
 }

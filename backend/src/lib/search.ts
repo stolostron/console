@@ -98,7 +98,7 @@ export async function getPagedSearchResources(
     resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
     if (!pageResults) break
     if (process.env.NODE_ENV !== 'test') {
-      let timeout = 5000
+      let timeout = 10000
       if (pass === 1) timeout = 500
       if (pass === 2) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))

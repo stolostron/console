@@ -17,7 +17,7 @@ const labelArr: string[] = [
 // grab the ocp apps from one remote cluster and duplicate then for each cluster;
 // therefore these become placeholders in the list which when clicked will cause
 // the ui to then use the \search api to get the details
-const FILL_SYSTEM_APP_THRESHOLD = 10
+const CLUSTER_SYSTEM_APP_THRESHOLD = 10
 
 const query = {
   operationName: 'searchResult',
@@ -85,7 +85,7 @@ export async function getOCPApps(
     // and then duplicate the remote cluster for every cluster
     clusterMap = getClusterMap()
     const clusterNames = Object.keys(clusterMap)
-    if (clusterNames.length > FILL_SYSTEM_APP_THRESHOLD) {
+    if (clusterNames.length > CLUSTER_SYSTEM_APP_THRESHOLD) {
       const remoteClusterName = clusterNames.find((name) => name !== 'local-cluster')
       filters.push({
         property: 'cluster',
@@ -186,7 +186,7 @@ export async function getOCPApps(
 function fillSystemApps(remoteSysApps: IResource[], clusterMap: { [cluster: string]: IResource }) {
   const clusterNames = Object.keys(clusterMap)
   // if environment has lots of clusters, we duplicate the apps on  this remote cluster
-  if (clusterNames.length > FILL_SYSTEM_APP_THRESHOLD) {
+  if (clusterNames.length > CLUSTER_SYSTEM_APP_THRESHOLD) {
     const fillerSysApps: IResource[] = []
     clusterNames.forEach((cluster) => {
       if (cluster !== 'local-cluster') {
