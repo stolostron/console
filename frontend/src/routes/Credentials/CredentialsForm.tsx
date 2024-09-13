@@ -444,10 +444,10 @@ export function CredentialsForm(
         break
       case Provider.redhatcloud:
         stringData.auth_method = auth_method
-        if (auth_method === 'offline-token') {
+        if (auth_method === OCMAuthMethod.API_TOKEN) {
           stringData.ocmAPIToken = ocmAPIToken
         }
-        if (auth_method === 'service-account') {
+        if (auth_method === OCMAuthMethod.SERVICE_ACCOUNT) {
           stringData.client_id = client_id
           stringData.client_secret = client_secret
         }
