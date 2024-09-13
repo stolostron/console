@@ -30,24 +30,46 @@ export function PolicyTemplateDetailsPage() {
   const kind = urlParams.kind ?? ''
   const templateName = urlParams.templateName ?? ''
   const isYamlTab = location.pathname.endsWith('/yaml')
-  const detailsUrl = generatePath(NavigationPath.policyTemplateDetails, {
-    namespace: policyNamespace,
-    name: policyName,
-    clusterName,
-    apiGroup,
-    apiVersion,
-    kind,
-    templateName,
-  })
-  const yamlUrl = generatePath(NavigationPath.policyTemplateYaml, {
-    namespace: policyNamespace,
-    name: policyName,
-    clusterName,
-    apiGroup,
-    apiVersion,
-    kind,
-    templateName,
-  })
+  const hasParentPolicy = policyNamespace && policyName
+  const detailsUrl = hasParentPolicy
+    ? generatePath(NavigationPath.policyTemplateDetails, {
+        namespace: policyNamespace,
+        name: policyName,
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        templateName,
+      })
+    : generatePath(NavigationPath.discoveredPolicyDetails, {
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        // discovered policy name
+        templateName,
+        templateNamespace: urlParams.templateNamespace ?? '',
+      })
+  const yamlUrl = hasParentPolicy
+    ? generatePath(NavigationPath.policyTemplateYaml, {
+        namespace: policyNamespace,
+        name: policyName,
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        templateName,
+      })
+    : generatePath(NavigationPath.discoveredPolicyYaml, {
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        // discovered policy name
+        templateName,
+        templateNamespace: urlParams.templateNamespace ?? '',
+      })
+
   let templateClusterName = clusterName
   let templateNamespace = clusterName
 
@@ -68,6 +90,11 @@ export function PolicyTemplateDetailsPage() {
     if (apiGroup.endsWith('gatekeeper.sh')) {
       // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
       templateNamespace = ''
+    }
+
+    // For discovered Policies
+    if (!hasParentPolicy) {
+      templateNamespace = urlParams.templateNamespace || clusterName
     }
 
     break
@@ -114,14 +141,37 @@ export function PolicyTemplateDetailsPage() {
               compliant={template?.status?.compliant}
             />
           }
-          breadcrumb={[
-            { text: t('Policies'), to: NavigationPath.policies },
-            {
-              text: policyName,
-              to: generatePath(NavigationPath.policyDetailsResults, { namespace: policyNamespace, name: policyName }),
-            },
-            { text: templateName, to: '' },
-          ]}
+          breadcrumb={
+            hasParentPolicy
+              ? [
+                  { text: t('Policies'), to: NavigationPath.policies },
+                  {
+                    text: policyName,
+                    to: generatePath(NavigationPath.policyDetailsResults, {
+                      namespace: policyNamespace,
+                      name: policyName,
+                    }),
+                  },
+                  { text: templateName, to: '' },
+                ]
+              : [
+                  {
+                    text: t('Discovered policies'),
+                    to: NavigationPath.discoveredPolicies,
+                  },
+                  {
+                    text: templateName,
+                    to: generatePath(NavigationPath.discoveredByCluster, {
+                      kind,
+                      apiGroup,
+                      apiVersion,
+                      policyName: templateName,
+                      policyNamespace: urlParams.templateNamespace || clusterName,
+                    }),
+                  },
+                  { text: clusterName, to: '' },
+                ]
+          }
           popoverAutoWidth={false}
           popoverPosition="bottom"
           navigation={

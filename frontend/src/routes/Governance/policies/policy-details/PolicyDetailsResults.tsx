@@ -29,6 +29,25 @@ export interface ResultsTableData {
   remediationAction: string
 }
 
+function getTemplateDetailURL(item: ResultsTableData) {
+  const policyName = item?.policyName
+  const policyNamespace = item?.policyNamespace
+  const cluster = item?.cluster
+  const templateName = item?.templateName
+  const apiVersion = item?.apiVersion
+  const kind = item?.kind
+  const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
+  return generatePath(NavigationPath.policyTemplateDetails, {
+    namespace: policyNamespace,
+    name: policyName,
+    clusterName: cluster,
+    apiGroup,
+    apiVersion: version,
+    kind,
+    templateName,
+  })
+}
+
 export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
@@ -164,7 +183,24 @@ export default function PolicyDetailsResults() {
       {
         header: t('Template'),
         sort: 'templateName',
-        cell: (item: ResultsTableData) => item.templateName,
+        cell: (item: ResultsTableData) => {
+          const templateDetailURL = getTemplateDetailURL(item)
+          return canCreatePolicy ? (
+            templateDetailURL ? (
+              <span>
+                <Link to={templateDetailURL}>{item.templateName}</Link>
+              </span>
+            ) : (
+              item.templateName
+            )
+          ) : (
+            <Tooltip content={t('rbac.unauthorized')}>
+              <span className="link-disabled" id="template-name-link-disabled">
+                {item.templateName}
+              </span>
+            </Tooltip>
+          )
+        },
         search: (item: ResultsTableData) => item.templateName,
         exportContent: (item: ResultsTableData) => item.templateName,
       },
@@ -180,16 +216,7 @@ export default function PolicyDetailsResults() {
           const kind = item?.kind
           const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
           if (prunedMessage && policyName && policyNamespace && cluster && templateName && apiVersion && kind) {
-            const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
-            const templateDetailURL = generatePath(NavigationPath.policyTemplateDetails, {
-              namespace: policyNamespace,
-              name: policyName,
-              clusterName: cluster,
-              apiGroup,
-              apiVersion: version,
-              kind,
-              templateName,
-            })
+            const templateDetailURL = getTemplateDetailURL(item)
             const templateLink = canCreatePolicy ? (
               templateDetailURL && (
                 <span>

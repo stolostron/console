@@ -27,7 +27,8 @@ import { IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
 import { LostChangesContext } from '../../../components/LostChanges'
-
+import { DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
+import OcmSvg from '../../../logos/ocm.svg'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -293,44 +294,46 @@ export function resolveExternalStatus(policy: Policy) {
   return managedFields.some((mf) => knownExternalManagerPatterns.some((p) => p.test(mf.manager ?? 'none')))
 }
 
-function getHelmReleaseMap(helmReleases: HelmRelease[]) {
-  const resourceMap = new Map()
-  helmReleases.forEach((helmRelease: HelmRelease) => {
-    resourceMap.set(`${helmRelease.metadata.namespace}/${helmRelease.metadata.name}`, helmRelease)
-  })
-  return resourceMap
-}
-function getSubscriptionMap(subscriptions: Subscription[]) {
-  const resourceMap: Record<string, Subscription | undefined> = {}
-  subscriptions.forEach((subscription: Subscription) => {
-    resourceMap[`${subscription.metadata.namespace}/${subscription.metadata.name}`] = subscription
-  })
-  return resourceMap
-}
-function getChannelMap(channels: Channel[]) {
-  const channelMap: Record<string, Channel | undefined> = {}
-  channels.forEach((channel: Channel) => {
-    channelMap[`${channel.metadata.namespace}/${channel.metadata.name}`] = channel
-  })
-  return channelMap
-}
-
 // This function may need some revision/testing
-export function resolveSource(
-  policy: Policy,
+/* istanbul ignore next */
+export const resolveSource = (
+  annotations: { [key: string]: string },
   helmReleases: HelmRelease[],
   channels: Channel[],
   subscriptions: Subscription[]
-) {
+) => {
+  function getHelmReleaseMap(helmReleases: HelmRelease[]) {
+    const resourceMap = new Map()
+    helmReleases.forEach((helmRelease: HelmRelease) => {
+      resourceMap.set(`${helmRelease.metadata.namespace}/${helmRelease.metadata.name}`, helmRelease)
+    })
+    return resourceMap
+  }
+
+  function getSubscriptionMap(subscriptions: Subscription[]) {
+    const resourceMap: Record<string, Subscription | undefined> = {}
+    subscriptions.forEach((subscription: Subscription) => {
+      resourceMap[`${subscription.metadata.namespace}/${subscription.metadata.name}`] = subscription
+    })
+    return resourceMap
+  }
+
+  function getChannelMap(channels: Channel[]) {
+    const channelMap: Record<string, Channel | undefined> = {}
+    channels.forEach((channel: Channel) => {
+      channelMap[`${channel.metadata.namespace}/${channel.metadata.name}`] = channel
+    })
+    return channelMap
+  }
+
   const getAnnotations = (item: any) => item?.metadata?.annotations ?? {}
   const getHostingSubscription = (annotations: any) =>
     annotations['apps.open-cluster-management.io/hosting-subscription']
-  const parentAnnotations = getAnnotations(policy)
-  let hostingSubscription = getHostingSubscription(parentAnnotations)
+  let hostingSubscription = getHostingSubscription(annotations)
   if (!hostingSubscription) {
     // check if this policy was deployed by a Helm release
-    const releaseNamespace = parentAnnotations['meta.helm.sh/release-namespace']
-    const releaseName = parentAnnotations['meta.helm.sh/release-name']
+    const releaseNamespace = annotations['meta.helm.sh/release-namespace']
+    const releaseName = annotations['meta.helm.sh/release-name']
     if (releaseNamespace && releaseName) {
       const helmReleaseMap = getHelmReleaseMap(helmReleases)
       const helmRelease = helmReleaseMap.get(`${releaseNamespace}/${releaseName}`)
@@ -363,7 +366,8 @@ export function resolveSource(
   return null
 }
 
-export function getSourceText(policySource: any, isExternal: boolean, t: TFunction) {
+/* istanbul ignore next */
+export const getSourceText = (policySource: any, isExternal: boolean, t: TFunction) => {
   if (policySource.type) {
     const channelType = (policySource.type && policySource.type.toLowerCase()) || ''
     const normalizedChannelType: string = channelType === 'github' ? 'git' : channelType
@@ -394,7 +398,7 @@ export function getPolicyDetailSourceLabel(
   t: TFunction
 ) {
   const isExternal = resolveExternalStatus(policy)
-  const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+  const policySource = resolveSource(policy.metadata.annotations ?? {}, helmReleases, channels, subscriptions)
   if (isExternal) {
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -650,18 +654,97 @@ export function hasInformOnlyPolicies(items: Array<PolicyTableItem>): boolean {
   return true
 }
 
+// Transform maps in a string format (e.g "hello=world; world=hello") to key and value maps.
+/* istanbul ignore next */
+export const parseStringMap = (
+  anoString: string
+): {
+  [key: string]: string
+} => {
+  const parsed = anoString?.split('; ') ?? []
+  const result: {
+    [key: string]: string
+  } = {}
+  for (const keyEqualVal of parsed) {
+    const kv = keyEqualVal.split('=')
+    if (kv.length == 2) {
+      result[kv[0]] = kv[1]
+    }
+  }
+
+  return result
+}
+
+// type guard
+function isPolicy(object: Policy | DiscoveredPolicyItem): object is Policy {
+  return object && (object as Policy).metadata !== undefined
+}
+
 export function getPolicySource(
-  policy: Policy,
+  policy: Policy | DiscoveredPolicyItem,
   helmReleases: HelmRelease[],
   channels: Channel[],
   subscriptions: Subscription[],
   t: TFunction<string, undefined>
 ): string | JSX.Element {
-  const isExternal = resolveExternalStatus(policy)
+  if (!policy) {
+    // Prevent error in detail page
+    return <></>
+  }
+
+  const isExternal = policy && isPolicy(policy) ? resolveExternalStatus(policy) : policy._isExternal || false
   let source: string | JSX.Element = t('Local')
   if (isExternal) {
-    const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+    const policySource = isPolicy(policy)
+      ? resolveSource(policy.metadata.annotations ?? {}, helmReleases, channels, subscriptions)
+      : resolveSource(parseStringMap(policy.annotation), helmReleases, channels, subscriptions)
     source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
   }
   return source
+}
+
+export function getEngineString(kind: string): string {
+  switch (kind) {
+    case 'ConfigurationPolicy':
+    case 'CertificatePolicy':
+    case 'OperatorPolicy':
+      return 'Open Cluster Management'
+    default:
+      return 'Unknown'
+  }
+}
+
+export function getEngineWithSvg(kind: string): JSX.Element {
+  switch (kind) {
+    case 'ConfigurationPolicy':
+    case 'CertificatePolicy':
+    case 'OperatorPolicy':
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div
+            style={{
+              height: 18,
+              width: 18,
+            }}
+          >
+            {' '}
+            <OcmSvg />
+          </div>{' '}
+          Open Cluster Management
+        </div>
+      )
+    default:
+      return <>Unknown</>
+  }
+}
+
+/* istanbul ignore next */
+export const parseDiscoveredPolicies = (data: any): any => {
+  return JSON.parse(JSON.stringify(data), (k, v: string) => {
+    if (['disabled', '_isExternal', '_hubClusterResource', 'deploymentAvailable', 'upgradeAvailable'].includes(k)) {
+      if (v === 'true') return true
+      return v === 'false' ? false : v
+    }
+    return v
+  })
 }

@@ -35,11 +35,6 @@ Object {
   },
   "statusSection": Array [
     Object {
-      "count": 1,
-      "link": "/multicloud/applications?type=subscription",
-      "title": "Subscription",
-    },
-    Object {
       "count": 2,
       "link": "/multicloud/applications?type=appset",
       "title": "Application set",
@@ -51,13 +46,18 @@ Object {
     },
     Object {
       "count": 1,
+      "link": "/multicloud/applications?type=flux",
+      "title": "Flux",
+    },
+    Object {
+      "count": 1,
       "link": "/multicloud/applications?type=openshift,openshift-default",
       "title": "OpenShift",
     },
     Object {
       "count": 1,
-      "link": "/multicloud/applications?type=flux",
-      "title": "Flux",
+      "link": "/multicloud/applications?type=subscription",
+      "title": "Subscription",
     },
   ],
 }
@@ -92,11 +92,11 @@ Array [
 exports[`Correctly returns getClusterVersionSummary 1`] = `
 Array [
   Object {
-    "key": "unknown",
+    "key": "OpenShift 4.15",
     "value": 1,
   },
   Object {
-    "key": "OpenShift 4.15",
+    "key": "unknown",
     "value": 1,
   },
 ]
