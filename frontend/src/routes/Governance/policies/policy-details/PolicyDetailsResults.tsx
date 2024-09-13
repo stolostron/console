@@ -92,7 +92,7 @@ export default function PolicyDetailsResults() {
             kind: template?.objectDefinition.kind ?? '-',
             status: detail.compliant ?? 'no-status',
             message: (detail?.history && detail.history[0]?.message) ?? '-',
-            timestamp: (detail?.history && detail?.history[0]?.lastTimestamp) ?? new Date().toISOString(),
+            timestamp: detail?.history?.[0]?.lastTimestamp ?? new Date().toISOString(),
             policyName,
             policyNamespace,
             remediationAction: getPolicyTempRemediation(policyResponse, template),
