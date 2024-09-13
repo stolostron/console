@@ -1,114 +1,43 @@
 // /* Copyright Contributors to the Open Cluster Management project */
-// import i18n from 'i18next'
 
-// /*
-// // Define a function to get locale from language
-// const getLocaleFromLanguage = (languageCode) => {
-//   const localeMap = {
-//     'en': 'en-US',
-//     'ja': 'ja-JP',
-//     'ko': 'ko-KR',
-//     'zh': 'zh-CN', // Simplified Chinese
-//     'fr': 'fr-FR',
-//     'es': 'es-ES'
-//   };
-
-//   return localeMap[languageCode] || 'en-US'; // Default to 'en-US' if not found
-// };
-// */
-
-// // Utility to format date and time in a localized manner
-// export const formatDateTime = (date: string | Date) => {
-//   // Convert the input date to a Date object
-//   const targetDate = new Date(date)
-
-//   // Get the detected language (or fallback to 'en')
-//   const language = i18n.language || 'en'
-//   console.log(language)
-
-//   // Create an instance of Intl.DateTimeFormat based on the user's locale
-//   const dateTimeFormat = new Intl.DateTimeFormat(language, {
-//     year: 'numeric',
-//     month: 'long',
-//     day: 'numeric',
-//     hour: '2-digit',
-//     minute: '2-digit',
-//     second: '2-digit',
-//     timeZoneName: 'short',
-//   })
-
-//   // Format the date
-//   const formattedDateTime = dateTimeFormat.format(targetDate)
-
-//   return formattedDateTime
-// }
-
-// // Utility to format relative time with localized numbers
-// export const formatRelativeTime = (date: string | Date) => {
-//   const targetDate = new Date(date)
-//   const now = new Date()
-//   const diffInSeconds = Math.floor((targetDate.getTime() - now.getTime()) / 1000)
-
-//   let value: number
-//   let unit: Intl.RelativeTimeFormatUnit
-
-//   // Calculate the time difference
-//   if (Math.abs(diffInSeconds) < 60) {
-//     value = diffInSeconds
-//     unit = 'second'
-//   } else if (Math.abs(diffInSeconds) < 3600) {
-//     value = Math.floor(diffInSeconds / 60)
-//     unit = 'minute'
-//   } else if (Math.abs(diffInSeconds) < 86400) {
-//     value = Math.floor(diffInSeconds / 3600)
-//     unit = 'hour'
-//   } else {
-//     value = Math.floor(diffInSeconds / 86400)
-//     unit = 'day'
-//   }
-
-//   const language = i18n.language || 'en'
-//   console.log(`Detected language: ${language}`)
-
-//   const rtf = new Intl.RelativeTimeFormat(language, { numeric: 'auto' })
-//   const relativeTimeString = rtf.format(value, unit)
-//   console.log(`Original relative time: ${relativeTimeString}`)
-
-//   return relativeTimeString
-// }
-
+import * as _ from 'lodash'
 import i18n from 'i18next'
 import { getLastLanguage } from './getLastLanguage'
 
-const language = i18n.language || 'en'
+const language = i18n.language || getLastLanguage() || 'en'
 console.log('LANG :  :', language)
 // The maximum allowed clock skew in milliseconds where we show a date as "Just now" even if it is from the future.
 export const maxClockSkewMS = -60000
 //const lang = getLastLanguage()
 
 // https://tc39.es/ecma402/#datetimeformat-objects
+// Use timeFormatter to display time in hours and minutes, e.g., "12:44 AM".
 export const timeFormatter = new Intl.DateTimeFormat(language, {
   hour: 'numeric',
   minute: 'numeric',
 })
 
+// Use timeFormatterWithSeconds to display time with seconds, e.g., "12:44:09 AM".
 export const timeFormatterWithSeconds = new Intl.DateTimeFormat(language, {
   hour: 'numeric',
   minute: 'numeric',
   second: 'numeric',
 })
 
+// Use dateFormatter to display the date with month, day, and year, e.g., "Sep 9, 2024".
 export const dateFormatter = new Intl.DateTimeFormat(language, {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
 })
 
+// Use dateFormatterNoYear to display the date without the year, e.g., "Sep 9".
 export const dateFormatterNoYear = new Intl.DateTimeFormat(language, {
   month: 'short',
   day: 'numeric',
 })
 
+// Use dateTimeFormatter to display the full date and time without seconds, e.g., "Sep 9, 2024, 12:44 AM".
 export const dateTimeFormatter = (langArg?: string) =>
   new Intl.DateTimeFormat(langArg ?? language, {
     month: 'short',
@@ -118,6 +47,7 @@ export const dateTimeFormatter = (langArg?: string) =>
     year: 'numeric',
   })
 
+// Use dateTimeFormatterWithSeconds to display the full date and time with seconds, e.g., "Sep 9, 2024, 12:44:09 AM".
 export const dateTimeFormatterWithSeconds = new Intl.DateTimeFormat(language, {
   month: 'short',
   day: 'numeric',
@@ -127,6 +57,7 @@ export const dateTimeFormatterWithSeconds = new Intl.DateTimeFormat(language, {
   year: 'numeric',
 })
 
+// Use utcDateTimeFormatter to display the date and time in UTC with timezone, e.g., "Sep 9, 2024, 12:44 AM UTC".
 export const utcDateTimeFormatter = new Intl.DateTimeFormat(language, {
   month: 'short',
   day: 'numeric',
@@ -137,6 +68,8 @@ export const utcDateTimeFormatter = new Intl.DateTimeFormat(language, {
   timeZoneName: 'short',
 })
 
+// Use relativeTimeFormatter to format relative time for days, hours, and minutes, e.g., "2 days ago".
+//Gives you more control, but you need to manually provide the time difference and unit.
 export const relativeTimeFormatter = (langArg?: string) =>
   Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(langArg ?? language) : null
 
@@ -154,8 +87,14 @@ export const getDuration = (ms: number) => {
   return { days, hours, minutes, seconds }
 }
 
-export const fromNow = (dateTime: string | Date, now?: Date, options?, langArg?: string) => {
-  console.log(dateTime, language)
+interface FromNowOptions {
+  omitSuffix?: boolean
+  includeSeconds?: boolean
+  addSuffix?: boolean
+}
+//Use fromNow when you want a relative time display like "5 minutes ago" or "2 days ago."
+//Automatically calculates the time difference and returns a human-readable string. Best for quick, ready-to-use relative time.
+export const fromNow = (dateTime: string | Date, now?: Date, options?: FromNowOptions, langArg?: string) => {
   // Check for null. If dateTime is null, it returns incorrect date Jan 1 1970.
   if (!dateTime) {
     return '-'
@@ -167,7 +106,7 @@ export const fromNow = (dateTime: string | Date, now?: Date, options?, langArg?:
 
   const d = new Date(dateTime)
   const ms = now.getTime() - d.getTime()
-  const justNow = i18n.t('public~Just now')
+  const justNow = i18n.t('Just now')
 
   // If the event occurred less than one minute in the future, assume it's clock drift and show "Just now."
   if (!options?.omitSuffix && ms < 60000 && ms > maxClockSkewMS) {
@@ -183,12 +122,12 @@ export const fromNow = (dateTime: string | Date, now?: Date, options?, langArg?:
 
   if (options?.omitSuffix) {
     if (days) {
-      return i18n.t('public~{{count}} day', { count: days })
+      return i18n.t('{{count}} day', { count: days })
     }
     if (hours) {
-      return i18n.t('public~{{count}} hour', { count: hours })
+      return i18n.t('{{count}} hour', { count: hours })
     }
-    return i18n.t('public~{{count}} minute', { count: minutes })
+    return i18n.t('{{count}} minute', { count: minutes })
   }
 
   // Fallback to normal date/time formatting if Intl.RelativeTimeFormat is not
@@ -202,17 +141,21 @@ export const fromNow = (dateTime: string | Date, now?: Date, options?, langArg?:
     return justNow
   }
 
-  if (days) {
-    return relativeTimeFormatter(langArg).format(-days, 'day')
-  }
+  const rtf = relativeTimeFormatter(langArg)
+  if (rtf) {
+    if (days) {
+      return rtf.format(-days, 'day')
+    }
 
-  if (hours) {
-    return relativeTimeFormatter(langArg).format(-hours, 'hour')
-  }
+    if (hours) {
+      return rtf.format(-hours, 'hour')
+    }
 
-  return relativeTimeFormatter(langArg).format(-minutes, 'minute')
+    if (minutes) {
+      return rtf.format(-minutes, 'minute')
+    }
+  }
 }
-
 export const isValid = (dateTime: Date) => dateTime instanceof Date && !_.isNaN(dateTime.valueOf())
 
 const zeroPad = (number: number) => (number < 10 ? `0${number}` : number)
