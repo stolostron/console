@@ -13,7 +13,7 @@ import {
   Provider,
   ProviderLongTextMap,
 } from '../../ui-components'
-import moment from 'moment'
+import { fromNow } from '../../resources/utils/datetime'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
@@ -232,19 +232,19 @@ export function CredentialsTable(props: {
             },
           },
           {
-            header: t('Created'),
-            sort: 'metadata.creationTimestamp',
-            cell: (resource) => (
-              <span style={{ whiteSpace: 'nowrap' }}>
-                {resource.metadata.creationTimestamp && moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
-              </span>
-            ),
-            exportContent: (item: Secret) => {
-              if (item.metadata.creationTimestamp) {
-                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
-              }
-            },
-          },
+  header: t('Created'),
+  sort: 'metadata.creationTimestamp',
+  cell: (resource) => (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      {resource.metadata.creationTimestamp && fromNow(resource.metadata.creationTimestamp)}
+    </span>
+  ),
+  exportContent: (item: Secret) => {
+    if (item.metadata.creationTimestamp) {
+      return fromNow(item.metadata.creationTimestamp);
+    }
+  },
+},
           {
             header: '',
             cellTransforms: [fitContent],
