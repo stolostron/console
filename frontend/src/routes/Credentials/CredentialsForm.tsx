@@ -155,8 +155,8 @@ export function CredentialsForm(
   )
 
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
-  const [client_id, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
-  const [client_secret, setServiceAccClientSecret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
+  const [client_id, setClient_Id] = useState(() => providerConnection?.stringData?.client_id ?? '')
+  const [client_secret, setClient_Secret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
 
   // Details
   const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -530,8 +530,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
       { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
-      { path: 'Secret[0].stringData.client_id', setState: setServiceAccClientId },
-      { path: 'Secret[0].stringData.client_secret', setState: setServiceAccClientSecret },
+      { path: 'Secret[0].stringData.client_id', setState: setClient_Id },
+      { path: 'Secret[0].stringData.client_secret', setState: setClient_Secret },
     ]
     return syncs
   }
@@ -1310,7 +1310,7 @@ export function CredentialsForm(
             type: 'Text',
             label: t('Client ID'),
             value: client_id,
-            onChange: setServiceAccClientId,
+            onChange: setClient_Id,
             isRequired: true,
           },
           (auth_method === 'service-account' || isViewing) && {
@@ -1319,7 +1319,7 @@ export function CredentialsForm(
             isHidden: credentialsType !== Provider.redhatcloud,
             label: t('Client secret'),
             value: client_secret,
-            onChange: setServiceAccClientSecret,
+            onChange: setClient_Secret,
             isRequired: true,
             isSecret: true,
           },
