@@ -5,10 +5,9 @@ import i18n from 'i18next'
 import { getLastLanguage } from './getLastLanguage'
 
 const language = i18n.language || getLastLanguage() || 'en'
-console.log('LANG :  :', language)
+
 // The maximum allowed clock skew in milliseconds where we show a date as "Just now" even if it is from the future.
 export const maxClockSkewMS = -60000
-//const lang = getLastLanguage()
 
 // https://tc39.es/ecma402/#datetimeformat-objects
 // Use timeFormatter to display time in hours and minutes, e.g., "12:44 AM".
