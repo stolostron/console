@@ -185,14 +185,16 @@ export default function PolicyDetailsResults() {
         sort: 'templateName',
         cell: (item: ResultsTableData) => {
           const templateDetailURL = getTemplateDetailURL(item)
+          const displayTemplate = templateDetailURL ? (
+            <span>
+              <Link to={templateDetailURL}>{item.templateName}</Link>
+            </span>
+          ) : (
+            item.templateName
+          )
+
           return canCreatePolicy ? (
-            templateDetailURL ? (
-              <span>
-                <Link to={templateDetailURL}>{item.templateName}</Link>
-              </span>
-            ) : (
-              item.templateName
-            )
+            displayTemplate
           ) : (
             <Tooltip content={t('rbac.unauthorized')}>
               <span className="link-disabled" id="template-name-link-disabled">
