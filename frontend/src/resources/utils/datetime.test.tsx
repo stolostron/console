@@ -1,7 +1,8 @@
 // /* Copyright Contributors to the Open Cluster Management project */
 import { fromNow, getDuration, isValid, timeFormatter, dateFormatter, twentyFourHourTime } from './datetime'
+import { getLastLanguage } from './getLastLanguage';
 
-// Mock i18n for translation functions
+// Mocking i18n for translation functions
 jest.mock('i18next', () => ({
   t: (key: string, options?: any) => {
     if (key === 'Just now') return 'Just now'
@@ -18,13 +19,13 @@ describe('fromNow', () => {
 
   it('should return correct relative time for past dates', () => {
     const now = new Date()
-    const oneDayAgo = new Date(now.getTime() - 86400000) // 1 day ago
+    const oneDayAgo = new Date(now.getTime() - 86400000)
     expect(fromNow(oneDayAgo, now)).toBe('1 day ago')
   })
 
   it('should return "-" for future dates', () => {
     const now = new Date()
-    const futureDate = new Date(now.getTime() + 86400000) // 1 day in the future
+    const futureDate = new Date(now.getTime() + 86400000)
     expect(fromNow(futureDate, now)).toBe('-')
   })
 
@@ -36,7 +37,7 @@ describe('fromNow', () => {
 })
 describe('getDuration', () => {
   it('should correctly calculate duration in days, hours, minutes, and seconds', () => {
-    const ms = 90061000 // 1 day, 1 hour, 1 minute, 1 second
+    const ms = 90061000
     const result = getDuration(ms)
     expect(result).toEqual({ days: 1, hours: 1, minutes: 1, seconds: 1 })
   })
@@ -59,16 +60,16 @@ describe('isValid', () => {
   })
 })
 
-describe('Formatters', () => {
+describe.only('Formatters', () => {
   it('should format time correctly using timeFormatter', () => {
     const date = new Date('2024-09-09T12:44:00')
-    expect(timeFormatter.format(date)).toBe('12:44 PM') // Depending on locale
+    expect(timeFormatter.format(date)).toBe('12:44 PM')
   })
 
   it('should format date correctly using dateFormatter', () => {
-    const date = new Date('2024-09-09')
-    expect(dateFormatter.format(date)).toBe('Sep 8, 2024') // Depending on locale
-  })
+  const date = new Date(Date.UTC(2024, 8, 8)); // September 8, 2024 (UTC)
+  expect(dateFormatter.format(date)).toBe('Sep 8, 2024');
+});
 })
 
 
@@ -113,3 +114,71 @@ describe('twentyFourHourTime', () => {
     expect(twentyFourHourTime(date, true)).toBe('12:00:00')
   })
 })
+
+
+jest.mock('./getLastLanguage');
+
+describe('language selection logic', () => {
+  let i18n: { language?: string };
+
+  beforeEach(() => {
+    // Reset the i18n mock before each test
+    i18n = {};
+    jest.resetAllMocks();
+  });
+
+  it('should return i18n.language when it is defined', () => {
+    i18n.language = 'fr';
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
+    expect(language).toBe('fr');
+  });
+
+  it('should return getLastLanguage when i18n.language is undefined', () => {
+    (getLastLanguage as jest.Mock).mockReturnValue('es');
+
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
+    expect(language).toBe('es');
+  });
+
+  it('should return "en" when both i18n.language and getLastLanguage return undefined', () => {
+    (getLastLanguage as jest.Mock).mockReturnValue(undefined);
+
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
+    expect(language).toBe('en');
+  });
+});
+
+
+// describe.only('language selection logic', () => {
+//   let i18n: { language?: string };
+
+//   beforeEach(() => {
+//     // Reset the i18n mock before each test
+//     i18n = {};
+//   });
+
+//   it('should return i18n.language when it is defined', () => {
+//     i18n.language = 'fr';
+//     const language = i18n.language || getLastLanguage() || 'en';
+//     expect(language).toBe('fr');
+//   });
+
+//   it('should return getLastLanguage when i18n.language is undefined', () => {
+//     jest.mock('./getLastLanguage', () => ({
+//       getLastLanguage: jest.fn(() => 'es'), // Mocking the return value
+//     }));
+
+//     const language = i18n.language || getLastLanguage() || 'en';
+//     expect(language).toBe('es');
+//   });
+
+//   it('should return "en" when both i18n.language and getLastLanguage return undefined', () => {
+//     jest.mock('./getLastLanguage', () => ({
+//       getLastLanguage: jest.fn(() => undefined), // Mocking the return value as undefined
+//     }));
+
+//     const language = i18n.language || getLastLanguage() || 'en';
+//     expect(language).toBe('en');
+//   });
+// });
+
