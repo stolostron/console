@@ -1,6 +1,6 @@
 // /* Copyright Contributors to the Open Cluster Management project */
 import { fromNow, getDuration, isValid, timeFormatter, dateFormatter, twentyFourHourTime } from './datetime'
-import { getLastLanguage } from './getLastLanguage';
+import { getLastLanguage } from './getLastLanguage'
 
 // Mocking i18n for translation functions
 jest.mock('i18next', () => ({
@@ -66,20 +66,19 @@ describe('Formatters', () => {
     expect(timeFormatter.format(date)).toBe('12:44 PM')
   })
 
- it('should format date correctly using dateFormatter', () => {
-  const date = new Date(Date.UTC(2024, 8, 8)); // Setting date in UTC (Sep 8, 2024)
-  
-  const dateFormatter = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC' // Ensures the formatter uses UTC
-  });
-  
-  expect(dateFormatter.format(date)).toBe('Sep 8, 2024');
-});
-})
+  it('should format date correctly using dateFormatter', () => {
+    const date = new Date(Date.UTC(2024, 8, 8)) // Setting date in UTC (Sep 8, 2024)
 
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC', // Ensures the formatter uses UTC
+    })
+
+    expect(dateFormatter.format(date)).toBe('Sep 8, 2024')
+  })
+})
 
 describe('twentyFourHourTime', () => {
   it('should return time in HH:mm format when showSeconds is false or undefined', () => {
@@ -123,39 +122,37 @@ describe('twentyFourHourTime', () => {
   })
 })
 
-
-jest.mock('./getLastLanguage');
+jest.mock('./getLastLanguage')
 
 describe('language selection logic', () => {
-  let i18n: { language?: string };
+  let i18n: { language?: string }
 
   beforeEach(() => {
     // Reset the i18n mock before each test
-    i18n = {};
-    jest.resetAllMocks();
-  });
+    i18n = {}
+    jest.resetAllMocks()
+  })
 
   it('should return i18n.language when it is defined', () => {
-    i18n.language = 'fr';
-    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
-    expect(language).toBe('fr');
-  });
+    i18n.language = 'fr'
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
+    expect(language).toBe('fr')
+  })
 
   it('should return getLastLanguage when i18n.language is undefined', () => {
-    (getLastLanguage as jest.Mock).mockReturnValue('es');
+    ;(getLastLanguage as jest.Mock).mockReturnValue('es')
 
-    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
-    expect(language).toBe('es');
-  });
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
+    expect(language).toBe('es')
+  })
 
   it('should return "en" when both i18n.language and getLastLanguage return undefined', () => {
-    (getLastLanguage as jest.Mock).mockReturnValue(undefined);
+    ;(getLastLanguage as jest.Mock).mockReturnValue(undefined)
 
-    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0];
-    expect(language).toBe('en');
-  });
-});
-
+    const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
+    expect(language).toBe('en')
+  })
+})
 
 // describe.only('language selection logic', () => {
 //   let i18n: { language?: string };
@@ -189,4 +186,3 @@ describe('language selection logic', () => {
 //     expect(language).toBe('en');
 //   });
 // });
-
