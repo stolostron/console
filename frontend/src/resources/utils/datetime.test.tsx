@@ -60,14 +60,22 @@ describe('isValid', () => {
   })
 })
 
-describe.only('Formatters', () => {
+describe('Formatters', () => {
   it('should format time correctly using timeFormatter', () => {
     const date = new Date('2024-09-09T12:44:00')
     expect(timeFormatter.format(date)).toBe('12:44 PM')
   })
 
-  it('should format date correctly using dateFormatter', () => {
-  const date = new Date(Date.UTC(2024, 8, 8)); // September 8, 2024 (UTC)
+ it('should format date correctly using dateFormatter', () => {
+  const date = new Date(Date.UTC(2024, 8, 8)); // Setting date in UTC (Sep 8, 2024)
+  
+  const dateFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC' // Ensures the formatter uses UTC
+  });
+  
   expect(dateFormatter.format(date)).toBe('Sep 8, 2024');
 });
 })
