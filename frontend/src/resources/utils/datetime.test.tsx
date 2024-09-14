@@ -9,7 +9,6 @@ jest.mock('i18next', () => ({
   },
 }))
 
-
 describe('fromNow', () => {
   it('should return "Just now" for very recent dates (1 ms)', () => {
     const now = new Date()
@@ -72,34 +71,45 @@ describe('Formatters', () => {
   })
 })
 
+
 describe('twentyFourHourTime', () => {
-  it('should format time correctly without seconds', () => {
-    const date = new Date('2023-10-10T14:30:00')
+  it('should return time in HH:mm format when showSeconds is false or undefined', () => {
+    const date = new Date('2024-09-12T14:30:00') // 14:30
     expect(twentyFourHourTime(date)).toBe('14:30')
   })
 
-  it('should format time correctly with seconds', () => {
-    const date = new Date('2023-10-10T14:30:45')
+  it('should return time in HH:mm:ss format when showSeconds is true', () => {
+    const date = new Date('2024-09-12T14:30:45') // 14:30:45
     expect(twentyFourHourTime(date, true)).toBe('14:30:45')
   })
 
-  it('should format midnight correctly without seconds', () => {
-    const date = new Date('2023-10-10T00:00:00')
+  it('should return time in HH:mm format when showSeconds is false', () => {
+    const date = new Date('2024-09-12T14:30:45') // 14:30:45
+    expect(twentyFourHourTime(date, false)).toBe('14:30')
+  })
+
+  it('should correctly handle midnight (00:00)', () => {
+    const date = new Date('2024-09-12T00:00:00') // 00:00
     expect(twentyFourHourTime(date)).toBe('00:00')
   })
 
-  it('should format midnight correctly with seconds', () => {
-    const date = new Date('2023-10-10T00:00:00')
-    expect(twentyFourHourTime(date, true)).toBe('00:00:00')
+  it('should correctly handle single digit hours and minutes', () => {
+    const date = new Date('2024-09-12T07:08:00') // 07:08
+    expect(twentyFourHourTime(date)).toBe('07:08')
   })
 
-  it('should format noon correctly without seconds', () => {
-    const date = new Date('2023-10-10T12:00:00')
+  it('should correctly handle seconds when showSeconds is true', () => {
+    const date = new Date('2024-09-12T07:08:09') // 07:08:09
+    expect(twentyFourHourTime(date, true)).toBe('07:08:09')
+  })
+
+  it('should correctly handle noon (12:00) without seconds', () => {
+    const date = new Date('2024-09-12T12:00:00') // 12:00
     expect(twentyFourHourTime(date)).toBe('12:00')
   })
 
-  it('should format noon correctly with seconds', () => {
-    const date = new Date('2023-10-10T12:00:00')
+  it('should correctly handle noon (12:00) with seconds', () => {
+    const date = new Date('2024-09-12T12:00:00') // 12:00:00
     expect(twentyFourHourTime(date, true)).toBe('12:00:00')
   })
 })
