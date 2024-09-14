@@ -1,5 +1,5 @@
 // /* Copyright Contributors to the Open Cluster Management project */
-import { fromNow, getDuration, isValid, timeFormatter, dateFormatter, twentyFourHourTime } from './datetime'
+import { fromNow, getDuration, isValid, timeFormatter, twentyFourHourTime } from './datetime'
 import { getLastLanguage } from './getLastLanguage'
 
 // Mocking i18n for translation functions
@@ -140,14 +140,14 @@ describe('language selection logic', () => {
   })
 
   it('should return getLastLanguage when i18n.language is undefined', () => {
-    ;(getLastLanguage as jest.Mock).mockReturnValue('es')
+    (getLastLanguage as jest.Mock).mockReturnValue('es')
 
     const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
     expect(language).toBe('es')
   })
 
   it('should return "en" when both i18n.language and getLastLanguage return undefined', () => {
-    ;(getLastLanguage as jest.Mock).mockReturnValue(undefined)
+    (getLastLanguage as jest.Mock).mockReturnValue(undefined)
 
     const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
     expect(language).toBe('en')
