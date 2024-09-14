@@ -4,8 +4,6 @@ import * as _ from 'lodash'
 import i18n from 'i18next'
 import { getLastLanguage } from './getLastLanguage'
 
-// const language = i18n.language || getLastLanguage() || 'en'
-
 const language = (i18n.language || getLastLanguage() || 'en').split('-')[0]
 
 // The maximum allowed clock skew in milliseconds where we show a date as "Just now" even if it is from the future.
