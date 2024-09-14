@@ -153,36 +153,3 @@ describe('language selection logic', () => {
     expect(language).toBe('en')
   })
 })
-
-// describe.only('language selection logic', () => {
-//   let i18n: { language?: string };
-
-//   beforeEach(() => {
-//     // Reset the i18n mock before each test
-//     i18n = {};
-//   });
-
-//   it('should return i18n.language when it is defined', () => {
-//     i18n.language = 'fr';
-//     const language = i18n.language || getLastLanguage() || 'en';
-//     expect(language).toBe('fr');
-//   });
-
-//   it('should return getLastLanguage when i18n.language is undefined', () => {
-//     jest.mock('./getLastLanguage', () => ({
-//       getLastLanguage: jest.fn(() => 'es'), // Mocking the return value
-//     }));
-
-//     const language = i18n.language || getLastLanguage() || 'en';
-//     expect(language).toBe('es');
-//   });
-
-//   it('should return "en" when both i18n.language and getLastLanguage return undefined', () => {
-//     jest.mock('./getLastLanguage', () => ({
-//       getLastLanguage: jest.fn(() => undefined), // Mocking the return value as undefined
-//     }));
-
-//     const language = i18n.language || getLastLanguage() || 'en';
-//     expect(language).toBe('en');
-//   });
-// });
