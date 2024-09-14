@@ -1,5 +1,5 @@
 // /* Copyright Contributors to the Open Cluster Management project */
-import { fromNow, getDuration, isValid, timeFormatter, dateFormatter } from './datetime'
+import { fromNow, getDuration, isValid, timeFormatter, dateFormatter, twentyFourHourTime } from './datetime'
 
 // Mock i18n for translation functions
 jest.mock('i18next', () => ({
@@ -8,6 +8,7 @@ jest.mock('i18next', () => ({
     return `${options.count} ${key}`
   },
 }))
+
 
 describe('fromNow', () => {
   it('should return "Just now" for very recent dates (1 ms)', () => {
@@ -68,5 +69,37 @@ describe('Formatters', () => {
   it('should format date correctly using dateFormatter', () => {
     const date = new Date('2024-09-09')
     expect(dateFormatter.format(date)).toBe('Sep 8, 2024') // Depending on locale
+  })
+})
+
+describe('twentyFourHourTime', () => {
+  it('should format time correctly without seconds', () => {
+    const date = new Date('2023-10-10T14:30:00')
+    expect(twentyFourHourTime(date)).toBe('14:30')
+  })
+
+  it('should format time correctly with seconds', () => {
+    const date = new Date('2023-10-10T14:30:45')
+    expect(twentyFourHourTime(date, true)).toBe('14:30:45')
+  })
+
+  it('should format midnight correctly without seconds', () => {
+    const date = new Date('2023-10-10T00:00:00')
+    expect(twentyFourHourTime(date)).toBe('00:00')
+  })
+
+  it('should format midnight correctly with seconds', () => {
+    const date = new Date('2023-10-10T00:00:00')
+    expect(twentyFourHourTime(date, true)).toBe('00:00:00')
+  })
+
+  it('should format noon correctly without seconds', () => {
+    const date = new Date('2023-10-10T12:00:00')
+    expect(twentyFourHourTime(date)).toBe('12:00')
+  })
+
+  it('should format noon correctly with seconds', () => {
+    const date = new Date('2023-10-10T12:00:00')
+    expect(twentyFourHourTime(date, true)).toBe('12:00:00')
   })
 })
