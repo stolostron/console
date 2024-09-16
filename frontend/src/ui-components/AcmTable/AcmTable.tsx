@@ -1464,10 +1464,9 @@ function TableColumnFilters<T>(
       const options: { option: TableFilterOption<string>; count: number }[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
-        const count =
-          filterCounts && filterCounts[filter.id]
-            ? filterCounts[filter.id][option.value]
-            : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
+        const count = filterCounts?.[filter.id]
+          ? filterCounts[filter.id][option.value]
+          : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
         /* istanbul ignore next */
         if (
           filter.showEmptyOptions ||
