@@ -127,7 +127,7 @@ async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
           },
           sync: {
             status: argoApp.syncStatus,
-          }
+          },
         },
       } as IResource)
     }
