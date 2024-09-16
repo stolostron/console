@@ -144,7 +144,9 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
     query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString(), appData.cluster)
     if (kindsNotNamespaceScoped.length > 0) {
       kindsNotNamespaceScoped.forEach((item, i) => {
-        queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i], null, appData.cluster))
+        queryNotNamespaceScoped.push(
+          getQueryStringForResource(item, kindsNotNamespaceScopedNames[i], null, appData.cluster)
+        )
       })
     }
     //get the cluster for each target namespace and all pods related to this objects only
