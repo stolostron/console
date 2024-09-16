@@ -68,7 +68,7 @@ export const utcDateTimeFormatter = new Intl.DateTimeFormat(language, {
 })
 
 // Use relativeTimeFormatter to format relative time for days, hours, and minutes, e.g., "2 days ago".
-//Gives you more control, but you need to manually provide the time difference and unit.
+// Gives you more control, but you need to manually provide the time difference and unit.
 export const relativeTimeFormatter = (langArg?: string) =>
   Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(langArg ?? language) : null
 
@@ -91,8 +91,8 @@ interface FromNowOptions {
   includeSeconds?: boolean
   addSuffix?: boolean
 }
-//Use fromNow when you want a relative time display like "5 minutes ago" or "2 days ago."
-//Automatically calculates the time difference and returns a human-readable string. Best for quick, ready-to-use relative time.
+// Use fromNow when you want a relative time display like "5 minutes ago" or "2 days ago."
+// Automatically calculates the time difference and returns a human-readable string. Best for quick, ready-to-use relative time.
 export const fromNow = (dateTime: string | Date, now?: Date, options?: FromNowOptions, langArg?: string) => {
   // Check for null. If dateTime is null, it returns incorrect date Jan 1 1970.
   if (!dateTime) {
