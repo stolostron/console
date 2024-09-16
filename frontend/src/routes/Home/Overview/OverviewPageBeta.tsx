@@ -16,6 +16,7 @@ import {
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -48,7 +49,6 @@ import {
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
-import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 
 function renderSummaryLoading() {
   return [
@@ -218,7 +218,9 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
 
   const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, percentOfClustersWithRisk } = useMemo(() => {
     const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
-      if (curr.body && curr.body.predictions) {
+      if (curr?.error) {
+        console.error(curr.error)
+      } else if (curr?.body.predictions) {
         return [...acc, ...curr.body.predictions]
       }
       return acc
