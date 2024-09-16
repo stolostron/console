@@ -96,10 +96,10 @@ export function grouping(): {
 
   const getSeverity = (policy: any, parseStringMap: TParseStringMap): string => {
     if (policy?.severity) {
-      return policy.severity
+      return policy.severity.toLowerCase()
     }
 
-    return parseStringMap(policy.annotation)['policy.open-cluster-management.io/severity'] ?? ''
+    return (parseStringMap(policy.annotation)['policy.open-cluster-management.io/severity'] ?? '').toLowerCase()
   }
 
   const getResponseAction = (policy: any): string | null => {
