@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
-import { convertYesNoCell, DiscoveredViolationsCard, policyViolationSummary } from './common'
+import { convertYesNoCell, getConstraintCompliance, DiscoveredViolationsCard, policyViolationSummary } from './common'
 import { waitForText } from '../../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 
@@ -22,7 +22,7 @@ describe('ByCluster common component test', () => {
         name: 'policy-pod',
         namespace: 'local-cluster',
         compliant: 'Compliant',
-        remediationAction: 'enforce',
+        responseAction: 'enforce',
         severity: 'low',
         disabled: false,
         _isExternal: true,
@@ -41,7 +41,7 @@ describe('ByCluster common component test', () => {
         name: 'policy-pod',
         namespace: 'managed4',
         compliant: 'Compliant',
-        remediationAction: 'inform',
+        responseAction: 'inform',
         severity: 'low',
         disabled: false,
         _isExternal: true,
@@ -79,7 +79,7 @@ describe('ByCluster common component test', () => {
         name: 'policy-pod',
         namespace: 'local-cluster',
         compliant: 'Compliant',
-        remediationAction: 'enforce',
+        responseAction: 'enforce',
         severity: 'low',
         disabled: false,
         _isExternal: true,
@@ -98,7 +98,7 @@ describe('ByCluster common component test', () => {
         name: 'policy-pod',
         namespace: 'managed4',
         compliant: 'NonCompliant',
-        remediationAction: 'inform',
+        responseAction: 'inform',
         severity: 'low',
         disabled: false,
         _isExternal: true,
@@ -117,7 +117,7 @@ describe('ByCluster common component test', () => {
         name: 'policy-pod',
         namespace: 'managed5',
         compliant: 'Pending',
-        remediationAction: 'inform',
+        responseAction: 'inform',
         severity: 'low',
         disabled: false,
         _isExternal: true,
@@ -145,5 +145,13 @@ describe('ByCluster common component test', () => {
     expect(convertYesNoCell(false)).toBe('no')
     expect(convertYesNoCell(true)).toBe('yes')
     expect(convertYesNoCell(undefined)).toBe('-')
+  })
+})
+
+describe('getConstraintCompliance', () => {
+  test('getConstraintCompliance should work properly', () => {
+    expect(getConstraintCompliance(0)).toEqual('compliant')
+    expect(getConstraintCompliance(1)).toEqual('noncompliant')
+    expect(getConstraintCompliance(undefined)).toEqual('-')
   })
 })

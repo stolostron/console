@@ -1161,6 +1161,7 @@
   "Discovered policies": "Discovered policies",
   "discoveredPolicies.tooltip.clusterViolation": "Gatekeeper violations refer to the total number of pre-existing misconfigurations that do not comply with the defined constraints.",
   "discoveredPolicies.tooltip.responseAction": "In Open Cluster Management policies, response action refers to the remediationAction. For Gatekeeper, it refers to the enforcementAction.",
+  "discoveredPolicies.tooltip.severity": "For Gatekeeper constraints, this value comes from the policy.open-cluster-management.io/severity annotation.",
   "discovery.addDiscovery": "Create discovery settings",
   "discovery.configureDiscovery": "Configure discovery settings",
   "discovery.import": "Import cluster",

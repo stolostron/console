@@ -20,7 +20,9 @@ import { getEngineWithSvg } from '../../common/util'
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
   const urlParams = useParams()
+  const name = urlParams.templateName ?? '-'
   const kind = urlParams.kind ?? ''
+  const apiGroup = urlParams.apiGroup ?? ''
   const { clusterName, template } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>()
 
@@ -37,7 +39,7 @@ export function PolicyTemplateDetails() {
     } else if (
       // Detect if this is a Gatekeeper constraint and is populated with audit results from a newer Gatekeeper. Older
       // Gatekeeper installations don't set 'group' and 'version'.
-      template?.apiVersion == 'constraints.gatekeeper.sh/v1beta1' &&
+      apiGroup === 'constraints.gatekeeper.sh' &&
       template?.status?.violations?.length &&
       template.status.violations[0].version !== undefined
     ) {
@@ -63,16 +65,16 @@ export function PolicyTemplateDetails() {
     }
 
     setRelatedObjects([])
-  }, [clusterName, template])
+  }, [apiGroup, clusterName, template])
 
   const descriptionItems = [
     {
       key: t('Name'),
-      value: template?.metadata?.name ?? '-',
+      value: name,
     },
     {
       key: t('Engine'),
-      value: kind ? getEngineWithSvg(kind) : '-',
+      value: kind ? getEngineWithSvg(apiGroup) : '-',
     },
     {
       key: t('Cluster'),
