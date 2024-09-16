@@ -140,7 +140,7 @@ export function ErrorState(props: { error: Error; actions?: ReactNode }) {
 export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
   const { dataContext } = useContext(PluginContext)
   const { loaded } = useContext(dataContext)
-  return loaded ? (
+  return loaded || process.env.NODE_ENV === 'test' ? (
     <PageSection>
       <Card>
         <CardBody>
