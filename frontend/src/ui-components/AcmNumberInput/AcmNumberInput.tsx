@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, FormGroup, NumberInput, NumberInputProps, Popover } from '@patternfly/react-core';
+import { Button, FormGroup, NumberInput, NumberInputProps, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -78,13 +78,13 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
         ) : undefined
       }
     >
-        <NumberInput
-          {...numberInputProps}
-          inputName={props.id}
-          inputAriaLabel={props.label}
-          // validated={validated} not supported now
-          isDisabled={props.isDisabled || ValidationContext.isReadOnly}
-        />
+      <NumberInput
+        {...numberInputProps}
+        inputName={props.id}
+        inputAriaLabel={props.label}
+        // validated={validated} not supported now
+        isDisabled={props.isDisabled || ValidationContext.isReadOnly}
+      />
     </FormGroup>
   )
 }

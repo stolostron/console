@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmNumberInput } from './AcmNumberInput'
 import { I18nextProvider } from 'react-i18next'
-import i18n from '../../lib/i18n';
+import i18n from '../../lib/i18n'
 
 describe('AcmNumberInput', () => {
   const NumberInput = () => <AcmNumberInput label="Number input" id="number-input" value={5} onChange={() => null} />
@@ -89,36 +89,29 @@ describe('AcmNumberInput', () => {
           onChange={() => {}}
         />
       </I18nextProvider>
-    );
+    )
 
-     // Checking if the help icon is rendered
-    const helpButton = screen.getByRole('button', { name: 'More info' });
-    expect(helpButton).toBeInTheDocument();
+    // Checking if the help icon is rendered
+    const helpButton = screen.getByRole('button', { name: 'More info' })
+    expect(helpButton).toBeInTheDocument()
 
     // Simulating a click on the help icon
-    fireEvent.click(helpButton);
+    fireEvent.click(helpButton)
 
     // Checking if the tooltip text is rendered
-    const tooltipText = await screen.findByText('This is a tooltip');
-    expect(tooltipText).toBeInTheDocument();
-  });
-
+    const tooltipText = await screen.findByText('This is a tooltip')
+    expect(tooltipText).toBeInTheDocument()
+  })
 
   it('does not render the help icon when labelHelp is not provided', () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <AcmNumberInput
-          id="test-id"
-          label="Test Label"
-          required
-          value={1}
-          onChange={() => {}}
-        />
+        <AcmNumberInput id="test-id" label="Test Label" required value={1} onChange={() => {}} />
       </I18nextProvider>
-    );
+    )
 
     // Checking if the help icon is not rendered
-    const helpButton = screen.queryByRole('button', { name: 'More info' });
-    expect(helpButton).not.toBeInTheDocument();
-  });
+    const helpButton = screen.queryByRole('button', { name: 'More info' })
+    expect(helpButton).not.toBeInTheDocument()
+  })
 })
