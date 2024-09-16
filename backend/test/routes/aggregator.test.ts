@@ -143,6 +143,8 @@ const responseNoFilter = {
       },
       status: {
         cluster: 'feng-managed',
+        health: {},
+        sync: {},
       },
     },
     {
