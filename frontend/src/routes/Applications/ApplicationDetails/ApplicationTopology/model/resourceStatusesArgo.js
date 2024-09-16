@@ -132,7 +132,7 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
     _.set(topoClusterNode, 'specs.targetNamespaces', targetNSForClusters)
   }
 
-  let query = getQueryStringForResource('Application', name, namespace)
+  let query = getQueryStringForResource('Application', name, namespace, appData.cluster)
   const queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
   if (appData && appData.targetNamespaces) {
     const argoKinds = appData.relatedKinds
@@ -141,10 +141,10 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
         })
       : null
     //get all resources from the target namespace since they are not linked to the argo application
-    query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString())
+    query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString(), appData.cluster)
     if (kindsNotNamespaceScoped.length > 0) {
       kindsNotNamespaceScoped.forEach((item, i) => {
-        queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i]))
+        queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i], null, appData.cluster))
       })
     }
     //get the cluster for each target namespace and all pods related to this objects only
