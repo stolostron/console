@@ -1696,7 +1696,6 @@
   "machinePool.modal.scale.enable-autoscale.title": "Activer la mise à l’échelle automatique",
   "machinePool.modal.scale.maxReplicas.label": "Nombre maximal de réplicas",
   "machinePool.modal.scale.minReplicas.label": "Nombre minimal de réplicas",
-  "machinePool.modal.scale.minReplicas.tooltip": "Lors de l'activation de l'autoscaling pour la première fois, la valeur suggérée pour les réplicas minimales sera égale au nombre de zones de disponibilité configurées pour le cluster. Par défaut, cela inclut toutes les zones de disponibilité dans la région sélectionnée, mais un sous-ensemble de zones peut être sélectionné lors de la création du cluster pour AWS et Azure.",
   "machinePool.modal.scale.replicas.label": "Nombre de réplicas d’ensembles de machines",
   "machinePool.modal.scale.validation.maxReplicas": "Le nombre maximal de réplicas doit être supérieur ou égal au nombre d’ensembles de machines ({{machineSetCount}}).",
   "machinePool.modal.scale.validation.positive": "Le nombre de réplicas doit être un nombre positif.",

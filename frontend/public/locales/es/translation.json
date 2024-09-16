@@ -1696,7 +1696,6 @@
   "machinePool.modal.scale.enable-autoscale.title": "Habilitar el escalamiento automático",
   "machinePool.modal.scale.maxReplicas.label": "Cantidad máxima de réplicas",
   "machinePool.modal.scale.minReplicas.label": "Cantidad mínima de réplicas",
-  "machinePool.modal.scale.minReplicas.tooltip": "Al habilitar el escalado automático por primera vez, el valor sugerido para réplicas mínimas será igual al número de zonas de disponibilidad configuradas para el clúster. Por defecto, esto incluye todas las zonas de disponibilidad en la región seleccionada, pero se puede seleccionar un subconjunto de zonas al crear el clúster para AWS y Azure.",
   "machinePool.modal.scale.replicas.label": "Recuento de réplicas del conjunto de máquinas",
   "machinePool.modal.scale.validation.maxReplicas": "La cantidad máxima de réplicas debe ser mayor o igual a la cantidad de conjuntos de máquinas ({{machineSetCount}}).",
   "machinePool.modal.scale.validation.positive": "La cantidad de réplicas debe ser un número positivo.",
