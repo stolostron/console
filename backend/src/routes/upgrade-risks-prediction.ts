@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -9,6 +9,7 @@ import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
 
+const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
 interface Credential {
   auths: {
     'cloud.openshift.com': {
@@ -17,7 +18,7 @@ interface Credential {
   }
 }
 
-interface Secret extends IResource {
+export interface Secret extends IResource {
   data?: {
     [key: string]: string
   }
@@ -59,7 +60,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
         // acm-operator version in User-Agent header doesn't matter - CCX only uses the 'acm-operator' string to identify the product initiating the req
         // https://github.com/RedHatInsights/insights-results-smart-proxy/blob/master/server/router_utils.go#L168
         const userAgent = 'acm-operator/v2.10.0 cluster/acm-hub'
-        const insightsPath = 'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
+        const insightsPath = 'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-predictio'
         let proxyAgent: HttpsProxyAgent<string> = undefined
         if (process.env.HTTPS_PROXY) {
           proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
@@ -77,12 +78,10 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch(
-            (err: Error): undefined => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return undefined
-            }
-          )
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch((err: Error) => {
+            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+            return { error: err.message }
+          })
         })
 
         await Promise.all(reqs).then((results) => {
