@@ -77,12 +77,10 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch(
-            (err: Error): undefined => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return undefined
-            }
-          )
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch((err: Error) => {
+            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+            return { error: err.message }
+          })
         })
 
         await Promise.all(reqs).then((results) => {
