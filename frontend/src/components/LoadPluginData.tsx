@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode, useContext, useEffect } from 'react'
 import { PluginContext } from '../lib/PluginContext'
-import { LoadingPage } from './LoadingPage'
 import { LostChangesProvider } from './LostChanges'
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
@@ -12,5 +11,5 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       load()
     }
   }, [load, loaded])
-  return loaded ? <LostChangesProvider>{props.children}</LostChangesProvider> : <LoadingPage />
+  return <LostChangesProvider>{props.children}</LostChangesProvider>
 }

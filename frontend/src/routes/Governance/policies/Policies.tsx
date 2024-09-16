@@ -643,14 +643,6 @@ export default function PoliciesPage() {
     [namespaces, t, getSourceOptions]
   )
 
-  if (tableItems.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-
   return (
     <PageSection>
       {modal !== undefined && modal}
@@ -660,7 +652,7 @@ export default function PoliciesPage() {
         columns={policyColumns}
         keyFn={policyKeyFn}
         items={tableItems}
-        emptyState={undefined} // only shown when tableItems.length > 0
+        emptyState={<GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />}
         tableActions={tableActions}
         filters={filters}
         showExportButton

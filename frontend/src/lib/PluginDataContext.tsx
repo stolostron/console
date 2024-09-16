@@ -17,8 +17,10 @@ export type PluginData = {
   reactQuery: typeof reactQuery
   backendUrl: string
   loaded: boolean
+  receivedFirstPacket: boolean
   startLoading: boolean
   setLoaded: Dispatch<SetStateAction<boolean>>
+  setReceivedFirstPacket: Dispatch<SetStateAction<boolean>>
   load: () => void
 }
 
@@ -29,14 +31,17 @@ export const defaultContext = {
   reactQuery,
   backendUrl: '',
   loaded: false,
+  receivedFirstPacket: false,
   startLoading: false,
   setLoaded: () => {},
+  setReceivedFirstPacket: () => {},
   load: () => {},
 }
 
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
+  const [receivedFirstPacket, setReceivedFirstPacket] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [startLoading, setStartLoading] = useState(false)
   const backendUrl = getBackendUrl()
@@ -49,11 +54,13 @@ export const usePluginDataContextValue = () => {
       backendUrl,
       reactQuery,
       loaded,
+      receivedFirstPacket,
       startLoading,
       setLoaded,
+      setReceivedFirstPacket,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loaded, startLoading]
+    [backendUrl, receivedFirstPacket, loaded, startLoading]
   )
   return contextValue
 }

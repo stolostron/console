@@ -77,6 +77,7 @@ export function GovernanceCreatePolicysetEmptyState(props: { rbac: boolean }) {
           components={{ bold: <strong /> }}
         />
       }
+      ignoreLoading={true}
       action={
         <div>
           <AcmButton

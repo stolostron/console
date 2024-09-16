@@ -171,14 +171,13 @@ import {
   subscriptionOperatorsState,
   subscriptionReportsState,
   subscriptionsState,
-  THROTTLE_EVENTS_DELAY,
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { useRecoilValue } from '../shared-recoil'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loaded, setLoaded } = useContext(PluginDataContext)
+  const { loaded, setLoaded, setReceivedFirstPacket } = useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
@@ -422,6 +421,16 @@ export function LoadData(props: { children?: ReactNode }) {
             case 'START':
               eventQueue.length = 0
               break
+            // instead of waiting for entire backend data to load
+            // data is broken up into packets with list resources first
+            // tables show skeleton until firs packet is received
+            // then list grows as subsequent packets packets are received
+            case 'EOP': // END OF A PACKET
+              setReceivedFirstPacket(() => {
+                processEventQueue()
+                return true
+              })
+              break
             case 'LOADED':
               setEventsLoaded((eventsLoaded) => {
                 if (!eventsLoaded) {
@@ -457,12 +466,16 @@ export function LoadData(props: { children?: ReactNode }) {
     }
     startWatch()
 
-    const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
+    const timeout = setInterval(() => {
+      if (eventsLoaded) {
+        processEventQueue()
+      }
+    }, 500)
     return () => {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [caches, setSettings, setters])
+  }, [caches, eventsLoaded, loaded, setReceivedFirstPacket, setSettings, setters])
 
   const {
     data: globalHubRes,

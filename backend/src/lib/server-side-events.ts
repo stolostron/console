@@ -4,7 +4,7 @@ import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
 import { getEncodeStream } from './compression'
-import { parseCookies, setCookie } from './cookies'
+import { setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
 
@@ -30,6 +30,18 @@ export interface ServerSideEvent<DataT = unknown> {
   name?: string
   namespace?: string
   data?: DataT
+}
+export interface WatchEvent {
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'EOP'
+  object: {
+    kind: string
+    apiVersion: string
+    metadata: {
+      name: string
+      namespace: string
+      resourceVersion: string
+    }
+  }
 }
 
 export interface ServerSideEventClient {
@@ -274,25 +286,76 @@ export class ServerSideEvents {
       logger.info({ msg: 'event stream close' })
     })
 
-    let lastEventID = 0
-    if (req.headers['last-event-id']) {
-      const last = Number(req.headers['last-event-id'])
-      if (Number.isInteger(last)) {
-        const cookies = parseCookies(req)
-        if (cookies['watch'] === instanceID) {
-          lastEventID = last
-        }
+    // SORT EVENTS INTO SMALLER PACKETS
+    // SO THAT BROWSER PAGE LOADS QUICKER
+    // split events into packets
+    const parts = Object.values(this.events)
+    const start = parts.splice(0, 2)
+    const end = parts.pop()
+    const clusters: ServerSideEvent<unknown>[] = []
+    const policies: ServerSideEvent<unknown>[] = []
+    const agents: ServerSideEvent<unknown>[] = []
+    const infos: ServerSideEvent<unknown>[] = []
+    const addons: ServerSideEvent<unknown>[] = []
+    const remainder: ServerSideEvent<unknown>[] = []
+    parts.forEach((event) => {
+      const data = event.data as WatchEvent
+      switch (data.object.kind) {
+        case 'ManagedCluster':
+        case 'HostedCluster':
+        case 'ClusterDeployment':
+          clusters.push(event)
+          break
+        case 'Policy':
+        case 'PolicySet':
+          policies.push(event)
+          break
+        case 'AgentClusterInstall':
+          agents.push(event)
+          break
+        case 'ManagedClusterInfo':
+          infos.push(event)
+          break
+        case 'ManagedClusterAddOn':
+          addons.push(event)
+          break
+        default:
+          remainder.push(event)
+          break
       }
-    }
+    })
 
-    let sentCount = 0
-    for (const eventID in this.events) {
-      if (Number(eventID) <= lastEventID) continue
-      this.sendEvent(clientID, this.events[eventID])
-      sentCount++
-    }
+    // sort events alphabetically so that browser list fills from top to bottom
+    const compareFn =
+      (propName: 'name' | 'namespace') => (a: ServerSideEvent<unknown>, b: ServerSideEvent<unknown>) => {
+        const adata = a.data as WatchEvent
+        const bdata = b.data as WatchEvent
+        return adata.object.metadata[propName].localeCompare(bdata.object.metadata[propName])
+      }
+    clusters.sort(compareFn('name'))
+    infos.sort(compareFn('namespace'))
+    policies.sort(compareFn('name'))
+    addons.sort(compareFn('namespace'))
 
-    logger.info({ msg: 'event stream start', events: sentCount })
+    // send packets of resources
+    const sending = start
+    do {
+      sending.push(...clusters.splice(0, 200))
+      sending.push(...agents.splice(0, 200))
+      sending.push(...infos.splice(0, 200))
+      sending.push(...policies.splice(0, 200))
+      sending.push(...addons.splice(0, 400))
+      sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
+    } while (clusters.length || policies.length || addons.length || infos.length || agents.length)
+    do {
+      sending.push(...remainder.splice(0, 2000))
+    } while (remainder.length)
+    sending.push(end)
+    sending.forEach((event) => {
+      this.sendEvent(clientID, event)
+    })
+
+    logger.info({ msg: 'event stream start', events: events.length })
 
     return eventClient
   }

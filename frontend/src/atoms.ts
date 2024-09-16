@@ -144,7 +144,7 @@ export interface Settings {
 }
 
 export interface WatchEvent {
-  type: 'ADDED' | 'DELETED' | 'MODIFIED'
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'EOP'
   object: {
     kind: string
     apiVersion: string
