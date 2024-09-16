@@ -1682,6 +1682,7 @@
   "machinePool.modal.scale.enable-autoscale.title": "启用自动扩展",
   "machinePool.modal.scale.maxReplicas.label": "最大副本",
   "machinePool.modal.scale.minReplicas.label": "最小副本",
+  "machinePool.modal.scale.minReplicas.tooltip":"首次启用自动扩展时，建议的最小副本值将等于为集群配置的可用区数量。默认情况下，这是所选区域中的所有可用区，但可以在 AWS 和 Azure 的集群创建时选择一个子集。",
   "machinePool.modal.scale.replicas.label": "机器集副本数",
   "machinePool.modal.scale.validation.maxReplicas": "最大副本必须大于或等于机器集的数量 ({{machineSetCount}})。",
   "machinePool.modal.scale.validation.positive": "副本数必须是正数。",

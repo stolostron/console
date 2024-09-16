@@ -1682,6 +1682,7 @@
   "machinePool.modal.scale.enable-autoscale.title": "自動スケーリングの有効化",
   "machinePool.modal.scale.maxReplicas.label": "最大レプリカ",
   "machinePool.modal.scale.minReplicas.label": "最小レプリカ",
+  "machinePool.modal.scale.minReplicas.tooltip": "初めて自動スケーリングを有効にする場合、最小レプリカの推奨値はクラスターに構成された可用性ゾーンの数と同じになります。デフォルトでは、これは選択されたリージョン内のすべての可用性ゾーンですが、AWSおよびAzureのクラスター作成時にゾーンのサブセットを選択できます。",
   "machinePool.modal.scale.replicas.label": "マシンセットのレプリカ数",
   "machinePool.modal.scale.validation.maxReplicas": "最大レプリカはマシンセットの数 ({{machineSetCount}}) 以上である必要があります。",
   "machinePool.modal.scale.validation.positive": "レプリカ数は正の数でなければなりません。",
