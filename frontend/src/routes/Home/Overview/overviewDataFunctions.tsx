@@ -17,7 +17,7 @@ import {
   PolicyReportResults,
   Subscription,
 } from '../../../resources'
-import { Provider, ProviderShortTextMap } from '../../../ui-components'
+import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import { getClusterList } from '../../Applications/helpers/resource-helper'
 import { getApplicationType } from '../../Applications/Overview'
 import {
@@ -57,9 +57,14 @@ export function getClusterProviderSummary(filteredClusters: Cluster[]) {
   const providerSums: Record<string, number> = {}
   filteredClusters.forEach((cluster) => {
     const provider = cluster?.provider ?? Provider.other
-    providerSums[provider] > 0 ? providerSums[provider]++ : (providerSums[provider] = 1)
+    const sum = providerSums[provider] > 0 ? providerSums[provider] + 1 : 1
+    providerSums[provider] = sum
   })
-  return Object.keys(providerSums).map((sum) => ({
+  // sort alphabetically
+  const orderedProviders = Object.keys(providerSums).sort((a, b) =>
+    compareStrings(ProviderShortTextMap[a as Provider], ProviderShortTextMap[b as Provider])
+  )
+  return orderedProviders.map((sum) => ({
     key: ProviderShortTextMap[sum as Provider],
     value: providerSums[sum],
     link: `${NavigationPath.managedClusters}?provider=${sum}`,
@@ -70,9 +75,12 @@ export function getClusterVersionSummary(filteredClusters: Cluster[]) {
   const versionSums: Record<string, number> = {}
   filteredClusters.forEach((cluster) => {
     const version = cluster.distribution?.displayVersion?.split('.', 2).join('.') ?? 'unknown'
-    versionSums[version] > 0 ? versionSums[version]++ : (versionSums[version] = 1)
+    const sum = versionSums[version] > 0 ? versionSums[version] + 1 : 1
+    versionSums[version] = sum
   })
-  return Object.keys(versionSums).map((version) => ({
+  // sort alphabetically
+  const orderedVersions = Object.keys(versionSums).sort((a, b) => compareStrings(a, b))
+  return orderedVersions.map((version) => ({
     key: version,
     value: versionSums[version],
   }))
@@ -86,7 +94,7 @@ export function getWorkerCoreTotal(workerCoreCountMetric: PrometheusResponse | u
       return cluster.labels?.['clusterID'] ?? cluster.name
     })
     const filteredCoreWorkerCounts =
-      clusterIDs.length === 0 // TODO check this...
+      clusterIDs.length === 0
         ? workerCoreCountMetric.data.result
         : workerCoreCountMetric.data.result.filter((alert) => clusterIDs.includes(alert.metric.managed_cluster_id))
     filteredCoreWorkerCounts.forEach((coreWorker) => {
@@ -196,6 +204,9 @@ export function getAppTypeSummary(
     }
   })
 
+  // sort alphabetically
+  const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
+
   const getAppTypeLink = (type: string) => {
     // handle cases from getApplicationType
     switch (type) {
@@ -222,7 +233,7 @@ export function getAppTypeSummary(
       description: t('total applications'),
       link: NavigationPath.applications,
     },
-    statusSection: Object.keys(typeTotals).map((type) => ({
+    statusSection: orderedAppTypes.map((type) => ({
       title: type,
       count: typeTotals[type],
       link: getAppTypeLink(type),

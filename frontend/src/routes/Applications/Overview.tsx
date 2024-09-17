@@ -221,6 +221,26 @@ export function getAppNamespace(resource: IResource) {
   return resource.metadata?.namespace
 }
 
+export function getAppHealthStatus(resource: IResource) {
+  let castType
+  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
+    castType = resource as ArgoApplication
+    return get(castType, 'status.health.status', '')
+  }
+
+  return ''
+}
+
+export function getAppSyncStatus(resource: IResource) {
+  let castType
+  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
+    castType = resource as ArgoApplication
+    return get(castType, 'status.sync.status', '')
+  }
+
+  return ''
+}
+
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
   let castType
   if (resource.apiVersion === ApplicationApiVersion) {
@@ -526,6 +546,8 @@ export default function ApplicationsOverview() {
           createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
           timeWindow: timeWindow,
           namespace: transformedNamespace,
+          healthStatus: getAppHealthStatus(tableItem),
+          syncStatus: getAppSyncStatus(tableItem),
         },
       }
 
@@ -681,6 +703,30 @@ export default function ApplicationsOverview() {
         },
       },
       {
+        header: t('Health Status'),
+        cell: (resource) => {
+          return <span>{get(resource, 'status.health.status', '')}</span>
+        },
+        tooltip: t('Health status for ArgoCD applications.'),
+        sort: 'transformed.healthStatus',
+        search: 'transformed.healthStatus',
+        exportContent: (resource) => {
+          return get(resource, 'status.health.status', '')
+        },
+      },
+      {
+        header: t('Sync Status'),
+        cell: (resource) => {
+          return <span>{get(resource, 'status.sync.status', '')}</span>
+        },
+        tooltip: t('Sync status for ArgoCD applications.'),
+        sort: 'transformed.syncStatus',
+        search: 'transformed.syncStatus',
+        exportContent: (resource) => {
+          return get(resource, 'status.sync.status', '')
+        },
+      },
+      {
         header: t('Time window'),
         cell: (resource) => {
           return getTimeWindow(resource)
@@ -789,6 +835,60 @@ export default function ApplicationsOverview() {
           return selectedValues.some((value) => {
             return clusterList.includes(value)
           })
+        },
+      },
+      {
+        id: 'syncStatus',
+        label: t('Sync Status'),
+        options: [
+          {
+            label: t('Synced'),
+            value: 'Synced',
+          },
+          {
+            label: t('OutOfSync'),
+            value: 'OutOfSync',
+          },
+          {
+            label: t('Unknown'),
+            value: 'Unknown',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.syncStatus'))
+        },
+      },
+      {
+        id: 'healthStatus',
+        label: t('Health Status'),
+        options: [
+          {
+            label: t('Unknown'),
+            value: 'Unknown',
+          },
+          {
+            label: t('Progressing'),
+            value: 'Progressing',
+          },
+          {
+            label: t('Suspended'),
+            value: 'Suspended',
+          },
+          {
+            label: t('Healthy'),
+            value: 'Healthy',
+          },
+          {
+            label: t('Degraded'),
+            value: 'Degraded',
+          },
+          {
+            label: t('Missing'),
+            value: 'Missing',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.healthStatus'))
         },
       },
     ],

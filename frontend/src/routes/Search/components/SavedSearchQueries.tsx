@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../resources/userpreference'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmCountCard, AcmExpandableWrapper } from '../../../ui-components'
+import { AcmCountCard, AcmExpandableWrapper, AcmToastContext } from '../../../ui-components'
 import { convertStringToQuery, setFederatedErrorAlert } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
-import { useSearchResultCountQuery } from '../search-sdk/search-sdk'
+import { SearchResultItemsDocument, useSearchResultCountQuery } from '../search-sdk/search-sdk'
+import { useSearchDefinitions } from '../searchDefinitions'
+import { generateSearchResultExport } from '../SearchResults/utils'
 import { updateBrowserUrl } from '../urlQuery'
 import { DeleteSearchModal } from './Modals/DeleteSearchModal'
 import { SaveAndEditSearchModal } from './Modals/SaveAndEditSearchModal'
@@ -35,9 +37,11 @@ export default function SavedSearchQueries(props: {
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
   const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
+  const searchDefinitions = useSearchDefinitions()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
   const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
@@ -85,6 +89,39 @@ export default function SavedSearchQueries(props: {
       }
     },
     [navigate, setSelectedSearch]
+  )
+
+  const handleExport = useCallback(
+    (query: SavedSearch) => {
+      searchClient
+        .query({
+          query: SearchResultItemsDocument,
+          variables: {
+            // limit set to -1 to allow all results
+            input: [convertStringToQuery(query.searchText, -1)],
+            limit: 1000,
+          },
+          fetchPolicy: 'network-only',
+        })
+        .then((searchResults) => {
+          generateSearchResultExport(
+            `${query.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+            searchResults.data,
+            searchDefinitions,
+            toast,
+            t
+          )
+        })
+        .catch(() => {
+          toast.addAlert({
+            title: t('Export unsuccessful'),
+            message: t('Error occurred while querying for search results. Please try the export again.'),
+            type: 'danger',
+            autoClose: true,
+          })
+        })
+    },
+    [searchDefinitions, toast, t]
   )
 
   if (loading) {
@@ -148,6 +185,10 @@ export default function SavedSearchQueries(props: {
                         handleAction: () => setShareSearch(savedSearch),
                       },
                       {
+                        text: t('Export as CSV'),
+                        handleAction: () => handleExport(savedSearch),
+                      },
+                      {
                         text: t('Delete'),
                         handleAction: () => setDeleteSearch(savedSearch),
                       },
@@ -186,6 +227,10 @@ export default function SavedSearchQueries(props: {
                     {
                       text: t('Share'),
                       handleAction: () => setShareSearch(query),
+                    },
+                    {
+                      text: t('Export as CSV'),
+                      handleAction: () => handleExport(query),
                     },
                   ],
                 }}

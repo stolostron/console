@@ -9,6 +9,7 @@ import { LoadingPage } from './LoadingPage'
 import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import { AcmFeedbackModal } from './AcmFeedbackModal'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
@@ -52,7 +53,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   }, [])
 
   // ACM Custom extensions
-
   const acmExtensions = useAcmExtension()
 
   return pluginDataContext ? (
@@ -69,6 +69,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         ocpApi,
       }}
     >
+      <AcmFeedbackModal />
       <div style={{ position: 'relative', height: '100%', width: '100%' }}>
         <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
