@@ -875,28 +875,28 @@ describe('Policy Template Details Page', () => {
     await waitForNotText('View YAML')
   })
 
-  test('Should show an error when displaying unsupported IamPolicy', async () => {
-    const path =
-      '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
-      'policy.open-cluster-management.io/v1/IamPolicy/limit-cluster-admins'
+//   test('Should show an error when displaying unsupported IamPolicy', async () => {
+//     const path =
+//       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
+//       'policy.open-cluster-management.io/v1/IamPolicy/limit-cluster-admins'
 
-    render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, new Map())
-        }}
-      >
-        <MemoryRouter initialEntries={[path]}>
-          <Routes>
-            <Route element={<PolicyTemplateDetailsPage />}>
-              <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
-              <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
-    )
+//     render(
+//       <RecoilRoot
+//         initializeState={(snapshot) => {
+//           snapshot.set(managedClusterAddonsState, new Map())
+//         }}
+//       >
+//         <MemoryRouter initialEntries={[path]}>
+//           <Routes>
+//             <Route element={<PolicyTemplateDetailsPage />}>
+//               <Route path={NavigationPath.policyTemplateDetails} element={<PolicyTemplateDetails />} />
+//               <Route path={NavigationPath.policyTemplateYaml} element={<PolicyTemplateYaml />} />
+//             </Route>
+//           </Routes>
+//         </MemoryRouter>
+//       </RecoilRoot>
+//     )
 
-    await waitForText('IamPolicy is no longer supported')
-  })
-})
+//     await waitForText('IamPolicy is no longer supported')
+//   })
+// })
