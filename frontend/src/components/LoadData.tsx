@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports

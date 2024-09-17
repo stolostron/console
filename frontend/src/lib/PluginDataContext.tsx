@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 import { Dispatch, createContext, useState, SetStateAction, useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'

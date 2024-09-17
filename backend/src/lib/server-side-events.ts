@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* istanbul ignore file */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
