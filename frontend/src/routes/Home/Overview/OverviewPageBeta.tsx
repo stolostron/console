@@ -16,17 +16,15 @@ import {
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
-import { useDiscoveredArgoApps, useDiscoveredOCPApps } from '../../../hooks/application-queries'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predictions'
 import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { ArgoApplication, Cluster, getUserPreference, UserPreference } from '../../../resources'
+import { Cluster, getUserPreference, UserPreference } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, colorThemes } from '../../../ui-components'
-import { parseArgoApplications, parseDiscoveredApplications, parseOcpAppResources } from '../../Applications/Overview'
 import { useAddRemediationPolicies } from '../../Governance/common/useCustom'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
@@ -56,31 +54,17 @@ import {
 } from './overviewDataFunctions'
 import SavedSearchesCard from './SavedSearchesCard'
 import SummaryCard from './SummaryCard'
+import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 
 export default function OverviewPageBeta(props: { selectedClusterLabels: Record<string, string[]> }) {
   const { selectedClusterLabels } = props
   usePageVisitMetricHandler(Pages.overviewFleet)
   const { t } = useTranslation()
-  const {
-    applicationsState,
-    applicationSetsState,
-    argoApplicationsState,
-    clusterManagementAddonsState,
-    helmReleaseState,
-    policyreportState,
-    placementDecisionsState,
-    subscriptionsState,
-  } = useSharedAtoms()
+  const { clusterManagementAddonsState, policyreportState } = useSharedAtoms()
 
   const policies = useAddRemediationPolicies()
   const allAddons = useClusterAddons()
-  const applications = useRecoilValue(applicationsState)
-  const applicationSets = useRecoilValue(applicationSetsState)
-  const argoApplications = useRecoilValue(argoApplicationsState)
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyReports = useRecoilValue(policyreportState)
-  const subscriptions = useRecoilValue(subscriptionsState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
     localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
@@ -94,12 +78,9 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
       : true
   )
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
-  const [argoApplicationsHashSet, setArgoApplicationsHashSet] = useState<Set<string>>(new Set<string>())
   const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
-  const { data: ocpApps = [] } = useDiscoveredOCPApps()
-  const { data: discoveredApplications = [] } = useDiscoveredArgoApps()
 
   const grafanaRoute = useMemo(() => {
     const obsAddOn = clusterManagementAddons.filter(
@@ -138,17 +119,9 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   )
   const filteredClusterNames = useMemo(() => filteredClusters.map((cluster) => cluster.name), [filteredClusters])
 
-  const argoApps: ArgoApplication[] = useMemo(
-    () => parseArgoApplications(argoApplications, setArgoApplicationsHashSet, allClusters),
-    [allClusters, argoApplications]
-  )
-  const discoveredArgoApps: ArgoApplication[] = useMemo(
-    () => parseDiscoveredApplications(discoveredApplications, setArgoApplicationsHashSet),
-    [discoveredApplications]
-  )
-  const ocpAppResources: any[] = useMemo(
-    () => parseOcpAppResources(ocpApps, helmReleases, argoApplicationsHashSet),
-    [argoApplicationsHashSet, helmReleases, ocpApps]
+  const requestedCounts = useAggregate(
+    SupportedAggregate.statuses,
+    filteredClusterNames.length < 100 ? { clusters: filteredClusterNames } : {}
   )
 
   const {
@@ -304,30 +277,8 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [filteredClusters, t])
 
   const appTypeSummary: Data = useMemo(() => {
-    return getAppTypeSummary(
-      applications,
-      applicationSets,
-      argoApps,
-      discoveredArgoApps,
-      ocpAppResources,
-      filteredClusterNames,
-      allClusters,
-      placementDecisions,
-      subscriptions,
-      t
-    )
-  }, [
-    applications,
-    applicationSets,
-    argoApps,
-    discoveredArgoApps,
-    ocpAppResources,
-    filteredClusterNames,
-    allClusters,
-    placementDecisions,
-    subscriptions,
-    t,
-  ])
+    return getAppTypeSummary(requestedCounts, t)
+  }, [requestedCounts, t])
 
   const policySummary = useMemo(() => {
     return getPolicySummary(policies, filteredClusterNames, allClusters.length, t)

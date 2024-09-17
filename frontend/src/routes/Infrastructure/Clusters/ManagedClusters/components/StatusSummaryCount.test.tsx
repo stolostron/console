@@ -4,7 +4,7 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
-import { nockSearch } from '../../../../../lib/nock-util'
+import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
@@ -262,6 +262,13 @@ const mockPolicies: Policy[] = [
     },
   },
 ]
+const statusAggregate = {
+  req: { clusters: ['test-cluster'] },
+  res: {
+    itemCount: 1,
+    filterCounts: undefined,
+  },
+}
 
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
@@ -271,6 +278,7 @@ describe('StatusSummaryCount', () => {
     nockSearch(mockSearchQueryArgoAppsStatusSummary, mockSearchResponseArgoApps1)
     nockSearch(mockSearchQueryArgoAppsStatusSummaryFilteredCount, mockSearchResponseArgoAppsCount1)
     nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount1)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   })
 
   const Component = () => {

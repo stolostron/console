@@ -488,6 +488,7 @@
   "app.enter.select.tag": "Optional: Enter a specific tag",
   "app.enter.select.username": "Optional: Enter the Git user name",
   "app.enter.subfolder": "Optional: Enter the Amazon S3 or MinIO subfolder bucket path",
+  "Application": "Application",
   "Application created": "Application created",
   "Application deploy status": "Application deploy status",
   "Application not found!": "Application not found!",

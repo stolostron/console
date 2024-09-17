@@ -19,7 +19,7 @@ import {
   policiesState,
   policyreportState,
 } from '../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest, nockSearch } from '../../../lib/nock-util'
+import { nockAggegateRequest, nockCreate, nockGet, nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import { clickByText, wait, waitForNocks } from '../../../lib/test-util'
 import {
   ClusterManagementAddOn,
@@ -31,19 +31,7 @@ import {
   Policy,
   PolicyReport,
 } from '../../../resources'
-import {
-  mockApplications,
-  mockApplicationSets,
-  mockArgoApplications,
-  mockSearchQueryArgoApps,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplications,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../Applications/Application.sharedmocks'
+import { mockApplications, mockApplicationSets, mockArgoApplications } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 import {
@@ -923,16 +911,20 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
     },
   },
 ]
+const statusAggregate = {
+  req: {},
+  res: {
+    itemCount: 6,
+    filterCounts: undefined,
+  },
+}
 
 it('should render overview page in empty state', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
 
   render(
     <RecoilRoot>
@@ -954,11 +946,9 @@ it('should render overview page in empty state', async () => {
 })
 
 it('should render overview page in error state', async () => {
+  nockIgnoreApiPaths()
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
   const mocks = [
@@ -996,10 +986,8 @@ it('should render overview page in error state', async () => {
 
 it('should render overview page with expected data', async () => {
   const metricNock = nockPostRequest('/metrics?overview-classic', {})
-  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
-  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
-  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
-  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+
   nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   const mocks = [

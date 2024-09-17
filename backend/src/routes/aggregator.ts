@@ -9,6 +9,7 @@ import {
   getApplications,
   filterApplications,
 } from './aggregators/applications'
+import { requestAggregatedStatuses } from './aggregators/statuses'
 
 export function startAggregating(): void {
   startAggregatingApplications()
@@ -23,8 +24,11 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   if (!token) return unauthorized(req, res)
   const type = req.url.split('?')[0].split('/')
   if (type.length < 3) return notFound(req, res)
-  if (type[2] === 'applications') {
-    return paginate(req, res, token, getApplications, filterApplications)
+  switch (type[2]) {
+    case 'applications':
+      return paginate(req, res, token, getApplications, filterApplications)
+    case 'statuses':
+      return requestAggregatedStatuses(req, res, token, getApplications)
   }
 
   return notFound(req, res)
