@@ -11,38 +11,37 @@ import {
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
-import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery, federatedErrorText } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
-import { GetRowActions } from './utils'
+import { useGetRowActions } from './utils'
 
-export function RenderItemContent(props: {
-  currentQuery: string
-  relatedKind: string
-  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-  hasFederatedError: boolean
-}) {
+export function RenderItemContent(
+  props: Readonly<{
+    currentQuery: string
+    relatedKind: string
+    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+    hasFederatedError: boolean
+  }>
+) {
   const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, hasFederatedError } = props
   const { t } = useTranslation()
   const { useSearchResultLimit } = useSharedAtoms()
-  const clusters = useAllClusters(true)
   const searchResultLimit = useSearchResultLimit()
+  const rowActions = useGetRowActions(relatedKind, currentQuery, false, setDeleteResource, setDeleteExternalResource)
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
       input: [{ ...convertStringToQuery(currentQuery, searchResultLimit), relatedKinds: [relatedKind] }],
     },
   })
-  const navigate = useNavigate()
 
   const searchDefinitions = useSearchDefinitions()
   const colDefs = _.get(
@@ -72,27 +71,20 @@ export function RenderItemContent(props: {
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={GetRowActions(
-        relatedKind,
-        currentQuery,
-        true,
-        setDeleteResource,
-        setDeleteExternalResource,
-        clusters,
-        navigate,
-        t
-      )}
+      rowActions={rowActions}
     />
   )
 }
 
-export default function RelatedResults(props: {
-  currentQuery: string
-  selectedRelatedKinds: string[]
-  setSelectedRelatedKinds: React.Dispatch<React.SetStateAction<string[]>>
-  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-}) {
+export default function RelatedResults(
+  props: Readonly<{
+    currentQuery: string
+    selectedRelatedKinds: string[]
+    setSelectedRelatedKinds: React.Dispatch<React.SetStateAction<string[]>>
+    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+  }>
+) {
   const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource, setDeleteExternalResource } =
     props
   const { t } = useTranslation()
@@ -146,7 +138,7 @@ export default function RelatedResults(props: {
         </AccordionItem>
       </Accordion>
     )
-  } else if ((error && !hasFederatedError) || !data || !data.searchResult) {
+  } else if ((error && !hasFederatedError) || !data?.searchResult) {
     return (
       <Alert variant={'danger'} isInline title={t('Query error related to the search results.')}>
         <Stack>
