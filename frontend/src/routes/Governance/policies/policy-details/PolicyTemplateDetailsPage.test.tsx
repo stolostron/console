@@ -905,7 +905,7 @@ describe('Policy Template Details Page', () => {
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter
