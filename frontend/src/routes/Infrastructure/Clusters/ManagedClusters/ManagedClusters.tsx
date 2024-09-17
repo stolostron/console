@@ -220,7 +220,7 @@ export function ClustersTable(props: {
   const clusterStatusColumn = useClusterStatusColumn()
   const clusterProviderColumn = useClusterProviderColumn()
   const clusterControlPlaneColumn = useClusterControlPlaneColumn()
-  const clusterDistributionColumn = useClusterDistributionColumn(props.clusters!, clusterCurators, hostedClusters)
+  const clusterDistributionColumn = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn(props.clusters!.length > 10)
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
@@ -758,7 +758,7 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
 }
 
 export function useClusterDistributionColumn(
-  allClusters: Cluster[] = [],
+  allClusters: Cluster[] | undefined,
   clusterCurators: ClusterCurator[],
   hostedClusters: HostedClusterK8sResource[]
 ): IAcmTableColumn<Cluster> {
@@ -772,16 +772,18 @@ export function useClusterDistributionColumn(
     return `${install.metadata?.namespace}/${install.metadata?.name}`
   })
 
-  allClusters.forEach((cluster) => {
-    const agentClusterInstall = agentClusterInstallsMap[`${cluster.namespace}/${cluster.name}`]
-    const clusterImage = clusterImageSets.find(
-      (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
-    )
-    const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
-    if (version) {
-      agentClusterObject[cluster?.name] = version
-    }
-  })
+  if (allClusters) {
+    allClusters.forEach((cluster) => {
+      const agentClusterInstall = agentClusterInstallsMap[`${cluster.namespace}/${cluster.name}`]
+      const clusterImage = clusterImageSets.find(
+        (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
+      )
+      const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
+      if (version) {
+        agentClusterObject[cluster?.name] = version
+      }
+    })
+  }
 
   return {
     header: t('table.distribution'),

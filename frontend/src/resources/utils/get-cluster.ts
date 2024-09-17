@@ -400,7 +400,7 @@ export function mapClusters(
     const managedClusterInfo = managedClusterInfosMap[cluster!]
     const hostedCluster = hostedClusterMap[cluster!]
     const clusterCurator = clusterCuratorsMap2[cluster!] || clusterCuratorsMap1[cluster!]
-    const addons: ManagedClusterAddOn[] = managedClusterAddOns.get(cluster || '') || []
+    const addons: ManagedClusterAddOn[] = managedClusterAddOns.get(cluster ?? '') || []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstallsMap[

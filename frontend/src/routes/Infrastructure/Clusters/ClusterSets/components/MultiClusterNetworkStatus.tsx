@@ -23,7 +23,7 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
   const submarinerAddons = useMemo(() => {
     let submarinerAddons: ManagedClusterAddOn[] = []
     clusters.forEach((cluster) => {
-      const addons = managedClusterAddons.get(cluster.namespace || '') || []
+      const addons = managedClusterAddons.get(cluster.namespace ?? '') || []
       submarinerAddons = [...submarinerAddons, ...addons.filter((mca) => mca.metadata.name === 'submariner')]
     })
     return submarinerAddons
