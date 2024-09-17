@@ -129,6 +129,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                     onMinus={() => setMinReplicas(minReplicas - 1)}
                     onPlus={() => setMinReplicas(minReplicas + 1)}
                     validation={positiveValidation}
+                    labelHelp={t('machinePool.modal.scale.minReplicas.tooltip')}
                   />
                   <AcmNumberInput
                     required

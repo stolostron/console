@@ -66,9 +66,17 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const allAddons = useClusterAddons()
   const policyReports = useRecoilValue(policyreportState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(true)
-  const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(true)
-  const [isCustomizationSectionOpen, setIsCustomizationSectionOpen] = useState<boolean>(true)
+  const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
+    localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
+  )
+  const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(
+    localStorage.getItem('cluster-section-toggle') ? localStorage.getItem('cluster-section-toggle') === 'true' : true
+  )
+  const [isCustomizationSectionOpen, setIsCustomizationSectionOpen] = useState<boolean>(
+    localStorage.getItem('saved-search-section-toggle')
+      ? localStorage.getItem('saved-search-section-toggle') === 'true'
+      : true
+  )
   const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean>(false)
   const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
@@ -123,8 +131,17 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
     policyReportLowCount,
     clustersWithIssuesCount,
   } = useMemo(() => {
-    return getPolicyReport(policyReports, filteredClusters)
-  }, [filteredClusters, policyReports])
+    if (isInsightsSectionOpen) {
+      return getPolicyReport(policyReports, filteredClusters)
+    }
+    return {
+      policyReportCriticalCount: 0,
+      policyReportImportantCount: 0,
+      policyReportModerateCount: 0,
+      policyReportLowCount: 0,
+      clustersWithIssuesCount: 0,
+    }
+  }, [isInsightsSectionOpen, filteredClusters, policyReports])
 
   const managedClusterIds = useMemo(() => {
     const ids: string[] = []
@@ -137,14 +154,16 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [allClusters])
 
   useEffect(() => {
-    if (managedClusterIds.length > 0) {
+    if (isInsightsSectionOpen && managedClusterIds.length > 0) {
       getUpgradeRiskPredictions(managedClusterIds).then((res) => setUpgradeRiskPredictions(res))
     }
-  }, [managedClusterIds])
+  }, [isInsightsSectionOpen, managedClusterIds])
 
   const { criticalUpdateCount, warningUpdateCount, infoUpdateCount, clustersWithRiskPredictors } = useMemo(() => {
     const reducedUpgradeRiskPredictions = upgradeRiskPredictions.reduce((acc: any[], curr: any) => {
-      if (curr?.body && curr.body.predictions) {
+      if (curr?.error) {
+        console.error(curr.error)
+      } else if (curr?.body.predictions) {
         return [...acc, ...curr.body.predictions]
       }
       return acc
@@ -188,7 +207,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [clusterOperators, operatorError, operatorLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
     query: 'cluster_operator_conditions',
-    skip: !isObservabilityInstalled,
+    skip: !isInsightsSectionOpen || !isObservabilityInstalled,
   })
   const {
     clustersAffectedOperator,
@@ -203,7 +222,7 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   const [alertsResult, alertsError, alertsLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
     query: 'ALERTS',
-    skip: !isObservabilityInstalled,
+    skip: !isInsightsSectionOpen || !isObservabilityInstalled,
   })
   const {
     clustersAffectedAlerts,
@@ -224,11 +243,13 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
   }, [alertsResult, filteredClusterNames, t])
 
   useEffect(() => {
-    getUserPreference().then((resp) => {
-      setIsUserPreferenceLoading(false)
-      setUserPreference(resp)
-    })
-  }, [])
+    if (isCustomizationSectionOpen) {
+      getUserPreference().then((resp) => {
+        setIsUserPreferenceLoading(false)
+        setUserPreference(resp)
+      })
+    }
+  }, [isCustomizationSectionOpen])
 
   const userSavedSearches = useMemo(() => {
     return userPreference?.spec?.savedSearches ?? []
@@ -375,7 +396,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
                 </div>
 
                 <Button
-                  onClick={() => setIsInsightsSectionOpen(!isInsightsSectionOpen)}
+                  id={'insights-section-toggle'}
+                  onClick={() => {
+                    localStorage.setItem('insights-section-toggle', `${!isInsightsSectionOpen}`)
+                    setIsInsightsSectionOpen(!isInsightsSectionOpen)
+                  }}
                   icon={isInsightsSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
                   variant={'plain'}
                 />
@@ -576,7 +601,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               {t('Cluster health')}
               <Button
-                onClick={() => setIsClusterSectionOpen(!isClusterSectionOpen)}
+                id={'cluster-section-toggle'}
+                onClick={() => {
+                  localStorage.setItem('cluster-section-toggle', `${!isClusterSectionOpen}`)
+                  setIsClusterSectionOpen(!isClusterSectionOpen)
+                }}
                 icon={isClusterSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
                 variant={'plain'}
               />
@@ -620,7 +649,11 @@ export default function OverviewPageBeta(props: { selectedClusterLabels: Record<
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               {t('Your view')}
               <Button
-                onClick={() => setIsCustomizationSectionOpen(!isCustomizationSectionOpen)}
+                id={'saved-search-section-toggle'}
+                onClick={() => {
+                  localStorage.setItem('saved-search-section-toggle', `${!isCustomizationSectionOpen}`)
+                  setIsCustomizationSectionOpen(!isCustomizationSectionOpen)
+                }}
                 icon={isCustomizationSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
                 variant={'plain'}
               />

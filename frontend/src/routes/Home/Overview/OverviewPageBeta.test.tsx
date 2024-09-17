@@ -3,6 +3,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
@@ -243,4 +244,117 @@ it('should render overview page with expected data', async () => {
   await waitFor(() => expect(getByText('All pods')).toBeTruthy())
   await waitFor(() => expect(getByText('testSavedQueryDesc1')).toBeTruthy())
   await waitFor(() => expect(getByText('10')).toBeTruthy())
+})
+
+it('should toggle card sections correctly', async () => {
+  nockIgnoreApiPaths()
+  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  const metricNock = nockPostRequest('/metrics?overview-fleet', {})
+  const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
+  const mockOperatorMetricsNock = nockRequest(
+    '/observability/query?query=cluster_operator_conditions',
+    mockOperatorMetrics
+  )
+  const mockWorkerCoreCountMetricsNock = nockRequest(
+    '/prometheus/query?query=acm_managed_cluster_worker_cores',
+    mockWorkerCoreCountMetrics
+  )
+  const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
+  const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+    '/upgrade-risks-prediction',
+    { clusterIds: ['1234-abcd'] },
+    mockUpgradeRisksPredictions
+  )
+
+  const { container } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(applicationsState, mockApplications)
+        snapshot.set(applicationSetsState, appSets)
+        snapshot.set(argoApplicationsState, mockArgoApplications)
+        snapshot.set(managedClustersState, managedClusters)
+        snapshot.set(managedClusterInfosState, [
+          ...managedClusterInfos,
+          {
+            apiVersion: 'internal.open-cluster-management.io/v1beta1',
+            kind: 'ManagedClusterInfo',
+            metadata: {
+              labels: {
+                cloud: 'Amazon',
+                env: 'dev',
+                name: 'managed-2',
+                vendor: 'OpenShift',
+                clusterID: '1234-abcd',
+              },
+              name: 'managed-2',
+              namespace: 'managed-2',
+            },
+            status: {
+              cloudVendor: 'Amazon',
+              kubeVendor: 'OpenShift',
+              loggingPort: { name: 'https', port: 443, protocol: 'TCP' },
+              version: 'v1.26.5+7d22122',
+            },
+          } as ManagedClusterInfo,
+        ])
+        snapshot.set(policiesState, policies)
+        snapshot.set(policyreportState, policyReports)
+        snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
+        snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
+        snapshot.set(placementDecisionsState, placementDecisions)
+        snapshot.set(argoApplicationsState, [])
+        snapshot.set(helmReleaseState, [])
+        snapshot.set(subscriptionsState, [])
+        snapshot.set(settingsState, mockSettings)
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MockedProvider mocks={savedSearchesMock}>
+            <OverviewPageBeta selectedClusterLabels={{}} />
+          </MockedProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </RecoilRoot>
+  )
+
+  // Wait for prometheus nocks to finish
+  await waitForNocks([
+    metricNock,
+    mockAlertMetricsNock,
+    mockOperatorMetricsNock,
+    mockWorkerCoreCountMetricsNock,
+    getUserPreferenceNock,
+    getUpgradeRisksPredictionsNock,
+  ])
+
+  Object.defineProperty(window, 'localStorage', {
+    value: {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+    },
+    writable: true,
+  })
+
+  // toggle insights section
+  const insightsToggle = container.querySelector('#insights-section-toggle')
+  expect(insightsToggle).toBeTruthy()
+  userEvent.click(insightsToggle as Element)
+
+  // toggle cluster health section
+  const clusterToggle = container.querySelector('#cluster-section-toggle')
+  expect(clusterToggle).toBeTruthy()
+  userEvent.click(clusterToggle as Element)
+
+  // toggle your view section
+  const savedSearchToggle = container.querySelector('#saved-search-section-toggle')
+  expect(savedSearchToggle).toBeTruthy()
+  userEvent.click(savedSearchToggle as Element)
+
+  expect(window.localStorage.setItem).toHaveBeenCalledWith('insights-section-toggle', 'false')
+  expect(window.localStorage.setItem).toHaveBeenCalledWith('cluster-section-toggle', 'false')
+  expect(window.localStorage.setItem).toHaveBeenCalledWith('saved-search-section-toggle', 'false')
 })

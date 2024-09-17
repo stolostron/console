@@ -507,6 +507,10 @@ export const getPodState = (podItem, clusterName, types) => {
 }
 
 export const getPulseForData = (available, desired, podsUnavailable) => {
+  if (available === desired) {
+    return greenPulse
+  }
+
   if (podsUnavailable > 0 || available === 0) {
     return redPulse
   }
