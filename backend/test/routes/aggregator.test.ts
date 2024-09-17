@@ -208,6 +208,7 @@ const responseNoFilter = {
       },
     },
   ],
+  processedItemCount: 7,
   emptyResult: false,
   isPreProcessed: true,
   request: {
@@ -237,6 +238,7 @@ const responseFiltered = {
       },
     },
   ],
+  processedItemCount: 1,
   emptyResult: false,
   isPreProcessed: true,
   request: {
