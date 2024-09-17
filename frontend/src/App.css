@@ -8,10 +8,7 @@
 
 #webpack-dev-server-client-overlay,
 #react-refresh-overlay {
-  height: 75px !important;
-  min-height: 75px !important;
-  left: 50% !important;
-  top: 0px !important;
-  width: 400px !important;
+  height: 20% !important;
+  top: 80% !important;
   position: absolute !important;
 }

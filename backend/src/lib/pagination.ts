@@ -4,6 +4,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
+import { AppColumns } from '../routes/aggregators/applications'
 
 export type FilterSelections = {
   [filter: string]: string[]
@@ -93,7 +94,11 @@ export function paginate(
             {
               name: 'search',
               getFn: (item) => {
-                return [item.transform[0][0], item.transform[2][0], item.transform[3][0]]
+                return [
+                  item.transform[AppColumns.name][0],
+                  item.transform[AppColumns.namespace][0],
+                  item.transform[AppColumns.clusters][0],
+                ]
               },
             },
           ],

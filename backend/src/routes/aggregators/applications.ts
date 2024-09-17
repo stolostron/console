@@ -5,6 +5,15 @@ import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, FilterCounts, ITransformedResource } from '../../lib/pagination'
 
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'repo',
+  'timeWindow',
+  'created',
+}
 interface IArgoApplication extends IResource {
   cluster?: string
   spec: {
@@ -138,10 +147,12 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       let isMatch = true
       switch (filter) {
         case 'type':
-          isMatch = filters['type'].some((value: string) => value === item.transform[1][0])
+          isMatch = filters['type'].some((value: string) => value === item.transform[AppColumns.type][0])
           break
         case 'cluster':
-          isMatch = filters['cluster'].some((value: string) => item.transform[3].indexOf(value) !== -1)
+          isMatch = filters['cluster'].some(
+            (value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1
+          )
           break
       }
       if (!isMatch) {

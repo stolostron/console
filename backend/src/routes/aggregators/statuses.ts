@@ -2,6 +2,7 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { FilterCounts, ITransformedResource } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
+import { AppColumns } from './applications'
 
 export interface IRequestStatuses {
   clusters?: string[]
@@ -36,7 +37,7 @@ export function requestAggregatedStatuses(
     // should we filter count by provided cluster names
     if (clusters.length) {
       items = items.filter((item) => {
-        return clusters.some((value: string) => item.transform[3].indexOf(value) !== -1)
+        return clusters.some((value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1)
       })
     }
     // filter by rbac
@@ -46,8 +47,8 @@ export function requestAggregatedStatuses(
     const filterCounts: FilterCounts = {}
     items.forEach((item) => {
       if (item.transform) {
-        incFilterCounts(filterCounts, 'type', item.transform[1])
-        incFilterCounts(filterCounts, 'cluster', item.transform[3])
+        incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type])
+        incFilterCounts(filterCounts, 'cluster', item.transform[AppColumns.clusters])
       }
     })
 
