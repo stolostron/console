@@ -120,6 +120,51 @@ function isFluxApplication(label: string) {
   return isFlux
 }
 
+// Get app name with link and search highlighting
+export function getApplicationName(application: IApplicationResource, search: string) {
+  let clusterQuery = ''
+  let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
+  if (
+    (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
+    (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
+  ) {
+    const cluster = application?.status?.cluster
+    clusterQuery = cluster ? `&cluster=${cluster}` : ''
+  }
+  if (application.apiVersion !== ApplicationApiVersion && application.apiVersion !== ArgoApplicationApiVersion) {
+    const labels = (application as OCPAppResource).label
+    if (
+      labels.includes(`${fluxAnnotations.git[0]}=`) ||
+      labels.includes(`${fluxAnnotations.git[1]}=`) ||
+      labels.includes(`${fluxAnnotations.helm[0]}=`) ||
+      labels.includes(`${fluxAnnotations.helm[1]}=`)
+    ) {
+      apiVersion = 'flux'
+    } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
+      apiVersion = 'ocp'
+    }
+  }
+  return (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <Link
+        to={{
+          pathname: generatePath(NavigationPath.applicationDetails, {
+            namespace: application.metadata?.namespace!,
+            name: application.metadata?.name!,
+          }),
+          search: `?apiVersion=${apiVersion}${clusterQuery}`,
+        }}
+      >
+        <HighlightSearchText text={application.metadata?.name} searchText={search} />
+      </Link>
+    </span>
+  )
+}
+
+export function getApplicationNamespace(resource: IApplicationResource, search: string) {
+  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
+}
+
 // Map resource kind to type column
 export function getApplicationType(resource: IApplicationResource, t: TFunction) {
   if (resource.apiVersion === ApplicationApiVersion) {
@@ -421,13 +466,13 @@ export default function ApplicationsOverview() {
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const managedClusters = useAllClusters(true, true)
+  const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
 
-  const [requestedView, setRequesedView] = useState<IRequestListView>()
+  const [requestedView, setRequestedView] = useState<IRequestListView>()
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -550,48 +595,7 @@ export default function ApplicationsOverview() {
         sort: 'metadata.name',
         search: 'metadata.name',
         transforms: [cellWidth(20)],
-        cell: (application, search) => {
-          let clusterQuery = ''
-          let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
-          if (
-            (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
-            (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
-          ) {
-            const cluster = application?.status?.cluster
-            clusterQuery = cluster ? `&cluster=${cluster}` : ''
-          }
-          if (
-            application.apiVersion !== ApplicationApiVersion &&
-            application.apiVersion !== ArgoApplicationApiVersion
-          ) {
-            const labels = (application as OCPAppResource).label
-            if (
-              labels.includes(`${fluxAnnotations.git[0]}=`) ||
-              labels.includes(`${fluxAnnotations.git[1]}=`) ||
-              labels.includes(`${fluxAnnotations.helm[0]}=`) ||
-              labels.includes(`${fluxAnnotations.helm[1]}=`)
-            ) {
-              apiVersion = 'flux'
-            } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
-              apiVersion = 'ocp'
-            }
-          }
-          return (
-            <span style={{ whiteSpace: 'nowrap' }}>
-              <Link
-                to={{
-                  pathname: generatePath(NavigationPath.applicationDetails, {
-                    namespace: application.metadata?.namespace!,
-                    name: application.metadata?.name!,
-                  }),
-                  search: `?apiVersion=${apiVersion}${clusterQuery}`,
-                }}
-              >
-                <HighlightSearchText text={application.metadata?.name} searchText={search} />
-              </Link>
-            </span>
-          )
-        },
+        cell: (resource, search) => getApplicationName(resource, search),
         exportContent: (application) => {
           return application.metadata?.name
         },
@@ -630,9 +634,7 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Namespace'),
-        cell: (resource, search) => {
-          return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
-        },
+        cell: (resource, search) => getApplicationNamespace(resource, search),
         sort: 'transformed.namespace',
         search: 'transformed.namespace',
         tooltip: t(
@@ -1233,7 +1235,7 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        setRequestView={setRequesedView}
+        setRequestView={setRequestedView}
         resultView={resultView}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}

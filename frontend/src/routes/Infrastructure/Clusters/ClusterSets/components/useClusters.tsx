@@ -20,6 +20,7 @@ import {
   mapClusters,
 } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import keyBy from 'lodash/keyBy'
 
 // returns the clusters assigned to a ManagedClusterSet
 export function useClusters(
@@ -77,7 +78,7 @@ export function getMappedClusterPoolClusterSetClusters(
   clusterDeployments: ClusterDeployment[],
   managedClusterInfos: ManagedClusterInfo[],
   certificateSigningRequests: CertificateSigningRequest[],
-  managedClusterAddons: ManagedClusterAddOn[],
+  managedClusterAddons: Map<string, ManagedClusterAddOn[]>,
   clusterManagementAddons: ClusterManagementAddOn[],
   clusterClaims: ClusterClaim[],
   clusterCurators: ClusterCurator[],
@@ -98,10 +99,12 @@ export function getMappedClusterPoolClusterSetClusters(
         : managedClusters.filter(
             (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
           )
+
+    const groupManagedClustersMap = keyBy(groupManagedClusters, 'metadata.name')
     groupClusterDeployments = clusterDeployments.filter(
       (cd) =>
         cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
-        groupManagedClusters.find((mc) => mc.metadata.name === cd.metadata.namespace)
+        groupManagedClustersMap[cd.metadata.namespace!]
     )
 
     // prevent the unclaimed clusters from showing up in cluster set clusters
@@ -126,15 +129,14 @@ export function getMappedClusterPoolClusterSetClusters(
     )
   }
 
-  const clusterNames = Array.from(
-    new Set([
-      ...groupManagedClusters.map((mc) => mc.metadata.name),
-      ...groupClusterDeployments.map((cd) => cd.metadata.name),
-    ])
-  )
-  const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNames.includes(mci.metadata.namespace))
+  const clusterNameSet = new Set([
+    ...groupManagedClusters.map((mc) => mc.metadata.name),
+    ...groupClusterDeployments.map((cd) => cd.metadata.name),
+  ])
 
-  const groupHostedClusters = hostedClusters.filter((hc) => clusterNames.includes(hc.metadata?.name))
+  const groupManagedClusterInfos = managedClusterInfos.filter((mci) => clusterNameSet.has(mci.metadata.namespace))
+
+  const groupHostedClusters = hostedClusters.filter((hc) => clusterNameSet.has(hc.metadata?.name))
 
   return mapClusters(
     groupClusterDeployments,
@@ -142,7 +144,6 @@ export function getMappedClusterPoolClusterSetClusters(
     certificateSigningRequests,
     groupManagedClusters,
     managedClusterAddons,
-    false,
     clusterManagementAddons,
     clusterClaims,
     clusterCurators,

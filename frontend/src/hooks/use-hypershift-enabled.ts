@@ -8,8 +8,8 @@ export const useIsHypershiftEnabled = () => {
   const { managedClusterAddonsState, multiClusterEnginesState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
   const [multiClusterEngine] = useRecoilValue(multiClusterEnginesState)
-  const hypershiftAddon = managedClusterAddOns.find(
-    (mca) => mca.metadata.namespace === 'local-cluster' && mca.metadata.name === 'hypershift-addon'
+  const hypershiftAddon = (managedClusterAddOns.get('local-cluster') || []).find(
+    (mca) => mca.metadata.name === 'hypershift-addon'
   )
   useEffect(() => {
     const getHypershiftStatus = async () => {

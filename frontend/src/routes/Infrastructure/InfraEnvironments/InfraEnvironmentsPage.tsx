@@ -34,7 +34,7 @@ import {
   PatchResourceFuncType,
   InfrastructureK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -55,6 +55,9 @@ import {
   listResources,
   patchResource,
 } from '../../../resources'
+import keyBy from 'lodash/keyBy'
+import get from 'lodash/get'
+import { Dictionary } from 'lodash'
 
 // Will change perspective, still in the OCP Console app
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
@@ -285,31 +288,60 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     open: false,
   })
 
-  const infraAgentsFiltered: {
-    [key: string]: {
-      infraAgents: AgentK8sResource[]
-      errorAgents: AgentK8sResource[]
-      warningAgents: AgentK8sResource[]
-    }
-  } = {}
+  const infraAgentsFiltered = useMemo(() => {
+    const infraAgentsFiltered: {
+      [key: string]: {
+        infraAgents: AgentK8sResource[]
+        errorAgents: AgentK8sResource[]
+        warningAgents: AgentK8sResource[]
+      }
+    } = {}
 
-  infraEnvs.forEach((infraEnv) => {
-    const infraAgents = agents.filter((a) =>
-      isMatch(a.metadata?.labels || {}, infraEnv.status?.agentLabelSelector?.matchLabels || {})
-    )
-    const errorAgents = infraAgents.filter((a) => getAgentStatusKey(a) === 'error')
-    const warningAgents = infraAgents.filter((a) =>
-      ['pending-for-input', 'insufficient', 'insufficient-unbound', 'disconnected-unbound', 'disconnected'].includes(
-        getAgentStatusKey(a)
+    // use maps to improve performance of associating agents to environment
+    // first, what keys does environement use to know its agent
+    const keySet = infraEnvs.reduce((keys, env) => {
+      Object.keys(get(env, 'status.agentLabelSelector.matchLabels')).forEach((key) => {
+        keys.add(key)
+      })
+      return keys
+    }, new Set()) as Set<string>
+
+    // then create maps of agents for each environment key
+    const agentMaps: Dictionary<any> = {}
+    const keys = Array.from(keySet)
+    keys.forEach((key: string) => {
+      agentMaps[key] = keyBy(agents, (agent) => {
+        return get(agent, ['metadata', 'labels', key])
+      })
+    })
+    infraEnvs.forEach((infraEnv) => {
+      // use the maps we created above to find the agents that belong to this environment
+      const infraAgents = Object.entries(agentMaps).reduce((infraAgents, entry) => {
+        const [key, map] = entry
+        const infraKey = get(infraEnv, ['status', 'agentLabelSelector', 'matchLabels', key])
+        const agent = map[infraKey]
+        if (agent) {
+          infraAgents.push(agent)
+        }
+        return infraAgents
+      }, [] as AgentK8sResource[])
+
+      const errorAgents = infraAgents.filter((a) => getAgentStatusKey(a) === 'error')
+      const warningAgents = infraAgents.filter((a) =>
+        ['pending-for-input', 'insufficient', 'insufficient-unbound', 'disconnected-unbound', 'disconnected'].includes(
+          getAgentStatusKey(a)
+        )
       )
-    )
 
-    infraAgentsFiltered[infraEnv.metadata?.uid!] = {
-      infraAgents,
-      errorAgents,
-      warningAgents,
-    }
-  })
+      infraAgentsFiltered[infraEnv.metadata?.uid!] = {
+        infraAgents,
+        errorAgents,
+        warningAgents,
+      }
+    })
+
+    return infraAgentsFiltered
+  }, [agents, infraEnvs])
 
   const onClickBulkDeleteInfraEnvs = (infraEnvs: InfraEnvK8sResource[]) => {
     setModalProps({

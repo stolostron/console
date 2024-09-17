@@ -38,7 +38,7 @@ export function RemoveAutomationModal(props: {
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const [isRemoving, setIsRemoving] = useState(false)
   const clusterProviders = useClusterProviderColumn()
-  const distributionVersion = useClusterDistributionColumn(clusterCurators, hostedClusters)
+  const distributionVersion = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)
 
   const removableClusters = useMemo<Cluster[] | undefined>(
     () =>

@@ -63,9 +63,14 @@ let atomArrayKey = 0
 function AtomArray<T>() {
   return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
+function AtomMap<T>() {
+  return atom<Map<string, T[]>>({ key: (++atomArrayKey).toString(), default: new Map() })
+}
 
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
+
+export const managedClusterAddonsState = AtomMap<ManagedClusterAddOn>()
 
 export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()
@@ -94,7 +99,6 @@ export const helmReleaseState = AtomArray<HelmRelease>()
 export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
-export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
 export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
 export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding>()
 export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
