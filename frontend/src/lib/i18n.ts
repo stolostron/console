@@ -46,6 +46,7 @@ i18n
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric',
+            timeZone: 'America/New_York', // Example for EST
           }).format(value)
         }
         if (typeof value === 'number') {

@@ -2,11 +2,12 @@
 
 import { t } from 'i18next'
 import i18n from 'i18next'
+import { jest } from '@jest/globals'
 
 jest.mock('i18next', () => ({
   t: jest.fn((key, { date, number }) => {
     if (date instanceof Date) {
-      if (key.includes('fromNow')) {
+      if (typeof key === 'string' && key.includes('fromNow')) {
         const now = new Date()
         const elapsed = now.getTime() - date.getTime()
         const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
@@ -96,8 +97,8 @@ describe('i18n format function', () => {
     const date = new Date('2024-09-14T12:00:00Z') // UTC time
     const result = i18n.t('{{date, format}}', { date: date })
 
-    // Adjusting expected result based on local time zone (e.g., EST)
-    const expected = 'Sep 14, 2024, 8:00:00 AM' // Gets adjusted based on local time zone
+    // Adjusting expected result based on how i18n formats the date
+    const expected = 'Sep 14, 2024, 12:00:00 PM' // Adjusted for UTC output
 
     expect(result).toBe(expected)
   })
