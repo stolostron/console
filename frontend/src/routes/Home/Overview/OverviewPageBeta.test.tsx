@@ -248,6 +248,7 @@ it('should render overview page with expected data', async () => {
 
 it('should toggle card sections correctly', async () => {
   nockIgnoreApiPaths()
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
