@@ -1725,6 +1725,7 @@
   "machinePool.modal.scale.enable-autoscale.title": "Enable autoscale",
   "machinePool.modal.scale.maxReplicas.label": "Maximum replicas",
   "machinePool.modal.scale.minReplicas.label": "Minimum replicas",
+  "machinePool.modal.scale.minReplicas.tooltip": "When you enable autoscaling for the first time, the suggested value for minimum replicas is equal to the number of availability zones configured for the cluster. By default, these are all availability zones in the selected region, but you can select a subset of zones during cluster creation for AWS and Azure.",
   "machinePool.modal.scale.replicas.label": "Machine set replica count",
   "machinePool.modal.scale.validation.maxReplicas": "Maximum replicas must be greater than or equal to the number of machine sets ({{machineSetCount}}).",
   "machinePool.modal.scale.validation.positive": "Replica count must be a positive number.",
