@@ -8,48 +8,55 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
-import { dateTimeFormatter, fromNow } from '../resources/utils/datetime'
 
 i18n
-  // pass the i18n instance to react-i18next
   .use(initReactI18next)
-  // detect user language
-  // learn more: https://github.com/i18next/i18next-browser-languageDetector
   .use(LanguageDetector)
-  // fetch json files
-  // learn more: https://github.com/i18next/i18next-http-backend
   .use(HttpApi)
-  // init i18next
   .init({
     backend: {
       loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
     },
     compatibilityJSON: 'v3',
-    fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
-    keySeparator: false, // this repo will use single level json
+    fallbackLng: ['en'],
+    keySeparator: false,
     interpolation: {
-      escapeValue: false, // react handles this already
-      format: function (value, format, lng, options) {
-        if (format === 'number') {
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat#Browser_compatibility
-          return new Intl.NumberFormat(lng).format(value)
-        }
+      escapeValue: false,
+      format: (value, format, lng) => {
         if (value instanceof Date) {
           if (format === 'fromNow') {
-            const fromNowOptions = {
-              includeSeconds: options?.includeSeconds || false, // Extract or set defaults
-              addSuffix: options?.addSuffix || false,
-            }
-            return fromNow(value, undefined, fromNowOptions)
+            const now = new Date()
+            const elapsed = now.getTime() - value.getTime()
+            const rtf = new Intl.RelativeTimeFormat(lng, { numeric: 'auto' })
+
+            const seconds = Math.floor(elapsed / 1000)
+            const minutes = Math.floor(seconds / 60)
+            const hours = Math.floor(minutes / 60)
+            const days = Math.floor(hours / 24)
+
+            if (seconds < 60) return rtf.format(-seconds, 'second')
+            if (minutes < 60) return rtf.format(-minutes, 'minute')
+            if (hours < 24) return rtf.format(-hours, 'hour')
+            return rtf.format(-days, 'day')
           }
-          return dateTimeFormatter(lng).format(value)
+          return new Intl.DateTimeFormat(lng, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+          }).format(value)
+        }
+        if (typeof value === 'number') {
+          return new Intl.NumberFormat(lng).format(value)
         }
         return value
       },
     },
-    defaultNS: 'translation', // the default file for strings when using useTranslation, etc
+    defaultNS: 'translation',
     nsSeparator: '~',
-    supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
+    supportedLngs: supportedLanguages,
     simplifyPluralSuffix: true,
   })
 
