@@ -30,6 +30,7 @@ export interface IResultListView {
   loading: boolean
   items: IResource[]
   emptyResult: boolean
+  processedItemCount: number
   isPreProcessed: boolean
   request?: IRequestListView
 }
@@ -56,6 +57,7 @@ const defaultListResponse: IResultListView = {
   loading: true,
   items: [],
   emptyResult: false,
+  processedItemCount: 0,
   isPreProcessed: true,
 }
 
@@ -127,6 +129,7 @@ export function useAggregate(
         page: response.page,
         loading: loading && !usingStoredResponse,
         items: response.items,
+        processedItemCount: response.processedItemCount,
         emptyResult: response.emptyResult,
         isPreProcessed: response.isPreProcessed,
       }

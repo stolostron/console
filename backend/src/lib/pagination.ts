@@ -30,6 +30,7 @@ export interface IRequestListView {
 export interface IResultListView {
   page: number
   items: IResource[]
+  processedItemCount: number
   emptyResult: boolean
   isPreProcessed: boolean
   request: IRequestListView
@@ -141,6 +142,7 @@ export function paginate(
     const results: IResultListView = {
       page: rpage,
       items,
+      processedItemCount: itemCount,
       emptyResult,
       isPreProcessed,
       request,
