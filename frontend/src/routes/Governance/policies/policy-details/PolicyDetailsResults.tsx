@@ -13,7 +13,6 @@ import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails }
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
-import { fromNow } from '../../../../resources/utils/datetime'
 
 export interface ResultsTableData {
   templateName: string
@@ -260,16 +259,10 @@ export default function PolicyDetailsResults() {
       {
         header: t('Last report'),
         sort: 'timestamp',
-        cell: (item: ResultsTableData) => {
-          const timestamp = item.timestamp
-          const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp
-          return formattedTimestamp && fromNow(formattedTimestamp)
-        },
-        exportContent: (item: ResultsTableData) => {
-          const timestamp = item.timestamp
-          const formattedTimestamp = typeof timestamp === 'number' ? new Date(timestamp) : timestamp
-          return formattedTimestamp && fromNow(formattedTimestamp)
-        },
+        cell: (item: ResultsTableData) =>
+          item.timestamp ? t('{{date, fromNow}}', { date: new Date(item.timestamp) }) : '-',
+        exportContent: (item: ResultsTableData) =>
+          item.timestamp ? t('{{date, fromNow}}', { date: new Date(item.timestamp) }) : '-',
       },
       {
         header: t('History'),
