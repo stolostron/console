@@ -21,7 +21,8 @@ describe('Virtual Machine actions', function () {
               namespace: 'testCluster',
             },
             data: {
-              token: 'dGVzdC12bS10b2tlbg==', // test-vm-token
+              // test-vm-token
+              token: 'dGVzdC12bS10b2tlbg==', // notsecret
             },
             type: 'Opaque',
           },
@@ -83,7 +84,8 @@ describe('Virtual Machine actions', function () {
               namespace: 'testCluster',
             },
             data: {
-              token: 'dGVzdC12bS10b2tlbg==', // test-vm-token
+              // test-vm-token
+              token: 'dGVzdC12bS10b2tlbg==', // notsecret
             },
             type: 'Opaque',
           },
