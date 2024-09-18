@@ -4,10 +4,11 @@ import queryString from 'query-string'
 import { useContext, useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
+import { settingsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster, getBackendUrl, putRequest } from '../../../resources'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue } from '../../../shared-recoil'
 import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -57,9 +58,9 @@ export const useGetRowActions = (
 ) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const settings = useRecoilValue(settingsState)
+  const vmActionsEnabled = settings.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const toast = useContext(AcmToastContext)
-  const { useVMActionsEnabled } = useSharedAtoms()
-  const vmActionsEnabled = useVMActionsEnabled()
   const allClusters = useAllClusters(true)
 
   return useMemo(
@@ -100,7 +101,7 @@ export function getRowActions(
   allClusters: Cluster[],
   navigate: NavigateFunction,
   toast: IAlertContext,
-  vmActionsEnabled: 'enabled' | 'disabled',
+  vmActionsEnabled: boolean,
   t: TFunction
 ) {
   const viewApplication = {
@@ -287,7 +288,7 @@ export function getRowActions(
   } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   } else if (resourceKind.toLowerCase() === 'virtualmachine') {
-    return vmActionsEnabled === 'enabled'
+    return vmActionsEnabled
       ? [
           startVM,
           stopVM,
