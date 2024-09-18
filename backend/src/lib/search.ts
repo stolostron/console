@@ -85,8 +85,7 @@ export async function getPagedSearchResources(
         property: 'name',
         values,
       })
-    }
-    if (pass === 1) {
+    } else if (pass === 1) {
       _query.variables.input[0].limit = 100
     }
     let results: ISearchResult
@@ -96,13 +95,13 @@ export async function getPagedSearchResources(
       continue
     }
     resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
-    if (!pageResults) break
     if (process.env.NODE_ENV !== 'test') {
       let timeout = 10000
       if (pass === 1) timeout = 500
       if (pass === 2) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))
     }
+    if (!pageResults) break
     i++
   }
   return resources

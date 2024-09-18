@@ -3,7 +3,7 @@ import { getKubeResources } from '../events'
 import { getOCPApps, isSystemApp } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
-import { FilterSelections, FilterCounts, ITransformedResource } from '../../lib/pagination'
+import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 
 export enum AppColumns {
   'name' = 0,
@@ -66,8 +66,8 @@ export function stopAggregatingApplications(): void {
 }
 
 export type ApplicationCache = {
-  items: ITransformedResource[]
-  filterCounts: FilterCounts
+  resources?: ITransformedResource[]
+  resourceMap?: { [key: string]: ITransformedResource[] }
 }
 export type ApplicationCacheType = {
   [type: string]: ApplicationCache
@@ -84,13 +84,18 @@ const appKeys = [
   'remoteSysApps',
 ]
 appKeys.forEach((key) => {
-  applicationCache[key] = { items: [], filterCounts: {} }
+  applicationCache[key] = { resources: [] }
 })
 
 export function getApplications() {
   const items: ITransformedResource[] = []
   Object.keys(applicationCache).forEach((key) => {
-    items.push(...applicationCache[key].items)
+    if (applicationCache[key].resources) {
+      items.push(...applicationCache[key].resources)
+    } else if (Object.keys(applicationCache[key].resourceMap).length) {
+      const allResources = Object.values(applicationCache[key].resourceMap)
+      items.push(...allResources.flat())
+    }
   })
   return items
 }
@@ -136,13 +141,12 @@ export async function aggregatSearchAPIApplications(pass: number) {
   await getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass)
 
   // system apps -- because system apps shouldn't change much, don't do it every time
-  if (pass <= 3 || pass % 10 === 0) {
+  if (pass <= 3 || pass % 3 === 0) {
     await getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass)
   }
 }
 
 export function generateTransforms(items: ITransformedResource[], isRemote?: boolean): ApplicationCache {
-  const filterCounts: FilterCounts = {}
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   items.forEach((app) => {
@@ -153,13 +157,13 @@ export function generateTransforms(items: ITransformedResource[], isRemote?: boo
       [type],
       [getAppNamespace(app)],
       clusters,
-      ['r'],
-      ['t'],
+      ['r'], // repo
+      ['t'], // time window
       [app.metadata.creationTimestamp as string],
     ]
     app.isRemote = isRemote
   })
-  return { items, filterCounts }
+  return { resources: items }
 }
 
 export function filterApplications(filters: FilterSelections, items: ITransformedResource[]) {

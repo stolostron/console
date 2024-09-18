@@ -3,7 +3,7 @@ import { getClusterMap } from '../../lib/clusters'
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms, IOCPApplication, MODE } from './applications'
+import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
 
 const labelArr: string[] = [
   'kustomize.toolkit.fluxcd.io/name=',
@@ -12,12 +12,9 @@ const labelArr: string[] = [
   'app.kubernetes.io/part-of=',
 ]
 
-// when there are lots of clusters there will be 34 identical ocp apps on each
-// rather then overtax the search api to gewt all these apps, we will just
-// grab the ocp apps from one remote cluster and duplicate then for each cluster;
-// therefore these become placeholders in the list which when clicked will cause
-// the ui to then use the \search api to get the details
-const CLUSTER_SYSTEM_APP_THRESHOLD = 10
+// getting system apps by its cluster name in cluster chuncks
+const REMOTE_CLUSTER_CHUNKS = 25
+const clusterNameChunks: string[][] = []
 
 const query = {
   operationName: 'searchResult',
@@ -59,7 +56,6 @@ export async function getOCPApps(
   mode: MODE,
   pass: number
 ) {
-  let clusterMap = undefined
   const _query = structuredClone(query)
   const filters = _query.variables.input[0].filters
   if (mode === MODE.ExcludeSystemApps) {
@@ -81,17 +77,11 @@ export async function getOCPApps(
       values: ['openshift*', 'open-cluster-management*'],
     })
 
-    // if lots of clusters we just get apps from local and one remote cluster
-    // and then duplicate the remote cluster for every cluster
-    clusterMap = getClusterMap()
-    const clusterNames = Object.keys(clusterMap)
-    if (clusterNames.length > CLUSTER_SYSTEM_APP_THRESHOLD) {
-      const remoteClusterName = clusterNames.find((name) => name !== 'local-cluster')
-      filters.push({
-        property: 'cluster',
-        values: ['local-cluster', `${remoteClusterName}`],
-      })
-    }
+    // get chuck of cluster names to search for sys apps
+    filters.push({
+      property: 'cluster',
+      values: getNextClusterNameChuck(applicationCache),
+    })
   }
 
   const ocpApps = (await getPagedSearchResources(
@@ -178,29 +168,59 @@ export async function getOCPApps(
     applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
     applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
   } else if (mode === MODE.OnlySystemApps) {
-    applicationCache['localSysApps'] = generateTransforms(localOCPApps)
-    applicationCache['remoteSysApps'] = generateTransforms(fillSystemApps(remoteOCPApps, clusterMap), true)
+    // if we just got remote clusters this time, don't touch localSysApps
+    if (localOCPApps.length) {
+      applicationCache['localSysApps'] = generateTransforms(localOCPApps)
+    }
+    // fill in remote system apps
+    fillRemoteSystemCache(applicationCache, remoteOCPApps)
   }
 }
 
-function fillSystemApps(remoteSysApps: IResource[], clusterMap: { [cluster: string]: IResource }) {
-  const clusterNames = Object.keys(clusterMap)
-  // if environment has lots of clusters, we duplicate the apps on  this remote cluster
-  if (clusterNames.length > CLUSTER_SYSTEM_APP_THRESHOLD) {
-    const fillerSysApps: IResource[] = []
-    clusterNames.forEach((cluster) => {
-      if (cluster !== 'local-cluster') {
-        remoteSysApps.forEach((app) => {
-          const dup = structuredClone(app) as IOCPApplication
-          dup.status.cluster = cluster
-          dup.metadata.creationTimestamp = clusterMap[cluster].metadata.creationTimestamp
-          fillerSysApps.push(dup)
-        })
-      }
-    })
-    return fillerSysApps
+function getNextClusterNameChuck(applicationCache: ApplicationCacheType): string[] {
+  // if no cluster name chucks left, create a new array of chunkz
+  if (clusterNameChunks.length === 0) {
+    const clusterMap = getClusterMap()
+    const clusterNames = Object.keys(clusterMap)
+    if (clusterNames.length > 0) {
+      const chunks = clusterNames.reduce((chunks: string[][], chunkName, index) => {
+        const cindex = Math.floor(index / REMOTE_CLUSTER_CHUNKS)
+        chunks[cindex] = ([] as string[]).concat(chunks[cindex] || [], chunkName)
+        return chunks
+      }, [])
+      clusterNameChunks.push(...chunks)
+    } else {
+      clusterNameChunks.push(['local-cluster'])
+    }
+
+    // update remoteSysApps map
+    const remoteSysMap = applicationCache['remoteSysApps'].resourceMap
+    if (applicationCache['remoteSysApps'].resources) {
+      delete applicationCache['remoteSysApps'].resources
+      applicationCache['remoteSysApps'].resourceMap = {}
+    } else if (Object.keys(remoteSysMap).length) {
+      // purge resource map of clusters that no longer exist
+      Object.keys(remoteSysMap).forEach((name) => {
+        if (!clusterMap[name]) {
+          delete remoteSysMap[name]
+        }
+      })
+    }
   }
-  return remoteSysApps
+
+  return clusterNameChunks.shift()
+}
+
+function fillRemoteSystemCache(applicationCache: ApplicationCacheType, remoteSysApps: IResource[]) {
+  const resources = generateTransforms(remoteSysApps, true).resources
+  resources.forEach((transform) => {
+    const clustername = transform.transform[AppColumns.clusters].join()
+    let transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
+    if (!transforms) {
+      transforms = applicationCache['remoteSysApps'].resourceMap[clustername] = []
+    }
+    transforms.push(transform)
+  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
