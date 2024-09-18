@@ -132,7 +132,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                     required
                     label={t('machinePool.modal.scale.maxReplicas.label')}
                     id="scale-max"
-                    min={minReplicas}
+                    min={Math.max(0, minReplicas)}
                     value={maxReplicas}
                     onChange={(event) => setMaxReplicas(Number((event.target as HTMLInputElement).value))}
                     onMinus={() => setMaxReplicas(maxReplicas - 1)}
