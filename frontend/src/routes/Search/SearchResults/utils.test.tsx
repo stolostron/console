@@ -60,7 +60,7 @@ const allClusters = [
 ]
 
 test('Correctly return row Actions', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Pod',
     'kind:Pod',
@@ -80,7 +80,7 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Cluster',
     'kind:Cluster',
@@ -97,7 +97,7 @@ test('Correctly return empty row Actions for restricted resource', () => {
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -128,7 +128,7 @@ test('Correctly return empty row Actions for Application', () => {
 })
 
 test('Correctly return row Actions for Application in global search', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -185,7 +185,7 @@ test('Correctly return row Actions for Application in global search', () => {
 })
 
 test('Correctly return VirtualMachine with actions enabled', () => {
-  const vmActionsEnabled = 'enabled'
+  const vmActionsEnabled = true
   const res = getRowActions(
     'VirtualMachine',
     'kind:VirtualMachine',
@@ -202,7 +202,7 @@ test('Correctly return VirtualMachine with actions enabled', () => {
 })
 
 test('Correctly return VirtualMachine with actions disabled', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'VirtualMachine',
     'kind:VirtualMachine',
