@@ -1,45 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
 import { AcmEmptyState, compareStrings, ITableFilter, IAcmTableColumn, AcmAlert } from '../../../ui-components'
-import { DiscoverdPolicyTableItem, ISourceType, useFetchPolicies } from './useFetchPolicies'
+import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { getEngineString, getEngineWithSvg } from '../common/util'
 import { NavigationPath } from '../../../NavigationPath'
-import { discoveredSourceCell, policyViolationSummary, severityCell } from './ByCluster/common'
+import {
+  discoveredSourceCell,
+  getResponseActionFilter,
+  getSeverityFilter,
+  getSourceFilterOptions,
+  policyViolationSummary,
+  severityCell,
+} from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { AcmTableWithEngine } from '../common/AcmTableWithEngine'
-import { uniq } from 'lodash'
-
-interface ISourceFilter {
-  label: string
-  value: string
-}
-
-export const getSourceFilter = (data: DiscoverdPolicyTableItem[]): ISourceFilter[] => {
-  const uniqMap: { [key: string]: ISourceType } = {}
-  data?.forEach((data: DiscoverdPolicyTableItem) => {
-    if (data.source?.type) {
-      const key = data.source.type + '_' + data.source.parentName + '_' + data.source.parentNs
-      uniqMap[key] = data.source
-    }
-  })
-
-  const result: ISourceFilter[] = []
-
-  for (const key in uniqMap) {
-    const source = uniqMap[key]
-    if (source.type.toLowerCase() === 'policy') {
-      const nsName = source.parentNs + '/' + source.parentName
-      result.push({ label: nsName, value: nsName })
-    } else if (source.type) {
-      result.push({ label: source.type, value: source.type })
-    }
-  }
-
-  return result
-}
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -187,32 +164,27 @@ export default function DiscoveredPolicies() {
       {
         id: 'kind',
         label: t('Kind'),
-        options: uniq(data?.map((d) => d.kind)).map((kind: string) => ({ label: kind, value: kind })),
+        options: [
+          { label: 'CertificatePolicy', value: 'CertificatePolicy' },
+          { label: 'ConfigurationPolicy', value: 'ConfigurationPolicy' },
+          { label: 'Gatekeeper constraint', value: 'Gatekeeper' },
+          { label: 'OperatorPolicy', value: 'OperatorPolicy' },
+        ],
         tableFilterFn: (selectedValues, item) => {
+          if (item.apigroup === 'constraints.gatekeeper.sh') {
+            return selectedValues.includes('Gatekeeper')
+          }
+
           return selectedValues.includes(item.kind)
         },
       },
+      getResponseActionFilter(t),
+      getSeverityFilter(t),
       {
-        id: 'responseAction',
-        label: t('Response action'),
-        options: [
-          { label: t('Inform'), value: 'inform' },
-          { label: t('Enforce'), value: 'enforce' },
-          { label: t('Inform/Enforce'), value: 'inform/enforce' },
-        ],
-        tableFilterFn: (selectedValues, item) => {
-          return selectedValues.includes(item.responseAction)
-        },
-      },
-      {
-        id: 'Source',
+        id: 'source',
         label: t('Source'),
-        options: data ? getSourceFilter(data) : [],
+        options: data ? getSourceFilterOptions(data) : [],
         tableFilterFn: (selectedValues, item) => {
-          if (item.source?.type.toLowerCase() === 'policy') {
-            return selectedValues.includes(item.source.parentNs + '/' + item.source.parentName)
-          }
-
           return item.source?.type ? selectedValues.includes(item.source?.type) : false
         },
       },

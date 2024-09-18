@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoverdPolicyTableItem, ISourceType } from '../useFetchPolicies'
-import { compareStrings, IAcmTableColumn } from '../../../../ui-components'
+import { compareStrings, IAcmTableColumn, ITableFilter } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { getPolicySource } from '../../common/util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
@@ -9,7 +9,12 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Label, Tooltip } from '@patternfly/react-core'
+import { Tooltip } from '@patternfly/react-core'
+
+interface ISourceFilter {
+  label: string
+  value: string
+}
 
 export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyItem[]): ViolationSummary => {
   let compliant = 0
@@ -54,6 +59,22 @@ export const getConstraintCompliance = (totalViolations?: number): string => {
   }
 
   return '-'
+}
+
+export const getSourceFilterOptions = (data: DiscoverdPolicyTableItem[] | DiscoveredPolicyItem[]): ISourceFilter[] => {
+  const uniqueSources = new Set<string>()
+
+  data?.forEach((data: DiscoverdPolicyTableItem | DiscoveredPolicyItem) => {
+    if (data.source?.type) {
+      uniqueSources.add(data.source.type)
+    }
+  })
+
+  return Array.from(uniqueSources)
+    .sort((a, b) => a.localeCompare(b))
+    .map((source: string) => {
+      return { label: source, value: source }
+    })
 }
 
 export const byClusterCols = (
@@ -102,6 +123,7 @@ export const byClusterCols = (
     cell: severityCell,
     sort: 'severity',
     id: 'severity',
+    tooltip: t('discoveredPolicies.tooltip.severity'),
     exportContent: (item) => item.severity,
   },
   {
@@ -128,10 +150,7 @@ export const byClusterCols = (
             <div>
               {item?.totalViolations ? (
                 <>
-                  <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
-                    {item.totalViolations}
-                  </Label>
-                  &nbsp;{t('Violation', { count: item.totalViolations })}
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {item.totalViolations}
                 </>
               ) : (
                 <>
@@ -246,6 +265,71 @@ export function discoveredSourceCell(t: TFunction, source: ISourceType | undefin
   return source?.type ? translateSource(source.type, t) : '-'
 }
 
+export function getSeverityFilter(t: TFunction): ITableFilter<DiscoverdPolicyTableItem | DiscoveredPolicyItem> {
+  return {
+    id: 'severity',
+    label: t('Severity'),
+    options: [
+      {
+        label: t('Critical'),
+        value: 'critical',
+      },
+      {
+        label: t('High'),
+        value: 'high',
+      },
+      {
+        label: t('Medium'),
+        value: 'medium',
+      },
+      {
+        label: t('Low'),
+        value: 'low',
+      },
+    ],
+    tableFilterFn: (selectedValues: string[], item: DiscoverdPolicyTableItem | DiscoveredPolicyItem) => {
+      const lcSeverity = item?.severity?.toLowerCase()
+
+      if (!lcSeverity) {
+        return false
+      }
+
+      for (const option of ['critical', 'high', 'medium', 'low']) {
+        if (selectedValues.includes(option) && lcSeverity === option) {
+          return true
+        }
+      }
+
+      return false
+    },
+  }
+}
+
+export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPolicyTableItem | DiscoveredPolicyItem> {
+  return {
+    id: 'responseAction',
+    label: t('Response action'),
+    options: [
+      { label: 'deny', value: 'deny' },
+      { label: 'dryrun', value: 'dryrun' },
+      { label: 'enforce', value: 'enforce' },
+      { label: 'inform', value: 'inform' },
+      { label: 'warn', value: 'warn' },
+    ],
+    tableFilterFn: (selectedValues, item) => {
+      for (const selectedValue of selectedValues) {
+        for (const responseAction of item.responseAction.split('/')) {
+          if (selectedValue === responseAction) {
+            return true
+          }
+        }
+      }
+
+      return false
+    },
+  }
+}
+
 export function severityCell(item: Readonly<DiscoverdPolicyTableItem | DiscoveredPolicyItem>) {
   const { severity } = item
 
@@ -268,8 +352,8 @@ export function translateSource(source: string, t: TFunction): any {
   }
 }
 
-export const convertYesNoCell = (val: string | boolean | undefined | null): string => {
+export const convertYesNoCell = (val: string | boolean | undefined | null, t: TFunction): string => {
   if (val == null || val == undefined) return '-'
-  if (typeof val !== 'boolean') return JSON.parse(val) ? 'yes' : 'no'
+  if (typeof val !== 'boolean') return JSON.parse(val) ? t('yes') : t('no')
   return val === true ? 'yes' : 'no'
 }

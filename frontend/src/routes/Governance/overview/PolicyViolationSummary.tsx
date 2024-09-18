@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card } from '@patternfly/react-core'
+import { useLocation } from 'react-router-dom-v5-compat'
 import { AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
+import { NavigationPath } from '../../../NavigationPath'
 
 export function PolicyViolationsCard(props: Readonly<{ policyViolationSummary: ViolationSummary }>) {
   const { t } = useTranslation()
@@ -66,6 +67,9 @@ export function ViolationsCard(
   }>
 ) {
   const { t } = useTranslation()
+  const locationPath = useLocation().pathname
+  const navPath = locationPath.startsWith(NavigationPath.discoveredPolicies) ? locationPath : NavigationPath.policies
+
   return (
     <Card>
       <AcmDonutChart
@@ -81,17 +85,17 @@ export function ViolationsCard(
             value: props.noncompliant,
             isPrimary: true,
             useForTitleCount: true,
-            link: props.noncompliant > 0 ? `${NavigationPath.policies}?violations=violations` : undefined,
+            link: props.noncompliant > 0 ? `${navPath}?violations=violations` : undefined,
           },
           {
             key: t('pending'),
             value: props.pending,
-            link: props.pending > 0 ? `${NavigationPath.policies}?violations=pending` : undefined,
+            link: props.pending > 0 ? `${navPath}?violations=pending` : undefined,
           },
           {
             key: t('with no violations'),
             value: props.compliant,
-            link: props.compliant > 0 ? `${NavigationPath.policies}?violations=no-violations` : undefined,
+            link: props.compliant > 0 ? `${navPath}?violations=no-violations` : undefined,
           },
         ]}
         colorScale={colorThemes.criticalLowSuccess}
