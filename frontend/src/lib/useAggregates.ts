@@ -63,7 +63,7 @@ const defaultListResponse: IResultListView = {
 
 const defaultStatusResponse: IResultStatuses = {
   itemCount: 0,
-  filterCounts: undefined,
+  filterCounts: { type: {} },
   loading: true,
 }
 
