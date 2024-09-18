@@ -34,8 +34,8 @@ function handleVMActions(action: string, path: string, item: any, toast: IAlertC
     vmNamespace: item.namespace,
   })
     .promise.then(() => {
-      // Wait 3 seconds & refetch search results to update table.
-      setTimeout(() => searchClient.refetchQueries({ include: ['searchResultItems'] }), 3000)
+      // Wait 5 seconds to allow search collector to catch up & refetch search results to update table.
+      setTimeout(() => searchClient.refetchQueries({ include: ['searchResultItems'] }), 5000)
     })
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
