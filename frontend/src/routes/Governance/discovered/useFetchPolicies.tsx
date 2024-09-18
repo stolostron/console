@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { grouping } from './grouping'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { useSearchResultItemsQuery } from '../../Search/search-sdk/search-sdk'
+import { useSearchResultItemsQuery, SearchInput } from '../../Search/search-sdk/search-sdk'
 import { searchClient } from '../../Search/search-sdk/search-client'
-import { convertStringToQuery } from '../../Search/search-helper'
 import { parseDiscoveredPolicies, resolveSource, getSourceText, parseStringMap } from '../common/util'
 export interface ISourceType {
   type: string //ex: 'Policy' | 'Git' | 'Multiple'
@@ -19,20 +18,23 @@ export interface DiscoveredPolicyItem {
   apigroup: string
   apiversion: string
   cluster: string
-  compliant: string
-  remediationAction: string
-  severity: string
+  compliant?: string
+  responseAction: string
+  severity?: string
   _isExternal: boolean
   annotation: string
   created: string
   label: string
   kind_plural: string
-  namespace: string
+  // This is undefined on Gatekeeper constraints
+  namespace?: string
   name: string
-  disabled: boolean
+  disabled?: boolean
   // These are only for Operator policy
-  deploymentAvailable?: boolean | 'yes' | 'no'
-  upgradeAvailable?: boolean | 'yes' | 'no'
+  deploymentAvailable?: boolean
+  upgradeAvailable?: boolean
+  // This is only for Gatekeeper constraints
+  totalViolations?: number
   // Not from search-collector. Attached in grouping function
   source?: ISourceType
 }
@@ -41,6 +43,7 @@ export interface DiscoverdPolicyTableItem {
   id: string
   name: string
   severity: string
+  apigroup: string
   kind: string
   responseAction: string
   policies: DiscoveredPolicyItem[]
@@ -55,6 +58,57 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
+
+  let searchQuery: SearchInput[]
+
+  if (policyName && policyKind && apiGroup) {
+    searchQuery = [
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: [apiGroup],
+          },
+          {
+            property: 'name',
+            values: [policyName],
+          },
+          {
+            property: 'kind',
+            values: [policyKind],
+          },
+        ],
+        limit: 100000,
+      },
+    ]
+  } else {
+    searchQuery = [
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: ['policy.open-cluster-management.io'],
+          },
+          {
+            property: 'kind',
+            values: ['CertificatePolicy', 'ConfigurationPolicy', 'OperatorPolicy'],
+          },
+        ],
+        limit: 100000,
+      },
+      // Query for all Gatekeeper Constraints
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: ['constraints.gatekeeper.sh'],
+          },
+        ],
+        limit: 100000,
+      },
+    ]
+  }
+
   const {
     data: searchData,
     loading: searchLoading,
@@ -62,14 +116,9 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
-      input: [
-        policyName && policyKind && apiGroup
-          ? convertStringToQuery(`kind:${policyKind} name:${policyName} apigroup:${apiGroup}`, 100000)
-          : convertStringToQuery('kind:ConfigurationPolicy,CertificatePolicy,OperatorPolicy', 100000),
-      ],
+      input: searchQuery,
     },
   })
-  const searchDataItems = searchData?.searchResult?.[0]?.items
 
   useEffect(() => {
     setIsFetching(true)
@@ -78,7 +127,13 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
       setIsFetching(false)
     }
 
-    if (searchDataItems && !searchErr && !searchLoading) {
+    let searchDataItems: any[] = []
+
+    searchData?.searchResult?.forEach((result) => {
+      searchDataItems = searchDataItems.concat(result?.items || [])
+    })
+
+    if (searchDataItems.length !== 0 && !searchErr && !searchLoading) {
       const dataObj = '(' + grouping + ')();'
       // for firefox
       const blob = new Blob([dataObj.replace('"use strict";', '')], { type: 'application/javascript' })
@@ -111,7 +166,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     channelsState,
     helmReleaseState,
     subscriptionsState,
-    searchDataItems,
+    searchData,
     searchErr,
     searchLoading,
     subscriptions,

@@ -6,7 +6,7 @@ type TGetSourceText = (policySource: any, isExternal: boolean, t: any) => string
 type TParseStringMap = (anoString: string) => { [key: string]: string }
 
 type TParseDiscoveredPolicies = (data: any) => any
-interface ISourceType {
+export interface ISourceType {
   type: any //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
   parentName: string
@@ -94,6 +94,27 @@ export function grouping(): {
     }
   }
 
+  const getSeverity = (policy: any, parseStringMap: TParseStringMap): string => {
+    if (policy?.severity) {
+      return policy.severity
+    }
+
+    return parseStringMap(policy.annotation)['policy.open-cluster-management.io/severity'] ?? ''
+  }
+
+  const getResponseAction = (policy: any): string | null => {
+    if (policy?.remediationAction) {
+      return policy.remediationAction.toLowerCase()
+    } else if (policy?.enforcementAction) {
+      return policy.enforcementAction
+    } else if (policy.apigroup === 'constraints.gatekeeper.sh') {
+      // The default is deny when unset.
+      return 'deny'
+    }
+
+    return null
+  }
+
   const createMessage = (
     data: any[],
     helmReleases: any[],
@@ -104,6 +125,10 @@ export function grouping(): {
     parseStringMapStr: string,
     parseDiscoveredPoliciesStr: string
   ): any[] => {
+    if (data?.length === 0) {
+      return []
+    }
+
     const resolveSource = eval(resolveSourceStr) as TResolveSource
     const getSourceText = eval(getSourceTextStr) as TGetSourceText
     const parseStringMap = eval(parseStringMapStr) as TParseStringMap
@@ -125,7 +150,7 @@ export function grouping(): {
     })
 
     const groupByNameKindGroup: { [nameKindGroup: string]: any[] } = {}
-    // Group by policy name, kind and apiGroup
+    // Group by policy name, kind and apigroup
     policiesWithSource?.forEach((p: any) => {
       const nameKindGroup: string = p['name'] + p['kind'] + p['apigroup'] || ''
       const existingGroup = groupByNameKindGroup[nameKindGroup] || []
@@ -139,17 +164,23 @@ export function grouping(): {
       const group = groupByNameKindGroup[nameKindGroup] || []
 
       let highestSeverity = 0
-      let responseAction = group[0].remediationAction
+      const allResponseActions: Set<string> = new Set()
+
       let source = { ...group[0].source }
 
       for (const policy of group) {
+        policy.severity = getSeverity(policy, parseStringMap)
+
         // Set to highest severity among grouped policies
         if (severityTable(policy.severity) > highestSeverity) {
           highestSeverity = severityTable(policy.severity)
         }
 
-        if (policy.remediationAction != responseAction) {
-          responseAction = 'inform/enforce'
+        const responseAction = getResponseAction(policy)
+
+        if (responseAction) {
+          policy.responseAction = responseAction
+          allResponseActions.add(responseAction)
         }
 
         if (source.type === 'Multiple') {
@@ -169,10 +200,27 @@ export function grouping(): {
         }
       }
 
+      let responseAction: string
+      const allResponseActionsList: string[] = Array.from(allResponseActions)
+
+      if (allResponseActions.size === 1) {
+        responseAction = allResponseActionsList[0]
+      } else if (
+        allResponseActions.size === 2 &&
+        allResponseActions.has('inform') &&
+        allResponseActions.has('enforce')
+      ) {
+        responseAction = 'inform/enforce'
+      } else {
+        // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
+        responseAction = allResponseActionsList.sort().join('/') //NOSONAR
+      }
+
       return {
         id: nameKindGroup,
+        apigroup: group[0].apigroup,
         name: group[0].name,
-        kind: group[0]?.kind,
+        kind: group[0].kind,
         severity: PolicySeverity[highestSeverity].toLowerCase(),
         responseAction,
         policies: group,

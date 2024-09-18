@@ -28,6 +28,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
+import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 export interface PolicyCompliance {
   policyName: string
@@ -703,48 +704,61 @@ export function getPolicySource(
   return source
 }
 
-export function getEngineString(kind: string): string {
-  switch (kind) {
-    case 'ConfigurationPolicy':
-    case 'CertificatePolicy':
-    case 'OperatorPolicy':
+export function getEngineString(apiGroup: string): string {
+  switch (apiGroup) {
+    case 'policy.open-cluster-management.io':
       return 'Open Cluster Management'
+    case 'constraints.gatekeeper.sh':
+    case 'templates.gatekeeper.sh':
+      return 'Gatekeeper'
     default:
       return 'Unknown'
   }
 }
 
-export function getEngineWithSvg(kind: string): JSX.Element {
-  switch (kind) {
-    case 'ConfigurationPolicy':
-    case 'CertificatePolicy':
-    case 'OperatorPolicy':
-      return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div
-            style={{
-              height: 18,
-              width: 18,
-            }}
-          >
-            {' '}
-            <OcmSvg />
-          </div>{' '}
-          Open Cluster Management
-        </div>
-      )
+export function getEngineWithSvg(apiGroup: string): JSX.Element {
+  let logo: JSX.Element
+  const engine = getEngineString(apiGroup)
+
+  switch (engine) {
+    case 'Open Cluster Management':
+      logo = <OcmSvg />
+      break
+    case 'Gatekeeper':
+      logo = <GatekeeperSvg />
+      break
     default:
       return <>Unknown</>
   }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div
+        style={{
+          height: 18,
+          width: 18,
+        }}
+      >
+        {' '}
+        {logo}
+      </div>{' '}
+      {engine}
+    </div>
+  )
 }
 
 /* istanbul ignore next */
 export const parseDiscoveredPolicies = (data: any): any => {
   return JSON.parse(JSON.stringify(data), (k, v: string) => {
-    if (['disabled', '_isExternal', '_hubClusterResource'].includes(k)) {
+    if (['disabled', '_isExternal', '_hubClusterResource', 'deploymentAvailable', 'upgradeAvailable'].includes(k)) {
       if (v === 'true') return true
       return v === 'false' ? false : v
     }
+
+    if (k === 'totalViolations') {
+      return parseInt(v)
+    }
+
     return v
   })
 }

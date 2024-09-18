@@ -244,7 +244,7 @@ function nockPatchClusterDeployment(clusterName: string, op: 'replace' | 'add' |
 const Component = () => {
   const context: Partial<ClusterSetDetailsContext> = {
     clusterSet: mockManagedClusterSet,
-    clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], []),
+    clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], new Map()),
     clusterPools: [],
     clusterDeployments: [mockClusterDeploymentClaimed],
     clusterRoleBindings: [],

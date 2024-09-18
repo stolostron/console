@@ -132,7 +132,7 @@ export const getApplicationData = (nodes) => {
         result.applicationSet = applicationSetRef.name
       }
       let cluster = 'local-cluster'
-      const clusterNames = _.get(appNode, ['specs', 'cluster-names'], [])
+      const clusterNames = _.get(appNode, ['specs', 'clusterNames'], [])
       if (clusterNames.length > 0) {
         cluster = clusterNames[0]
       }

@@ -47,10 +47,15 @@ const applicationAggregate = {
       mockOCPApplication0,
       mockFluxApplication0,
     ],
-    itemCount: 42,
-    filterCounts: undefined,
     emptyResult: false,
     isPreProcessed: false,
+  },
+}
+const statusAggregate = {
+  req: {},
+  res: {
+    itemCount: 42,
+    filterCounts: undefined,
   },
 }
 
@@ -60,6 +65,7 @@ describe('Applications Page', () => {
     nockIgnoreApiPaths()
     nockPostRequest('/metrics?application', {})
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     render(
       <RecoilRoot
         initializeState={(snapshot) => {

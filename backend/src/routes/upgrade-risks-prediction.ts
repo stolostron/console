@@ -6,20 +6,13 @@ import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
-
+import { Secret } from '../resources/secret'
 interface Credential {
   auths: {
     'cloud.openshift.com': {
       auth: string
     }
-  }
-}
-
-interface Secret extends IResource {
-  data?: {
-    [key: string]: string
   }
 }
 
@@ -77,12 +70,10 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch(
-            (err: Error): undefined => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return undefined
-            }
-          )
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch((err: Error) => {
+            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+            return { error: err.message }
+          })
         })
 
         await Promise.all(reqs).then((results) => {

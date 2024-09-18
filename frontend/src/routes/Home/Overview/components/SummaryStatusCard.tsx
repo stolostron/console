@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, CardTitle } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Skeleton } from '@patternfly/react-core'
 import { ReactNode } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 
@@ -16,6 +16,7 @@ export interface Data {
     icon?: ReactNode
     link?: string
   }[]
+  loading?: boolean
 }
 
 export function SummaryStatusCard(props: { key: string; title: string; data: Data }) {
@@ -43,7 +44,9 @@ export function SummaryStatusCard(props: { key: string; title: string; data: Dat
                 marginRight: '3rem',
               }}
             >
-              {data.mainSection.link ? (
+              {data?.loading ? (
+                <Skeleton style={{ marginBottom: '10px', height: '30px' }} />
+              ) : data.mainSection.link ? (
                 <Link style={{ fontSize: 24 }} to={data.mainSection.link}>
                   {data.mainSection.title}
                 </Link>
@@ -53,17 +56,21 @@ export function SummaryStatusCard(props: { key: string; title: string; data: Dat
               <span>{data.mainSection.description}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {data.statusSection.map((status, index) => {
-                return (
-                  <div key={`${key}-status-${index}`} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', marginRight: '2rem' }}>
-                      <div style={{ marginRight: '.25rem' }}>{status?.icon ? status.icon : undefined}</div>
-                      {status.title}
+              {!data?.loading ? (
+                data.statusSection.map((status, index) => {
+                  return (
+                    <div key={`${key}-status-${index}`} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', marginRight: '2rem' }}>
+                        <div style={{ marginRight: '.25rem' }}>{status?.icon ? status.icon : undefined}</div>
+                        {status.title}
+                      </div>
+                      {status?.link ? <Link to={status.link}>{status.count}</Link> : <span>{status.count}</span>}
                     </div>
-                    {status?.link ? <Link to={status.link}>{status.count}</Link> : <span>{status.count}</span>}
-                  </div>
-                )
-              })}
+                  )
+                })
+              ) : (
+                <div></div>
+              )}
             </div>
           </div>
         </div>

@@ -22,7 +22,7 @@ describe('CreateAWSControlPlane', () => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddOn])
+          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
           snapshot.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])

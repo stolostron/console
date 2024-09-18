@@ -322,7 +322,7 @@ describe('Policy Template Details Page', () => {
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -398,6 +398,10 @@ describe('Policy Template Details Page', () => {
       },
     }
 
+    const mockManagedClusterAddOn: Map<string, ManagedClusterAddOn[]> = new Map([
+      [clusterName, [mockManagedClusterAddOnWork, mockManagedClusterAddOnPolicy]],
+    ])
+
     const getResourceRequestCopy = JSON.parse(JSON.stringify(getResourceRequest))
     getResourceRequestCopy.metadata.namespace = hostingClusterName
     getResourceRequestCopy.metadata.name = '6b5d34f1f43b9ca1ea4d4e889bda37e4ae8d0435'
@@ -420,7 +424,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddOnWork, mockManagedClusterAddOnPolicy])
+          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -551,7 +555,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -595,7 +599,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -748,7 +752,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -797,7 +801,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -843,7 +847,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -878,7 +882,7 @@ describe('Policy Template Details Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -901,7 +905,7 @@ describe('Policy Template Details Page', () => {
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
         }}
       >
         <MemoryRouter

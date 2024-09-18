@@ -19,7 +19,7 @@ import {
   nodePoolsState,
   policyreportState,
 } from '../../../../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../../../lib/nock-util'
+import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
@@ -41,19 +41,6 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
-import {
-  mockSearchQueryArgoAppsClusterOverview,
-  mockSearchQueryArgoAppsClusterOverviewFilteredCount,
-  mockSearchQueryArgoAppsCount,
-  mockSearchQueryOCPApplicationsClusterOverview,
-  mockSearchQueryOCPApplicationsClusterOverviewFilteredCount,
-  mockSearchQueryOCPApplicationsCount,
-  mockSearchResponseArgoApps1,
-  mockSearchResponseArgoAppsCount,
-  mockSearchResponseArgoAppsCount1,
-  mockSearchResponseOCPApplications,
-  mockSearchResponseOCPApplicationsCount,
-} from '../../../../../Applications/Application.sharedmocks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ClusterDetailsContext } from '../ClusterDetails'
 
@@ -67,41 +54,6 @@ jest.mock('react-router-dom-v5-compat', () => ({
     push: mockHistoryPush,
   }),
 }))
-
-const mockSearchQuery = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          { property: 'compliant', values: ['!Compliant'] },
-          { property: 'kind', values: ['Policy'] },
-          { property: 'namespace', values: ['feng-hypershift-test'] },
-          { property: 'cluster', values: ['local-cluster'] },
-        ],
-      },
-    ],
-  },
-  query:
-    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
-}
-
-const mockSearchResponse = {
-  data: {
-    searchResult: [
-      {
-        count: 0,
-        related: [],
-        __typename: 'SearchResult',
-      },
-      {
-        count: 0,
-        related: [],
-        __typename: 'SearchResult',
-      },
-    ],
-  },
-}
 
 const kubeConfigSecret: Secret = {
   apiVersion: SecretApiVersion,
@@ -122,18 +74,19 @@ const kubeAdminPassSecret: Secret = {
   },
   stringData: {},
 }
+const statusAggregate = {
+  req: { clusters: ['feng-hypershift-test'] },
+  res: {
+    itemCount: 42,
+    filterCounts: undefined,
+  },
+}
 
 describe('ClusterOverview with AWS hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
     nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
@@ -146,7 +99,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -179,13 +132,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
 describe('ClusterOverview with BM hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -201,7 +148,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -234,13 +181,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
 describe('ClusterOverview with BM hypershift cluster no namespace', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -256,7 +197,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -289,13 +230,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
 describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockGet(kubeConfigSecret)
     nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
@@ -311,7 +246,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -344,13 +279,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
 describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster }
     render(
@@ -361,7 +290,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -394,13 +323,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
 describe('ClusterOverview with regional hub cluster information', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
@@ -411,7 +334,7 @@ describe('ClusterOverview with regional hub cluster information', () => {
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -446,13 +369,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
   beforeEach(() => {
     mockRegionalHubCluster.isHostedCluster = true
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
@@ -463,7 +380,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
           snapshot.set(clusterDeploymentsState, [])
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(clusterManagementAddonsState, [])
           snapshot.set(clusterClaimsState, [])
           snapshot.set(clusterCuratorsState, [])
@@ -709,13 +626,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     }
 
     nockIgnoreRBAC()
-    nockSearch(mockSearchQuery, mockSearchResponse)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverview, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsClusterOverviewFilteredCount, mockSearchResponseOCPApplications)
-    nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-    nockSearch(mockSearchQueryArgoAppsClusterOverview, mockSearchResponseArgoApps1)
-    nockSearch(mockSearchQueryArgoAppsClusterOverviewFilteredCount, mockSearchResponseArgoAppsCount1)
-    nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockIgnoreApiPaths()
     nockGet(getSecrets1.req, getSecrets1.req) // get 'secrets' in 'clusters' namespace
     nockGet(getSecrets2.req, getSecrets2.req)

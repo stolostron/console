@@ -59,6 +59,8 @@ interface IArgoAppRemoteResource {
   targetRevision: string
   chart: string
   cluster: string
+  healthStatus: string
+  syncStatus: string
 }
 
 export async function getArgoApps(applicationCache: ApplicationCacheType, pass: number) {
@@ -120,6 +122,12 @@ async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
         },
         status: {
           cluster: argoApp.cluster,
+          health: {
+            status: argoApp.healthStatus,
+          },
+          sync: {
+            status: argoApp.syncStatus,
+          },
         },
       } as IResource)
     }

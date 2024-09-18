@@ -5,7 +5,7 @@ import { AcmEmptyState, AcmTable } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Box } from '@mui/material'
-import { ByClusterCols, DiscoveredViolationsCard, policyViolationSummary } from './common'
+import { byClusterCols, convertYesNoCell, DiscoveredViolationsCard, policyViolationSummary } from './common'
 import { useMemo } from 'react'
 
 export default function DiscoveredByCluster({
@@ -21,7 +21,7 @@ export default function DiscoveredByCluster({
   const policyName = policies?.[0]?.name ?? ''
   const cols = useMemo(
     () =>
-      ByClusterCols(
+      byClusterCols(
         t,
         helmReleases,
         subscriptions,
@@ -30,31 +30,19 @@ export default function DiscoveredByCluster({
           ? [
               {
                 header: t('Deployment available'),
-                cell: (item: DiscoveredPolicyItem) => {
-                  if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
-                  return item.deploymentAvailable ? 'yes' : 'no'
-                },
+                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable),
                 sort: 'deploymentAvailable',
                 search: 'deploymentAvailable',
                 id: 'deploymentAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => {
-                  if (item.deploymentAvailable == null || item.deploymentAvailable == undefined) return '-'
-                  return item.deploymentAvailable ? 'yes' : 'no'
-                },
+                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable),
               },
               {
                 header: t('Upgrade available'),
-                cell: (item: DiscoveredPolicyItem) => {
-                  if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
-                  return item.upgradeAvailable ? 'yes' : 'no'
-                },
+                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable),
                 sort: 'upgradeAvailable',
                 search: 'upgradeAvailable',
                 id: 'upgradeAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => {
-                  if (item.upgradeAvailable == null || item.upgradeAvailable == undefined) return '-'
-                  return item.upgradeAvailable ? 'yes' : 'no'
-                },
+                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable),
               },
             ]
           : []

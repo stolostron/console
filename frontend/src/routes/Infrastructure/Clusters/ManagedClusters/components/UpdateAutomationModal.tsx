@@ -66,7 +66,7 @@ export function UpdateAutomationModal(props: {
   const [selectedCuratorTemplate, setSelectedCuratorTemplate] = useState<ClusterCurator | undefined>()
   const [isUpdating, setIsUpdating] = useState(false)
   const clusterProviders = useClusterProviderColumn()
-  const distributionVersion = useClusterDistributionColumn(clusterCurators, hostedClusters)
+  const distributionVersion = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)
 
   const handleCuratorSelect = (uid: string | undefined) => {
     setSelectedCuratorTemplate(
@@ -218,7 +218,7 @@ export function UpdateAutomationModal(props: {
     <AcmModal
       title={t('Update automation template')}
       isOpen={props.open}
-      variant={ModalVariant.small}
+      variant={ModalVariant.medium}
       onClose={() => {
         setSelectedCuratorTemplate(undefined)
         props.close()

@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoverdPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn } from '../../../../ui-components'
@@ -10,6 +9,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { Label, Tooltip } from '@patternfly/react-core'
 
 export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyItem[]): ViolationSummary => {
   let compliant = 0
@@ -17,8 +17,16 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   let pending = 0
   let unknown = 0
   for (const policy of discoveredPolicyItems) {
-    if (policy.disabled || !policy?.compliant) continue
-    switch (policy?.compliant?.toLowerCase()) {
+    let compliance: string
+
+    if (policy.apigroup === 'constraints.gatekeeper.sh') {
+      compliance = getConstraintCompliance(policy?.totalViolations)
+    } else {
+      compliance = policy?.compliant?.toLowerCase() ?? ''
+    }
+
+    if (policy.disabled || !compliance) continue
+    switch (compliance) {
       case 'compliant':
         compliant++
         break
@@ -36,106 +44,146 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   return { noncompliant, compliant, pending, unknown }
 }
 
-export const ByClusterCols = (
+export const getConstraintCompliance = (totalViolations?: number): string => {
+  totalViolations = totalViolations ?? -1
+
+  if (totalViolations === 0) {
+    return 'compliant'
+  } else if (totalViolations > 0) {
+    return 'noncompliant'
+  }
+
+  return '-'
+}
+
+export const byClusterCols = (
   t: TFunction<string, undefined>,
   helmReleases: HelmRelease[],
   subscriptions: Subscription[],
   channels: Channel[],
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
-): IAcmTableColumn<DiscoveredPolicyItem>[] =>
-  useMemo(() => {
-    return [
-      {
-        header: t('Cluster'),
-        cell: (item: DiscoveredPolicyItem) => {
+): IAcmTableColumn<DiscoveredPolicyItem>[] => [
+  {
+    header: t('Cluster'),
+    cell: (item: DiscoveredPolicyItem) => {
+      return (
+        <Link
+          to={generatePath(NavigationPath.discoveredPolicyDetails, {
+            clusterName: item.cluster,
+            apiVersion: item.apiversion,
+            apiGroup: item.apigroup,
+            kind: item.kind,
+            // discovered policy name
+            templateName: item.name,
+            templateNamespace: item.namespace ?? null,
+          })}
+        >
+          {item.cluster}
+        </Link>
+      )
+    },
+    sort: 'cluster',
+    search: 'cluster',
+    id: 'cluster',
+    exportContent: (item) => item.cluster,
+  },
+  ...(moreCols ?? []),
+  {
+    header: t('Response action'),
+    cell: 'responseAction',
+    sort: 'responseAction',
+    search: 'responseAction',
+    id: 'responseAction',
+    exportContent: (item: DiscoveredPolicyItem) => item.responseAction,
+  },
+  {
+    header: t('Severity'),
+    // TODO Add severity icon
+    cell: severityCell,
+    sort: 'severity',
+    id: 'severity',
+    exportContent: (item) => item.severity,
+  },
+  {
+    header: t('Violations'),
+    tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
+    cell: (item: DiscoveredPolicyItem) => {
+      let compliant: string
+
+      if (item.apigroup === 'constraints.gatekeeper.sh') {
+        compliant = getConstraintCompliance(item?.totalViolations)
+      } else {
+        compliant = item?.compliant?.toLowerCase() ?? ''
+      }
+
+      switch (compliant) {
+        case 'compliant':
           return (
-            <Link
-              to={generatePath(NavigationPath.discoveredPolicyDetails, {
-                clusterName: item.cluster,
-                apiVersion: item.apiversion,
-                apiGroup: item.apigroup,
-                kind: item.kind,
-                // discovered policy name
-                templateName: item.name,
-                templateNamespace: item.namespace,
-              })}
-            >
-              {item.cluster}
-            </Link>
+            <div>
+              <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+            </div>
           )
-        },
-        sort: 'cluster',
-        search: 'cluster',
-        id: 'cluster',
-        exportContent: (item) => item.cluster,
-      },
-      ...(moreCols ?? []),
-      {
-        header: t('Response action'),
-        cell: 'remediationAction',
-        sort: 'remediationAction',
-        search: 'remediationAction',
-        id: 'responseAction',
-        exportContent: (item: DiscoveredPolicyItem) => item.remediationAction,
-      },
-      {
-        header: t('Severity'),
-        // TODO Add severity icon
-        cell: severityCell,
-        sort: 'severity',
-        id: 'severity',
-        exportContent: (item) => item.severity,
-      },
-      {
-        header: t('Violations'),
-        cell: (item: DiscoveredPolicyItem) => {
-          const compliant = item?.compliant?.toLowerCase()
-          switch (compliant) {
-            case 'compliant':
-              return (
-                <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-                </div>
-              )
-            case 'noncompliant':
-              return (
-                <div>
+        case 'noncompliant':
+          return (
+            <div>
+              {item?.totalViolations ? (
+                <>
+                  <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
+                    {item.totalViolations}
+                  </Label>
+                  &nbsp;{t('Violation', { count: item.totalViolations })}
+                </>
+              ) : (
+                <>
                   <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
-                </div>
-              )
-            case 'pending':
-              return (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
-                </div>
-              )
-            default:
-              return (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                </div>
-              )
-          }
-        },
-        sort: 'compliant',
-        id: 'violations',
-        exportContent: (item: DiscoveredPolicyItem) => item.compliant || '-',
-      },
-      {
-        header: t('Source'),
-        cell: (item: DiscoveredPolicyItem) => {
-          if (item.source?.type === 'Policy') {
-            return discoveredSourceCell(t, item.source)
-          }
-          return getPolicySource(item, helmReleases, channels, subscriptions, t)
-        },
-        sort: (a: DiscoveredPolicyItem, b: DiscoveredPolicyItem) => compareStrings(a.source?.type, b.source?.type),
-        search: (item: DiscoveredPolicyItem) => item.source?.type ?? '',
-        id: 'source',
-        exportContent: (item) => item.source?.type ?? '-',
-      },
-    ]
-  }, [channels, helmReleases, moreCols, subscriptions, t])
+                </>
+              )}
+            </div>
+          )
+        case 'pending':
+          return (
+            <div>
+              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+            </div>
+          )
+        default:
+          return (
+            <div>
+              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+            </div>
+          )
+      }
+    },
+    sort: 'compliant',
+    id: 'violations',
+    exportContent: (item: DiscoveredPolicyItem) => {
+      if (item.apigroup === 'constraints.gatekeeper.sh') {
+        const compliant = getConstraintCompliance(item?.totalViolations)
+
+        if (compliant === 'noncompliant') {
+          return compliant + ' (' + item.totalViolations + ')'
+        }
+
+        return compliant ?? '-'
+      }
+
+      return item?.compliant?.toLowerCase() ?? '-'
+    },
+  },
+  {
+    header: t('Source'),
+    cell: (item: DiscoveredPolicyItem) => {
+      if (item.source?.type === 'Policy') {
+        return discoveredSourceCell(t, item.source)
+      }
+      return getPolicySource(item, helmReleases, channels, subscriptions, t)
+    },
+    sort: (a: DiscoveredPolicyItem, b: DiscoveredPolicyItem) => compareStrings(a.source?.type, b.source?.type),
+    search: (item: DiscoveredPolicyItem) => item.source?.type ?? '',
+    id: 'source',
+    exportContent: (item) => item.source?.type ?? '-',
+  },
+]
 
 export function DiscoveredViolationsCard(
   props: Readonly<{ policyKind: string; policyViolationSummary: ViolationSummary }>
@@ -165,22 +213,32 @@ export function discoveredSourceCell(t: TFunction, source: ISourceType | undefin
             borderRadius: '20px',
             fontSize: '0.75rem',
             marginRight: '10px',
-            minWidth: 18,
+            width: 20,
+            textAlign: 'center',
           }}
         >
           P
         </span>
-        <Link
-          to={generatePath(NavigationPath.policyDetails, {
-            namespace: source.parentNs,
-            name: source.parentName,
-          })}
-          state={{
-            from: NavigationPath.policies,
-          }}
+        <Tooltip
+          content={
+            <>
+              <div>{`Namespace: ${source.parentNs}`} </div>
+              <div>{`Name: ${source.parentName}`}</div>
+            </>
+          }
         >
-          {source.parentName}
-        </Link>
+          <Link
+            to={generatePath(NavigationPath.policyDetails, {
+              namespace: source.parentNs,
+              name: source.parentName,
+            })}
+            state={{
+              from: NavigationPath.policies,
+            }}
+          >
+            {source.parentName}
+          </Link>
+        </Tooltip>
       </>
     )
   }
@@ -208,4 +266,10 @@ export function translateSource(source: string, t: TFunction): any {
     default:
       return source
   }
+}
+
+export const convertYesNoCell = (val: string | boolean | undefined | null): string => {
+  if (val == null || val == undefined) return '-'
+  if (typeof val !== 'boolean') return JSON.parse(val) ? 'yes' : 'no'
+  return val === true ? 'yes' : 'no'
 }

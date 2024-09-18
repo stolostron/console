@@ -1,21 +1,22 @@
 // Copyright (c) 2023 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import i18next from 'i18next'
-import { NavigateFunction } from 'react-router-dom-v5-compat'
 import { ClusterStatus } from '../../../resources'
 import { getSearchDefinitions } from '../searchDefinitions'
-import { generateSearchResultExport, GetRowActions } from './utils'
+import { generateSearchResultExport, getRowActions } from './utils'
 
 const mockHistoryPush = jest.fn()
-const navigate: NavigateFunction = jest.fn()
 jest.mock('react-router-dom-v5-compat', () => ({
   ...jest.requireActual('react-router-dom-v5-compat'),
   useHistory: () => ({
     push: mockHistoryPush,
   }),
 }))
-
 const t = i18next.t.bind(i18next)
+const navigate = jest.fn()
+const toastContextMock: any = {
+  addAlert: jest.fn(),
+}
 
 const allClusters = [
   {
@@ -59,7 +60,8 @@ const allClusters = [
 ]
 
 test('Correctly return row Actions', () => {
-  const res = GetRowActions(
+  const vmActionsEnabled = 'disabled'
+  const res = getRowActions(
     'Pod',
     'kind:Pod',
     false,
@@ -67,6 +69,8 @@ test('Correctly return row Actions', () => {
     () => {},
     allClusters,
     navigate,
+    toastContextMock,
+    vmActionsEnabled,
     t
   )
   res[0].click({ kind: 'Pod' }) // edit resource
@@ -76,7 +80,8 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const res = GetRowActions(
+  const vmActionsEnabled = 'disabled'
+  const res = getRowActions(
     'Cluster',
     'kind:Cluster',
     false,
@@ -84,13 +89,16 @@ test('Correctly return empty row Actions for restricted resource', () => {
     () => {},
     allClusters,
     navigate,
+    toastContextMock,
+    vmActionsEnabled,
     t
   )
   expect(res).toMatchSnapshot()
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const res = GetRowActions(
+  const vmActionsEnabled = 'disabled'
+  const res = getRowActions(
     'Application',
     'kind:Application',
     false,
@@ -98,6 +106,8 @@ test('Correctly return empty row Actions for Application', () => {
     () => {},
     allClusters,
     navigate,
+    toastContextMock,
+    vmActionsEnabled,
     t
   )
   res[0].click({
@@ -118,7 +128,8 @@ test('Correctly return empty row Actions for Application', () => {
 })
 
 test('Correctly return row Actions for Application in global search', () => {
-  const res = GetRowActions(
+  const vmActionsEnabled = 'disabled'
+  const res = getRowActions(
     'Application',
     'kind:Application',
     false,
@@ -126,6 +137,8 @@ test('Correctly return row Actions for Application in global search', () => {
     () => {},
     allClusters,
     navigate,
+    toastContextMock,
+    vmActionsEnabled,
     t
   )
   res[0].click({
@@ -171,6 +184,40 @@ test('Correctly return row Actions for Application in global search', () => {
   expect(res).toMatchSnapshot()
 })
 
+test('Correctly return VirtualMachine with actions enabled', () => {
+  const vmActionsEnabled = 'enabled'
+  const res = getRowActions(
+    'VirtualMachine',
+    'kind:VirtualMachine',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    navigate,
+    toastContextMock,
+    vmActionsEnabled,
+    t
+  )
+  expect(res).toMatchSnapshot()
+})
+
+test('Correctly return VirtualMachine with actions disabled', () => {
+  const vmActionsEnabled = 'disabled'
+  const res = getRowActions(
+    'VirtualMachine',
+    'kind:VirtualMachine',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    navigate,
+    toastContextMock,
+    vmActionsEnabled,
+    t
+  )
+  expect(res).toMatchSnapshot()
+})
+
 test('generateSearchResultExport - Correctly generates and triggers csv download for single resource kind', () => {
   const toastContextMock: any = {
     addAlert: jest.fn(),
@@ -205,7 +252,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   }
 
   const searchDefinitions = getSearchDefinitions((key) => key)
-  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
+  generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
     title: 'Generating data. Download may take a moment to start.',
@@ -293,7 +340,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   }
 
   const searchDefinitions = getSearchDefinitions((key) => key)
-  generateSearchResultExport(searchResultDataMock, searchDefinitions, toastContextMock, t)
+  generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
     title: 'Generating data. Download may take a moment to start.',

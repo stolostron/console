@@ -16,6 +16,7 @@ describe('DiscoveredByClusterPage', () => {
       data: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
           name: 'check-policy-reports',
           kind: 'ConfigurationPolicy',
           severity: 'critical',
@@ -34,7 +35,7 @@ describe('DiscoveredByClusterPage', () => {
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'Compliant',
-              remediationAction: 'enforce',
+              responseAction: 'enforce',
               severity: 'critical',
               disabled: false,
               _isExternal: true,
@@ -54,7 +55,7 @@ describe('DiscoveredByClusterPage', () => {
               name: 'check-policy-reports',
               namespace: 'managed1',
               compliant: 'Compliant',
-              remediationAction: 'inform',
+              responseAction: 'inform',
               severity: 'low',
               disabled: false,
               _isExternal: true,
@@ -82,7 +83,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -120,6 +120,7 @@ describe('DiscoveredByClusterPage', () => {
       data: [
         {
           id: 'check-policy-reportsCertificatePolicy',
+          apigroup: 'policy.open-cluster-management.io',
           name: 'check-policy-reports',
           kind: 'CertificatePolicy',
           severity: 'low',
@@ -138,7 +139,7 @@ describe('DiscoveredByClusterPage', () => {
               name: 'check-policy-reports',
               namespace: 'local-cluster',
               compliant: 'Compliant',
-              remediationAction: 'enforce',
+              responseAction: 'enforce',
               severity: 'low',
               disabled: false,
               _isExternal: true,
@@ -166,7 +167,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -203,6 +203,7 @@ describe('DiscoveredByClusterPage', () => {
       data: [
         {
           id: 'check-policy-reportsOperatorPolicy',
+          apigroup: 'policy.open-cluster-management.io',
           name: 'check-policy-reports',
           kind: 'OperatorPolicy',
           severity: 'low',
@@ -221,7 +222,7 @@ describe('DiscoveredByClusterPage', () => {
               name: 'check-policy-reports',
               namespace: 'local-cluster',
               compliant: 'NonCompliant',
-              remediationAction: 'enforce',
+              responseAction: 'enforce',
               severity: 'low',
               disabled: false,
               _isExternal: true,
@@ -251,7 +252,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -285,6 +285,111 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('OperatorPolicy violations', true)
   })
 
+  test('Should render DiscoveredByCluster for a Gatekeeper constraint', async () => {
+    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+      isFetching: false,
+      data: [
+        {
+          id: 'ns-must-have-gk_K8sRequiredLabels_',
+          apigroup: 'constraints.gatekeeper.sh',
+          name: 'ns-must-have-gk',
+          kind: 'K8sRequiredLabels',
+          severity: 'critical',
+          responseAction: 'deny/warn',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _uid: 'local-cluster/36044810-6b61-4437-adbe-5456c5f47a95',
+              apigroup: 'constraints.gatekeeper.sh',
+              apiversion: 'v1beta1',
+              cluster: 'local-cluster',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'K8sRequiredLabels',
+              kind_plural: 'k8srequiredlabels',
+              label: '',
+              name: 'ns-must-have-gk',
+              totalViolations: 82,
+              responseAction: 'warn',
+              severity: 'critical',
+              _isExternal: false,
+              annotation: 'policy.open-cluster-management.io/severity=critical',
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster1/45044810-6b61-4437-adbe-5456c5f47a81',
+              apigroup: 'constraints.gatekeeper.sh',
+              apiversion: 'v1beta1',
+              cluster: 'cluster1',
+              created: '2024-08-13T11:01:32Z',
+              kind: 'K8sRequiredLabels',
+              kind_plural: 'k8srequiredlabels',
+              label: '',
+              name: 'ns-must-have-gk',
+              totalViolations: 75,
+              responseAction: 'deny',
+              severity: 'high',
+              _isExternal: false,
+              annotation: 'policy.open-cluster-management.io/severity=high',
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+          ],
+          source: { type: 'Local', parentName: '', parentNs: '' },
+        },
+      ],
+      err: undefined,
+    })
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'K8sRequiredLabels',
+              policyName: 'ns-must-have-gk',
+              apiGroup: 'constraints.gatekeeper.sh',
+              apiVersion: 'v1beta1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Header
+    await waitForText('Discovered policies')
+
+    await waitForText('ns-must-have-gk', true)
+    await waitForText('Gatekeeper', true)
+
+    await waitForText('Response action')
+    await waitForText('deny')
+    await waitForText('warn')
+
+    await waitForText('Violations', true)
+
+    expect(screen.getByRole('cell', { name: /82 Violations/ })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: /75 Violations/ })).toBeInTheDocument()
+
+    await waitForText('Severity')
+    await waitForText('High')
+    await waitForText('Critical')
+
+    await waitForText('Source')
+    await waitForText('Local', true)
+
+    await waitForText('K8sRequiredLabels violations', true)
+    await waitForText('2 with violations')
+  })
+
   test('Should render empty policy warning page for OperatorPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
@@ -306,7 +411,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -343,7 +447,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -380,7 +483,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -417,7 +519,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >
@@ -454,7 +555,6 @@ describe('DiscoveredByClusterPage', () => {
               policyName: 'check-policy-reports',
               apiGroup: 'policy.open-cluster-management.io',
               apiVersion: 'v1',
-              policyNamespace: 'local-cluster',
             }),
           ]}
         >

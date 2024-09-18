@@ -19,11 +19,9 @@ import {
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
-import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -39,7 +37,7 @@ import { federatedErrorText } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
-import { GetRowActions, ISearchResult } from './utils'
+import { ISearchResult, useGetRowActions } from './utils'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -78,8 +76,6 @@ function RenderAccordionItem(props: {
     idx,
     defaultIsExpanded,
   } = props
-  const { t } = useTranslation()
-  const clusters = useAllClusters(true)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -87,8 +83,7 @@ function RenderAccordionItem(props: {
   const items = kindSearchResultItems[kind]
   const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
   const kindString = kind.split('.').pop() ?? ''
-
-  const navigate = useNavigate()
+  const rowActions = useGetRowActions(kindString, currentQuery, false, setDeleteResource, setDeleteExternalResource)
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
@@ -105,20 +100,11 @@ function RenderAccordionItem(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={GetRowActions(
-            kind,
-            currentQuery,
-            false,
-            setDeleteResource,
-            setDeleteExternalResource,
-            clusters,
-            navigate,
-            t
-          )}
+          rowActions={rowActions}
         />
       )
     },
-    [searchDefinitions, currentQuery, setDeleteResource, setDeleteExternalResource, clusters, navigate, t]
+    [rowActions, searchDefinitions]
   )
 
   return (
