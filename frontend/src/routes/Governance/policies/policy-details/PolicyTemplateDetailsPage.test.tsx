@@ -499,7 +499,9 @@ describe('Policy Template Details Page', () => {
         },
         spec: {
           enforcementAction: 'warn',
-          match: { kinds: [{ apiGroups: [''], kinds: ['Namespace'] }] },
+          match: {
+            kinds: [{ apiGroups: ['networking.k8s.io', 'my-system.sh'], kinds: ['app'] }, { kinds: ['Pod'] }],
+          },
           parameters: { labels: ['gatekeeper'] },
         },
         status: {
@@ -579,6 +581,10 @@ describe('Policy Template Details Page', () => {
     await waitForText('K8sRequiredLabels')
 
     await waitForText('View YAML', true)
+
+    await waitForText('networking.k8s.io/app')
+    await waitForText('my-system.sh/app')
+    await waitForText('Pod')
 
     const viewYamlLinks = screen.getAllByText('View YAML')
     expect(viewYamlLinks[0].getAttribute('href')).toEqual(

@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Grid, GridItem, PageSection, Title } from '@patternfly/react-core'
+import { Badge, Grid, GridItem, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-
 import {
   AcmDescriptionList,
   AcmEmptyState,
@@ -16,7 +15,12 @@ import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
+import { Grid as MuiGrid } from '@mui/material'
 
+interface IKinds {
+  apiGroups: string[]
+  kinds: string[]
+}
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
   const urlParams = useParams()
@@ -63,32 +67,46 @@ export function PolicyTemplateDetails() {
 
       return
     }
-
     setRelatedObjects([])
   }, [apiGroup, clusterName, template])
 
-  const descriptionItems = [
-    {
-      key: t('Name'),
-      value: name,
-    },
-    {
-      key: t('Engine'),
-      value: kind ? getEngineWithSvg(apiGroup) : '-',
-    },
-    {
-      key: t('Cluster'),
-      value: template ? clusterName : '-',
-    },
-    {
-      key: t('Kind'),
-      value: kind ?? '-',
-    },
-    {
-      key: t('API groups'),
-      value: template?.apiVersion ?? '-',
-    },
-  ]
+  const descriptionItems = useMemo(() => {
+    const cols = [
+      {
+        key: t('Name'),
+        value: name,
+      },
+      {
+        key: t('Engine'),
+        value: kind ? getEngineWithSvg(apiGroup) : '-',
+      },
+      {
+        key: t('Cluster'),
+        value: template ? clusterName : '-',
+      },
+      {
+        key: t('Kind'),
+        value: kind ?? '-',
+      },
+      {
+        key: t('API groups'),
+        value: template?.apiVersion ?? '-',
+      },
+    ]
+
+    if (template?.spec?.match?.kinds) {
+      return [
+        ...cols.slice(0, 2),
+        {
+          key: t('Matches'),
+          value: matchesBadges(template?.spec?.match?.kinds as IKinds[]),
+        },
+        ...cols.slice(2),
+      ]
+    }
+
+    return cols
+  }, [t, name, kind, apiGroup, template, clusterName])
 
   const relatedResourceColumns = useMemo(
     () => [
@@ -263,5 +281,35 @@ export function PolicyTemplateDetails() {
         </AcmTablePaginationContextProvider>
       </PageSection>
     </div>
+  )
+}
+
+const matchesBadges = (kinds: IKinds[]): ReactNode => {
+  return (
+    <MuiGrid container style={{ maxWidth: '500px', gap: 8 }}>
+      {kinds.map((kinds) => {
+        return kinds.kinds.map((k) => {
+          if (!kinds.apiGroups || kinds.apiGroups.length == 0) {
+            return (
+              <div key={k}>
+                <Badge isRead key={k}>
+                  {k}
+                </Badge>
+              </div>
+            )
+          }
+
+          return kinds.apiGroups.map((apigroup) => {
+            return (
+              <div key={`${apigroup}/${k}`}>
+                <Badge isRead key={`${apigroup}/${k}`}>
+                  {apigroup ? `${apigroup}/${k}` : k}
+                </Badge>
+              </div>
+            )
+          })
+        })
+      })}
+    </MuiGrid>
   )
 }
