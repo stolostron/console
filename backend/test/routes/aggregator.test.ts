@@ -73,7 +73,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(10)
+    await aggregatSearchAPIApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
@@ -354,7 +354,7 @@ function setupNocks() {
   // SYSTEM APPS
   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
     '/searchapi/graphql',
-    `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]}],"limit":100}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
   )
   nocked.reply(200, {})
   //
