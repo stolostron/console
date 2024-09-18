@@ -28,36 +28,17 @@ Array [
 
 exports[`Correctly returns getAppTypeSummary 1`] = `
 Object {
+  "loading": false,
   "mainSection": Object {
     "description": "total applications",
     "link": "/multicloud/applications",
-    "title": "7",
+    "title": "123",
   },
   "statusSection": Array [
     Object {
-      "count": 2,
-      "link": "/multicloud/applications?type=appset",
-      "title": "Application set",
-    },
-    Object {
-      "count": 2,
+      "count": 4,
       "link": "/multicloud/applications?type=argo",
       "title": "Argo CD",
-    },
-    Object {
-      "count": 1,
-      "link": "/multicloud/applications?type=flux",
-      "title": "Flux",
-    },
-    Object {
-      "count": 1,
-      "link": "/multicloud/applications?type=openshift,openshift-default",
-      "title": "OpenShift",
-    },
-    Object {
-      "count": 1,
-      "link": "/multicloud/applications?type=subscription",
-      "title": "Subscription",
     },
   ],
 }

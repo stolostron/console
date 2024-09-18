@@ -9,7 +9,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Tooltip } from '@patternfly/react-core'
+import { Label, Tooltip } from '@patternfly/react-core'
 
 export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyItem[]): ViolationSummary => {
   let compliant = 0
@@ -17,8 +17,16 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   let pending = 0
   let unknown = 0
   for (const policy of discoveredPolicyItems) {
-    if (policy.disabled || !policy?.compliant) continue
-    switch (policy?.compliant?.toLowerCase()) {
+    let compliance: string
+
+    if (policy.apigroup === 'constraints.gatekeeper.sh') {
+      compliance = getConstraintCompliance(policy?.totalViolations)
+    } else {
+      compliance = policy?.compliant?.toLowerCase() ?? ''
+    }
+
+    if (policy.disabled || !compliance) continue
+    switch (compliance) {
       case 'compliant':
         compliant++
         break
@@ -34,6 +42,18 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
     }
   }
   return { noncompliant, compliant, pending, unknown }
+}
+
+export const getConstraintCompliance = (totalViolations?: number): string => {
+  totalViolations = totalViolations ?? -1
+
+  if (totalViolations === 0) {
+    return 'compliant'
+  } else if (totalViolations > 0) {
+    return 'noncompliant'
+  }
+
+  return '-'
 }
 
 export const byClusterCols = (
@@ -55,7 +75,7 @@ export const byClusterCols = (
             kind: item.kind,
             // discovered policy name
             templateName: item.name,
-            templateNamespace: item.namespace,
+            templateNamespace: item.namespace ?? null,
           })}
         >
           {item.cluster}
@@ -70,11 +90,11 @@ export const byClusterCols = (
   ...(moreCols ?? []),
   {
     header: t('Response action'),
-    cell: 'remediationAction',
-    sort: 'remediationAction',
-    search: 'remediationAction',
+    cell: 'responseAction',
+    sort: 'responseAction',
+    search: 'responseAction',
     id: 'responseAction',
-    exportContent: (item: DiscoveredPolicyItem) => item.remediationAction,
+    exportContent: (item: DiscoveredPolicyItem) => item.responseAction,
   },
   {
     header: t('Severity'),
@@ -86,8 +106,16 @@ export const byClusterCols = (
   },
   {
     header: t('Violations'),
+    tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
     cell: (item: DiscoveredPolicyItem) => {
-      const compliant = item?.compliant?.toLowerCase()
+      let compliant: string
+
+      if (item.apigroup === 'constraints.gatekeeper.sh') {
+        compliant = getConstraintCompliance(item?.totalViolations)
+      } else {
+        compliant = item?.compliant?.toLowerCase() ?? ''
+      }
+
       switch (compliant) {
         case 'compliant':
           return (
@@ -98,7 +126,18 @@ export const byClusterCols = (
         case 'noncompliant':
           return (
             <div>
-              <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+              {item?.totalViolations ? (
+                <>
+                  <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
+                    {item.totalViolations}
+                  </Label>
+                  &nbsp;{t('Violation', { count: item.totalViolations })}
+                </>
+              ) : (
+                <>
+                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                </>
+              )}
             </div>
           )
         case 'pending':
@@ -117,7 +156,19 @@ export const byClusterCols = (
     },
     sort: 'compliant',
     id: 'violations',
-    exportContent: (item: DiscoveredPolicyItem) => item.compliant || '-',
+    exportContent: (item: DiscoveredPolicyItem) => {
+      if (item.apigroup === 'constraints.gatekeeper.sh') {
+        const compliant = getConstraintCompliance(item?.totalViolations)
+
+        if (compliant === 'noncompliant') {
+          return compliant + ' (' + item.totalViolations + ')'
+        }
+
+        return compliant ?? '-'
+      }
+
+      return item?.compliant?.toLowerCase() ?? '-'
+    },
   },
   {
     header: t('Source'),

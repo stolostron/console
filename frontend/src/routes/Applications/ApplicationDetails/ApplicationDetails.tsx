@@ -155,7 +155,7 @@ export default function ApplicationDetailsPage() {
   const isAppSet = applicationData?.application?.isAppSet
   const isOCPApp = applicationData?.application?.isOCPApp
   const isFluxApp = applicationData?.application?.isFluxApp
-  const clusters = useAllClusters(true, true)
+  const clusters = useAllClusters(true)
 
   let modalWarnings: string
 

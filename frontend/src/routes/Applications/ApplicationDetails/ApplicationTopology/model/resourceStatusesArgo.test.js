@@ -21,6 +21,10 @@ const mockSearchQuery = {
             property: 'namespace',
             values: ['feng-argo'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
+          },
         ],
         relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
       },
@@ -113,6 +117,10 @@ const mockSearchQuery4 = {
             property: 'namespace',
             values: ['feng-multi-argo'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
+          },
         ],
         relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
       },
@@ -126,6 +134,10 @@ const mockSearchQuery4 = {
           {
             property: 'name',
             values: ['feng-namespace'],
+          },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
           },
         ],
         relatedKinds: [],
@@ -141,6 +153,10 @@ const mockSearchQuery4 = {
             property: 'name',
             values: ['cars.feng.example.com'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
+          },
         ],
         relatedKinds: [],
       },
@@ -154,6 +170,10 @@ const mockSearchQuery4 = {
           {
             property: 'name',
             values: ['feng-consolelink'],
+          },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
           },
         ],
         relatedKinds: [],
@@ -169,6 +189,10 @@ const mockSearchQuery4 = {
             property: 'name',
             values: ['feng-project'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
+          },
         ],
         relatedKinds: [],
       },
@@ -183,6 +207,10 @@ const mockSearchQuery4 = {
             property: 'name',
             values: ['feng-clusterrole'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
+          },
         ],
         relatedKinds: [],
       },
@@ -196,6 +224,10 @@ const mockSearchQuery4 = {
           {
             property: 'name',
             values: ['feng-clusterrolebinding'],
+          },
+          {
+            property: 'cluster',
+            values: ['local-cluster'],
           },
         ],
         relatedKinds: [],

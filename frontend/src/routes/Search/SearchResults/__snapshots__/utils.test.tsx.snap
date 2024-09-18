@@ -1,5 +1,71 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Correctly return VirtualMachine with actions disabled 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "id": "edit",
+    "title": "Edit VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-related",
+    "title": "View related resources",
+  },
+  Object {
+    "click": [Function],
+    "id": "delete",
+    "title": "Delete VirtualMachine",
+  },
+]
+`;
+
+exports[`Correctly return VirtualMachine with actions enabled 1`] = `
+Array [
+  Object {
+    "click": [Function],
+    "id": "startVM",
+    "title": "Start VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "stopVM",
+    "title": "Stop VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "restartVM",
+    "title": "Restart VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "pauseVM",
+    "title": "Pause VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "unpauseVM",
+    "title": "Unpause VirtualMachine",
+  },
+  Object {
+    "addSeparator": true,
+    "click": [Function],
+    "id": "edit",
+    "title": "Edit VirtualMachine",
+  },
+  Object {
+    "click": [Function],
+    "id": "view-related",
+    "title": "View related resources",
+  },
+  Object {
+    "click": [Function],
+    "id": "delete",
+    "title": "Delete VirtualMachine",
+  },
+]
+`;
+
 exports[`Correctly return empty row Actions for Application 1`] = `
 Array [
   Object {

@@ -15,6 +15,7 @@ describe('useFetchPolicies custom hook', () => {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
           kind: 'ConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
           severity: 'critical',
           responseAction: 'inform/enforce',
           policies: [
@@ -31,7 +32,7 @@ describe('useFetchPolicies custom hook', () => {
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'Compliant',
-              remediationAction: 'enforce',
+              responseAction: 'enforce',
               severity: 'critical',
               disabled: false,
               _isExternal: true,
@@ -51,7 +52,7 @@ describe('useFetchPolicies custom hook', () => {
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'NomCompliant',
-              remediationAction: 'inform',
+              responseAction: 'inform',
               severity: 'critical',
               disabled: false,
               _isExternal: true,
@@ -63,6 +64,43 @@ describe('useFetchPolicies custom hook', () => {
             type: 'Policy',
             parentName: 'p-name',
             parentNs: 'p-ns',
+          },
+        },
+        {
+          id: 'ns-must-have-gkK8sRequiredLabelsconstraints.gatekeeper.sh',
+          apigroup: 'constraints.gatekeeper.sh',
+          name: 'ns-must-have-gk',
+          kind: 'K8sRequiredLabels',
+          severity: 'high',
+          responseAction: 'dryrun',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/9843c09d-2ebb-4fe8-8397-49f11b3b55a9',
+              annotation: 'policy.open-cluster-management.io/severity=high',
+              apigroup: 'constraints.gatekeeper.sh',
+              apiversion: 'v1beta1',
+              cluster: 'local-cluster',
+              label: '',
+              created: '2024-09-13T13:05:13Z',
+              kind: 'K8sRequiredLabels',
+              kind_plural: 'k8srequiredlabels',
+              name: 'ns-must-have-gk',
+              totalViolations: 82,
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              severity: 'high',
+              responseAction: 'dryrun',
+            },
+          ],
+          source: {
+            type: 'Local',
+            parentNs: '',
+            parentName: '',
           },
         },
       ],
@@ -77,21 +115,27 @@ describe('useFetchPolicies custom hook', () => {
 
     await waitForText('Name')
     await waitForText('check-policy-reports')
+    await waitForText('ns-must-have-gk')
 
     await waitForText('Engine')
     await waitForText('Open Cluster Management')
+    await waitForText('Gatekeeper')
 
     await waitForText('Kind')
     await waitForText('ConfigurationPolicy')
+    await waitForText('K8sRequiredLabels')
 
     await waitForText('Response action')
     await waitForText('inform/enforce')
+    await waitForText('dryrun')
 
     await waitForText('Severity')
     await waitForText('Critical')
+    await waitForText('High')
 
     await waitForText('Source')
     await waitForText('p-name')
+    await waitForText('Local')
 
     // tooltip test
     fireEvent.mouseEnter(screen.getByText('p-name'))
@@ -141,6 +185,7 @@ describe('useFetchPolicies custom hook', () => {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
           kind: 'ConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
           severity: 'unknown',
           responseAction: 'inform/enforce',
           policies: [
@@ -157,7 +202,7 @@ describe('useFetchPolicies custom hook', () => {
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'Compliant',
-              remediationAction: 'enforce',
+              responseAction: 'enforce',
               severity: '',
               disabled: false,
               _isExternal: true,
@@ -177,7 +222,7 @@ describe('useFetchPolicies custom hook', () => {
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'NomCompliant',
-              remediationAction: 'inform',
+              responseAction: 'inform',
               severity: '',
               disabled: false,
               _isExternal: true,
@@ -207,6 +252,7 @@ describe('useFetchPolicies custom hook', () => {
     const data: useFetchPolicies.DiscoverdPolicyTableItem[] = [
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports',
         kind: 'ConfigurationPolicy',
         severity: 'critical',
@@ -220,6 +266,7 @@ describe('useFetchPolicies custom hook', () => {
       },
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports',
         kind: 'ConfigurationPolicy',
         severity: 'critical',
@@ -233,6 +280,7 @@ describe('useFetchPolicies custom hook', () => {
       },
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports2',
         kind: 'ConfigurationPolicy2',
         severity: 'critical',
@@ -246,6 +294,7 @@ describe('useFetchPolicies custom hook', () => {
       },
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports2',
         kind: 'ConfigurationPolicy2',
         severity: 'critical',
@@ -259,6 +308,7 @@ describe('useFetchPolicies custom hook', () => {
       },
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports2',
         kind: 'ConfigurationPolicy2',
         severity: 'critical',
@@ -272,6 +322,7 @@ describe('useFetchPolicies custom hook', () => {
       },
       {
         id: 'check-policy-reportsConfigurationPolicy',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports2',
         kind: 'ConfigurationPolicy2',
         severity: 'critical',

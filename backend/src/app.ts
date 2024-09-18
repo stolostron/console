@@ -28,6 +28,7 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
+import { virtualMachineProxy } from './routes/virtualMachineProxy'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -68,6 +69,8 @@ router.all('/metrics', metrics)
 router.get('/globalhub', globalHub)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
+router.put('/virtualmachines/*', virtualMachineProxy)
+router.put('/virtualmachineinstances/*', virtualMachineProxy)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

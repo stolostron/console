@@ -8,7 +8,6 @@
 
 #webpack-dev-server-client-overlay,
 #react-refresh-overlay {
-  overflow: scroll;
   height: 20% !important;
   top: 80% !important;
   position: absolute !important;

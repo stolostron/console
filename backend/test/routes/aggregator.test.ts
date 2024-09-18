@@ -62,7 +62,43 @@ describe(`aggregator Route`, function () {
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseFiltered))
   })
+  it(`should return application  counts`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+
+    // initialize events
+    initResourceCache(resourceCache)
+
+    // setup nocks
+    setupNocks()
+
+    // fill in application cache from resourceCache and search api mocks
+    aggregateKubeApplications()
+    await aggregatSearchAPIApplications(10)
+
+    // FILTERED
+    const res = await request('POST', '/aggregate/statuses', {
+      clusters: ['local-cluster'],
+    })
+    expect(res.statusCode).toEqual(200)
+    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
+  })
 })
+
+const responseCount = {
+  itemCount: '3',
+  filterCounts: {
+    type: {
+      subscription: 1,
+      appset: 1,
+      openshift: 1,
+    },
+    cluster: {
+      'local-cluster': 3,
+    },
+  },
+  loading: false,
+}
+
 const responseNoFilter = {
   page: 1,
   items: [
@@ -143,6 +179,8 @@ const responseNoFilter = {
       },
       status: {
         cluster: 'feng-managed',
+        health: {},
+        sync: {},
       },
     },
     {
@@ -172,22 +210,7 @@ const responseNoFilter = {
       },
     },
   ],
-  itemCount: 7,
-  filterCounts: {
-    type: {
-      subscription: 1,
-      appset: 1,
-      argo: 2,
-      openshift: 2,
-      flux: 1,
-    },
-    cluster: {
-      'local-cluster': 3,
-      unknown: 1,
-      'feng-managed': 1,
-      'test-cluster': 2,
-    },
-  },
+  processedItemCount: 7,
   emptyResult: false,
   isPreProcessed: true,
   request: {
@@ -217,22 +240,7 @@ const responseFiltered = {
       },
     },
   ],
-  itemCount: 1,
-  filterCounts: {
-    type: {
-      subscription: 1,
-      appset: 1,
-      argo: 2,
-      openshift: 2,
-      flux: 1,
-    },
-    cluster: {
-      'local-cluster': 3,
-      unknown: 1,
-      'feng-managed': 1,
-      'test-cluster': 2,
-    },
-  },
+  processedItemCount: 1,
   emptyResult: false,
   isPreProcessed: true,
   request: {
