@@ -137,6 +137,7 @@ export interface Settings {
   SAVED_SEARCH_LIMIT?: string
   SEARCH_RESULT_LIMIT?: string
   SEARCH_AUTOCOMPLETE_LIMIT?: string
+  VIRTUAL_MACHINE_ACTIONS?: 'enabled' | 'disabled'
 
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
@@ -198,4 +199,9 @@ export function useAppArgoSearchResultLimit() {
 export function useAppOCPSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+}
+
+export function useVMActionsEnabled() {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => settings.VIRTUAL_MACHINE_ACTIONS ?? 'disabled', [settings])
 }

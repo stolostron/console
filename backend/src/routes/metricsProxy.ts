@@ -8,7 +8,7 @@ import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getCACertificate } from '../lib/serviceAccountToken'
 import { getToken } from '../lib/token'
-import { IResource } from '../resources/resource'
+import { Route } from '../resources/route'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -25,26 +25,6 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_ETAG,
 ]
 
-interface Route extends IResource {
-  spec: {
-    host?: string
-    path?: string
-    to?: {
-      kind?: 'Service'
-      name?: string
-      weight?: number
-    }
-    port?: {
-      targetPort?: string
-    }
-    tls?: {
-      termination?: 'edge' | 'passthrough' | 'reencrypt'
-      insecureEdgeTerminationPolicy?: 'Allow' | 'Disable' | 'Redirect'
-    }
-    wildcardPolicy?: 'Subdomain' | 'None'
-  }
-}
-
 export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
@@ -55,7 +35,7 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
   )
     .then((response: Route) => {
       const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec && response.spec?.host ? `${scheme}://${response.spec.host}` : ''
+      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
     })
     .catch((err: Error): undefined => {
       logger.error({ msg: 'Error getting Prometheus Route', error: err.message })
@@ -76,7 +56,7 @@ export async function observabilityProxy(req: Http2ServerRequest, res: Http2Serv
   )
     .then((response: Route) => {
       const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec && response.spec?.host ? `${scheme}://${response.spec.host}` : ''
+      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
     })
     .catch((err: Error): undefined => {
       logger.error({ msg: 'Error getting Observability Route', error: err.message })

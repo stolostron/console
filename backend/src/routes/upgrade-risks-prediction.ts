@@ -1,26 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
-
-const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
+import { Secret } from '../resources/secret'
 interface Credential {
   auths: {
     'cloud.openshift.com': {
       auth: string
     }
-  }
-}
-
-export interface Secret extends IResource {
-  data?: {
-    [key: string]: string
   }
 }
 
