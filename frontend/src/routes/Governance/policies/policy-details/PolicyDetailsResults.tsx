@@ -48,6 +48,15 @@ function getTemplateDetailURL(item: ResultsTableData) {
   })
 }
 
+function templateExists(msg: string): boolean {
+  return !(
+    (msg.includes('template-error;') && msg.includes('{{hub')) ||
+    msg.includes('Failed to create policy template') ||
+    msg.includes('check if you have CRD deployed') ||
+    msg.includes('Dependencies were not satisfied')
+  )
+}
+
 export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
@@ -184,6 +193,10 @@ export default function PolicyDetailsResults() {
         header: t('Template'),
         sort: 'templateName',
         cell: (item: ResultsTableData) => {
+          if (!templateExists(item?.message ?? '')) {
+            return item.templateName
+          }
+
           const templateDetailURL = getTemplateDetailURL(item)
           return canCreatePolicy ? (
             templateDetailURL ? (
@@ -228,15 +241,10 @@ export default function PolicyDetailsResults() {
                 <span className="link-disabled">{`- ${t('View details')}`}</span>
               </Tooltip>
             )
-            const templateExists = !(
-              prunedMessage.includes('Failed to create policy template') ||
-              prunedMessage.includes('check if you have CRD deployed') ||
-              prunedMessage.includes('Dependencies were not satisfied')
-            )
             return (
               <div>
                 {/* message may need to be limited to 300 chars? */}
-                {prunedMessage} {templateExists && templateLink}
+                {prunedMessage} {templateExists(prunedMessage) && templateLink}
               </div>
             )
           }
