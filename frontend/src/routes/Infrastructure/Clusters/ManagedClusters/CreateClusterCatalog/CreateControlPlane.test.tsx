@@ -35,7 +35,7 @@ describe('CreateControlPlane', () => {
         initializeState={(snapshot) => {
           snapshot.set(infraEnvironmentsState, infraEnvsMock || [])
           snapshot.set(agentsState, agentsMock || [])
-          snapshot.set(managedClusterAddonsState, [mockManagedClusterAddOn])
+          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
           snapshot.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])

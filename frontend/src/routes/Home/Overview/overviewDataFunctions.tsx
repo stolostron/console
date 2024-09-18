@@ -19,11 +19,11 @@ import {
 } from '../../../resources'
 import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import { getClusterList } from '../../Applications/helpers/resource-helper'
-import { getApplicationType } from '../../Applications/Overview'
 import {
   CriticalRiskIcon,
   ImportantRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
+import { IResultStatuses } from '../../../lib/useAggregates'
 
 export function getFilteredClusters(allClusters: Cluster[], selectedClusterLabels: Record<string, string[]>) {
   const selectedLabelValues: number = Object.keys(selectedClusterLabels).reduce(
@@ -145,65 +145,31 @@ export function getNodeSummary(filteredClusters: Cluster[], t: TFunction<string,
   }
 }
 
-function getApps(
-  applications: Application[],
-  applicationSets: ApplicationSet[],
-  argoApps: ArgoApplication[],
-  discoveredApps: ArgoApplication[],
-  ocpAppResources: any[],
-  filteredClusterNames: string[],
-  allClusters: Cluster[],
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[]
-) {
-  const apps = [...applications, ...applicationSets, ...argoApps, ...discoveredApps, ...ocpAppResources]
-  // If no cluster labels are selected we default to the filteredClusterNames containing all cluster names
-  if (allClusters.length > filteredClusterNames.length) {
-    // filter apps by clusters from label selection.
-    return apps.filter((app) => {
-      const localCluster = allClusters.find((cls) => cls.name === 'local-cluster')
-      const clusterList = getClusterList(app, argoApps, placementDecisions, subscriptions, localCluster, allClusters)
+export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction<string, undefined>) {
+  const { itemCount = 0, filterCounts = { type: {} }, loading } = requestedCounts || {}
 
-      return filteredClusterNames.some((value) => {
-        return clusterList.includes(value)
-      })
-    })
-  }
-  return apps
-}
-
-export function getAppTypeSummary(
-  applications: Application[],
-  applicationSets: ApplicationSet[],
-  argoApps: ArgoApplication[],
-  discoveredArgoApps: ArgoApplication[],
-  ocpAppResources: any[],
-  filteredClusterNames: string[],
-  allClusters: Cluster[],
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[],
-  t: TFunction<string, undefined>
-) {
-  const appTypes = getApps(
-    applications,
-    applicationSets,
-    argoApps,
-    discoveredArgoApps,
-    ocpAppResources,
-    filteredClusterNames,
-    allClusters,
-    placementDecisions,
-    subscriptions
-  ).map((app) => getApplicationType(app, t))
-  const typeTotals: Record<string, number> = {}
-  appTypes.forEach((app) => {
-    if (typeof typeTotals[app] === 'undefined') {
-      typeTotals[app] = 1
-    } else {
-      typeTotals[app] += 1
+  const getAppTypeLabel = (type: string) => {
+    switch (type) {
+      case 'openshift':
+        return 'OpenShift'
+      case 'flux':
+        return t('Flux')
+      case 'subscription':
+        return t('Subscription')
+      case 'argo':
+        return t('Argo CD')
+      case 'appset':
+        return t('Application set')
+      case 'openshift-default':
+        return t('System')
+      default:
+        return t('Application')
     }
+  }
+  const typeTotals: Record<string, number> = {}
+  Object.keys(filterCounts.type).forEach((type) => {
+    typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
   })
-
   // sort alphabetically
   const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
 
@@ -229,7 +195,7 @@ export function getAppTypeSummary(
 
   return {
     mainSection: {
-      title: `${appTypes.length}`,
+      title: `${itemCount}`,
       description: t('total applications'),
       link: NavigationPath.applications,
     },
@@ -238,6 +204,7 @@ export function getAppTypeSummary(
       count: typeTotals[type],
       link: getAppTypeLink(type),
     })),
+    loading,
   }
 }
 

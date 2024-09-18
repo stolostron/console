@@ -16,7 +16,6 @@ import { get } from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
-import { GetOpenShiftAppResourceMaps } from '../../components/GetDiscoveredOCPApps'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -37,10 +36,8 @@ import {
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
   Channel,
-  Cluster,
   DiscoveredArgoApplicationDefinition,
   getApiVersionResourceGroup,
-  HelmRelease,
   IResource,
   OCPAppResource,
   Subscription,
@@ -56,7 +53,6 @@ import {
   IAcmTableColumn,
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { getArgoDestinationCluster } from './ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
@@ -92,13 +88,6 @@ const fluxAnnotations = {
   git: ['kustomize.toolkit.fluxcd.io/name', 'kustomize.toolkit.fluxcd.io/namespace'],
 }
 
-const labelArr: string[] = [
-  'kustomize.toolkit.fluxcd.io/name=',
-  'helm.toolkit.fluxcd.io/name=',
-  'app=',
-  'app.kubernetes.io/part-of=',
-]
-
 const TABLE_ID = 'applicationTable'
 
 const filterId = 'type'
@@ -118,6 +107,51 @@ function isFluxApplication(label: string) {
     }
   })
   return isFlux
+}
+
+// Get app name with link and search highlighting
+export function getApplicationName(application: IApplicationResource, search: string) {
+  let clusterQuery = ''
+  let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
+  if (
+    (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
+    (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
+  ) {
+    const cluster = application?.status?.cluster
+    clusterQuery = cluster ? `&cluster=${cluster}` : ''
+  }
+  if (application.apiVersion !== ApplicationApiVersion && application.apiVersion !== ArgoApplicationApiVersion) {
+    const labels = (application as OCPAppResource).label
+    if (
+      labels.includes(`${fluxAnnotations.git[0]}=`) ||
+      labels.includes(`${fluxAnnotations.git[1]}=`) ||
+      labels.includes(`${fluxAnnotations.helm[0]}=`) ||
+      labels.includes(`${fluxAnnotations.helm[1]}=`)
+    ) {
+      apiVersion = 'flux'
+    } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
+      apiVersion = 'ocp'
+    }
+  }
+  return (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <Link
+        to={{
+          pathname: generatePath(NavigationPath.applicationDetails, {
+            namespace: application.metadata?.namespace!,
+            name: application.metadata?.name!,
+          }),
+          search: `?apiVersion=${apiVersion}${clusterQuery}`,
+        }}
+      >
+        <HighlightSearchText text={application.metadata?.name} searchText={search} />
+      </Link>
+    </span>
+  )
+}
+
+export function getApplicationNamespace(resource: IApplicationResource, search: string) {
+  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
 }
 
 // Map resource kind to type column
@@ -278,123 +312,6 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
   }
 }
 
-export function parseArgoApplications(
-  argoApplications: ArgoApplication[],
-  setArgoApplicationsHashSet: (value: React.SetStateAction<Set<string>>) => void,
-  managedClusters: Cluster[]
-) {
-  return argoApplications.filter((argoApp) => {
-    const resources = argoApp.status ? argoApp.status.resources : undefined
-    const definedNamespace = get(resources, '[0].namespace')
-
-    // cache Argo app signature for filtering OCP apps later
-    setArgoApplicationsHashSet(
-      (prev) =>
-        new Set(
-          prev.add(
-            `${argoApp.metadata.name}-${
-              definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
-            }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}`
-          )
-        )
-    )
-    const isChildOfAppset =
-      argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-    if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
-      return true
-    }
-    return false
-  })
-}
-
-export function parseDiscoveredApplications(
-  discoveredApplications: ArgoApplication[],
-  setArgoApplicationsHashSet: (value: React.SetStateAction<Set<string>>) => void
-) {
-  const resultingTableItems: ArgoApplication[] = []
-
-  discoveredApplications.forEach((remoteArgoApp: any) => {
-    setArgoApplicationsHashSet(
-      (prev) =>
-        new Set(prev.add(`${remoteArgoApp.name}-${remoteArgoApp.destinationNamespace}-${remoteArgoApp.cluster}`))
-    )
-    if (!remoteArgoApp._hostingResource) {
-      // Skip apps created by Argo pull model
-      resultingTableItems.push({
-        apiVersion: ArgoApplicationApiVersion,
-        kind: ArgoApplicationKind,
-        metadata: {
-          name: remoteArgoApp.name,
-          namespace: remoteArgoApp.namespace,
-          creationTimestamp: remoteArgoApp.created,
-        },
-        spec: {
-          destination: {
-            namespace: remoteArgoApp.destinationNamespace,
-            name: remoteArgoApp.destinationName,
-            server: remoteArgoApp.destinationCluster || remoteArgoApp.destinationServer,
-          },
-          source: {
-            path: remoteArgoApp.path,
-            repoURL: remoteArgoApp.repoURL,
-            targetRevision: remoteArgoApp.targetRevision,
-            chart: remoteArgoApp.chart,
-          },
-        },
-        status: {
-          cluster: remoteArgoApp.cluster,
-        },
-      } as ArgoApplication)
-    }
-  })
-
-  return resultingTableItems
-}
-
-export function parseOcpAppResources(
-  discoveredOCPAppResources: OCPAppResource[],
-  helmReleases: HelmRelease[],
-  argoApplicationsHashSet: Set<string>
-) {
-  const openShiftAppResourceMaps = GetOpenShiftAppResourceMaps(
-    discoveredOCPAppResources,
-    helmReleases,
-    argoApplicationsHashSet
-  )
-  const transformedData: any[] = []
-
-  Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
-    let labelIdx
-    let i
-    for (i = 0; i < labelArr.length; i++) {
-      labelIdx = value.label?.indexOf(labelArr[i])
-      if (labelIdx > -1) {
-        break
-      }
-    }
-    labelIdx += labelArr[i].length
-
-    const semicolon = value.label?.indexOf(';', labelIdx)
-    const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
-    const resourceName = value.name
-    transformedData.push({
-      apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
-      kind: value.kind,
-      label: value.label,
-      metadata: {
-        name: appLabel,
-        namespace: value.namespace,
-        creationTimestamp: value.created,
-      },
-      status: {
-        cluster: value.cluster,
-        resourceName,
-      },
-    } as OCPAppResource)
-  })
-  return transformedData
-}
-
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
@@ -421,13 +338,13 @@ export default function ApplicationsOverview() {
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
 
-  const managedClusters = useAllClusters(true, true)
+  const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
 
-  const [requestedView, setRequesedView] = useState<IRequestListView>()
+  const [requestedView, setRequestedView] = useState<IRequestListView>()
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -513,6 +430,8 @@ export default function ApplicationsOverview() {
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
+  const resultCounts = useAggregate(SupportedAggregate.statuses, {})
+  resultCounts.itemCount = resultView.processedItemCount
   const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
@@ -550,48 +469,7 @@ export default function ApplicationsOverview() {
         sort: 'metadata.name',
         search: 'metadata.name',
         transforms: [cellWidth(20)],
-        cell: (application, search) => {
-          let clusterQuery = ''
-          let apiVersion = `${application.kind.toLowerCase()}.${application.apiVersion?.split('/')[0]}`
-          if (
-            (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
-            (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
-          ) {
-            const cluster = application?.status?.cluster
-            clusterQuery = cluster ? `&cluster=${cluster}` : ''
-          }
-          if (
-            application.apiVersion !== ApplicationApiVersion &&
-            application.apiVersion !== ArgoApplicationApiVersion
-          ) {
-            const labels = (application as OCPAppResource).label
-            if (
-              labels.includes(`${fluxAnnotations.git[0]}=`) ||
-              labels.includes(`${fluxAnnotations.git[1]}=`) ||
-              labels.includes(`${fluxAnnotations.helm[0]}=`) ||
-              labels.includes(`${fluxAnnotations.helm[1]}=`)
-            ) {
-              apiVersion = 'flux'
-            } else if (labels.includes(`${appAnnotationStr}=`) || labels.includes(partOfAnnotationStr)) {
-              apiVersion = 'ocp'
-            }
-          }
-          return (
-            <span style={{ whiteSpace: 'nowrap' }}>
-              <Link
-                to={{
-                  pathname: generatePath(NavigationPath.applicationDetails, {
-                    namespace: application.metadata?.namespace!,
-                    name: application.metadata?.name!,
-                  }),
-                  search: `?apiVersion=${apiVersion}${clusterQuery}`,
-                }}
-              >
-                <HighlightSearchText text={application.metadata?.name} searchText={search} />
-              </Link>
-            </span>
-          )
-        },
+        cell: (resource, search) => getApplicationName(resource, search),
         exportContent: (application) => {
           return application.metadata?.name
         },
@@ -630,9 +508,7 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Namespace'),
-        cell: (resource, search) => {
-          return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
-        },
+        cell: (resource, search) => getApplicationNamespace(resource, search),
         sort: 'transformed.namespace',
         search: 'transformed.namespace',
         tooltip: t(
@@ -1233,8 +1109,9 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
-        setRequestView={setRequesedView}
+        setRequestView={setRequestedView}
         resultView={resultView}
+        resultCounts={resultCounts}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}
         showExportButton

@@ -165,308 +165,318 @@ export const managedClusters: ManagedCluster[] = [
     },
   },
 ]
-
-export const mockManagedClusterAddons: ManagedClusterAddOn[] = [
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:59:17Z',
-      name: 'application-manager',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+export const mockManagedClusterAddons: Map<string, ManagedClusterAddOn[]> = new Map([
+  [
+    'local-cluster',
+    [
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
           name: 'application-manager',
-          uid: 'fe141d28-3335-43be-b725-2d4505e91f01',
+          namespace: 'managed-cluster-1',
         },
-      ],
-      resourceVersion: '1734162',
-      uid: 'f8cf8487-1ac2-49b2-82cf-4f9343ae8782',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:59:17Z',
-      name: 'cert-policy-controller',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
+        },
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: undefined,
+              message: 'application-manager add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Available',
+            },
+          ],
+          addOnMeta: {
+            displayName: '',
+            description: '',
+          },
+          addOnConfiguration: {
+            crdName: '',
+            crName: '',
+          },
+        },
+      },
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          creationTimestamp: '2023-02-08T14:59:17Z',
           name: 'cert-policy-controller',
-          uid: '205ac0e8-20db-4a1f-af81-d24027634a14',
+          namespace: 'local-cluster',
+          ownerReferences: [
+            {
+              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ClusterManagementAddOn',
+              name: 'cert-policy-controller',
+              uid: '205ac0e8-20db-4a1f-af81-d24027634a14',
+            },
+          ],
+          resourceVersion: '1739654',
+          uid: '963d1d78-5745-4e20-8b9a-96f8b762bdec',
         },
-      ],
-      resourceVersion: '1739654',
-      uid: '963d1d78-5745-4e20-8b9a-96f8b762bdec',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
         },
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
+        status: {
+          addOnConfiguration: { crdName: '', crName: '' },
+          addOnMeta: { displayName: '', description: '' },
+          conditions: [
+            {
+              message: 'manifests of addon are applied successfully',
+              reason: 'AddonManifestApplied',
+              status: 'True',
+              type: 'ManifestApplied',
+            },
+            {
+              message: 'Registration of the addon agent is configured',
+              reason: 'RegistrationConfigured',
+              status: 'True',
+              type: 'RegistrationApplied',
+            },
+            {
+              message:
+                'client certificate rotated starting from 2023-02-09 13:08:09 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
+              reason: 'ClientCertificateUpdated',
+              status: 'True',
+              type: 'ClusterCertificateRotated',
+            },
+            {
+              message: 'cert-policy-controller add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Degraded',
+            },
+          ],
         },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 13:08:09 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'cert-policy-controller add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Degraded',
-        },
-      ],
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:58:32Z',
-      name: 'cluster-proxy',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+      },
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          creationTimestamp: '2023-02-08T14:58:32Z',
           name: 'cluster-proxy',
-          uid: 'a1b690ce-c81d-4a87-af0a-8cc214d4f9e4',
+          namespace: 'local-cluster',
+          ownerReferences: [
+            {
+              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ClusterManagementAddOn',
+              name: 'cluster-proxy',
+              uid: 'a1b690ce-c81d-4a87-af0a-8cc214d4f9e4',
+            },
+          ],
+          resourceVersion: '1725616',
+          uid: '3f5e11a9-52a5-46b9-9e8f-c108c3fd4e4d',
         },
-      ],
-      resourceVersion: '1725616',
-      uid: '3f5e11a9-52a5-46b9-9e8f-c108c3fd4e4d',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
         },
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
+        status: {
+          addOnConfiguration: { crdName: '', crName: '' },
+          addOnMeta: { displayName: '', description: '' },
+          conditions: [
+            {
+              message: 'manifests of addon are applied successfully',
+              reason: 'AddonManifestApplied',
+              status: 'True',
+              type: 'ManifestApplied',
+            },
+            {
+              message: 'Registration of the addon agent is configured',
+              reason: 'RegistrationConfigured',
+              status: 'True',
+              type: 'RegistrationApplied',
+            },
+            {
+              message:
+                'client certificate rotated starting from 2023-02-09 12:58:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
+              reason: 'ClientCertificateUpdated',
+              status: 'True',
+              type: 'ClusterCertificateRotated',
+            },
+            {
+              message: 'cluster-proxy add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Progressing',
+            },
+          ],
         },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 12:58:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'cluster-proxy add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Progressing',
-        },
-      ],
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:59:17Z',
-      name: 'config-policy-controller',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+      },
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          creationTimestamp: '2023-02-08T14:59:17Z',
           name: 'config-policy-controller',
-          uid: 'f45d726e-11c9-41e6-aaf8-a744d8613636',
+          namespace: 'local-cluster',
+          ownerReferences: [
+            {
+              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ClusterManagementAddOn',
+              name: 'config-policy-controller',
+              uid: 'f45d726e-11c9-41e6-aaf8-a744d8613636',
+            },
+          ],
+          resourceVersion: '1734118',
+          uid: '9fb54c01-8b73-45ce-804f-b726e06b733a',
         },
-      ],
-      resourceVersion: '1734118',
-      uid: '9fb54c01-8b73-45ce-804f-b726e06b733a',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
         },
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
+        status: {
+          addOnConfiguration: { crdName: '', crName: '' },
+          addOnMeta: { displayName: '', description: '' },
+          conditions: [
+            {
+              message: 'manifests of addon are applied successfully',
+              reason: 'AddonManifestApplied',
+              status: 'True',
+              type: 'ManifestApplied',
+            },
+            {
+              message: 'Registration of the addon agent is configured',
+              reason: 'RegistrationConfigured',
+              status: 'True',
+              type: 'RegistrationApplied',
+            },
+            {
+              message:
+                'client certificate rotated starting from 2023-02-09 13:04:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
+              reason: 'ClientCertificateUpdated',
+              status: 'True',
+              type: 'ClusterCertificateRotated',
+            },
+            {
+              message: 'config-policy-controller add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Disabled',
+            },
+          ],
         },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 13:04:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'config-policy-controller add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Disabled',
-        },
-      ],
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:59:17Z',
-      name: 'governance-policy-framework',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+      },
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          creationTimestamp: '2023-02-08T14:59:17Z',
           name: 'governance-policy-framework',
-          uid: '02f62b75-49cd-4d35-85be-25bc5b959701',
+          namespace: 'local-cluster',
+          ownerReferences: [
+            {
+              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ClusterManagementAddOn',
+              name: 'governance-policy-framework',
+              uid: '02f62b75-49cd-4d35-85be-25bc5b959701',
+            },
+          ],
+          resourceVersion: '1739647',
+          uid: 'e4de7012-c4da-495e-bf2d-914cbea49ba2',
         },
-      ],
-      resourceVersion: '1739647',
-      uid: 'e4de7012-c4da-495e-bf2d-914cbea49ba2',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
         },
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
+        status: {
+          addOnConfiguration: { crdName: '', crName: '' },
+          addOnMeta: { displayName: '', description: '' },
+          conditions: [
+            {
+              message: 'manifests of addon are applied successfully',
+              reason: 'AddonManifestApplied',
+              status: 'True',
+              type: 'ManifestApplied',
+            },
+            {
+              message: 'Registration of the addon agent is configured',
+              reason: 'RegistrationConfigured',
+              status: 'True',
+              type: 'RegistrationApplied',
+            },
+            {
+              message:
+                'client certificate rotated starting from 2023-02-09 13:08:09 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
+              reason: 'ClientCertificateUpdated',
+              status: 'True',
+              type: 'ClusterCertificateRotated',
+            },
+            {
+              message: 'governance-policy-framework add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Cool',
+            },
+          ],
         },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 13:08:09 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'governance-policy-framework add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Cool',
-        },
-      ],
-    },
-  },
-  {
-    apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-    kind: 'ManagedClusterAddOn',
-    metadata: {
-      creationTimestamp: '2023-02-08T14:58:32Z',
-      name: 'work-manager',
-      namespace: 'local-cluster',
-      ownerReferences: [
-        {
-          apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'ClusterManagementAddOn',
+      },
+      {
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          creationTimestamp: '2023-02-08T14:58:32Z',
           name: 'work-manager',
-          uid: '3b80aede-f99c-4f53-9f75-a115e736e647',
+          namespace: 'local-cluster',
+          ownerReferences: [
+            {
+              apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ClusterManagementAddOn',
+              name: 'work-manager',
+              uid: '3b80aede-f99c-4f53-9f75-a115e736e647',
+            },
+          ],
+          resourceVersion: '1734156',
+          uid: 'b753d5a2-f93d-49b1-a921-c54a586c7da0',
         },
-      ],
-      resourceVersion: '1734156',
-      uid: 'b753d5a2-f93d-49b1-a921-c54a586c7da0',
-    },
-    spec: {
-      installNamespace: 'open-cluster-management-agent-addon',
-    },
-    status: {
-      addOnConfiguration: { crdName: '', crName: '' },
-      addOnMeta: { displayName: '', description: '' },
-      conditions: [
-        {
-          message: 'Registration of the addon agent is configured',
-          reason: 'RegistrationConfigured',
-          status: 'True',
-          type: 'RegistrationApplied',
+        spec: {
+          installNamespace: 'open-cluster-management-agent-addon',
         },
-        {
-          message: 'manifests of addon are applied successfully',
-          reason: 'AddonManifestApplied',
-          status: 'True',
-          type: 'ManifestApplied',
+        status: {
+          addOnConfiguration: { crdName: '', crName: '' },
+          addOnMeta: { displayName: '', description: '' },
+          conditions: [
+            {
+              message: 'Registration of the addon agent is configured',
+              reason: 'RegistrationConfigured',
+              status: 'True',
+              type: 'RegistrationApplied',
+            },
+            {
+              message: 'manifests of addon are applied successfully',
+              reason: 'AddonManifestApplied',
+              status: 'True',
+              type: 'ManifestApplied',
+            },
+            {
+              message:
+                'client certificate rotated starting from 2023-02-09 13:04:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
+              reason: 'ClientCertificateUpdated',
+              status: 'True',
+              type: 'ClusterCertificateRotated',
+            },
+            {
+              message: 'work-manager add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Available',
+            },
+          ],
         },
-        {
-          message:
-            'client certificate rotated starting from 2023-02-09 13:04:08 +0000 UTC to 2023-03-11 09:35:45 +0000 UTC',
-          reason: 'ClientCertificateUpdated',
-          status: 'True',
-          type: 'ClusterCertificateRotated',
-        },
-        {
-          message: 'work-manager add-on is available.',
-          reason: 'ManagedClusterAddOnLeaseUpdated',
-          status: 'True',
-          type: 'Available',
-        },
-      ],
-    },
-  },
-]
+      },
+    ],
+  ],
+])
 
 export const mockClusterManagementAddons: ClusterManagementAddOn[] = [
   {

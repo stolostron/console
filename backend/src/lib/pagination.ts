@@ -4,6 +4,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import Fuse from 'fuse.js'
 import { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
+import { AppColumns } from '../routes/aggregators/applications'
 
 export type FilterSelections = {
   [filter: string]: string[]
@@ -29,8 +30,7 @@ export interface IRequestListView {
 export interface IResultListView {
   page: number
   items: IResource[]
-  itemCount: number
-  filterCounts: FilterCounts
+  processedItemCount: number
   emptyResult: boolean
   isPreProcessed: boolean
   request: IRequestListView
@@ -59,7 +59,7 @@ export function paginate(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  getItems: () => { items: ITransformedResource[]; filterCounts: FilterCounts },
+  getItems: () => ITransformedResource[],
   filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
 ): void {
   const chucks: string[] = []
@@ -71,13 +71,11 @@ export function paginate(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = JSON.parse(body) as IRequestListView
     const { page, perPage, search, sortBy, filters } = request
-    const cache = getItems()
-    const { filterCounts } = cache
-    let { items } = cache
+    let items = getItems()
     let itemCount = items.length
     let rpage = page
     let emptyResult = false
-    let isPreProcessed = false // if false, we pass all data and frontend does the filter/search/sort
+    let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
     const backendLimit = process.env.NODE_ENV === 'test' ? 0 : PREPROCESS_BREAKPOINT
     let startIndex = 0
     let endIndex = itemCount
@@ -97,7 +95,11 @@ export function paginate(
             {
               name: 'search',
               getFn: (item) => {
-                return [item.transform[0][0], item.transform[2][0], item.transform[3][0]]
+                return [
+                  item.transform[AppColumns.name][0],
+                  item.transform[AppColumns.namespace][0],
+                  item.transform[AppColumns.clusters][0],
+                ]
               },
             },
           ],
@@ -140,8 +142,7 @@ export function paginate(
     const results: IResultListView = {
       page: rpage,
       items,
-      itemCount,
-      filterCounts: isPreProcessed ? filterCounts : undefined,
+      processedItemCount: itemCount,
       emptyResult,
       isPreProcessed,
       request,

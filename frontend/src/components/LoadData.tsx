@@ -176,6 +176,7 @@ import {
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { useRecoilValue } from '../shared-recoil'
+import get from 'lodash/get'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loaded, setLoaded } = useContext(PluginDataContext)
@@ -237,8 +238,9 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
 
-  const { setters, caches } = useMemo(() => {
+  const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
+    const mappers: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any[]>>; keyBy: string[] }>> = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
@@ -247,6 +249,16 @@ export function LoadData(props: { children?: ReactNode }) {
       if (!caches[groupVersion]) caches[groupVersion] = {}
       caches[groupVersion][kind] = {}
     }
+    function addMapper(apiVersion: string, kind: string, setter: SetterOrUpdater<Map<string, any[]>>, keyBy: string[]) {
+      const groupVersion = apiVersion.split('/')[0]
+      if (!mappers[groupVersion]) mappers[groupVersion] = {}
+      mappers[groupVersion][kind] = { setter, keyBy }
+    }
+
+    // mappers (key=>[values])
+    addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
+
+    // setters
     addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
     addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
@@ -280,7 +292,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
     addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
     addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
-    addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
     addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
@@ -304,7 +315,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    return { setters, caches }
+    return { setters, mappers, caches }
   }, [
     setAgentClusterInstalls,
     setAgents,
@@ -383,12 +394,12 @@ export function LoadData(props: { children?: ReactNode }) {
 
       for (const groupVersion in resourceTypeMap) {
         for (const kind in resourceTypeMap[groupVersion]) {
-          const setter = setters[groupVersion]?.[kind]
-          if (setter) {
-            setter(() => {
-              const cache = caches[groupVersion]?.[kind]
-              const watchEvents = resourceTypeMap[groupVersion]?.[kind]
-              if (watchEvents) {
+          const watchEvents = resourceTypeMap[groupVersion]?.[kind]
+          if (watchEvents) {
+            const setter = setters[groupVersion]?.[kind]
+            if (setter) {
+              setter(() => {
+                const cache = caches[groupVersion]?.[kind]
                 for (const watchEvent of watchEvents) {
                   const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
                   switch (watchEvent.type) {
@@ -401,9 +412,42 @@ export function LoadData(props: { children?: ReactNode }) {
                       break
                   }
                 }
+                return Object.values(cache)
+              })
+            } else {
+              const mapper = mappers[groupVersion]?.[kind]
+              if (mapper) {
+                const { setter, keyBy } = mapper
+                for (const watchEvent of watchEvents) {
+                  const key = keyBy
+                    .reduce((keys, partKey) => {
+                      keys.push(get(watchEvent.object, partKey))
+                      return keys
+                    }, [] as string[])
+                    .join('/')
+                  setter((map) => {
+                    const arr = map.get(key) || []
+                    const index = arr.findIndex(
+                      (resource) =>
+                        resource.metadata?.name === watchEvent.object.metadata.name &&
+                        resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                    )
+                    switch (watchEvent.type) {
+                      case 'ADDED':
+                      case 'MODIFIED':
+                        if (index !== -1) arr[index] = watchEvent.object
+                        else arr.push(watchEvent.object)
+                        break
+                      case 'DELETED':
+                        if (index !== -1) arr.splice(index, 1)
+                        break
+                    }
+                    map.set(key, arr)
+                    return map
+                  })
+                }
               }
-              return Object.values(cache)
-            })
+            }
           }
         }
       }
@@ -462,7 +506,7 @@ export function LoadData(props: { children?: ReactNode }) {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [caches, setSettings, setters])
+  }, [caches, mappers, setters, setSettings])
 
   const {
     data: globalHubRes,

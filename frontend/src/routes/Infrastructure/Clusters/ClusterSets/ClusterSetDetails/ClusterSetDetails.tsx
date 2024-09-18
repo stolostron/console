@@ -58,9 +58,16 @@ export default function ClusterSetDetails() {
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
   )
 
-  const submarinerAddons = managedClusterAddons.filter(
-    (mca) => mca.metadata.name === 'submariner' && clusters?.find((c) => c.namespace === mca.metadata.namespace)
-  )
+  // instead of searching through clusters for each ManagedClusterAddon (12*3800)
+  // loop through clusters once and use a managedClusterAddons map to get the addons for each cluster
+  const submarinerAddons = useMemo(() => {
+    let submarinerAddons: ManagedClusterAddOn[] = []
+    clusters.forEach((cluster) => {
+      const addons = managedClusterAddons.get(cluster.namespace ?? '') || []
+      submarinerAddons = [...submarinerAddons, ...addons.filter((mca) => mca.metadata.name === 'submariner')]
+    })
+    return submarinerAddons
+  }, [clusters, managedClusterAddons])
 
   const clusterSetBindings = useClusterSetBindings(clusterSet)
   const [clusterRoleBindingsCache, setClusterRoleBindingsCache] = useState<ClusterRoleBinding[]>([])

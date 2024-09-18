@@ -1,16 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import queryString from 'query-string'
+import { useContext, useMemo } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, NavigateFunction } from 'react-router-dom-v5-compat'
+import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster } from '../../../resources/utils/get-cluster'
-import { compareStrings, IAlertContext } from '../../../ui-components'
+import { Cluster, getBackendUrl, putRequest } from '../../../resources'
+import { useSharedAtoms } from '../../../shared-recoil'
+import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
 } from '../components/Modals/DeleteExternalResourceModal'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
+import { searchClient } from '../search-sdk/search-client'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { GetUrlSearchParam, SearchColumnDefinition } from '../searchDefinitions'
 
@@ -22,7 +27,71 @@ export interface ISearchResult {
   __type: string
 }
 
-export function GetRowActions(
+function handleVMActions(action: string, path: string, item: any, toast: IAlertContext, t: TFunction) {
+  putRequest(`${getBackendUrl()}${path}`, {
+    managedCluster: item.cluster,
+    vmName: item.name,
+    vmNamespace: item.namespace,
+  })
+    .promise.then(() => {
+      // Wait 3 seconds & refetch search results to update table.
+      setTimeout(() => searchClient.refetchQueries({ include: ['searchResultItems'] }), 3000)
+    })
+    .catch((err) => {
+      console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
+      toast.addAlert({
+        title: t('Unsuccessful request'),
+        message: t(`Error occurred on VirtualMachine {{action}} action`, { action }),
+        type: 'danger',
+        autoClose: true,
+      })
+    })
+}
+
+export const useGetRowActions = (
+  resourceKind: string,
+  currentQuery: string,
+  relatedResource: boolean,
+  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
+  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+) => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
+  const { useVMActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVMActionsEnabled()
+  const allClusters = useAllClusters(true)
+
+  return useMemo(
+    () =>
+      getRowActions(
+        resourceKind,
+        currentQuery,
+        relatedResource,
+        setDeleteResource,
+        setDeleteExternalResource,
+        allClusters,
+        navigate,
+        toast,
+        vmActionsEnabled,
+        t
+      ),
+    [
+      resourceKind,
+      currentQuery,
+      relatedResource,
+      setDeleteResource,
+      setDeleteExternalResource,
+      allClusters,
+      navigate,
+      toast,
+      vmActionsEnabled,
+      t,
+    ]
+  )
+}
+
+export function getRowActions(
   resourceKind: string,
   currentQuery: string,
   relatedResource: boolean,
@@ -30,6 +99,8 @@ export function GetRowActions(
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
   allClusters: Cluster[],
   navigate: NavigateFunction,
+  toast: IAlertContext,
+  vmActionsEnabled: 'enabled' | 'disabled',
   t: TFunction
 ) {
   const viewApplication = {
@@ -171,6 +242,42 @@ export function GetRowActions(
     },
   }
 
+  const startVM = {
+    id: 'startVM',
+    title: t('Start {{resourceKind}}', { resourceKind }),
+    click: (item: any) => {
+      handleVMActions('start', '/virtualmachines/start', item, toast, t)
+    },
+  }
+  const stopVM = {
+    id: 'stopVM',
+    title: t('Stop {{resourceKind}}', { resourceKind }),
+    click: (item: any) => {
+      handleVMActions('stop', '/virtualmachines/stop', item, toast, t)
+    },
+  }
+  const restartVM = {
+    id: 'restartVM',
+    title: t('Restart {{resourceKind}}', { resourceKind }),
+    click: (item: any) => {
+      handleVMActions('restart', '/virtualmachines/restart', item, toast, t)
+    },
+  }
+  const pauseVM = {
+    id: 'pauseVM',
+    title: t('Pause {{resourceKind}}', { resourceKind }),
+    click: (item: any) => {
+      handleVMActions('pause', '/virtualmachineinstances/pause', item, toast, t)
+    },
+  }
+  const unpauseVM = {
+    id: 'unpauseVM',
+    title: t('Unpause {{resourceKind}}', { resourceKind }),
+    click: (item: any) => {
+      handleVMActions('unpause', '/virtualmachineinstances/unpause', item, toast, t)
+    },
+  }
+
   if (
     resourceKind.toLowerCase() === 'cluster' ||
     resourceKind.toLowerCase() === 'release' ||
@@ -179,6 +286,19 @@ export function GetRowActions(
     return []
   } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
+  } else if (resourceKind.toLowerCase() === 'virtualmachine') {
+    return vmActionsEnabled === 'enabled'
+      ? [
+          startVM,
+          stopVM,
+          restartVM,
+          pauseVM,
+          unpauseVM,
+          { ...editButton, addSeparator: true },
+          viewRelatedButton,
+          deleteButton,
+        ]
+      : [editButton, viewRelatedButton, deleteButton]
   }
   return [editButton, viewRelatedButton, deleteButton]
 }
@@ -243,7 +363,7 @@ export function generateSearchResultExport(
     columns = get(searchDefinitions, `['${kindAndGroup}'].columns`, searchDefinitions['genericresource'].columns)
     // Filter column definitions that do NOT contain sort field. Sort is the only way to confidently get resource fields
     columns = columns.filter((col: SearchColumnDefinition) => {
-      return col.sort ? true : false
+      return !!col.sort
     })
   }
 

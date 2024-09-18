@@ -49,7 +49,6 @@ function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
         policyName: item.name,
         apiGroup: item.policies[0].apigroup,
         apiVersion: item.policies[0].apiversion,
-        policyNamespace: item.policies[0].cluster,
       })}
       state={{
         from: NavigationPath.policies,
@@ -67,7 +66,6 @@ function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
     apiVersion: item.policies[0].apiversion,
     kind: item.kind,
     policyName: item.name,
-    policyNamespace: item.policies[0].cluster,
   })
   if (noncompliant !== 0 || compliant !== 0 || pending != 0 || unknown !== 0) {
     return (
@@ -102,12 +100,12 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Engine'),
-        cell: (item: DiscoverdPolicyTableItem) => getEngineWithSvg(item.kind),
+        cell: (item: DiscoverdPolicyTableItem) => getEngineWithSvg(item.apigroup),
         sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) =>
-          compareStrings(getEngineString(a.kind), getEngineString(b.kind)),
-        search: (item: DiscoverdPolicyTableItem) => getEngineString(item.kind),
+          compareStrings(getEngineString(a.apigroup), getEngineString(b.apigroup)),
+        search: (item: DiscoverdPolicyTableItem) => getEngineString(item.apigroup),
         id: 'engine',
-        exportContent: (item: DiscoverdPolicyTableItem) => getEngineString(item.kind),
+        exportContent: (item: DiscoverdPolicyTableItem) => getEngineString(item.apigroup),
       },
       {
         header: t('Kind'),
@@ -132,6 +130,7 @@ export default function DiscoveredPolicies() {
         sort: 'severity',
         search: 'severity',
         id: 'severity',
+        tooltip: t('discoveredPolicies.tooltip.severity'),
         exportContent: (item) => item.severity,
       },
       {

@@ -3,6 +3,7 @@
 import { TFunction } from 'react-i18next'
 import { ClusterManagementAddOn, ClusterManagementAddOnDefinition } from '../cluster-management-add-on'
 import { ManagedClusterAddOn } from '../managed-cluster-add-on'
+import { Dictionary } from 'lodash'
 
 export type Addon = {
   name: string
@@ -27,13 +28,11 @@ export const addonPathKey = 'console.open-cluster-management.io/launch-link'
 export const addonTextKey = 'console.open-cluster-management.io/launch-link-text'
 
 export function mapAddons(
-  clusterManagementAddons: ClusterManagementAddOn[],
+  clusterManagementAddons: Dictionary<ClusterManagementAddOn>,
   managedClusterAddons: ManagedClusterAddOn[] = []
 ) {
   const addons: Addon[] = managedClusterAddons.map((mca) => {
-    let cma: ClusterManagementAddOn | undefined = clusterManagementAddons.find(
-      (clusterManagementAddOn) => mca.metadata.name === clusterManagementAddOn?.metadata.name
-    )
+    let cma: ClusterManagementAddOn | undefined = clusterManagementAddons[mca.metadata.name!]
     if (cma === undefined) {
       cma = {
         ...ClusterManagementAddOnDefinition,

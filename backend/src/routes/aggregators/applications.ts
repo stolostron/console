@@ -5,6 +5,15 @@ import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, FilterCounts, ITransformedResource } from '../../lib/pagination'
 
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'repo',
+  'timeWindow',
+  'created',
+}
 interface IArgoApplication extends IResource {
   cluster?: string
   spec: {
@@ -62,6 +71,14 @@ const appKeys = ['subscription', 'appset', 'localArgoApps', 'remoteArgoApps', 'l
 appKeys.forEach((key) => {
   applicationCache[key] = { items: [], filterCounts: {} }
 })
+
+export function getApplications() {
+  const items: ITransformedResource[] = []
+  Object.keys(applicationCache).forEach((key) => {
+    items.push(...applicationCache[key].items)
+  })
+  return items
+}
 
 export function startAggregatingApplications() {
   void localKubeLoop()
@@ -121,31 +138,6 @@ export function generateTransforms(items: ITransformedResource[], isRemote?: boo
       [app.metadata.creationTimestamp as string],
     ]
     app.isRemote = isRemote
-    incFilterCounts(filterCounts, 'type', [type])
-    incFilterCounts(filterCounts, 'cluster', clusters)
-  })
-  return { items, filterCounts }
-}
-
-export function getApplications() {
-  const items: ITransformedResource[] = []
-  const filterCounts: FilterCounts = {}
-  Object.keys(applicationCache).forEach((key) => {
-    items.push(...applicationCache[key].items)
-    const cnts = applicationCache[key].filterCounts
-    Object.keys(cnts).forEach((parent) => {
-      let category = filterCounts[parent]
-      if (!category) {
-        category = filterCounts[parent] = {}
-      }
-      const types = cnts[parent] //type/cluster
-      Object.keys(types).forEach((child: string) => {
-        if (!category[child]) {
-          category[child] = 0
-        }
-        category[child] += types[child]
-      })
-    })
   })
   return { items, filterCounts }
 }
@@ -159,10 +151,12 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       let isMatch = true
       switch (filter) {
         case 'type':
-          isMatch = filters['type'].some((value: string) => value === item.transform[1][0])
+          isMatch = filters['type'].some((value: string) => value === item.transform[AppColumns.type][0])
           break
         case 'cluster':
-          isMatch = filters['cluster'].some((value: string) => item.transform[3].indexOf(value) !== -1)
+          isMatch = filters['cluster'].some(
+            (value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1
+          )
           break
       }
       if (!isMatch) {
@@ -172,19 +166,6 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
     return isFilterMatch
   })
   return items
-}
-
-// add to filters count that appears in filter dropdown
-function incFilterCounts(mapmap: FilterCounts, id: string, keys: string[]) {
-  let map = mapmap[id]
-  if (!map) map = mapmap[id] = {}
-  keys.forEach((key) => {
-    if (key in map) {
-      map[key]++
-    } else {
-      map[key] = 1
-    }
-  })
 }
 
 function getAppNamespace(resource: IResource): string {
@@ -357,7 +338,7 @@ function getArgoDestinationCluster(
   const serverApi = destination?.server
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ? cluster : 'local-cluster'
+      clusterName = cluster || 'local-cluster'
     } else {
       // const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
       // clusterName = server ? server.name : 'unknown'

@@ -873,13 +873,18 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
   },
 ]
 
-const mockManagedClusterAddOns: ManagedClusterAddOn[] = [
-  mockManagedClusterAddOnApp,
-  mockManagedClusterAddOnWork,
-  mockManagedClusterAddOnCert,
-  mockManagedClusterAddOnPolicy,
-  mockManagedClusterAddOnSearch,
-]
+export const mockManagedClusterAddOns: Map<string, ManagedClusterAddOn[]> = new Map([
+  [
+    'test-cluster',
+    [
+      mockManagedClusterAddOnApp,
+      mockManagedClusterAddOnWork,
+      mockManagedClusterAddOnCert,
+      mockManagedClusterAddOnPolicy,
+      mockManagedClusterAddOnSearch,
+    ],
+  ],
+])
 
 const mockKlusterletAddonConfig: KlusterletAddonConfig = {
   apiVersion: KlusterletAddonConfigApiVersion,
@@ -1369,7 +1374,7 @@ describe('ClusterDetails', () => {
 
   test('settings page renders', async () => {
     await clickByText('Add-ons')
-    await waitForText(mockManagedClusterAddOns[0].metadata.name!)
+    await waitForText(mockManagedClusterAddOnApp.metadata.name!)
   })
 
   test('overview page handles detach', async () => {
@@ -1522,7 +1527,7 @@ describe('ClusterDetails with not found', () => {
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
           snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
           snapshot.set(configMapsState, [])
         }}
@@ -1560,7 +1565,7 @@ describe('ClusterDetails with not found', () => {
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
           snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, [])
+          snapshot.set(managedClusterAddonsState, new Map())
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
           snapshot.set(configMapsState, [])
           snapshot.set(hostedClustersState, mockHostedClusters)

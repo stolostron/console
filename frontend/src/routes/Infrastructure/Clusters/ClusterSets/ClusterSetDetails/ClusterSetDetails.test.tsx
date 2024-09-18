@@ -1157,7 +1157,7 @@ const mockManagedClusterOpenstackSubmarinerConfig: SubmarinerConfig = {
   },
 }
 
-const mockSubmarinerAddon: ManagedClusterAddOn = {
+const mockSubmarinerAddOn: ManagedClusterAddOn = {
   apiVersion: ManagedClusterAddOnApiVersion,
   kind: ManagedClusterAddOnKind,
   metadata: {
@@ -1169,16 +1169,20 @@ const mockSubmarinerAddon: ManagedClusterAddOn = {
   },
 }
 
+export const mockSubmarinerAddon: Map<string, ManagedClusterAddOn[]> = new Map([
+  [clusterSetCluster.metadata.name!, [mockSubmarinerAddOn]],
+])
+
 const mockSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
   kind: SubmarinerConfigKind,
   metadata: {
     name: 'submariner',
-    namespace: mockSubmarinerAddon.metadata.namespace!,
+    namespace: mockSubmarinerAddOn.metadata.namespace!,
   },
   spec: {
     credentialsSecret: {
-      name: `${mockSubmarinerAddon.metadata.namespace}-aws-creds`,
+      name: `${mockSubmarinerAddOn.metadata.namespace}-aws-creds`,
     },
   },
 }
@@ -1490,7 +1494,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterNoCredentialsOpenstack,
       ])
       snapshot.set(certificateSigningRequestsState, [])
-      snapshot.set(managedClusterAddonsState, [mockSubmarinerAddon])
+      snapshot.set(managedClusterAddonsState, mockSubmarinerAddon)
       snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
       snapshot.set(clusterPoolsState, [])
       snapshot.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
@@ -1600,7 +1604,7 @@ describe('ClusterSetDetails page', () => {
 
     await clickByText('Submariner add-ons', 0)
 
-    await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+    await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
 
     const nockListExtraSecrets = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
     const nockListNoCredsSecrets = nockNamespacedList(mockManagedClusterNoCredentialsSecret, [])
@@ -1822,12 +1826,12 @@ describe('ClusterSetDetails page', () => {
 
     await clickByText('Submariner add-ons', 0)
 
-    await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+    await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
     await clickByLabel('Actions', 0)
     await clickByText('Uninstall add-on')
     await waitForText('Uninstall Submariner add-ons?')
 
-    const deleteAddon = nockDelete(mockSubmarinerAddon)
+    const deleteAddon = nockDelete(mockSubmarinerAddOn)
     const deleteConfig = nockDelete(mockSubmarinerConfig)
     await clickByText('Uninstall')
     await waitForNocks([deleteAddon, deleteConfig])
@@ -1838,7 +1842,7 @@ describe('ClusterSetDetails page', () => {
 
     await clickByText('Submariner add-ons', 0)
 
-    await waitForText(mockSubmarinerAddon!.metadata.namespace!)
+    await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
 
     await clickByLabel('Actions', 0)
     await clickByText('Edit configuration')

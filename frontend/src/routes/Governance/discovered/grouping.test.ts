@@ -69,7 +69,7 @@ const subscriptions: Subscription[] = [
   },
 ]
 
-const mockpolicy: any[] = [
+const mockSearchResults: any[] = [
   {
     _hubClusterResource: true,
     _uid: 'local-cluster/36044810-6b61-4437-adbe-5456c5f47a95',
@@ -83,8 +83,7 @@ const mockpolicy: any[] = [
     name: 'check-policy-reports',
     namespace: 'managed1',
     compliant: 'NonCompliant',
-    remediationAction: 'enforce',
-    // remediationAction is empty. The default is inform
+    remediationAction: 'inform',
     severity: 'low',
     disabled: 'false',
     _isExternal: 'true',
@@ -217,14 +216,43 @@ const mockpolicy: any[] = [
     annotation:
       'apps.open-cluster-management.io/hosting-subscription=no-type-sub-ns/no-type-sub; cluster-namespace=managed2',
   },
+  {
+    _hubClusterResource: 'true',
+    _isExternal: 'false',
+    _uid: 'local-cluster/4cf14a3f-0802-40b8-bf6f-87462d17e9f0',
+    annotation: 'policy.open-cluster-management.io/severity=critical; test=value',
+    apigroup: 'constraints.gatekeeper.sh',
+    apiversion: 'v1beta1',
+    cluster: 'local-cluster',
+    created: '2024-09-12T18:51:09Z',
+    enforcementAction: 'dryrun',
+    kind: 'K8sRequiredLabels',
+    kind_plural: 'k8srequiredlabels',
+    name: 'ns-must-have-gk',
+    totalViolations: '85',
+  },
+  {
+    _hubClusterResource: 'true',
+    _isExternal: 'false',
+    _uid: 'local-cluster/4cf14a3f-0802-40b8-bf6f-87462d17e9f0',
+    annotation: 'policy.open-cluster-management.io/severity=high; test=value',
+    apigroup: 'constraints.gatekeeper.sh',
+    apiversion: 'v1beta1',
+    cluster: 'cluster1',
+    created: '2024-09-12T18:51:09Z',
+    kind: 'K8sRequiredLabels',
+    kind_plural: 'k8srequiredlabels',
+    name: 'ns-must-have-gk',
+    totalViolations: '32',
+  },
 ]
 describe('grouping function test', () => {
   const getPolicySource = grouping().getPolicySource
   test.each([
-    ['expect Git', mockpolicy[0], 'Git'],
-    ['Managed externally', mockpolicy[1], 'Managed externally'],
-    ['External', mockpolicy[2], 'External'],
-    ['Policy with namespace and name', mockpolicy[3], 'Policy'],
+    ['expect Git', mockSearchResults[0], 'Git'],
+    ['Managed externally', mockSearchResults[1], 'Managed externally'],
+    ['External', mockSearchResults[2], 'External'],
+    ['Policy with namespace and name', mockSearchResults[3], 'Policy'],
   ])('%s', (_name, policy, expected) => {
     expect(
       getPolicySource(policy, helmRelease, channels, subscriptions, resolveSource, getSourceText, parseStringMap).type
@@ -237,7 +265,7 @@ describe('OnMessage test', () => {
 
   test('OnMessage should create result properly', () => {
     const result = createMessage(
-      mockpolicy,
+      mockSearchResults,
       helmRelease,
       channels,
       subscriptions,
@@ -246,26 +274,28 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    // All policies name are same
     expect(result).toEqual([
       {
         id: 'check-policy-reportsConfigurationPolicypolicy.open-cluster-management.io',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports',
         kind: 'ConfigurationPolicy',
         severity: 'critical',
-        responseAction: 'enforce',
+        responseAction: 'inform/enforce',
         policies: [
           {
-            ...parseDiscoveredPolicies(mockpolicy[0]),
-            remediationAction: 'enforce',
+            ...parseDiscoveredPolicies(mockSearchResults[0]),
+            responseAction: 'inform',
             source: { type: 'Git', parentNs: '', parentName: '' },
           },
           {
-            ...parseDiscoveredPolicies(mockpolicy[1]),
+            ...parseDiscoveredPolicies(mockSearchResults[1]),
+            responseAction: 'enforce',
             source: { type: 'Managed externally', parentNs: '', parentName: '' },
           },
           {
-            ...parseDiscoveredPolicies(mockpolicy[3]),
+            ...parseDiscoveredPolicies(mockSearchResults[3]),
+            responseAction: 'enforce',
             source: { type: 'Policy', parentNs: 'default', parentName: 'config-policy' },
           },
         ],
@@ -273,18 +303,28 @@ describe('OnMessage test', () => {
       },
       {
         id: 'check-policy-reportsCertificatePolicypolicy.open-cluster-management.io',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'check-policy-reports',
         kind: 'CertificatePolicy',
         severity: 'unknown',
         responseAction: 'enforce',
         policies: [
-          { ...parseDiscoveredPolicies(mockpolicy[2]), source: { type: 'External', parentNs: '', parentName: '' } },
-          { ...parseDiscoveredPolicies(mockpolicy[4]), source: { type: 'External', parentNs: '', parentName: '' } },
+          {
+            ...parseDiscoveredPolicies(mockSearchResults[2]),
+            source: { type: 'External', parentNs: '', parentName: '' },
+            responseAction: 'enforce',
+          },
+          {
+            ...parseDiscoveredPolicies(mockSearchResults[4]),
+            source: { type: 'External', parentNs: '', parentName: '' },
+            responseAction: 'enforce',
+          },
         ],
         source: { type: 'External', parentNs: '', parentName: '' },
       },
       {
         id: 'op-policyOperatorPolicypolicy.open-cluster-management.io',
+        apigroup: 'policy.open-cluster-management.io',
         name: 'op-policy',
         kind: 'OperatorPolicy',
         // One policy omit the severity so the highest severity is high
@@ -292,17 +332,68 @@ describe('OnMessage test', () => {
         responseAction: 'enforce',
         policies: [
           {
-            ...parseDiscoveredPolicies(mockpolicy[5]),
+            ...parseDiscoveredPolicies(mockSearchResults[5]),
+            responseAction: 'enforce',
             source: { type: 'Policy', parentNs: 'default', parentName: 'op-1-policy' },
           },
           {
-            ...parseDiscoveredPolicies(mockpolicy[6]),
+            ...parseDiscoveredPolicies(mockSearchResults[6]),
+            responseAction: 'enforce',
             source: { type: 'Policy', parentNs: 'default', parentName: 'op-2-policy' },
           },
         ],
         // All policies has source.type = Policy however parentName are different so type should be `Multiple`
         source: { type: 'Multiple', parentNs: '', parentName: '' },
       },
+      {
+        apigroup: 'constraints.gatekeeper.sh',
+        id: 'ns-must-have-gkK8sRequiredLabelsconstraints.gatekeeper.sh',
+        kind: 'K8sRequiredLabels',
+        name: 'ns-must-have-gk',
+        policies: [
+          {
+            ...parseDiscoveredPolicies(mockSearchResults[7]),
+            responseAction: 'dryrun',
+            severity: 'critical',
+            source: {
+              parentName: '',
+              parentNs: '',
+              type: 'Local',
+            },
+          },
+          {
+            ...parseDiscoveredPolicies(mockSearchResults[8]),
+            responseAction: 'deny',
+            severity: 'high',
+            source: {
+              parentName: '',
+              parentNs: '',
+              type: 'Local',
+            },
+          },
+        ],
+        responseAction: 'deny/dryrun',
+        severity: 'critical',
+        source: {
+          parentName: '',
+          parentNs: '',
+          type: 'Local',
+        },
+      },
     ])
+  })
+
+  test('OnMessage with empty search results', () => {
+    const result = createMessage(
+      [],
+      helmRelease,
+      channels,
+      subscriptions,
+      resolveSource.toString(),
+      getSourceText.toString(),
+      parseStringMap.toString(),
+      parseDiscoveredPolicies.toString()
+    )
+    expect(result).toEqual([])
   })
 })

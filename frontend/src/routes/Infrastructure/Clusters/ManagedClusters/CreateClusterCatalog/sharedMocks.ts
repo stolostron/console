@@ -53,22 +53,29 @@ export const mockMultiClusterEngineWithHypershiftDisabled: MultiClusterEngine = 
   },
 } as MultiClusterEngine
 
-export const mockManagedClusterAddOn: ManagedClusterAddOn = {
-  apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-  kind: 'ManagedClusterAddOn',
-  metadata: {
-    name: 'hypershift-addon',
-    namespace: 'local-cluster',
-  },
-  status: {
-    conditions: [
+export const mockManagedClusterAddOn: Map<string, ManagedClusterAddOn[]> = new Map([
+  [
+    'local-cluster',
+    [
       {
-        lastTransitionTime: undefined,
-        message: 'application-manager add-on is available.',
-        reason: 'ManagedClusterAddOnLeaseUpdated',
-        status: 'True',
-        type: 'Available',
-      },
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        kind: 'ManagedClusterAddOn',
+        metadata: {
+          name: 'hypershift-addon',
+          namespace: 'local-cluster',
+        },
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: undefined,
+              message: 'application-manager add-on is available.',
+              reason: 'ManagedClusterAddOnLeaseUpdated',
+              status: 'True',
+              type: 'Available',
+            },
+          ],
+        },
+      } as ManagedClusterAddOn,
     ],
-  },
-} as ManagedClusterAddOn
+  ],
+])

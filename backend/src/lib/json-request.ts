@@ -4,6 +4,7 @@ import { Agent } from 'https'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
+import { getCACertificate } from './serviceAccountToken'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
   constants
@@ -23,6 +24,14 @@ export interface PostResponse<T> {
   body?: T
 }
 
+export interface PutResponse {
+  statusCode?: number
+  body?: {
+    name?: string
+    message?: string
+  }
+}
+
 export function jsonPost<T = unknown>(
   url: string,
   body: unknown,
@@ -39,7 +48,7 @@ export function jsonPost<T = unknown>(
   return fetchRetry(url, {
     method: 'POST',
     headers,
-    agent: proxyAgent ? proxyAgent : agent,
+    agent: proxyAgent || agent,
     body: JSON.stringify(body),
     compress: true,
   }).then(async (response) => {
@@ -49,4 +58,40 @@ export function jsonPost<T = unknown>(
     }
     return result
   })
+}
+
+export function jsonPut(url: string, body: unknown, token?: string): Promise<PutResponse> {
+  const headers: HeadersInit = {
+    [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
+  }
+  if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
+  return fetchRetry(url, {
+    method: 'PUT',
+    headers,
+    agent: new Agent({ ca: getCACertificate() }),
+    body: JSON.stringify(body),
+    compress: true,
+  })
+    .then(async (response) => {
+      try {
+        const resBody = (await response.json()) as unknown
+        return {
+          statusCode: response.status,
+          body: resBody,
+        }
+      } catch (err) {
+        return {
+          statusCode: response.status,
+        }
+      }
+    })
+    .catch((err: Error) => {
+      const errResult = {
+        body: {
+          name: err.name,
+          message: err.message,
+        },
+      }
+      return errResult
+    })
 }
