@@ -11,6 +11,7 @@ import {
   discoveredSourceCell,
   getResponseActionFilter,
   getSeverityFilter,
+  getSourceExportCSV,
   getSourceFilterOptions,
   policyViolationSummary,
   severityCell,
@@ -129,7 +130,7 @@ export default function DiscoveredPolicies() {
           compareStrings(a.source?.type, b.source?.type),
         search: (item: DiscoverdPolicyTableItem) => item.source?.type ?? '',
         id: 'source',
-        exportContent: (item) => item?.source?.type ?? '-',
+        exportContent: getSourceExportCSV,
       },
     ],
     [t]
