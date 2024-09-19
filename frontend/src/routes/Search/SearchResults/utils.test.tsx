@@ -230,7 +230,7 @@ test('Correctly return VirtualMachine with actions disabled', () => {
   )
   expect(res).toMatchSnapshot()
 })
-test('should handle edit button click for managed hub', () => {
+test('should handle vm action buttons', () => {
   const item = { managedHub: 'cluster1' }
   const vmActionsEnabled = true
   const actions = getRowActions(

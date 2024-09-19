@@ -9,6 +9,7 @@ import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '..
 import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import Search from '../Search'
+import { getResourceParams } from './DetailsPage'
 
 jest.mock('react-router-dom-v5-compat', () => {
   const originalModule = jest.requireActual('react-router-dom-v5-compat')
@@ -124,5 +125,25 @@ describe('DetailsPage', () => {
         })
       ).toBeTruthy()
     )
+  })
+
+  test('Should return the url search params correctly', () => {
+    const res = getResourceParams()
+    expect(res).toMatchSnapshot()
+  })
+
+  test('Should return the url search params incorrectly', () => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/multicloud/search/resources',
+        search: '?',
+        state: {
+          from: '/multicloud/search',
+          fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',
+        },
+      },
+    })
+    const res = getResourceParams()
+    expect(res).toMatchSnapshot()
   })
 })
