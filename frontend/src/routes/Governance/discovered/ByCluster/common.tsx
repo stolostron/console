@@ -200,7 +200,7 @@ export const byClusterCols = (
     sort: (a: DiscoveredPolicyItem, b: DiscoveredPolicyItem) => compareStrings(a.source?.type, b.source?.type),
     search: (item: DiscoveredPolicyItem) => item.source?.type ?? '',
     id: 'source',
-    exportContent: (item) => item.source?.type ?? '-',
+    exportContent: getSourceExportCSV,
   },
 ]
 
@@ -356,4 +356,16 @@ export const convertYesNoCell = (val: string | boolean | undefined | null, t: TF
   if (val == null || val == undefined) return '-'
   if (typeof val !== 'boolean') return JSON.parse(val) ? t('yes') : t('no')
   return val === true ? 'yes' : 'no'
+}
+
+export const getSourceExportCSV = (item: DiscoveredPolicyItem | DiscoverdPolicyTableItem): string => {
+  if (!item.source?.type) {
+    return '-'
+  }
+
+  if (item.source?.type === 'Policy' && item.source?.parentName) {
+    return `Policy (${item.source.parentNs}/${item.source.parentName})`
+  }
+
+  return item.source?.type
 }
