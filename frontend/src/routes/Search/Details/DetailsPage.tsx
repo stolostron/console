@@ -171,7 +171,7 @@ export default function DetailsPage() {
           { action: 'Unpause', path: '/virtualmachineinstances/unpause' },
         ].map((action) => (
           <DropdownItem
-            key={`${action}-vm-resource`}
+            key={`${action.action}-vm-resource`}
             component="button"
             onClick={() =>
               handleVMActions(
@@ -184,7 +184,7 @@ export default function DetailsPage() {
               )
             }
           >
-            {t(`${action.action} {{resourceKind}}`, { resourceKind: kind })}
+            {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
           </DropdownItem>
         )),
         <Divider key={'action-divider'} />
