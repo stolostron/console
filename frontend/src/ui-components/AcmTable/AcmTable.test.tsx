@@ -8,10 +8,18 @@ import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
-import { AcmTable, AcmTablePaginationContextProvider, AcmTableProps, ExportableIRow } from './AcmTable'
+import {
+  AcmTable,
+  AcmTablePaginationContextProvider,
+  AcmTableProps,
+  ExportableIRow,
+  ITableAdvancedFilter,
+} from './AcmTable'
 import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { exportObjectString } from '../../resources/utils'
+import { SearchOperator } from '../AcmSearchInput'
+
 const axe = configureAxe({
   rules: {
     'scope-attr-valid': { enabled: false },
@@ -26,7 +34,24 @@ interface IExampleData {
   gender: string
   email: string
   ip_address: string
+  availableOperators?: SearchOperator[]
 }
+
+const advancedFilters = [
+  {
+    label: 'Gender',
+    id: 'gender',
+    availableOperators: [SearchOperator.Equals],
+    options: [
+      { label: 'Male', value: 'male' },
+      { label: 'Female', value: 'female' },
+      { label: 'Non-binary', value: 'non-binary' },
+    ],
+    tableFilterFn: (selectedValues: string[], item: IExampleData) => {
+      return selectedValues.includes(item['gender'].toLowerCase())
+    },
+  },
+]
 
 describe('AcmTable', () => {
   const createAction = jest.fn()
@@ -50,6 +75,7 @@ describe('AcmTable', () => {
       gridBreakPoint?: TableGridBreakpoint
       useCustomTableAction?: boolean
       addSubRows?: () => ExportableIRow[]
+      advancedFilters?: ITableAdvancedFilter<IExampleData>[]
     } & Partial<AcmTableProps<IExampleData>>
   ) => {
     const {
@@ -59,6 +85,7 @@ describe('AcmTable', () => {
       useSearch = true,
       useCustomTableAction = false,
       addSubRows,
+      advancedFilters,
     } = props
     const [items, setItems] = useState<IExampleData[]>(testItems)
     return (
@@ -68,6 +95,7 @@ describe('AcmTable', () => {
             path="/*"
             element={
               <AcmTable<IExampleData>
+                advancedFilters={advancedFilters}
                 emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
                 items={items}
                 columns={[
@@ -591,6 +619,36 @@ describe('AcmTable', () => {
 
     // verify sort order set during filter (Last Name) persists
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
+  })
+
+  test('can be searched with advanced filter dropdown', () => {
+    const { getByLabelText, getByText, queryByText, getByRole } = render(<Table advancedFilters={advancedFilters} />)
+
+    expect(getByLabelText('Open advanced search')).toBeInTheDocument()
+
+    userEvent.click(getByLabelText('Open advanced search'))
+    userEvent.click(getByText('Select a column'))
+    expect(getByRole('option', { name: 'gender' })).toBeInTheDocument()
+
+    userEvent.click(getByText('gender'))
+    userEvent.type(getByRole('textbox', { name: 'Value' }), 'female')
+    expect(queryByText('57 / 57')).toBeInTheDocument()
+  })
+
+  test('can be search with advanced filter fuzzy search', () => {
+    const { getByLabelText, queryByText, getAllByDisplayValue, getByTestId } = render(
+      <Table advancedFilters={advancedFilters} />
+    )
+
+    userEvent.click(getByLabelText('Open advanced search'))
+    expect(getByTestId('fuzzy-search-input')).toBeInTheDocument()
+    userEvent.type(getByTestId('fuzzy-search-input'), 'Horatia')
+
+    expect(getByLabelText('Open advanced search')).toBeInTheDocument()
+    userEvent.click(getByLabelText('Open advanced search'))
+
+    expect(getAllByDisplayValue('Horatia')).toHaveLength(1)
+    expect(queryByText('1 / 105')).toBeInTheDocument()
   })
 
   const sortTest = () => {

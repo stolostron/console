@@ -55,6 +55,7 @@ import {
   IAcmTableAction,
   IAcmTableButtonAction,
   IAcmTableColumn,
+  ITableAdvancedFilter,
   ITableFilter,
   Provider,
   ProviderLongTextMap,
@@ -76,6 +77,7 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './util
 import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
+import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -479,6 +481,35 @@ export function ClustersTable(props: {
 
   const rowActions = useMemo(() => [], [])
 
+  const advancedFilters = useMemo<ITableAdvancedFilter<Cluster>[]>(() => {
+    return [
+      {
+        id: 'name',
+        label: t('table.name'),
+        availableOperators: [SearchOperator.Equals],
+        options: Object.values(Provider)
+          .map((key) => ({
+            label: ProviderLongTextMap[key],
+            value: key,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.name),
+      },
+      {
+        id: 'namespace',
+        label: t('table.name'),
+        availableOperators: [SearchOperator.Equals],
+        options: Object.values(Provider)
+          .map((key) => ({
+            label: ProviderLongTextMap[key],
+            value: key,
+          }))
+          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+        tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.name),
+      },
+    ]
+  }, [t])
+
   const filters = useMemo<ITableFilter<Cluster>[]>(() => {
     return [
       {
@@ -595,6 +626,7 @@ export function ClustersTable(props: {
         rowActions={rowActions}
         emptyState={props.emptyState}
         filters={filters}
+        advancedFilters={advancedFilters}
         id="managedClusters"
         showExportButton
         exportFilePrefix="managedclusters"
