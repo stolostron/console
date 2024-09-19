@@ -134,6 +134,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     })
 
     if (searchDataItems.length == 0 && !searchErr && !searchLoading) {
+      setData([])
       setIsFetching(false)
     }
 
