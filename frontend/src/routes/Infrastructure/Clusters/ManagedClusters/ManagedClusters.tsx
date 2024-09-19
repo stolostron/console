@@ -55,6 +55,7 @@ import {
   IAcmTableAction,
   IAcmTableButtonAction,
   IAcmTableColumn,
+  ITableAdvancedFilter,
   ITableFilter,
   Provider,
   ProviderLongTextMap,
@@ -76,6 +77,8 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './util
 import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
+import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
+import { handleOperatorComparison } from '../../../../lib/search-utils'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -479,6 +482,29 @@ export function ClustersTable(props: {
 
   const rowActions = useMemo(() => [], [])
 
+  const advancedFilters = useMemo<ITableAdvancedFilter<Cluster>[]>(() => {
+    return [
+      {
+        id: 'name',
+        label: t('table.name'),
+        availableOperators: [SearchOperator.Equals],
+        tableFilterFn: (selectedValues, cluster) => {
+          const filtervalue = selectedValues[0]
+          return handleOperatorComparison(cluster.name, filtervalue)
+        },
+      },
+      {
+        id: 'namespace',
+        label: t('table.namespace'),
+        availableOperators: [SearchOperator.Equals],
+        tableFilterFn: (selectedValues, cluster) => {
+          const filtervalue = selectedValues[0]
+          return handleOperatorComparison(cluster.name, filtervalue)
+        },
+      },
+    ]
+  }, [t])
+
   const filters = useMemo<ITableFilter<Cluster>[]>(() => {
     return [
       {
@@ -595,6 +621,7 @@ export function ClustersTable(props: {
         rowActions={rowActions}
         emptyState={props.emptyState}
         filters={filters}
+        advancedFilters={advancedFilters}
         id="managedClusters"
         showExportButton
         exportFilePrefix="managedclusters"
@@ -678,7 +705,7 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     ),
     sort: 'namespace',
     cell: (cluster, search) => {
-      return <HighlightSearchText text={cluster.namespace || '-'} searchText={search} />
+      return <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} />
     },
     exportContent: (cluster) => cluster.namespace,
   }
