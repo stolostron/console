@@ -95,11 +95,12 @@ export async function getPagedSearchResources(
     } catch (e) {
       continue
     }
-    resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
+    const items = (results.data?.searchResult?.[0]?.items || []) as IResource[]
+    resources = resources.concat(items)
     if (process.env.NODE_ENV !== 'test') {
       let timeout = 10000
-      if (pass === 1) timeout = 500
-      if (pass === 2) timeout = 2000
+      if (pass === 2 || items.length < 1000) timeout = 2000
+      if (pass === 1 || items.length < 100) timeout = 1000
       await new Promise((r) => setTimeout(r, timeout))
     }
     if (!usePagedQuery) break
