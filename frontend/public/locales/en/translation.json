@@ -9,6 +9,7 @@
   "(1 of {{0}})": "(1 of {{0}})",
   "{{0}} values": "{{0}} values",
   "{{0}} within the last:": "{{0}} within the last:",
+  "{{action}} {{resourceKind}}": "{{action}} {{resourceKind}}",
   "{{count}} cluster cannot be edited ": "{{count}} cluster cannot be edited ",
   "{{count}} cluster cannot be edited _plural": "{{count}} clusters cannot be edited ",
   "{{count}} clusters with issues": "{{count}} cluster with issues",
