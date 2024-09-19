@@ -442,7 +442,56 @@ function setupNocks() {
     })
 }
 
+//////////////////////////////////////////////////////////////////////////
 const resourceCache = {
+  // cluster
+  '/cluster.open-cluster-management.io/v1/managedclusters': {
+    '29496936-2d1d-4460-af37-f68471293e75': {
+      resource: {
+        apiVersion: 'cluster.open-cluster-management.io/v1',
+        kind: 'ManagedCluster',
+        metadata: {
+          annotations: {
+            'installer.multicluster.openshift.io/release-version': '2.7.0',
+            'open-cluster-management/created-via': 'other',
+          },
+          creationTimestamp: '2024-09-12T13:39:41Z',
+          finalizers: [
+            'managedcluster-import-controller.open-cluster-management.io/cleanup',
+            'open-cluster-management.io/managedclusterrole',
+            'cluster.open-cluster-management.io/api-resource-cleanup',
+            'managedclusterinfo.finalizers.open-cluster-management.io',
+            'managedcluster-import-controller.open-cluster-management.io/manifestwork-cleanup',
+          ],
+          generation: 4,
+          labels: {
+            cloud: 'Amazon',
+            'cluster.open-cluster-management.io/clusterset': 'default',
+            clusterID: '075c2ab5-a818-468c-935b-ebbbc45a42f8',
+            'feature.open-cluster-management.io/addon-application-manager': 'available',
+            'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+            'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+            'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+            'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+            'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
+            'feature.open-cluster-management.io/addon-managed-serviceaccount': 'available',
+            'feature.open-cluster-management.io/addon-work-manager': 'available',
+            'local-cluster': 'true',
+            name: 'local-cluster',
+            openshiftVersion: '4.17.0-rc.2',
+            'openshiftVersion-major': '4',
+            'openshiftVersion-major-minor': '4.17',
+            'velero.io/exclude-from-backup': 'true',
+            vendor: 'OpenShift',
+          },
+          name: 'local-cluster',
+          resourceVersion: '7522024',
+          uid: '29496936-2d1d-4460-af37-f68471293e75',
+        },
+      },
+      eventID: 89,
+    },
+  },
   // subscription app
   '/app.k8s.io/v1beta1/applications': {
     'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {

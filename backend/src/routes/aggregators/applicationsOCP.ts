@@ -178,7 +178,7 @@ export async function getOCPApps(
 }
 
 function getNextClusterNameChuck(applicationCache: ApplicationCacheType): string[] {
-  // if no cluster name chucks left, create a new array of chunkz
+  // if no cluster name chucks left, create a new array of chunks
   if (clusterNameChunks.length === 0) {
     const clusterMap = getClusterMap()
     const clusterNames = Object.keys(clusterMap)
