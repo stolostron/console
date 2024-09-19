@@ -50,6 +50,7 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
+let usePagedQuery = true
 export async function getOCPApps(
   applicationCache: ApplicationCacheType,
   argAppSet: Set<string>,
@@ -58,6 +59,7 @@ export async function getOCPApps(
 ) {
   const _query = structuredClone(query)
   const filters = _query.variables.input[0].filters
+  let clusterNameChunk
   if (mode === MODE.ExcludeSystemApps) {
     // NO system apps
     filters.push(
@@ -78,17 +80,19 @@ export async function getOCPApps(
     })
 
     // get chuck of cluster names to search for sys apps
+    clusterNameChunk = getNextClusterNameChuck(applicationCache)
     filters.push({
       property: 'cluster',
-      values: getNextClusterNameChuck(applicationCache),
+      values: clusterNameChunk,
     })
   }
 
-  const ocpApps = (await getPagedSearchResources(
-    _query,
-    mode !== MODE.OnlySystemApps,
-    pass
-  )) as unknown as IOCPAppResource[]
+  // if system mode, don't use paged
+  // if not but last ocp apps > 1000, use paged
+  const isSystemMode = mode === MODE.OnlySystemApps
+  const pagedQuery = isSystemMode ? false : usePagedQuery
+  const ocpApps = (await getPagedSearchResources(_query, pagedQuery, pass)) as unknown as IOCPAppResource[]
+  usePagedQuery = !isSystemMode && ocpApps.length > 1000
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
@@ -173,7 +177,7 @@ export async function getOCPApps(
       applicationCache['localSysApps'] = generateTransforms(localOCPApps)
     }
     // fill in remote system apps
-    fillRemoteSystemCache(applicationCache, remoteOCPApps)
+    fillRemoteSystemCache(applicationCache, remoteOCPApps, clusterNameChunk)
   }
 }
 
@@ -211,14 +215,19 @@ function getNextClusterNameChuck(applicationCache: ApplicationCacheType): string
   return clusterNameChunks.shift()
 }
 
-function fillRemoteSystemCache(applicationCache: ApplicationCacheType, remoteSysApps: IResource[]) {
+function fillRemoteSystemCache(
+  applicationCache: ApplicationCacheType,
+  remoteSysApps: IResource[],
+  clusterNameChunk: string[]
+) {
+  // initialize map
+  clusterNameChunk.forEach((clustername) => {
+    applicationCache['remoteSysApps'].resourceMap[clustername] = []
+  })
   const resources = generateTransforms(remoteSysApps, true).resources
   resources.forEach((transform) => {
     const clustername = transform.transform[AppColumns.clusters].join()
-    let transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
-    if (!transforms) {
-      transforms = applicationCache['remoteSysApps'].resourceMap[clustername] = []
-    }
+    const transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
     transforms.push(transform)
   })
 }

@@ -70,7 +70,7 @@ export async function getPagedSearchResources(
     variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
     query: string
   },
-  pageResults: boolean,
+  usePagedQuery: boolean,
   pass: number
 ) {
   const options = await getServiceAccountOptions()
@@ -79,7 +79,7 @@ export async function getPagedSearchResources(
     const _query = structuredClone(query)
     // should we limit the results by groupings of apps that
     // begin with certain letters?
-    if (pageResults) {
+    if (usePagedQuery) {
       const values = pagedSearchQueries[i]
       _query.variables.input[0].filters.push({
         property: 'name',
@@ -102,7 +102,7 @@ export async function getPagedSearchResources(
       if (pass === 2) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))
     }
-    if (!pageResults) break
+    if (!usePagedQuery) break
     i++
   }
   return resources
