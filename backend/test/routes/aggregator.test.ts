@@ -85,15 +85,14 @@ describe(`aggregator Route`, function () {
 })
 
 const responseCount = {
-  itemCount: '3',
+  itemCount: '2',
   filterCounts: {
     type: {
       subscription: 1,
       appset: 1,
-      openshift: 1,
     },
     cluster: {
-      'local-cluster': 3,
+      'local-cluster': 2,
     },
   },
   loading: false,
@@ -264,7 +263,7 @@ function setupNocks() {
   pagedSearchQueries.forEach((query, inx) => {
     const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":100}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
     )
     if (inx === 0) {
       nocked.reply(200, {
@@ -300,12 +299,20 @@ function setupNocks() {
     }
   })
 
+  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+    .post(
+      '/searchapi/graphql',
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      // "{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"}"
+    )
+    .reply(200, {})
+
   //
   // REMOTE/LOCAL OCP and FLUX--NOT SYSTEM
   pagedSearchQueries.forEach((query, inx) => {
     const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":100}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
     )
     if (inx === 0) {
       nocked.reply(200, {
@@ -350,6 +357,13 @@ function setupNocks() {
       nocked.reply(200, {})
     }
   })
+
+  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+    .post(
+      '/searchapi/graphql',
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+    )
+    .reply(200, {})
 
   // SYSTEM APPS
   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(

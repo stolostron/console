@@ -85,9 +85,6 @@ export async function getPagedSearchResources(
         property: 'name',
         values,
       })
-      if (pass === 1) {
-        _query.variables.input[0].limit = 100
-      }
     }
     let results: ISearchResult
     try {
