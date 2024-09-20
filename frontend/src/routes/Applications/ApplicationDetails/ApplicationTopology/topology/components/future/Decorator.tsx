@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { css } from '@patternfly/react-styles'
-import styles from '@patternfly/react-styles/css/components/Topology/topology-components'
+import styles from '@patternfly/react-topology/dist/esm/css/topology-components'
 import { useHover, createSvgIdUrl } from '@patternfly/react-topology'
 import SvgDropShadowFilter from './SvgDropShadowFilter'
 import { DEFAULT_DECORATOR_PADDING } from './shapeUtils'

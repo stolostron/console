@@ -2,7 +2,7 @@
 
 import { ClusterImageSet, ClusterPool, patchResource } from '../../../../../resources'
 import { AcmSelect } from '../../../../../ui-components'
-import { SelectOption } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'

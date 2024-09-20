@@ -1,6 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { EmptyState, EmptyStateBody, EmptyStateIcon, EmptyStateSecondaryActions, Title } from '@patternfly/react-core'
+import {
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateIcon,
+  Title,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
+} from '@patternfly/react-core'
 import { css } from '@emotion/css'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 import { AcmLoadingPage } from '../AcmLoadingPage/AcmLoadingPage'
@@ -8,7 +16,7 @@ import { TrashIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../lib/acm-i18next'
 
 const container = css({
-  '& .pf-c-card': {
+  '& .pf-v5-c-card': {
     height: '100vh',
   },
 })
@@ -51,15 +59,17 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
       <AcmPageCard>
         <EmptyState>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <EmptyStateIcon icon={TrashIcon} />
-          <div className={body}>
-            <Title size="lg" headingLevel="h4">
-              {props.successTitle ?? t('Success')}
-            </Title>
-            <EmptyStateBody>{props.successMessage}</EmptyStateBody>
-          </div>
-          {props.primaryAction}
-          <EmptyStateSecondaryActions>{props.secondaryActions}</EmptyStateSecondaryActions>
+          <EmptyStateHeader icon={<EmptyStateIcon icon={TrashIcon} />} />
+          <EmptyStateFooter>
+            <div className={body}>
+              <Title size="lg" headingLevel="h4">
+                {props.successTitle ?? t('Success')}
+              </Title>
+              <EmptyStateBody>{props.successMessage}</EmptyStateBody>
+            </div>
+            {props.primaryAction}
+            <EmptyStateActions>{props.secondaryActions}</EmptyStateActions>
+          </EmptyStateFooter>
         </EmptyState>
       </AcmPageCard>
     </div>

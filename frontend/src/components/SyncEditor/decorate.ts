@@ -1,27 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import { ErrorType } from './validation'
+import { Monaco } from '@monaco-editor/react'
+import { editor as editorTypes } from 'monaco-editor'
 
 const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-interface Decoration {
-  id: string
-  options: {
-    inlineClassName: string
-    glyphMarginClassName: string
-    linesDecorationsClassName: string
-    className: string
-    description: string
-  }
-}
-
 export const decorate = (
   isCustomEdit: boolean,
   editorHasFocus: boolean,
-  editorRef: any,
-  monacoRef: any,
+  editor: editorTypes.IStandaloneCodeEditor,
+  monaco: Monaco,
   errors: any[],
   changes: any[],
   change: {
@@ -36,41 +27,41 @@ export const decorate = (
   const squigglyTooltips: any[] = []
 
   // errors/warnings
-  addErrorDecorations(monacoRef, errors, decorations, squigglyTooltips)
+  addErrorDecorations(monaco, errors, decorations, squigglyTooltips)
 
   // add change decorations
-  addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
+  addChangeDecorations(isCustomEdit, monaco, changes, change, decorations)
 
   // if form is making changes, layer any editor changes decorations on top of form changes
   if (preservedUserEdits.length) {
-    addChangeDecorations(true, monacoRef, preservedUserEdits, change, decorations)
+    addChangeDecorations(true, monaco, preservedUserEdits, change, decorations)
   }
 
   // add protected decorations
-  addProtectedDecorations(monacoRef, protectedRanges, decorations)
+  addProtectedDecorations(monaco, protectedRanges, decorations)
 
   // add filter row toggle decorations
-  addFilteredDecorations(monacoRef, filteredRows, decorations)
+  addFilteredDecorations(monaco, filteredRows, decorations)
 
   // add decorations to editor
   const hasErrors = errors.length > 0
-  const handles = getResourceEditorDecorations(editorRef, hasErrors).map((decoration: { id: any }) => decoration.id)
-  editorRef.current.deltaDecorations(handles, decorations)
+  const handles = getResourceEditorDecorations(editor, hasErrors).map((decoration: { id: any }) => decoration.id)
+  editor.deltaDecorations(handles, decorations)
 
   // scroll to best line to show
   if (!editorHasFocus) {
-    scrollToChangeDecoration(editorRef, errors, decorations)
+    scrollToChangeDecoration(editor, errors, decorations)
   }
 
   return squigglyTooltips
 }
 
-const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorations: any[]) => {
+const addProtectedDecorations = (monaco: Monaco, protectedRanges: any[], decorations: any[]) => {
   protectedRanges?.forEach((range) => {
     const start = range.startLineNumber
     const end = range.endLineNumber - 1
     decorations.push({
-      range: new monacoRef.current.Range(start, 1, end, 132),
+      range: new monaco.Range(start, 1, end, 132),
       options: {
         inlineClassName: 'protectedDecoration',
         description: 'resource-editor',
@@ -79,10 +70,10 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
   })
 }
 
-const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations: any[]) => {
+const addFilteredDecorations = (monaco: Monaco, filteredRows: any[], decorations: any[]) => {
   filteredRows?.forEach((row) => {
     decorations.push({
-      range: new monacoRef.current.Range(row, 0, row, 132),
+      range: new monaco.Range(row, 0, row, 132),
       options: {
         after: { content: '\u200b', inlineClassName: 'inline-folded' },
         description: 'resource-editor',
@@ -91,7 +82,7 @@ const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations
   })
 }
 
-const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], squigglyTooltips: any[]) => {
+const addErrorDecorations = (monaco: Monaco, errors: any[], decorations: any[], squigglyTooltips: any[]) => {
   errors.forEach((error: { linePos: any; message: any; errorType: ErrorType }) => {
     const { linePos, message, errorType } = error
     const start = linePos?.start?.line ?? 0
@@ -124,12 +115,12 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
       }
 
       decorations.push({
-        range: new monacoRef.current.Range(start, 0, start, 132),
+        range: new monaco.Range(start, 0, start, 132),
         options,
       })
 
       // squiggly line under error
-      const range = new monacoRef.current.Range(
+      const range = new monaco.Range(
         start,
         linePos?.start?.col ?? 0,
         linePos?.end?.line ?? start,
@@ -150,7 +141,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
 
 const addChangeDecorations = (
   isCustomEdit: boolean,
-  monacoRef: any,
+  monaco: Monaco,
   changes: any[],
   change: {
     parsed: { [name: string]: any[] }
@@ -163,7 +154,7 @@ const addChangeDecorations = (
     const obj: any = get(change.mappings, $a)
     if (obj) {
       decorations.push({
-        range: new monacoRef.current.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
+        range: new monaco.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
         options: {
           isWholeLine: true,
           linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
@@ -174,7 +165,7 @@ const addChangeDecorations = (
       })
       if ($f != null && $f.toString().length < 132 && !obj.$s) {
         decorations.push({
-          range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
+          range: new monaco.Range(obj.$r, 0, obj.$r, 132),
           options: {
             after: { content: `  # ${$f}`, inlineClassName: 'protectedDecoration' },
             description: 'resource-editor',
@@ -185,16 +176,16 @@ const addChangeDecorations = (
   })
 }
 
-export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean) => {
+export const getResourceEditorDecorations = (editor: editorTypes.IStandaloneCodeEditor, hasErrors: boolean) => {
   // clear resource-editor decorations
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
   // areas are so only previous decorations do
-  const model = editorRef.current?.getModel()
-  let decorations: Decoration[] = model ? model.getAllDecorations() : []
+  const model = editor?.getModel()
+  let decorations = model ? model.getAllDecorations() : []
   decorations = decorations.filter(({ options }) => {
     return (
       options?.className?.startsWith('squiggly-') ||
-      ['customLineDecoration', 'insertedLineDecoration'].includes(options?.linesDecorationsClassName) ||
+      ['customLineDecoration', 'insertedLineDecoration'].includes(options?.linesDecorationsClassName ?? '') ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
   })
@@ -202,8 +193,7 @@ export const getResourceEditorDecorations = (editorRef: any, hasErrors: boolean)
   return decorations
 }
 
-const scrollToChangeDecoration = (editorRef: any, errors: any[], decorations: any[]) => {
-  const editor = editorRef.current
+const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, errors: any[], decorations: any[]) => {
   const visibleRange = editor.getVisibleRanges()[0]
   if (visibleRange) {
     // if any errors and not in visible range, and first error isn't visible, scroll to it

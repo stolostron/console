@@ -196,7 +196,7 @@ export function DistributionField(props: {
       <AcmButton
         onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
         variant="link"
-        isSmall
+        size="sm"
         isInline
         role="link"
         icon={<ExternalLinkAltIcon />}

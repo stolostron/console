@@ -63,7 +63,7 @@ export function LablesGroup(props: { labels: Record<string, string> }) {
     return (
       <LabelGroup
         style={{
-          color: 'var(--pf-global--Color--200)',
+          color: 'var(--pf-v5-global--Color--200)',
           fontSize: '14px',
         }}
       >
@@ -414,8 +414,8 @@ export default function DetailsOverviewPage() {
                 </Flex>
                 <DescriptionListDescription
                   style={{
-                    border: '1px solid var(--pf-global--BorderColor--300)',
-                    borderRadius: 'var(--pf-c-label-group--m-category--BorderRadius)',
+                    border: '1px solid var(--pf-v5-global--BorderColor--300)',
+                    borderRadius: 'var(--pf-v5-c-label-group--m-category--BorderRadius)',
                     padding: '0.25rem',
                   }}
                 >

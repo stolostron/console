@@ -8,10 +8,11 @@ import {
   EmptyStateIcon,
   Split,
   SplitItem,
-  Title,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
 
@@ -23,31 +24,30 @@ export interface AcmTableEmptyStateProps {
 
 export function AcmTableEmptyState(props: { title: string; message: string; action?: string }) {
   return (
-    <EmptyState variant={EmptyStateVariant.small}>
-      <EmptyStateIcon icon={SearchIcon} />
-      <Title headingLevel="h2" size="lg">
-        {props.title}
-      </Title>
+    <EmptyState variant={EmptyStateVariant.sm}>
+      <EmptyStateHeader titleText={<>{props.title}</>} icon={<EmptyStateIcon icon={SearchIcon} />} headingLevel="h2" />
       <EmptyStateBody>{props.message}</EmptyStateBody>
-      <EmptyStateBody>
-        {props.action ? (
-          <Split>
-            <SplitItem isFilled></SplitItem>
-            <SplitItem>
-              <Toolbar>
-                <ToolbarContent>
-                  <ToolbarItem>
-                    <Button>{props.action}</Button>
-                  </ToolbarItem>
-                </ToolbarContent>
-              </Toolbar>
-            </SplitItem>
-            <SplitItem isFilled></SplitItem>
-          </Split>
-        ) : (
-          <></>
-        )}
-      </EmptyStateBody>
+      <EmptyStateFooter>
+        <EmptyStateBody>
+          {props.action ? (
+            <Split>
+              <SplitItem isFilled></SplitItem>
+              <SplitItem>
+                <Toolbar>
+                  <ToolbarContent>
+                    <ToolbarItem>
+                      <Button>{props.action}</Button>
+                    </ToolbarItem>
+                  </ToolbarContent>
+                </Toolbar>
+              </SplitItem>
+              <SplitItem isFilled></SplitItem>
+            </Split>
+          ) : (
+            <></>
+          )}
+        </EmptyStateBody>
+      </EmptyStateFooter>
     </EmptyState>
   )
 }

@@ -177,8 +177,8 @@ export default function RelatedResults(
                   <div
                     style={{
                       marginLeft: '10px',
-                      fontSize: 'var(--pf-global--FontSize--sm)',
-                      color: 'var(--pf-global--Color--200)',
+                      fontSize: 'var(--pf-v5-global--FontSize--sm)',
+                      color: 'var(--pf-v5-global--Color--200)',
                     }}
                   >
                     {`(${count!.count})`}

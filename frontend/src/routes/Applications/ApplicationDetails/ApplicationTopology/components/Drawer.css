@@ -1,5 +1,5 @@
 .topologyDetails {
-  background-color: var(--pf-global--BackgroundColor--400);
+  background-color: var(--pf-v5-global--BackgroundColor--400);
   width: 100%;
   height: calc(100% - 29px);
   overflow: auto;
@@ -8,9 +8,9 @@
 .topologyDetails .detailsHeader {
   position: sticky;
   top: 0px;
-  box-shadow: var(--pf-c-page--section--m-sticky-top--BoxShadow);
-  z-index: var(--pf-c-page--section--m-sticky-top--ZIndex);
-  background-color: var(--pf-global--BackgroundColor--100);
+  box-shadow: var(--pf-v5-c-page--section--m-sticky-top--BoxShadow);
+  z-index: var(--pf-v5-c-page--section--m-sticky-top--ZIndex);
+  background-color: var(--pf-v5-global--BackgroundColor--100);
 }
 
 .topologyDetails .detailsHeader .innerDetailsHeader {
@@ -158,180 +158,200 @@
   display: flex;
   justify-content: flex-end;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-pagination__total-items {
+.topologyDetails .sectionContent .clusterDetails .pf-v5-c-pagination .pf-v5-c-pagination__total-items {
   display: none;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-pagination
-  .pf-c-pagination__nav
-  .pf-c-pagination__nav-control
-  .pf-c-button {
+  .pf-v5-c-pagination
+  .pf-v5-c-pagination__nav
+  .pf-v5-c-pagination__nav-control
+  .pf-v5-c-button {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-options-menu {
+.topologyDetails .sectionContent .clusterDetails .pf-v5-c-pagination .pf-v5-c-options-menu {
   display: none;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-select
-  .pf-c-select__toggle
-  .pf-c-select__toggle-wrapper
-  .pf-c-form-control:focus {
+  .pf-v5-c-select
+  .pf-v5-c-select__toggle
+  .pf-v5-c-select__toggle-wrapper
+  .pf-v5-c-form-control:focus {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
+.topologyDetails .sectionContent .clusterDetails .pf-v5-c-select .pf-v5-c-select__toggle .pf-v5-c-button:focus {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion {
-  --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-  --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--active__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-  --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+.topologyDetails .sectionContent .clusterDetails .pf-v5-c-accordion {
+  --pf-v5-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
+  --pf-v5-c-accordion__toggle--hover__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--active__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--focus__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--active__toggle-text--FontWeight: normal;
+  --pf-v5-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle {
+.topologyDetails .sectionContent .clusterDetails .pf-v5-c-accordion .clusterDetailItem .pf-v5-c-accordion__toggle {
   padding-left: 0px;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .clusterDetailItem
-  .pf-c-accordion__toggle.pf-m-expanded
-  .pf-c-accordion__toggle-text {
+  .pf-v5-c-accordion__toggle.pf-m-expanded
+  .pf-v5-c-accordion__toggle-text {
   color: #000;
   font-weight: normal;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:hover {
+.topologyDetails
+  .sectionContent
+  .clusterDetails
+  .pf-v5-c-accordion
+  .clusterDetailItem
+  .pf-v5-c-accordion__toggle:hover {
   background-color: #fff;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:active {
+.topologyDetails
+  .sectionContent
+  .clusterDetails
+  .pf-v5-c-accordion
+  .clusterDetailItem
+  .pf-v5-c-accordion__toggle:active {
   background-color: #fff;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle:focus {
+.topologyDetails
+  .sectionContent
+  .clusterDetails
+  .pf-v5-c-accordion
+  .clusterDetailItem
+  .pf-v5-c-accordion__toggle:focus {
   background-color: #fff;
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle::after {
+.topologyDetails
+  .sectionContent
+  .clusterDetails
+  .pf-v5-c-accordion
+  .clusterDetailItem
+  .pf-v5-c-accordion__toggle::after {
   width: 0px;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .clusterDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded {
-  --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded {
+  --pf-v5-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .clusterDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded
-  .pf-c-accordion__expanded-content-body {
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded
+  .pf-v5-c-accordion__expanded-content-body {
   padding-left: 0px;
   padding-top: 0px;
 }
 .topologyDetails
   .sectionContent
   .clusterDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .clusterDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded
-  .pf-c-accordion__expanded-content-body::after {
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded
+  .pf-v5-c-accordion__expanded-content-body::after {
   width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-pagination__total-items {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-pagination .pf-v5-c-pagination__total-items {
   display: none;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-pagination
-  .pf-c-pagination__nav
-  .pf-c-pagination__nav-control
-  .pf-c-button {
+  .pf-v5-c-pagination
+  .pf-v5-c-pagination__nav
+  .pf-v5-c-pagination__nav-control
+  .pf-v5-c-button {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-options-menu {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-pagination .pf-v5-c-options-menu {
   display: none;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-select
-  .pf-c-select__toggle
-  .pf-c-select__toggle-wrapper
-  .pf-c-form-control:focus {
+  .pf-v5-c-select
+  .pf-v5-c-select__toggle
+  .pf-v5-c-select__toggle-wrapper
+  .pf-v5-c-form-control:focus {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-select .pf-v5-c-select__toggle .pf-v5-c-button:focus {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion {
-  --pf-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-  --pf-c-accordion__toggle--hover__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--active__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--focus__toggle-text--Color: #000;
-  --pf-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-  --pf-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion {
+  --pf-v5-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
+  --pf-v5-c-accordion__toggle--hover__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--active__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--focus__toggle-text--Color: #000;
+  --pf-v5-c-accordion__toggle--active__toggle-text--FontWeight: normal;
+  --pf-v5-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion .appDetailItem .pf-v5-c-accordion__toggle {
   padding-left: 0px;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .appDetailItem
-  .pf-c-accordion__toggle.pf-m-expanded
-  .pf-c-accordion__toggle-text {
+  .pf-v5-c-accordion__toggle.pf-m-expanded
+  .pf-v5-c-accordion__toggle-text {
   color: #000;
   font-weight: normal;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:hover {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion .appDetailItem .pf-v5-c-accordion__toggle:hover {
   background-color: #fff;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:active {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion .appDetailItem .pf-v5-c-accordion__toggle:active {
   background-color: #fff;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle:focus {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion .appDetailItem .pf-v5-c-accordion__toggle:focus {
   background-color: #fff;
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle::after {
+.topologyDetails .sectionContent .appDetails .pf-v5-c-accordion .appDetailItem .pf-v5-c-accordion__toggle::after {
   width: 0px;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .appDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded {
-  --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded {
+  --pf-v5-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .appDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded
-  .pf-c-accordion__expanded-content-body {
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded
+  .pf-v5-c-accordion__expanded-content-body {
   padding-left: 0px;
   padding-top: 0px;
 }
 .topologyDetails
   .sectionContent
   .appDetails
-  .pf-c-accordion
+  .pf-v5-c-accordion
   .appDetailItem
-  .pf-c-accordion__expanded-content.pf-m-expanded
-  .pf-c-accordion__expanded-content-body::after {
+  .pf-v5-c-accordion__expanded-content.pf-m-expanded
+  .pf-v5-c-accordion__expanded-content-body::after {
   width: 0px;
 }
 .topologyDetails .label {
@@ -349,11 +369,11 @@
 }
 .topologyDetails .value {
   font-size: 14px;
-  color: var(--pf-global--Color--100);
+  color: var(--pf-v5-global--Color--100);
   word-break: normal;
 }
 .topologyDetails .ksLabelBackground {
-  background-color: var(--pf-c-label--BackgroundColor);
+  background-color: var(--pf-v5-c-label--BackgroundColor);
   border-radius: 35px;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -366,7 +386,7 @@
   font-family: 'RedHatText';
   font-weight: 600;
   font-size: 14px;
-  color: var(--pf-global--link--Color);
+  color: var(--pf-v5-global--link--Color);
   cursor: pointer;
 }
 .topologyDetails .link:hover {
@@ -407,15 +427,15 @@
 .topologyDetails:hover .details-view-scrollbar {
   visibility: visible;
 }
-.pf-c-drawer__panel .pf-c-drawer__body.pf-m-no-padding .pf-c-drawer__actions {
+.pf-v5-c-drawer__panel .pf-v5-c-drawer__body.pf-m-no-padding .pf-v5-c-drawer__actions {
   display: flex;
   justify-content: flex-end;
 }
 
-.pf-c-drawer__panel
-  .pf-c-drawer__body.pf-m-no-padding
-  .pf-c-drawer__actions
-  .pf-c-drawer__close
-  .pf-c-button.pf-m-plain {
+.pf-v5-c-drawer__panel
+  .pf-v5-c-drawer__body.pf-m-no-padding
+  .pf-v5-c-drawer__actions
+  .pf-v5-c-drawer__close
+  .pf-v5-c-button.pf-m-plain {
   padding: 5px 5px 0px 0px;
 }

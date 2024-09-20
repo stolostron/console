@@ -289,7 +289,7 @@ export default function ClusterDetailsPage() {
           title={cluster.displayName!}
           description={
             cluster.hive.clusterClaimName && (
-              <span style={{ color: 'var(--pf-global--Color--200)' }}>{cluster.hive.clusterClaimName}</span>
+              <span style={{ color: 'var(--pf-v5-global--Color--200)' }}>{cluster.hive.clusterClaimName}</span>
             )
           }
           navigation={

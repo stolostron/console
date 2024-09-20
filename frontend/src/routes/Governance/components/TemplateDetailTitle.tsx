@@ -32,7 +32,7 @@ export function TemplateDetailTitle({
           style={{
             padding: '1px 4px',
             backgroundColor: '#009596',
-            color: 'var(--pf-global--BackgroundColor--light-100)',
+            color: 'var(--pf-v5-global--BackgroundColor--light-100)',
             borderRadius: '20px',
             fontSize: '0.75rem',
             marginRight: '10px',
@@ -64,7 +64,7 @@ export function TemplateDetailTitle({
             color="orange"
             icon={
               <ExclamationTriangleIcon
-                color="var(--pf-global--warning-color--100)"
+                color="var(--pf-v5-global--warning-color--100)"
                 style={{ verticalAlign: 'middle' }}
               />
             }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Fragment } from 'react'
-import { useItem, Select, WizArrayInput, WizTextInput } from '@patternfly-labs/react-form-wizard'
+import { useItem, WizSelect, WizArrayInput, WizTextInput } from '@patternfly-labs/react-form-wizard'
 import { IResource } from '../common/resources/IResource'
 import { PlacementApiGroup, PlacementKind } from '../common/resources/IPlacement'
 import {
@@ -67,7 +67,7 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
         helperText={t('The placement binding name must be unique to the namespace.')}
         validation={validateKubernetesResourceName}
       />
-      <Select
+      <WizSelect
         path="placementRef.kind"
         label={t('Placement kind')}
         helperText={t('The placement rule used to select clusters for placement.')}
@@ -113,7 +113,7 @@ function Subject() {
   const { t } = useTranslation()
   return (
     <Fragment>
-      <Select
+      <WizSelect
         path="kind"
         label={t('Subject kind')}
         required

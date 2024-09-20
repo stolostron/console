@@ -33,7 +33,7 @@ class ControlPanelPrompt extends React.Component {
     return (
       <React.Fragment>
         <div className="creation-view-controls-add-value-container bottom-right">
-          <Button id={id} variant="link" onClick={createPopupWindow} icon={icon} iconPosition="right" isSmall>
+          <Button id={id} variant="link" onClick={createPopupWindow} icon={icon} iconPosition="right" size="sm">
             {prompt}
           </Button>
         </div>

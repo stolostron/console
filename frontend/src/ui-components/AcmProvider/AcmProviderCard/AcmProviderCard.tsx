@@ -5,7 +5,6 @@ import {
   Card,
   CardFooter,
   CardHeader,
-  CardHeaderMain,
   Gallery,
   GalleryItem,
   Stack,
@@ -29,8 +28,8 @@ const icon = css({
 })
 const providerTitle = css({
   marginTop: '4px',
-  fontSize: 'var(--pf-c-title--m-3xl--FontSize)',
-  lineHeight: 'var(--pf-c-title--m-3xl--LineHeight)',
+  fontSize: 'var(--pf-v5-c-title--m-3xl--FontSize)',
+  lineHeight: 'var(--pf-v5-c-title--m-3xl--LineHeight)',
 })
 const dangerIcon = css({
   width: '16px',
@@ -89,20 +88,23 @@ export function AcmProviderCard(props: ProviderCardProps) {
       <Stack>
         <StackItem>
           <CardHeader>
-            <CardHeaderMain>
-              <div className={icon}>
-                <AcmIcon icon={ProviderIconMap[props.provider]} />
-              </div>
-              <Title headingLevel="h2" size="3xl" className={providerTitle} style={{ fontWeight: 300 }}>
-                {ProviderShortTextMap[props.provider]}
-                {props.danger && (
-                  <ExclamationCircleIcon
-                    color="var(--pf-global--palette--red-100)"
-                    className={`${dangerIcon} danger-icon`}
-                  />
-                )}
-              </Title>
-            </CardHeaderMain>
+            actions=
+            {
+              <>
+                <div className={icon}>
+                  <AcmIcon icon={ProviderIconMap[props.provider]} />
+                </div>
+                <Title headingLevel="h2" size="3xl" className={providerTitle} style={{ fontWeight: 300 }}>
+                  {ProviderShortTextMap[props.provider]}
+                  {props.danger && (
+                    <ExclamationCircleIcon
+                      color="var(--pf-v5-global--palette--red-100)"
+                      className={`${dangerIcon} danger-icon`}
+                    />
+                  )}
+                </Title>
+              </>
+            }
           </CardHeader>
         </StackItem>
         <StackItem isFilled></StackItem>
