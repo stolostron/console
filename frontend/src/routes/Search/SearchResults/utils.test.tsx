@@ -18,6 +18,19 @@ const toastContextMock: any = {
   addAlert: jest.fn(),
 }
 
+jest.mock('../../../resources', () => ({
+  ...jest.requireActual('../../../resources'),
+  putRequest: jest.fn(() => {
+    return { promise: Promise.resolve() }
+  }),
+}))
+jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
+  handleVMActions: jest.fn(() => {
+    return Promise.resolve()
+  }),
+}))
+
 const allClusters = [
   {
     name: 'local-cluster',
@@ -216,6 +229,33 @@ test('Correctly return VirtualMachine with actions disabled', () => {
     t
   )
   expect(res).toMatchSnapshot()
+})
+test('should handle vm action buttons', () => {
+  const item = { managedHub: 'cluster1' }
+  const vmActionsEnabled = true
+  const actions = getRowActions(
+    'VirtualMachine',
+    'kind:VirtualMachine',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    navigate,
+    toastContextMock,
+    vmActionsEnabled,
+    t
+  )
+  const startVMAction = actions.find((action) => action.id === 'startVM')
+  const stopVMAction = actions.find((action) => action.id === 'stopVM')
+  const restartVMAction = actions.find((action) => action.id === 'restartVM')
+  const pauseVMAction = actions.find((action) => action.id === 'pauseVM')
+  const unpauseVMAction = actions.find((action) => action.id === 'unpauseVM')
+
+  startVMAction?.click(item)
+  stopVMAction?.click(item)
+  restartVMAction?.click(item)
+  pauseVMAction?.click(item)
+  unpauseVMAction?.click(item)
 })
 
 test('generateSearchResultExport - Correctly generates and triggers csv download for single resource kind', () => {

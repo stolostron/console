@@ -27,7 +27,14 @@ export interface ISearchResult {
   __type: string
 }
 
-function handleVMActions(action: string, path: string, item: any, toast: IAlertContext, t: TFunction) {
+export function handleVMActions(
+  action: string,
+  path: string,
+  item: any,
+  refetchVM: () => void, // provide a callback fn to refetch the vm
+  toast: IAlertContext,
+  t: TFunction
+) {
   putRequest(`${getBackendUrl()}${path}`, {
     managedCluster: item.cluster,
     vmName: item.name,
@@ -35,7 +42,7 @@ function handleVMActions(action: string, path: string, item: any, toast: IAlertC
   })
     .promise.then(() => {
       // Wait 5 seconds to allow search collector to catch up & refetch search results to update table.
-      setTimeout(() => searchClient.refetchQueries({ include: ['searchResultItems'] }), 5000)
+      setTimeout(refetchVM, 5000)
     })
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
@@ -246,35 +253,70 @@ export function getRowActions(
     id: 'startVM',
     title: t('Start {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('start', '/virtualmachines/start', item, toast, t)
+      handleVMActions(
+        'start',
+        '/virtualmachines/start',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const stopVM = {
     id: 'stopVM',
     title: t('Stop {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('stop', '/virtualmachines/stop', item, toast, t)
+      handleVMActions(
+        'stop',
+        '/virtualmachines/stop',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const restartVM = {
     id: 'restartVM',
     title: t('Restart {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('restart', '/virtualmachines/restart', item, toast, t)
+      handleVMActions(
+        'restart',
+        '/virtualmachines/restart',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const pauseVM = {
     id: 'pauseVM',
     title: t('Pause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('pause', '/virtualmachineinstances/pause', item, toast, t)
+      handleVMActions(
+        'pause',
+        '/virtualmachineinstances/pause',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const unpauseVM = {
     id: 'unpauseVM',
     title: t('Unpause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('unpause', '/virtualmachineinstances/unpause', item, toast, t)
+      handleVMActions(
+        'unpause',
+        '/virtualmachineinstances/unpause',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
 

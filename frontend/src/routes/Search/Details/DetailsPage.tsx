@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { Divider, Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -10,7 +10,9 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
+import { handleVMActions } from '../SearchResults/utils'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
 export type SearchDetailsContext = {
@@ -27,40 +29,23 @@ export type SearchDetailsContext = {
 }
 
 export function getResourceParams() {
-  let cluster = '',
-    kind = '',
-    apiversion = '',
-    namespace = '',
-    name = ''
-  const urlParams = decodeURIComponent(window.location.search).replace('?', '').split('&')
-  urlParams.forEach((param) => {
-    const paramKey = param.split('=')[0]
-    const paramValue = param.split('=')[1]
-    switch (paramKey) {
-      case 'cluster':
-        cluster = paramValue
-        break
-      case 'kind':
-        kind = paramValue
-        break
-      case 'apiversion':
-        apiversion = paramValue
-        break
-      case 'namespace':
-        namespace = paramValue
-        break
-      case 'name':
-        name = paramValue
-        break
-    }
-  })
-  return { cluster, kind, apiversion, namespace, name }
+  const params = new URLSearchParams(decodeURIComponent(window.location.search))
+  return {
+    cluster: params.get('cluster') || '',
+    kind: params.get('kind') || '',
+    apiversion: params.get('apiversion') || '',
+    namespace: params.get('namespace') || '',
+    name: params.get('name') || '',
+  }
 }
 
 export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
+  const { settingsState } = useSharedAtoms()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()
   const [resourceVersion, setResourceVersion] = useState<string>('')
@@ -155,6 +140,59 @@ export default function DetailsPage() {
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError]
   )
 
+  const getResourceActions = useMemo(() => {
+    const actions = [
+      <DropdownItem
+        component="button"
+        key="edit-resource"
+        onClick={() => {
+          navigate(`${NavigationPath.resourceYAML}${window.location.search}`)
+        }}
+      >
+        {t('Edit {{resourceKind}}', { resourceKind: kind })}
+      </DropdownItem>,
+      <DropdownItem
+        component="button"
+        key="delete-resource"
+        onClick={() => {
+          setIsDeleteResourceModalOpen(true)
+        }}
+      >
+        {t('Delete {{resourceKind}}', { resourceKind: kind })}
+      </DropdownItem>,
+    ]
+    if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
+      actions.unshift(
+        ...[
+          { action: 'Start', path: '/virtualmachines/start' },
+          { action: 'Stop', path: '/virtualmachines/stop' },
+          { action: 'Restart', path: '/virtualmachines/restart' },
+          { action: 'Pause', path: '/virtualmachineinstances/pause' },
+          { action: 'Unpause', path: '/virtualmachineinstances/unpause' },
+        ].map((action) => (
+          <DropdownItem
+            key={`${action.action}-vm-resource`}
+            component="button"
+            onClick={() =>
+              handleVMActions(
+                action.action.toLowerCase(),
+                action.path,
+                { cluster, name, namespace },
+                () => setResourceVersion(''), // trigger resource refetchto update details page data.
+                toast,
+                t
+              )
+            }
+          >
+            {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
+          </DropdownItem>
+        )),
+        <Divider key={'action-divider'} />
+      )
+    }
+    return actions
+  }, [cluster, kind, name, namespace, vmActionsEnabled, navigate, toast, t])
+
   return (
     <AcmPage
       header={
@@ -197,26 +235,7 @@ export default function DetailsPage() {
                   {t('Actions')}
                 </DropdownToggle>
               }
-              dropdownItems={[
-                <DropdownItem
-                  component="button"
-                  key="edit-resource"
-                  onClick={() => {
-                    navigate(`${NavigationPath.resourceYAML}${window.location.search}`)
-                  }}
-                >
-                  {t('Edit {{resourceKind}}', { resourceKind: kind })}
-                </DropdownItem>,
-                <DropdownItem
-                  component="button"
-                  key="delete-resource"
-                  onClick={() => {
-                    setIsDeleteResourceModalOpen(true)
-                  }}
-                >
-                  {t('Delete {{resourceKind}}', { resourceKind: kind })}
-                </DropdownItem>,
-              ]}
+              dropdownItems={getResourceActions}
               onSelect={() => setResourceActionsOpen(false)}
             />
           }
