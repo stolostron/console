@@ -73,6 +73,8 @@ export interface ProviderConnectionStringData {
   pullSecret?: string
   ['ssh-privatekey']?: string
   ['ssh-publickey']?: string
+  kubeconfig?: string
+  externalInfraNamespace?: string
 
   httpProxy?: any
   httpsProxy?: any

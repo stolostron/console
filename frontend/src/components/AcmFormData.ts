@@ -49,24 +49,19 @@ export enum LinkType {
 
 export interface InputBase<T> {
   id: string
-
   label: string
   placeholder?: string
   title?: string
-
   value: T
   onChange: (value: T) => void
   validation?: (value: T) => string | undefined
   validate?: boolean
-
   isRequired?: boolean
   isDisabled?: boolean
   isHidden?: boolean
-
   helperText?: string
   labelHelp?: string
   labelHelpTitle?: string
-
   prompt?: { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
 }
 
