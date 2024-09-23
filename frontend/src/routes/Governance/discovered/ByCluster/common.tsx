@@ -205,12 +205,12 @@ export const byClusterCols = (
 ]
 
 export function DiscoveredViolationsCard(
-  props: Readonly<{ policyKind: string; policyViolationSummary: ViolationSummary }>
+  props: Readonly<{ policyKind: string; policyViolationSummary: ViolationSummary; title?: string }>
 ) {
   const { t } = useTranslation()
   return (
     <ViolationsCard
-      title={props.policyKind + ' ' + t('violations')}
+      title={props.title ?? props.policyKind + ' ' + t('violations')}
       description={t('Overview of policy violations')}
       noncompliant={props.policyViolationSummary.noncompliant}
       compliant={props.policyViolationSummary.compliant}

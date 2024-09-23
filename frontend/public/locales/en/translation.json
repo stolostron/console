@@ -699,6 +699,7 @@
   "Cluster update risks are only collected for OpenShift Container Platform clusters.": "Cluster update risks are only collected for OpenShift Container Platform clusters.",
   "Cluster version": "Cluster version",
   "Cluster violation": "Cluster violation",
+  "cluster violations": "cluster violations",
   "Cluster violations": "Cluster violations",
   "Cluster with pending policies": "Cluster with pending policies",
   "Cluster with policy violations": "Cluster with policy violations",

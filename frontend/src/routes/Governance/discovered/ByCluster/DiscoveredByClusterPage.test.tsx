@@ -112,7 +112,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Managed externally', true)
     // Because of tooltip, this is presented multiple times
-    await waitForText('ConfigurationPolicy violations', true)
+    await waitForText('ConfigurationPolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for CertificatePolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
@@ -195,7 +195,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Managed externally', true)
     // Because of tooltip, this is presented multiple times
-    await waitForText('CertificatePolicy violations', true)
+    await waitForText('CertificatePolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for OperatorPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
@@ -299,8 +299,8 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Violations', true)
 
     // Test the donut charts
-    expect(container.querySelector('#operatorpolicy-violations-chart-title')).toHaveTextContent(
-      'OperatorPolicy violations 1'
+    expect(container.querySelector('#operatorpolicy-cluster-violations-chart-title')).toHaveTextContent(
+      'OperatorPolicy cluster violations 1'
     )
     expect(container.querySelector('#deployments-unavailable-chart-title')).toHaveTextContent(
       'Deployments unavailable 1'
@@ -317,7 +317,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Deployment available')
     await waitForText('Upgrade available')
     // Because of tooltip, this is presented multiple times
-    await waitForText('OperatorPolicy violations', true)
+    await waitForText('OperatorPolicy cluster violations', true)
 
     // Test some filters
     await waitForText('Filter')
@@ -486,7 +486,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Local', true)
 
-    await waitForText('K8sRequiredLabels violations', true)
+    await waitForText('K8sRequiredLabels cluster violations', true)
     await waitForText('2 with violations')
   })
 
