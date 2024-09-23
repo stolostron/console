@@ -78,7 +78,15 @@ export default function YAMLEditor(props: {
           .catch(() => console.error('Encountered an error while trying to fold the ManagedFields section.'))
       }
     }
-  }, [resourceYAML, defaultScrollToLine, hasManagedFieldsFolded])
+
+    if (editorRef?.current) {
+      window.getEditorValue = () => editorRef?.current?.getValue()
+    }
+
+    return () => {
+      delete window.getEditorValue
+    }
+  }, [editorRef, resourceYAML, defaultScrollToLine, hasManagedFieldsFolded])
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
