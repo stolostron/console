@@ -4,7 +4,6 @@
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
 import { deleteResource } from '../../../../resources/utils/resource-request'
 import { useSharedAtoms } from '../../../../shared-recoil'
@@ -16,6 +15,7 @@ import {
   SearchResultRelatedCountDocument,
   SearchResultRelatedItemsDocument,
 } from '../../search-sdk/search-sdk'
+import { handleResourceActionAuth } from '../../SearchResults/utils'
 
 export interface IDeleteModalProps {
   open: boolean
@@ -216,20 +216,7 @@ export const DeleteResourceModal = (props: any) => {
       return
     }
     const { cluster, kind, name, namespace } = resource
-    const canDeleteResource = canUser(
-      'delete',
-      {
-        apiVersion: apiGroup,
-        kind: kind,
-        metadata: {
-          name: name,
-          namespace: namespace,
-        },
-      },
-      cluster === 'local-cluster' ? namespace : cluster,
-      name
-    )
-
+    const canDeleteResource = handleResourceActionAuth('delete', kind, cluster, apiGroup, name, namespace)
     canDeleteResource.promise
       .then((result) => {
         setLoadingAccessRequest(false)

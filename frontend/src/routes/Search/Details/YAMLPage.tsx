@@ -8,10 +8,10 @@ import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { canUser } from '../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../resources'
 import { getResource, replaceResource } from '../../../resources/utils/resource-request'
 import { AcmLoadingPage } from '../../../ui-components'
+import { handleResourceActionAuth } from '../SearchResults/utils'
 import { useSearchDetailsContext } from './DetailsPage'
 
 const headerContainer = css({
@@ -333,20 +333,8 @@ export default function YAMLPage() {
     if (!resourceYaml) {
       return
     }
-    const canUpdateResource = canUser(
-      'update',
-      {
-        apiVersion: apiversion,
-        kind,
-        metadata: {
-          name,
-          namespace,
-        },
-      },
-      cluster === 'local-cluster' ? namespace : cluster,
-      name
-    )
 
+    const canUpdateResource = handleResourceActionAuth('update', kind, cluster, name, namespace, apiversion)
     canUpdateResource.promise
       .then((result) => setUserCanEdit(result.status?.allowed! ?? false))
       .catch((err) => console.error(err))

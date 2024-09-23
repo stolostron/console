@@ -4,10 +4,10 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource, fireManagedClusterAction, IResource } from '../../../resources'
 import { AcmAlert, AcmButton, AcmModal } from '../../../ui-components'
+import { handleResourceActionAuth } from '../SearchResults/utils'
 
 interface Props {
   open: boolean
@@ -26,21 +26,13 @@ export const DeleteResourceModal = (props: Props) => {
   const [deleteResourceError, setDeleteResourceError] = useState(undefined)
 
   useEffect(() => {
-    if (open && resource) {
-      const canDeleteResource = canUser(
-        'delete',
-        {
-          apiVersion: resource?.apiVersion,
-          kind: resource.kind,
-          metadata: {
-            name: resource.metadata?.name,
-            namespace: resource.metadata?.namespace,
-          },
-        },
-        cluster === 'local-cluster' ? resource.metadata?.namespace : cluster,
-        resource.metadata?.name
-      )
-
+    if (open && resource?.metadata) {
+      const {
+        apiVersion,
+        kind,
+        metadata: { name, namespace },
+      } = resource
+      const canDeleteResource = handleResourceActionAuth('delete', kind, cluster, apiVersion, name, namespace)
       canDeleteResource.promise
         .then((result) => {
           setLoadingAccessRequest(false)

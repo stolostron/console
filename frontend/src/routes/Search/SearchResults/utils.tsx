@@ -5,8 +5,15 @@ import { useContext, useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, getBackendUrl, putRequest } from '../../../resources'
+import {
+  Cluster,
+  getBackendUrl,
+  ManagedClusterActionApiVersion,
+  ManagedClusterActionKind,
+  putRequest,
+} from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -25,6 +32,42 @@ export interface ISearchResult {
   name: string
   apigroup?: string
   __type: string
+}
+
+export function handleResourceActionAuth(
+  action: 'create' | 'update' | 'delete',
+  kind: string,
+  cluster: string,
+  apiVersion: string,
+  name?: string,
+  namespace?: string
+) {
+  switch (kind.toLowerCase()) {
+    case 'virtualmachine':
+      return canUser(
+        'create',
+        {
+          // Map VM action authentication to MCA create resource.
+          apiVersion: ManagedClusterActionApiVersion,
+          kind: ManagedClusterActionKind,
+        },
+        cluster === 'local-cluster' ? namespace : cluster
+      )
+    default:
+      return canUser(
+        action,
+        {
+          apiVersion,
+          kind,
+          metadata: {
+            name,
+            namespace,
+          },
+        },
+        cluster === 'local-cluster' ? namespace : cluster,
+        name
+      )
+  }
 }
 
 export function handleVMActions(
