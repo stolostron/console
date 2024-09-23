@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import {
   Namespace,
   NamespaceApiVersion,
@@ -16,6 +17,7 @@ import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-u
 import {
   clearByTestId,
   clickByPlaceholderText,
+  clickByTestId,
   clickByText,
   selectByText,
   typeByTestId,
@@ -443,5 +445,123 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
+  })
+
+  it('should create kubevirt (Red Hat Virtualization) credentials without external infra', async () => {
+    render(<Component credentialsType={Provider.kubevirt} />)
+    const providerConnection = createProviderConnection(
+      'kubevirt',
+      {
+        kubeconfig: 'kubeconfig-content',
+        pullSecret: '{"pull":"secret"}\n',
+        'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+      },
+      false // External infra not enabled
+    )
+
+    // Render the form and fill in the fields
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // (no external infra)
+    await clickByText('Next')
+
+    // Fill in optional fields like pull secret and SSH public key
+    if (providerConnection.stringData?.pullSecret) {
+      await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+    }
+    if (providerConnection.stringData?.['ssh-publickey']) {
+      await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+    }
+
+    const nextButton = screen.getByText('Next')
+    await waitFor(() => expect(nextButton).not.toBeDisabled())
+    await clickByText('Next')
+
+    // Nock mock to match the expected API request (no external infra)
+    const createNock = nockCreate({
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: providerConnection.metadata.name,
+        namespace: providerConnection.metadata.namespace,
+        labels: {
+          'cluster.open-cluster-management.io/type': 'kubevirt',
+          'cluster.open-cluster-management.io/credentials': '',
+        },
+      },
+      stringData: {
+        pullSecret: providerConnection.stringData?.pullSecret,
+        'ssh-publickey': providerConnection.stringData?.['ssh-publickey'],
+      },
+    } as any)
+    await waitFor(() => expect(screen.getByText('Add')).toBeDefined())
+    await waitFor(() => expect(screen.getByText('Add')).not.toBeDisabled())
+    await clickByText('Add')
+    await waitForNock(createNock)
+  })
+
+  it('should create kubevirt (Red Hat Virtualization) credentials with external infra', async () => {
+    render(<Component credentialsType={Provider.kubevirt} />)
+
+    // Define the provider connection data
+    const providerConnection = createProviderConnection(
+      'kubevirt',
+      {
+        kubeconfig: 'kubeconfig',
+        externalInfraNamespace: 'external-namespace',
+        pullSecret: '{"pull":"secret"}\n',
+        'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+      },
+      true // External infra enabled
+    )
+
+    // Render the form and fill in the fields
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // Click on the external infrastructure checkbox
+    await clickByTestId('isExternalInfra')
+
+    // Fill in Kubeconfig and Namespace
+    await typeByTestId('kubeconfig', providerConnection.stringData?.kubeconfig!)
+    await typeByTestId('externalInfraNamespace', 'external-namespace')
+    await clickByText('Next')
+
+    // Fill in the pull secret and SSH public key
+    await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+    await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+
+    const nextButton = screen.getByText('Next')
+    await waitFor(() => expect(nextButton).not.toBeDisabled())
+    await clickByText('Next')
+
+    // Nock mock to match the expected API request
+    const createNock = nockCreate({
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: providerConnection.metadata.name,
+        namespace: providerConnection.metadata.namespace,
+        labels: {
+          'cluster.open-cluster-management.io/type': 'kubevirt',
+          'cluster.open-cluster-management.io/credentials': '',
+        },
+      },
+      stringData: {
+        pullSecret: providerConnection.stringData?.pullSecret,
+        'ssh-publickey': providerConnection.stringData?.['ssh-publickey'],
+        kubeconfig: providerConnection.stringData?.kubeconfig,
+        externalInfraNamespace: providerConnection.stringData?.externalInfraNamespace,
+      },
+    } as any)
+    await waitFor(() => expect(screen.getByText('Add')).toBeDefined())
+    await waitFor(() => expect(screen.getByText('Add')).not.toBeDisabled())
+    await clickByText('Add')
+    await waitForNock(createNock)
   })
 })
