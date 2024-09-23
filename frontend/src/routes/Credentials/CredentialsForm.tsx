@@ -6,7 +6,7 @@ import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom
 import YAML from 'yaml'
 import set from 'lodash/set'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
-import { FormData } from '../../components/AcmFormData'
+import { FormData, Input } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { LostChangesContext } from '../../components/LostChanges'
@@ -94,7 +94,6 @@ export function ViewEditCredentialsFormPage() {
   const { name = '', namespace = '' } = params
   const isEditing = !!useMatch(NavigationPath.editCredentials)
   const isViewing = !isEditing
-
   const [error, setError] = useState<Error>()
 
   const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
@@ -163,6 +162,20 @@ export function CredentialsForm(
   const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
     () => providerConnection?.stringData?.additionalTrustBundle ?? ''
   )
+
+  // External Infrastructure
+  const [isExternalInfra, setIsExternalInfra] = useState(
+    () => !!(providerConnection?.stringData?.kubeconfig || providerConnection?.stringData?.externalInfraNamespace)
+  )
+  // const isExternalInfraString = isExternalInfra ? 'true' : 'false';
+  const [kubeconfig, setKubeconfig] = useState(() => providerConnection?.stringData?.kubeconfig ?? '')
+  const [externalInfraNamespace, setExternalInfraNamespace] = useState(
+    () => providerConnection?.stringData?.externalInfraNamespace ?? ''
+  )
+
+  const hasExternalInfraData = () => {
+    return !!(kubeconfig || externalInfraNamespace)
+  }
 
   // Amazon Web Services State
   const [aws_access_key_id, setAwsAccessKeyID] = useState(() => providerConnection?.stringData?.aws_access_key_id ?? '')
@@ -442,6 +455,8 @@ export function CredentialsForm(
       case Provider.kubevirt:
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
+        isExternalInfra && (stringData.kubeconfig = kubeconfig)
+        isExternalInfra && (stringData.externalInfraNamespace = externalInfraNamespace)
         break
     }
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
@@ -509,6 +524,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
+      { path: 'Secret[0].stringData.kubeconfig', setState: setKubeconfig },
+      { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
     ]
     return syncs
   }
@@ -1244,6 +1261,48 @@ export function CredentialsForm(
           },
         ],
       },
+      ...(!isViewing || hasExternalInfraData()
+        ? [
+            {
+              type: 'Section' as const,
+              title: t('External infrastructure'),
+              wizardTitle: t('Select to enable and store external infrastructure details'),
+              inputs: [
+                {
+                  id: 'isExternalInfra',
+                  type: 'Checkbox',
+                  label: t('Enable external infrastructure'),
+                  labelHelp: t('Selecting this option requires providing a kubeconfig and namespace.'),
+                  helperText: t('Enable external infrastructure usage by providing the kubeconfig and namespace.'),
+                  isHidden: credentialsType !== Provider.kubevirt,
+                  value: isExternalInfra,
+                  onChange: () => setIsExternalInfra((enabled) => !enabled),
+                },
+                {
+                  id: 'kubeconfig',
+                  type: 'Text',
+                  label: t('Kubeconfig'),
+                  placeholder: t('Enter the kubeconfig'),
+                  value: kubeconfig,
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  onChange: setKubeconfig,
+                  isRequired: isExternalInfra,
+                  isSecret: true,
+                },
+                {
+                  id: 'externalInfraNamespace',
+                  type: 'Text',
+                  label: t('Namespace'),
+                  placeholder: t('Enter the namespace'),
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  value: externalInfraNamespace,
+                  onChange: setExternalInfraNamespace,
+                  isRequired: isExternalInfra,
+                },
+              ] as Input[],
+            },
+          ]
+        : []),
       {
         type: 'Section',
         title: t('OpenShift Cluster Manager'),
@@ -1360,9 +1419,13 @@ export function CredentialsForm(
       if (isEditing) {
         const secret = credentialData as Secret
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
-        if (secret.stringData) {
-          patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
-        }
+        const data: Secret['data'] = {}
+        Object.keys(secret.stringData ?? {}).forEach((key) => {
+          if (secret.stringData?.[key]) {
+            data[key] = Buffer.from(secret.stringData[key], 'ascii').toString('base64')
+          }
+        })
+        patch.push({ op: 'replace', path: `/data`, value: data })
         return patchResource(secret, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Credentials updated'),
@@ -1436,6 +1499,7 @@ export function CredentialsForm(
         '*.stringData.osServicePrincipal.json',
         '*.stringData.osServiceAccount.json',
         '*.stringData.clouds.yaml',
+        '*.stringData.kubeconfig',
       ]}
       immutables={
         isHostedControlPlane
