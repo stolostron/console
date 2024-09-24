@@ -8,7 +8,7 @@ import {
   ProviderConnectionKind,
   ProviderConnectionStringData,
 } from '../../resources'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -92,7 +92,10 @@ describe('add credentials page', () => {
     render(<Component credentialsType={Provider.aws} />)
     const providerConnection = createProviderConnection(
       'aws',
-      { aws_access_key_id: 'aws_access_key_id', aws_secret_access_key: 'aws_secret_access_key' },
+      {
+        aws_access_key_id: 'aws_access_key_id',
+        aws_secret_access_key: 'aws_secret_access_key',
+      },
       true
     )
 
@@ -417,16 +420,33 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
   })
 
-  it('should create rhocm credentials', async () => {
+  it('should create rhocm credentials with ocm API Token (default) option', async () => {
     render(<Component credentialsType={Provider.redhatcloud} />)
 
     const providerConnection = createProviderConnection('rhocm', {
+      auth_method: 'offline-token',
       ocmAPIToken: 'ocmAPIToken',
     })
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
+
+    // Assert the presence of the title and description text
+
+    const credentialTitle = await screen.findByText('Enter the OpenShift Cluster Manager credentials')
+    expect(credentialTitle).toBeInTheDocument()
+
+    const ocmTokenLink = await screen.findByText('How do I get OpenShift Cluster Manager credentials?')
+    expect(ocmTokenLink).toBeInTheDocument()
+
+    // Open the dropdown
+    const dropdownToggle = screen.getByLabelText('Options menu')
+    fireEvent.click(dropdownToggle)
+
+    // Select the "API Token" option
+    const apiTokenOption = screen.getByRole('option', { name: 'API token' })
+    fireEvent.click(apiTokenOption)
 
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
@@ -436,6 +456,56 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
+
+    // Assertions for code coverage
+    expect(providerConnection.stringData?.auth_method).toBe('offline-token')
+    expect(providerConnection.stringData?.ocmAPIToken).toBe('ocmAPIToken')
+  })
+
+  it('should create rhocm credentials with Service Account option', async () => {
+    render(<Component credentialsType={Provider.redhatcloud} />)
+
+    const providerConnection = createProviderConnection('rhocm', {
+      auth_method: 'service-account',
+      client_id: 'serviceAccountClientId',
+      client_secret: 'serviceAccountClientSecret',
+    })
+
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // Assert the presence of the tile and description
+
+    const credentialTitle = await screen.findByText('Enter the OpenShift Cluster Manager credentials')
+    expect(credentialTitle).toBeInTheDocument()
+    const serviceAccountTokenLink = await screen.findByText('How do I get OpenShift Cluster Manager credentials?')
+    expect(serviceAccountTokenLink).toBeInTheDocument()
+
+    // Open the dropdown
+    const dropdownToggle = screen.getByLabelText('Options menu')
+    fireEvent.click(dropdownToggle)
+
+    // Select the "Service Account" option
+    const serviceAccountOption = screen.getByText('Service account')
+    fireEvent.click(serviceAccountOption)
+
+    await clickByText('Next')
+
+    // rhocm credentials
+    await typeByTestId('client_id', providerConnection.stringData?.client_id!)
+    await typeByTestId('client_secret', providerConnection.stringData?.client_secret!)
+    await clickByText('Next')
+
+    // Add Credentials
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
+
+    // Assertions for code coverage
+    expect(providerConnection.stringData?.auth_method).toBe('service-account')
+    expect(providerConnection.stringData?.client_id).toBe('serviceAccountClientId')
+    expect(providerConnection.stringData?.client_secret).toBe('serviceAccountClientSecret')
   })
 
   it('should throw error for requiredValidationMessage', async () => {
