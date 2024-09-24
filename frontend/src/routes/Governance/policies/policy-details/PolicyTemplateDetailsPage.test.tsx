@@ -398,9 +398,8 @@ describe('Policy Template Details Page', () => {
       },
     }
 
-    const mockManagedClusterAddOn: Record<string, ManagedClusterAddOn[]> = {
-      clusterName: [mockManagedClusterAddOnWork, mockManagedClusterAddOnPolicy],
-    }
+    const mockManagedClusterAddOn: Record<string, ManagedClusterAddOn[]> = {}
+    mockManagedClusterAddOn[clusterName] = [mockManagedClusterAddOnWork, mockManagedClusterAddOnPolicy]
 
     const getResourceRequestCopy = JSON.parse(JSON.stringify(getResourceRequest))
     getResourceRequestCopy.metadata.namespace = hostingClusterName
