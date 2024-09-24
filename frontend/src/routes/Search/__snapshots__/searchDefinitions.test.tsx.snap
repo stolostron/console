@@ -20,42 +20,42 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "managedHub",
+    "cell": "global-hub",
     "header": "Managed hub",
     "sort": "managedHub",
   },
   Object {
-    "cell": "ManagedClusterConditionAvailable",
+    "cell": "-",
     "header": "Available",
     "sort": "ManagedClusterConditionAvailable",
   },
   Object {
-    "cell": "HubAcceptedManagedCluster",
+    "cell": "-",
     "header": "Hub accepted",
     "sort": "HubAcceptedManagedCluster",
   },
   Object {
-    "cell": "ManagedClusterJoined",
+    "cell": "-",
     "header": "Joined",
     "sort": "ManagedClusterJoined",
   },
   Object {
-    "cell": "nodes",
+    "cell": "-",
     "header": "Nodes",
     "sort": "nodes",
   },
   Object {
-    "cell": "kubernetesVersion",
+    "cell": "-",
     "header": "Kubernetes version",
     "sort": "kubernetesVersion",
   },
   Object {
-    "cell": "cpu",
+    "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
   Object {
-    "cell": "memory",
+    "cell": "-",
     "header": "Memory",
     "sort": "memory",
   },
@@ -496,7 +496,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -558,7 +558,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -570,12 +570,12 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "type",
+    "cell": "-",
     "header": "Type",
     "sort": "type",
   },
   Object {
-    "cell": "pathname",
+    "cell": "-",
     "header": "Pathname",
     "sort": "pathname",
   },
@@ -620,37 +620,37 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "ManagedClusterConditionAvailable",
+    "cell": "-",
     "header": "Available",
     "sort": "ManagedClusterConditionAvailable",
   },
   Object {
-    "cell": "HubAcceptedManagedCluster",
+    "cell": "-",
     "header": "Hub accepted",
     "sort": "HubAcceptedManagedCluster",
   },
   Object {
-    "cell": "ManagedClusterJoined",
+    "cell": "-",
     "header": "Joined",
     "sort": "ManagedClusterJoined",
   },
   Object {
-    "cell": "nodes",
+    "cell": "-",
     "header": "Nodes",
     "sort": "nodes",
   },
   Object {
-    "cell": "kubernetesVersion",
+    "cell": "-",
     "header": "Kubernetes version",
     "sort": "kubernetesVersion",
   },
   Object {
-    "cell": "cpu",
+    "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
   Object {
-    "cell": "memory",
+    "cell": "-",
     "header": "Memory",
     "sort": "memory",
   },
@@ -695,7 +695,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -707,22 +707,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "version",
+    "cell": "-",
     "header": "Version",
     "sort": "version",
   },
   Object {
-    "cell": "available",
+    "cell": "-",
     "header": "Available",
     "sort": "available",
   },
   Object {
-    "cell": "progressing",
+    "cell": "-",
     "header": "Progressing",
     "sort": "progressing",
   },
   Object {
-    "cell": "degraded",
+    "cell": "-",
     "header": "Degraded",
     "sort": "degraded",
   },
@@ -767,7 +767,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -779,17 +779,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "version",
+    "cell": "-",
     "header": "Version",
     "sort": "version",
   },
   Object {
-    "cell": "phase",
+    "cell": "-",
     "header": "Phase",
     "sort": "phase",
   },
   Object {
-    "cell": "display",
+    "cell": "-",
     "header": "Display",
     "sort": "display",
   },
@@ -834,7 +834,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -846,17 +846,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "schedule",
+    "cell": "-",
     "header": "schedule",
     "sort": "schedule",
   },
   Object {
-    "cell": "suspend",
+    "cell": "-",
     "header": "Suspend",
     "sort": "suspend",
   },
   Object {
-    "cell": "active",
+    "cell": "-",
     "header": "Active",
     "sort": "active",
   },
@@ -906,7 +906,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -918,27 +918,27 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "desired",
+    "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
   Object {
-    "cell": "current",
+    "cell": "-",
     "header": "Current",
     "sort": "current",
   },
   Object {
-    "cell": "ready",
+    "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
   Object {
-    "cell": "updated",
+    "cell": "-",
     "header": "Updated",
     "sort": "updated",
   },
   Object {
-    "cell": "available",
+    "cell": "-",
     "header": "Available",
     "sort": "available",
   },
@@ -983,17 +983,17 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
   Object {
-    "cell": "chartUrl",
+    "cell": "-",
     "header": "Chart URL",
     "sort": "chartUrl",
   },
   Object {
-    "cell": "dependencies",
+    "cell": "-",
     "header": "Dependencies",
     "sort": "dependencies",
   },
@@ -1038,7 +1038,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1050,22 +1050,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "desired",
+    "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
   Object {
-    "cell": "current",
+    "cell": "-",
     "header": "Current",
     "sort": "current",
   },
   Object {
-    "cell": "ready",
+    "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
   Object {
-    "cell": "available",
+    "cell": "-",
     "header": "Available",
     "sort": "available",
   },
@@ -1162,7 +1162,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1174,22 +1174,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "sourceType",
+    "cell": "-",
     "header": "Source type",
     "sort": "sourceType",
   },
   Object {
-    "cell": "url",
+    "cell": "-",
     "header": "URL",
     "sort": "url",
   },
   Object {
-    "cell": "chartPath",
+    "cell": "-",
     "header": "Chart path",
     "sort": "chartPath",
   },
   Object {
-    "cell": "branch",
+    "cell": "-",
     "header": "Branch",
     "sort": "branch",
   },
@@ -1234,7 +1234,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1246,17 +1246,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "completions",
+    "cell": "-",
     "header": "Completions",
     "sort": "completions",
   },
   Object {
-    "cell": "parallelism",
+    "cell": "-",
     "header": "Parallelism",
     "sort": "parallelism",
   },
   Object {
-    "cell": "successful",
+    "cell": "-",
     "header": "Successful",
     "sort": "successful",
   },
@@ -1308,7 +1308,7 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
@@ -1360,27 +1360,27 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "role",
+    "cell": "-",
     "header": "Role",
     "sort": "role",
   },
   Object {
-    "cell": "architecture",
+    "cell": "-",
     "header": "Architecture",
     "sort": "architecture",
   },
   Object {
-    "cell": "osImage",
+    "cell": "-",
     "header": "OS image",
     "sort": "osImage",
   },
   Object {
-    "cell": "cpu",
+    "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
@@ -1432,37 +1432,37 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "type",
+    "cell": "-",
     "header": "Type",
     "sort": "type",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "capacity",
+    "cell": "-",
     "header": "Capacity",
     "sort": "capacity",
   },
   Object {
-    "cell": "accessMode",
+    "cell": "-",
     "header": "Access mode",
     "sort": "accessMode",
   },
   Object {
-    "cell": "claimRef",
+    "cell": "-",
     "header": "Claim",
     "sort": "claimRef",
   },
   Object {
-    "cell": "reclaimPolicy",
+    "cell": "-",
     "header": "Reclaim policy",
     "sort": "reclaimPolicy",
   },
   Object {
-    "cell": "path",
+    "cell": "-",
     "header": "Path",
     "sort": "path",
   },
@@ -1507,7 +1507,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1519,22 +1519,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "volumeName",
+    "cell": "-",
     "header": "Persistent volume",
     "sort": "volumeName",
   },
   Object {
-    "cell": "request",
+    "cell": "-",
     "header": "Requests",
     "sort": "request",
   },
   Object {
-    "cell": "accessMode",
+    "cell": "-",
     "header": "Access mode",
     "sort": "accessMode",
   },
@@ -1579,17 +1579,17 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
   Object {
-    "cell": "subjects",
+    "cell": "-",
     "header": "Subjects",
     "sort": "subjects",
   },
   Object {
-    "cell": "placementpolicy",
+    "cell": "-",
     "header": "Placement policy",
     "sort": "placementpolicy",
   },
@@ -1634,17 +1634,17 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
   Object {
-    "cell": "replicas",
+    "cell": "-",
     "header": "Replicas",
     "sort": "replicas",
   },
   Object {
-    "cell": "decisions",
+    "cell": "-",
     "header": "Decisions",
     "sort": "decisions",
   },
@@ -1689,7 +1689,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1701,7 +1701,7 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "replicas",
+    "cell": "-",
     "header": "Replicas",
     "sort": "replicas",
   },
@@ -1746,7 +1746,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1758,22 +1758,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "restarts",
+    "cell": "-",
     "header": "Restarts",
     "sort": "restarts",
   },
   Object {
-    "cell": "hostIP",
+    "cell": "-",
     "header": "Host IP",
     "sort": "hostIP",
   },
   Object {
-    "cell": "podIP",
+    "cell": "-",
     "header": "Pod IP",
     "sort": "podIP",
   },
@@ -1818,7 +1818,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1830,7 +1830,7 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "disabled",
+    "cell": "-",
     "header": "Disabled",
     "sort": "disabled",
   },
@@ -1840,7 +1840,7 @@ Array [
     "sort": "compliant",
   },
   Object {
-    "cell": "remediationAction",
+    "cell": "-",
     "header": "Remediation action",
     "sort": "remediationAction",
   },
@@ -1891,22 +1891,22 @@ Array [
     "tooltip": "Scope refers to the cluster associated to the PolicyReport.",
   },
   Object {
-    "cell": "critical",
+    "cell": "-",
     "header": "Critical",
     "sort": "critical",
   },
   Object {
-    "cell": "important",
+    "cell": "-",
     "header": "Important",
     "sort": "important",
   },
   Object {
-    "cell": "moderate",
+    "cell": "-",
     "header": "Moderate",
     "sort": "moderate",
   },
   Object {
-    "cell": "low",
+    "cell": "-",
     "header": "Low",
     "sort": "low",
   },
@@ -1942,7 +1942,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -1954,17 +1954,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "chartName",
+    "cell": "-",
     "header": "Chart name",
     "sort": "chartName",
   },
   Object {
-    "cell": "chartVersion",
+    "cell": "-",
     "header": "Chart version",
     "sort": "chartVersion",
   },
@@ -1996,7 +1996,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2008,12 +2008,12 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "desired",
+    "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
   Object {
-    "cell": "current",
+    "cell": "-",
     "header": "Current",
     "sort": "current",
   },
@@ -2058,7 +2058,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2070,7 +2070,7 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "type",
+    "cell": "-",
     "header": "Type",
     "sort": "type",
   },
@@ -2115,7 +2115,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2127,17 +2127,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "type",
+    "cell": "-",
     "header": "Type",
     "sort": "type",
   },
   Object {
-    "cell": "clusterIP",
+    "cell": "-",
     "header": "Cluster IP",
     "sort": "clusterIP",
   },
   Object {
-    "cell": "port",
+    "cell": "-",
     "header": "Port",
     "sort": "port",
   },
@@ -2182,7 +2182,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2194,12 +2194,12 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "desired",
+    "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
   Object {
-    "cell": "current",
+    "cell": "-",
     "header": "Current",
     "sort": "current",
   },
@@ -2244,7 +2244,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2256,22 +2256,22 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "package",
+    "cell": "-",
     "header": "Package",
     "sort": "package",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "localPlacement",
+    "cell": "-",
     "header": "Local placement",
     "sort": "localPlacement",
   },
   Object {
-    "cell": "timeWindow",
+    "cell": "-",
     "header": "Time window",
     "sort": "timeWindow",
   },
@@ -2316,7 +2316,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2328,17 +2328,17 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "package",
+    "cell": "-",
     "header": "Package",
     "sort": "package",
   },
   Object {
-    "cell": "source",
+    "cell": "-",
     "header": "Source",
     "sort": "source",
   },
   Object {
-    "cell": "Channel",
+    "cell": "-",
     "header": "Channel",
     "sort": "Channel",
   },
@@ -2383,7 +2383,7 @@ Array [
     "sort": "name",
   },
   Object {
-    "cell": "namespace",
+    "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
@@ -2395,12 +2395,12 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "ready",
+    "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
@@ -2438,6 +2438,136 @@ Array [
     />,
     "header": "Labels",
     "sort": "label",
+  },
+]
+`;
+
+exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachineinstance 1`] = `
+Array [
+  Object {
+    "cell": <CreateDetailsLink
+      item={
+        Object {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+    />,
+    "header": "Name",
+    "sort": "name",
+  },
+  Object {
+    "cell": "testNamespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  Object {
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "-",
+    "header": "Node",
+    "sort": "node",
+  },
+  Object {
+    "cell": "-",
+    "header": "IP address",
+    "sort": "ipaddress",
+  },
+  Object {
+    "cell": "in a month",
+    "header": "Created",
+    "sort": "created",
+  },
+  Object {
+    "cell": <AcmLabels
+      collapse={Array []}
+      labels={
+        Array [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "sort": "label",
+  },
+]
+`;
+
+exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachinespage 1`] = `
+Array [
+  Object {
+    "cell": <CreateDetailsLink
+      item={
+        Object {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+    />,
+    "header": "Name",
+    "search": [Function],
+    "sort": "name",
+  },
+  Object {
+    "cell": "-",
+    "header": "Status",
+    "sort": "status",
+  },
+  Object {
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
+    "header": "Cluster",
+    "search": [Function],
+    "sort": "cluster",
+  },
+  Object {
+    "cell": "-",
+    "header": "Node",
+    "sort": "node",
+  },
+  Object {
+    "cell": "-",
+    "header": "IP Address",
+    "sort": "ipaddress",
+  },
+  Object {
+    "cell": <CreateExternalVMLink
+      item={
+        Object {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+      t={[Function]}
+    />,
+    "header": "Console URL",
+  },
+  Object {
+    "cell": "in a month",
+    "header": "Created",
+    "sort": "created",
   },
 ]
 `;
@@ -2547,27 +2677,27 @@ Array [
     "sort": "cluster",
   },
   Object {
-    "cell": "status",
+    "cell": "-",
     "header": "Status",
     "sort": "status",
   },
   Object {
-    "cell": "role",
+    "cell": "-",
     "header": "Role",
     "sort": "role",
   },
   Object {
-    "cell": "architecture",
+    "cell": "-",
     "header": "Architecture",
     "sort": "architecture",
   },
   Object {
-    "cell": "osImage",
+    "cell": "-",
     "header": "OS image",
     "sort": "osImage",
   },
   Object {
-    "cell": "cpu",
+    "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
