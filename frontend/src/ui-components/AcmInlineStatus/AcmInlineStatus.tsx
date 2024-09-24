@@ -79,7 +79,7 @@ export function AcmInlineStatus(props: { type: StatusType; status: string | Reac
       <div className={icon}>
         <StatusIcon type={props.type} />
       </div>
-      <span>
+      <span style={{ marginLeft: props.popover ? 'inherit' : '.4rem' }}>
         {props.popover ? (
           <Popover hasAutoWidth {...props.popover}>
             <Button variant="link" className={button} style={{ paddingLeft: '5px' }}>

@@ -64,7 +64,7 @@ function AtomArray<T>() {
   return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 function AtomMap<T>() {
-  return atom<Map<string, T[]>>({ key: (++atomArrayKey).toString(), default: new Map() })
+  return atom<Record<string, T[]>>({ key: (++atomArrayKey).toString(), default: {} })
 }
 
 // throttle events delay
