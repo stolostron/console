@@ -55,6 +55,11 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   }
   return options
 }
+
+// search api does not provide paging but we want to break up our searches so as not to overtax the search api by querying for all apps at once
+// this is pseudo-paging: we grab all apps that begin with a letter, that way we don't have overlapping results
+// we don't want to do this letter by letter because that would take 36 searches
+// so we create 6 groupings of letters and we try to make each group search return about the same number of apps
 export const pagedSearchQueries: string[][] = [
   ['a*', 'i*', 'n*'],
   ['e*', 'r*', 'o*'],

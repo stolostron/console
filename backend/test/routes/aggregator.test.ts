@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
-import { aggregateKubeApplications, aggregatSearchAPIApplications } from '../../src/routes/aggregators/applications'
+import { aggregateKubeApplications, aggregateSearchAPIApplications } from '../../src/routes/aggregators/applications'
 import { pagedSearchQueries } from '../../src/lib/search'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
@@ -19,7 +19,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(1)
+    await aggregateSearchAPIApplications(1)
 
     // NO FILTER
     const res = await request('POST', '/aggregate/applications', {
@@ -44,7 +44,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(1)
+    await aggregateSearchAPIApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/applications', {
@@ -73,7 +73,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(1)
+    await aggregateSearchAPIApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {

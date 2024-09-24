@@ -5,16 +5,19 @@ import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
 
+// query limit per letter group
+const OCP_APP_QUERY_LIMIT = 20000
+
+// getting system apps by its cluster name in cluster chunks
+const REMOTE_CLUSTER_CHUNKS = 25
+const clusterNameChunks: string[][] = []
+
 const labelArr: string[] = [
   'kustomize.toolkit.fluxcd.io/name=',
   'helm.toolkit.fluxcd.io/name=',
   'app=',
   'app.kubernetes.io/part-of=',
 ]
-
-// getting system apps by its cluster name in cluster chuncks
-const REMOTE_CLUSTER_CHUNKS = 25
-const clusterNameChunks: string[][] = []
 
 const query = {
   operationName: 'searchResult',
@@ -31,7 +34,7 @@ const query = {
             values: [...labelArr.map((label) => `${label}*`)],
           },
         ],
-        limit: 20000,
+        limit: OCP_APP_QUERY_LIMIT,
       },
     ],
   },
@@ -80,7 +83,7 @@ export async function getOCPApps(
     })
 
     // get chuck of cluster names to search for sys apps
-    clusterNameChunk = getNextClusterNameChuck(applicationCache)
+    clusterNameChunk = getNextClusterNameChunk(applicationCache)
     filters.push({
       property: 'cluster',
       values: clusterNameChunk,
@@ -181,15 +184,15 @@ export async function getOCPApps(
   }
 }
 
-function getNextClusterNameChuck(applicationCache: ApplicationCacheType): string[] {
+function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string[] {
   // if no cluster name chucks left, create a new array of chunks
   if (clusterNameChunks.length === 0) {
     const clusterMap = getClusterMap()
     const clusterNames = Object.keys(clusterMap)
     if (clusterNames.length > 0) {
-      const chunks = clusterNames.reduce((chunks: string[][], chunkName, index) => {
+      const chunks = clusterNames.reduce((chunks: string[][], clusterName, index) => {
         const cindex = Math.floor(index / REMOTE_CLUSTER_CHUNKS)
-        chunks[cindex] = ([] as string[]).concat(chunks[cindex] || [], chunkName)
+        chunks[cindex] = (chunks[cindex] ?? []).concat(clusterName)
         return chunks
       }, [])
       clusterNameChunks.push(...chunks)

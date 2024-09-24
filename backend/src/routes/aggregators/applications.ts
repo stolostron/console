@@ -55,7 +55,6 @@ interface ISubscription extends IResource {
 }
 
 export enum MODE {
-  IgnoreSystemApps = 1,
   OnlySystemApps,
   ExcludeSystemApps,
 }
@@ -116,7 +115,7 @@ async function localKubeLoop(): Promise<void> {
 async function searchAPILoop(): Promise<void> {
   let pass = 1
   while (!stopping) {
-    await aggregatSearchAPIApplications(pass)
+    await aggregateSearchAPIApplications(pass)
     pass++
   }
 }
@@ -133,7 +132,7 @@ export function aggregateKubeApplications() {
   )
 }
 
-export async function aggregatSearchAPIApplications(pass: number) {
+export async function aggregateSearchAPIApplications(pass: number) {
   // Argo Apps
   const argoAppSet = await getArgoApps(applicationCache, pass)
 
