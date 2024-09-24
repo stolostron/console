@@ -379,43 +379,40 @@ const mockHostedCluster1: HostedClusterK8sResource = {
   },
 }
 
-export const mockManagedClusterAddon: Map<string, ManagedClusterAddOn[]> = new Map([
-  [
-    'managed-cluster-1',
-    [
-      {
-        apiVersion: ManagedClusterAddOnApiVersion,
-        kind: ManagedClusterAddOnKind,
-        metadata: {
-          name: 'application-manager',
-          namespace: 'managed-cluster-1',
-        },
-        spec: {
-          installNamespace: 'open-cluster-management-agent-addon',
-        },
-        status: {
-          conditions: [
-            {
-              lastTransitionTime: undefined,
-              message: 'application-manager add-on is available.',
-              reason: 'ManagedClusterAddOnLeaseUpdated',
-              status: 'True',
-              type: 'Available',
-            },
-          ],
-          addOnMeta: {
-            displayName: '',
-            description: '',
+export const mockManagedClusterAddon: Record<string, ManagedClusterAddOn[]> = {
+  'managed-cluster-1': [
+    {
+      apiVersion: ManagedClusterAddOnApiVersion,
+      kind: ManagedClusterAddOnKind,
+      metadata: {
+        name: 'application-manager',
+        namespace: 'managed-cluster-1',
+      },
+      spec: {
+        installNamespace: 'open-cluster-management-agent-addon',
+      },
+      status: {
+        conditions: [
+          {
+            lastTransitionTime: undefined,
+            message: 'application-manager add-on is available.',
+            reason: 'ManagedClusterAddOnLeaseUpdated',
+            status: 'True',
+            type: 'Available',
           },
-          addOnConfiguration: {
-            crdName: '',
-            crName: '',
-          },
+        ],
+        addOnMeta: {
+          displayName: '',
+          description: '',
+        },
+        addOnConfiguration: {
+          crdName: '',
+          crName: '',
         },
       },
-    ],
+    },
   ],
-])
+}
 
 export const mockClusterManagementAddon: ClusterManagementAddOn = {
   apiVersion: ClusterManagementAddOnApiVersion,
