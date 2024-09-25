@@ -46,7 +46,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
             return Buffer.from(proxyToken, 'base64').toString('ascii')
           })
           .catch((err: Error): undefined => {
-            logger.error({ msg: `Error getting secret in namespace bare-metal`, error: err.message })
+            logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
             return undefined
           })
 
