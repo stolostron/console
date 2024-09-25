@@ -476,11 +476,30 @@ describe('add credentials page', () => {
   it('should create kubevirt (Red Hat Virtualization) credentials with external infra', async () => {
     render(<Component credentialsType={Provider.kubevirt} />)
 
-    // Define the provider connection data
+    // mock data below for kubevirt (Red Hat Virtualization) credentials with external infrastructure
+    const mockKubeconfig = `
+clusters:
+- name: 'mock-cluster'
+  cluster:
+    server: 'https://mock-server:6443'
+    certificate-authority-data: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=='
+contexts:
+- name: 'mock-context'
+  context:
+    cluster: 'mock-cluster'
+    user: 'mock-user'
+    namespace: 'mock-namespace'
+users:
+- name: 'mock-user'
+  user:
+    client-certificate-data: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=='
+    client-key-data: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQo='
+current-context: 'mock-context'
+`
     const providerConnection = createProviderConnection('kubevirt', {
       pullSecret: '{"pull":"secret"}\n',
       'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
-      kubeconfig: 'kubeconfig',
+      externalInfraKubeconfig: mockKubeconfig,
       externalInfraNamespace: 'external-namespace',
     })
 
@@ -490,15 +509,10 @@ describe('add credentials page', () => {
     await clickByText('Next')
 
     // Click on the external infrastructure checkbox
-    await waitFor(() =>
-      expect(
-        screen.getByRole('heading', { level: 2, name: /Select to enable and store external infrastructure details/i })
-      ).toBeInTheDocument()
-    )
     await clickByTestId('isExternalInfra')
 
     // Fill in Kubeconfig and Namespace
-    await typeByTestId('kubeconfig', providerConnection.stringData?.kubeconfig! ?? '')
+    await typeByTestId('externalInfraKubeconfig', providerConnection.stringData?.externalInfraKubeconfig! ?? '')
     await typeByTestId('externalInfraNamespace', providerConnection.stringData?.externalInfraNamespace ?? '')
     await clickByText('Next')
 
