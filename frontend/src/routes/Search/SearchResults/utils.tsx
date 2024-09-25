@@ -54,12 +54,15 @@ export function handleVMActions(
     })
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
+
+      let errMessage = err?.message ?? t('An unexpected error occurred.')
+      if (errMessage.includes(':')) errMessage = errMessage.split(':')[1]
       toast.addAlert({
-        title: err?.message ?? t('Unsuccessful request'),
-        message: t('Error occurred on VirtualMachine {{name}} {{action}} action.', {
+        title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
           name: item.name,
           action,
         }),
+        message: errMessage,
         type: 'danger',
       })
     })
