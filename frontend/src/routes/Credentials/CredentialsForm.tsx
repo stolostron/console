@@ -64,7 +64,6 @@ type ProviderConnectionOrCredentialsType =
 
 export function CreateCredentialsFormPage(props: { credentialsType: CredentialsType }) {
   const { t } = useTranslation()
-
   const { credentialsType } = props
 
   const { projects, error } = useProjects()
@@ -109,7 +108,6 @@ export function ViewEditCredentialsFormPage() {
       .catch(setError)
     return result.abort
   }, [name, namespace])
-
   if (error) return <ErrorPage error={error} />
 
   if (!providerConnection) return <LoadingPage />
@@ -139,9 +137,28 @@ export function CredentialsForm(
     props
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
+
   const toastContext = useContext(AcmToastContext)
   const navigate = useNavigate()
   const { back, cancel } = useBackCancelNavigation()
+
+  // Red Hat Cloud
+  enum OCMAuthMethod {
+    API_TOKEN = 'offline-token',
+    SERVICE_ACCOUNT = 'service-account',
+  }
+
+  const handleAuthMethodChange = (value: OCMAuthMethod) => {
+    setAuthMethod(value)
+  }
+
+  const [auth_method, setAuthMethod] = useState<OCMAuthMethod>(
+    (providerConnection?.stringData?.auth_method as OCMAuthMethod) ?? OCMAuthMethod.API_TOKEN
+  )
+
+  const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
+  const [client_id, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
+  const [client_secret, setServiceAccClientSecret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
 
   // Details
   const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -316,9 +333,6 @@ export function CredentialsForm(
   const [ansibleHost, setAnsibleHost] = useState(() => providerConnection?.stringData?.host ?? '')
   const [ansibleToken, setAnsibleToken] = useState(() => providerConnection?.stringData?.token ?? '')
 
-  // Red Hat Cloud
-  const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
-
   // AWS S3 bucket
   const s3values = useMemo(
     () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
@@ -450,7 +464,14 @@ export function CredentialsForm(
         stringData.token = ansibleToken
         break
       case Provider.redhatcloud:
-        stringData.ocmAPIToken = ocmAPIToken
+        stringData.auth_method = auth_method
+        if (auth_method === OCMAuthMethod.API_TOKEN) {
+          stringData.ocmAPIToken = ocmAPIToken
+        }
+        if (auth_method === OCMAuthMethod.SERVICE_ACCOUNT) {
+          stringData.client_id = client_id
+          stringData.client_secret = client_secret
+        }
         break
       case Provider.hostinventory:
       case Provider.hybrid:
@@ -530,6 +551,7 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
       { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
+      { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
       { path: 'Secret[0].stringData.externalInfraKubeconfig', setState: setExternalInfraKubeconfig },
       { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
@@ -1326,25 +1348,58 @@ export function CredentialsForm(
       {
         type: 'Section',
         title: t('OpenShift Cluster Manager'),
-        wizardTitle: t('Enter the OpenShift Cluster Manager API token'),
+        wizardTitle: t('Enter the OpenShift Cluster Manager credentials'),
         description: (
           <a href={DOC_LINKS.CREATE_CONNECTION_REDHATCLOUD} target="_blank" rel="noreferrer">
-            {t('How do I get the OpenShift Cluster Manager API Token?')}
+            {t('How do I get OpenShift Cluster Manager credentials?')}
           </a>
         ),
         inputs: [
           {
             id: 'ocmAPIToken',
+            label: t('Authentication method'),
             isHidden: credentialsType !== Provider.redhatcloud,
+            labelHelp: t('The authentication method to use to connect to OpenShift Cluster Manager.'),
+            type: 'Select',
+            placeholder: t('Select an authentication method'),
+            value: auth_method,
+            onChange: handleAuthMethodChange,
+            options: [
+              { id: OCMAuthMethod.API_TOKEN, value: OCMAuthMethod.API_TOKEN, text: t('API token') },
+              { id: OCMAuthMethod.SERVICE_ACCOUNT, value: OCMAuthMethod.SERVICE_ACCOUNT, text: t('Service account') },
+            ],
+            isRequired: true,
+          },
+          (auth_method === OCMAuthMethod.API_TOKEN || isViewing) && {
+            id: 'ocmAPIToken',
             type: 'Text',
-            label: t('OpenShift Cluster Manager API token'),
-            placeholder: t('Enter the OpenShift Cluster Manager API token'),
+            isHidden: credentialsType !== Provider.redhatcloud,
+            label: t('API token'),
             value: ocmAPIToken,
             onChange: setOcmAPIToken,
             isRequired: true,
             isSecret: true,
           },
-        ],
+          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+            id: 'client_id',
+            isHidden: credentialsType !== Provider.redhatcloud,
+            type: 'Text',
+            label: t('Client ID'),
+            value: client_id,
+            onChange: setServiceAccClientId,
+            isRequired: true,
+          },
+          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+            id: 'client_secret',
+            type: 'Text',
+            isHidden: credentialsType !== Provider.redhatcloud,
+            label: t('Client secret'),
+            value: client_secret,
+            onChange: setServiceAccClientSecret,
+            isRequired: true,
+            isSecret: true,
+          },
+        ].filter(Boolean) as Input[],
       },
       {
         type: 'Section',
@@ -1510,6 +1565,7 @@ export function CredentialsForm(
         '*.stringData.password',
         '*.stringData.token',
         '*.stringData.ocmAPIToken',
+        '*.stringData.client_secret',
         '*.stringData.additionalTrustBundle',
         '*.stringData.disconnectedAdditionalTrustBundle',
         '*.stringData.ovirt_ca_bundle',

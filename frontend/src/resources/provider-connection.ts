@@ -54,9 +54,6 @@ export interface ProviderConnectionStringData {
   clusterOSImage?: string
   disconnectedAdditionalTrustBundle?: string
 
-  // OpenShift Cluster Manager
-  ocmAPIToken?: string
-
   // OpenStack
   ['clouds.yaml']?: string
   cloud?: string
@@ -86,6 +83,13 @@ export interface ProviderConnectionStringData {
 
   host?: string
   token?: string
+
+  auth_method?: 'service-account' | 'offline-token'
+  // OpenShift Cluster Manager Service Account credentials
+  client_id?: string
+  client_secret?: string
+  // OpenShift Cluster Manager API Token
+  ocmAPIToken?: string
 }
 
 export interface ProviderConnection {

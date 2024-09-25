@@ -3,8 +3,8 @@
 import { ISortBy } from '@patternfly/react-table'
 import { IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
-import { useCallback, useEffect } from 'react'
-import { usePluginDataContextValue } from './PluginDataContext'
+import { useCallback, useContext, useEffect } from 'react'
+import { PluginContext } from './PluginContext'
 
 const apiUrl = '/aggregate'
 
@@ -97,7 +97,8 @@ export function useAggregate(
   }
 
   // make request to backend
-  const { backendUrl } = usePluginDataContextValue()
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
   const requestedViewStr = requestedView && JSON.stringify(requestedView)
   const queryFunc = useCallback(() => {
     return requestedViewStr

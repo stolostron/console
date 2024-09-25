@@ -208,6 +208,7 @@ export default function DiscoveredByCluster({
             <DiscoveredViolationsCard
               policyKind={policyKind}
               policyViolationSummary={policyViolationSummary(policies ?? [])}
+              title={policyKind + ' ' + t('cluster violations')}
             />
             {policyKind === 'OperatorPolicy' && (
               <>
