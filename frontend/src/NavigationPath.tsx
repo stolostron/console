@@ -130,6 +130,9 @@ export enum NavigationPath {
   editAnsibleAutomation = '/multicloud/infrastructure/automations/edit/:namespace/:name',
   viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
 
+  // Infrastructure - Virtual Machines
+  virtualMachines = '/multicloud/infrastructure/virtualmachines',
+
   // Applications
   applications = '/multicloud/applications',
   advancedConfiguration = '/multicloud/applications/advanced',

@@ -45,6 +45,7 @@ const Search = lazy(() => import('./routes/Search/Search'))
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const Automations = lazy(() => import('./routes/Infrastructure/Automations/Automations'))
 const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
+const VirtualMachines = lazy(() => import('./routes/Infrastructure/VirtualMachines/VirtualMachines'))
 
 // GOVERNANCE
 const Governance = lazy(() => import('./routes/Governance/Governance'))
@@ -197,6 +198,13 @@ const routes: (IRoute | IRouteGroup)[] = [
         path: NavigationPath.infraEnvironments,
         match: MatchType.SubRoutes,
         element: <InfraEnvironments />,
+      },
+      {
+        title: 'Virtual machines',
+        type: 'route',
+        path: NavigationPath.virtualMachines,
+        match: MatchType.SubRoutes,
+        element: <VirtualMachines />,
       },
     ],
   },
