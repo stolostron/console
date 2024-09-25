@@ -1361,7 +1361,7 @@
   "error": "Error",
   "Error": "Error",
   "Error getting Ansible jobs": "Error getting Ansible jobs",
-  "Error occurred on VirtualMachine {{action}} action": "Error occurred on VirtualMachine {{action}} action",
+  "Error occurred on VirtualMachine {{name}} {{action}} action.": "Error occurred on VirtualMachine {{name}} {{action}} action.",
   "Error occurred while contacting the search service.": "Error occurred while contacting the search service.",
   "Error occurred while getting the result count.": "Error occurred while getting the result count.",
   "Error occurred while querying for search results. Please try the export again.": "Error occurred while querying for search results. Please try the export again.",
