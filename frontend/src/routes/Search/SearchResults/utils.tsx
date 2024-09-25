@@ -57,6 +57,7 @@ export function handleVMActions(
 
       let errMessage = err?.message ?? t('An unexpected error occurred.')
       if (errMessage.includes(':')) errMessage = errMessage.split(':')[1]
+      if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
       toast.addAlert({
         title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
           name: item.name,

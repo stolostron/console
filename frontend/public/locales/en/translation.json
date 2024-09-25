@@ -3040,6 +3040,7 @@
   "Unable to communicate with the server due to a gateway timeout.": "Unable to communicate with the server due to a gateway timeout.",
   "Unable to update the resource because of a resource conflict.": "Unable to update the resource because of a resource conflict.",
   "Unauthorized": "Unauthorized",
+  "Unauthorized to execute this action.": "Unauthorized to execute this action.",
   "unavailable": "unavailable",
   "Unavailable": "Unavailable",
   "unbind": "Remove from cluster",
