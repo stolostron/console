@@ -2544,7 +2544,7 @@ Array [
   },
   Object {
     "cell": "-",
-    "header": "IP Address",
+    "header": "IP address",
     "sort": "ipaddress",
   },
   Object {
