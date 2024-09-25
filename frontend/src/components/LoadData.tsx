@@ -435,8 +435,9 @@ export function LoadData(props: { children?: ReactNode }) {
                     }, [] as string[])
                     .join('/')
                   setter((map) => {
-                    const newMap = structuredClone(map)
-                    const arr = newMap[key] || []
+                    const newMap = { ...map }
+                    newMap[key] = [...(map[key] || [])]
+                    const arr = newMap[key]
                     const index = arr.findIndex(
                       (resource) =>
                         resource.metadata?.name === watchEvent.object.metadata.name &&
@@ -452,7 +453,6 @@ export function LoadData(props: { children?: ReactNode }) {
                         if (index !== -1) arr.splice(index, 1)
                         break
                     }
-                    newMap[key] = arr
                     return newMap
                   })
                 }
