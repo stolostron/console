@@ -57,13 +57,18 @@
             "host": { "type": "string" },
             "kubeconfig": { "type": "string" },
             "server": { "type": "string" },
-            "token": { "type": "string" }
+            "token": { "type": "string" },
+            "api_token": { "type": "string" },
+            "cluster_id": { "type": "string" },
+            "client_id": { "type": "string" },
+            "client_secret": { "type": "string" }
           },
           "oneOf": [
             { "required": ["host", "token"] },
             { "required": ["autoImportRetry", "token", "server"] },
             { "required": ["autoImportRetry", "kubeconfig"] },
-            { "required": ["api_token", "cluster_id"] }
+            { "required": ["api_token", "cluster_id"] },
+            { "required": ["client_id", "client_secret", "cluster_id"] }
           ]
         }
       },
