@@ -42,6 +42,7 @@ export const mockInfraEnv1: InfraEnvK8sResource = {
     pullSecretRef: {
       name: `pullsecret-${infraEnvName}`,
     },
+    cpuArchitecture: 'x86_64',
   },
   status: {
     agentLabelSelector: {

@@ -38,6 +38,7 @@ describe('DetailsForm', () => {
                       diskEncryption: {},
                       cpuArchitecture: '',
                       platform: 'baremetal',
+                      userManagedNetworking: false,
                     },
                     step: {
                       title: {
