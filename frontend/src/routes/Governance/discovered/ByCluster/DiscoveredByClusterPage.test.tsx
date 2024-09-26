@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from '../useFetchPolicies'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import DiscoveredByClusterPage from './DiscoveredByClusterPage'
-import { waitForText } from '../../../../lib/test-util'
+import { waitForNotText, waitForText } from '../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { ApolloError } from '@apollo/client'
@@ -112,7 +112,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Managed externally', true)
     // Because of tooltip, this is presented multiple times
-    await waitForText('ConfigurationPolicy violations', true)
+    await waitForText('ConfigurationPolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for CertificatePolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
@@ -195,7 +195,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Managed externally', true)
     // Because of tooltip, this is presented multiple times
-    await waitForText('CertificatePolicy violations', true)
+    await waitForText('CertificatePolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for OperatorPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
@@ -206,7 +206,7 @@ describe('DiscoveredByClusterPage', () => {
           apigroup: 'policy.open-cluster-management.io',
           name: 'check-policy-reports',
           kind: 'OperatorPolicy',
-          severity: 'low',
+          severity: 'high',
           responseAction: 'enforce',
           policies: [
             {
@@ -220,7 +220,6 @@ describe('DiscoveredByClusterPage', () => {
               kind_plural: 'operatorpolicies',
               label: 'policy.open-cluster-management.io/policy=default.cert-dd',
               name: 'check-policy-reports',
-              namespace: 'local-cluster',
               compliant: 'NonCompliant',
               responseAction: 'enforce',
               severity: 'low',
@@ -231,13 +230,34 @@ describe('DiscoveredByClusterPage', () => {
               annotation: 'apps.open-cluster-management.io/hosting-subscription=policies/demo-sub',
               source: { type: 'Managed externally', parentName: '', parentNs: '' },
             },
+            {
+              _hubClusterResource: true,
+              _uid: 'local-cluster/36044810-6b61-4437-adbe-5456c5f47a95',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'managed3',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'OperatorPolicy',
+              kind_plural: 'operatorpolicies',
+              label: 'policy.open-cluster-management.io/policy=default.cert-dd',
+              name: 'check-policy-reports',
+              compliant: 'Compliant',
+              responseAction: 'inform',
+              severity: 'high',
+              disabled: false,
+              _isExternal: true,
+              deploymentAvailable: false,
+              upgradeAvailable: false,
+              annotation: 'apps.open-cluster-management.io/hosting-subscription=policies/demo-sub',
+              source: { type: 'Managed externally', parentName: '', parentNs: '' },
+            },
           ],
           source: { type: 'Managed externally', parentName: '', parentNs: '' },
         },
       ],
       err: undefined,
     })
-    render(
+    const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(channelsState, [])
@@ -268,21 +288,102 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('check-policy-reports', true)
     await waitForText('Open Cluster Management')
 
+    await waitForText('Cluster')
+    await waitForText('managed2')
+    await waitForText('managed3')
+
     await waitForText('Response action')
     await waitForText('enforce')
+    await waitForText('inform')
 
     await waitForText('Violations', true)
 
+    // Test the donut charts
+    expect(container.querySelector('#operatorpolicy-cluster-violations-chart-title')).toHaveTextContent(
+      'OperatorPolicy cluster violations 1'
+    )
+    expect(container.querySelector('#deployments-unavailable-chart-title')).toHaveTextContent(
+      'Deployments unavailable 1'
+    )
+    expect(container.querySelector('#upgrade-availability-chart-title')).toHaveTextContent('Upgrade availability 1')
+
     await waitForText('Severity')
     await waitForText('Low')
+    await waitForText('High')
 
     await waitForText('Source')
-    await waitForText('Managed externally')
+    await waitForText('Managed externally', true)
 
     await waitForText('Deployment available')
     await waitForText('Upgrade available')
     // Because of tooltip, this is presented multiple times
-    await waitForText('OperatorPolicy violations', true)
+    await waitForText('OperatorPolicy cluster violations', true)
+
+    // Test some filters
+    await waitForText('Filter')
+    screen.getByRole('button', { name: 'Options menu' }).click()
+
+    const deploymentAvailableFilter = screen.getByRole('group', { name: 'Deployment available' })
+
+    within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
+
+    await waitForText('managed2')
+    await waitForNotText('managed3')
+
+    within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
+    within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
+
+    await waitForText('managed3')
+    await waitForNotText('managed2')
+
+    within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
+
+    const upgradeAvailableFilter = screen.getByRole('group', { name: 'Upgrade available' })
+
+    within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
+
+    await waitForText('managed2')
+    await waitForNotText('managed3')
+
+    within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
+    within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
+
+    await waitForText('managed3')
+    await waitForNotText('managed2')
+
+    within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
+
+    screen.getByRole('checkbox', { name: 'Managed externally 2' }).click()
+    await waitForText('managed2')
+    await waitForText('managed3')
+
+    screen.getByRole('checkbox', { name: 'Managed externally 2' }).click()
+
+    screen.getByRole('checkbox', { name: 'Low 1' }).click()
+
+    await waitForText('managed2')
+    await waitForNotText('managed3')
+
+    screen.getByRole('checkbox', { name: 'Low 1' }).click()
+
+    screen.getByRole('checkbox', { name: 'High 1' }).click()
+    await waitForNotText('managed2')
+    await waitForText('managed3')
+
+    screen.getByRole('checkbox', { name: 'High 1' }).click()
+
+    screen.getByRole('checkbox', { name: 'enforce 1' }).click()
+    await waitForNotText('managed3')
+    await waitForText('managed2')
+
+    screen.getByRole('checkbox', { name: 'enforce 1' }).click()
+    screen.getByRole('checkbox', { name: 'inform 1' }).click()
+
+    await waitForNotText('managed2')
+    await waitForText('managed3')
+
+    // Unset the filter so the state doesn't carry over
+    screen.getByRole('checkbox', { name: 'inform 1' }).click()
   })
 
   test('Should render DiscoveredByCluster for a Gatekeeper constraint', async () => {
@@ -375,9 +476,8 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('warn')
 
     await waitForText('Violations', true)
-
-    expect(screen.getByRole('cell', { name: /82 Violations/ })).toBeInTheDocument()
-    expect(screen.getByRole('cell', { name: /75 Violations/ })).toBeInTheDocument()
+    await waitForText('82')
+    await waitForText('75')
 
     await waitForText('Severity')
     await waitForText('High')
@@ -386,7 +486,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('Source')
     await waitForText('Local', true)
 
-    await waitForText('K8sRequiredLabels violations', true)
+    await waitForText('K8sRequiredLabels cluster violations', true)
     await waitForText('2 with violations')
   })
 

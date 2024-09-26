@@ -6,8 +6,8 @@ import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, getBackendUrl, putRequest } from '../../../resources'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { Cluster, fetchRetry, getBackendUrl } from '../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -27,23 +27,44 @@ export interface ISearchResult {
   __type: string
 }
 
-function handleVMActions(action: string, path: string, item: any, toast: IAlertContext, t: TFunction) {
-  putRequest(`${getBackendUrl()}${path}`, {
-    managedCluster: item.cluster,
-    vmName: item.name,
-    vmNamespace: item.namespace,
+export function handleVMActions(
+  action: string,
+  path: string,
+  item: any,
+  refetchVM: () => void, // provide a callback fn to refetch the vm
+  toast: IAlertContext,
+  t: TFunction
+) {
+  const abortController = new AbortController()
+  fetchRetry({
+    method: 'PUT',
+    url: `${getBackendUrl()}${path}`,
+    data: {
+      managedCluster: item.cluster,
+      vmName: item.name,
+      vmNamespace: item.namespace,
+    },
+    signal: abortController.signal,
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
   })
-    .promise.then(() => {
-      // Wait 3 seconds & refetch search results to update table.
-      setTimeout(() => searchClient.refetchQueries({ include: ['searchResultItems'] }), 3000)
+    .then(() => {
+      // Wait 5 seconds to allow search collector to catch up & refetch search results to update table.
+      setTimeout(refetchVM, 5000)
     })
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
+
+      let errMessage = err?.message ?? t('An unexpected error occurred.')
+      if (errMessage.includes(':')) errMessage = errMessage.split(':')[1]
+      if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
       toast.addAlert({
-        title: t('Unsuccessful request'),
-        message: t(`Error occurred on VirtualMachine {{action}} action`, { action }),
+        title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
+          name: item.name,
+          action,
+        }),
+        message: errMessage,
         type: 'danger',
-        autoClose: true,
       })
     })
 }
@@ -57,9 +78,9 @@ export const useGetRowActions = (
 ) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { settingsState } = useSharedAtoms()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const toast = useContext(AcmToastContext)
-  const { useVMActionsEnabled } = useSharedAtoms()
-  const vmActionsEnabled = useVMActionsEnabled()
   const allClusters = useAllClusters(true)
 
   return useMemo(
@@ -100,7 +121,7 @@ export function getRowActions(
   allClusters: Cluster[],
   navigate: NavigateFunction,
   toast: IAlertContext,
-  vmActionsEnabled: 'enabled' | 'disabled',
+  vmActionsEnabled: boolean,
   t: TFunction
 ) {
   const viewApplication = {
@@ -246,35 +267,70 @@ export function getRowActions(
     id: 'startVM',
     title: t('Start {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('start', '/virtualmachines/start', item, toast, t)
+      handleVMActions(
+        'start',
+        '/virtualmachines/start',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const stopVM = {
     id: 'stopVM',
     title: t('Stop {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('stop', '/virtualmachines/stop', item, toast, t)
+      handleVMActions(
+        'stop',
+        '/virtualmachines/stop',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const restartVM = {
     id: 'restartVM',
     title: t('Restart {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('restart', '/virtualmachines/restart', item, toast, t)
+      handleVMActions(
+        'restart',
+        '/virtualmachines/restart',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const pauseVM = {
     id: 'pauseVM',
     title: t('Pause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('pause', '/virtualmachineinstances/pause', item, toast, t)
+      handleVMActions(
+        'pause',
+        '/virtualmachineinstances/pause',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
   const unpauseVM = {
     id: 'unpauseVM',
     title: t('Unpause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      handleVMActions('unpause', '/virtualmachineinstances/unpause', item, toast, t)
+      handleVMActions(
+        'unpause',
+        '/virtualmachineinstances/unpause',
+        item,
+        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+        toast,
+        t
+      )
     },
   }
 
@@ -287,7 +343,7 @@ export function getRowActions(
   } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   } else if (resourceKind.toLowerCase() === 'virtualmachine') {
-    return vmActionsEnabled === 'enabled'
+    return vmActionsEnabled
       ? [
           startVM,
           stopVM,

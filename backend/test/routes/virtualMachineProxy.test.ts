@@ -21,7 +21,8 @@ describe('Virtual Machine actions', function () {
               namespace: 'testCluster',
             },
             data: {
-              token: 'dGVzdC12bS10b2tlbg==', // test-vm-token
+              // test-vm-token
+              token: 'dGVzdC12bS10b2tlbg==', // notsecret
             },
             type: 'Opaque',
           },
@@ -83,7 +84,8 @@ describe('Virtual Machine actions', function () {
               namespace: 'testCluster',
             },
             data: {
-              token: 'dGVzdC12bS10b2tlbg==', // test-vm-token
+              // test-vm-token
+              token: 'dGVzdC12bS10b2tlbg==', // notsecret
             },
             type: 'Opaque',
           },
@@ -129,11 +131,8 @@ describe('Virtual Machine actions', function () {
     expect(res.statusCode).toEqual(500)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(
       JSON.stringify({
-        statusCode: 500,
-        body: {
-          name: 'fetchError',
-          message: 'error testing...',
-        },
+        name: 'fetchError',
+        message: 'error testing...',
       })
     )
   })

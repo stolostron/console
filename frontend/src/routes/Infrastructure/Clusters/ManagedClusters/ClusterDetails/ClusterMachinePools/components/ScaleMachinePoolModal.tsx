@@ -75,13 +75,10 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
   const maxReplicasValidation = useCallback(
     (count: number) => {
       if (count < minReplicas) return t('Maximum replicas must be greater than or equal to minimum replicas.')
-      // We only need to enforce machineSetCount as minimum for maxReplicas
-      // until https://issues.redhat.com/browse/HIVE-2415 is fixed
-      if (count < machineSetCount) return t('machinePool.modal.scale.validation.maxReplicas', { machineSetCount })
       if (count < 0) return t('machinePool.modal.scale.validation.positive')
       return undefined
     },
-    [machineSetCount, minReplicas, t]
+    [minReplicas, t]
   )
 
   return (
@@ -135,9 +132,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                     required
                     label={t('machinePool.modal.scale.maxReplicas.label')}
                     id="scale-max"
-                    // We only need to enforce machineSetCount as minimum for maxReplicas
-                    // until https://issues.redhat.com/browse/HIVE-2415 is fixed
-                    min={Math.max(0, minReplicas, machineSetCount)}
+                    min={Math.max(0, minReplicas)}
                     value={maxReplicas}
                     onChange={(event) => setMaxReplicas(Number((event.target as HTMLInputElement).value))}
                     onMinus={() => setMaxReplicas(maxReplicas - 1)}

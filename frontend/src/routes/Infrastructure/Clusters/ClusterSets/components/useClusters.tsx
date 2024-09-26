@@ -78,7 +78,7 @@ export function getMappedClusterPoolClusterSetClusters(
   clusterDeployments: ClusterDeployment[],
   managedClusterInfos: ManagedClusterInfo[],
   certificateSigningRequests: CertificateSigningRequest[],
-  managedClusterAddons: Map<string, ManagedClusterAddOn[]>,
+  managedClusterAddons: Record<string, ManagedClusterAddOn[]>,
   clusterManagementAddons: ClusterManagementAddOn[],
   clusterClaims: ClusterClaim[],
   clusterCurators: ClusterCurator[],

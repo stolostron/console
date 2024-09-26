@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from './useFetchPolicies'
-import DiscoveredPolicies, { getSourceFilter } from './DiscoveredPolicies'
+import DiscoveredPolicies from './DiscoveredPolicies'
+import { getSourceFilterOptions } from './ByCluster/common'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { waitForText } from '../../../lib/test-util'
+import { waitForText, waitForNotText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
 
@@ -141,6 +142,17 @@ describe('useFetchPolicies custom hook', () => {
     fireEvent.mouseEnter(screen.getByText('p-name'))
     await waitForText('Namespace: p-ns')
     await waitForText('Name: p-name')
+
+    // Test the kind filter
+    await waitForText('Filter')
+    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
+
+    await waitForNotText('check-policy-reports')
+    await waitForText('ns-must-have-gk')
+
+    // Unset the filter so the state doesn't carry over
+    screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
   })
 
   test('Should render error page', async () => {
@@ -335,13 +347,12 @@ describe('useFetchPolicies custom hook', () => {
         },
       },
     ]
-    expect(JSON.stringify(getSourceFilter(data))).toBe(
+    expect(JSON.stringify(getSourceFilterOptions(data))).toBe(
       JSON.stringify([
-        { label: 'Multiple', value: 'Multiple' },
-        { label: 'parent-ns/parent-name', value: 'parent-ns/parent-name' },
-        { label: 'parent-ns2/parent-name2', value: 'parent-ns2/parent-name2' },
         { label: 'Local', value: 'Local' },
         { label: 'Managed externally', value: 'Managed externally' },
+        { label: 'Multiple', value: 'Multiple' },
+        { label: 'Policy', value: 'Policy' },
       ])
     )
   })

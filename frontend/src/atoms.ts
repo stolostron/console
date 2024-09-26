@@ -64,7 +64,7 @@ function AtomArray<T>() {
   return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 function AtomMap<T>() {
-  return atom<Map<string, T[]>>({ key: (++atomArrayKey).toString(), default: new Map() })
+  return atom<Record<string, T[]>>({ key: (++atomArrayKey).toString(), default: {} })
 }
 
 // throttle events delay
@@ -199,9 +199,4 @@ export function useAppArgoSearchResultLimit() {
 export function useAppOCPSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
-}
-
-export function useVMActionsEnabled() {
-  const settings = useRecoilValue(settingsState)
-  return useMemo(() => settings.VIRTUAL_MACHINE_ACTIONS ?? 'disabled', [settings])
 }

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import { css } from '@emotion/css'
 import {
   Badge,
@@ -14,7 +15,6 @@ import {
   PaginationProps,
   PaginationVariant,
   PerPageOptions,
-  SearchInput,
   Select,
   SelectGroup,
   SelectOption,
@@ -80,6 +80,7 @@ import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { PluginContext } from '../../lib/PluginContext'
+import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -236,6 +237,9 @@ export interface ITableFilter<T> {
   options: TableFilterOption<FilterOptionValueT>[]
   tableFilterFn: TableFilterFn<T>
   showEmptyOptions?: boolean
+}
+export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'options'> {
+  availableOperators: SearchOperator[]
 }
 
 export type FilterSelections = {
@@ -506,6 +510,7 @@ export type AcmTableProps<T> = {
   noBorders?: boolean
   fuseThreshold?: number
   filters?: ITableFilter<T>[]
+  advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
   showColumManagement?: boolean
   showExportButton?: boolean
@@ -525,6 +530,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     customTableAction,
     additionalToolbarItems,
     filters = [],
+    advancedFilters = [],
     gridBreakPoint,
     initialSelectedItems,
     onSelect: propsOnSelect,
@@ -577,6 +583,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
   const sort = props.sort || stateSort
   const setSort = props.setSort || stateSetSort
+  const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
@@ -800,6 +807,27 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         })
       }
     }
+
+    const findFilterMatch = (filter: string) => advancedFilters.find((filterItem) => filterItem.id === filter)
+    // advanced filtering, won't apply if preprocessed
+    if (!isPreProcessed) {
+      const advancedFilterSelections: FilterSelections = {}
+      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
+        if (columnId && value && operator) {
+          advancedFilterSelections[columnId] = [value]
+        }
+      })
+      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
+        const filterCategories = Object.keys(advancedFilterSelections)
+        filteredItems = filteredItems.filter((item: T) =>
+          filterCategories.every(
+            (filter: string) =>
+              /* istanbul ignore next */
+              findFilterMatch(filter)?.tableFilterFn(advancedFilterSelections[filter], item) ?? true
+          )
+        )
+      }
+    }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
       const subRows = addSubRows?.(item)
@@ -820,7 +848,18 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return tableItem
     })
     return { tableItems, totalCount: (isPreProcessed && resultCounts?.itemCount) || tableItems.length }
-  }, [items, isPreProcessed, resultCounts?.itemCount, filters, filterSelections, keyFn, addSubRows, selectedSortedCols])
+  }, [
+    items,
+    isPreProcessed,
+    resultCounts?.itemCount,
+    filters,
+    filterSelections,
+    keyFn,
+    addSubRows,
+    selectedSortedCols,
+    activeAdvancedFilters,
+    advancedFilters,
+  ])
 
   const { filtered, filteredCount } = useMemo<{
     filtered: ITableItem<T>[]
@@ -846,7 +885,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return { filtered: tableItems, filteredCount: totalCount }
     }
   }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
-
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number
@@ -1262,14 +1300,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               <ToolbarGroup variant="filter-group">
                 {hasSearch && (
                   <ToolbarItem variant="search-filter">
-                    <SearchInput
+                    <AcmSearchInput
                       placeholder={searchPlaceholder}
-                      value={search}
-                      onChange={updateSearch}
-                      onClear={clearSearch}
                       spellCheck={false}
                       resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
                       style={{ flexGrow: 1 }}
+                      canAddConstraints
+                      useAdvancedSearchPopper={advancedFilters.length > 0}
+                      setActiveConstraints={setActiveAdvancedFilters}
+                      searchableColumns={advancedFilters.map((filter) => ({
+                        columnId: filter.id,
+                        columnDisplayName: filter.label,
+                        availableOperators: filter.availableOperators,
+                      }))}
+                      fuzzySearchValue={search}
+                      fuzzySearchOnChange={updateSearch}
+                      fuzzySearchOnClear={clearSearch}
                     />
                   </ToolbarItem>
                 )}

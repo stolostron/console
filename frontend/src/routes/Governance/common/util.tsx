@@ -737,6 +737,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
         style={{
           height: 18,
           width: 18,
+          flexShrink: 0,
         }}
       >
         {' '}

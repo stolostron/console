@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
 import { convertYesNoCell, getConstraintCompliance, DiscoveredViolationsCard, policyViolationSummary } from './common'
 import { waitForText } from '../../../../lib/test-util'
+import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 describe('ByCluster common component test', () => {
@@ -140,11 +141,12 @@ describe('ByCluster common component test', () => {
   })
 
   test('convertYesNoCell should work properly', () => {
-    expect(convertYesNoCell('true')).toBe('yes')
-    expect(convertYesNoCell('false')).toBe('no')
-    expect(convertYesNoCell(false)).toBe('no')
-    expect(convertYesNoCell(true)).toBe('yes')
-    expect(convertYesNoCell(undefined)).toBe('-')
+    const t = i18next.t.bind(i18next)
+
+    expect(convertYesNoCell('false', t)).toBe('no')
+    expect(convertYesNoCell(false, t)).toBe('no')
+    expect(convertYesNoCell(true, t)).toBe('yes')
+    expect(convertYesNoCell(undefined, t)).toBe('-')
   })
 })
 

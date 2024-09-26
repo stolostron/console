@@ -46,7 +46,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
             return Buffer.from(proxyToken, 'base64').toString('ascii')
           })
           .catch((err: Error): undefined => {
-            logger.error({ msg: `Error getting secret in namespace bare-metal`, error: err.message })
+            logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
             return undefined
           })
 
@@ -86,7 +86,10 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
                 msg: 'Error in VirtualMachine action response',
                 error: results.body.message,
               })
-              res.writeHead(results.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR).end(JSON.stringify(results))
+              res.setHeader('Content-Type', 'application/json')
+              res.writeHead(results.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
+              delete results.body?.code // code is added via writeHead
+              res.end(JSON.stringify(results.body))
             }
           })
           .catch((err: Error) => {

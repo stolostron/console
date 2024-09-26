@@ -18,6 +18,19 @@ const toastContextMock: any = {
   addAlert: jest.fn(),
 }
 
+jest.mock('../../../resources', () => ({
+  ...jest.requireActual('../../../resources'),
+  fetchRetry: jest.fn(() => {
+    return Promise.resolve()
+  }),
+}))
+jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
+  handleVMActions: jest.fn(() => {
+    return Promise.resolve()
+  }),
+}))
+
 const allClusters = [
   {
     name: 'local-cluster',
@@ -60,7 +73,7 @@ const allClusters = [
 ]
 
 test('Correctly return row Actions', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Pod',
     'kind:Pod',
@@ -80,7 +93,7 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Cluster',
     'kind:Cluster',
@@ -97,7 +110,7 @@ test('Correctly return empty row Actions for restricted resource', () => {
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -128,7 +141,7 @@ test('Correctly return empty row Actions for Application', () => {
 })
 
 test('Correctly return row Actions for Application in global search', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -185,7 +198,7 @@ test('Correctly return row Actions for Application in global search', () => {
 })
 
 test('Correctly return VirtualMachine with actions enabled', () => {
-  const vmActionsEnabled = 'enabled'
+  const vmActionsEnabled = true
   const res = getRowActions(
     'VirtualMachine',
     'kind:VirtualMachine',
@@ -202,7 +215,7 @@ test('Correctly return VirtualMachine with actions enabled', () => {
 })
 
 test('Correctly return VirtualMachine with actions disabled', () => {
-  const vmActionsEnabled = 'disabled'
+  const vmActionsEnabled = false
   const res = getRowActions(
     'VirtualMachine',
     'kind:VirtualMachine',
@@ -216,6 +229,33 @@ test('Correctly return VirtualMachine with actions disabled', () => {
     t
   )
   expect(res).toMatchSnapshot()
+})
+test('should handle vm action buttons', () => {
+  const item = { managedHub: 'cluster1' }
+  const vmActionsEnabled = true
+  const actions = getRowActions(
+    'VirtualMachine',
+    'kind:VirtualMachine',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    navigate,
+    toastContextMock,
+    vmActionsEnabled,
+    t
+  )
+  const startVMAction = actions.find((action) => action.id === 'startVM')
+  const stopVMAction = actions.find((action) => action.id === 'stopVM')
+  const restartVMAction = actions.find((action) => action.id === 'restartVM')
+  const pauseVMAction = actions.find((action) => action.id === 'pauseVM')
+  const unpauseVMAction = actions.find((action) => action.id === 'unpauseVM')
+
+  startVMAction?.click(item)
+  stopVMAction?.click(item)
+  restartVMAction?.click(item)
+  pauseVMAction?.click(item)
+  unpauseVMAction?.click(item)
 })
 
 test('generateSearchResultExport - Correctly generates and triggers csv download for single resource kind', () => {

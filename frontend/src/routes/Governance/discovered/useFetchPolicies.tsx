@@ -133,6 +133,11 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
       searchDataItems = searchDataItems.concat(result?.items || [])
     })
 
+    if (searchDataItems.length == 0 && !searchErr && !searchLoading) {
+      setData([])
+      setIsFetching(false)
+    }
+
     if (searchDataItems.length !== 0 && !searchErr && !searchLoading) {
       const dataObj = '(' + grouping + ')();'
       // for firefox

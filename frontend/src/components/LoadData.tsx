@@ -240,7 +240,11 @@ export function LoadData(props: { children?: ReactNode }) {
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
-    const mappers: Record<string, Record<string, { setter: SetterOrUpdater<Map<string, any[]>>; keyBy: string[] }>> = {}
+
+    const mappers: Record<
+      string,
+      Record<string, { setter: SetterOrUpdater<Record<string, any[]>>; keyBy: string[] }>
+    > = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
@@ -249,7 +253,12 @@ export function LoadData(props: { children?: ReactNode }) {
       if (!caches[groupVersion]) caches[groupVersion] = {}
       caches[groupVersion][kind] = {}
     }
-    function addMapper(apiVersion: string, kind: string, setter: SetterOrUpdater<Map<string, any[]>>, keyBy: string[]) {
+    function addMapper(
+      apiVersion: string,
+      kind: string,
+      setter: SetterOrUpdater<Record<string, any[]>>,
+      keyBy: string[]
+    ) {
       const groupVersion = apiVersion.split('/')[0]
       if (!mappers[groupVersion]) mappers[groupVersion] = {}
       mappers[groupVersion][kind] = { setter, keyBy }
@@ -426,7 +435,9 @@ export function LoadData(props: { children?: ReactNode }) {
                     }, [] as string[])
                     .join('/')
                   setter((map) => {
-                    const arr = map.get(key) || []
+                    const newMap = { ...map }
+                    newMap[key] = [...(map[key] || [])]
+                    const arr = newMap[key]
                     const index = arr.findIndex(
                       (resource) =>
                         resource.metadata?.name === watchEvent.object.metadata.name &&
@@ -442,8 +453,7 @@ export function LoadData(props: { children?: ReactNode }) {
                         if (index !== -1) arr.splice(index, 1)
                         break
                     }
-                    map.set(key, arr)
-                    return map
+                    return newMap
                   })
                 }
               }
