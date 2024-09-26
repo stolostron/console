@@ -188,7 +188,8 @@ export function CredentialsForm(
       !!(
         providerConnection?.stringData?.externalInfraKubeconfig ||
         providerConnection?.stringData?.externalInfraNamespace
-      ))
+      )
+  )
   const [externalInfraKubeconfig, setExternalInfraKubeconfig] = useState(
     () => providerConnection?.stringData?.externalInfraKubeconfig ?? ''
   )
