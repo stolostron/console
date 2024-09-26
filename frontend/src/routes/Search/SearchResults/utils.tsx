@@ -55,8 +55,8 @@ export function handleVMActions(
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
 
-      let errMessage = err?.message ?? t('An unexpected error occurred.')
-      if (errMessage.includes(':')) errMessage = errMessage.split(':')[1]
+      let errMessage: string = err?.message ?? t('An unexpected error occurred.')
+      if (errMessage.includes(':')) errMessage = errMessage.split(':').slice(1).join(':')
       if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
       toast.addAlert({
         title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
@@ -267,9 +267,12 @@ export function getRowActions(
     id: 'startVM',
     title: t('Start {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/start`
+        : `/virtualmachines/start`
       handleVMActions(
         'start',
-        '/virtualmachines/start',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -281,9 +284,12 @@ export function getRowActions(
     id: 'stopVM',
     title: t('Stop {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/stop`
+        : `/virtualmachines/stop`
       handleVMActions(
         'stop',
-        '/virtualmachines/stop',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -295,9 +301,12 @@ export function getRowActions(
     id: 'restartVM',
     title: t('Restart {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/restart`
+        : `/virtualmachines/restart`
       handleVMActions(
         'restart',
-        '/virtualmachines/restart',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -309,9 +318,12 @@ export function getRowActions(
     id: 'pauseVM',
     title: t('Pause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/pause`
+        : `/virtualmachineinstances/pause`
       handleVMActions(
         'pause',
-        '/virtualmachineinstances/pause',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -323,9 +335,12 @@ export function getRowActions(
     id: 'unpauseVM',
     title: t('Unpause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/unpause`
+        : `/virtualmachineinstances/unpause`
       handleVMActions(
         'unpause',
-        '/virtualmachineinstances/unpause',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
