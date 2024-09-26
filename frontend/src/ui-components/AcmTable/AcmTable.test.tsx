@@ -19,6 +19,7 @@ import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { exportObjectString } from '../../resources/utils'
 import { SearchOperator } from '../AcmSearchInput'
+import { handleStandardComparison } from '../../lib/search-utils'
 
 const axe = configureAxe({
   rules: {
@@ -42,13 +43,14 @@ const advancedFilters = [
     label: 'gender',
     id: 'gender',
     availableOperators: [SearchOperator.Equals],
-    options: [
-      { label: 'Male', value: 'male' },
-      { label: 'Female', value: 'female' },
-      { label: 'Non-binary', value: 'non-binary' },
-    ],
-    tableFilterFn: (selectedValues: string[], item: IExampleData) => {
-      return selectedValues.includes(item['gender'].toLowerCase())
+    tableAdvancedFilterFn: (
+      constraint: {
+        operator: SearchOperator
+        value: string
+      },
+      item: IExampleData
+    ) => {
+      return handleStandardComparison(constraint.value, item.gender, SearchOperator.Equals)
     },
   },
 ]
@@ -629,9 +631,13 @@ describe('AcmTable', () => {
     userEvent.click(getByLabelText('Open advanced search'))
     userEvent.click(getByText('Select a column'))
     expect(getByRole('option', { name: 'gender' })).toBeInTheDocument()
-
     userEvent.click(getByText('gender'))
-    userEvent.type(getByRole('textbox', { name: 'Value' }), 'female')
+
+    userEvent.click(getByText('Select an operator'))
+    expect(getByText('=')).toBeInTheDocument()
+    userEvent.click(getByText('='))
+
+    userEvent.type(getByRole('textbox', { name: 'Value' }), 'Female')
     expect(queryByText('57 / 57')).toBeInTheDocument()
   })
 

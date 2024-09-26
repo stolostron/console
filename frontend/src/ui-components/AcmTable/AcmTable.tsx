@@ -237,12 +237,30 @@ export interface ITableFilter<T> {
   tableFilterFn: TableFilterFn<T>
   showEmptyOptions?: boolean
 }
-export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'options'> {
+
+export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'tableFilterFn' | 'options'> {
+  columnDisplayName?: string
   availableOperators: SearchOperator[]
+  tableAdvancedFilterFn: TableAdvancedFilterFn<T>
 }
 
 export type FilterSelections = {
   [filter: string]: string[]
+}
+
+export type TableAdvancedFilterFn<T> = (
+  constraints: {
+    operator: SearchOperator
+    value: string
+  },
+  item: T
+) => boolean
+
+export type AdvancedFilterSelections = {
+  [filter: string]: {
+    operator: SearchOperator
+    value: string
+  }
 }
 
 function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: FilterSelections | ParsedQuery<string>) {
@@ -775,46 +793,47 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
 
+    const findFilterMatch = <T,>(
+      filter: string,
+      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
+    ): ITableAdvancedFilter<T> | ITableFilter<T> | undefined => {
+      return filterArray.find((filterItem) => filterItem.id === filter)
+    }
+
+    const applyFilters = <T,>(
+      items: T[],
+      filterSelections: Record<string, any>,
+      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[],
+      filterFnName: 'tableFilterFn' | 'tableAdvancedFilterFn'
+    ): T[] => {
+      const filterCategories = Object.keys(filterSelections)
+      return items.filter((item: T) =>
+        filterCategories.every((filter: string) => {
+          const filterTwo = findFilterMatch(filter, filterArray) as any
+          return filterTwo?.[filterFnName](filterSelections[filter], item) ?? true
+        })
+      )
+    }
+
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
       if (filters.length && Object.keys(filterSelections).length) {
-        const filterCategories = Object.keys(filterSelections)
-        filteredItems = items.filter((item: T) => {
-          let isFilterMatch = true
-          // Item must match 1 filter of each category
-          filterCategories.forEach((filter: string) => {
-            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-            /* istanbul ignore next */
-            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-            if (!isMatch) {
-              isFilterMatch = false
-            }
-          })
-          return isFilterMatch
-        })
+        filteredItems = applyFilters(items, filterSelections, filters, 'tableFilterFn')
+      }
+
+      // advanced filtering
+      const advancedFilterSelections: AdvancedFilterSelections = {}
+      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
+        if (columnId && value && operator) {
+          advancedFilterSelections[columnId] = { operator, value }
+        }
+      })
+
+      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
+        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters, 'tableAdvancedFilterFn')
       }
     }
 
-    const findFilterMatch = (filter: string) => advancedFilters.find((filterItem) => filterItem.id === filter)
-    // advanced filtering, won't apply if preprocessed
-    if (!isPreProcessed) {
-      const advancedFilterSelections: FilterSelections = {}
-      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
-        if (columnId && value && operator) {
-          advancedFilterSelections[columnId] = [value]
-        }
-      })
-      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
-        const filterCategories = Object.keys(advancedFilterSelections)
-        filteredItems = filteredItems.filter((item: T) =>
-          filterCategories.every(
-            (filter: string) =>
-              /* istanbul ignore next */
-              findFilterMatch(filter)?.tableFilterFn(advancedFilterSelections[filter], item) ?? true
-          )
-        )
-      }
-    }
     const tableItems = filteredItems.map((item) => {
       const key = keyFn(item)
       const subRows = addSubRows?.(item)
