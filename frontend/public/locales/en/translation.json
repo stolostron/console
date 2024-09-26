@@ -3167,7 +3167,6 @@
   "validate.yaml.cloud.cacert.not.found": "If a CA certificate is specified, the cloud key must contain a cacert key with the value '/etc/openstack-ca/ca.crt' or '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'",
   "validate.yaml.cloud.cacert.was.found": "If a CA certificate is not specified, the cloud key must not contain a cacert key.",
   "validate.yaml.cloud.not.found": "The cloud name was not found in clouds.yaml.",
-  "validate.yaml.invalid.kubeconfig": "The provided kubeconfig is not valid. Please check the syntax and required fields.",
   "validate.yaml.not.valid": "The YAML is not valid.",
   "Validating...": "Validating...",
   "Validation errors detected": "Validation errors detected",
