@@ -7,6 +7,16 @@ describe('Virtual Machine actions', function () {
   it('should successfully call start action', async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
     nock(process.env.CLUSTER_API_URL)
+      .post(
+        '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+        '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"action.open-cluster-management.io","namespace":"testCluster","resource":"managedclusteractions","verb":"create"}}}'
+      )
+      .reply(200, {
+        status: {
+          allowed: true,
+        },
+      })
+    nock(process.env.CLUSTER_API_URL)
       .get('/api/v1/namespaces/testCluster/secrets')
       .reply(200, {
         statusCode: 200,
@@ -69,6 +79,16 @@ describe('Virtual Machine actions', function () {
 
   it('should error on start action request', async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL)
+      .post(
+        '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+        '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"action.open-cluster-management.io","namespace":"testCluster","resource":"managedclusteractions","verb":"create"}}}'
+      )
+      .reply(200, {
+        status: {
+          allowed: true,
+        },
+      })
     nock(process.env.CLUSTER_API_URL)
       .get('/api/v1/namespaces/testCluster/secrets')
       .reply(200, {
@@ -139,6 +159,16 @@ describe('Virtual Machine actions', function () {
 
   it('should fail with invalid route and secret', async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL)
+      .post(
+        '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+        '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"action.open-cluster-management.io","namespace":"testCluster","resource":"managedclusteractions","verb":"create"}}}'
+      )
+      .reply(200, {
+        status: {
+          allowed: true,
+        },
+      })
     nock(process.env.CLUSTER_API_URL).get('/api/v1/namespaces/testCluster/secrets').reply(400, {
       statusCode: 400,
       apiVersion: 'v1',
