@@ -56,13 +56,18 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   return options
 }
 
-// create array of [a*] to [z*] programmatically
-export const pagedSearchQueries: string[][] = []
-for (let i = 0; i < 26; i++) {
-  pagedSearchQueries[i] = [`${String.fromCharCode(i + 97)}*`]
-}
-// append with [0*] to [9*]
-pagedSearchQueries.push(['0*', '1*', '2*', '3*', '4*', '5*', '6*', '7*', '8*', '9*'])
+// search api does not provide paging but we want to break up our searches so as not to overtax the search api by querying for all apps at once
+// this is pseudo-paging: we grab all apps that begin with a letter, that way we don't have overlapping results
+// we don't want to do this letter by letter because that would take 36 searches
+// so we create 6 groupings of letters and we try to make each group search return about the same number of apps
+export const pagedSearchQueries: string[][] = [
+  ['a*', 'i*', 'n*'],
+  ['e*', 'r*', 'o*'],
+  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
+  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
+  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
+  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
+]
 
 export async function getPagedSearchResources(
   query: {
@@ -70,19 +75,21 @@ export async function getPagedSearchResources(
     variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
     query: string
   },
+  usePagedQuery: boolean,
   pass: number
 ) {
   const options = await getServiceAccountOptions()
   let resources: IResource[] = []
   for (let i = 0; i < pagedSearchQueries.length; ) {
     const _query = structuredClone(query)
-    const values = pagedSearchQueries[i]
-    _query.variables.input[0].filters.push({
-      property: 'name',
-      values,
-    })
-    if (pass === 1) {
-      _query.variables.input[0].limit = 100
+    // should we limit the results by groupings of apps that
+    // begin with certain letters?
+    if (usePagedQuery) {
+      const values = pagedSearchQueries[i]
+      _query.variables.input[0].filters.push({
+        property: 'name',
+        values,
+      })
     }
     let results: ISearchResult
     try {
@@ -90,13 +97,15 @@ export async function getPagedSearchResources(
     } catch (e) {
       continue
     }
-    resources = resources.concat((results.data?.searchResult?.[0]?.items || []) as IResource[])
+    const items = (results.data?.searchResult?.[0]?.items || []) as IResource[]
+    resources = resources.concat(items)
     if (process.env.NODE_ENV !== 'test') {
       let timeout = 10000
-      if (pass === 1) timeout = 500
-      if (pass === 2) timeout = 2000
+      if (pass === 2 || items.length < 1000) timeout = 2000
+      if (pass === 1 || items.length < 100) timeout = 1000
       await new Promise((r) => setTimeout(r, timeout))
     }
+    if (!usePagedQuery) break
     i++
   }
   return resources

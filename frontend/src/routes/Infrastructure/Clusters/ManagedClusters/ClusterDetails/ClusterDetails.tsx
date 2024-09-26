@@ -121,7 +121,7 @@ export default function ClusterDetailsPage() {
     (mci) => mci.metadata?.name === name && mci.metadata?.namespace === name
   )
 
-  const clusterAddons: ManagedClusterAddOn[] = managedClusterAddons.get(name || '') || []
+  const clusterAddons: ManagedClusterAddOn[] = managedClusterAddons?.[name || ''] || []
   const addons = mapAddons(clusterManagementAddOnMap, clusterAddons)
 
   const clusterClaim = clusterClaims.find(

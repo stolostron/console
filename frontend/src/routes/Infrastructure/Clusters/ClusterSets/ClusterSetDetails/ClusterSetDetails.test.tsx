@@ -1169,9 +1169,9 @@ const mockSubmarinerAddOn: ManagedClusterAddOn = {
   },
 }
 
-export const mockSubmarinerAddon: Map<string, ManagedClusterAddOn[]> = new Map([
-  [clusterSetCluster.metadata.name!, [mockSubmarinerAddOn]],
-])
+export const mockSubmarinerAddon: Record<string, ManagedClusterAddOn[]> = {
+  [clusterSetCluster.metadata.name!]: [mockSubmarinerAddOn],
+}
 
 const mockSubmarinerConfig: SubmarinerConfig = {
   apiVersion: SubmarinerConfigApiVersion,
