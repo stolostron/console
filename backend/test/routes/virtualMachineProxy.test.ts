@@ -131,11 +131,8 @@ describe('Virtual Machine actions', function () {
     expect(res.statusCode).toEqual(500)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(
       JSON.stringify({
-        statusCode: 500,
-        body: {
-          name: 'fetchError',
-          message: 'error testing...',
-        },
+        name: 'fetchError',
+        message: 'error testing...',
       })
     )
   })
