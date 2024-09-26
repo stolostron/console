@@ -6,7 +6,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, getBackendUrl, putRequest } from '../../../resources'
+import { Cluster, fetchRetry, getBackendUrl } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -35,22 +35,32 @@ export function handleVMActions(
   toast: IAlertContext,
   t: TFunction
 ) {
-  putRequest(`${getBackendUrl()}${path}`, {
-    managedCluster: item.cluster,
-    vmName: item.name,
-    vmNamespace: item.namespace,
+  const abortController = new AbortController()
+  fetchRetry({
+    method: 'PUT',
+    url: `${getBackendUrl()}${path}`,
+    data: {
+      managedCluster: item.cluster,
+      vmName: item.name,
+      vmNamespace: item.namespace,
+    },
+    signal: abortController.signal,
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
   })
-    .promise.then(() => {
+    .then(() => {
       // Wait 5 seconds to allow search collector to catch up & refetch search results to update table.
       setTimeout(refetchVM, 5000)
     })
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
       toast.addAlert({
-        title: t('Unsuccessful request'),
-        message: t(`Error occurred on VirtualMachine {{action}} action`, { action }),
+        title: err?.message ?? t('Unsuccessful request'),
+        message: t('Error occurred on VirtualMachine {{name}} {{action}} action.', {
+          name: item.name,
+          action,
+        }),
         type: 'danger',
-        autoClose: true,
       })
     })
 }

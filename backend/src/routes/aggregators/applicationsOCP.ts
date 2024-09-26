@@ -1,11 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { getClusterMap } from '../../lib/clusters'
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms } from './applications'
+import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
 
-// query limit per letter
-const OCP_APP_QUERY_LIMIT = 200000
+// query limit per letter group
+const OCP_APP_QUERY_LIMIT = 20000
+
+// getting system apps by its cluster name in cluster chunks
+const REMOTE_CLUSTER_CHUNKS = 25
+const clusterNameChunks: string[][] = []
 
 const labelArr: string[] = [
   'kustomize.toolkit.fluxcd.io/name=',
@@ -48,8 +53,49 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
-export async function getOCPApps(applicationCache: ApplicationCacheType, argAppSet: Set<string>, pass: number) {
-  const ocpApps = (await getPagedSearchResources(query, pass)) as unknown as IOCPAppResource[]
+let usePagedQuery = true
+export async function getOCPApps(
+  applicationCache: ApplicationCacheType,
+  argAppSet: Set<string>,
+  mode: MODE,
+  pass: number
+) {
+  const _query = structuredClone(query)
+  const filters = _query.variables.input[0].filters
+  let clusterNameChunk
+  if (mode === MODE.ExcludeSystemApps) {
+    // NO system apps
+    filters.push(
+      {
+        property: 'namespace',
+        values: ['!openshift*'],
+      },
+      {
+        property: 'namespace',
+        values: ['!open-cluster-management*'],
+      }
+    )
+  } else if (mode === MODE.OnlySystemApps) {
+    // ONLY system apps
+    filters.push({
+      property: 'namespace',
+      values: ['openshift*', 'open-cluster-management*'],
+    })
+
+    // get chuck of cluster names to search for sys apps
+    clusterNameChunk = getNextClusterNameChunk(applicationCache)
+    filters.push({
+      property: 'cluster',
+      values: clusterNameChunk,
+    })
+  }
+
+  // if system mode, don't use paged
+  // if not but last ocp apps > 1000, use paged
+  const isSystemMode = mode === MODE.OnlySystemApps
+  const pagedQuery = isSystemMode ? false : usePagedQuery
+  const ocpApps = (await getPagedSearchResources(_query, pagedQuery, pass)) as unknown as IOCPAppResource[]
+  usePagedQuery = !isSystemMode && ocpApps.length > 1000
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
@@ -125,8 +171,68 @@ export async function getOCPApps(applicationCache: ApplicationCacheType, argAppS
       },
     } as unknown as IResource)
   })
-  applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
-  applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
+  if (mode === MODE.ExcludeSystemApps) {
+    applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
+    applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
+  } else if (mode === MODE.OnlySystemApps) {
+    // if we just got remote clusters this time, don't touch localSysApps
+    if (localOCPApps.length) {
+      applicationCache['localSysApps'] = generateTransforms(localOCPApps)
+    }
+    // fill in remote system apps
+    fillRemoteSystemCache(applicationCache, remoteOCPApps, clusterNameChunk)
+  }
+}
+
+function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string[] {
+  // if no cluster name chucks left, create a new array of chunks
+  if (clusterNameChunks.length === 0) {
+    const clusterMap = getClusterMap()
+    const clusterNames = Object.keys(clusterMap)
+    if (clusterNames.length > 0) {
+      const chunks = clusterNames.reduce((chunks: string[][], clusterName, index) => {
+        const cindex = Math.floor(index / REMOTE_CLUSTER_CHUNKS)
+        chunks[cindex] = (chunks[cindex] ?? []).concat(clusterName)
+        return chunks
+      }, [])
+      clusterNameChunks.push(...chunks)
+    } else {
+      clusterNameChunks.push(['local-cluster'])
+    }
+
+    // update remoteSysApps map
+    const remoteSysMap = applicationCache['remoteSysApps'].resourceMap
+    if (applicationCache['remoteSysApps'].resources) {
+      delete applicationCache['remoteSysApps'].resources
+      applicationCache['remoteSysApps'].resourceMap = {}
+    } else if (Object.keys(remoteSysMap).length) {
+      // purge resource map of clusters that no longer exist
+      Object.keys(remoteSysMap).forEach((name) => {
+        if (!clusterMap[name]) {
+          delete remoteSysMap[name]
+        }
+      })
+    }
+  }
+
+  return clusterNameChunks.shift()
+}
+
+function fillRemoteSystemCache(
+  applicationCache: ApplicationCacheType,
+  remoteSysApps: IResource[],
+  clusterNameChunk: string[]
+) {
+  // initialize map
+  clusterNameChunk.forEach((clustername) => {
+    applicationCache['remoteSysApps'].resourceMap[clustername] = []
+  })
+  const resources = generateTransforms(remoteSysApps, true).resources
+  resources.forEach((transform) => {
+    const clustername = transform.transform[AppColumns.clusters].join()
+    const transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
+    transforms.push(transform)
+  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

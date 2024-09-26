@@ -20,8 +20,8 @@ const toastContextMock: any = {
 
 jest.mock('../../../resources', () => ({
   ...jest.requireActual('../../../resources'),
-  putRequest: jest.fn(() => {
-    return { promise: Promise.resolve() }
+  fetchRetry: jest.fn(() => {
+    return Promise.resolve()
   }),
 }))
 jest.mock('./utils', () => ({

@@ -86,6 +86,23 @@
         "type": "console.navigation/href",
         "properties": {
             "perspective": "acm",
+            "section": "mce-infrastructure",
+            "id": "mce-virtual-machines",
+            "name": "%plugin__mce~Virtual machines%",
+            "href": "/multicloud/infrastructure/virtualmachines"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/virtualmachines",
+            "component": { "$codeRef": "virtualmachines.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
             "id": "mce-credentials",
             "name": "%plugin__mce~Credentials%",
             "href": "/multicloud/credentials"

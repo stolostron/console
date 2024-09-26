@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
-import { aggregateKubeApplications, aggregatSearchAPIApplications } from '../../src/routes/aggregators/applications'
+import { aggregateKubeApplications, aggregateSearchAPIApplications } from '../../src/routes/aggregators/applications'
 import { pagedSearchQueries } from '../../src/lib/search'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
@@ -19,7 +19,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(10)
+    await aggregateSearchAPIApplications(1)
 
     // NO FILTER
     const res = await request('POST', '/aggregate/applications', {
@@ -44,7 +44,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(10)
+    await aggregateSearchAPIApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/applications', {
@@ -73,7 +73,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     aggregateKubeApplications()
-    await aggregatSearchAPIApplications(10)
+    await aggregateSearchAPIApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
@@ -85,15 +85,14 @@ describe(`aggregator Route`, function () {
 })
 
 const responseCount = {
-  itemCount: '3',
+  itemCount: '2',
   filterCounts: {
     type: {
       subscription: 1,
       appset: 1,
-      openshift: 1,
     },
     cluster: {
-      'local-cluster': 3,
+      'local-cluster': 2,
     },
   },
   loading: false,
@@ -300,12 +299,20 @@ function setupNocks() {
     }
   })
 
+  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+    .post(
+      '/searchapi/graphql',
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      // "{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"}"
+    )
+    .reply(200, {})
+
   //
-  // REMOTE/LOCAL OCP and FLUX
+  // REMOTE/LOCAL OCP and FLUX--NOT SYSTEM
   pagedSearchQueries.forEach((query, inx) => {
     const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
       '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":200000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
     )
     if (inx === 0) {
       nocked.reply(200, {
@@ -350,6 +357,20 @@ function setupNocks() {
       nocked.reply(200, {})
     }
   })
+
+  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+    .post(
+      '/searchapi/graphql',
+      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
+    )
+    .reply(200, {})
+
+  // SYSTEM APPS
+  const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
+    '/searchapi/graphql',
+    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+  )
+  nocked.reply(200, {})
   //
   // RBAC
   nock(process.env.CLUSTER_API_URL)
@@ -435,7 +456,56 @@ function setupNocks() {
     })
 }
 
+//////////////////////////////////////////////////////////////////////////
 const resourceCache = {
+  // cluster
+  '/cluster.open-cluster-management.io/v1/managedclusters': {
+    '29496936-2d1d-4460-af37-f68471293e75': {
+      resource: {
+        apiVersion: 'cluster.open-cluster-management.io/v1',
+        kind: 'ManagedCluster',
+        metadata: {
+          annotations: {
+            'installer.multicluster.openshift.io/release-version': '2.7.0',
+            'open-cluster-management/created-via': 'other',
+          },
+          creationTimestamp: '2024-09-12T13:39:41Z',
+          finalizers: [
+            'managedcluster-import-controller.open-cluster-management.io/cleanup',
+            'open-cluster-management.io/managedclusterrole',
+            'cluster.open-cluster-management.io/api-resource-cleanup',
+            'managedclusterinfo.finalizers.open-cluster-management.io',
+            'managedcluster-import-controller.open-cluster-management.io/manifestwork-cleanup',
+          ],
+          generation: 4,
+          labels: {
+            cloud: 'Amazon',
+            'cluster.open-cluster-management.io/clusterset': 'default',
+            clusterID: '075c2ab5-a818-468c-935b-ebbbc45a42f8',
+            'feature.open-cluster-management.io/addon-application-manager': 'available',
+            'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+            'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+            'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+            'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+            'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
+            'feature.open-cluster-management.io/addon-managed-serviceaccount': 'available',
+            'feature.open-cluster-management.io/addon-work-manager': 'available',
+            'local-cluster': 'true',
+            name: 'local-cluster',
+            openshiftVersion: '4.17.0-rc.2',
+            'openshiftVersion-major': '4',
+            'openshiftVersion-major-minor': '4.17',
+            'velero.io/exclude-from-backup': 'true',
+            vendor: 'OpenShift',
+          },
+          name: 'local-cluster',
+          resourceVersion: '7522024',
+          uid: '29496936-2d1d-4460-af37-f68471293e75',
+        },
+      },
+      eventID: 89,
+    },
+  },
   // subscription app
   '/app.k8s.io/v1beta1/applications': {
     'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {

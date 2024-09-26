@@ -3,27 +3,14 @@ import { PrometheusResponse } from '@openshift-console/dynamic-plugin-sdk'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 
+import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-  Addon,
-  AddonStatus,
-  Application,
-  ApplicationSet,
-  ArgoApplication,
-  Cluster,
-  PlacementDecision,
-  Policy,
-  PolicyReport,
-  PolicyReportResults,
-  Subscription,
-} from '../../../resources'
+import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
 import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
-import { getClusterList } from '../../Applications/helpers/resource-helper'
 import {
   CriticalRiskIcon,
   ImportantRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
-import { IResultStatuses } from '../../../lib/useAggregates'
 
 export function getFilteredClusters(allClusters: Cluster[], selectedClusterLabels: Record<string, string[]>) {
   const selectedLabelValues: number = Object.keys(selectedClusterLabels).reduce(
@@ -174,8 +161,12 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
   const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
 
   const getAppTypeLink = (type: string) => {
-    // handle cases from getApplicationType
+    // handle cases from getAppTypeLabel
     switch (type) {
+      case 'OpenShift':
+        return `${NavigationPath.applications}?type=openshift`
+      case t('Flux'):
+        return `${NavigationPath.applications}?type=flux`
       case t('Subscription'):
         return `${NavigationPath.applications}?type=subscription`
       case t('Argo CD'):
@@ -183,11 +174,8 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
         return `${NavigationPath.applications}?type=argo`
       case t('Application set'):
         return `${NavigationPath.applications}?type=appset`
-      case t('Flux'):
-        return `${NavigationPath.applications}?type=flux`
       case 'System':
-      case 'OpenShift':
-        return `${NavigationPath.applications}?type=openshift,openshift-default`
+        return `${NavigationPath.applications}?type=openshift-default`
       default:
         return NavigationPath.applications
     }
@@ -276,41 +264,6 @@ export function getPolicySummary(
       },
     ],
   }
-}
-
-export function getAppCount(
-  applications: Application[],
-  applicationSets: ApplicationSet[],
-  argoApps: ArgoApplication[],
-  discoveredApps: ArgoApplication[],
-  ocpAppResources: any[],
-  filteredClusterNames: string[],
-  argoApplications: ArgoApplication[],
-  allClusters: Cluster[],
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[]
-) {
-  const apps = [...applications, ...applicationSets, ...argoApps, ...discoveredApps, ...ocpAppResources]
-  // If no cluster labels are selected we default to the filteredClusterNames containing all cluster names
-  if (allClusters.length > filteredClusterNames.length) {
-    // filter apps by clusters from label selection.
-    return apps.filter((app) => {
-      const localCluster = allClusters.find((cls) => cls.name === 'local-cluster')
-      const clusterList = getClusterList(
-        app,
-        argoApplications,
-        placementDecisions,
-        subscriptions,
-        localCluster,
-        allClusters
-      )
-
-      return filteredClusterNames.some((value) => {
-        return clusterList.includes(value)
-      })
-    }).length
-  }
-  return apps.length
 }
 
 export function getPolicyReport(policyReports: PolicyReport[], filteredClusters: Cluster[]) {

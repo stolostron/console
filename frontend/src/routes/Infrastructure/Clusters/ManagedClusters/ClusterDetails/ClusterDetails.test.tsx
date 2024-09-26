@@ -873,18 +873,15 @@ const mockClusterManagementAddons: ClusterManagementAddOn[] = [
   },
 ]
 
-export const mockManagedClusterAddOns: Map<string, ManagedClusterAddOn[]> = new Map([
-  [
-    'test-cluster',
-    [
-      mockManagedClusterAddOnApp,
-      mockManagedClusterAddOnWork,
-      mockManagedClusterAddOnCert,
-      mockManagedClusterAddOnPolicy,
-      mockManagedClusterAddOnSearch,
-    ],
+export const mockManagedClusterAddOns: Record<string, ManagedClusterAddOn[]> = {
+  'test-cluster': [
+    mockManagedClusterAddOnApp,
+    mockManagedClusterAddOnWork,
+    mockManagedClusterAddOnCert,
+    mockManagedClusterAddOnPolicy,
+    mockManagedClusterAddOnSearch,
   ],
-])
+}
 
 const mockKlusterletAddonConfig: KlusterletAddonConfig = {
   apiVersion: KlusterletAddonConfigApiVersion,
@@ -1527,7 +1524,7 @@ describe('ClusterDetails with not found', () => {
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
           snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, new Map())
+          snapshot.set(managedClusterAddonsState, {})
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
           snapshot.set(configMapsState, [])
         }}
@@ -1565,7 +1562,7 @@ describe('ClusterDetails with not found', () => {
           snapshot.set(managedClusterInfosState, [])
           snapshot.set(certificateSigningRequestsState, [])
           snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, new Map())
+          snapshot.set(managedClusterAddonsState, {})
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
           snapshot.set(configMapsState, [])
           snapshot.set(hostedClustersState, mockHostedClusters)

@@ -49,11 +49,15 @@ export interface ResourceDefinitions {
   statefulset: Record<'columns', SearchColumnDefinition[]>
   'subscription.apps.open-cluster-management.io': Record<'columns', SearchColumnDefinition[]>
   'subscription.operators.coreos.com': Record<'columns', SearchColumnDefinition[]>
+  virtualmachine: Record<'columns', SearchColumnDefinition[]>
+  virtualmachinespage: Record<'columns', SearchColumnDefinition[]>
+  virtualmachineinstance: Record<'columns', SearchColumnDefinition[]>
 }
 
 export interface SearchColumnDefinition {
   header: string
   sort?: string
+  search?: string | ((item: any) => string)
   cell: string | ((item: any) => JSX.Element | '-') | ((item: any) => string)
 }
 
@@ -378,6 +382,25 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           },
         },
       ]),
+    },
+    virtualmachineinstance: {
+      columns: AddDefaultColumns(t, [AddColumn('node', t('Node')), AddColumn('ipaddress', t('IP address'))]),
+    },
+    virtualmachinespage: {
+      columns: [
+        { ...AddColumn('name', t('Name')), search: (item: any) => item.name },
+        AddColumn('status', t('Status')),
+        { ...AddColumn('cluster', t('Cluster')), search: (item: any) => item.cluster },
+        AddColumn('node', t('Node')),
+        AddColumn('ipaddress', t('IP address')),
+        {
+          header: t('Console URL'),
+          cell: (item: any) => {
+            return <CreateExternalVMLink item={item} t={t} />
+          },
+        },
+        AddColumn('created', t('Created')),
+      ],
     },
   }
 }
@@ -738,7 +761,9 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
       return {
         header: localizedColumnName,
         sort: key,
-        cell: key,
+        cell: (item: any) => {
+          return item[key] ?? '-'
+        },
       }
   }
 }

@@ -43,7 +43,7 @@ export function useClusterAddons(clusterName?: string) {
     const clusterManagementAddonsMap = keyBy(clusterManagementAddons, 'metadata.name')
     uniqueClusterNames.forEach((cluster) => {
       if (cluster) {
-        const clusterAddons = managedClusterAddons.get(cluster) || []
+        const clusterAddons = managedClusterAddons?.[cluster] || []
         result[cluster] = mapAddons(clusterManagementAddonsMap, clusterAddons)
       }
     })
