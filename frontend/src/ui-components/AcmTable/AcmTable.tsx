@@ -492,6 +492,28 @@ export function AcmTablePaginationContextProvider(props: { children: ReactNode; 
   return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
 }
 
+const findFilterMatch = <T,>(
+  filter: string,
+  filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
+): ITableAdvancedFilter<T> | ITableFilter<T> | undefined => {
+  return filterArray.find((filterItem) => filterItem.id === filter)
+}
+
+const applyFilters = <T,>(
+  items: T[],
+  filterSelections: Record<string, any>,
+  filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[],
+  filterFnName: 'tableFilterFn' | 'tableAdvancedFilterFn'
+): T[] => {
+  const filterCategories = Object.keys(filterSelections)
+  return items.filter((item: T) =>
+    filterCategories.every((filter: string) => {
+      const filterTwo = findFilterMatch(filter, filterArray) as any
+      return filterTwo?.[filterFnName](filterSelections[filter], item) ?? true
+    })
+  )
+}
+
 export type AcmTableProps<T> = {
   items?: T[]
   addSubRows?: (item: T) => IRow[] | undefined
@@ -794,28 +816,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     /* istanbul ignore if */
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
-
-    const findFilterMatch = <T,>(
-      filter: string,
-      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
-    ): ITableAdvancedFilter<T> | ITableFilter<T> | undefined => {
-      return filterArray.find((filterItem) => filterItem.id === filter)
-    }
-
-    const applyFilters = <T,>(
-      items: T[],
-      filterSelections: Record<string, any>,
-      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[],
-      filterFnName: 'tableFilterFn' | 'tableAdvancedFilterFn'
-    ): T[] => {
-      const filterCategories = Object.keys(filterSelections)
-      return items.filter((item: T) =>
-        filterCategories.every((filter: string) => {
-          const filterTwo = findFilterMatch(filter, filterArray) as any
-          return filterTwo?.[filterFnName](filterSelections[filter], item) ?? true
-        })
-      )
-    }
 
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
