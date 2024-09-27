@@ -104,6 +104,8 @@ export interface IAcmTableColumn<T> {
   /** exported value as a string, supported export: CSV*/
   exportContent?: CellFn<T>
 
+  disableExport?: boolean
+
   transforms?: ITransform[]
 
   cellTransforms?: ITransform[]
@@ -946,8 +948,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const headerString: string[] = []
       const csvExportCellArray: string[] = []
 
-      selectedSortedCols.forEach(({ header }) => {
-        header && headerString.push(header)
+      selectedSortedCols.forEach(({ header, disableExport }) => {
+        header && !disableExport && headerString.push(header)
       })
       sorted[0]?.subRows &&
         sorted[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
@@ -957,8 +959,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
       sorted.forEach(({ item, subRows }) => {
         let contentString: string[] = []
-        selectedSortedCols.forEach(({ header, exportContent }) => {
-          if (header) {
+        selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
+          if (header && !disableExport) {
             // if callback and its output exists, add to array, else add "-"
             const exportvalue = exportContent?.(item, '')
             exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
@@ -972,6 +974,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             }
           })
         })
+
         contentString = [contentString.join(',')]
         contentString[0] && csvExportCellArray.push(contentString[0])
       })

@@ -289,6 +289,7 @@ export default function PolicyDetailsResults() {
           }
           return '-'
         },
+        disableExport: true,
       },
     ],
     [canCreatePolicy, t]
