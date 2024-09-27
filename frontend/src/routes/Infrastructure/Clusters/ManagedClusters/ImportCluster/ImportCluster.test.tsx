@@ -55,6 +55,7 @@ import {
   nockIgnoreRBAC,
 } from '../../../../../lib/nock-util'
 import {
+  mockCRHCredential,
   mockCRHCredential1,
   mockCRHCredential2,
   mockDiscoveryConfig,
@@ -579,6 +580,25 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
   type: 'Opaque',
 }
 
+const mockOCMConnection: Secret = {
+  apiVersion: ProviderConnectionApiVersion,
+  kind: ProviderConnectionKind,
+  metadata: {
+    name: 'OCM-access',
+    namespace: 'foobar',
+    labels: {
+      'cluster.open-cluster-management.io/type': 'rhocm',
+      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ROSA',
+      'cluster.open-cluster-management.io/copiedFromSecretName': 'OCM-connection',
+      'cluster.open-cluster-management.io/backup': 'cluster',
+    },
+  },
+  stringData: {
+    ocmAPIToken: 'fake_token',
+  },
+  type: 'Opaque',
+}
+
 const mockOCMConnection1: Secret = {
   apiVersion: ProviderConnectionApiVersion,
   kind: ProviderConnectionKind,
@@ -915,7 +935,7 @@ describe('Import Discovered Cluster', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-           //snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection1, mockOCMConnection2])
+          snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection])
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(discoveredClusterState, mockDiscoveredClusters)
           snapshot.set(namespacesState, mockNamepaces)
@@ -980,7 +1000,7 @@ describe('Import Discovered Cluster', () => {
     ).toBeDefined()
     expect(
       container.querySelector(
-        `[data-ouia-component-id=${mockDiscoveredClusters[3].metadata.uid!}] td.pf-c-table__action`
+        `[data-ouia-component-id=${mockDiscoveredClusters[4].metadata.uid!}] td.pf-c-table__action`
       )
     ).toBeEmptyDOMElement()
   })
