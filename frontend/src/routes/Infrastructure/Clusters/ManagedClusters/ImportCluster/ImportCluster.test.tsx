@@ -33,7 +33,7 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../../../resources'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -55,7 +55,6 @@ import {
   nockIgnoreRBAC,
 } from '../../../../../lib/nock-util'
 import {
-  mockCRHCredential,
   mockCRHCredential1,
   mockCRHCredential2,
   mockDiscoveryConfig,
