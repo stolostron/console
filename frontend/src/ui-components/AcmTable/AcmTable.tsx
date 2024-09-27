@@ -230,6 +230,7 @@ export type TableFilterFn<T> = (selectedValues: string[], item: T) => boolean
  * @param {TableFilterOption<FilterOptionValueT>[]} options - Options is an array to define the exact filter options
  * @param {TableFilterFn<T>} tableFilterFn - A required function that returns a boolean if the item is a match to the current filters
  */
+
 export interface ITableFilter<T> {
   label: string
   id: string
@@ -239,9 +240,14 @@ export interface ITableFilter<T> {
 }
 
 export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'tableFilterFn' | 'options'> {
-  columnDisplayName?: string
   availableOperators: SearchOperator[]
   tableAdvancedFilterFn: TableAdvancedFilterFn<T>
+}
+
+function isITableAdvancedFilter<T>(
+  filter: ITableAdvancedFilter<T> | ITableFilter<T>
+): filter is ITableAdvancedFilter<T> {
+  return Object.hasOwn(filter, 'tableAdvancedFilterFn')
 }
 
 export type FilterSelections = {
@@ -793,24 +799,30 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     if (!items) return { tableItems: [], totalCount: 0 }
     let filteredItems: T[] = items
 
-    const findFilterMatch = <T,>(
+    const findFilterMatch = (
       filter: string,
       filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
     ): ITableAdvancedFilter<T> | ITableFilter<T> | undefined => {
       return filterArray.find((filterItem) => filterItem.id === filter)
     }
 
-    const applyFilters = <T,>(
+    const applyFilters = (
       items: T[],
       filterSelections: Record<string, any>,
-      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[],
-      filterFnName: 'tableFilterFn' | 'tableAdvancedFilterFn'
+      filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
     ): T[] => {
       const filterCategories = Object.keys(filterSelections)
       return items.filter((item: T) =>
-        filterCategories.every((filter: string) => {
-          const filterTwo = findFilterMatch(filter, filterArray) as any
-          return filterTwo?.[filterFnName](filterSelections[filter], item) ?? true
+        filterCategories.every((filterName: string) => {
+          const filter = findFilterMatch(filterName, filterArray)
+          if (filter) {
+            return (isITableAdvancedFilter(filter) ? filter.tableAdvancedFilterFn : filter.tableFilterFn)(
+              filterSelections[filterName],
+              item
+            )
+          } else {
+            return true // Don't filter out if we can't find the filter
+          }
         })
       )
     }
@@ -818,7 +830,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
       if (filters.length && Object.keys(filterSelections).length) {
-        filteredItems = applyFilters(items, filterSelections, filters, 'tableFilterFn')
+        filteredItems = applyFilters(items, filterSelections, filters)
       }
 
       // advanced filtering
@@ -830,7 +842,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       })
 
       if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
-        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters, 'tableAdvancedFilterFn')
+        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters)
       }
     }
 
