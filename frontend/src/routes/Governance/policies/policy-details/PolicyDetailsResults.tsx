@@ -269,7 +269,7 @@ export default function PolicyDetailsResults() {
         cell: (item: ResultsTableData) =>
           item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
         exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
       },
       {
         header: t('History'),
