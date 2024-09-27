@@ -496,15 +496,13 @@ export function ClustersTable(props: {
         id: 'name',
         label: t('table.name'),
         availableOperators: [SearchOperator.Equals],
-        tableAdvancedFilterFn: ({ value }, cluster) =>
-          handleStandardComparison(cluster.name, value, SearchOperator.Equals),
+        tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
       },
       {
         id: 'namespace',
         label: t('table.namespace'),
         availableOperators: [SearchOperator.Equals],
-        tableAdvancedFilterFn: ({ value }, cluster) =>
-          handleStandardComparison(cluster.name, value, SearchOperator.Equals),
+        tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
       },
       {
         id: 'distribution',
@@ -518,7 +516,7 @@ export function ClustersTable(props: {
           SearchOperator.LessThanOrEqualTo,
           SearchOperator.NotEquals,
         ],
-        tableAdvancedFilterFn: ({ operator, value }, cluster) => {
+        tableFilterFn: ({ operator, value }, cluster) => {
           const clusterVersion = getClusterDistributionString(
             cluster,
             clusterImageSets,
