@@ -33,7 +33,7 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../../../resources'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -54,7 +54,13 @@ import {
   nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
 } from '../../../../../lib/nock-util'
-import { mockCRHCredential, mockDiscoveryConfig, mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import {
+  mockCRHCredential,
+  mockCRHCredential1,
+  mockCRHCredential2,
+  mockDiscoveryConfig,
+  mockManagedClusterSet,
+} from '../../../../../lib/test-metadata'
 import {
   clickByPlaceholderText,
   clickByRole,
@@ -142,7 +148,36 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
       credential: {
         apiVersion: SecretApiVersion,
         kind: SecretKind,
-        name: 'OCM-access',
+        name: 'OCM-Access-API',
+        namespace: 'foobar',
+        resourceVersion: '87010',
+        uid: '6a',
+      },
+    },
+  },
+  {
+    apiVersion: DiscoveredClusterApiVersion,
+    kind: DiscoveredClusterKind,
+    metadata: {
+      name: 'rosa-discovery-cluster',
+      namespace: 'foobar',
+    },
+    spec: {
+      activityTimestamp: '2020-07-30T19:09:40Z',
+      cloudProvider: 'aws',
+      apiUrl: 'https://api.rosa-discovery-cluster.dev01.red -chesterfield.com',
+      displayName: 'rosa-discovery-cluster',
+      console: 'https://console-openshift-console.apps.rosa-discovery-cluster.dev01.red-chesterfield.com',
+      creationTimestamp: '2022-30T19:09:43Z',
+      name: 'rosa-discovery-cluster',
+      type: 'ROSA',
+      openshiftVersion: '4.5.5',
+      status: 'Active',
+      rhocmClusterId: '39ldt3r51vjjsho1eqntrg3m',
+      credential: {
+        apiVersion: SecretApiVersion,
+        kind: SecretKind,
+        name: 'OCM-Access-SA',
         namespace: 'foobar',
         resourceVersion: '87010',
         uid: '6a',
@@ -248,7 +283,7 @@ const mockAutoTokenSecret: Secret = {
   },
   type: 'Opaque',
 }
-const mockROSAAutoTokenSecret: Secret = {
+const mockROSAAutoTokenSecretAPIToken: Secret = {
   apiVersion: SecretApiVersion,
   kind: SecretKind,
   metadata: {
@@ -258,6 +293,22 @@ const mockROSAAutoTokenSecret: Secret = {
   stringData: {
     autoImportRetry: '2',
     api_token: 'fake_token',
+    cluster_id: '39ldt3r51vjjsho1eqntrg3m',
+  },
+  type: 'auto-import/rosa',
+}
+
+const mockROSAAutoTokenSecretServiceAcc: Secret = {
+  apiVersion: SecretApiVersion,
+  kind: SecretKind,
+  metadata: {
+    name: 'auto-import-secret',
+    namespace: 'rosa-discovery-cluster',
+  },
+  stringData: {
+    autoImportRetry: '2',
+    client_id: 'c437fga6-9035-44ff-8cf7-4dh5b9',
+    client_secret: '3q55tPVVsdgdshfdjgykcdCDOoTBuc',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
   },
   type: 'auto-import/rosa',
@@ -529,11 +580,11 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
   type: 'Opaque',
 }
 
-const mockOCMConnection: Secret = {
+const mockOCMConnection1: Secret = {
   apiVersion: ProviderConnectionApiVersion,
   kind: ProviderConnectionKind,
   metadata: {
-    name: 'OCM-access',
+    name: 'OCM-Access-API',
     namespace: 'foobar',
     labels: {
       'cluster.open-cluster-management.io/type': 'rhocm',
@@ -543,7 +594,29 @@ const mockOCMConnection: Secret = {
     },
   },
   stringData: {
+    auth_method: 'offline-token',
     ocmAPIToken: 'fake_token',
+  },
+  type: 'Opaque',
+}
+
+const mockOCMConnection2: Secret = {
+  apiVersion: ProviderConnectionApiVersion,
+  kind: ProviderConnectionKind,
+  metadata: {
+    name: 'OCM-Access-SA',
+    namespace: 'foobar',
+    labels: {
+      'cluster.open-cluster-management.io/type': 'rhocm',
+      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ROSA',
+      'cluster.open-cluster-management.io/copiedFromSecretName': 'OCM-connection',
+      'cluster.open-cluster-management.io/backup': 'cluster',
+    },
+  },
+  stringData: {
+    auth_method: 'service-account',
+    client_id: 'fake_client_id1234',
+    client_secret: 'fake_client_secret1234',
   },
   type: 'Opaque',
 }
@@ -843,7 +916,7 @@ describe('Import Discovered Cluster', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection])
+          //  snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection1, mockOCMConnection2])
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(discoveredClusterState, mockDiscoveredClusters)
           snapshot.set(namespacesState, mockNamepaces)
@@ -888,38 +961,6 @@ describe('Import Discovered Cluster', () => {
     await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock])
   })
 
-  test('create discovered ROSA cluster', async () => {
-    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
-    await waitFor(() => expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()) // Wait for Discovered ROSA Cluster to appear in table
-    userEvent.click(getAllByLabelText('Actions')[1]) // Click on Kebab menu
-
-    await clickByText('Import cluster')
-    await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
-
-    await waitForText('OCM-access')
-    await waitForText(mockDiscoveredClusters[1].spec.credential!.name) // discovery credential field should be set correctly
-    await waitForText('Cluster ID')
-    getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
-
-    const projectNock = nockCreate(mockROSADiscoveryProject, mockROSADiscoveryProjectResponse)
-    const managedClusterNock = nockCreate(mockManagedROSADiscoveredCluster, mockManagedROSADiscoveredClusterResponse)
-    const kacNock = nockCreate(mockROSADiscoveryKlusterletAddonConfig, mockROSADiscoveryKlusterletAddonConfigResponse)
-    const autoImportSecretNock = nockCreate(mockROSAAutoTokenSecret)
-    const importCommandNock = nockGet(mockROSAAutoTokenSecret)
-
-    // Add labels
-    await clickByTestId('label-input-button')
-    await typeByTestId('additionalLabels', 'foo=bar{enter}')
-
-    // Advance to Review step and submit the form
-    await clickByText('Next')
-    await clickByText('Next')
-    await waitForText('Import')
-    await clickByText('Import')
-
-    await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
-  })
-
   test('sets discovered OCP cluster URL field', async () => {
     const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
 
@@ -943,5 +984,139 @@ describe('Import Discovered Cluster', () => {
         `[data-ouia-component-id=${mockDiscoveredClusters[3].metadata.uid!}] td.pf-c-table__action`
       )
     ).toBeEmptyDOMElement()
+  })
+})
+
+describe.only('Import Discovered Cluster with import credentials', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+  test('create discovered ROSA cluster with auto import apitoken', async () => {
+    // Set the sessionStorage item specifically for this test
+    window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
+
+    // Custom Component for this test
+    const Component = () => (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+          snapshot.set(secretsState, [mockCRHCredential1, mockOCMConnection1])
+          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+          snapshot.set(namespacesState, mockNamepaces)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route path="/" element={<DiscoveredClustersPage />} />
+            <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render the custom component
+
+    await waitFor(() => {
+      expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()
+    })
+    userEvent.click(getAllByLabelText('Actions')[1]) // Click on Kebab menu
+    await clickByText('Import cluster')
+    await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
+
+    await waitForText('OCM-Access-API')
+    await waitForText(mockDiscoveredClusters[1].spec.credential!.name) // discovery credential field should be set correctly
+    await waitForText('Cluster ID')
+    getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
+
+    const projectNock = nockCreate(mockROSADiscoveryProject, mockROSADiscoveryProjectResponse)
+    const managedClusterNock = nockCreate(mockManagedROSADiscoveredCluster, mockManagedROSADiscoveredClusterResponse)
+    const kacNock = nockCreate(mockROSADiscoveryKlusterletAddonConfig, mockROSADiscoveryKlusterletAddonConfigResponse)
+    const autoImportSecretNock = nockCreate(mockROSAAutoTokenSecretAPIToken)
+    const importCommandNock = nockGet(mockROSAAutoTokenSecretAPIToken)
+
+    // Add labels
+    await clickByTestId('label-input-button')
+    await typeByTestId('additionalLabels', 'foo=bar{enter}')
+
+    // Advance to Review step and submit the form
+    await clickByText('Next')
+    await clickByText('Next')
+    await waitForText('Import')
+    await clickByText('Import')
+
+    await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
+  })
+})
+
+describe.only('Import Discovered Cluster with import credentials', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+  test.only('create discovered ROSA cluster with auto import service account', async () => {
+    window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster-serviceaccount.com')
+
+    const Component = () => (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+          snapshot.set(secretsState, [mockCRHCredential2, mockOCMConnection2])
+          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+          snapshot.set(namespacesState, mockNamepaces)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route path="/" element={<DiscoveredClustersPage />} />
+            <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render the custom component
+
+    await waitFor(() => {
+      expect(getAllByText(mockDiscoveredClusters[2].metadata.name!)[0]!).toBeInTheDocument()
+    })
+    userEvent.click(getAllByLabelText('Actions')[1]) // Click on Kebab menu
+    await clickByText('Import cluster')
+    await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
+
+    // await waitFor(() => {
+    //   const dropdownToggles = screen.getAllByLabelText('Options menu')
+    //   expect(dropdownToggles[3]).toBeInTheDocument()
+    //   fireEvent.click(dropdownToggles[3])
+    // })
+
+    await waitForText('OCM-Access-SA')
+    await waitForText(mockDiscoveredClusters[2].spec.credential?.name)
+    await waitForText('Cluster ID')
+    getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
+
+    const projectNock = nockCreate(mockROSADiscoveryProject, mockROSADiscoveryProjectResponse)
+    const managedClusterNock = nockCreate(mockManagedROSADiscoveredCluster, mockManagedROSADiscoveredClusterResponse)
+    const kacNock = nockCreate(mockROSADiscoveryKlusterletAddonConfig, mockROSADiscoveryKlusterletAddonConfigResponse)
+    const autoImportSecretNock = nockCreate(mockROSAAutoTokenSecretServiceAcc)
+    const importCommandNock = nockGet(mockROSAAutoTokenSecretServiceAcc)
+
+    // Add labels
+    await clickByTestId('label-input-button')
+    await typeByTestId('additionalLabels', 'foo=bar{enter}')
+
+    // Advance to Review step and submit the form
+    await clickByText('Next')
+    await clickByText('Next')
+    await waitForText('Import')
+    await clickByText('Import')
+
+    await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
   })
 })
