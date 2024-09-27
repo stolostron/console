@@ -306,9 +306,9 @@ const mockROSAAutoTokenSecretServiceAcc: Secret = {
   },
   stringData: {
     autoImportRetry: '2',
-    client_id: 'c437fga6-9035-44ff-8cf7-4dh5b9',
-    client_secret: '3q55tPVVsdgdshfdjgykcdCDOoTBuc',
-    cluster_id: '39ldt3r51vjjsho1eqntrg3m',
+    client_id: 'sldkhfgsdkgksdfkshdkfj',
+    client_secret: 'kdjsfhsdkgfksdg',
+    cluster_id: 'sdkfjsldfhgksjdfhg',
   },
   type: 'auto-import/rosa',
 }
@@ -915,7 +915,7 @@ describe('Import Discovered Cluster', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          //  snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection1, mockOCMConnection2])
+           //snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection1, mockOCMConnection2])
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(discoveredClusterState, mockDiscoveredClusters)
           snapshot.set(namespacesState, mockNamepaces)
@@ -986,7 +986,7 @@ describe('Import Discovered Cluster', () => {
   })
 })
 
-describe.only('Import Discovered Cluster with import credentials', () => {
+describe('Import Discovered Cluster with import credentials', () => {
   beforeEach(() => {
     localStorage.clear()
     nockIgnoreRBAC()
@@ -1051,14 +1051,14 @@ describe.only('Import Discovered Cluster with import credentials', () => {
   })
 })
 
-describe.only('Import Discovered Cluster with import credentials', () => {
+describe('Import Discovered Cluster with import credentials', () => {
   beforeEach(() => {
     localStorage.clear()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
   })
-  test.only('create discovered ROSA cluster with auto import service account', async () => {
+  test('create discovered ROSA cluster with auto import service account', async () => {
     window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster-serviceaccount.com')
 
     const Component = () => (
