@@ -524,7 +524,7 @@ export function ClustersTable(props: {
             clusterImageSets,
             agentClusterInstalls,
             props.clusters
-          )?.split(' ')[1]
+          )
           return handleSemverOperatorComparison(clusterVersion ?? '', value, operator)
         },
       },

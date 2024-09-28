@@ -22,32 +22,49 @@ export const handleStandardComparison = (valueOne: string, valueTwo: string, ope
   }
 }
 
-// for a given displayVersion string there is a distribution value a ' ' and a semver value, here we divide them and take the semver
-export const handleSemverOperatorComparison = (versionOne: string, versionTwo: string, operator: SearchOperator) => {
-  // Semver coerces the version to a valid semver version if possible, otherwise it returns the original value
-  const coercedVersionOne = semver.valid(semver.coerce(versionOne)) ?? versionOne
-  const coercedVersionTwo = semver.valid(semver.coerce(versionTwo)) ?? versionTwo
+export const handleSemverOperatorComparison = (
+  versionToCompare: string,
+  inputVersion: string,
+  operator: SearchOperator
+) => {
+  const coerceVersion = (version: string) => semver.coerce(version) ?? version
+  const coercedInputVersion = coerceVersion(inputVersion)
+  const coercedVersionToCompare = coerceVersion(versionToCompare)
+  const isValidSemver = (version: string | semver.SemVer) => semver.valid(version) !== null
 
-  const validInputSemvers = !!semver.valid(coercedVersionOne) && !!semver.valid(coercedVersionTwo)
-  if (!validInputSemvers) {
-    if (operator === SearchOperator.NotEquals) {
-      return true
-    }
-    return false
+  if (!isValidSemver(coercedInputVersion) || !isValidSemver(coercedVersionToCompare)) {
+    return operator === SearchOperator.NotEquals
   }
+
+  const useRange = !isValidSemver(inputVersion) && isValidSemver(coercedInputVersion)
+  let safeInputValue = coercedInputVersion.toString()
+  if (useRange) {
+    const isMajorVersionAlone = !inputVersion.includes(
+      `${semver.coerce(inputVersion)?.major}.${semver.coerce(inputVersion)?.minor}`
+    )
+    if (isMajorVersionAlone) {
+      safeInputValue = safeInputValue.toString().split('.').slice(0, 1).join('.')
+    } else {
+      safeInputValue = safeInputValue.toString().split('.').slice(0, 2).join('.')
+    }
+  }
+  const semverSatisfies = (range: string) => semver.satisfies(coercedVersionToCompare, range)
+  const semverCompare = (compareMethod: (a: string | semver.SemVer, b: string | semver.SemVer) => boolean) =>
+    compareMethod(coercedVersionToCompare, coercedInputVersion)
+
   switch (operator) {
     case SearchOperator.Equals:
-      return semver.eq(coercedVersionOne, coercedVersionTwo)
+      return useRange ? semverSatisfies(safeInputValue) : semverCompare(semver.eq)
     case SearchOperator.GreaterThan:
-      return semver.gt(coercedVersionOne, coercedVersionTwo)
-    case SearchOperator.LessThan:
-      return semver.lt(coercedVersionOne, coercedVersionTwo)
+      return useRange ? semverSatisfies(`>${coercedInputVersion}`) : semverCompare(semver.gt)
     case SearchOperator.GreaterThanOrEqualTo:
-      return semver.gte(coercedVersionOne, coercedVersionTwo)
+      return useRange ? semverSatisfies(`>=${coercedInputVersion}`) : semverCompare(semver.gte)
+    case SearchOperator.LessThan:
+      return useRange ? semverSatisfies(`<${coercedInputVersion}`) : semverCompare(semver.lt)
     case SearchOperator.LessThanOrEqualTo:
-      return semver.lte(coercedVersionOne, coercedVersionTwo)
+      return useRange ? semverSatisfies(`<=${coercedInputVersion}`) : semverCompare(semver.lte)
     case SearchOperator.NotEquals:
-      return !semver.eq(coercedVersionOne, coercedVersionTwo)
+      return useRange ? !semverSatisfies(safeInputValue) : !semverCompare(semver.eq)
     default:
       return false
   }
