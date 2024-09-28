@@ -185,7 +185,7 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:501ccae49e7503a069bdd80f0d0b7000e02c94191fa8c19359c02fe68d6e7cd0
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-buildah-6gb:0.2@sha256:aa8498dcdfe5d937f5d84db96a95bfab86f24b5b5bc8a7833c8944043f3bad79
         name: buildah-6gb
       when:
       - input: $(tasks.init.results.build)
@@ -305,7 +305,7 @@ spec:
       runAfter:
       - build-container
       taskRef:
-        bundle: quay.io/redhat-appstudio-tekton-catalog/task-clamav-scan:0.1@sha256:8d7ae9da4c0e28262c965b0557fc657ca342b474611d947655463ce9d0cfcb54
+        bundle: quay.io/redhat-appstudio-tekton-catalog/task-clamav-scan:0.1@sha256:2da8996017d1fbde1bb7f207a015679fb1796628f5cb372df36186931da84e78
         name: clamav-scan
       when:
       - input: $(params.skip-checks)
