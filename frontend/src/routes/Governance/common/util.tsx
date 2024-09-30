@@ -732,19 +732,22 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <>
       <div
         style={{
+          display: 'inline-block',
           height: 18,
           width: 18,
           flexShrink: 0,
+          position: 'relative',
+          top: 4,
+          marginRight: 4,
         }}
       >
-        {' '}
         {logo}
-      </div>{' '}
-      {engine}
-    </div>
+      </div>
+      <>{engine}</>{' '}
+    </>
   )
 }
 
