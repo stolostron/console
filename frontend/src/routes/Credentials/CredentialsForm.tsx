@@ -1278,7 +1278,7 @@ export function CredentialsForm(
         ),
         inputs: [
           {
-            id: 'ocmAPIToken',
+            id: 'ocmAuthMethod',
             label: t('Authentication method'),
             isHidden: credentialsType !== Provider.redhatcloud,
             labelHelp: t('The authentication method to use to connect to OpenShift Cluster Manager.'),
