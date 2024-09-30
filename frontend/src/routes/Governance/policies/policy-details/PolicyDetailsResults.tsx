@@ -2,7 +2,6 @@
 import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
-import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -23,7 +22,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: moment.MomentInput
+  timestamp: string | number | Date
   policyName: string
   policyNamespace: string
   remediationAction: string
@@ -100,8 +99,8 @@ export default function PolicyDetailsResults() {
             apiVersion: template?.objectDefinition.apiVersion ?? '-',
             kind: template?.objectDefinition.kind ?? '-',
             status: detail.compliant ?? 'no-status',
-            message: (detail?.history && detail.history[0]?.message) ?? '-',
-            timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
+            message: detail?.history?.[0]?.message ?? '-',
+            timestamp: detail?.history?.[0]?.lastTimestamp ?? '-',
             policyName,
             policyNamespace,
             remediationAction: getPolicyTempRemediation(policyResponse, template),
@@ -198,14 +197,16 @@ export default function PolicyDetailsResults() {
           }
 
           const templateDetailURL = getTemplateDetailURL(item)
+          const displayTemplate = templateDetailURL ? (
+            <span>
+              <Link to={templateDetailURL}>{item.templateName}</Link>
+            </span>
+          ) : (
+            item.templateName
+          )
+
           return canCreatePolicy ? (
-            templateDetailURL ? (
-              <span>
-                <Link to={templateDetailURL}>{item.templateName}</Link>
-              </span>
-            ) : (
-              item.templateName
-            )
+            displayTemplate
           ) : (
             <Tooltip content={t('rbac.unauthorized')}>
               <span className="link-disabled" id="template-name-link-disabled">
@@ -267,9 +268,9 @@ export default function PolicyDetailsResults() {
         header: t('Last report'),
         sort: 'timestamp',
         cell: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+          item.timestamp ? t('{{date, fromNow}}', { date: new Date(item.timestamp) }) : '-',
         exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+          item.timestamp ? t('{{date, fromNow}}', { date: new Date(item.timestamp) }) : '-',
       },
       {
         header: t('History'),
