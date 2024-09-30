@@ -22,7 +22,7 @@ import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
-import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
+import { fetchAggregate, IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
 import { NavigationPath } from '../../NavigationPath'
 import {
   ApplicationApiVersion,
@@ -337,6 +337,8 @@ export default function ApplicationsOverview() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
 
   const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
@@ -433,6 +435,10 @@ export default function ApplicationsOverview() {
   const resultCounts = useAggregate(SupportedAggregate.statuses, {})
   resultCounts.itemCount = resultView.processedItemCount
   const allApplications = resultView.items
+
+  const fetchAggregateForExport = async (requestedExport: IRequestListView) => {
+    return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
+  }
 
   const tableItems: IResource[] = useMemo(
     () => [...allApplications.map((app) => generateTransformData(app))],
@@ -1112,6 +1118,7 @@ export default function ApplicationsOverview() {
         setRequestView={setRequestedView}
         resultView={resultView}
         resultCounts={resultCounts}
+        fetchExport={fetchAggregateForExport}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}
         showExportButton

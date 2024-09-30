@@ -70,9 +70,14 @@ export function paginate(
     const body = chucks.join()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = JSON.parse(body) as IRequestListView
-    const { page, perPage, search, sortBy, filters } = request
+    const { search, sortBy, filters } = request
+    let { page, perPage } = request
     let items = getItems()
     let itemCount = items.length
+    if (perPage === -1) {
+      page = 1
+      perPage = itemCount
+    }
     let rpage = page
     let emptyResult = false
     let isPreProcessed = itemCount === 0 // if false, we pass all data and frontend does the filter/search/sort
