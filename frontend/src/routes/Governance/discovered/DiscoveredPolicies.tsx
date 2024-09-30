@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
-import { AcmEmptyState, compareStrings, ITableFilter, IAcmTableColumn, AcmAlert } from '../../../ui-components'
+import {
+  AcmEmptyState,
+  compareStrings,
+  ITableFilter,
+  IAcmTableColumn,
+  AcmAlert,
+  AcmTable,
+} from '../../../ui-components'
 import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ReactNode, useMemo } from 'react'
@@ -17,7 +24,6 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { AcmTableWithEngine } from '../common/AcmTableWithEngine'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -208,7 +214,7 @@ export default function DiscoveredPolicies() {
 
   return (
     <PageSection>
-      <AcmTableWithEngine<DiscoverdPolicyTableItem>
+      <AcmTable<DiscoverdPolicyTableItem>
         id="discoveredPolicyTable"
         columns={discoveredPoliciesCols}
         keyFn={(item) => item.id}
