@@ -941,7 +941,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       // if table is pagenated from backend,
       // we need to fetch all backend items to export
       let exportItems = sorted
-      if (isPreProcessed && fetchExport) {
+      if (fetchExport) {
         const fetchedItems = await fetchExport({
           page: 1,
           perPage: -1,
@@ -990,17 +990,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         autoClose: true,
       })
     },
-    [
-      t,
-      exportFilePrefix,
-      selectedSortedCols,
-      sorted,
-      isPreProcessed,
-      fetchExport,
-      internalSearch,
-      filterSelections,
-      sort,
-    ]
+    [t, exportFilePrefix, selectedSortedCols, sorted, fetchExport, internalSearch, filterSelections, sort]
   )
 
   const paged = useMemo<ITableItem<T>[]>(() => {
