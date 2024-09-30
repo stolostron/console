@@ -150,13 +150,15 @@ export function CredentialsForm(
     setAuthMethod(value)
   }
 
-  const [auth_method, setAuthMethod] = useState<OCMAuthMethod>(
+  const [authMethod, setAuthMethod] = useState<OCMAuthMethod>(
     (providerConnection?.stringData?.auth_method as OCMAuthMethod) ?? OCMAuthMethod.API_TOKEN
   )
 
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
-  const [client_id, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
-  const [client_secret, setServiceAccClientSecret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
+  const [serviceAccClientId, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
+  const [serviceAccClientSecret, setServiceAccClientSecret] = useState(
+    () => providerConnection?.stringData?.client_secret ?? ''
+  )
 
   // Details
   const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -443,13 +445,12 @@ export function CredentialsForm(
         stringData.token = ansibleToken
         break
       case Provider.redhatcloud:
-        stringData.auth_method = auth_method
-        if (auth_method === OCMAuthMethod.API_TOKEN) {
+        stringData.auth_method = authMethod
+        if (authMethod === OCMAuthMethod.API_TOKEN) {
           stringData.ocmAPIToken = ocmAPIToken
-        }
-        if (auth_method === OCMAuthMethod.SERVICE_ACCOUNT) {
-          stringData.client_id = client_id
-          stringData.client_secret = client_secret
+        } else if (authMethod === OCMAuthMethod.SERVICE_ACCOUNT) {
+          stringData.client_id = serviceAccClientId
+          stringData.client_secret = serviceAccClientSecret
         }
         break
       case Provider.hostinventory:
@@ -1278,13 +1279,13 @@ export function CredentialsForm(
         ),
         inputs: [
           {
-            id: 'ocmAPIToken',
+            id: 'ocmAuthMethod',
             label: t('Authentication method'),
             isHidden: credentialsType !== Provider.redhatcloud,
             labelHelp: t('The authentication method to use to connect to OpenShift Cluster Manager.'),
             type: 'Select',
             placeholder: t('Select an authentication method'),
-            value: auth_method,
+            value: authMethod,
             onChange: handleAuthMethodChange,
             options: [
               { id: OCMAuthMethod.API_TOKEN, value: OCMAuthMethod.API_TOKEN, text: t('API token') },
@@ -1292,7 +1293,7 @@ export function CredentialsForm(
             ],
             isRequired: true,
           },
-          (auth_method === OCMAuthMethod.API_TOKEN || isViewing) && {
+          (authMethod === OCMAuthMethod.API_TOKEN || isViewing) && {
             id: 'ocmAPIToken',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
@@ -1302,21 +1303,21 @@ export function CredentialsForm(
             isRequired: true,
             isSecret: true,
           },
-          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+          (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_id',
             isHidden: credentialsType !== Provider.redhatcloud,
             type: 'Text',
             label: t('Client ID'),
-            value: client_id,
+            value: serviceAccClientId,
             onChange: setServiceAccClientId,
             isRequired: true,
           },
-          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+          (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_secret',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
             label: t('Client secret'),
-            value: client_secret,
+            value: serviceAccClientSecret,
             onChange: setServiceAccClientSecret,
             isRequired: true,
             isSecret: true,
