@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { IResource, postRequest } from '../resources'
+import { fetchRetry, IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
 import { useCallback, useContext, useEffect } from 'react'
 import { PluginContext } from './PluginContext'
@@ -168,4 +168,26 @@ function setWithExpiry(key: string, value: any) {
     expiry: now.getTime() + EXPIRATION,
   }
   localStorage.setItem(key, JSON.stringify(item))
+}
+
+export async function fetchAggregate(
+  aggregate: SupportedAggregate,
+  backendUrl: string,
+  requestedView: RequestListType
+) {
+  const abortController = new AbortController()
+  return fetchRetry({
+    method: 'POST',
+    url: `${backendUrl}${apiUrl}/${aggregate}`,
+    data: requestedView,
+    signal: abortController.signal,
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
+  })
+    .then((res) => res.data as IResultListView)
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error(error)
+      return undefined
+    })
 }

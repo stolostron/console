@@ -51,6 +51,23 @@ const applicationAggregate = {
     isPreProcessed: false,
   },
 }
+const fetchAggregate = {
+  req: { page: 1, perPage: -1, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
+  res: {
+    page: 1,
+    items: [
+      mockApplication0,
+      mockApplicationSet0,
+      mockApplicationSet1,
+      mockArgoApplication1,
+      mockArgoApplication2,
+      mockOCPApplication0,
+      mockFluxApplication0,
+    ],
+    emptyResult: false,
+    isPreProcessed: false,
+  },
+}
 const statusAggregate = {
   req: {},
   res: {
@@ -196,6 +213,8 @@ describe('Applications Page', () => {
   })
 
   test('export button should produce a file for download', async () => {
+    nockAggegateRequest('applications', fetchAggregate.req, applicationAggregate.res)
+
     await waitForText('feng-remote-argo8')
 
     window.URL.createObjectURL = jest.fn()
@@ -216,5 +235,6 @@ describe('Applications Page', () => {
 
     document.body.appendChild = documentBody
     document.createElement('a').dispatchEvent = documentCreate
+    await new Promise((resolve) => setTimeout(resolve, 1500))
   })
 })

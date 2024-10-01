@@ -536,6 +536,7 @@ export type AcmTableProps<T> = {
   setRequestView?: (requestedView: IRequestListView) => void
   resultView?: IResultListView
   resultCounts?: IResultStatuses
+  fetchExport?: (requestedExport: IRequestListView) => Promise<IResultListView | undefined>
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -581,6 +582,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     setRequestView,
     resultView,
     resultCounts,
+    fetchExport,
   } = props
 
   const defaultSort = {
@@ -937,7 +939,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [page, actualPage, setPage])
 
   const exportTable = useCallback(
-    (toastContext: IAlertContext) => {
+    async (toastContext: IAlertContext) => {
       toastContext.addAlert({
         title: t('Generating data. Download may take a moment to start.'),
         type: 'info',
@@ -957,7 +959,27 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         })
       csvExportCellArray.push(headerString.join(','))
 
-      sorted.forEach(({ item, subRows }) => {
+      // if table is pagenated from backend,
+      // we need to fetch all backend items to export
+      let exportItems = sorted
+      if (fetchExport) {
+        const fetchedItems = await fetchExport({
+          page: 1,
+          perPage: -1,
+          search: internalSearch,
+          filters: filterSelections,
+          sortBy: sort,
+        })
+        if (fetchedItems) {
+          exportItems = fetchedItems.items.map((item) => {
+            return {
+              item,
+            } as ITableItem<T>
+          })
+        }
+      }
+
+      exportItems.forEach(({ item, subRows }) => {
         let contentString: string[] = []
         selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
           if (header && !disableExport) {
@@ -990,7 +1012,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         autoClose: true,
       })
     },
-    [selectedSortedCols, sorted, exportFilePrefix, t]
+    [t, exportFilePrefix, selectedSortedCols, sorted, fetchExport, internalSearch, filterSelections, sort]
   )
 
   const paged = useMemo<ITableItem<T>[]>(() => {
