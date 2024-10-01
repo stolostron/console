@@ -95,6 +95,7 @@ const responseCount = {
       'local-cluster': 2,
     },
   },
+  systemAppNSPrefixes: [] as string[],
   loading: false,
 }
 
