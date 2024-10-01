@@ -879,7 +879,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         threshold: threshold,
         keys: columns
           .map((column, i) => (column.search ? `column-${i}` : undefined))
-          .filter((value) => value !== undefined) as string[],
+          .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
       const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
