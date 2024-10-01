@@ -469,6 +469,7 @@ export const mockRequestedCounts: IResultStatuses = {
       argo: 4,
     },
   },
+  systemAppNSPrefixes: [],
   loading: false,
 }
 export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0, mockApplicationSet1]

@@ -155,7 +155,7 @@ export function getApplicationNamespace(resource: IApplicationResource, search: 
 }
 
 // Map resource kind to type column
-export function getApplicationType(resource: IApplicationResource, t: TFunction) {
+export function getApplicationType(resource: IApplicationResource, systemAppNSPrefixes: string[], t: TFunction) {
   if (resource.apiVersion === ApplicationApiVersion) {
     if (resource.kind === ApplicationKind) {
       return t('Subscription')
@@ -170,7 +170,7 @@ export function getApplicationType(resource: IApplicationResource, t: TFunction)
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return t('Flux')
-    } else if (isSystemApp(resource.metadata?.namespace)) {
+    } else if (isSystemApp(systemAppNSPrefixes, resource.metadata?.namespace)) {
       return 'System'
     }
     return 'OpenShift'
@@ -178,14 +178,8 @@ export function getApplicationType(resource: IApplicationResource, t: TFunction)
   return '-'
 }
 
-function isSystemApp(namespace?: string) {
-  return (
-    namespace &&
-    (namespace.startsWith('openshift') ||
-      namespace.startsWith('open-cluster-management') ||
-      namespace.startsWith('hive') ||
-      namespace.startsWith('multicluster-engine'))
-  )
+function isSystemApp(systemAppNSPrefixes: string[], namespace?: string) {
+  return namespace && systemAppNSPrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -432,6 +426,7 @@ export default function ApplicationsOverview() {
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
   const resultCounts = useAggregate(SupportedAggregate.statuses, {})
   resultCounts.itemCount = resultView.processedItemCount
+  const { systemAppNSPrefixes } = resultCounts
   const allApplications = resultView.items
 
   const tableItems: IResource[] = useMemo(
@@ -476,7 +471,7 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Type'),
-        cell: (resource) => <span>{getApplicationType(resource, t)}</span>,
+        cell: (resource) => <span>{getApplicationType(resource, systemAppNSPrefixes, t)}</span>,
         sort: 'kind',
         tooltip: (
           <span>
@@ -503,7 +498,7 @@ export default function ApplicationsOverview() {
         transforms: [cellWidth(15)],
         // probably don't need search if we have a type filter
         exportContent: (resource) => {
-          return getApplicationType(resource, t)
+          return getApplicationType(resource, systemAppNSPrefixes, t)
         },
       },
       {
@@ -628,6 +623,7 @@ export default function ApplicationsOverview() {
     [
       t,
       extensionColumns,
+      systemAppNSPrefixes,
       argoApplications,
       placementDecisions,
       subscriptions,
@@ -672,7 +668,7 @@ export default function ApplicationsOverview() {
           return selectedValues.some((value) => {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
-              const isSystem = isSystemApp(item.metadata?.namespace)
+              const isSystem = isSystemApp(systemAppNSPrefixes, item.metadata?.namespace)
               switch (value) {
                 case 'openshift':
                   return !isFlux && !isSystem
@@ -766,7 +762,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, managedClusters]
+    [t, managedClusters, systemAppNSPrefixes]
   )
 
   const navigate = useNavigate()

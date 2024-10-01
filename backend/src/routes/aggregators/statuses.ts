@@ -3,6 +3,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { FilterCounts, ITransformedResource } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
 import { AppColumns } from './applications'
+import { systemAppNamespacePrefixes } from './applicationsOCP'
 
 export interface IRequestStatuses {
   clusters?: string[]
@@ -11,6 +12,7 @@ export interface IRequestStatuses {
 export interface IResultStatuses {
   itemCount: string
   filterCounts: FilterCounts
+  systemAppNSPrefixes: string[]
   loading: boolean
 }
 
@@ -55,6 +57,7 @@ export function requestAggregatedStatuses(
     const results: IResultStatuses = {
       itemCount: items.length.toString(),
       filterCounts,
+      systemAppNSPrefixes: systemAppNamespacePrefixes,
       loading: false,
     }
     res.setHeader('Content-Type', 'application/json')
