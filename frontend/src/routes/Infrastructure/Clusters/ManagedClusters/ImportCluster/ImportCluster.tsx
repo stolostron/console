@@ -449,7 +449,12 @@ export default function ImportClusterPage() {
         id="code-content"
         schema={isACMAvailable ? acmSchema : schema}
         resources={resources}
-        secrets={['Secret.*.stringData.token', 'Secret.*.stringData.kubeconfig', 'Secret.*.stringData.api_token']}
+        secrets={[
+          'Secret.*.stringData.token',
+          'Secret.*.stringData.kubeconfig',
+          'Secret.*.stringData.api_token',
+          'Secret.*.stringData.client_secret',
+        ]}
         syncs={syncs}
         onEditorChange={(changes: { resources: any[] }): void => {
           update(changes?.resources)
@@ -806,13 +811,25 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
   const updateROSAImportSecret = useCallback(
     (credentialName: string) => {
-      const newToken =
-        ocmCredentials.find((credential) => credential.metadata.name === credentialName)?.stringData?.ocmAPIToken ?? ''
+      const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
+      const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
       const discoverySecret = cloneDeep(autoImportSecret)
-      discoverySecret.stringData = {
-        ...discoverySecret.stringData,
-        api_token: newToken,
-        cluster_id: clusterID,
+      // Updating the discovery secret based on the auth_method
+      if (authMethod === 'service-account') {
+        discoverySecret.stringData = {
+          ...discoverySecret.stringData,
+          auth_method: 'service-account',
+          client_id: selectedCredential?.stringData?.client_id ?? '',
+          client_secret: selectedCredential?.stringData?.client_secret ?? '',
+          cluster_id: clusterID,
+        }
+      } else if (authMethod === 'offline-token') {
+        discoverySecret.stringData = {
+          ...discoverySecret.stringData,
+          auth_method: 'offline-token',
+          api_token: selectedCredential?.stringData?.ocmAPIToken ?? '',
+          cluster_id: clusterID,
+        }
       }
       discoverySecret.type = 'auto-import/rosa'
       return discoverySecret
