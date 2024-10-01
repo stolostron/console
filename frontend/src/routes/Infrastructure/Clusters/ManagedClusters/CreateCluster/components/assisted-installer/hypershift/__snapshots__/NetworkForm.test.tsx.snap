@@ -935,7 +935,7 @@ exports[`NetworkForm it renders 1`] = `
 `;
 
 exports[`NetworkForm it sets default form values 1`] = `
-Object {
+{
   "apiPublishingStrategy": "NodePort",
   "clusterNetworkCidr": "10.132.0.0/14",
   "clusterNetworkHostPrefix": 23,

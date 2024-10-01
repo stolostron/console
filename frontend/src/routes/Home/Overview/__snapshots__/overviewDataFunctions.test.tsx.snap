@@ -1,23 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Correctly returns getAddonHealth 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "Degraded",
     "link": "/multicloud/infrastructure/clusters/managed?addons=Degraded",
     "value": 1,
   },
-  Object {
+  {
     "key": "Progressing",
     "link": "/multicloud/infrastructure/clusters/managed?addons=Progressing",
     "value": 1,
   },
-  Object {
+  {
     "key": "Unknown",
     "link": "/multicloud/infrastructure/clusters/managed?addons=Unknown",
     "value": 3,
   },
-  Object {
+  {
     "isPrimary": true,
     "key": "Available",
     "link": "/multicloud/infrastructure/clusters/managed?addons=Available",
@@ -27,15 +27,15 @@ Array [
 `;
 
 exports[`Correctly returns getAppTypeSummary 1`] = `
-Object {
+{
   "loading": false,
-  "mainSection": Object {
+  "mainSection": {
     "description": "total applications",
     "link": "/multicloud/applications",
     "title": "123",
   },
-  "statusSection": Array [
-    Object {
+  "statusSection": [
+    {
       "count": 4,
       "link": "/multicloud/applications?type=argo",
       "title": "Argo CD",
@@ -45,8 +45,8 @@ Object {
 `;
 
 exports[`Correctly returns getClusterProviderSummary 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "Amazon",
     "link": "/multicloud/infrastructure/clusters/managed?provider=aws",
     "value": 2,
@@ -55,28 +55,28 @@ Array [
 `;
 
 exports[`Correctly returns getClusterStatus 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "Offline",
-    "link": "/multicloud/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True%20label%3Acloud%3DAmazon\\"}",
+    "link": "/multicloud/search?filters={"textsearch":"kind%3ACluster%20ManagedClusterConditionAvailable%3A!True%20label%3Acloud%3DAmazon"}",
     "value": 1,
   },
-  Object {
+  {
     "isPrimary": true,
     "key": "Ready",
-    "link": "/multicloud/search?filters={\\"textsearch\\":\\"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue%20label%3Acloud%3DAmazon\\"}",
+    "link": "/multicloud/search?filters={"textsearch":"kind%3ACluster%20ManagedClusterConditionAvailable%3ATrue%20label%3Acloud%3DAmazon"}",
     "value": 1,
   },
 ]
 `;
 
 exports[`Correctly returns getClusterVersionSummary 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "OpenShift 4.15",
     "value": 1,
   },
-  Object {
+  {
     "key": "unknown",
     "value": 1,
   },
@@ -84,13 +84,13 @@ Array [
 `;
 
 exports[`Correctly returns getComplianceData 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "Violations",
     "link": "/multicloud/governance/policies?violations=violations",
     "value": 1,
   },
-  Object {
+  {
     "isPrimary": true,
     "key": "No violations",
     "link": "/multicloud/governance/policies?violations=no-violations&violations=no-status",
@@ -100,14 +100,14 @@ Array [
 `;
 
 exports[`Correctly returns getFilteredClusters 1`] = `
-Array [
-  Object {
+[
+  {
     "clusterSet": "default",
     "displayName": "managed-1",
     "hasAutomationTemplate": false,
-    "hive": Object {
+    "hive": {
       "isHibernatable": false,
-      "secrets": Object {},
+      "secrets": {},
     },
     "isCurator": false,
     "isHive": false,
@@ -116,7 +116,7 @@ Array [
     "isManaged": true,
     "isRegionalHubCluster": false,
     "isSNOCluster": false,
-    "labels": Object {
+    "labels": {
       "cloud": "Amazon",
       "cluster.open-cluster-management.io/clusterset": "default",
       "env": "dev",
@@ -128,13 +128,13 @@ Array [
     },
     "name": "managed-1",
     "namespace": "managed-1",
-    "nodes": Object {
-      "nodeList": Array [],
+    "nodes": {
+      "nodeList": [],
       "ready": 0,
       "unhealthy": 0,
       "unknown": 0,
     },
-    "owner": Object {},
+    "owner": {},
     "provider": "aws",
     "status": "unknown",
     "statusMessage": "Registration agent stopped updating its lease.",
@@ -144,13 +144,13 @@ Array [
 `;
 
 exports[`Correctly returns getNodeSummary 1`] = `
-Object {
-  "mainSection": Object {
+{
+  "mainSection": {
     "description": "total nodes",
     "title": "1",
   },
-  "statusSection": Array [
-    Object {
+  "statusSection": [
+    {
       "count": 1,
       "icon": <CheckCircleIcon
         color="var(--pf-global--success-color--100)"
@@ -160,7 +160,7 @@ Object {
       "link": "/multicloud/infrastructure/clusters/managed?nodes=healthy",
       "title": "Ready",
     },
-    Object {
+    {
       "count": 0,
       "icon": <ExclamationCircleIcon
         color="var(--pf-global--danger-color--100)"
@@ -170,7 +170,7 @@ Object {
       "link": undefined,
       "title": "Unhealthy",
     },
-    Object {
+    {
       "count": 0,
       "icon": <UnknownIcon
         color="currentColor"
@@ -185,7 +185,7 @@ Object {
 `;
 
 exports[`Correctly returns getPolicyReport 1`] = `
-Object {
+{
   "clustersWithIssuesCount": 1,
   "policyReportCriticalCount": 1,
   "policyReportImportantCount": 1,
@@ -195,14 +195,14 @@ Object {
 `;
 
 exports[`Correctly returns getPolicySummary 1`] = `
-Object {
-  "mainSection": Object {
+{
+  "mainSection": {
     "description": "enabled policies",
     "link": "/multicloud/governance/policies?enabled=True",
     "title": "2",
   },
-  "statusSection": Array [
-    Object {
+  "statusSection": [
+    {
       "count": 0,
       "icon": <CheckCircleIcon
         color="var(--pf-global--success-color--100)"
@@ -212,7 +212,7 @@ Object {
       "link": "/multicloud/governance/policies?enabled=True&violations=no-violations",
       "title": "With no violations",
     },
-    Object {
+    {
       "count": 1,
       "icon": <ExclamationCircleIcon
         color="var(--pf-global--danger-color--100)"
@@ -222,7 +222,7 @@ Object {
       "link": "/multicloud/governance/policies?enabled=True&violations=violations",
       "title": "With violations",
     },
-    Object {
+    {
       "count": 1,
       "icon": <UnknownIcon
         color="currentColor"
@@ -237,14 +237,14 @@ Object {
 `;
 
 exports[`Correctly returns getPolicySummary with filtered clusters 1`] = `
-Object {
-  "mainSection": Object {
+{
+  "mainSection": {
     "description": "enabled policies",
     "link": "/multicloud/governance/policies?enabled=True",
     "title": "1",
   },
-  "statusSection": Array [
-    Object {
+  "statusSection": [
+    {
       "count": 0,
       "icon": <CheckCircleIcon
         color="var(--pf-global--success-color--100)"
@@ -254,7 +254,7 @@ Object {
       "link": "/multicloud/governance/policies?enabled=True&violations=no-violations",
       "title": "With no violations",
     },
-    Object {
+    {
       "count": 1,
       "icon": <ExclamationCircleIcon
         color="var(--pf-global--danger-color--100)"
@@ -264,7 +264,7 @@ Object {
       "link": "/multicloud/governance/policies?enabled=True&violations=violations",
       "title": "With violations",
     },
-    Object {
+    {
       "count": 0,
       "icon": <UnknownIcon
         color="currentColor"
@@ -281,16 +281,16 @@ Object {
 exports[`Correctly returns getWorkerCoreTotal 1`] = `8`;
 
 exports[`Correctly returns parseAlertsMetric 1`] = `
-Object {
-  "alertSeverity": Object {
-    "critical": Object {
-      "alerts": Array [],
+{
+  "alertSeverity": {
+    "critical": {
+      "alerts": [],
       "icon": <CriticalRiskIcon />,
       "key": "critical",
       "label": "Critical",
     },
-    "info": Object {
-      "alerts": Array [
+    "info": {
+      "alerts": [
         "InsightsRecommendationActive",
         "InsightsRecommendationActive",
       ],
@@ -298,14 +298,14 @@ Object {
       "key": "info",
       "label": "Info",
     },
-    "other": Object {
-      "alerts": Array [],
+    "other": {
+      "alerts": [],
       "icon": undefined,
       "key": "other",
       "label": "Other",
     },
-    "warning": Object {
-      "alerts": Array [
+    "warning": {
+      "alerts": [
         "AlertmanagerReceiversNotConfigured",
       ],
       "icon": <ImportantRiskIcon />,
@@ -313,7 +313,7 @@ Object {
       "label": "Warning",
     },
   },
-  "clustersAffectedAlerts": Array [
+  "clustersAffectedAlerts": [
     "local-cluster",
     "managed-1",
   ],
@@ -321,15 +321,15 @@ Object {
 `;
 
 exports[`Correctly returns parseOperatorMetric 1`] = `
-Object {
-  "clustersAffectedOperator": Array [],
-  "degraded": Array [
+{
+  "clustersAffectedOperator": [],
+  "degraded": [
     "etcd",
   ],
-  "notAvailable": Array [
+  "notAvailable": [
     "baremetal",
   ],
-  "other": Array [
+  "other": [
     "cloud-controller-manager",
     "cloud-credential",
     "cloud-credential",
@@ -338,7 +338,7 @@ Object {
 `;
 
 exports[`Correctly returns parseUpgradeRiskPredictions with no predictions 1`] = `
-Object {
+{
   "clustersWithRiskPredictors": 0,
   "criticalUpdateCount": 0,
   "infoUpdateCount": 0,
@@ -347,7 +347,7 @@ Object {
 `;
 
 exports[`Correctly returns parseUpgradeRiskPredictions with predictions 1`] = `
-Object {
+{
   "clustersWithRiskPredictors": 2,
   "criticalUpdateCount": 1,
   "infoUpdateCount": 1,

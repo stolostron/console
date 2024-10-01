@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DetailsPage Should return the url search params correctly 1`] = `
-Object {
+{
   "apiversion": "v1",
   "cluster": "local-cluster",
   "kind": "Pod",
@@ -11,7 +11,7 @@ Object {
 `;
 
 exports[`DetailsPage Should return the url search params incorrectly 1`] = `
-Object {
+{
   "apiversion": "",
   "cluster": "",
   "kind": "",

@@ -1,50 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Cluster creation control data for CIM generates correctly 1`] = `
-Array [
-  Object {
+[
+  {
     "id": "aiDetailStep",
     "title": "Cluster details",
     "type": "step",
   },
-  Object {
+  {
     "active": "Host inventory",
     "id": "infrastructure",
     "name": "Infrastructure",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "active": "Standalone",
     "id": "controlplane",
     "name": "Control plane type",
     "type": "reviewinfo",
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
     "id": "connection",
     "name": "Infrastructure provider credential",
     "placeholder": "Select a credential",
-    "providerId": Array [
+    "providerId": [
       "hybrid",
       "hostinventory",
     ],
     "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "notification": "Select a connection",
       "required": false,
     },
   },
-  Object {
-    "additionalProps": Object {
+  {
+    "additionalProps": {
       "isNutanix": undefined,
       "promptSshPublicKey": false,
     },
     "component": <DetailsForm />,
-    "encodeValues": Array [
+    "encodeValues": [
       "pullSecret",
     ],
     "id": "ai",
@@ -52,17 +52,17 @@ Array [
     "providerId": "ai",
     "type": "custom",
   },
-  Object {
+  {
     "id": "automationStep",
     "title": "Automation",
     "type": "step",
   },
-  Object {
+  {
     "id": "chooseTemplate",
     "info": "Optional: Choose an automation template to run Ansible jobs at different stages of the cluster lifecycle.",
     "type": "title",
   },
-  Object {
+  {
     "component": <AutomationProviderHint
       className="creation-view-controls-hint"
       component="hint"
@@ -70,12 +70,12 @@ Array [
     "id": "automationProviderHint",
     "type": "custom",
   },
-  Object {
+  {
     "id": "templateName",
     "name": "Automation template",
     "onSelect": [Function],
     "placeholder": "Select an automation template",
-    "prompts": Object {
+    "prompts": {
       "icon": <ExternalLinkAltIcon
         color="currentColor"
         noVerticalAlign={false}
@@ -89,58 +89,58 @@ Array [
     },
     "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "required": false,
     },
   },
-  Object {
+  {
     "component": <TemplateLinkOutControl />,
     "id": "curatorLinkOut",
     "type": "custom",
   },
-  Object {
+  {
     "component": <TemplateSummaryControl />,
     "id": "curatorSummary",
     "type": "custom",
   },
-  Object {
+  {
     "active": "",
     "id": "clusterCuratorSpec",
     "reverse": [Function],
     "type": "hidden",
   },
-  Object {
-    "active": Array [],
+  {
+    "active": [],
     "hidden": true,
     "id": "supportedCurations",
     "type": "values",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-install",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-upgrade",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-scale",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-destroy",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "reconcilePause",
     "type": "hidden",
   },
-  Object {
+  {
     "comment": "Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.",
     "disableEditorOnSuccess": true,
     "disablePreviousControlsOnSuccess": true,
@@ -149,24 +149,24 @@ Array [
     "title": "Review and save",
     "type": "review",
   },
-  Object {
+  {
     "disabled": true,
     "id": "aiHostsStep",
     "title": "Hosts",
     "type": "step",
   },
-  Object {
+  {
     "disabled": true,
     "id": "aiNetworkStep",
     "title": "Networking",
     "type": "step",
   },
-  Object {
+  {
     "active": true,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
   },
-  Object {
+  {
     "component": <Warning />,
     "id": "warning",
     "type": "custom",
@@ -175,50 +175,50 @@ Array [
 `;
 
 exports[`Cluster creation control data for CIM generates correctly for MCE 1`] = `
-Array [
-  Object {
+[
+  {
     "id": "aiDetailStep",
     "title": "Cluster details",
     "type": "step",
   },
-  Object {
+  {
     "active": "Host inventory",
     "id": "infrastructure",
     "name": "Infrastructure",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "active": "Standalone",
     "id": "controlplane",
     "name": "Control plane type",
     "type": "reviewinfo",
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
     "id": "connection",
     "name": "Infrastructure provider credential",
     "placeholder": "Select a credential",
-    "providerId": Array [
+    "providerId": [
       "hybrid",
       "hostinventory",
     ],
     "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "notification": "Select a connection",
       "required": false,
     },
   },
-  Object {
-    "additionalProps": Object {
+  {
+    "additionalProps": {
       "isNutanix": undefined,
       "promptSshPublicKey": false,
     },
     "component": <DetailsForm />,
-    "encodeValues": Array [
+    "encodeValues": [
       "pullSecret",
     ],
     "id": "ai",
@@ -226,17 +226,17 @@ Array [
     "providerId": "ai",
     "type": "custom",
   },
-  Object {
+  {
     "id": "automationStep",
     "title": "Automation",
     "type": "step",
   },
-  Object {
+  {
     "id": "chooseTemplate",
     "info": "Optional: Choose an automation template to run Ansible jobs at different stages of the cluster lifecycle.",
     "type": "title",
   },
-  Object {
+  {
     "component": <AutomationProviderHint
       className="creation-view-controls-hint"
       component="hint"
@@ -244,12 +244,12 @@ Array [
     "id": "automationProviderHint",
     "type": "custom",
   },
-  Object {
+  {
     "id": "templateName",
     "name": "Automation template",
     "onSelect": [Function],
     "placeholder": "Select an automation template",
-    "prompts": Object {
+    "prompts": {
       "icon": <ExternalLinkAltIcon
         color="currentColor"
         noVerticalAlign={false}
@@ -263,58 +263,58 @@ Array [
     },
     "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "required": false,
     },
   },
-  Object {
+  {
     "component": <TemplateLinkOutControl />,
     "id": "curatorLinkOut",
     "type": "custom",
   },
-  Object {
+  {
     "component": <TemplateSummaryControl />,
     "id": "curatorSummary",
     "type": "custom",
   },
-  Object {
+  {
     "active": "",
     "id": "clusterCuratorSpec",
     "reverse": [Function],
     "type": "hidden",
   },
-  Object {
-    "active": Array [],
+  {
+    "active": [],
     "hidden": true,
     "id": "supportedCurations",
     "type": "values",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-install",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-upgrade",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-scale",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "toweraccess-destroy",
     "type": "hidden",
   },
-  Object {
+  {
     "active": "",
     "id": "reconcilePause",
     "type": "hidden",
   },
-  Object {
+  {
     "comment": "Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.",
     "disableEditorOnSuccess": true,
     "disablePreviousControlsOnSuccess": true,
@@ -323,24 +323,24 @@ Array [
     "title": "Review and save",
     "type": "review",
   },
-  Object {
+  {
     "disabled": true,
     "id": "aiHostsStep",
     "title": "Hosts",
     "type": "step",
   },
-  Object {
+  {
     "disabled": true,
     "id": "aiNetworkStep",
     "title": "Networking",
     "type": "step",
   },
-  Object {
+  {
     "active": false,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
   },
-  Object {
+  {
     "component": <Warning />,
     "id": "warning",
     "type": "custom",

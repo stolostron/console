@@ -556,28 +556,28 @@ exports[`HostForm it renders 1`] = `
 `;
 
 exports[`HostForm summary should match 1`] = `
-Array [
-  Object {
+[
+  {
     "desc": "test test",
     "term": "Hosts namespace",
   },
-  Object {
+  {
     "desc": "Highly available",
     "term": "Controller availability policy",
   },
-  Object {
+  {
     "desc": "Highly available",
     "term": "Infrastructure availability policy",
   },
-  Object {
+  {
     "desc": "Management",
     "term": "OLM catalog placement",
   },
-  Object {
+  {
     "desc": 0,
     "term": "Node pools",
   },
-  Object {
+  {
     "desc": 0,
     "term": "Hosts count",
   },
@@ -585,28 +585,28 @@ Array [
 `;
 
 exports[`HostForm summary should match 2`] = `
-Array [
-  Object {
+[
+  {
     "desc": "test test",
     "term": "Hosts namespace",
   },
-  Object {
+  {
     "desc": "Single replica",
     "term": "Controller availability policy",
   },
-  Object {
+  {
     "desc": "Single replica",
     "term": "Infrastructure availability policy",
   },
-  Object {
+  {
     "desc": "Guest",
     "term": "OLM catalog placement",
   },
-  Object {
+  {
     "desc": 0,
     "term": "Node pools",
   },
-  Object {
+  {
     "desc": 0,
     "term": "Hosts count",
   },
