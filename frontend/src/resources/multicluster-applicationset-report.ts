@@ -17,5 +17,5 @@ export interface MulticlusterApplicationSetReport extends IResource {
   apiVersion: MulticlusterApplicationSetReportApiVersionType
   kind: MulticlusterApplicationSetReportKindType
   metadata: Metadata
-  statuses: {}
+  statuses: object
 }

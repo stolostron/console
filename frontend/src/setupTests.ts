@@ -15,8 +15,7 @@ import 'regenerator-runtime/runtime'
 import { initReactI18next } from 'react-i18next'
 import './lib/test-shots'
 import { TextEncoder } from 'util'
-
-require('react')
+import * as translation from '../public/locales/en/translation.json'
 
 process.env.NODE_ENV = 'test'
 process.env.JEST_DEFAULT_HOST = 'http://localhost'
@@ -280,7 +279,7 @@ i18n
     ns: 'translation',
     resources: {
       en: {
-        translation: require('../public/locales/en/translation.json'),
+        translation,
       },
     },
   })

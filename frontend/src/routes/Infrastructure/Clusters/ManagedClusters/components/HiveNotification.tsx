@@ -107,7 +107,9 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
     const response = getHivePod(cluster.namespace, cluster.name, cluster.status)
     response.then((job) => {
       const podName = job?.metadata.name || ''
-      podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
+      if (podName) {
+        window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
+      }
     })
   }
 }

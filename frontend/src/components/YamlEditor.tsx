@@ -130,7 +130,7 @@ export default function YAMLEditor(props: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onChange = useCallback(
     debounce((value) => {
-      setResourceYaml && setResourceYaml(value)
+      setResourceYaml?.(value)
     }, 100),
     []
   )

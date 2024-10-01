@@ -57,7 +57,7 @@ export interface MachinePool {
         }
       }
       ovirt?: {
-        cpu?: {}
+        cpu?: object
         memoryMB?: number
         osDisk?: {
           sizeGB: number

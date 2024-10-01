@@ -171,7 +171,7 @@ export default function CardViewToolbarSearch(props: {
   const handleColon = () => {
     if (!selectedKey.length && dataKeyNames.includes(inputValue)) {
       selectKey(inputValue)
-      event && event.preventDefault()
+      event?.preventDefault()
     }
   }
 
@@ -179,7 +179,7 @@ export default function CardViewToolbarSearch(props: {
   const handleArrowKey = () => {
     if (menuRef.current) {
       const firstElement = menuRef.current.querySelector('li > button:not(:disabled)')
-      firstElement && firstElement.focus()
+      firstElement?.focus()
     }
   }
 

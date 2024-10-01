@@ -178,9 +178,9 @@ const DefaultNode: React.FunctionComponent<DefaultNodeProps> = ({
 
   React.useEffect(() => {
     if (isHover) {
-      onShowCreateConnector && onShowCreateConnector()
+      onShowCreateConnector?.()
     } else {
-      onHideCreateConnector && onHideCreateConnector()
+      onHideCreateConnector?.()
     }
   }, [isHover, onShowCreateConnector, onHideCreateConnector])
 

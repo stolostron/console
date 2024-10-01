@@ -28,7 +28,9 @@ async function getResourceStatuses(name, namespace, appSetApps, appData, appSetC
   appSetApps.forEach((argoApp) => {
     //get destination and clusters information
     const argoNS = argoApp.spec.destination.namespace
-    argoNS && targetNS.push(argoNS)
+    if (argoNS) {
+      targetNS.push(argoNS)
+    }
   })
 
   const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []

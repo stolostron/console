@@ -22,7 +22,7 @@ export interface AnsibleJob {
   kind: AnsibleJobKindType
   metadata: Metadata
   spec?: {
-    extra_vars: {}
+    extra_vars: object
   }
   status?: {
     ansibleJobResult: {

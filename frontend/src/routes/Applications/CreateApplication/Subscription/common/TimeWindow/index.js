@@ -232,7 +232,7 @@ export class TimeWindow extends Component {
                           let input
                           try {
                             input = new RegExp(e.target.value, 'i')
-                          } catch (err) {
+                          } catch {
                             // Nothing to do
                           }
                           return e.target.value !== ''
@@ -488,7 +488,7 @@ export class TimeWindow extends Component {
     let targetName = ''
     try {
       targetName = event.target.name
-    } catch (e) {
+    } catch {
       targetName = ''
     }
 

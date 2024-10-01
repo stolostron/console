@@ -80,7 +80,9 @@ type NodePoolsProgressProps = {
 const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
   const { t } = useTranslation()
   const nodePoolsProgressID = `${window.location.href}node-pools-progress`
-  localStorage.getItem(nodePoolsProgressID) ?? localStorage.setItem(nodePoolsProgressID, 'show')
+  if (!localStorage.getItem(nodePoolsProgressID)) {
+    localStorage.setItem(nodePoolsProgressID, 'show')
+  }
   const [expanded, setExpanded] = useState(localStorage.getItem(nodePoolsProgressID) === 'show')
   const { cluster, hostedCluster } = useClusterDetailsContext()
   const [openAddNodepoolModal, toggleOpenAddNodepoolModal] = useState<boolean>(false)

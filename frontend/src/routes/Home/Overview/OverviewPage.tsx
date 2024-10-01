@@ -62,7 +62,7 @@ function getClusterSummary(
           isSelected: selectedCloud === cloud,
           onClick: () => {
             // Clicking on the selected cloud card will remove the selection.
-            selectedCloud === cloud ? setSelectedCloud('') : setSelectedCloud(cloud)
+            setSelectedCloud(selectedCloud === cloud ? '' : cloud)
           },
         })
       }
@@ -289,7 +289,9 @@ export default function OverviewPage() {
     let clustersWithIssuesCount = 0
     policyReportsForSelectedClusters.forEach((policyReport: PolicyReport) => {
       const insightsFilteredResults = policyReport.results.filter((result) => result.source === 'insights')
-      insightsFilteredResults.length > 0 && clustersWithIssuesCount++
+      if (insightsFilteredResults.length > 0) {
+        clustersWithIssuesCount++
+      }
       insightsFilteredResults.forEach((result: PolicyReportResults) => {
         switch (result.properties.total_risk) {
           case '4':

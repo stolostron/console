@@ -17,5 +17,5 @@ export interface SubscriptionReport extends IResource {
   apiVersion: SubscriptionReportApiVersionType
   kind: SubscriptionReportKindType
   metadata: Metadata
-  spec: {}
+  spec: object
 }

@@ -937,7 +937,9 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             isRequired={importMode === ImportMode.discoveryOCM}
             hidden={importMode !== ImportMode.discoveryOCM}
             onChange={(namespaceName) => {
-              namespaceName && dispatch({ type: 'setNamespace', namespace: namespaceName })
+              if (namespaceName) {
+                dispatch({ type: 'setNamespace', namespace: namespaceName })
+              }
               dispatch({ type: 'setCredential', credential: '' })
               const discoverySecret = updateROSAImportSecret('')
               resources.splice(1, 1, discoverySecret)

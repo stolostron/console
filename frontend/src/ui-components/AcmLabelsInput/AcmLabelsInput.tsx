@@ -66,7 +66,9 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
                 onClose={(e) => {
                   removeLabel(key)
                   /* istanbul ignore next */
-                  e.detail === 0 && inputRef.current?.focus() // only refocus on keyboard event, detail is 0 on key event
+                  if (e.detail === 0) {
+                    inputRef.current?.focus() // only refocus on keyboard event, detail is 0 on key event
+                  }
                 }}
                 closeBtnProps={{ id: `remove-${key}`, ref: index + 1 === length ? escapeRef : null }}
               >
