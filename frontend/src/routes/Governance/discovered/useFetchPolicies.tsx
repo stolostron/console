@@ -115,9 +115,8 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     error: searchErr,
   } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    variables: {
-      input: searchQuery,
-    },
+    variables: { input: searchQuery },
+    pollInterval: 15000, // Poll every 15 seconds
   })
 
   useEffect(() => {
