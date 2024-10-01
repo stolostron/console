@@ -1069,7 +1069,7 @@ describe('Import Discovered Cluster with import credentials', () => {
     await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
   })
 
-   test('create discovered ROSA cluster with auto import service account', async () => {
+  test('create discovered ROSA cluster with auto import service account', async () => {
     window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster-serviceaccount.com')
 
     const Component = () => (
@@ -1101,7 +1101,7 @@ describe('Import Discovered Cluster with import credentials', () => {
     await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
 
     await waitForText('OCM-Access-SA')
-    await waitForText(mockDiscoveredClusters[2].spec.credential!.name) 
+    await waitForText(mockDiscoveredClusters[2].spec.credential!.name)
     await waitForText('Cluster ID')
     getByDisplayValue('39ldt3r51vjjsho1eqntrg3m') // cluster ID field should be set correctly
 
