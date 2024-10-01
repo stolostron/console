@@ -812,7 +812,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const updateROSAImportSecret = useCallback(
     (credentialName: string) => {
       const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
-      const authMethod = selectedCredential?.stringData?.auth_method ?? ''
+      const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
       const discoverySecret = cloneDeep(autoImportSecret)
       // Updating the discovery secret based on the auth_method
       if (authMethod === 'service-account') {
