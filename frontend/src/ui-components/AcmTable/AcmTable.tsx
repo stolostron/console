@@ -222,51 +222,41 @@ interface ITableItem<T> {
 }
 
 type FilterOptionValueT = string
+type FilterSelection = FilterOptionValueT[]
 type TableFilterOption<FilterOptionValueT> = { label: ReactNode; value: FilterOptionValueT }
-export type TableFilterFn<T> = (selectedValues: string[], item: T) => boolean
-/**
- * Interface defining required params for table filtering property "filterItems"
- * @interface
- * @param {string} label - label is the string displayed in UI
- * @param {string} id - ID is unique identifier
- * @param {TableFilterOption<FilterOptionValueT>[]} options - Options is an array to define the exact filter options
- * @param {TableFilterFn<T>} tableFilterFn - A required function that returns a boolean if the item is a match to the current filters
- */
-export interface ITableFilter<T> {
-  label: string
+
+type AdvancedFilterSelection = {
+  operator: SearchOperator
+  value: string
+}
+
+type CurrentFilters<S> = {
+  [filter: string]: S
+}
+
+type TableFilterBase<T, S> = {
+  /** unique identifier for the filter */
   id: string
+  /** string displayed in the UI */
+  label: string
+  /** A required function that returns a boolean if the item is a match to the current filters */
+  tableFilterFn: (selection: S, item: T) => boolean
+}
+export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
+  /** Options is an array to define the exact filter options */
   options: TableFilterOption<FilterOptionValueT>[]
-  tableFilterFn: TableFilterFn<T>
   showEmptyOptions?: boolean
 }
 
-export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'tableFilterFn' | 'options'> {
-  columnDisplayName?: string
+export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilterSelection> {
   availableOperators: SearchOperator[]
-  tableAdvancedFilterFn: TableAdvancedFilterFn<T>
 }
 
-export type FilterSelections = {
-  [filter: string]: string[]
-}
-
-export type TableAdvancedFilterFn<T> = (
-  constraints: {
-    operator: SearchOperator
-    value: string
-  },
-  item: T
-) => boolean
-
-export type AdvancedFilterSelections = {
-  [filter: string]: {
-    operator: SearchOperator
-    value: string
-  }
-}
-
-function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: FilterSelections | ParsedQuery<string>) {
-  const validSelections: FilterSelections = {}
+function getValidFilterSelections<T>(
+  filters: ITableFilter<T>[],
+  selections: CurrentFilters<FilterSelection> | ParsedQuery<string>
+) {
+  const validSelections: CurrentFilters<FilterSelection> = {}
   let removedOptions = false
   Object.keys(selections).forEach((key) => {
     const filter = filters.find((filter) => filter.id === key)
@@ -323,7 +313,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
   }, [filters, queryParams])
 
   const updateFilters = useCallback(
-    (newFilters: FilterSelections, saveFilters: boolean = true) => {
+    (newFilters: CurrentFilters<FilterSelection>, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
       const newSearch = updatedSearch ? `?${updatedSearch}` : ''
@@ -492,25 +482,19 @@ export function AcmTablePaginationContextProvider(props: { children: ReactNode; 
   return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
 }
 
-const findFilterMatch = <T,>(
-  filter: string,
-  filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[]
-): ITableAdvancedFilter<T> | ITableFilter<T> | undefined => {
-  return filterArray.find((filterItem) => filterItem.id === filter)
-}
+const findFilterMatch = <T, S>(filter: string, filterArray: TableFilterBase<T, S>[]) =>
+  filterArray.find((filterItem) => filterItem.id === filter)
 
-const applyFilters = <T,>(
+const applyFilters = <T, S>(
   items: T[],
-  filterSelections: Record<string, any>,
-  filterArray: (ITableAdvancedFilter<T> | ITableFilter<T>)[],
-  filterFnName: 'tableFilterFn' | 'tableAdvancedFilterFn'
+  filterSelections: CurrentFilters<S>,
+  filterArray: TableFilterBase<T, S>[]
 ): T[] => {
   const filterCategories = Object.keys(filterSelections)
   return items.filter((item: T) =>
-    filterCategories.every((filter: string) => {
-      const filterTwo = findFilterMatch(filter, filterArray) as any
-      return filterTwo?.[filterFnName](filterSelections[filter], item) ?? true
-    })
+    filterCategories.every(
+      (filter: string) => findFilterMatch(filter, filterArray)?.tableFilterFn(filterSelections[filter], item) ?? true
+    )
   )
 }
 
@@ -822,11 +806,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     // if using a result view from backend, the items have already been filtered
     if (!isPreProcessed) {
       if (filters.length && Object.keys(filterSelections).length) {
-        filteredItems = applyFilters(items, filterSelections, filters, 'tableFilterFn')
+        filteredItems = applyFilters(items, filterSelections, filters)
       }
 
       // advanced filtering
-      const advancedFilterSelections: AdvancedFilterSelections = {}
+      const advancedFilterSelections: CurrentFilters<AdvancedFilterSelection> = {}
       activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
         if (columnId && value && operator) {
           advancedFilterSelections[columnId] = { operator, value }
@@ -834,7 +818,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       })
 
       if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
-        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters, 'tableAdvancedFilterFn')
+        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters)
       }
     }
 

@@ -43,7 +43,7 @@ const advancedFilters = [
     label: 'gender',
     id: 'gender',
     availableOperators: [SearchOperator.Equals],
-    tableAdvancedFilterFn: (
+    tableFilterFn: (
       constraint: {
         operator: SearchOperator
         value: string
