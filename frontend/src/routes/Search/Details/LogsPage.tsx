@@ -132,7 +132,7 @@ export function LogsToolbar(props: {
           _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
           selection: string | SelectOptionObject
         ) => {
-          selection === 'previous-log' ? setPreviousLogs(true) : setPreviousLogs(false)
+          setPreviousLogs(selection === 'previous-log')
           setIsPreviousSelectOpen(false)
         }}
         selections={previousLogs ? 'previous-log' : 'current-log'}
@@ -402,7 +402,9 @@ export default function LogsPage() {
   const linesLength = useMemo(() => logs.split('\n').length - 1, [logs])
 
   const toggleFullscreen = () => {
-    resourceLogRef.current && screenfull.isEnabled && screenfull.toggle(resourceLogRef.current)
+    if (resourceLogRef.current && screenfull.isEnabled) {
+      screenfull.toggle(resourceLogRef.current)
+    }
   }
 
   const onScroll = ({

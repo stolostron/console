@@ -241,7 +241,9 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
       // unselect existing radio
       _.set(existingruleCheckbox, 'active', true)
       _.set(existingRuleControl, 'active', '')
-      selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', '')
+      if (selectedRuleNameControl) {
+        _.set(selectedRuleNameControl, 'active', '')
+      }
       _.set(existingRuleControl, 'opaque', false)
 
       // select labels instead
@@ -254,7 +256,9 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
 
     // also tell placement rule combo to load existing rules for this namespace
     const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
-    existingPlacementRuleCombo && _.set(existingPlacementRuleCombo, 'isLoaded', false)
+    if (existingPlacementRuleCombo) {
+      _.set(existingPlacementRuleCombo, 'isLoaded', false)
+    }
   })
 
   return globalControl
@@ -324,7 +328,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         }
       })
     }
-  } catch (err) {
+  } catch {
     //return err
   }
 }

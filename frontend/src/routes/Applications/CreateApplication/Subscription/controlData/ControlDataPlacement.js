@@ -183,8 +183,12 @@ export const updatePlacementControls = (control) => {
   const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
 
   // set radio buttons based on what was selected
-  clusterSelectorControl && _.set(clusterSelectorControl, 'active.mode', id === clusterSelectorCheckbox)
-  existingRuleControl && _.set(existingRuleControl, 'active', id === existingRuleCheckbox)
+  if (clusterSelectorControl) {
+    _.set(clusterSelectorControl, 'active.mode', id === clusterSelectorCheckbox)
+  }
+  if (existingRuleControl) {
+    _.set(existingRuleControl, 'active', id === existingRuleCheckbox)
+  }
 
   // opaque the existing rules combobox
   const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementrulecombo')
@@ -201,7 +205,9 @@ export const updatePlacementControls = (control) => {
     selectedRuleComboControl.active = ''
     selectedRuleComboControl.info = ''
     const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
-    selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', '')
+    if (selectedRuleNameControl) {
+      _.set(selectedRuleNameControl, 'active', '')
+    }
   }
 
   return groupControlData
@@ -217,16 +223,17 @@ export const updateNewRuleControls = (control) => {
   const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
   const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
   if (kind) {
-    if (kind === PlacementRuleKind) {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', true)
-      deprecatedRule && _.set(deprecatedRule, 'active', '')
-    } else {
-      isDeprecatedPR && _.set(isDeprecatedPR, 'active', false)
-      deprecatedRule && _.set(deprecatedRule, 'active', '')
+    if (isDeprecatedPR) {
+      _.set(isDeprecatedPR, 'active', kind === PlacementRuleKind)
+    }
+    if (deprecatedRule) {
+      _.set(deprecatedRule, 'active', '')
     }
   }
 
-  selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
+  if (selectedRuleNameControl) {
+    _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

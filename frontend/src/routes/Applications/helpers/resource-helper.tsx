@@ -223,7 +223,7 @@ function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
 
   try {
     argoServerURL = new URL(url)
-  } catch (_err) {
+  } catch {
     return false
   }
 

@@ -18,7 +18,7 @@ export interface MultiClusterHub extends IResource {
   apiVersion: MultiClusterHubApiVersionType
   kind: MultiClusterHubKindType
   metadata: Metadata
-  spec?: {}
+  spec?: object
   status: {
     currentVersion: string
   }

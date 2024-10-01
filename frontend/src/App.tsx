@@ -78,7 +78,7 @@ function UserDropdownToggle() {
     const resp = getUsername()
     resp.promise
       .then((payload) => {
-        payload && payload.body && payload.body.username ? setName(payload.body.username) : setName('undefined')
+        setName(payload.body.username ?? 'undefined')
       })
       .catch((error) => {
         if (!(error instanceof ResourceError) || error.code !== ResourceErrorCode.RequestAborted) {

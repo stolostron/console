@@ -16,10 +16,6 @@ import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
-jest.mock('../../../resources/utils/resource-request', () => ({
-  deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
-}))
-
 describe('DeleteResourceModal', () => {
   it('should render delete ACM app no related resources', () => {
     const resource: IResource = {

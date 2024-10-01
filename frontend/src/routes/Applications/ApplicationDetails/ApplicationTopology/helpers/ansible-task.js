@@ -179,11 +179,12 @@ export const showAnsibleJobDetails = (node, details, t) => {
     value: _.get(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
     status: getStatusFromPulse(jobStatus.pulse),
   })
-  _.get(node, 'specs.raw.status.k8sJob.message') &&
+  if (_.get(node, 'specs.raw.status.k8sJob.message')) {
     details.push({
       labelValue: t('prop.details.section'),
       value: t('description.ansible.job.status.debug'),
     })
+  }
 
   return details
 }

@@ -102,37 +102,36 @@ export default function PolicyDetailsResults() {
       (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
     )
     const status: ResultsTableData[] = []
-    policyResponses.length > 0 &&
-      policyResponses.forEach((policyResponse: Policy) => {
-        const cluster =
-          (policyResponse?.metadata?.labels &&
-            policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
-          '-'
-        const clusterNamespace =
-          (policyResponse?.metadata?.labels &&
-            policyResponse?.metadata?.labels['policy.open-cluster-management.io/cluster-namespace']) ??
-          '-'
-        const details = policyResponse?.status?.details ?? []
-        details.forEach((detail: PolicyStatusDetails) => {
-          const templates = policyResponse?.spec['policy-templates'] ?? []
-          const template = templates.find(
-            (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
-          )
-          status.push({
-            templateName: detail.templateMeta.name ?? '-',
-            cluster,
-            clusterNamespace,
-            apiVersion: template?.objectDefinition.apiVersion ?? '-',
-            kind: template?.objectDefinition.kind ?? '-',
-            status: detail.compliant ?? 'no-status',
-            message: (detail?.history && detail.history[0]?.message) ?? '-',
-            timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
-            policyName,
-            policyNamespace,
-            remediationAction: getPolicyTempRemediation(policyResponse, template),
-          })
+    policyResponses?.forEach((policyResponse: Policy) => {
+      const cluster =
+        (policyResponse?.metadata?.labels &&
+          policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
+        '-'
+      const clusterNamespace =
+        (policyResponse?.metadata?.labels &&
+          policyResponse?.metadata?.labels['policy.open-cluster-management.io/cluster-namespace']) ??
+        '-'
+      const details = policyResponse?.status?.details ?? []
+      details.forEach((detail: PolicyStatusDetails) => {
+        const templates = policyResponse?.spec['policy-templates'] ?? []
+        const template = templates.find(
+          (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
+        )
+        status.push({
+          templateName: detail.templateMeta.name ?? '-',
+          cluster,
+          clusterNamespace,
+          apiVersion: template?.objectDefinition.apiVersion ?? '-',
+          kind: template?.objectDefinition.kind ?? '-',
+          status: detail.compliant ?? 'no-status',
+          message: (detail?.history && detail.history[0]?.message) ?? '-',
+          timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
+          policyName,
+          policyNamespace,
+          remediationAction: getPolicyTempRemediation(policyResponse, template),
         })
       })
+    })
     return status
   }, [policy, policies])
 

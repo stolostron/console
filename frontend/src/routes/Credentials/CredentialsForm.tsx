@@ -312,7 +312,7 @@ export function CredentialsForm(
           setOpenstackCloudsYaml(YAML.stringify(yamlData))
         }
       }
-    } catch (_e) {}
+    } catch {}
   }, [cloudsYaml, osCABundle])
 
   // Disconnected
@@ -477,8 +477,10 @@ export function CredentialsForm(
       case Provider.kubevirt:
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
-        isExternalInfra && (stringData.kubeconfig = kubeconfig)
-        isExternalInfra && (stringData.externalInfraNamespace = externalInfraNamespace)
+        if (isExternalInfra) {
+          stringData.kubeconfig = kubeconfig
+          stringData.externalInfraNamespace = externalInfraNamespace
+        }
         break
     }
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {

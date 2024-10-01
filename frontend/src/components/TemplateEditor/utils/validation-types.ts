@@ -119,7 +119,7 @@ export const getURLValidator = (t: TFunction): Validator => ({
     test: (value) => {
       try {
         new URL(value)
-      } catch (e) {
+      } catch {
         return false
       }
       return true
