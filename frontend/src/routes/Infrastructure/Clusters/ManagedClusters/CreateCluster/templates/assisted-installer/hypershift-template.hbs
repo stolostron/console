@@ -31,13 +31,10 @@ spec:
     networkType: {{{hypershift-network.networkType}}}
   {{#if hypershift-network.enableProxy}}
   configuration:
-    items:
-    - apiVersion: config.openshift.io/v1
-      kind: Proxy
-      spec:
-        httpProxy: '{{{hypershift-network.httpProxy}}}'
-        httpsProxy: '{{{hypershift-network.httpsProxy}}}'
-        noProxy: '{{{hypershift-network.noProxy}}}'
+    proxy:
+      httpProxy: '{{{hypershift-network.httpProxy}}}'
+      httpsProxy: '{{{hypershift-network.httpsProxy}}}'
+      noProxy: '{{{hypershift-network.noProxy}}}'
   {{/if}}
   {{#if hypershift-hosts.controllerAvailabilityPolicy}}
   controllerAvailabilityPolicy: {{{hypershift-hosts.controllerAvailabilityPolicy}}}
