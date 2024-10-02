@@ -105,6 +105,19 @@ export function PolicyTemplateDetails() {
       ]
     }
 
+    if (kind === 'OperatorPolicy') {
+      let value = '-'
+
+      for (const condition of template?.status?.conditions ?? []) {
+        if (condition?.type === 'Compliant') {
+          value = condition?.message ?? '-'
+          break
+        }
+      }
+
+      cols.push({ key: t('Message'), value: value })
+    }
+
     return cols
   }, [t, name, kind, apiGroup, template, clusterName])
 
