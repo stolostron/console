@@ -56,6 +56,7 @@ const statusAggregate = {
   res: {
     itemCount: 42,
     filterCounts: undefined,
+    systemAppNSPrefixes: [],
   },
 }
 
