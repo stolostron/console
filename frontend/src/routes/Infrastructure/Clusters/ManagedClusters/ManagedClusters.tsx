@@ -972,7 +972,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
       )
     },
     exportContent: (cluster) => {
-      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing},  unknown: ${cluster.addons!.unknown}`
+      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing}, unknown: ${cluster.addons!.unknown}`
     },
   }
 }

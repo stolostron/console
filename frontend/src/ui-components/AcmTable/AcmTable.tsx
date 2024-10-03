@@ -943,7 +943,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         })
       csvExportCellArray.push(headerString.join(','))
 
-      // if table is paginated from backend,
+      // if table is pagenated from backend,
       // we need to fetch all backend items to export
       let exportItems = sorted
       if (fetchExport) {
@@ -965,32 +965,23 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
       exportItems.forEach(({ item, subRows }) => {
         let contentString: string[] = []
-        // if callback and its output exists, add to array, else add "-"
         selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
           if (header && !disableExport) {
-            const exportValue = exportContent?.(item, '')
-            if (typeof exportValue === 'string') {
-              contentString.push(returnCSVSafeString(exportValue.trim()))
-            } else {
-              contentString.push('-')
-            }
+            // if callback and its output exists, add to array, else add "-"
+            const exportvalue = exportContent?.(item, '')
+            exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
           }
         })
-
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
-              const exportValue = exportContent?.(item)
-              if (typeof exportValue === 'string') {
-                contentString.push(returnCSVSafeString(exportValue.trim()))
-              } else {
-                contentString.push('-')
-              }
+              const exportvalue = exportContent?.(item)
+              exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
             }
           })
         })
 
-        contentString = [contentString.join(',').replace(/\s*,\s*/g, ', ')] // Removes extra spaces before/after commas
+        contentString = [contentString.join(',')]
         contentString[0] && csvExportCellArray.push(contentString[0])
       })
 
