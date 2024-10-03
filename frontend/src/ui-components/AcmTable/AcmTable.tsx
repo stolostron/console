@@ -943,7 +943,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         })
       csvExportCellArray.push(headerString.join(','))
 
-      // if table is pagenated from backend,
+      // if table is paginated from backend,
       // we need to fetch all backend items to export
       let exportItems = sorted
       if (fetchExport) {
@@ -965,26 +965,27 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
       exportItems.forEach(({ item, subRows }) => {
         let contentString: string[] = []
+        // if callback and its output exists, add to array, else add "-"
         selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
           if (header && !disableExport) {
-            // if callback and its output exists, add to array, else add "-"
-            const exportvalue = exportContent?.(item, '')
-            exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+            const exportValue = exportContent?.(item, '')?.trim()
+            exportValue ? contentString.push(returnCSVSafeString(exportValue)) : contentString.push('-')
           }
         })
+      
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
-              const exportvalue = exportContent?.(item)
-              exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+              const exportValue = exportContent?.(item)?.trim()
+              exportValue ? contentString.push(returnCSVSafeString(exportValue)) : contentString.push('-')
             }
           })
         })
 
-        contentString = [contentString.join(',')]
+        contentString = [contentString.join(',').replace(/\s*,\s*/g, ', ')] // Removes extra spaces before/after commas
         contentString[0] && csvExportCellArray.push(contentString[0])
       })
-
+      
       const exportString = csvExportCellArray.join('\n')
       const fileName = `${fileNamePrefix}-${Date.now()}.csv`
 
