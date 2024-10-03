@@ -4,12 +4,8 @@ import { Cluster, ClusterPool, getClusterStatusType, ManagedClusterSet } from '.
 import { AcmInlineStatusGroup, StatusType } from '../../../../../ui-components'
 import { useClusters } from './useClusters'
 
-export function ClusterStatuses(props: {
-  managedClusterSet?: ManagedClusterSet
-  clusterPool?: ClusterPool
-  isGlobalClusterSet?: boolean
-}) {
-  const clusters = useClusters(props.managedClusterSet, props.clusterPool, props.isGlobalClusterSet)
+export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; clusterPool?: ClusterPool }) {
+  const clusters = useClusters({ managedClusterSet: props.managedClusterSet, clusterPool: props.clusterPool })
   const { healthy, running, warning, progress, danger, pending, sleep, unknown, detached } = getClusterStatusCount(
     clusters,
     props.managedClusterSet,

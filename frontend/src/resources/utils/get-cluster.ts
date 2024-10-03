@@ -24,7 +24,7 @@ import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'react-i18next'
-import { ClusterManagementAddOn, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
+import { ClusterManagementAddOn, DiscoveredCluster, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,
@@ -352,27 +352,73 @@ export type UpgradeInfo = {
   }
 }
 
-export function mapClusters(
-  allClusterDeployments: ClusterDeployment[] = [],
-  managedClusterInfos: ManagedClusterInfo[] = [],
-  certificateSigningRequests: CertificateSigningRequest[] = [],
-  managedClusters: ManagedCluster[] = [],
-  managedClusterAddOns: Record<string, ManagedClusterAddOn[]> = {},
-  clusterManagementAddOn: ClusterManagementAddOn[] = [],
-  clusterClaims: ClusterClaim[] = [],
-  clusterCurators: ClusterCurator[] = [],
-  agentClusterInstalls: AgentClusterInstallK8sResource[] = [],
-  hostedClusters: HostedClusterK8sResource[] = [],
-  nodePools: NodePoolK8sResource[] = []
-) {
+//** for testing only; allows mapping of partial data */
+export function testMapClusters(params: Partial<Parameters<typeof mapClusters>[0]>) {
+  const {
+    clusterDeployments = [],
+    managedClusterInfos = [],
+    certificateSigningRequests = [],
+    managedClusters = [],
+    managedClusterAddOns = {},
+    clusterManagementAddOns = [],
+    clusterClaims = [],
+    clusterCurators = [],
+    agentClusterInstalls = [],
+    hostedClusters = [],
+    nodePools = [],
+    discoveredClusters = [],
+  } = params
+  return mapClusters({
+    clusterDeployments,
+    managedClusterInfos,
+    certificateSigningRequests,
+    managedClusters,
+    managedClusterAddOns,
+    clusterManagementAddOns,
+    clusterClaims,
+    clusterCurators,
+    agentClusterInstalls,
+    hostedClusters,
+    nodePools,
+    discoveredClusters,
+  })
+}
+
+export function mapClusters({
+  clusterDeployments,
+  managedClusterInfos,
+  certificateSigningRequests,
+  managedClusters,
+  managedClusterAddOns: allManagedClusterAddOns,
+  clusterManagementAddOns: allClusterManagementAddOns,
+  clusterClaims,
+  clusterCurators,
+  agentClusterInstalls,
+  hostedClusters,
+  nodePools,
+  discoveredClusters,
+}: {
+  clusterDeployments: ClusterDeployment[]
+  managedClusterInfos: ManagedClusterInfo[]
+  certificateSigningRequests: CertificateSigningRequest[]
+  managedClusters: ManagedCluster[]
+  managedClusterAddOns: Record<string, ManagedClusterAddOn[]>
+  clusterManagementAddOns: ClusterManagementAddOn[]
+  clusterClaims: ClusterClaim[]
+  clusterCurators: ClusterCurator[]
+  agentClusterInstalls: AgentClusterInstallK8sResource[]
+  hostedClusters: HostedClusterK8sResource[]
+  nodePools: NodePoolK8sResource[]
+  discoveredClusters: DiscoveredCluster[]
+}) {
   const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
-  const clusterDeployments = allClusterDeployments.filter(
+  const cds = clusterDeployments.filter(
     // CDs with AgentCluster as owner are just meta objects for AI. We can ignore them.
     (cd) => (cd.metadata.ownerReferences ? !cd.metadata.ownerReferences.some((o) => o.kind === 'AgentCluster') : true)
   )
   const uniqueClusterNames = Array.from(
     new Set([
-      ...clusterDeployments.map((cd) => cd.metadata.name),
+      ...cds.map((cd) => cd.metadata.name),
       ...managedClusterInfos.map((mc) => mc.metadata.name),
       ...mcs.map((mc) => mc.metadata.name),
       ...hostedClusters.map((hc) => hc.metadata?.name),
@@ -388,10 +434,11 @@ export function mapClusters(
   const clusterCuratorsMap2 = keyBy(clusterCurators, 'metadata.namespace')
   const managedClusterMap = keyBy(managedClusters, 'metadata.name')
   const clusterClaimsMap = keyBy(clusterClaims, 'spec.namespace')
-  const clusterDeploymentsMap = keyBy(clusterDeployments, 'metadata.name')
+  const clusterDeploymentsMap = keyBy(cds, 'metadata.name')
   const managedClusterInfosMap = keyBy(managedClusterInfos, 'metadata.name')
   const hostedClusterMap = keyBy(hostedClusters, 'metadata.name')
-  const clusterManagementAddOnMap = keyBy(clusterManagementAddOn, 'metadata.name')
+  const clusterManagementAddOns = keyBy(allClusterManagementAddOns, 'metadata.name')
+  const discoveredClustersMap = keyBy(discoveredClusters, 'spec.displayName')
 
   return uniqueClusterNames.map((cluster) => {
     const clusterDeployment = clusterDeploymentsMap[cluster!]
@@ -400,44 +447,58 @@ export function mapClusters(
     const managedClusterInfo = managedClusterInfosMap[cluster!]
     const hostedCluster = hostedClusterMap[cluster!]
     const clusterCurator = clusterCuratorsMap2[cluster!] || clusterCuratorsMap1[cluster!]
-    const addons: ManagedClusterAddOn[] = managedClusterAddOns?.[cluster ?? ''] || []
+    const managedClusterAddOns: ManagedClusterAddOn[] = allManagedClusterAddOns?.[cluster ?? ''] || []
     const agentClusterInstall =
       clusterDeployment?.spec?.clusterInstallRef &&
       agentClusterInstallsMap[
         `${clusterDeployment.metadata.namespace}/${clusterDeployment?.spec?.clusterInstallRef?.name}`
       ]
+    const discoveredCluster = discoveredClustersMap[cluster!]
 
-    return getCluster(
+    return getCluster({
       managedClusterInfo,
       clusterDeployment,
       certificateSigningRequests,
       managedCluster,
-      addons,
-      clusterManagementAddOnMap,
+      managedClusterAddOns,
+      clusterManagementAddOns,
       clusterClaim,
       clusterCurator,
       agentClusterInstall,
       hostedCluster,
-      undefined,
-      nodePools
-    )
+      nodePools,
+      discoveredCluster,
+    })
   })
 }
 
-export function getCluster(
-  managedClusterInfo: ManagedClusterInfo | undefined,
-  clusterDeployment: ClusterDeployment | undefined,
-  certificateSigningRequests: CertificateSigningRequest[] | undefined,
-  managedCluster: ManagedCluster | undefined,
-  managedClusterAddOns: ManagedClusterAddOn[],
-  clusterManagementAddOns: Dictionary<ClusterManagementAddOn>,
-  clusterClaim: ClusterClaim | undefined,
-  clusterCurator: ClusterCurator | undefined,
-  agentClusterInstall: AgentClusterInstallK8sResource | undefined,
-  hostedCluster: HostedClusterK8sResource | undefined,
-  selectedHostedCluster: HostedClusterK8sResource | undefined,
-  nodePools: NodePoolK8sResource[] | undefined
-): Cluster {
+export function getCluster({
+  managedClusterInfo,
+  clusterDeployment,
+  certificateSigningRequests,
+  managedCluster,
+  managedClusterAddOns,
+  clusterManagementAddOns,
+  clusterClaim,
+  clusterCurator,
+  agentClusterInstall,
+  hostedCluster,
+  nodePools,
+  discoveredCluster,
+}: {
+  managedClusterInfo?: ManagedClusterInfo
+  clusterDeployment?: ClusterDeployment
+  certificateSigningRequests?: CertificateSigningRequest[]
+  managedCluster?: ManagedCluster
+  managedClusterAddOns: ManagedClusterAddOn[]
+  clusterManagementAddOns: Dictionary<ClusterManagementAddOn>
+  clusterClaim?: ClusterClaim
+  clusterCurator?: ClusterCurator
+  agentClusterInstall?: AgentClusterInstallK8sResource
+  hostedCluster?: HostedClusterK8sResource
+  nodePools: NodePoolK8sResource[]
+  discoveredCluster?: DiscoveredCluster
+}): Cluster {
   const { status, statusMessage } = getClusterStatus(
     clusterDeployment,
     managedClusterInfo,
@@ -460,8 +521,7 @@ export function getCluster(
     managedClusterInfo,
     managedCluster,
     agentClusterInstall,
-    hostedCluster,
-    selectedHostedCluster
+    hostedCluster
   )
 
   return {
@@ -470,15 +530,13 @@ export function getCluster(
       managedCluster?.metadata.name ??
       managedClusterInfo?.metadata.name ??
       hostedCluster?.metadata?.name ??
-      selectedHostedCluster?.metadata?.name ??
       '',
     displayName:
       // clusterDeployment?.spec?.clusterPoolRef?.claimName ??
       clusterDeployment?.metadata.name ??
       managedCluster?.metadata.name ??
       managedClusterInfo?.metadata.name ??
-      hostedCluster?.metadata?.name ??
-      selectedHostedCluster?.metadata?.name,
+      hostedCluster?.metadata?.name,
     namespace:
       clusterDeployment?.metadata.namespace ??
       hostedCluster?.metadata?.namespace ??
@@ -491,7 +549,14 @@ export function getCluster(
       '',
     status,
     statusMessage,
-    provider: getProvider(managedClusterInfo, managedCluster, clusterDeployment, hostedCluster, agentClusterInstall),
+    provider: getProvider({
+      managedClusterInfo,
+      managedCluster,
+      clusterDeployment,
+      hostedCluster,
+      agentClusterInstall,
+      discoveredCluster,
+    }),
     distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
     acmDistribution,
     microshiftDistribution: getMicroshiftDistributionInfo(managedCluster),
@@ -502,7 +567,7 @@ export function getCluster(
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
     consoleURL: consoleURL,
     isHive: !!clusterDeployment && !hostedCluster,
-    isHypershift: !!hostedCluster || !!selectedHostedCluster,
+    isHypershift: !!hostedCluster,
     isManaged: !!managedCluster || !!managedClusterInfo,
     isCurator: !!clusterCurator,
     hasAutomationTemplate: !!(clusterCurator && isAutomationTemplate(clusterCurator)),
@@ -597,13 +662,21 @@ function getHostedClusterProvider(hostedCluster: HostedClusterK8sResource) {
   }
 }
 
-export function getProvider(
-  managedClusterInfo?: ManagedClusterInfo,
-  managedCluster?: ManagedCluster,
-  clusterDeployment?: ClusterDeployment,
-  hostedCluster?: HostedClusterK8sResource,
+export function getProvider({
+  managedClusterInfo,
+  managedCluster,
+  clusterDeployment,
+  hostedCluster,
+  agentClusterInstall,
+  discoveredCluster,
+}: {
+  managedClusterInfo?: ManagedClusterInfo
+  managedCluster?: ManagedCluster
+  clusterDeployment?: ClusterDeployment
+  hostedCluster?: HostedClusterK8sResource
   agentClusterInstall?: AgentClusterInstallK8sResource
-) {
+  discoveredCluster?: DiscoveredCluster
+} = {}) {
   if (hostedCluster) return getHostedClusterProvider(hostedCluster)
 
   const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
@@ -630,11 +703,18 @@ export function getProvider(
     return undefined
   }
 
-  const providerLabel = (
+  let providerLabel = (
     hivePlatformLabel && hivePlatformLabel !== 'unknown'
       ? hivePlatformLabel
       : cloudLabel ?? platformClusterClaim?.value ?? ''
   ).toUpperCase()
+
+  // Hosted clusters imported from a managed MCE cluster will not have provider set
+  // Look it up from the corresponding DiscoveredCluster
+  if (getIsHostedCluster(managedCluster) && providerLabel === 'OTHER') {
+    if (discoveredCluster?.spec.isManagedCluster && discoveredCluster?.spec.cloudProvider)
+      providerLabel = discoveredCluster.spec.cloudProvider.toUpperCase()
+  }
 
   let provider: Provider | undefined
   switch (providerLabel) {
@@ -680,6 +760,9 @@ export function getProvider(
       break
     case 'AUTO-DETECT':
       provider = undefined
+      break
+    case 'KUBEVIRT':
+      provider = Provider.kubevirt
       break
     case 'OTHER':
     default:
@@ -1022,8 +1105,7 @@ export function getConsoleUrl(
   managedClusterInfo?: ManagedClusterInfo,
   managedCluster?: ManagedCluster,
   agentClusterInstall?: AgentClusterInstallK8sResource,
-  hostedCluster?: HostedClusterK8sResource,
-  selectedHostedCluster?: HostedClusterK8sResource
+  hostedCluster?: HostedClusterK8sResource
 ) {
   const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
     (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -1034,8 +1116,7 @@ export function getConsoleUrl(
     managedClusterInfo?.status?.consoleURL ??
     // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
     getConsoleUrlAI(clusterDeployment as ClusterDeploymentK8sResource, agentClusterInstall) ??
-    getHypershiftConsoleURL(hostedCluster) ??
-    getHypershiftConsoleURL(selectedHostedCluster)
+    getHypershiftConsoleURL(hostedCluster)
   )
 }
 
