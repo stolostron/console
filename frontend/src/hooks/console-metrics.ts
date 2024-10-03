@@ -4,11 +4,11 @@ import { useEffect } from 'react'
 import { getBackendUrl, postRequest } from '../resources'
 
 export enum Pages {
-  overview = 'overview-classic',
   overviewFleet = 'overview-fleet',
   search = 'search',
   searchDetails = 'search-details',
   clusters = 'clusters',
+  virtualMachines = 'virtual-machines',
   application = 'application',
   governance = 'governance',
 }
