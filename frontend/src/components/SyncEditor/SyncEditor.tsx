@@ -3,7 +3,6 @@
 import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
 import { Alert, ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
@@ -12,6 +11,7 @@ import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
+import '../theme'
 import './SyncEditor.css'
 import { useTranslation } from '../../lib/acm-i18next'
 import { ChangeHandler } from 'react-monaco-editor'
@@ -126,40 +126,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
 
   function onEditorDidMount(editor: any, monaco: any) {
-    // create 'resource-editor' theme
-    monaco.editor.defineTheme('resource-editor', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'number', foreground: 'ace12e' },
-        { token: 'type', foreground: '73bcf7' },
-        { token: 'string.yaml', foreground: 'f0ab00' },
-        { token: 'keyword', foreground: 'cbc0ff' },
-      ],
-      colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34',
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
-      },
-    })
-
-    // create 'readonly-resource-editor' theme
-    monaco.editor.defineTheme('readonly-resource-editor', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'number', foreground: 'b0b0b0' },
-        { token: 'type', foreground: 'b0b0b0' },
-        { token: 'string.yaml', foreground: '#b0b0b0' },
-        { token: 'keyword', foreground: 'b0b0b0' },
-      ],
-      colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34',
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
-      },
+    setTimeout(() => {
+      monaco.editor.setTheme('console')
     })
 
     // a little breathing space above top line
@@ -246,10 +214,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       window.getEditorValue = undefined
     }
   }, [])
-
-  useEffect(() => {
-    monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
-  }, [readonly])
 
   // prevent editor from flashing when typing in form
   useEffect(() => {
@@ -735,6 +699,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         customControls={variant === 'toolbar' ? toolbarControls : undefined}
         onEditorDidMount={onEditorDidMount}
         options={{
+          theme: 'console',
           wordWrap: 'wordWrapColumn',
           wordWrapColumn: showCondensed ? 512 : 256,
           scrollBeyondLastLine: true,

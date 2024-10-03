@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { monaco } from 'react-monaco-editor'
+
 export declare global {
   interface Window {
     getEditorValue: any
@@ -20,5 +22,7 @@ export declare global {
     capturedFetches: any[]
     pendingNocks: any[]
     SERVER_FLAGS: any
+
+    monaco: monaco
   }
 }
