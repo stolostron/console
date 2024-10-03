@@ -2053,7 +2053,7 @@
   "pending: {{count}} cluster": "pending: {{count}} cluster",
   "pending: {{count}} cluster_plural": "pending: {{count}} clusters",
   "pending: {{count}} policy": "pending: {{count}} policy",
-  "pending: {{count}} policy_plural": "pending: {{count}} policy",
+  "pending: {{count}} policy_plural": "pending: {{count}} policies",
   "pending.cluster.claims": "Pending cluster claims",
   "per page": "per page",
   "Permanently delete {{type}} {{name}}?": "Permanently delete {{type}} {{name}}?",
