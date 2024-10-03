@@ -972,7 +972,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             exportValue ? contentString.push(returnCSVSafeString(exportValue)) : contentString.push('-')
           }
         })
-      
+
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
@@ -985,7 +985,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         contentString = [contentString.join(',').replace(/\s*,\s*/g, ', ')] // Removes extra spaces before/after commas
         contentString[0] && csvExportCellArray.push(contentString[0])
       })
-      
+
       const exportString = csvExportCellArray.join('\n')
       const fileName = `${fileNamePrefix}-${Date.now()}.csv`
 
