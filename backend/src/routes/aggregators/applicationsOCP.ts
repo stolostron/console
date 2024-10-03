@@ -277,6 +277,7 @@ export async function discoverSystemAppNamespacePrefixes() {
     const mce = await getMultiClusterEngine()
     systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
   }
+  return systemAppNamespacePrefixes
 }
 
 export function isSystemApp(namespace?: string) {
