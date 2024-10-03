@@ -627,6 +627,14 @@ describe('Policy Template Details Page', () => {
     await waitForText('oppol-no-group', true)
     await waitForText('OperatorPolicy')
 
+    await waitForText('Message')
+    await waitForText(
+      'Compliant; the OperatorGroup matches what is required by the policy, the Subscription matches what is ' +
+        'required by the policy, no InstallPlans requiring approval were found, ClusterServiceVersion - install ' +
+        'strategy completed with no errors, all operator Deployments have their minimum availability, CatalogSource ' +
+        'was found'
+    )
+
     await waitForText('View YAML', true)
 
     const row = screen.getByRole('row', {
