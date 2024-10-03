@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
 import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
