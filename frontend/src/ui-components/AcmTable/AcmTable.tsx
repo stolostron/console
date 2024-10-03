@@ -968,16 +968,24 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         // if callback and its output exists, add to array, else add "-"
         selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
           if (header && !disableExport) {
-            const exportValue = exportContent?.(item, '')?.trim()
-            exportValue ? contentString.push(returnCSVSafeString(exportValue)) : contentString.push('-')
+            const exportValue = exportContent?.(item, '')
+            if (typeof exportValue === 'string') {
+              contentString.push(returnCSVSafeString(exportValue.trim()))
+            } else {
+              contentString.push('-')
+            }
           }
         })
 
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
-              const exportValue = exportContent?.(item)?.trim()
-              exportValue ? contentString.push(returnCSVSafeString(exportValue)) : contentString.push('-')
+              const exportValue = exportContent?.(item)
+              if (typeof exportValue === 'string') {
+                contentString.push(returnCSVSafeString(exportValue.trim()))
+              } else {
+                contentString.push('-')
+              }
             }
           })
         })
