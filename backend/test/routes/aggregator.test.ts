@@ -5,6 +5,7 @@ import { pagedSearchQueries } from '../../src/lib/search'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
+import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/applicationsOCP'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
@@ -69,9 +70,11 @@ describe(`aggregator Route`, function () {
     initResourceCache(resourceCache)
 
     // setup nocks
-    setupNocks()
+    setupNocks(true)
 
     // fill in application cache from resourceCache and search api mocks
+    const prefixes = await discoverSystemAppNamespacePrefixes()
+    expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
     aggregateKubeApplications()
     await aggregateSearchAPIApplications(1)
 
@@ -84,6 +87,8 @@ describe(`aggregator Route`, function () {
   })
 })
 
+const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
+
 const responseCount = {
   itemCount: '2',
   filterCounts: {
@@ -95,7 +100,7 @@ const responseCount = {
       'local-cluster': 2,
     },
   },
-  systemAppNSPrefixes: [] as string[],
+  systemAppNSPrefixes: systemPrefixes,
   loading: false,
 }
 
@@ -258,7 +263,7 @@ const responseFiltered = {
 }
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
-function setupNocks() {
+function setupNocks(prefixes?: boolean) {
   //
   // REMOTE ARGO
   pagedSearchQueries.forEach((query, inx) => {
@@ -455,6 +460,31 @@ function setupNocks() {
         allowed: true,
       },
     })
+
+  if (prefixes) {
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+      .reply(200, {
+        items: [
+          {
+            metadata: {
+              namespace: 'open-cluster-management',
+            },
+          },
+        ],
+      })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/multicluster.openshift.io/v1/multiclusterengines')
+      .reply(200, {
+        items: [
+          {
+            spec: {
+              targetNamespace: 'multicluster-engine',
+            },
+          },
+        ],
+      })
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
