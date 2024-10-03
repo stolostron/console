@@ -67,14 +67,6 @@ function renderDonutChart(
     name: `${d.value} ${d.key}`,
   }))
 
-  const donutTitle =
-    clusterCompliantCount + clusterNonCompliantCount + clusterPendingCount === 0
-      ? '0%'
-      : `${(
-          (clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount + clusterPendingCount)) *
-          100
-        ).toFixed(0)}%`
-
   return (
     <div style={{ height: 230, marginTop: -16, marginBottom: -16 }}>
       <ChartDonut
@@ -91,7 +83,8 @@ function renderDonutChart(
         padding={{
           right: 300,
         }}
-        title={donutTitle}
+        title={clusterNonCompliantCount.toString()}
+        subTitle={t('Violation', { count: clusterNonCompliantCount })}
         width={450}
         colorScale={colorThemes.criticalLowSuccess}
       />
