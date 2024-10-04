@@ -387,7 +387,7 @@ export function mapClusters(
   const clusterCuratorsMap1 = keyBy(clusterCurators, 'metadata.name')
   const clusterCuratorsMap2 = keyBy(clusterCurators, 'metadata.namespace')
   const managedClusterMap = keyBy(managedClusters, 'metadata.name')
-  const clusterClaimsMap = keyBy(clusterClaims, 'metadata.name')
+  const clusterClaimsMap = keyBy(clusterClaims, 'spec.namespace')
   const clusterDeploymentsMap = keyBy(clusterDeployments, 'metadata.name')
   const managedClusterInfosMap = keyBy(managedClusterInfos, 'metadata.name')
   const hostedClusterMap = keyBy(hostedClusters, 'metadata.name')
