@@ -22,32 +22,38 @@ export const handleStandardComparison = (valueOne: string, valueTwo: string, ope
   }
 }
 
-// for a given displayVersion string there is a distribution value a ' ' and a semver value, here we divide them and take the semver
-export const handleSemverOperatorComparison = (versionOne: string, versionTwo: string, operator: SearchOperator) => {
-  // Semver coerces the version to a valid semver version if possible, otherwise it returns the original value
-  const coercedVersionOne = semver.valid(semver.coerce(versionOne)) ?? versionOne
-  const coercedVersionTwo = semver.valid(semver.coerce(versionTwo)) ?? versionTwo
+export const handleSemverOperatorComparison = (versionToCompare: string, input: string, operator: SearchOperator) => {
+  const coercedInputVersion = semver.coerce(input)
+  const coercedVersionToCompare = semver.coerce(versionToCompare)
 
-  const validInputSemvers = !!semver.valid(coercedVersionOne) && !!semver.valid(coercedVersionTwo)
-  if (!validInputSemvers) {
-    if (operator === SearchOperator.NotEquals) {
-      return true
-    }
-    return false
+  if (!coercedInputVersion || !coercedVersionToCompare) {
+    // No valid semver in either case, so assume these are not equal
+    return operator === SearchOperator.NotEquals
   }
+
+  // if user enters partial semver, coerce will assume the missing components are 0
+  // coerce is still useful in case the user enters more text than just a semver
+  let inputVersion = `${coercedInputVersion.major}.${coercedInputVersion.minor}.${coercedInputVersion.patch}`
+  if (!input.includes(inputVersion)) {
+    inputVersion = `${coercedInputVersion.major}.${coercedInputVersion.minor}`
+  }
+  if (!input.includes(inputVersion)) {
+    inputVersion = `${coercedInputVersion.major}`
+  }
+
   switch (operator) {
     case SearchOperator.Equals:
-      return semver.eq(coercedVersionOne, coercedVersionTwo)
+      return semver.satisfies(coercedVersionToCompare, inputVersion)
     case SearchOperator.GreaterThan:
-      return semver.gt(coercedVersionOne, coercedVersionTwo)
-    case SearchOperator.LessThan:
-      return semver.lt(coercedVersionOne, coercedVersionTwo)
+      return semver.satisfies(coercedVersionToCompare, `>${inputVersion}`)
     case SearchOperator.GreaterThanOrEqualTo:
-      return semver.gte(coercedVersionOne, coercedVersionTwo)
+      return semver.satisfies(coercedVersionToCompare, `>=${inputVersion}`)
+    case SearchOperator.LessThan:
+      return semver.satisfies(coercedVersionToCompare, `<${inputVersion}`)
     case SearchOperator.LessThanOrEqualTo:
-      return semver.lte(coercedVersionOne, coercedVersionTwo)
+      return semver.satisfies(coercedVersionToCompare, `<=${inputVersion}`)
     case SearchOperator.NotEquals:
-      return !semver.eq(coercedVersionOne, coercedVersionTwo)
+      return !semver.satisfies(coercedVersionToCompare, inputVersion)
     default:
       return false
   }

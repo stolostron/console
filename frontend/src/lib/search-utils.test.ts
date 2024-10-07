@@ -2,68 +2,75 @@
 import { SearchOperator } from '../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from './search-utils'
 
-const stringData = {
-  stringOne: 'Adam',
-  stringTwo: 'Becky',
-  stringThree: 'Charlie',
-  stringFour: 'David',
-  stringFive: 'Eve',
-}
-const versionData = {
-  versionOne: '1.0.0',
-  versionTwo: '1.5.0',
-  versionThree: '2.0.0',
-  versionFour: '2.5.0',
-  versionIncomplete: '1.',
-}
-
 describe('search-utils basic string operator', () => {
-  const { stringOne, stringTwo, stringThree, stringFour, stringFive } = stringData
   it('can determine equals', () => {
-    expect(handleStandardComparison(stringOne, stringOne, SearchOperator.Equals)).toBeTruthy()
+    expect(handleStandardComparison('Adam', 'Adam', SearchOperator.Equals)).toBeTruthy()
   })
   it('can determine greater', () => {
-    expect(handleStandardComparison(stringOne, stringTwo, SearchOperator.GreaterThan)).toBeTruthy()
+    expect(handleStandardComparison('Adam', 'Becky', SearchOperator.GreaterThan)).toBeTruthy()
   })
   it('can determine less', () => {
-    expect(handleStandardComparison(stringFour, stringThree, SearchOperator.LessThan)).toBeTruthy()
+    expect(handleStandardComparison('David', 'Charlie', SearchOperator.LessThan)).toBeTruthy()
   })
   it('can determine greater than or equal to', () => {
-    expect(handleStandardComparison(stringOne, stringOne, SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
-    expect(handleStandardComparison(stringOne, stringTwo, SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
+    expect(handleStandardComparison('Adam', 'Adam', SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
+    expect(handleStandardComparison('Adam', 'Becky', SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
   })
   it('can determine less than or equal to', () => {
-    expect(handleStandardComparison(stringOne, stringOne, SearchOperator.LessThanOrEqualTo)).toBeTruthy()
-    expect(handleStandardComparison(stringFive, stringOne, SearchOperator.LessThanOrEqualTo)).toBeTruthy()
+    expect(handleStandardComparison('Adam', 'Adam', SearchOperator.LessThanOrEqualTo)).toBeTruthy()
+    expect(handleStandardComparison('Eve', 'Adam', SearchOperator.LessThanOrEqualTo)).toBeTruthy()
   })
   it('can determine non-equals', () => {
-    expect(handleStandardComparison(stringOne, stringFive, SearchOperator.Equals)).toBeFalsy()
+    expect(handleStandardComparison('Adam', 'Eve', SearchOperator.Equals)).toBeFalsy()
   })
 })
 
 describe('search-utils sermver operator', () => {
-  const { versionOne, versionTwo, versionThree, versionFour, versionIncomplete } = versionData
-  it('can determine greater semver', () => {
-    expect(handleSemverOperatorComparison(versionFour, versionThree, SearchOperator.GreaterThan)).toBeTruthy()
+  it('can determine greater than semver', () => {
+    expect(handleSemverOperatorComparison('2.5.0', '2.0.0', SearchOperator.GreaterThan)).toBeTruthy()
   })
-  it('can determine less semver', () => {
-    expect(handleSemverOperatorComparison(versionOne, versionTwo, SearchOperator.LessThan)).toBeTruthy()
+  it('can determine less than semver', () => {
+    expect(handleSemverOperatorComparison('1.0.0', '1.5.0', SearchOperator.LessThan)).toBeTruthy()
   })
   it('can determine equals semver', () => {
-    expect(handleSemverOperatorComparison(versionOne, versionOne, SearchOperator.Equals)).toBeTruthy()
+    expect(handleSemverOperatorComparison('1.0.0', '1.0.0', SearchOperator.Equals)).toBeTruthy()
   })
   it('can determine greater than or equal to semver', () => {
-    expect(handleSemverOperatorComparison(versionThree, versionThree, SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
-    expect(handleSemverOperatorComparison(versionFour, versionThree, SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
+    expect(handleSemverOperatorComparison('2.0.0', '2.0.0', SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
+    expect(handleSemverOperatorComparison('2.5.0', '2.0.0', SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
   })
   it('can determine less than or equal to semver', () => {
-    expect(handleSemverOperatorComparison(versionTwo, versionTwo, SearchOperator.LessThanOrEqualTo)).toBeTruthy()
-    expect(handleSemverOperatorComparison(versionOne, versionTwo, SearchOperator.LessThanOrEqualTo)).toBeTruthy()
+    expect(handleSemverOperatorComparison('1.5.0', '1.5.0', SearchOperator.LessThanOrEqualTo)).toBeTruthy()
+    expect(handleSemverOperatorComparison('1.0.0', '1.5.0', SearchOperator.LessThanOrEqualTo)).toBeTruthy()
   })
   it('can determine non-equal semver', () => {
-    expect(handleSemverOperatorComparison(versionOne, versionTwo, SearchOperator.NotEquals)).toBeTruthy()
+    expect(handleSemverOperatorComparison('1.0.0', '1.5.0', SearchOperator.NotEquals)).toBeTruthy()
   })
   it('can coerce incomplete semver strings', () => {
-    expect(handleSemverOperatorComparison(versionIncomplete, versionOne, SearchOperator.Equals)).toBeTruthy()
+    expect(handleSemverOperatorComparison('1.', '1.0.0', SearchOperator.Equals)).toBeTruthy()
+  })
+  it('can infer on incomplete semver equals', () => {
+    expect(handleSemverOperatorComparison('1.0.0', '1.', SearchOperator.Equals)).toBeTruthy()
+  })
+  it('can infer on incomplete semver greater than', () => {
+    expect(handleSemverOperatorComparison('2.5.0', '1.', SearchOperator.GreaterThan)).toBeTruthy()
+  })
+  it('can infer on incomplete semver greater than or equal to', () => {
+    expect(handleSemverOperatorComparison('1.5.0', '1.', SearchOperator.GreaterThanOrEqualTo)).toBeTruthy()
+  })
+  it('can infer on incomplete semver less than', () => {
+    expect(handleSemverOperatorComparison('1.0.0', '1.5', SearchOperator.LessThan)).toBeTruthy()
+  })
+  it('can infer on incomplete semver less than or equal to', () => {
+    expect(handleSemverOperatorComparison('1.0.0', '2', SearchOperator.LessThanOrEqualTo)).toBeTruthy()
+  })
+  it('can infer on incomplete semver not equals', () => {
+    expect(handleSemverOperatorComparison('1.0.0', '2.5', SearchOperator.NotEquals)).toBeTruthy()
+  })
+  it('can infer with incomplete semver form x.', () => {
+    expect(handleSemverOperatorComparison('1.', '2.5.', SearchOperator.LessThan)).toBeTruthy()
+  })
+  it('can infer with incomplete semver form x.y.', () => {
+    expect(handleSemverOperatorComparison('2.5.0', '2.5.', SearchOperator.Equals)).toBeTruthy()
   })
 })
