@@ -12,6 +12,8 @@ import {
   ClusterDeployment,
   ClusterManagementAddOn,
   ClusterPool,
+  DiscoveredCluster,
+  isGlobalClusterSet,
   ManagedCluster,
   ManagedClusterAddOn,
   ManagedClusterInfo,
@@ -23,11 +25,13 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import keyBy from 'lodash/keyBy'
 
 // returns the clusters assigned to a ManagedClusterSet
-export function useClusters(
-  managedClusterSet: ManagedClusterSet | undefined,
-  clusterPool?: ClusterPool | undefined,
-  isGlobalClusterSet?: boolean
-) {
+export function useClusters({
+  managedClusterSet,
+  clusterPool,
+}: {
+  managedClusterSet?: ManagedClusterSet
+  clusterPool?: ClusterPool
+}) {
   const {
     certificateSigningRequestsState,
     clusterClaimsState,
@@ -40,6 +44,7 @@ export function useClusters(
     clusterCuratorsState,
     hostedClustersState,
     nodePoolsState,
+    discoveredClusterState,
   } = useSharedAtoms()
 
   const managedClusters = useRecoilValue(managedClustersState)
@@ -53,52 +58,79 @@ export function useClusters(
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
 
-  return getMappedClusterPoolClusterSetClusters(
+  return getMappedClusterPoolClusterSetClusters({
     managedClusters,
     clusterDeployments,
     managedClusterInfos,
     certificateSigningRequests,
-    managedClusterAddons,
-    clusterManagementAddons,
+    managedClusterAddOns: managedClusterAddons,
+    clusterManagementAddOns: clusterManagementAddons,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
     hostedClusters,
     nodePools,
+    discoveredClusters,
     managedClusterSet,
     clusterPool,
-    isGlobalClusterSet
-  )
+  })
+}
+
+export function getMappedClusterSetClusters(
+  params: Required<Omit<Parameters<typeof getMappedClusterPoolClusterSetClusters>[0], 'clusterPool'>>
+) {
+  return getMappedClusterPoolClusterSetClusters(params)
+}
+
+export function getMappedClusterPoolClusters(
+  params: Required<Omit<Parameters<typeof getMappedClusterPoolClusterSetClusters>[0], 'managedClusterSet'>>
+) {
+  return getMappedClusterPoolClusterSetClusters(params)
 }
 
 // returns the clusters assigned to a ManagedClusterSet without invoking a react hook
-export function getMappedClusterPoolClusterSetClusters(
-  managedClusters: ManagedCluster[],
-  clusterDeployments: ClusterDeployment[],
-  managedClusterInfos: ManagedClusterInfo[],
-  certificateSigningRequests: CertificateSigningRequest[],
-  managedClusterAddons: Record<string, ManagedClusterAddOn[]>,
-  clusterManagementAddons: ClusterManagementAddOn[],
-  clusterClaims: ClusterClaim[],
-  clusterCurators: ClusterCurator[],
-  agentClusterInstalls: AgentClusterInstallK8sResource[],
-  hostedClusters: HostedClusterK8sResource[],
-  nodePools: NodePoolK8sResource[],
-  managedClusterSet: ManagedClusterSet | undefined,
-  clusterPool: ClusterPool | undefined,
-  isGlobalClusterSet: boolean | undefined
-) {
+function getMappedClusterPoolClusterSetClusters({
+  managedClusters,
+  clusterDeployments,
+  managedClusterInfos,
+  certificateSigningRequests,
+  managedClusterAddOns,
+  clusterManagementAddOns,
+  clusterClaims,
+  clusterCurators,
+  agentClusterInstalls,
+  hostedClusters,
+  nodePools,
+  discoveredClusters,
+  managedClusterSet,
+  clusterPool,
+}: {
+  managedClusters: ManagedCluster[]
+  clusterDeployments: ClusterDeployment[]
+  managedClusterInfos: ManagedClusterInfo[]
+  certificateSigningRequests: CertificateSigningRequest[]
+  managedClusterAddOns: Record<string, ManagedClusterAddOn[]>
+  clusterManagementAddOns: ClusterManagementAddOn[]
+  clusterClaims: ClusterClaim[]
+  clusterCurators: ClusterCurator[]
+  agentClusterInstalls: AgentClusterInstallK8sResource[]
+  hostedClusters: HostedClusterK8sResource[]
+  nodePools: NodePoolK8sResource[]
+  discoveredClusters: DiscoveredCluster[]
+  managedClusterSet?: ManagedClusterSet
+  clusterPool?: ClusterPool
+}) {
   let groupManagedClusters: ManagedCluster[] = []
   let groupClusterDeployments: ClusterDeployment[] = []
 
-  if (managedClusterSet || isGlobalClusterSet === true) {
-    groupManagedClusters =
-      isGlobalClusterSet === true
-        ? managedClusters
-        : managedClusters.filter(
-            (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
-          )
+  if (managedClusterSet) {
+    groupManagedClusters = isGlobalClusterSet(managedClusterSet)
+      ? managedClusters
+      : managedClusters.filter(
+          (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+        )
 
     const groupManagedClustersMap = keyBy(groupManagedClusters, 'metadata.name')
     groupClusterDeployments = clusterDeployments.filter(
@@ -138,17 +170,18 @@ export function getMappedClusterPoolClusterSetClusters(
 
   const groupHostedClusters = hostedClusters.filter((hc) => clusterNameSet.has(hc.metadata?.name))
 
-  return mapClusters(
-    groupClusterDeployments,
-    groupManagedClusterInfos,
+  return mapClusters({
+    clusterDeployments: groupClusterDeployments,
+    managedClusterInfos: groupManagedClusterInfos,
     certificateSigningRequests,
-    groupManagedClusters,
-    managedClusterAddons,
-    clusterManagementAddons,
+    managedClusters: groupManagedClusters,
+    managedClusterAddOns,
+    clusterManagementAddOns,
     clusterClaims,
     clusterCurators,
     agentClusterInstalls,
-    groupHostedClusters,
-    nodePools
-  )
+    hostedClusters: groupHostedClusters,
+    nodePools,
+    discoveredClusters,
+  })
 }

@@ -51,7 +51,6 @@ import {
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
-import { useAllClusters } from '../components/useAllClusters'
 import HypershiftKubeconfigDownload from '../components/HypershiftKubeconfigDownload'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import keyBy from 'lodash/keyBy'
@@ -66,7 +65,6 @@ export type ClusterDetailsContext = {
   readonly agentClusterInstall?: AgentClusterInstallK8sResource
   readonly infraEnvAIFlow?: InfraEnvK8sResource
   readonly hostedCluster?: HostedClusterK8sResource
-  readonly selectedHostedCluster?: HostedClusterK8sResource
   readonly canGetSecret: boolean
 }
 
@@ -97,13 +95,14 @@ export default function ClusterDetailsPage() {
     managedClusterInfosState,
     managedClustersState,
     nodePoolsState,
+    discoveredClusterState,
   } = useSharedAtoms()
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const allManagedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const allClusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
@@ -111,7 +110,8 @@ export default function ClusterDetailsPage() {
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
-  const clusterManagementAddOnMap = keyBy(clusterManagementAddons, 'metadata.name')
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const clusterManagementAddOns = keyBy(allClusterManagementAddons, 'metadata.name')
 
   const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
   const clusterDeployment = clusterDeployments.find(
@@ -121,8 +121,8 @@ export default function ClusterDetailsPage() {
     (mci) => mci.metadata?.name === name && mci.metadata?.namespace === name
   )
 
-  const clusterAddons: ManagedClusterAddOn[] = managedClusterAddons?.[name || ''] || []
-  const addons = mapAddons(clusterManagementAddOnMap, clusterAddons)
+  const managedClusterAddOns: ManagedClusterAddOn[] = allManagedClusterAddons?.[name || ''] || []
+  const addons = mapAddons(clusterManagementAddOns, managedClusterAddOns)
 
   const clusterClaim = clusterClaims.find(
     (cc) =>
@@ -146,28 +146,24 @@ export default function ClusterDetailsPage() {
       ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata?.namespace
   )
 
+  const discoveredCluster = discoveredClusters.find((dc) => dc.spec.displayName === managedCluster?.metadata.name)
+
   const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo || !!hostedCluster
 
-  const clusters = useAllClusters()
-  const selectedCluster = clusters.find((c) => c.name === name && c.namespace === namespace)
-  const selectedHostedCluster = hostedClusters.find(
-    (hc) => hc.metadata?.name === name && hc.metadata?.namespace === namespace
-  )
-
-  const cluster = getCluster(
+  const cluster = getCluster({
     managedClusterInfo,
     clusterDeployment,
     certificateSigningRequests,
     managedCluster,
-    clusterAddons,
-    clusterManagementAddOnMap,
+    managedClusterAddOns,
+    clusterManagementAddOns,
     clusterClaim,
     clusterCurator,
     agentClusterInstall,
     hostedCluster,
-    selectedHostedCluster,
-    nodePools
-  )
+    nodePools,
+    discoveredCluster,
+  })
   const prevCluster = usePrevious(cluster)
   const showMachinePoolTab = showMachinePools(cluster)
 
@@ -191,7 +187,6 @@ export default function ClusterDetailsPage() {
       clusterDeployment,
       infraEnvAIFlow,
       hostedCluster,
-      selectedHostedCluster,
       canGetSecret,
     }),
     [
@@ -205,7 +200,6 @@ export default function ClusterDetailsPage() {
       hostedCluster,
       infraEnvAIFlow,
       managedCluster,
-      selectedHostedCluster,
     ]
   )
 
@@ -221,7 +215,7 @@ export default function ClusterDetailsPage() {
     return <ClusterDestroy isLoading={clusterExists} cluster={prevCluster!} agentClusterInstall={agentClusterInstall} />
   }
 
-  if (!clusterExists && !selectedCluster) {
+  if (!clusterExists) {
     return (
       <Page>
         <ErrorPage
