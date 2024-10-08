@@ -31,11 +31,11 @@ export type SearchDetailsContext = {
 export function getResourceParams() {
   const params = new URLSearchParams(decodeURIComponent(window.location.search))
   return {
-    cluster: params.get('cluster') || '',
-    kind: params.get('kind') || '',
-    apiversion: params.get('apiversion') || '',
-    namespace: params.get('namespace') || '',
-    name: params.get('name') || '',
+    cluster: params.get('cluster') ?? '',
+    kind: params.get('kind') ?? '',
+    apiversion: params.get('apiversion') ?? '',
+    namespace: params.get('namespace') ?? '',
+    name: params.get('name') ?? '',
   }
 }
 
