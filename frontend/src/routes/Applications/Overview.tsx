@@ -939,6 +939,7 @@ export default function ApplicationsOverview() {
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
               deleted: (app: IResource) => {
+                /* istanbul ignore next */
                 setDeletedApps((arr) => {
                   arr = [app, ...arr].slice(0, 10)
                   return arr

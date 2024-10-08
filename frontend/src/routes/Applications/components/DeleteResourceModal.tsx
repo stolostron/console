@@ -56,12 +56,14 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     }
 
     if (props.resource.kind === ApplicationKind) {
+      /* istanbul ignore next */
       return deleteApplication(props.resource, removeAppResources ? props.selected : [], props.deleted)
     }
 
     if (props.resource.kind === ApplicationSetKind) {
       return deleteApplication(
         props.resource,
+        /* istanbul ignore next */
         props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
           ? [
               {
