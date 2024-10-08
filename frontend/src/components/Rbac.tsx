@@ -61,7 +61,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             } else {
               return action
             }
-          } catch (err) {
+          } catch {
             return action
           }
         })

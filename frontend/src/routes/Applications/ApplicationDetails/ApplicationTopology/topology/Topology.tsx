@@ -117,27 +117,27 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
         })
     }
 
-    selectedNodeId
-      ? setDrawerContent(
-          t('Details'),
-          false, // inline
-          true, // resizable
-          true, // no drawerhead
-          true, // no padding for drawerpanelbody
-          <DetailsView
-            options={options}
-            getLayoutNodes={getLayoutNodes}
-            selectedNodeId={selectedNodeId}
-            processActionLink={processActionLink}
-            nodes={elements.nodes}
-            clusterDetailsContainerControl={clusterDetailsContainerControl}
-            argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-            activeFilters={{}}
-            t={t}
-          />,
-          false
-        )
-      : setDrawerContent('Close', false, true, true, true, undefined, true)
+    setDrawerContent(
+      selectedNodeId ? t('Details') : '',
+      false, // inline
+      true, // resizable
+      true, // no drawerhead
+      true, // no padding for drawerpanelbody
+      selectedNodeId ? (
+        <DetailsView
+          options={options}
+          getLayoutNodes={getLayoutNodes}
+          selectedNodeId={selectedNodeId}
+          processActionLink={processActionLink}
+          nodes={elements.nodes}
+          clusterDetailsContainerControl={clusterDetailsContainerControl}
+          argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+          activeFilters={{}}
+          t={t}
+        />
+      ) : undefined,
+      !selectedNodeId
+    )
   })
 
   const channelChanger = (

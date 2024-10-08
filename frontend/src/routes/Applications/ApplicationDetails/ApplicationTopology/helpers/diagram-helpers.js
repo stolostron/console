@@ -123,19 +123,21 @@ export const createDeployableYamlLink = (node, details, t) => {
     node.specs.isDesign // only for top-level resources
   ) {
     const editLink = createEditLink(node)
-    editLink &&
-      isSearchAvailable() &&
-      details.push({
-        type: 'link',
-        value: {
-          label: t('View resource YAML'),
-          data: {
-            action: showResourceYaml,
-            cluster: 'local-cluster',
-            editLink: editLink,
+    if (editLink) {
+      if (isSearchAvailable()) {
+        details.push({
+          type: 'link',
+          value: {
+            label: t('View resource YAML'),
+            data: {
+              action: showResourceYaml,
+              cluster: 'local-cluster',
+              editLink: editLink,
+            },
           },
-        },
-      })
+        })
+      }
+    }
   }
 
   return details
@@ -541,10 +543,11 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     })
   }
 
-  !typeObject &&
+  if (!typeObject) {
     details.push({
       type: 'spacer',
     })
+  }
 
   return details
 }

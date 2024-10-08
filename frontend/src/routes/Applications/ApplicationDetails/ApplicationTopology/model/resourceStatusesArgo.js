@@ -75,7 +75,9 @@ async function getResourceStatuses(app, appData, topology, argoSource) {
     allApps.forEach((argoApp) => {
       //get destination and clusters information
       const argoNS = argoApp.destinationNamespace
-      argoNS && targetNS.push(argoNS)
+      if (argoNS) {
+        targetNS.push(argoNS)
+      }
       const argoServerDest = findMatchingCluster(argoApp, _.get(appData, 'argoSecrets'))
       const argoServerNameDest = argoServerDest || argoApp.destinationName
       _.set(argoApp, 'destinationCluster', argoServerNameDest || argoApp.destinationServer)
@@ -189,7 +191,7 @@ export const findMatchingCluster = (argoApp, argoMappingInfo) => {
         }
         return serverApi
       }
-    } catch (err) {
+    } catch {
       // do nothing
       return serverApi
     }

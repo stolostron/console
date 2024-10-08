@@ -5,7 +5,9 @@ import { deleteResources } from './delete-resources'
 
 export function deleteSubmarinerAddon(managedClusterAddon: ManagedClusterAddOn, submarinerConfig?: SubmarinerConfig) {
   const resources: IResource[] = [managedClusterAddon]
-  submarinerConfig && resources.push(submarinerConfig)
+  if (submarinerConfig) {
+    resources.push(submarinerConfig)
+  }
   const deleteResourcesResult = deleteResources(resources)
 
   return {

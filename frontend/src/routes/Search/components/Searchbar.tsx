@@ -354,7 +354,7 @@ export function Searchbar(props: SearchbarProps) {
   const handleArrowKey = () => {
     if (menuRef.current) {
       const firstElement = menuRef.current.querySelector<HTMLButtonElement>('li > button:not(:disabled)')
-      firstElement && firstElement.focus()
+      firstElement?.focus()
     }
   }
 

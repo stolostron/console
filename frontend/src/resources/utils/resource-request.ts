@@ -246,7 +246,7 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
       if (patch.length) {
         await patchResource(existingResource, patch)
       }
-    } catch (err) {
+    } catch {
       // if the resource does not exist, create the resource
       await createResource(resource).promise
     }
@@ -482,7 +482,9 @@ async function getAnsibleTemplates(
     let jobUrl: string = ansibleHostUrl + path
     while (jobUrl) {
       const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-      result.data.results && ansibleJobs.push(...result.data.results)
+      if (result.data.results) {
+        ansibleJobs.push(...result.data.results)
+      }
       const { next } = result.data
       if (next) {
         jobUrl = ansibleHostUrl + next
@@ -547,7 +549,9 @@ async function getAnsibleInventories(
   const ansibleInventories: AnsibleTowerInventory[] = []
   const inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
   const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
-  result.data.results && ansibleInventories.push(...result.data.results)
+  if (result.data.results) {
+    ansibleInventories.push(...result.data.results)
+  }
 
   return {
     results: ansibleInventories?.map(
@@ -711,7 +715,7 @@ export async function fetchRetry<T>(options: {
       if (!headers['Content-Type']) {
         headers['Content-Type'] = 'application/json'
       }
-    } catch (err) {
+    } catch {
       throw new ResourceError(ResourceErrorCode.BadRequest)
     }
   }

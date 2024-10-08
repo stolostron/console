@@ -27,11 +27,13 @@ export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
         }).promise
         const kubeconfigString = atob((kubeconfig as any).data?.kubeconfig)
         setHypershiftKubeAPI((jsYaml.load(kubeconfigString) as any).clusters?.[0]?.cluster?.server)
-      } catch (err) {
+      } catch {
         setError(true)
       }
     }
-    hypershiftKubeconfig && fetchKubeconfig()
+    if (hypershiftKubeconfig) {
+      fetchKubeconfig()
+    }
   }, [hypershiftKubeconfig, hostedCluster?.metadata?.namespace])
 
   return [hypershiftKubeAPI, error]

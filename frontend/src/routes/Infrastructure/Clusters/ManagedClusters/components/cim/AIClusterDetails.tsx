@@ -226,7 +226,7 @@ const AIClusterDetails: React.FC = () => {
   )
 }
 
-export default (props: {}) => (
+export default (props: object) => (
   // @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates
   <AlertsContextProvider>
     <AIClusterDetails {...props} />

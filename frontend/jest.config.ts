@@ -25,12 +25,6 @@ const config: Config.InitialOptions = {
   slowTestThreshold: 30,
   watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
   moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-      tsconfig: '<rootDir>/tsconfig.dev.json',
-    },
-  },
   transform: {
     '^.+\\.[jt]sx?$': [
       'ts-jest',
@@ -48,6 +42,7 @@ const config: Config.InitialOptions = {
   transformIgnorePatterns: [
     'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
   ],
+  modulePathIgnorePatterns: ['<rootDir>/plugins'],
   ci: true,
   collectCoverage: true,
   coverageDirectory: './coverage',

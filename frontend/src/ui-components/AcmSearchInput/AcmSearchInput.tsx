@@ -206,7 +206,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                           const newConstraintArray = [...searchConstraints]
                           newConstraintArray[index].columnId = columnId
                           setSearchConstraints(newConstraintArray)
-                          setActiveConstraints && setActiveConstraints(newConstraintArray)
+                          setActiveConstraints?.(newConstraintArray)
                         }}
                       >
                         {getAvailableColumnNames()}
@@ -227,7 +227,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                             const newConstraintArray = [...searchConstraints]
                             newConstraintArray[index].operator = operator as SearchOperator
                             setSearchConstraints(newConstraintArray)
-                            setActiveConstraints && setActiveConstraints(newConstraintArray)
+                            setActiveConstraints?.(newConstraintArray)
                           }}
                           isDisabled={!constraint.columnId}
                         >
@@ -245,7 +245,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                           const newConstraintArray = [...searchConstraints]
                           newConstraintArray[index].value = newValue
                           setSearchConstraints(newConstraintArray)
-                          setActiveConstraints && setActiveConstraints(newConstraintArray)
+                          setActiveConstraints?.(newConstraintArray)
                         }}
                       />
                     </FlexItem>
@@ -258,7 +258,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                           const newConstraintArray = [...searchConstraints]
                           newConstraintArray.splice(index, 1)
                           setSearchConstraints(newConstraintArray)
-                          setActiveConstraints && setActiveConstraints(newConstraintArray)
+                          setActiveConstraints?.(newConstraintArray)
                           event?.stopPropagation()
                         }}
                         aria-label={t('Remove constraint')}
@@ -274,8 +274,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                   variant={ButtonVariant.link}
                   onClick={(event) => {
                     event.stopPropagation()
-                    searchConstraints &&
+                    if (searchConstraints) {
                       setSearchConstraints([...searchConstraints, { operator: undefined, value: '', columnId: '' }])
+                    }
                   }}
                   icon={<PlusCircleIcon />}
                 >

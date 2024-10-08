@@ -47,7 +47,7 @@ export function AutomationProviderHint(props: {
   try {
     const version = coerce(ansibleOperator.version)
     workflowSupported = !!(version && gte(version, WORKFLOW_SUPPORT_VERSION))
-  } catch (err) {
+  } catch {
     // assume too old; workflow job templates not supported
   }
   const showUpgradePrompt =

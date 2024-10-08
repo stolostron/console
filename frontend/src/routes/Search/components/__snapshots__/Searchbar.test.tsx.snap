@@ -1,16 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Searchbar tests convertStringToTags correctly returns an array of tags 1`] = `
-Array [
-  Object {
+[
+  {
     "id": "kind:Pod",
     "name": "kind:Pod",
   },
-  Object {
+  {
     "id": "name:testPod",
     "name": "name:testPod",
   },
 ]
 `;
 
-exports[`Searchbar tests convertStringToTags correctly returns an empty array when searchText is empty 1`] = `Array []`;
+exports[`Searchbar tests convertStringToTags correctly returns an empty array when searchText is empty 1`] = `[]`;

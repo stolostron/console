@@ -330,7 +330,7 @@ const getNockShotFunctions = (
     unfiltered: boolean,
     inlineComment: string
   ) => string,
-  dataMap: {},
+  dataMap: { [x: string]: { [x: string]: IKindData[] } },
   prefix: any,
   reqBody: any,
   resBody: any,

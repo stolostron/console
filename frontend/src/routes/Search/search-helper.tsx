@@ -102,13 +102,14 @@ export function formatSearchbarSuggestions(
       }
     })
   suggestions.unshift(labelTag)
-  isLoading &&
+  if (isLoading) {
     suggestions.push({
       id: 'id-loading',
       name: suggestionKind === 'filter' ? t('Loading...') : t('Loading more...'),
       kind: 'label',
       disabled: true,
     })
+  }
   return suggestions
 }
 
@@ -159,7 +160,7 @@ export function setFederatedErrorAlert(
 ) {
   const federatedWarningKey = 'federated-error'
   if (!loading && error && error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
-    !alerts.find((alert) => alert.key === federatedWarningKey) &&
+    if (!alerts.find((alert) => alert.key === federatedWarningKey)) {
       addSearchAlert({
         key: federatedWarningKey,
         variant: 'warning',
@@ -175,6 +176,7 @@ export function setFederatedErrorAlert(
           </div>
         ),
       })
+    }
   } else if (
     !loading &&
     !error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText)) &&

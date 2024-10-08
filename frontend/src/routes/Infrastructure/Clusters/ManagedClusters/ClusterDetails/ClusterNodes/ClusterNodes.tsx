@@ -58,7 +58,7 @@ function getNodeMemory(node: NodeInfo): number {
   try {
     const memory = quantityToScalar(node.capacity!.memory)
     return memory
-  } catch (err) {
+  } catch {
     return 0
   }
 }

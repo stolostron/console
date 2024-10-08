@@ -82,7 +82,9 @@ function sortByList<T>(colOrderIds: string[], items: IAcmTableColumn<T>[]) {
   const sortedColumns: IAcmTableColumn<T>[] = []
   colOrderIds.forEach((id) => {
     const find = items.find((col) => col.id === id)
-    find && sortedColumns.push(find!)
+    if (find) {
+      sortedColumns.push(find)
+    }
   })
   return sortedColumns
 }

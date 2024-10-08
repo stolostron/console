@@ -298,7 +298,7 @@ export function CredentialsForm(
           setOpenstackCloudsYaml(YAML.stringify(yamlData))
         }
       }
-    } catch (_e) {}
+    } catch {}
   }, [cloudsYaml, osCABundle])
 
   // Disconnected

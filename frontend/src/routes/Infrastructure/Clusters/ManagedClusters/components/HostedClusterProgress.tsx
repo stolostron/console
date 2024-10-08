@@ -22,7 +22,9 @@ const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClust
   const { t } = useTranslation()
   const { cluster } = useClusterDetailsContext()
   const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
-  localStorage.getItem(hostedClusterProgressID) ?? localStorage.setItem(hostedClusterProgressID, 'show')
+  if (!localStorage.getItem(hostedClusterProgressID)) {
+    localStorage.setItem(hostedClusterProgressID, 'show')
+  }
   const [expanded, setExpanded] = useState(localStorage.getItem(hostedClusterProgressID) === 'show')
 
   const hostedClusterAvailable =
