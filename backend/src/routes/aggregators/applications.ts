@@ -282,7 +282,7 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
       pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
       pd.metadata.namespace === placementNamespace
   )
-  const clusterDecisions = placementDecision?.status.decisions || []
+  const clusterDecisions = placementDecision?.status?.decisions || []
 
   clusterDecisions.forEach((cd: { clusterName: string }) => {
     if (cd.clusterName !== 'local-cluster') {
