@@ -87,7 +87,7 @@ describe(`aggregator Route`, function () {
   })
 })
 
-const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
+const systemPrefixes = ['openshift', 'hive', 'rhacm', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
   itemCount: '2',
@@ -462,17 +462,6 @@ function setupNocks(prefixes?: boolean) {
     })
 
   if (prefixes) {
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
-      .reply(200, {
-        items: [
-          {
-            metadata: {
-              namespace: 'open-cluster-management',
-            },
-          },
-        ],
-      })
     nock(process.env.CLUSTER_API_URL)
       .get('/apis/multicluster.openshift.io/v1/multiclusterengines')
       .reply(200, {
