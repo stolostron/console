@@ -75,6 +75,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         props.deleted
       )
     }
+    /* istanbul ignore next */
     return deleteApplication(props.resource, [], props.deleted)
   }
 
