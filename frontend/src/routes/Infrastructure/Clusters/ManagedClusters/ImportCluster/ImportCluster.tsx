@@ -288,7 +288,6 @@ export default function ImportClusterPage() {
     initialAPIToken =
       ocmCredentials.find((cred) => cred.metadata.name === initialDiscoveryCredential)?.stringData?.ocmAPIToken ?? ''
   }
-
   const [state, dispatch] = useReducer(
     reducer,
     getInitialState(
@@ -329,22 +328,59 @@ export default function ImportClusterPage() {
       },
       spec: { hubAcceptsClient: true },
     })
+
     if (state.importMode === ImportMode.discoveryOCM) {
-      resources.push({
-        apiVersion: SecretApiVersion,
-        kind: SecretKind,
-        metadata: {
-          name: secretName,
-          namespace: initialClusterName,
-        },
-        stringData: {
+      const selectedCredential = ocmCredentials.find((cred) => cred.metadata.name === initialDiscoveryCredential)
+
+      if (selectedCredential) {
+        const authMethod = selectedCredential.stringData?.auth_method || 'offline-token'
+
+        // Constructing the stringData object based on the authMethod
+        let stringData: {
+          autoImportRetry: string
+          cluster_id: string
+          auth_method?: string
+          client_id?: string
+          client_secret?: string
+          api_token?: string
+        } = {
           autoImportRetry: '2',
-          api_token: initialAPIToken,
           cluster_id: initialClusterID,
-        },
-        type: 'auto-import/rosa',
-      })
+        }
+
+        // Adding additional fields based on the authMethod selected
+        if (authMethod === 'service-account') {
+          stringData = {
+            ...stringData,
+            auth_method: 'service-account',
+            client_id: selectedCredential.stringData?.client_id ?? '',
+            client_secret: selectedCredential.stringData?.client_secret ?? '',
+          }
+        } else if (authMethod === 'offline-token') {
+          stringData = {
+            ...stringData,
+            auth_method: 'offline-token',
+            api_token: selectedCredential.stringData?.ocmAPIToken ?? '',
+          }
+        }
+
+        // Defining the discoverySecret object with the updated stringData
+        const discoverySecret = {
+          apiVersion: SecretApiVersion,
+          kind: SecretKind,
+          metadata: {
+            name: secretName,
+            namespace: initialClusterName,
+          },
+          stringData,
+          type: 'auto-import/rosa',
+        }
+
+        // Pushing the discoverySecret to the resources array
+        resources.push(discoverySecret)
+      }
     }
+
     if (state.importMode === ImportMode.token) {
       resources.push({
         apiVersion: SecretApiVersion,
@@ -755,19 +791,6 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   let ocmCredentialNamespaces = ocmCredentials.map((credential) => credential.metadata.namespace!)
   ocmCredentialNamespaces = [...new Set(ocmCredentialNamespaces)]
 
-  // Filters list of credentials
-  useEffect(() => {
-    if (namespace) {
-      const credentials: ProviderConnection[] = []
-      ocmCredentials.forEach((credential) => {
-        if (credential.metadata.namespace === namespace) {
-          credentials.push(credential)
-        }
-      })
-      setCredentials(credentials)
-    }
-  }, [ocmCredentials, namespace])
-
   const autoImportSecret = useMemo(
     (): Secret => ({
       apiVersion: SecretApiVersion,
@@ -783,6 +806,62 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     }),
     [clusterName]
   )
+
+  const updateROSAImportSecret = useCallback(
+    (credentialName: string) => {
+      const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
+      const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
+      const discoverySecret = cloneDeep(autoImportSecret)
+      // Updating the discovery secret based on the auth_method
+      if (authMethod === 'service-account') {
+        discoverySecret.stringData = {
+          ...discoverySecret.stringData,
+          cluster_id: clusterID,
+          auth_method: 'service-account',
+          client_id: selectedCredential?.stringData?.client_id ?? '',
+          client_secret: selectedCredential?.stringData?.client_secret ?? '',
+        }
+      } else if (authMethod === 'offline-token') {
+        discoverySecret.stringData = {
+          ...discoverySecret.stringData,
+          cluster_id: clusterID,
+          auth_method: 'offline-token',
+          api_token: selectedCredential?.stringData?.ocmAPIToken ?? '',
+        }
+      }
+      discoverySecret.type = 'auto-import/rosa'
+      return discoverySecret
+    },
+    [autoImportSecret, clusterID, ocmCredentials]
+  )
+
+  useEffect(() => {
+    if (namespace) {
+      const filteredCredentials: ProviderConnection[] = []
+      ocmCredentials.forEach((credential) => {
+        if (credential.metadata.namespace === namespace) {
+          const authMethod = credential.stringData?.auth_method || 'offline-token'
+          if (authMethod === 'service-account' || authMethod === 'offline-token') {
+            filteredCredentials.push(credential)
+          }
+        }
+      })
+      setCredentials(filteredCredentials)
+
+      // Set the default credential to the first available credential
+      if (filteredCredentials.length > 0 && !credential) {
+        const defaultCredential = filteredCredentials[0]
+        dispatch({ type: 'setCredential', credential: defaultCredential.metadata.name ?? '' })
+        const discoverySecret = updateROSAImportSecret(defaultCredential.metadata.name ?? '')
+        resources.splice(1, 1, discoverySecret)
+      } else if (filteredCredentials.length === 0) {
+        // Clear the credential if no credentials are available for the selected namespace
+        dispatch({ type: 'setCredential', credential: '' })
+        const discoverySecret = updateROSAImportSecret('')
+        resources.splice(1, 1, discoverySecret)
+      }
+    }
+  }, [ocmCredentials, namespace, credential, dispatch, resources, updateROSAImportSecret])
 
   const getImportModeDescription = (m: ImportMode) => {
     switch (m) {
@@ -809,33 +888,6 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     }
   }
 
-  const updateROSAImportSecret = useCallback(
-    (credentialName: string) => {
-      const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
-      const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
-      const discoverySecret = cloneDeep(autoImportSecret)
-      // Updating the discovery secret based on the auth_method
-      if (authMethod === 'service-account') {
-        discoverySecret.stringData = {
-          ...discoverySecret.stringData,
-          auth_method: 'service-account',
-          client_id: selectedCredential?.stringData?.client_id ?? '',
-          client_secret: selectedCredential?.stringData?.client_secret ?? '',
-          cluster_id: clusterID,
-        }
-      } else if (authMethod === 'offline-token') {
-        discoverySecret.stringData = {
-          ...discoverySecret.stringData,
-          auth_method: 'offline-token',
-          api_token: selectedCredential?.stringData?.ocmAPIToken ?? '',
-          cluster_id: clusterID,
-        }
-      }
-      discoverySecret.type = 'auto-import/rosa'
-      return discoverySecret
-    },
-    [autoImportSecret, clusterID, ocmCredentials]
-  )
   const onChangeImportMode = useCallback(
     (importMode?: string) => {
       if (isImportMode(importMode)) {
@@ -967,9 +1019,11 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             value={credential}
             onChange={(credentialName) => {
               if (credentialName) {
+                console.log('Selected Credential:', credentialName)
                 dispatch({ type: 'setCredential', credential: credentialName })
                 const discoverySecret = updateROSAImportSecret(credentialName)
                 resources.splice(1, 1, discoverySecret)
+                console.log('Updated Resources:', resources)
               }
             }}
             isRequired={importMode === ImportMode.discoveryOCM}
