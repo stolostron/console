@@ -164,11 +164,31 @@ export default function DetailsPage() {
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
       actions.unshift(
         ...[
-          { action: 'Start', path: '/virtualmachines/start' },
-          { action: 'Stop', path: '/virtualmachines/stop' },
-          { action: 'Restart', path: '/virtualmachines/restart' },
-          { action: 'Pause', path: '/virtualmachineinstances/pause' },
-          { action: 'Unpause', path: '/virtualmachineinstances/unpause' },
+          {
+            action: 'Start',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
+            managedPath: '/virtualmachines/start',
+          },
+          {
+            action: 'Stop',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
+            managedPath: '/virtualmachines/stop',
+          },
+          {
+            action: 'Restart',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
+            managedPath: '/virtualmachines/restart',
+          },
+          {
+            action: 'Pause',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
+            managedPath: '/virtualmachineinstances/pause',
+          },
+          {
+            action: 'Unpause',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
+            managedPath: '/virtualmachineinstances/unpause',
+          },
         ].map((action) => (
           <DropdownItem
             key={`${action.action}-vm-resource`}
@@ -176,7 +196,7 @@ export default function DetailsPage() {
             onClick={() =>
               handleVMActions(
                 action.action.toLowerCase(),
-                action.path,
+                cluster === 'local-cluster' ? action.hubPath : action.managedPath,
                 { cluster, name, namespace },
                 () => setResourceVersion(''), // trigger resource refetchto update details page data.
                 toast,
