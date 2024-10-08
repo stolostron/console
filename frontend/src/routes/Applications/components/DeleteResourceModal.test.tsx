@@ -42,6 +42,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -99,6 +100,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -168,6 +170,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -230,6 +233,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -269,6 +273,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -305,6 +310,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={appSetApps}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -349,6 +355,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={appSetsSharingPlacement}
           appKind={resource.kind}
           appSetApps={appSetApps}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
