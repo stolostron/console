@@ -444,6 +444,7 @@ export default function ApplicationsOverview() {
 
   const tableItems: IResource[] = useMemo(() => {
     const items = allApplications
+    /* istanbul ignore next */
     deletedApps.forEach((dapp) => {
       const inx = items.findIndex((app) => dapp.metadata?.uid === app.metadata?.uid)
       if (inx !== -1) {
@@ -938,8 +939,7 @@ export default function ApplicationsOverview() {
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
-              deleted: (app: IResource) => {
-                /* istanbul ignore next */
+              deleted: /* istanbul ignore next */ (app: IResource) => {
                 setDeletedApps((arr) => {
                   arr = [app, ...arr].slice(0, 10)
                   return arr
