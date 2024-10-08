@@ -146,4 +146,37 @@ describe('DetailsPage', () => {
     const res = getResourceParams()
     expect(res).toMatchSnapshot()
   })
+
+  it('should render local-cluster VM details correctly', async () => {
+    render(
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.resources]}>
+          <Routes>
+            <Route path={`${NavigationPath.search}/*`} element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([metricNock, nockGet(mockLocalClusterPod)])
+
+    // Test that the component has rendered correctly with data
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /testlocalpod/i,
+        })
+      ).toBeTruthy()
+    )
+
+    // Wait for the details page to be loaded
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /pod details/i,
+        })
+      ).toBeTruthy()
+    )
+  })
 })
