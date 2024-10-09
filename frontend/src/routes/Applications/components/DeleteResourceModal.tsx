@@ -24,6 +24,7 @@ export interface IDeleteResourceModalProps {
   appSetsSharingPlacement?: string[]
   appKind: string
   appSetApps?: string[]
+  deleted?: (resource: IResource) => void
   close: () => void
   t: TFunction
   redirect?: string
@@ -55,12 +56,14 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     }
 
     if (props.resource.kind === ApplicationKind) {
-      return deleteApplication(props.resource, removeAppResources ? props.selected : [])
+      /* istanbul ignore next */
+      return deleteApplication(props.resource, removeAppResources ? props.selected : [], props.deleted)
     }
 
     if (props.resource.kind === ApplicationSetKind) {
       return deleteApplication(
         props.resource,
+        /* istanbul ignore next */
         props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
           ? [
               {
@@ -70,10 +73,12 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                 namespace: props.resource.metadata?.namespace,
               },
             ]
-          : []
+          : [],
+        props.deleted
       )
     }
-    return deleteApplication(props.resource)
+    /* istanbul ignore next */
+    return deleteApplication(props.resource, [], props.deleted)
   }
 
   const renderConfirmCheckbox = () => {

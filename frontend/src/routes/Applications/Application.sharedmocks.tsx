@@ -469,6 +469,7 @@ export const mockRequestedCounts: IResultStatuses = {
       argo: 4,
     },
   },
+  refresh: () => {},
   systemAppNSPrefixes: [],
   loading: false,
 }
