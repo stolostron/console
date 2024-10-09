@@ -435,6 +435,8 @@ export default function ApplicationsOverview() {
   const resultCounts = useAggregate(SupportedAggregate.statuses, {})
   resultCounts.itemCount = resultView.processedItemCount
   const allApplications = resultView.items
+  const { refresh: listRefresh } = resultView
+  const { refresh: countRefresh } = resultCounts
 
   const fetchAggregateForExport = async (requestedExport: IRequestListView) => {
     return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
@@ -932,6 +934,8 @@ export default function ApplicationsOverview() {
               deleted: /* istanbul ignore next */ () => {
                 resultView.refresh()
                 resultCounts.refresh()
+                listRefresh()
+                countRefresh()
               },
               close: () => {
                 setModalProps({ open: false })
@@ -967,19 +971,23 @@ export default function ApplicationsOverview() {
       return actions
     },
     [
-      applicationSets,
-      applications,
-      argoApplications,
-      canDeleteApplication,
-      canDeleteApplicationSet,
-      canCreateApplication,
-      channels,
-      navigate,
-      placements,
-      placementRules,
-      subscriptions,
-      acmExtensions,
       t,
+      acmExtensions,
+      navigate,
+      canDeleteApplicationSet,
+      canDeleteApplication,
+      applications,
+      subscriptions,
+      placementRules,
+      placements,
+      channels,
+      applicationSets,
+      argoApplications,
+      resultView,
+      resultCounts,
+      listRefresh,
+      countRefresh,
+      canCreateApplication,
     ]
   )
 
