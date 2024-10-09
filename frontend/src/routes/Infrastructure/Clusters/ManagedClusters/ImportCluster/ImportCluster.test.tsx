@@ -292,8 +292,9 @@ const mockROSAAutoTokenSecretAPIToken: Secret = {
   },
   stringData: {
     autoImportRetry: '2',
-    api_token: 'fake_token',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
+    auth_method: 'offline-token',
+    api_token: 'fake_token',
   },
   type: 'auto-import/rosa',
 }
@@ -307,8 +308,10 @@ const mockROSAAutoTokenSecretServiceAcc: Secret = {
   },
   stringData: {
     autoImportRetry: '2',
-    api_token: '',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
+    auth_method: 'service-account',
+    client_id: 'fake_client_id1234',
+    client_secret: 'fake_client_secret1234',
   },
   type: 'auto-import/rosa',
 }
