@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getClusterMap } from '../../lib/clusters'
+import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
+import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
@@ -265,12 +267,22 @@ function getValues(labels: { annotation: any; value: any }[]) {
   }
 }
 
+export const systemAppNamespacePrefixes: string[] = []
+export async function discoverSystemAppNamespacePrefixes() {
+  if (!systemAppNamespacePrefixes.length) {
+    systemAppNamespacePrefixes.push('openshift')
+    systemAppNamespacePrefixes.push('hive')
+    systemAppNamespacePrefixes.push('open-cluster-management')
+    const mch = await getMultiClusterHub()
+    if (mch?.metadata?.namespace && mch.metadata.namespace !== 'open-cluster-management') {
+      systemAppNamespacePrefixes.push(mch.metadata.namespace)
+    }
+    const mce = await getMultiClusterEngine()
+    systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
+  }
+  return systemAppNamespacePrefixes
+}
+
 export function isSystemApp(namespace?: string) {
-  return (
-    namespace &&
-    (namespace.startsWith('openshift') ||
-      namespace.startsWith('open-cluster-management') ||
-      namespace.startsWith('hive') ||
-      namespace.startsWith('multicluster-engine'))
-  )
+  return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
