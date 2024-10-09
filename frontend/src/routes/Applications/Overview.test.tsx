@@ -52,7 +52,7 @@ const applicationAggregate = {
   },
 }
 const fetchAggregate = {
-  req: { page: 1, perPage: -1, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
+  req: { page: 1, perPage: -1 },
   res: {
     page: 1,
     items: [
