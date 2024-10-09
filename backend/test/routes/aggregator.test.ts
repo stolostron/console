@@ -87,7 +87,7 @@ describe(`aggregator Route`, function () {
   })
 })
 
-const systemPrefixes = ['openshift', 'hive', 'rhacm', 'open-cluster-management', 'multicluster-engine']
+const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
   itemCount: '2',
