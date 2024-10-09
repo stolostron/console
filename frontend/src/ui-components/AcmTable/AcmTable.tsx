@@ -486,12 +486,12 @@ const findFilterMatch = <T, S>(filter: string, filterArray: TableFilterBase<T, S
   filterArray.find((filterItem) => filterItem.id === filter)
 
 const applyFilters = <T, S>(
-  items: T[],
+  items: ITableItem<T>[],
   filterSelections: CurrentFilters<S>,
   filterArray: TableFilterBase<T, S>[]
-): T[] => {
+): ITableItem<T>[] => {
   const filterCategories = Object.keys(filterSelections)
-  return items.filter((item: T) =>
+  return items.filter(({ item }) =>
     filterCategories.every(
       (filter: string) => findFilterMatch(filter, filterArray)?.tableFilterFn(filterSelections[filter], item) ?? true
     )
@@ -795,34 +795,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
 
-  const { tableItems, totalCount } = useMemo<{
+  const { tableItems, totalCount, allTableItems } = useMemo<{
     tableItems: ITableItem<T>[]
     totalCount: number
+    allTableItems: ITableItem<T>[]
   }>(() => {
     /* istanbul ignore if */
-    if (!items) return { tableItems: [], totalCount: 0 }
-    let filteredItems: T[] = items
+    if (!items) return { tableItems: [], totalCount: 0, allTableItems: [] }
 
-    // if using a result view from backend, the items have already been filtered
-    if (!isPreProcessed) {
-      if (filters.length && Object.keys(filterSelections).length) {
-        filteredItems = applyFilters(items, filterSelections, filters)
-      }
-
-      // advanced filtering
-      const advancedFilterSelections: CurrentFilters<AdvancedFilterSelection> = {}
-      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
-        if (columnId && value && operator) {
-          advancedFilterSelections[columnId] = { operator, value }
-        }
-      })
-
-      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
-        filteredItems = applyFilters(filteredItems, advancedFilterSelections, advancedFilters)
-      }
-    }
-
-    const tableItems = filteredItems.map((item) => {
+    const unfilteredTableItems: ITableItem<T>[] = items.map((item) => {
       const key = keyFn(item)
       const subRows = addSubRows?.(item)
       // Establish key for subrow based on parent row
@@ -841,7 +822,32 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: (isPreProcessed && resultCounts?.itemCount) || tableItems.length }
+    let filteredTableItems: ITableItem<T>[] = unfilteredTableItems
+
+    // if using a result view from backend, the items have already been filtered
+    if (!isPreProcessed) {
+      if (filters.length && Object.keys(filterSelections).length) {
+        filteredTableItems = applyFilters(unfilteredTableItems, filterSelections, filters)
+      }
+
+      // advanced filtering
+      const advancedFilterSelections: CurrentFilters<AdvancedFilterSelection> = {}
+      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
+        if (columnId && value && operator) {
+          advancedFilterSelections[columnId] = { operator, value }
+        }
+      })
+
+      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
+        filteredTableItems = applyFilters(unfilteredTableItems, advancedFilterSelections, advancedFilters)
+      }
+    }
+
+    return {
+      tableItems: filteredTableItems,
+      totalCount: (isPreProcessed && resultCounts?.itemCount) || filteredTableItems.length,
+      allTableItems: unfilteredTableItems,
+    }
   }, [
     items,
     isPreProcessed,
@@ -934,25 +940,23 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const headerString: string[] = []
       const csvExportCellArray: string[] = []
 
-      selectedSortedCols.forEach(({ header, disableExport }) => {
+      columns.forEach(({ header, disableExport }) => {
         header && !disableExport && headerString.push(header)
       })
-      sorted[0]?.subRows &&
-        sorted[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
+      allTableItems[0]?.subRows &&
+        allTableItems[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
           header && headerString.push(header)
         })
       csvExportCellArray.push(headerString.join(','))
 
       // if table is pagenated from backend,
       // we need to fetch all backend items to export
-      let exportItems = sorted
+      let exportItems = allTableItems
       if (fetchExport) {
         const fetchedItems = await fetchExport({
           page: 1,
           perPage: -1,
-          search: internalSearch,
-          filters: filterSelections,
-          sortBy: sort,
+          sortBy: undefined,
         })
         if (fetchedItems) {
           exportItems = fetchedItems.items.map((item) => {
@@ -965,7 +969,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
       exportItems.forEach(({ item, subRows }) => {
         let contentString: string[] = []
-        selectedSortedCols.forEach(({ header, exportContent, disableExport }) => {
+        columns.forEach(({ header, exportContent, disableExport }) => {
           if (header && !disableExport) {
             // if callback and its output exists, add to array, else add "-"
             const exportvalue = exportContent?.(item, '')
@@ -996,7 +1000,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         autoClose: true,
       })
     },
-    [t, exportFilePrefix, selectedSortedCols, sorted, fetchExport, internalSearch, filterSelections, sort]
+    [t, allTableItems, columns, exportFilePrefix, fetchExport]
   )
 
   const paged = useMemo<ITableItem<T>[]>(() => {
