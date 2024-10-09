@@ -16,6 +16,10 @@ import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
+jest.mock('../../../resources/utils/resource-request', () => ({
+  deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
+}))
+
 describe('DeleteResourceModal', () => {
   it('should render delete ACM app no related resources', () => {
     const resource: IResource = {
@@ -42,6 +46,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -99,6 +104,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -168,6 +174,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -230,6 +237,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -269,6 +277,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={[]}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -276,6 +285,7 @@ describe('DeleteResourceModal', () => {
     )
 
     expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
+    userEvent.click(screen.getByRole('button', { name: /delete/i }))
   })
 
   it('should render delete appset with placement', () => {
@@ -305,6 +315,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={[]}
           appKind={resource.kind}
           appSetApps={appSetApps}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
@@ -349,6 +360,7 @@ describe('DeleteResourceModal', () => {
           appSetsSharingPlacement={appSetsSharingPlacement}
           appKind={resource.kind}
           appSetApps={appSetApps}
+          deleted={() => void {}}
           close={() => void {}}
           t={t}
         />
