@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
-import { getOCPApps, isSystemApp } from './applicationsOCP'
+import { getOCPApps, isSystemApp, discoverSystemAppNamespacePrefixes } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
@@ -100,6 +100,7 @@ export function getApplications() {
 }
 
 export function startAggregatingApplications() {
+  void discoverSystemAppNamespacePrefixes()
   void localKubeLoop()
   void searchAPILoop()
 }
