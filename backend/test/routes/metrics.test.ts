@@ -37,9 +37,9 @@ describe('metrics route', function () {
           },
         },
       })
-    nock(process.env.CLUSTER_API_URL).post('/metrics?overview-classic').reply(200)
+    nock(process.env.CLUSTER_API_URL).post('/metrics?overview-fleet').reply(200)
 
-    const res = await request('POST', '/metrics?overview-classic')
+    const res = await request('POST', '/metrics?overview-fleet')
     // POST increases the metric count - no response to validate
     expect(res.statusCode).toEqual(200)
   })

@@ -470,6 +470,7 @@ export const mockRequestedCounts: IResultStatuses = {
     },
   },
   refresh: () => {},
+  systemAppNSPrefixes: [],
   loading: false,
 }
 export const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0, mockApplicationSet1]

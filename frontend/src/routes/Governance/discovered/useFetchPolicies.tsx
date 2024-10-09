@@ -120,8 +120,6 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   })
 
   useEffect(() => {
-    setIsFetching(true)
-
     if (searchErr && !searchLoading) {
       setIsFetching(false)
     }

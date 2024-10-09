@@ -13,6 +13,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useMemo, useState } from 'react'
+import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -176,6 +177,7 @@ function VirtualMachineTable() {
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
+  usePageVisitMetricHandler(Pages.virtualMachines)
 
   return (
     <AcmPage hasDrawer header={<AcmPageHeader title={t('Virtual machines')} />}>

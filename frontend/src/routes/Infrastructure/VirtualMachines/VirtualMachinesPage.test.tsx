@@ -6,12 +6,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { wait } from '../../../lib/test-util'
+import { nockPostRequest } from '../../../lib/nock-util'
+import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
 
 describe('VirtualMachinesPage Page', () => {
   it('should render page with correct vm data', async () => {
+    const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
       {
         request: {
@@ -92,6 +94,7 @@ describe('VirtualMachinesPage Page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNocks([metricNock])
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the table has rendered with virtual machine 1 data
@@ -108,6 +111,7 @@ describe('VirtualMachinesPage Page', () => {
   })
 
   it('should render page with errors', async () => {
+    const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
       {
         request: {
@@ -142,6 +146,7 @@ describe('VirtualMachinesPage Page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNocks([metricNock])
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered errors correctly

@@ -10,10 +10,10 @@ metadata:
       == "backplane-2.7"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: release-mce-27
-    appstudio.openshift.io/component: console-mce-mce-27
+    appstudio.openshift.io/application: release-mce-28
+    appstudio.openshift.io/component: console-mce-mce-28
     pipelines.appstudio.openshift.io/type: build
-  name: console-mce-mce-27-on-push
+  name: console-mce-mce-28-on-push
   namespace: crt-redhat-acm-tenant
 spec:
   params:
@@ -22,7 +22,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-mce-27/console-mce-mce-27:{{revision}}
+    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-mce-28/console-mce-mce-28:{{revision}}
   - name: dockerfile
     value: Containerfile.mce.konflux
   - name: path-context
@@ -232,7 +232,7 @@ spec:
         - name: name
           value: buildah-6gb
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:b72d7dab6c72e1e76dd7f18df1bef8fb21807b00a631e9b1e6219b6a9decb824
+          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:2ab23a5ffc4423a64ec46c7f607d9d34faf2a7d54ec9c939c85b658efcc5cd12
         - name: kind
           value: task
         resolver: bundles
@@ -306,7 +306,7 @@ spec:
         - name: name
           value: clair-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:9f4ddafd599e06b319cece5a4b8ac36b9e7ec46bea378bc6c6af735d3f7f8060
+          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:37b9187c1d5f6672bbc9c61d88fc71a3ee688076cb16edef42d1ff92a59027fb
         - name: kind
           value: task
         resolver: bundles

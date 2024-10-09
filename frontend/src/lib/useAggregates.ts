@@ -42,6 +42,7 @@ export interface IRequestStatuses {
 export interface IResultStatuses {
   itemCount: number
   filterCounts: FilterCounts | undefined
+  systemAppNSPrefixes: string[]
   loading: boolean
   refresh: () => void
 }
@@ -67,6 +68,7 @@ const defaultListResponse: IResultListView = {
 const defaultStatusResponse: IResultStatuses = {
   itemCount: 0,
   filterCounts: { type: {} },
+  systemAppNSPrefixes: [],
   loading: true,
   refresh: () => {},
 }
@@ -145,6 +147,7 @@ export function useAggregate(
       response = {
         itemCount: response.itemCount,
         filterCounts: response.filterCounts,
+        systemAppNSPrefixes: response.systemAppNSPrefixes,
         loading: loading && !usingStoredResponse,
         refresh,
       }

@@ -42,7 +42,7 @@ import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 import { PluginContext } from '../../../../lib/PluginContext'
 import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
-import { getMappedClusterPoolClusterSetClusters } from './components/useClusters'
+import { getMappedClusterSetClusters } from './components/useClusters'
 
 export default function ClusterSetsPage() {
   const { t } = useTranslation()
@@ -139,41 +139,42 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
     clusterCuratorsState,
     hostedClustersState,
     nodePoolsState,
+    discoveredClusterState,
   } = useSharedAtoms()
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
 
   const managedClusterSetClusters: Record<string, Cluster[]> = {}
 
   props.managedClusterSets &&
     props.managedClusterSets.forEach((managedClusterSet) => {
       if (managedClusterSet.metadata.name) {
-        const clusters = getMappedClusterPoolClusterSetClusters(
+        const clusters = getMappedClusterSetClusters({
           managedClusters,
           clusterDeployments,
           managedClusterInfos,
           certificateSigningRequests,
-          managedClusterAddons,
-          clusterManagementAddons,
+          managedClusterAddOns,
+          clusterManagementAddOns,
           clusterClaims,
           clusterCurators,
           agentClusterInstalls,
           hostedClusters,
           nodePools,
+          discoveredClusters,
           managedClusterSet,
-          undefined,
-          isGlobalClusterSet(managedClusterSet)
-        )
+        })
         managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
       }
     })
@@ -241,13 +242,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
           },
           {
             header: t('table.cluster.statuses'),
-            cell: (managedClusterSet: ManagedClusterSet) => {
-              return isGlobalClusterSet(managedClusterSet) ? (
-                <ClusterStatuses isGlobalClusterSet={true} />
-              ) : (
-                <ClusterStatuses managedClusterSet={managedClusterSet} />
-              )
-            },
+            cell: (managedClusterSet: ManagedClusterSet) => <ClusterStatuses managedClusterSet={managedClusterSet} />,
             exportContent: (managedClusterSet: ManagedClusterSet) => {
               const status = getClusterStatusCount(managedClusterSetClusters[managedClusterSet.metadata.name!])
               const clusterStatusAvailable =

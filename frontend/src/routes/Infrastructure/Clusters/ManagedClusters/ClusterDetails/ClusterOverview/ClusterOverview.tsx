@@ -72,15 +72,8 @@ function getAIClusterProperties(
 }
 
 export function ClusterOverviewPageContent() {
-  const {
-    canGetSecret,
-    cluster,
-    clusterCurator,
-    clusterDeployment,
-    agentClusterInstall,
-    hostedCluster,
-    selectedHostedCluster,
-  } = useClusterDetailsContext()
+  const { canGetSecret, cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
+    useClusterDetailsContext()
   const { t } = useTranslation()
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -446,8 +439,8 @@ export function ClusterOverviewPageContent() {
         )}
         <ClusterStatusMessageAlert cluster={cluster} padBottom />
         <HiveNotification />
-        {cluster?.isHypershift && !cluster?.isHostedCluster && selectedHostedCluster ? (
-          <HypershiftImportCommand selectedHostedClusterResource={selectedHostedCluster} />
+        {cluster?.isHypershift && !cluster?.isHostedCluster && hostedCluster ? (
+          <HypershiftImportCommand selectedHostedClusterResource={hostedCluster} />
         ) : (
           <ImportCommandContainer />
         )}

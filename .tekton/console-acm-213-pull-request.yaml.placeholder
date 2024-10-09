@@ -4,15 +4,16 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/stolostron/console?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-2.12"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: release-acm-212
-    appstudio.openshift.io/component: console-acm-212
+    appstudio.openshift.io/application: release-acm-213
+    appstudio.openshift.io/component: console-acm-213
     pipelines.appstudio.openshift.io/type: build
-  name: console-acm-212-on-push
+  name: console-acm-213-on-pull-request
   namespace: crt-redhat-acm-tenant
 spec:
   params:
@@ -21,7 +22,9 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-acm-212/console-acm-212:{{revision}}
+    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-acm-213/console-acm-213:on-pr-{{revision}}
+  - name: image-expires-after
+    value: 5d
   - name: dockerfile
     value: Containerfile.acm.konflux
   - name: path-context
@@ -231,7 +234,7 @@ spec:
         - name: name
           value: buildah-6gb
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:b72d7dab6c72e1e76dd7f18df1bef8fb21807b00a631e9b1e6219b6a9decb824
+          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:2ab23a5ffc4423a64ec46c7f607d9d34faf2a7d54ec9c939c85b658efcc5cd12
         - name: kind
           value: task
         resolver: bundles
@@ -305,7 +308,7 @@ spec:
         - name: name
           value: clair-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:9f4ddafd599e06b319cece5a4b8ac36b9e7ec46bea378bc6c6af735d3f7f8060
+          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:37b9187c1d5f6672bbc9c61d88fc71a3ee688076cb16edef42d1ff92a59027fb
         - name: kind
           value: task
         resolver: bundles

@@ -403,7 +403,11 @@ metadata:
   namespace: '{{{name}}}'
 stringData:
   username: {{{escapeYAML username}}}
+{{#if showSecrets}}
   password: {{{escapeYAML password}}}
+{{else}}
+  password: # injected on create
+{{/if}}
 
 ---
 
