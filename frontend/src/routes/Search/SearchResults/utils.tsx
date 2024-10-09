@@ -46,6 +46,7 @@ export function handleVMActions(
     },
     signal: abortController.signal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    headers: { Accept: '*/*' },
     disableRedirectUnauthorizedLogin: true,
   })
     .then(() => {
