@@ -38,7 +38,7 @@ export function deleteApplication(app: IResource, childResources?: any[], delete
           return
         }
         resolve(promisesSettledResult)
-        deleted && deleted(app)
+        deleted?.(app)
       })
     }),
     abort: deleteResourcesResult.abort,

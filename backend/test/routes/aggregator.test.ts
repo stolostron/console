@@ -18,7 +18,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications()
+    aggregateKubeApplications(true)
     await aggregateSearchAPIApplications(1)
 
     // NO FILTER
@@ -43,7 +43,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications()
+    aggregateKubeApplications(true)
     await aggregateSearchAPIApplications(1)
 
     // FILTERED
@@ -72,7 +72,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications()
+    aggregateKubeApplications(true)
     await aggregateSearchAPIApplications(1)
 
     // FILTERED
