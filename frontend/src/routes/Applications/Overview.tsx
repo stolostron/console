@@ -350,8 +350,6 @@ export default function ApplicationsOverview() {
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
-  const [deletedApps, setDeletedApps] = useState<IResource[]>([])
-
   const getTimeWindow = useCallback(
     (app: IResource) => {
       if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
@@ -442,18 +440,10 @@ export default function ApplicationsOverview() {
     return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
   }
 
-  const tableItems: IResource[] = useMemo(() => {
-    const items = allApplications
-    /* istanbul ignore next */
-    deletedApps.forEach((dapp) => {
-      const inx = items.findIndex((app) => dapp.metadata?.uid === app.metadata?.uid)
-      if (inx !== -1) {
-        items.splice(inx, 1)
-        resultCounts.itemCount -= 1
-      }
-    })
-    return items.map((app) => generateTransformData(app))
-  }, [allApplications, deletedApps, generateTransformData, resultCounts])
+  const tableItems: IResource[] = useMemo(
+    () => [...allApplications.map((app) => generateTransformData(app))],
+    [allApplications, generateTransformData]
+  )
 
   const keyFn = useCallback(
     (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
@@ -939,11 +929,9 @@ export default function ApplicationsOverview() {
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
-              deleted: /* istanbul ignore next */ (app: IResource) => {
-                setDeletedApps((arr) => {
-                  arr = [app, ...arr].slice(0, 10)
-                  return arr
-                })
+              deleted: /* istanbul ignore next */ () => {
+                resultView.refresh()
+                resultCounts.refresh()
               },
               close: () => {
                 setModalProps({ open: false })

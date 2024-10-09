@@ -28,6 +28,7 @@ export interface IRequestListView {
 export interface IResultListView {
   page: number
   loading: boolean
+  refresh: () => void
   items: IResource[]
   emptyResult: boolean
   processedItemCount: number
@@ -42,6 +43,7 @@ export interface IResultStatuses {
   itemCount: number
   filterCounts: FilterCounts | undefined
   loading: boolean
+  refresh: () => void
 }
 
 export enum SupportedAggregate {
@@ -55,6 +57,7 @@ export enum SupportedAggregate {
 const defaultListResponse: IResultListView = {
   page: 1,
   loading: true,
+  refresh: () => {},
   items: [],
   emptyResult: false,
   processedItemCount: 0,
@@ -65,6 +68,7 @@ const defaultStatusResponse: IResultStatuses = {
   itemCount: 0,
   filterCounts: { type: {} },
   loading: true,
+  refresh: () => {},
 }
 
 type RequestStatusesType = IRequestStatuses | undefined
@@ -109,7 +113,7 @@ export function useAggregate(
       : undefined
   }, [aggregate, backendUrl, requestedViewStr])
 
-  const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {
+  const { data, loading, startPolling, stopPolling, refresh } = useQuery(queryFunc, [defaultResponse], {
     pollInterval: 15,
   })
 
@@ -129,6 +133,7 @@ export function useAggregate(
       response = {
         page: response.page,
         loading: loading && !usingStoredResponse,
+        refresh,
         items: response.items,
         processedItemCount: response.processedItemCount,
         emptyResult: response.emptyResult,
@@ -141,6 +146,7 @@ export function useAggregate(
         itemCount: response.itemCount,
         filterCounts: response.filterCounts,
         loading: loading && !usingStoredResponse,
+        refresh,
       }
       // save response for next time
       if (!loading) setWithExpiry(STATUSESKEY, response)
