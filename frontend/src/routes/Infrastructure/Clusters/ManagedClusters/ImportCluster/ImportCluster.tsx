@@ -321,7 +321,7 @@ export default function ImportClusterPage() {
           return state.importMode === ImportMode.discoveryOCM ? { ...state, credential: action.credential } : state
         case 'setKubeconfig':
           return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
-        case 'updateCredentials':
+        case 'updateCredentials': {
           const updatedCredentialList = action.payload?.credentialList || []
           const namespaceExists = updatedCredentialList.some(
             (credential) => credential.metadata.namespace === state.namespace
@@ -336,6 +336,7 @@ export default function ImportClusterPage() {
             isCredentialAvailable: credentialExists,
             credentialList: updatedCredentialList,
           }
+        }
       }
     },
     [ocmCredentials]
