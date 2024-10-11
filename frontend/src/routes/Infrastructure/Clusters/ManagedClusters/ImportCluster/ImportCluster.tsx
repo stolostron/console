@@ -115,10 +115,7 @@ type State = {
   api_token: string
   namespace: string
   credentials: ProviderConnection[]
-  credentialList: ProviderConnection[]
   credential: string
-  isNamespaceAvailable?: boolean
-  isCredentialAvailable?: boolean
 }
 
 type Action =
@@ -135,7 +132,7 @@ type Action =
   | ({ type: 'setClusterID' } & Pick<State, 'clusterID'>)
   | ({ type: 'setNamespace' } & Pick<State, 'namespace'>)
   | ({ type: 'setCredential' } & Pick<State, 'credential'>)
-  | { type: 'updateCredentials'; payload: { credentialList: ProviderConnection[] } }
+  | { type: 'updateCredentials' }
 
 const getImportMode = (presetDiscoveredCluster: boolean, discoveryClusterType?: string) => {
   if (presetDiscoveredCluster) {
@@ -159,7 +156,7 @@ function getInitialState({
   discoveryCredential,
   discoveryClusterType,
   initialAPIToken,
-  credentialList = [],
+  credentialList,
 }: {
   initialClusterName: State['clusterName']
   initialServer: State['server']
@@ -206,9 +203,6 @@ function getInitialState({
     namespace: initialNamespace,
     credentials,
     credential: initialCredential,
-    credentialList: credentialList,
-    isNamespaceAvailable: false,
-    isCredentialAvailable: false,
   }
 }
 
@@ -322,20 +316,32 @@ export default function ImportClusterPage() {
         case 'setKubeconfig':
           return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
         case 'updateCredentials': {
-          const updatedCredentialList = action.payload?.credentialList || []
-          const namespaceExists = updatedCredentialList.some(
+          const namespaceExists = ocmCredentials.some((credential) => credential.metadata.namespace === state.namespace)
+
+          if (!namespaceExists) {
+            return {
+              ...state,
+              namespace: '',
+              credential: '',
+            }
+          }
+
+          const filteredCredentials = ocmCredentials.filter(
             (credential) => credential.metadata.namespace === state.namespace
           )
-          const credentialExists = updatedCredentialList.some(
+          const credentialExists = filteredCredentials.some(
             (credential) => credential.metadata.name === state.credential
           )
-
-          return {
-            ...state,
-            isNamespaceAvailable: namespaceExists,
-            isCredentialAvailable: credentialExists,
-            credentialList: updatedCredentialList,
+          if (!credentialExists) {
+            return {
+              ...state,
+              credential:
+                filteredCredentials.length > 0 && filteredCredentials[0].metadata.name
+                  ? filteredCredentials[0].metadata.name
+                  : '',
+            }
           }
+          return state
         }
       }
     },
@@ -351,7 +357,7 @@ export default function ImportClusterPage() {
       discoveryCredential: initialDiscoveryCredential,
       discoveryClusterType: discoveryType,
       initialAPIToken,
-      credentialList: ocmCredentials || [],
+      credentialList: ocmCredentials,
     },
     getInitialState
   )
@@ -360,7 +366,7 @@ export default function ImportClusterPage() {
 
   useEffect(() => {
     if (prevOcmCredentials !== ocmCredentials) {
-      dispatch({ type: 'updateCredentials', payload: { credentialList: ocmCredentials } })
+      dispatch({ type: 'updateCredentials' })
     }
   }, [ocmCredentials, prevOcmCredentials])
 
