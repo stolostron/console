@@ -12,6 +12,7 @@ import {
   PanelMain,
   PanelMainBody,
   Popper,
+  SearchInput,
   SearchInputProps,
   SelectOption,
   Tooltip,
@@ -20,7 +21,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { AcmSelect } from '../AcmSelect'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { AcmTextInput } from '../AcmTextInput'
-import { SearchInput } from './PFSearchInput'
 
 export enum SearchOperator {
   Equals = '=',
@@ -152,7 +152,6 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
   const activeConstraints = pendingConstraints.filter(
     (constraint) => constraint.columnId && constraint.value && constraint.operator
   ).length
-  const showResultCount = !!fuzzySearchValue || !!activeConstraints
   const searchInput = (
     <SearchInput
       placeholder={placeholder}
@@ -173,7 +172,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
       isAdvancedSearchOpen={isAdvancedSearchOpen}
       onClear={onClear}
       value={fuzzySearchValue}
-      enableUtilities={showResultCount}
+      areUtilitiesDisplayed={!!activeConstraints}
     />
   )
 
