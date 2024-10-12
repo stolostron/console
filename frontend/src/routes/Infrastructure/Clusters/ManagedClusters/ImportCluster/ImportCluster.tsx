@@ -373,25 +373,12 @@ export default function ImportClusterPage() {
 
   const prevOcmCredentials = usePrevious(ocmCredentials)
 
-  // useEffect(() => {
-  //   if (prevOcmCredentials !== ocmCredentials) {
-  //     dispatch({ type: 'updateCredentials' })
-  //   }
-  // }, [ocmCredentials, prevOcmCredentials])
-
   useEffect(() => {
-    // Check if the selected credential has been deleted
-    const credentialExists = ocmCredentials.some((cred) => cred.metadata.name === state.credential)
-
-    if (!credentialExists) {
-      dispatch({ type: 'setCredential', credential: '' }) // Reset the credential if it has been deleted
-    }
-
-    // If the credentials list has changed (e.g., some were deleted), trigger update
+    console.log(state.credential);
     if (prevOcmCredentials !== ocmCredentials) {
       dispatch({ type: 'updateCredentials' })
     }
-  }, [ocmCredentials, prevOcmCredentials])
+  }, [ocmCredentials, prevOcmCredentials, state.credential])
 
   useEffect(() => {
     if (state.importMode !== 'manual') {
