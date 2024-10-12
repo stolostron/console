@@ -27,8 +27,11 @@ export interface PostResponse<T> {
 export interface PutResponse {
   statusCode?: number
   body?: {
+    kind?: string
     name?: string
     message?: string
+    reason?: string
+    code?: number
   }
 }
 

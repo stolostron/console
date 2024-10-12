@@ -10,11 +10,11 @@ import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { ITransformedResource } from '../lib/pagination'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { ITransformedResource } from '../lib/pagination'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -631,7 +631,7 @@ function canGetResource(resource: IResource, token: string): Promise<boolean> {
   return canAccess(resource, 'get', token)
 }
 
-function canAccess(
+export function canAccess(
   resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
   verb: 'get' | 'list' | 'create',
   token: string

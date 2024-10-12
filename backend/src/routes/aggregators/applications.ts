@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
-import { getOCPApps, isSystemApp } from './applicationsOCP'
+import { getOCPApps, isSystemApp, discoverSystemAppNamespacePrefixes } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
@@ -88,6 +88,7 @@ appKeys.forEach((key) => {
 
 export function getApplications() {
   const items: ITransformedResource[] = []
+  aggregateKubeApplications(false)
   Object.keys(applicationCache).forEach((key) => {
     if (applicationCache[key].resources) {
       items.push(...applicationCache[key].resources)
@@ -100,6 +101,7 @@ export function getApplications() {
 }
 
 export function startAggregatingApplications() {
+  void discoverSystemAppNamespacePrefixes()
   void localKubeLoop()
   void searchAPILoop()
 }
@@ -107,7 +109,7 @@ export function startAggregatingApplications() {
 // aggregate local applications found in kube every 5 seconds
 async function localKubeLoop(): Promise<void> {
   while (!stopping) {
-    aggregateKubeApplications()
+    aggregateKubeApplications(true)
     await new Promise((r) => setTimeout(r, 5000))
   }
 }
@@ -120,16 +122,18 @@ async function searchAPILoop(): Promise<void> {
   }
 }
 
-export function aggregateKubeApplications() {
+export function aggregateKubeApplications(force: boolean) {
   // ACM Apps
-  applicationCache['subscription'] = generateTransforms(
-    structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1'))
-  )
+  let resources = getKubeResources('Application', 'app.k8s.io/v1beta1')
+  if (force || resources.length !== applicationCache['subscription'].resources.length) {
+    applicationCache['subscription'] = generateTransforms(structuredClone(resources))
+  }
 
   // AppSets
-  applicationCache['appset'] = generateTransforms(
-    structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
-  )
+  resources = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
+  if (force || resources.length !== applicationCache['appset'].resources.length) {
+    applicationCache['appset'] = generateTransforms(structuredClone(resources))
+  }
 }
 
 export async function aggregateSearchAPIApplications(pass: number) {
@@ -282,7 +286,8 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
       pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
       pd.metadata.namespace === placementNamespace
   )
-  const clusterDecisions = placementDecision?.status.decisions || []
+  /* istanbul ignore next */
+  const clusterDecisions = placementDecision?.status?.decisions || []
 
   clusterDecisions.forEach((cd: { clusterName: string }) => {
     if (cd.clusterName !== 'local-cluster') {

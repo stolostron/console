@@ -14,6 +14,7 @@ import {
   Popper,
   SearchInputProps,
   SelectOption,
+  Tooltip,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmSelect } from '../AcmSelect'
@@ -23,12 +24,18 @@ import { SearchInput } from './PFSearchInput'
 
 export enum SearchOperator {
   Equals = '=',
+  NotEquals = '!=',
+  GreaterThan = '>',
+  LessThan = '<',
+  GreaterThanOrEqualTo = '>=',
+  LessThanOrEqualTo = '<=',
 }
 
 export interface SearchableColumn {
   columnId: string
   availableOperators: SearchOperator[]
   columnDisplayName?: string
+  displayOperator?: boolean
 }
 
 export interface SearchConstraint {
@@ -58,7 +65,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
     searchableColumns,
     canAddConstraints,
     disableAddConstraint,
-    pendingConstraints = [{ operator: SearchOperator.Equals, value: '', columnId: '' }],
+    pendingConstraints = [{ operator: undefined, value: '', columnId: '' }],
     fuzzySearchValue,
     fuzzySearchOnChange,
     fuzzySearchOnClear,
@@ -78,8 +85,8 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
 
   const onClear = useCallback(() => {
     fuzzySearchOnClear?.()
-    setSearchConstraints([{ operator: SearchOperator.Equals, value: '', columnId: '' }])
-    setActiveConstraints?.([{ operator: SearchOperator.Equals, value: '', columnId: '' }])
+    setSearchConstraints([{ operator: undefined, value: '', columnId: '' }])
+    setActiveConstraints?.([{ operator: undefined, value: '', columnId: '' }])
   }, [fuzzySearchOnClear, setActiveConstraints])
 
   const onChange = useCallback(
@@ -110,19 +117,32 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
 
   const getAvailableColumnNames = () => {
     return searchableColumns?.map(({ columnId, columnDisplayName }) => {
-      const isDisabled = !!searchConstraints.find(
-        (constraint) => constraint.columnId === columnId && constraint.operator === SearchOperator.Equals
-      )
       return (
         <SelectOption
           key={columnId}
           value={columnId}
-          isDisabled={isDisabled}
           onClick={(event) => {
             event.stopPropagation()
           }}
         >
           {columnDisplayName ?? columnId}
+        </SelectOption>
+      )
+    })
+  }
+
+  const getAvailableOperators = (columnName?: string) => {
+    const operators = searchableColumns?.find((column) => column.columnId == columnName)?.availableOperators ?? []
+    return operators.map((operation) => {
+      return (
+        <SelectOption
+          key={operation}
+          value={operation}
+          onClick={(event) => {
+            event.stopPropagation()
+          }}
+        >
+          {operation}
         </SelectOption>
       )
     })
@@ -158,7 +178,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
 
   const advancedSearchForm = (
     <div ref={advancedSearchPaneRef}>
-      <Panel variant="raised" style={{ minWidth: '35em', overflow: 'scroll', maxHeight: '40em' }}>
+      <Panel variant="raised" style={{ minWidth: '50em' }}>
         <PanelMain>
           <PanelMainBody>
             <Form>
@@ -168,6 +188,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                 id="fuzzy-search-input"
                 placeholder={placeholder}
                 value={fuzzySearchValue}
+                validation={() => 'Required'}
                 onChange={(value) => {
                   onChange(value)
                 }}
@@ -175,7 +196,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
               {searchConstraints?.map((constraint, index) => {
                 return (
                   <Flex alignItems={{ default: 'alignItemsFlexStart' }} key={`${constraint.columnId}-${index}`}>
-                    <FlexItem style={{ width: '35%' }}>
+                    <FlexItem style={{ width: '28%' }}>
                       <AcmSelect
                         label={t('Column')}
                         id="search-column"
@@ -191,7 +212,30 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         {getAvailableColumnNames()}
                       </AcmSelect>
                     </FlexItem>
-                    <FlexItem style={{ width: '35%' }}>
+                    <FlexItem style={{ minWidth: '13%' }}>
+                      <Tooltip
+                        content={t('Select a column name to choose an operator')}
+                        trigger={!constraint.columnId ? 'mouseenter' : ''}
+                        position="bottom"
+                      >
+                        <AcmSelect
+                          label={t('Operator')}
+                          id={`search-operator`}
+                          value={constraint.operator}
+                          placeholder={t('Select an operator')}
+                          onChange={(operator) => {
+                            const newConstraintArray = [...searchConstraints]
+                            newConstraintArray[index].operator = operator as SearchOperator
+                            setSearchConstraints(newConstraintArray)
+                            setActiveConstraints && setActiveConstraints(newConstraintArray)
+                          }}
+                          isDisabled={!constraint.columnId}
+                        >
+                          {getAvailableOperators(constraint.columnId)}
+                        </AcmSelect>
+                      </Tooltip>
+                    </FlexItem>
+                    <FlexItem style={{ width: '28%' }}>
                       <AcmTextInput
                         label={t('Value')}
                         placeholder={t('Enter a value')}
@@ -226,15 +270,12 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
               })}
               {canAddConstraints && (
                 <Button
-                  isDisabled={disableAddConstraint || searchConstraints?.length > 1}
+                  isDisabled={disableAddConstraint}
                   variant={ButtonVariant.link}
                   onClick={(event) => {
                     event.stopPropagation()
                     searchConstraints &&
-                      setSearchConstraints([
-                        ...searchConstraints,
-                        { operator: SearchOperator.Equals, value: '', columnId: '' },
-                      ])
+                      setSearchConstraints([...searchConstraints, { operator: undefined, value: '', columnId: '' }])
                   }}
                   icon={<PlusCircleIcon />}
                 >

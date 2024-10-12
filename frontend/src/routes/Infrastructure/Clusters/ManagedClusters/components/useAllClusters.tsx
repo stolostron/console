@@ -21,35 +21,38 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
     agentClusterInstallsState,
     hostedClustersState,
     nodePoolsState,
+    discoveredClusterState,
   } = useSharedAtoms()
 
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const managedClusterInfos = useRecoilValue(managedClusterInfosState)
   const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
   const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
 
   const clusters = useMemo(
     () =>
-      mapClusters(
+      mapClusters({
         clusterDeployments,
         managedClusterInfos,
         certificateSigningRequests,
         managedClusters,
-        managedClusterAddons,
+        managedClusterAddOns,
         clusterManagementAddOns,
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
         hostedClusters,
-        nodePools
-      ).filter((cluster) => {
+        nodePools,
+        discoveredClusters,
+      }).filter((cluster) => {
         if (excludeUnclaimed) {
           if (cluster.hive.clusterPool) {
             return cluster.hive.clusterClaimName !== undefined
@@ -62,13 +65,14 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
       managedClusterInfos,
       certificateSigningRequests,
       managedClusters,
-      managedClusterAddons,
+      managedClusterAddOns,
       clusterManagementAddOns,
       clusterClaims,
       clusterCurators,
       agentClusterInstalls,
       hostedClusters,
       nodePools,
+      discoveredClusters,
       excludeUnclaimed,
     ]
   )

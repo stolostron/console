@@ -17,7 +17,7 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
   const { managedClusterAddonsState } = useSharedAtoms()
   const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
 
-  const clusters = useClusters(clusterSet)
+  const clusters = useClusters({ managedClusterSet: clusterSet })
   // instead of searching through clusters for each ManagedClusterAddon (12*3800)
   // loop through clusters once and use a managedClusterAddons map to get the addons for each cluster
   const submarinerAddons = useMemo(() => {

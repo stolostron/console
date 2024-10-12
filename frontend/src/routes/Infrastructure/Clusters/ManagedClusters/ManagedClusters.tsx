@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import {
+  AgentClusterInstallK8sResource,
+  getVersionFromReleaseImage,
+  HostedClusterK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
   ButtonVariant,
@@ -30,6 +34,7 @@ import {
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
+  ClusterImageSet,
   ClusterStatus,
   exportObjectString,
   getAddonStatusLabel,
@@ -78,7 +83,7 @@ import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
-import { handleOperatorComparison } from '../../../../lib/search-utils'
+import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -228,6 +233,9 @@ export function ClustersTable(props: {
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
+  const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
 
   const modalColumns = useMemo(
     () => [clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn],
@@ -488,22 +496,38 @@ export function ClustersTable(props: {
         id: 'name',
         label: t('table.name'),
         availableOperators: [SearchOperator.Equals],
-        tableFilterFn: (selectedValues, cluster) => {
-          const filtervalue = selectedValues[0]
-          return handleOperatorComparison(cluster.name, filtervalue)
-        },
+        tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
       },
       {
         id: 'namespace',
         label: t('table.namespace'),
         availableOperators: [SearchOperator.Equals],
-        tableFilterFn: (selectedValues, cluster) => {
-          const filtervalue = selectedValues[0]
-          return handleOperatorComparison(cluster.name, filtervalue)
+        tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
+      },
+      {
+        id: 'distribution',
+        columnDisplayName: 'Distribution',
+        label: t('table.distribution'),
+        availableOperators: [
+          SearchOperator.Equals,
+          SearchOperator.GreaterThan,
+          SearchOperator.LessThan,
+          SearchOperator.GreaterThanOrEqualTo,
+          SearchOperator.LessThanOrEqualTo,
+          SearchOperator.NotEquals,
+        ],
+        tableFilterFn: ({ operator, value }, cluster) => {
+          const clusterVersion = getClusterDistributionString(
+            cluster,
+            clusterImageSets,
+            agentClusterInstalls,
+            props.clusters
+          )
+          return handleSemverOperatorComparison(clusterVersion ?? '', value, operator)
         },
       },
     ]
-  }, [t])
+  }, [t, agentClusterInstalls, clusterImageSets, props.clusters])
 
   const filters = useMemo<ITableFilter<Cluster>[]>(() => {
     return [
@@ -784,17 +808,13 @@ export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-export function useClusterDistributionColumn(
-  allClusters: Cluster[] | undefined,
-  clusterCurators: ClusterCurator[],
-  hostedClusters: HostedClusterK8sResource[]
-): IAcmTableColumn<Cluster> {
-  const { t } = useTranslation()
-  const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+export function getClusterDistributionString(
+  cluster: Cluster,
+  clusterImageSets: ClusterImageSet[],
+  agentClusterInstalls: AgentClusterInstallK8sResource[],
+  allClusters: Cluster[] | undefined
+): string | undefined {
   const agentClusterObject: Record<string, string> = {}
-
   const agentClusterInstallsMap = keyBy(agentClusterInstalls, (install) => {
     return `${install.metadata?.namespace}/${install.metadata?.name}`
   })
@@ -812,6 +832,33 @@ export function useClusterDistributionColumn(
     })
   }
 
+  let version
+  const openshiftText = 'OpenShift'
+  const microshiftText = 'MicroShift'
+
+  if (cluster?.provider === Provider.microshift) {
+    version = cluster?.microshiftDistribution?.version
+    return version ?? `${microshiftText} ${version}`
+  }
+  // use version from cluster image
+  const clusterImageVersion = agentClusterObject[cluster.name]
+  if (clusterImageVersion) {
+    return `${openshiftText} ${clusterImageVersion}`
+  }
+  // else use displayVersion
+  return cluster?.distribution?.displayVersion
+}
+
+export function useClusterDistributionColumn(
+  allClusters: Cluster[] | undefined,
+  clusterCurators: ClusterCurator[],
+  hostedClusters: HostedClusterK8sResource[]
+): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
+  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+
   return {
     header: t('table.distribution'),
     sort: 'distribution.displayVersion',
@@ -825,21 +872,7 @@ export function useClusterDistributionColumn(
       />
     ),
     exportContent: (cluster) => {
-      let version
-      const openshiftText = 'OpenShift'
-      const microshiftText = 'MicroShift'
-
-      if (cluster?.provider === Provider.microshift) {
-        version = cluster?.microshiftDistribution?.version
-        return version ?? `${microshiftText} ${version}`
-      }
-      // use version from cluster image
-      const clusterImageVersion = agentClusterObject[cluster.name]
-      if (clusterImageVersion) {
-        return `${openshiftText} ${clusterImageVersion}`
-      }
-      // else use displayVersion
-      return cluster?.distribution?.displayVersion
+      return getClusterDistributionString(cluster, clusterImageSets, agentClusterInstalls, allClusters)
     },
   }
 }
@@ -939,7 +972,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
       )
     },
     exportContent: (cluster) => {
-      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing},  unknown: ${cluster.addons!.unknown}`
+      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing}, unknown: ${cluster.addons!.unknown}`
     },
   }
 }

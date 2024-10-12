@@ -5,7 +5,7 @@ import { AcmButton } from '../ui-components'
 import { TextContent } from '@patternfly/react-core'
 import { useTranslation } from './acm-i18next'
 
-export const DOC_VERSION = '2.12'
+export const DOC_VERSION = '2.13'
 
 export const DOC_HOME = `https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`

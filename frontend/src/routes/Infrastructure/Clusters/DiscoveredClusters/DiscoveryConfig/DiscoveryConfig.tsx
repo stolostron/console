@@ -52,7 +52,7 @@ import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
-const discoveryVersions = ['4.15', '4.16', '4.17', '4.18']
+const discoveryVersions = ['4.16', '4.17', '4.18', '4.19']
 
 export default function DiscoveryConfigPage() {
   const { t } = useTranslation()

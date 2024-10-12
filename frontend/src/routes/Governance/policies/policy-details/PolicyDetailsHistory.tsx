@@ -124,7 +124,8 @@ export function PolicyDetailsHistory(props: {
         header: t('Last report'),
         sort: 'index',
         cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
-        exportContent: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
+        exportContent: (item: any) =>
+          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
       },
     ],
     [t]

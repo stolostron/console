@@ -140,7 +140,7 @@ describe('discovery config page', () => {
     // Select Version
     expect(container.querySelectorAll(`[aria-labelledby^="discoveryVersions-label"]`)).toHaveLength(1)
     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
-    await clickByText('4.15')
+    await clickByText('4.16')
 
     // Submit form
     const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
@@ -179,7 +179,7 @@ describe('discovery config page', () => {
     await clickByText('30 days')
 
     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
-    await clickByText('4.16')
+    await clickByText('4.17')
 
     const replaceNock = nockReplace(discoveryConfigUpdated)
     await clickByText('Save')

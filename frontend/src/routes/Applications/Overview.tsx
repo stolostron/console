@@ -22,7 +22,7 @@ import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
-import { IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
+import { fetchAggregate, IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
 import { NavigationPath } from '../../NavigationPath'
 import {
   ApplicationApiVersion,
@@ -155,7 +155,7 @@ export function getApplicationNamespace(resource: IApplicationResource, search: 
 }
 
 // Map resource kind to type column
-export function getApplicationType(resource: IApplicationResource, t: TFunction) {
+export function getApplicationType(resource: IApplicationResource, systemAppNSPrefixes: string[], t: TFunction) {
   if (resource.apiVersion === ApplicationApiVersion) {
     if (resource.kind === ApplicationKind) {
       return t('Subscription')
@@ -170,7 +170,7 @@ export function getApplicationType(resource: IApplicationResource, t: TFunction)
     const isFlux = isFluxApplication(resource.label)
     if (isFlux) {
       return t('Flux')
-    } else if (isSystemApp(resource.metadata?.namespace)) {
+    } else if (isSystemApp(systemAppNSPrefixes, resource.metadata?.namespace)) {
       return 'System'
     }
     return 'OpenShift'
@@ -178,14 +178,8 @@ export function getApplicationType(resource: IApplicationResource, t: TFunction)
   return '-'
 }
 
-function isSystemApp(namespace?: string) {
-  return (
-    namespace &&
-    (namespace.startsWith('openshift') ||
-      namespace.startsWith('open-cluster-management') ||
-      namespace.startsWith('hive') ||
-      namespace.startsWith('multicluster-engine'))
-  )
+function isSystemApp(systemAppNSPrefixes: string[], namespace?: string) {
+  return namespace && systemAppNSPrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -337,6 +331,8 @@ export default function ApplicationsOverview() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
 
   const managedClusters = useAllClusters(true)
   const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
@@ -432,7 +428,14 @@ export default function ApplicationsOverview() {
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
   const resultCounts = useAggregate(SupportedAggregate.statuses, {})
   resultCounts.itemCount = resultView.processedItemCount
+  const { systemAppNSPrefixes } = resultCounts
   const allApplications = resultView.items
+  const { refresh: listRefresh } = resultView
+  const { refresh: countRefresh } = resultCounts
+
+  const fetchAggregateForExport = async (requestedExport: IRequestListView) => {
+    return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
+  }
 
   const tableItems: IResource[] = useMemo(
     () => [...allApplications.map((app) => generateTransformData(app))],
@@ -476,7 +479,7 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('Type'),
-        cell: (resource) => <span>{getApplicationType(resource, t)}</span>,
+        cell: (resource) => <span>{getApplicationType(resource, systemAppNSPrefixes, t)}</span>,
         sort: 'kind',
         tooltip: (
           <span>
@@ -503,7 +506,7 @@ export default function ApplicationsOverview() {
         transforms: [cellWidth(15)],
         // probably don't need search if we have a type filter
         exportContent: (resource) => {
-          return getApplicationType(resource, t)
+          return getApplicationType(resource, systemAppNSPrefixes, t)
         },
       },
       {
@@ -628,6 +631,7 @@ export default function ApplicationsOverview() {
     [
       t,
       extensionColumns,
+      systemAppNSPrefixes,
       argoApplications,
       placementDecisions,
       subscriptions,
@@ -672,7 +676,7 @@ export default function ApplicationsOverview() {
           return selectedValues.some((value) => {
             if (isOCPAppResource(item)) {
               const isFlux = isFluxApplication(item.label)
-              const isSystem = isSystemApp(item.metadata?.namespace)
+              const isSystem = isSystemApp(systemAppNSPrefixes, item.metadata?.namespace)
               switch (value) {
                 case 'openshift':
                   return !isFlux && !isSystem
@@ -766,7 +770,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, managedClusters]
+    [t, managedClusters, systemAppNSPrefixes]
   )
 
   const navigate = useNavigate()
@@ -923,6 +927,12 @@ export default function ApplicationsOverview() {
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
+              deleted: /* istanbul ignore next */ () => {
+                resultView.refresh()
+                resultCounts.refresh()
+                listRefresh()
+                countRefresh()
+              },
               close: () => {
                 setModalProps({ open: false })
               },
@@ -957,19 +967,23 @@ export default function ApplicationsOverview() {
       return actions
     },
     [
-      applicationSets,
-      applications,
-      argoApplications,
-      canDeleteApplication,
-      canDeleteApplicationSet,
-      canCreateApplication,
-      channels,
-      navigate,
-      placements,
-      placementRules,
-      subscriptions,
-      acmExtensions,
       t,
+      acmExtensions,
+      navigate,
+      canDeleteApplicationSet,
+      canDeleteApplication,
+      applications,
+      subscriptions,
+      placementRules,
+      placements,
+      channels,
+      applicationSets,
+      argoApplications,
+      resultView,
+      resultCounts,
+      listRefresh,
+      countRefresh,
+      canCreateApplication,
     ]
   )
 
@@ -1112,6 +1126,7 @@ export default function ApplicationsOverview() {
         setRequestView={setRequestedView}
         resultView={resultView}
         resultCounts={resultCounts}
+        fetchExport={fetchAggregateForExport}
         customTableAction={appCreationButton}
         additionalToolbarItems={additionalToolbarItems}
         showExportButton

@@ -7,13 +7,14 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: release-acm-212
-    appstudio.openshift.io/component: console-acm-212
+    appstudio.openshift.io/application: release-mce-28
+    appstudio.openshift.io/component: console-mce-mce-28
     pipelines.appstudio.openshift.io/type: build
-  name: console-acm-212-on-pull-request
+  name: console-mce-mce-28-on-pull-request
   namespace: crt-redhat-acm-tenant
 spec:
   params:
@@ -22,11 +23,11 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-acm-212/console-acm-212:on-pr-{{revision}}
+    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/release-mce-28/console-mce-mce-28:on-pr-{{revision}}
   - name: image-expires-after
     value: 5d
   - name: dockerfile
-    value: Containerfile.acm.konflux
+    value: Containerfile.mce.konflux
   - name: path-context
     value: .
   pipelineSpec:
@@ -234,7 +235,7 @@ spec:
         - name: name
           value: buildah-6gb
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:1f191dce49453f034faddddca8df9fecd9179847fd3e4e7d3822053b0fd42063
+          value: quay.io/konflux-ci/tekton-catalog/task-buildah-6gb:0.2@sha256:2ab23a5ffc4423a64ec46c7f607d9d34faf2a7d54ec9c939c85b658efcc5cd12
         - name: kind
           value: task
         resolver: bundles
@@ -308,7 +309,7 @@ spec:
         - name: name
           value: clair-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:9f4ddafd599e06b319cece5a4b8ac36b9e7ec46bea378bc6c6af735d3f7f8060
+          value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:37b9187c1d5f6672bbc9c61d88fc71a3ee688076cb16edef42d1ff92a59027fb
         - name: kind
           value: task
         resolver: bundles
@@ -375,7 +376,7 @@ spec:
         - name: name
           value: clamav-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.1@sha256:9f2b3cbf4bee2e802b21a3051ac4198a2122f3b956e6934cb7592625c894c778
+          value: quay.io/konflux-ci/tekton-catalog/task-clamav-scan:0.1@sha256:5ac9b24cff7cfb391bc54cd5135536892090354862327d1028fa08872d759c03
         - name: kind
           value: task
         resolver: bundles
@@ -395,7 +396,7 @@ spec:
         - name: name
           value: apply-tags
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:e6beb161ed59d7be26317da03e172137b31b26648d3e139558e9a457bc56caff
+          value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.1@sha256:f485e250fb060060892b633c495a3d7e38de1ec105ae1be48608b0401530ab2c
         - name: kind
           value: task
         resolver: bundles

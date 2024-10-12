@@ -4,8 +4,8 @@ import { PageSection, Stack } from '@patternfly/react-core'
 import { isEqual } from 'lodash'
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Addon,
@@ -31,7 +31,6 @@ import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/comp
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery } from '../../Search/search-sdk/search-sdk'
-import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 
 function getClusterSummary(
   clusters: Cluster[],
@@ -177,7 +176,6 @@ const searchQueries = (selectedClusters: Array<string>, clusters: Cluster[]): Ar
 }
 
 export default function OverviewPage() {
-  usePageVisitMetricHandler(Pages.overview)
   const { t } = useTranslation()
   const { managedClusterInfosState, policyreportState, usePolicies } = useSharedAtoms()
 

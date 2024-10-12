@@ -25,16 +25,12 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
 ```
-main → release-2.12 → backplane-2.7
+main → release-2.13 → backplane-2.8
+release-2.12 → backplane-2.7
 release-2.11 → backplane-2.6
 release-2.10 → backplane-2.5
 release-2.9 → backplane-2.4
 release-2.8 → backplane-2.3
-release-2.7 → backplane-2.2
-release-2.6 → backplane-2.1
-release-2.5
-backplane-2.0 // cherry-pick from PRs against release-2.5
-release-2.4
 ```
 
 ## Core Dependencies - Release Branch Mapping
@@ -43,7 +39,8 @@ A number of the core NPM package dependencies are published from other repositor
 
 | console branch                          | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
 | --------------------------------------- | --------------------------------- | -------------------------- | ------------------------ | -------------------- |
-| main<br/>release-2.12<br/>backplane-2.7 | main                              | main                       | N/A                      | N/A                  |
+| main<br/>release-2.13<br/>backplane-2.8 | main                              | main                       | N/A                      | N/A                  |
+| release-2.12<br/>backplane-2.7          | v1.32.z                           | v1.15.z                    | N/A                      | N/A                  |
 | release-2.11<br/>backplane-2.6          | v1.29.z                           | v1.14.z                    | N/A                      | N/A                  |
 | release-2.10<br/>backplane-2.5          | v1.27.z                           | v1.13.z                    | N/A                      | N/A                  |
 | release-2.9<br/>backplane-2.4           | v1.26.z                           | v1.12.z                    | N/A                      | N/A                  |

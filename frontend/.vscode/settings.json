@@ -57,7 +57,7 @@
     "**/dist": true
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "editor.quickSuggestions": {
     "comments": "on",
