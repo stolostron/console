@@ -377,7 +377,7 @@ export default function ImportClusterPage() {
     if (prevOcmCredentials !== ocmCredentials) {
       dispatch({ type: 'updateCredentials' })
     }
-  }, [ocmCredentials, prevOcmCredentials, state.credential])
+  }, [ocmCredentials, prevOcmCredentials])
 
   useEffect(() => {
     if (state.importMode !== 'manual') {
