@@ -362,6 +362,7 @@ const localClusterSearchDetailsContext: Partial<SearchDetailsContext> = {
   cluster: 'local-cluster',
   namespace: 'testNamespace',
   name: 'testName',
+  isHubClusterResource: true,
 }
 
 describe('LogsPage', () => {
