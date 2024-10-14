@@ -467,6 +467,7 @@ export function CreateDetailsLink(props: { item: any }) {
 
   switch (item.kind.toLowerCase()) {
     case 'cluster':
+    case 'managedcluster':
       return (
         <Link to={generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name })}>
           {item.name}
@@ -568,7 +569,8 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 
   switch (item.kind.toLowerCase()) {
-    case 'cluster': {
+    case 'cluster':
+    case 'managedcluster': {
       if (item.managedHub === 'global-hub') {
         return generateLink(
           'internal',
