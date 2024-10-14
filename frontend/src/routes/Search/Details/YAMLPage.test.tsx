@@ -58,6 +58,7 @@ describe('YAMLPage', () => {
             apiversion={'v1'}
             name={'test-pod'}
             namespace={'test-namespace'}
+            isHubClusterResource={true}
             resourceYaml={''}
             setResourceYaml={() => {}}
             handleResize={() => {}}

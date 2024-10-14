@@ -286,7 +286,8 @@ export function LogsFooterButton(props: {
 }
 
 export default function LogsPage() {
-  const { kind, resource, resourceError, containers, cluster, namespace, name } = useSearchDetailsContext()
+  const { kind, resource, resourceError, containers, cluster, namespace, name, isHubClusterResource } =
+    useSearchDetailsContext()
   const { search } = useLocation()
   const logViewerRef = useRef<any>()
   const resourceLogRef = useRef<any>()
@@ -294,7 +295,7 @@ export default function LogsPage() {
   const [isLoadingLogs, setIsLoadingLogs] = useState<boolean>(false)
   const [logs, setLogs] = useState<string>('')
   const [logsError, setLogsError] = useState<ReactNode>()
-  const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
+  const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) ?? '')
 
   const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(false)
   const [wrapLines, setWrapLines] = useState(false)
@@ -348,7 +349,7 @@ export default function LogsPage() {
   }, [container, resource])
 
   useEffect(() => {
-    if (cluster !== 'local-cluster' && container !== '') {
+    if (!isHubClusterResource && container !== '') {
       setIsLoadingLogs(true)
       const abortController = new AbortController()
       const logsResult = fetchRetry({
@@ -374,7 +375,7 @@ export default function LogsPage() {
             setLogsError(err.message)
           }
         })
-    } else if (cluster === 'local-cluster' && container !== '') {
+    } else if (isHubClusterResource && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -396,7 +397,7 @@ export default function LogsPage() {
           setLogsError(err.message)
         })
     }
-  }, [cluster, container, managedClusters, name, namespace, previousLogs])
+  }, [cluster, container, managedClusters, name, namespace, previousLogs, isHubClusterResource])
 
   const linesLength = useMemo(() => logs.split('\n').length - 1, [logs])
 
