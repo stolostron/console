@@ -15,10 +15,6 @@ import { NavigationPath } from '../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-
-export interface SearchDefinitions {
-  (t: TFunction, isGlobalHub?: boolean): ResourceDefinitions
-}
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -417,7 +413,7 @@ export const useSearchDefinitions = () => {
 
 export function GetAge(item: any, key: string) {
   const createdTime = _.get(item, key)
-  if (createdTime && createdTime.includes('T')) {
+  if (createdTime?.includes('T')) {
     return moment(createdTime, 'YYYY-MM-DDTHH:mm:ssZ').fromNow()
   } else if (createdTime) {
     return moment(createdTime, 'YYYY-MM-DD HH:mm:ss').fromNow()
@@ -447,7 +443,7 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
-export function CreateDetailsLink(props: { item: any }) {
+export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
 
   const defaultSearchLink = (
@@ -480,7 +476,7 @@ export function CreateDetailsLink(props: { item: any }) {
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: item._hubClusterResource ? undefined : cluster,
-          applicationset: applicationSet == null ? undefined : applicationSet,
+          applicationset: applicationSet ?? undefined,
         })
         return (
           <Link
@@ -559,7 +555,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         return <Link to={{ pathname: path, search: params }}>{item.name}</Link>
       case 'external':
         return (
-          <AcmButton {...linkProps} href={`${managedHub?.consoleURL}${path}${params ? params : ''}`}>
+          <AcmButton {...linkProps} href={`${managedHub?.consoleURL}${path}${params ?? ''}`}>
             {item.name}
           </AcmButton>
         )
@@ -589,7 +585,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: item._hubClusterResource ? undefined : cluster,
-          applicationset: applicationSet == null ? undefined : applicationSet,
+          applicationset: applicationSet ?? undefined,
         })
         const path = generatePath(NavigationPath.applicationOverview, { namespace, name })
         if (item.managedHub === 'global-hub' && !item._hubClusterResource) {
@@ -633,7 +629,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 }
 
-export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }) {
+export function CreateApplicationTopologyLink(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const allClusters = useAllClusters(true)
   if (item?.apiversion && item?.apigroup) {
@@ -773,7 +769,7 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
   }
 }
 
-export function CreateExternalVMLink(props: { item: any; t: TFunction }) {
+export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const allClusters = useAllClusters(true)
   const vmCluster = item.cluster
