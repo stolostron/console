@@ -296,6 +296,7 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Application re
     kind: 'Application',
     managedHub: 'global-hub',
     cluster: 'local-cluster',
+    _hubClusterResource: 'true',
   }
   const { baseElement } = render(
     <RecoilRoot>
@@ -358,6 +359,7 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy res
     managedHub: 'global-hub',
     name: 'global-policy',
     namespace: 'default',
+    _hubClusterResource: 'true',
   }
   const { baseElement } = render(
     <RecoilRoot>
@@ -378,6 +380,7 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyReport r
     kind: 'PolicyReport',
     managedHub: 'global-hub',
     cluster: 'local-cluster',
+    _hubClusterResource: 'true',
   }
   const { baseElement } = render(
     <RecoilRoot>
