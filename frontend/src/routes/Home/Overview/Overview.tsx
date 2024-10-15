@@ -1,23 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Label, Switch } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { AcmErrorBoundary, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import ReuseableSearchbar from '../../Search/components/ReuseableSearchbar'
-import ClustersTab from './ClustersTab'
 import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
+import OverviewPage from './OverviewPage'
 
-const CLUSTERS_TAB: string = 'clusters-tab'
+const CLUSTERS_TAB: string = 'overview-tab'
 
 export default function Overview() {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState<string>(CLUSTERS_TAB) // TODO - saved to local storage? Or always come in to clusters tab?
-  const [isBetaView, setIsBetaView] = useState<boolean>(localStorage.getItem('overview-isBeta') === 'true')
+  const [selectedTab, setSelectedTab] = useState<string>(CLUSTERS_TAB)
   const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
   const { acmExtensions } = useContext(PluginContext)
 
-  let content = <ClustersTab isBetaView={isBetaView} selectedClusterLabels={selectedClusterLabels} />
+  let content = <OverviewPage selectedClusterLabels={selectedClusterLabels} />
   if (selectedTab) {
     const Component = acmExtensions?.overviewTab?.find((o) => o.uid === selectedTab)?.properties.component
     if (Component) {
@@ -36,25 +34,6 @@ export default function Overview() {
           <div style={{ borderBottom: '1px solid var(--pf-v5-global--BorderColor--100)' }}>
             <AcmPageHeader
               title={t('Overview')}
-              switches={
-                selectedTab === CLUSTERS_TAB ? (
-                  <div>
-                    <Switch // only if clustersTab
-                      label={t('Fleet view')}
-                      isChecked={isBetaView}
-                      onChange={() => {
-                        setIsBetaView(!isBetaView)
-                        localStorage.setItem('overview-isBeta', `${!isBetaView}`) // keep selection
-                      }}
-                    />
-                    {!isBetaView ? (
-                      <Label style={{ marginLeft: '10px' }} color="orange">
-                        {t('Deprecated')}
-                      </Label>
-                    ) : undefined}
-                  </div>
-                ) : undefined
-              }
               searchbar={<ReuseableSearchbar />}
               navigation={
                 <AcmSecondaryNav>
@@ -79,7 +58,7 @@ export default function Overview() {
             />
           </div>
           {/* Fleet view includes a cluster label filter */}
-          {selectedTab === CLUSTERS_TAB && isBetaView && (
+          {selectedTab === CLUSTERS_TAB && (
             <OverviewClusterLabelSelector
               selectedClusterLabels={selectedClusterLabels}
               setSelectedClusterLabels={setSelectedClusterLabels}
