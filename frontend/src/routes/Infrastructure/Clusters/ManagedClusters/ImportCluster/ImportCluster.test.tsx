@@ -1149,7 +1149,7 @@ describe('Credential Edge Cases 1', () => {
   )
 
   test('should set credential to empty string when no credentials exist in namespace', async () => {
-    const secrets: Secret[] = [];
+    const secrets: Secret[] = []
     const { getByDisplayValue } = render(initializeCredentialComponent(secrets))
 
     await waitFor(() => {
@@ -1165,7 +1165,7 @@ describe('Credential Edge Cases 1', () => {
         metadata: { name: '', namespace: 'default' },
         data: {},
       },
-    ];
+    ]
     const { getByDisplayValue } = render(initializeCredentialComponent(secrets))
 
     await waitFor(() => {
@@ -1178,11 +1178,11 @@ describe('Credential Edge Cases 2', () => {
   const initializeCredentialComponent = (secrets: Secret[]) => (
     <RecoilRoot
       initializeState={(snapshot) => {
-        snapshot.set(managedClusterSetsState, [mockManagedClusterSet]);
-        snapshot.set(secretsState, secrets);
-        snapshot.set(discoveryConfigState, [mockDiscoveryConfig]);
-        snapshot.set(discoveredClusterState, mockDiscoveredClusters);
-        snapshot.set(namespacesState, mockNamepaces);
+        snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+        snapshot.set(secretsState, secrets)
+        snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
+        snapshot.set(discoveredClusterState, mockDiscoveredClusters)
+        snapshot.set(namespacesState, mockNamepaces)
       }}
     >
       <MemoryRouter>
@@ -1192,7 +1192,7 @@ describe('Credential Edge Cases 2', () => {
         </Routes>
       </MemoryRouter>
     </RecoilRoot>
-  );
+  )
 
   test('should set credential to the first filtered credential name when it exists', async () => {
     const validSecrets: Secret[] = [
@@ -1201,7 +1201,7 @@ describe('Credential Edge Cases 2', () => {
         kind: 'Secret',
         metadata: { name: 'validCredential', namespace: 'open-cluster-management' },
         data: {
-          'someKey': 'someValue',
+          someKey: 'someValue',
         },
       },
       {
@@ -1209,16 +1209,15 @@ describe('Credential Edge Cases 2', () => {
         kind: 'Secret',
         metadata: { name: 'otherCredential', namespace: 'open-cluster-management' },
         data: {
-          'anotherKey': 'anotherValue',
+          anotherKey: 'anotherValue',
         },
       },
-    ];
+    ]
 
-    const { getAllByText } = render(initializeCredentialComponent(validSecrets));
+    const { getAllByText } = render(initializeCredentialComponent(validSecrets))
 
     await waitFor(() => {
       expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()
     })
-  });
-});
-
+  })
+})
