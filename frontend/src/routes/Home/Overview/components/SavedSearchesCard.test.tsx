@@ -11,7 +11,7 @@ import { SavedSearch } from '../../../../resources'
 import { SearchResultCountDocument } from '../../../Search/search-sdk/search-sdk'
 import SavedSearchesCard from './SavedSearchesCard'
 
-jest.mock('../../../resources/userpreference', () => ({
+jest.mock('../../../../resources/userpreference', () => ({
   listResources: jest.fn(() => ({
     promise: Promise.resolve([
       {
