@@ -315,17 +315,22 @@ export default function ImportClusterPage() {
           return state.importMode === ImportMode.token ? { ...state, server: action.server } : state
         case 'setClusterID':
           return state.importMode === ImportMode.discoveryOCM ? { ...state, clusterID: action.clusterID } : state
-        case 'setNamespace':
-          if (state.importMode === ImportMode.discoveryOCM) {
-            const credentials = getCredentialsInNamespace(ocmCredentials, action.namespace)
-            return {
-              ...state,
-              namespace: action.namespace,
-              credentials,
-              credential: credentials[0].metadata.name ?? '',
-            }
+        case 'setNamespace': {
+          if (state.importMode !== ImportMode.discoveryOCM) {
+            return state
           }
-          return state
+
+          const credentials = getCredentialsInNamespace(ocmCredentials, action.namespace)
+          const updatedCredential =
+            credentials.length > 0 && credentials[0].metadata.name ? credentials[0].metadata.name : ''
+
+          return {
+            ...state,
+            namespace: action.namespace,
+            credentials,
+            credential: updatedCredential,
+          }
+        }
         case 'setCredential':
           return state.importMode === ImportMode.discoveryOCM ? { ...state, credential: action.credential } : state
         case 'setKubeconfig':
