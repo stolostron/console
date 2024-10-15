@@ -4,32 +4,24 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockAggegateRequest, nockCreate, nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { PluginContext } from '../../../lib/PluginContext'
 import { PluginDataContext } from '../../../lib/PluginDataContext'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import Overview from './Overview'
-import {
-  getAddonRequest,
-  getAddonResponse,
-  mockGetSelfSubjectAccessRequest,
-  mockGetSelfSubjectAccessResponse,
-} from './Overview.sharedmocks'
-const statusAggregate = {
-  req: {},
-  res: {
-    itemCount: 42,
-    filterCounts: undefined,
-  },
-}
+import { getAddonRequest, getAddonResponse } from './Overview.sharedmocks'
 
 const queryClient = new QueryClient()
+
+jest.mock('./OverviewPage', () => {
+  return function OverviewPage() {
+    return <div>mockedPage</div>
+  }
+})
 
 it('should render overview page with extension', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
-  const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
-  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
@@ -76,14 +68,12 @@ it('should render overview page with extension', async () => {
   await clickByText('Test tab')
 
   await waitForText('Test extension content')
-  await waitForNocks([getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
+  await waitForNocks([getAddonNock, apiPathNock])
 })
 
 it('should render overview page layout when extension tab crashes', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
-  const getManageedClusterAccessRequeset = nockCreate(mockGetSelfSubjectAccessRequest, mockGetSelfSubjectAccessResponse)
-  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
@@ -132,5 +122,5 @@ it('should render overview page layout when extension tab crashes', async () => 
   await clickByText('Test tab')
 
   await waitForText('Overview')
-  await waitForNocks([getAddonNock, getManageedClusterAccessRequeset, apiPathNock])
+  await waitForNocks([getAddonNock, apiPathNock])
 })
