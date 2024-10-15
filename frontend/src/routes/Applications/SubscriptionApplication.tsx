@@ -50,6 +50,7 @@ import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/compo
 import { CredentialsForm } from '../Credentials/CredentialsForm'
 import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+import { LoadingPage } from '../../components/LoadingPage'
 
 interface CreationStatus {
   status: string
@@ -178,6 +179,7 @@ export function CreateSubscriptionApplication(
 ) {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const [createdResource, setCreatedResource] = useState<any>()
   const {
     ansibleJobState,
     applicationsState,
@@ -218,13 +220,7 @@ export function CreateSubscriptionApplication(
             type: 'success',
             autoClose: true,
           })
-          navigate({
-            pathname: generatePath(NavigationPath.applicationOverview, {
-              namespace: applicationResourceJSON.metadata.namespace!,
-              name: applicationResourceJSON.metadata.name!,
-            }),
-            search: location.search,
-          })
+          setCreatedResource(applicationResourceJSON)
         })
         .catch((err) => {
           const errorInfo = getErrorInfo(err, t)
@@ -392,6 +388,27 @@ export function CreateSubscriptionApplication(
   const editApplication = getEditApplication(location)
   const searchParams = useSearchParams()
 
+  // don't navigate to details page until application exists in recoil
+  useEffect(() => {
+    if (createdResource) {
+      if (
+        applications.findIndex(
+          (app) =>
+            app.metadata.name === createdResource.metadata.name! &&
+            app.metadata.namespace === createdResource.metadata.namespace!
+        ) !== -1
+      ) {
+        navigate({
+          pathname: generatePath(NavigationPath.applicationOverview, {
+            namespace: createdResource.metadata.namespace!,
+            name: createdResource.metadata.name!,
+          }),
+          search: location.search,
+        })
+      }
+    }
+  }, [applications, createdResource, location, navigate])
+
   useEffect(() => {
     if (editApplication) {
       const { selectedAppName, selectedAppNamespace } = editApplication
@@ -468,7 +485,9 @@ export function CreateSubscriptionApplication(
 
   const isFetchControl = editApplication ? fetchControl : true
 
-  return (
+  return createdResource ? (
+    <LoadingPage />
+  ) : (
     isFetchControl && (
       <TemplateEditor
         type={'application'}

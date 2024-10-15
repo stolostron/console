@@ -88,7 +88,7 @@ appKeys.forEach((key) => {
 
 export function getApplications() {
   const items: ITransformedResource[] = []
-  aggregateKubeApplications(false)
+  aggregateKubeApplications()
   Object.keys(applicationCache).forEach((key) => {
     if (applicationCache[key].resources) {
       items.push(...applicationCache[key].resources)
@@ -102,16 +102,7 @@ export function getApplications() {
 
 export function startAggregatingApplications() {
   void discoverSystemAppNamespacePrefixes()
-  void localKubeLoop()
   void searchAPILoop()
-}
-
-// aggregate local applications found in kube every 5 seconds
-async function localKubeLoop(): Promise<void> {
-  while (!stopping) {
-    aggregateKubeApplications(true)
-    await new Promise((r) => setTimeout(r, 5000))
-  }
 }
 
 async function searchAPILoop(): Promise<void> {
@@ -122,18 +113,16 @@ async function searchAPILoop(): Promise<void> {
   }
 }
 
-export function aggregateKubeApplications(force: boolean) {
+export function aggregateKubeApplications() {
   // ACM Apps
-  let resources = getKubeResources('Application', 'app.k8s.io/v1beta1')
-  if (force || resources.length !== applicationCache['subscription'].resources.length) {
-    applicationCache['subscription'] = generateTransforms(structuredClone(resources))
-  }
+  applicationCache['subscription'] = generateTransforms(
+    structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+  )
 
   // AppSets
-  resources = getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')
-  if (force || resources.length !== applicationCache['appset'].resources.length) {
-    applicationCache['appset'] = generateTransforms(structuredClone(resources))
-  }
+  applicationCache['appset'] = generateTransforms(
+    structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+  )
 }
 
 export async function aggregateSearchAPIApplications(pass: number) {
