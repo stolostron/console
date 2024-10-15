@@ -255,27 +255,6 @@ export default function ImportClusterPage() {
     return filteredCredentials.some((credential) => credential.metadata.name === credentialName)
   }
 
-  // Helper function to compute additional labels
-  const computeAdditionalLabels = (
-    labels: Record<string, string>,
-    defaultLabels: Record<string, string>,
-    managedClusterSetLabel: string
-  ) => {
-    return Object.entries(labels).reduce(
-      (acc, [key, value]) => {
-        const isDefaultLabel = defaultLabels[key] !== undefined
-        const isChangedLabel = isDefaultLabel && defaultLabels[key] !== value
-
-        if (key !== managedClusterSetLabel && (isChangedLabel || !isDefaultLabel)) {
-          acc[key] = value
-        }
-
-        return acc
-      },
-      {} as Record<string, string>
-    )
-  }
-
   const reducer = useCallback(
     (state: State, action: Action): State => {
       switch (action.type) {
@@ -297,16 +276,19 @@ export default function ImportClusterPage() {
         case 'setAdditionalLabels':
           return { ...state, additionalLabels: action.additionalLabels, kacAdditionalLabels: action.additionalLabels }
         case 'computeAdditionalLabels': {
-          // Extract the ManagedClusterSet label from the action
-          const managedClusterSet = action.labels?.[managedClusterSetLabel] || ''
-
-          // Determine which additional labels to compute
-          const additionalLabels = computeAdditionalLabels(action.labels, state.defaultLabels, managedClusterSetLabel)
-
+          // Update cluster set
+          const managedClusterSet = action.labels?.[managedClusterSetLabel] ?? ''
+          // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
+          // Changed default labels get added to additional labels to shadow the defaults
+          const additionalLabelKeys = Object.keys(action.labels).filter(
+            (key) =>
+              key !== managedClusterSetLabel &&
+              (!Object.keys(state.defaultLabels).includes(key) || state.defaultLabels[key] !== action.labels[key])
+          )
           return {
             ...state,
             managedClusterSet,
-            additionalLabels,
+            additionalLabels: pick(action.labels, additionalLabelKeys),
           }
         }
         case 'computeKACAdditionalLabels': {
