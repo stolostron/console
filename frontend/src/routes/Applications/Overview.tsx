@@ -928,10 +928,10 @@ export default function ApplicationsOverview() {
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
               deleted: /* istanbul ignore next */ () => {
-                resultView.refresh()
-                resultCounts.refresh()
-                listRefresh()
-                countRefresh()
+                setTimeout(() => {
+                  listRefresh()
+                  countRefresh()
+                }, 250)
               },
               close: () => {
                 setModalProps({ open: false })
@@ -979,8 +979,6 @@ export default function ApplicationsOverview() {
       channels,
       applicationSets,
       argoApplications,
-      resultView,
-      resultCounts,
       listRefresh,
       countRefresh,
       canCreateApplication,
