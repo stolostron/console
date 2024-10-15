@@ -240,6 +240,21 @@ export default function ImportClusterPage() {
     client_secret: initialClientSecret,
   } = initialStringData
 
+  // Helper function to check if the namespace exists
+  function doesNamespaceExist(ocmCredentials: ProviderConnection[], namespace: string): boolean {
+    return ocmCredentials.some((credential) => credential.metadata.namespace === namespace)
+  }
+
+  // Helper function to filter credentials based on namespace
+  function getFilteredCredentials(ocmCredentials: ProviderConnection[], namespace: string): ProviderConnection[] {
+    return ocmCredentials.filter((credential) => credential.metadata.namespace === namespace)
+  }
+
+  // Helper function to check if a credential exists within the filtered credentials
+  function doesCredentialExist(filteredCredentials: ProviderConnection[], credentialName: string): boolean {
+    return filteredCredentials.some((credential) => credential.metadata.name === credentialName)
+  }
+
   const reducer = useCallback(
     (state: State, action: Action): State => {
       switch (action.type) {
@@ -316,7 +331,7 @@ export default function ImportClusterPage() {
         case 'setKubeconfig':
           return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
         case 'updateCredentials': {
-          const namespaceExists = ocmCredentials.some((credential) => credential.metadata.namespace === state.namespace)
+          const namespaceExists = doesNamespaceExist(ocmCredentials, state.namespace)
 
           if (!namespaceExists) {
             return {
@@ -326,12 +341,9 @@ export default function ImportClusterPage() {
             }
           }
 
-          const filteredCredentials = ocmCredentials.filter(
-            (credential) => credential.metadata.namespace === state.namespace
-          )
-          const credentialExists = filteredCredentials.some(
-            (credential) => credential.metadata.name === state.credential
-          )
+          const filteredCredentials = getFilteredCredentials(ocmCredentials, state.namespace)
+          const credentialExists = doesCredentialExist(filteredCredentials, state.credential)
+
           if (!credentialExists) {
             return {
               ...state,
