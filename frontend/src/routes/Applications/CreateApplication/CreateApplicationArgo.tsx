@@ -4,7 +4,7 @@ import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import moment from 'moment-timezone'
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
@@ -22,6 +22,7 @@ import {
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
+import { LoadingPage } from '../../../components/LoadingPage'
 
 export default function CreateArgoApplicationSetPage() {
   return <CreateApplicationArgo />
@@ -94,8 +95,32 @@ export function CreateApplicationArgo() {
     : moment.tz.names()
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const [createdResource, setCreatedResource] = useState<any>()
 
-  return (
+  // don't navigate to details page until application exists in recoil
+  useEffect(() => {
+    if (createdResource) {
+      if (
+        applicationSets.findIndex(
+          (appset) =>
+            appset.metadata.name === createdResource.metadata.name! &&
+            appset.metadata.namespace === createdResource.metadata.namespace!
+        ) !== -1
+      ) {
+        navigate({
+          pathname: generatePath(NavigationPath.applicationOverview, {
+            namespace: createdResource?.metadata?.namespace ?? '',
+            name: createdResource?.metadata?.name ?? '',
+          }),
+          search: argoAppSetQueryString,
+        })
+      }
+    }
+  }, [applicationSets, createdResource, navigate])
+
+  return createdResource ? (
+    <LoadingPage />
+  ) : (
     <ArgoWizard
       createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
       ansibleCredentials={availableAnsibleCredentials}
@@ -131,14 +156,7 @@ export function CreateApplicationArgo() {
             })
           }
           submitForm()
-
-          navigate({
-            pathname: generatePath(NavigationPath.applicationOverview, {
-              namespace: applicationSet?.metadata?.namespace ?? '',
-              name: applicationSet?.metadata?.name ?? '',
-            }),
-            search: argoAppSetQueryString,
-          })
+          setCreatedResource(applicationSet)
         })
       }}
       timeZones={timeZones}
