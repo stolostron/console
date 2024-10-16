@@ -341,6 +341,7 @@ export default function ApplicationsOverview() {
   })
 
   const [requestedView, setRequestedView] = useState<IRequestListView>()
+  const [deletedApps, setDeletedApps] = useState<IResource[]>([])
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
@@ -430,17 +431,23 @@ export default function ApplicationsOverview() {
   resultCounts.itemCount = resultView.processedItemCount
   const { systemAppNSPrefixes } = resultCounts
   const allApplications = resultView.items
-  const { refresh: listRefresh } = resultView
-  const { refresh: countRefresh } = resultCounts
 
   const fetchAggregateForExport = async (requestedExport: IRequestListView) => {
     return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
   }
 
-  const tableItems: IResource[] = useMemo(
-    () => [...allApplications.map((app) => generateTransformData(app))],
-    [allApplications, generateTransformData]
-  )
+  const tableItems: IResource[] = useMemo(() => {
+    const items = allApplications
+    /* istanbul ignore next */
+    deletedApps.forEach((dapp) => {
+      const inx = items.findIndex((app) => dapp.metadata?.uid === app.metadata?.uid)
+      if (inx !== -1) {
+        items.splice(inx, 1)
+        resultCounts.itemCount -= 1
+      }
+    })
+    return items.map((app) => generateTransformData(app))
+  }, [allApplications, deletedApps, generateTransformData, resultCounts])
 
   const keyFn = useCallback(
     (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
@@ -927,11 +934,11 @@ export default function ApplicationsOverview() {
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
               appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
-              deleted: /* istanbul ignore next */ () => {
-                setTimeout(() => {
-                  listRefresh()
-                  countRefresh()
-                }, 250)
+              deleted: /* istanbul ignore next */ (app: IResource) => {
+                setDeletedApps((arr) => {
+                  arr = [app, ...arr].slice(0, 10)
+                  return arr
+                })
               },
               close: () => {
                 setModalProps({ open: false })
@@ -979,8 +986,6 @@ export default function ApplicationsOverview() {
       channels,
       applicationSets,
       argoApplications,
-      listRefresh,
-      countRefresh,
       canCreateApplication,
     ]
   )
