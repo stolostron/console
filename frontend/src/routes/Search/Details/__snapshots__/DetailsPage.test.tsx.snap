@@ -12,10 +12,10 @@ Object {
 
 exports[`DetailsPage Should return the url search params incorrectly 1`] = `
 Object {
-  "apiversion": "",
-  "cluster": "",
-  "kind": "",
-  "name": "",
-  "namespace": "",
+  "apiversion": "v1",
+  "cluster": "local-cluster",
+  "kind": "Pod",
+  "name": "testLocalPod",
+  "namespace": "testNamespace",
 }
 `;
