@@ -129,7 +129,7 @@ export function getRowActions(
     id: 'view-application',
     title: t('View Application'),
     click: (item: any) => {
-      const { apigroup, applicationSet, cluster, name, namespace, kind } = item
+      const { apigroup, applicationSet, cluster, name, namespace, kind, _hubClusterResource } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
         const path = generatePath(NavigationPath.applicationOverview, {
           namespace,
@@ -137,10 +137,10 @@ export function getRowActions(
         })
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
-          cluster: cluster === 'local-cluster' ? undefined : cluster,
+          cluster: !_hubClusterResource ? cluster : undefined,
           applicationset: applicationSet ?? undefined,
         })
-        if (item.managedHub === 'global-hub' && item.cluster !== 'local-cluster') {
+        if (item.managedHub === 'global-hub' && !item?._hubClusterResource) {
           const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
           return window.open(`${hubUrl}${path}?${params}`, '_blank')
         }
@@ -178,7 +178,7 @@ export function getRowActions(
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
       const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
-      if (item.managedHub && item.cluster !== 'local-cluster') {
+      if (item.managedHub && !item?._hubClusterResource) {
         const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
         return window.open(`${hubUrl}${path}?apiVersion=${apiversion}`, '_blank')
       }
@@ -258,6 +258,7 @@ export function getRowActions(
             open: true,
             close: () => setDeleteResource(ClosedDeleteModalProps),
             resource: item,
+            isHubClusterResource: item._hubClusterResource === 'true',
             currentQuery,
             relatedResource,
           })

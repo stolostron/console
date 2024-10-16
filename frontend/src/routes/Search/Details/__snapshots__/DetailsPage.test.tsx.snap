@@ -4,6 +4,7 @@ exports[`DetailsPage Should return the url search params correctly 1`] = `
 Object {
   "apiversion": "v1",
   "cluster": "local-cluster",
+  "isHubClusterResource": true,
   "kind": "Pod",
   "name": "testLocalPod",
   "namespace": "testNamespace",
