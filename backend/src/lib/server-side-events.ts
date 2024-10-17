@@ -11,9 +11,9 @@ import { randomString } from './random-string'
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
 
-// If a client hasn't finished receiving a broadcast in over an hour
+// If a client hasn't finished receiving a broadcast in PURGE_CLIENT_TIMEOUT
 // assume the browser has been refreshed or closed
-const PURGE_CLIENT_TIMEOUT = 60 * 60 * 1000
+const PURGE_CLIENT_TIMEOUT = 10 * 60 * 1000
 
 const instanceID = randomString(8)
 

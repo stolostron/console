@@ -19,7 +19,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications(true)
+    aggregateKubeApplications()
     await aggregateSearchAPIApplications(1)
 
     // NO FILTER
@@ -44,7 +44,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications(true)
+    aggregateKubeApplications()
     await aggregateSearchAPIApplications(1)
 
     // FILTERED
@@ -75,7 +75,7 @@ describe(`aggregator Route`, function () {
     // fill in application cache from resourceCache and search api mocks
     const prefixes = await discoverSystemAppNamespacePrefixes()
     expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
-    aggregateKubeApplications(true)
+    aggregateKubeApplications()
     await aggregateSearchAPIApplications(1)
 
     // FILTERED
