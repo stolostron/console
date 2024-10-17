@@ -1198,6 +1198,7 @@ describe('CreateCluster KubeVirt', () => {
     await clickByTestId('namespaceName-input-toggle-select-typeahead')
     await clickByText('testNs')
     await clickByText('Next', 1)
+    await clickByText('Next', 1)
     await pasteByTestId('pullSecret', pullSecretAI)
     await clickByText('Next', 1)
     await clickByText('Add')

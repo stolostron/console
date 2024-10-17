@@ -23,7 +23,9 @@ import {
   validateHttpsProxy,
   validateImageContentSources,
   validateJSON,
+  validateKubeconfig,
   validateKubernetesDnsName,
+  validateNamespace,
   validateNoProxyList,
   validatePrivateSshKey,
   validatePublicSshKey,
@@ -181,6 +183,25 @@ export function CredentialsForm(
   const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
     () => providerConnection?.stringData?.additionalTrustBundle ?? ''
   )
+
+  // External Infrastructure
+  const [isExternalInfra, setIsExternalInfra] = useState(
+    () =>
+      !!(
+        providerConnection?.stringData?.externalInfraKubeconfig ||
+        providerConnection?.stringData?.externalInfraNamespace
+      )
+  )
+  const [externalInfraKubeconfig, setExternalInfraKubeconfig] = useState(
+    () => providerConnection?.stringData?.externalInfraKubeconfig ?? ''
+  )
+  const [externalInfraNamespace, setExternalInfraNamespace] = useState(
+    () => providerConnection?.stringData?.externalInfraNamespace ?? ''
+  )
+
+  const hasExternalInfraData = () => {
+    return !!(externalInfraKubeconfig || externalInfraNamespace)
+  }
 
   // Amazon Web Services State
   const [aws_access_key_id, setAwsAccessKeyID] = useState(() => providerConnection?.stringData?.aws_access_key_id ?? '')
@@ -463,6 +484,8 @@ export function CredentialsForm(
       case Provider.kubevirt:
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
+        isExternalInfra && (stringData.externalInfraKubeconfig = externalInfraKubeconfig)
+        isExternalInfra && (stringData.externalInfraNamespace = externalInfraNamespace)
         break
     }
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
@@ -531,8 +554,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
       { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
-      { path: 'Secret[0].stringData.client_id', setState: setServiceAccClientId },
-      { path: 'Secret[0].stringData.client_secret', setState: setServiceAccClientSecret },
+      { path: 'Secret[0].stringData.externalInfraKubeconfig', setState: setExternalInfraKubeconfig },
+      { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
     ]
     return syncs
   }
@@ -1268,6 +1291,61 @@ export function CredentialsForm(
           },
         ],
       },
+      ...(!isViewing || hasExternalInfraData()
+        ? [
+            {
+              type: 'Section' as const,
+              title: t('External infrastructure'),
+              wizardTitle: t('Configure external infrastructure for OpenShift Virtualization'),
+              description: t(
+                'Optionally use an OpenShift Virtualization installation on an external infrastructure cluster.'
+              ),
+              inputs: [
+                {
+                  id: 'isExternalInfra',
+                  type: 'Checkbox',
+                  title: t('External infrastructure'),
+                  label: t('Enable external infrastructure'),
+                  labelHelp: t(
+                    'Enable external infrastructure to place virtual machines on an external infrastructure cluster. The Hosted Control Plane components will still be created on the hub cluster.'
+                  ),
+                  isHidden: credentialsType !== Provider.kubevirt,
+                  value: isExternalInfra,
+                  onChange: () => setIsExternalInfra((enabled) => !enabled),
+                },
+                {
+                  id: 'externalInfraKubeconfig',
+                  type: 'TextArea',
+                  label: t('Kubeconfig'),
+                  labelHelp: t(
+                    'Provide a kubeconfig that grants access to an external infrastructure cluster running OpenShift Virtualization.'
+                  ),
+                  placeholder: t('Copy and paste your kubeconfig content'),
+                  value: externalInfraKubeconfig,
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  onChange: setExternalInfraKubeconfig,
+                  isRequired: true,
+                  isSecret: true,
+                  validation: (value) => validateKubeconfig(value, t),
+                },
+                {
+                  id: 'externalInfraNamespace',
+                  type: 'Text',
+                  label: t('Namespace'),
+                  labelHelp: t(
+                    'Enter the namespace where virtual machines will be created on the external infrastructure cluster. This namespace must already exist and the kubeconfig must allow access to manage the required resources in this namespace.'
+                  ),
+                  placeholder: t('Enter the namespace'),
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  value: externalInfraNamespace,
+                  onChange: setExternalInfraNamespace,
+                  isRequired: true,
+                  validation: (value) => validateNamespace(value, t),
+                },
+              ] as Input[],
+            },
+          ]
+        : []),
       {
         type: 'Section',
         title: t('OpenShift Cluster Manager'),
@@ -1417,7 +1495,6 @@ export function CredentialsForm(
       if (isEditing) {
         const secret = credentialData as Secret
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
-
         const data: Secret['data'] = {}
         Object.keys(secret.stringData ?? {}).forEach((key) => {
           if (secret.stringData?.[key]) {
@@ -1499,6 +1576,7 @@ export function CredentialsForm(
         '*.stringData.osServicePrincipal.json',
         '*.stringData.osServiceAccount.json',
         '*.stringData.clouds.yaml',
+        '*.stringData.externalInfraKubeconfig',
       ]}
       immutables={
         isHostedControlPlane
