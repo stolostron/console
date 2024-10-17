@@ -14,7 +14,6 @@ exports[`DetailsPage Should return the url search params incorrectly 1`] = `
 Object {
   "apiversion": "",
   "cluster": "",
-  "isHubClusterResource": false,
   "kind": "",
   "name": "",
   "namespace": "",
