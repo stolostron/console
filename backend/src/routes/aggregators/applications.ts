@@ -4,6 +4,7 @@ import { getOCPApps, isSystemApp, discoverSystemAppNamespacePrefixes } from './a
 import { getArgoApps } from './applicationsArgo'
 import { IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
+import { logger } from '../../lib/logger'
 
 export enum AppColumns {
   'name' = 0,
@@ -105,36 +106,75 @@ export function startAggregatingApplications() {
   void searchAPILoop()
 }
 
-async function searchAPILoop(): Promise<void> {
+// timeout failsafe to make sure search loop keeps running
+const SEARCH_TIMEOUT = 5 * 60 * 1000
+const awaitTimeout = (delay: number, reason: string) =>
+  new Promise<void>((resolve, reject) => setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay))
+const wrapPromise = (promise: Promise<Set<string>>, delay: number, reason: string) =>
+  Promise.race([promise, awaitTimeout(delay, reason)])
+const wrapPromise2 = (promise: Promise<void>, delay: number, reason: string) =>
+  Promise.race([promise, awaitTimeout(delay, reason)])
+
+async function searchAPILoop() {
   let pass = 1
   while (!stopping) {
-    await aggregateSearchAPIApplications(pass)
+    try {
+      await wrapPromise2(aggregateSearchAPIApplications(pass), SEARCH_TIMEOUT * 2, 'timeout').catch((e) =>
+        logger.error(`searchAPILoop exception ${e}`)
+      )
+    } catch (e) {
+      logger.error(`searchAPILoop exception ${e}`)
+    }
     pass++
   }
 }
 
 export function aggregateKubeApplications() {
   // ACM Apps
-  applicationCache['subscription'] = generateTransforms(
-    structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1'))
-  )
+  try {
+    applicationCache['subscription'] = generateTransforms(
+      structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1'))
+    )
+  } catch (e) {
+    logger.error(`aggregateKubeApplications subscription exception ${e}`)
+  }
 
   // AppSets
-  applicationCache['appset'] = generateTransforms(
-    structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
-  )
+  try {
+    applicationCache['appset'] = generateTransforms(
+      structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1'))
+    )
+  } catch (e) {
+    logger.error(`aggregateKubeApplications appset exception ${e}`)
+  }
 }
 
+let argoAppSet = new Set<string>()
 export async function aggregateSearchAPIApplications(pass: number) {
   // Argo Apps
-  const argoAppSet = await getArgoApps(applicationCache, pass)
+  logger.info(`search begin ArgoCD`)
+  await wrapPromise(getArgoApps(applicationCache, pass), SEARCH_TIMEOUT, 'timeout')
+    .then((data) => {
+      if (data) argoAppSet = data
+    })
+    .catch((e) => logger.error(`aggregateSearchAPIApplications ArgoCD exception ${e}`))
 
   // OCP Apps/FLUX
-  await getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass)
+  logger.info(`search begin Openshift/Flux`)
+  await wrapPromise2(
+    getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass),
+    SEARCH_TIMEOUT,
+    'timeout'
+  ).catch((e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`))
 
   // system apps -- because system apps shouldn't change much, don't do it every time
   if (pass <= 3 || pass % 3 === 0) {
-    await getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass)
+    logger.info(`search begin System`)
+    await wrapPromise2(
+      getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass),
+      SEARCH_TIMEOUT,
+      'timeout'
+    ).catch((e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`))
   }
 }
 
