@@ -318,9 +318,11 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
     ],
     tableFilterFn: (selectedValues, item) => {
       for (const selectedValue of selectedValues) {
-        for (const responseAction of item.responseAction.split('/')) {
-          if (selectedValue === responseAction) {
-            return true
+        if (item.responseAction) {
+          for (const responseAction of item.responseAction.split('/')) {
+            if (selectedValue === responseAction) {
+              return true
+            }
           }
         }
       }
