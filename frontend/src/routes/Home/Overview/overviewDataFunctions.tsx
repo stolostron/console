@@ -154,9 +154,12 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
     }
   }
   const typeTotals: Record<string, number> = {}
-  Object.keys(filterCounts.type).forEach((type) => {
-    typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
-  })
+  // type can be undefined just after ACM is installed.
+  if (filterCounts.type) {
+    Object.keys(filterCounts.type).forEach((type) => {
+      typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
+    })
+  }
   // sort alphabetically
   const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
 
