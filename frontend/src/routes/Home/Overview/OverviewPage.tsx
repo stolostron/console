@@ -130,7 +130,6 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
   }, [selectedClusterLabels])
 
   const allClusters: Cluster[] = useAllClusters(true /* exclude unclaimed cluster pool clusters */)
-  console.log(allClusters)
   const filteredClusters = useMemo(
     () => getFilteredClusters(allClusters, selectedClusterLabels),
     [allClusters, selectedClusterLabels]
