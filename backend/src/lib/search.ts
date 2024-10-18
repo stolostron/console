@@ -146,7 +146,7 @@ export function getSearchResults(
         } catch (e) {
           // search might be overwhelmed
           // pause before next request
-          logger.error(`getSearchResults ${kind} parse error ${e}`)
+          logger.error(`getSearchResults ${kind} parse error ${e} ${body}`)
           setTimeout(() => {
             reject(Error(body))
           }, requestTimeout)

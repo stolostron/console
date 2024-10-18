@@ -71,6 +71,7 @@ export async function getArgoApps(applicationCache: ApplicationCacheType, pass: 
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
+  logger.info(`search begin Remote ArgoCD`)
   try {
     applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
   } catch (e) {
@@ -105,7 +106,7 @@ async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
   const argoApps = (await getPagedSearchResources(
     query,
     usePagedQuery,
-    'ArgoCD',
+    'Remote ArgoCD',
     pass
   )) as unknown as IArgoAppRemoteResource[]
   usePagedQuery = argoApps.length > 1000

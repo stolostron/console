@@ -174,7 +174,6 @@ export function aggregateKubeApplications() {
 let argoAppSet = new Set<string>()
 export async function aggregateSearchAPIApplications(pass: number) {
   // Argo Apps
-  logger.info(`search begin ArgoCD`)
   await wrapPromise(getArgoApps(applicationCache, pass), SEARCH_TIMEOUT, 'timeout')
     .then((data) => {
       if (data) argoAppSet = data
