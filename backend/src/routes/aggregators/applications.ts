@@ -107,13 +107,37 @@ export function startAggregatingApplications() {
 }
 
 // timeout failsafe to make sure search loop keeps running
-const SEARCH_TIMEOUT = 5 * 60 * 1000
+const SEARCH_TIMEOUT = 60 * 1000
 const awaitTimeout = (delay: number, reason: string) =>
   new Promise<void>((resolve, reject) => setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay))
-const wrapPromise = (promise: Promise<Set<string>>, delay: number, reason: string) =>
-  Promise.race([promise, awaitTimeout(delay, reason)])
-const wrapPromise2 = (promise: Promise<void>, delay: number, reason: string) =>
-  Promise.race([promise, awaitTimeout(delay, reason)])
+const wrapPromise = (promise: Promise<Set<string>>, delay: number, reason: string) => {
+  let timeoutID: string | number | NodeJS.Timeout
+  const promises = [
+    new Promise<void>((resolve, reject) => {
+      timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
+    }),
+    promise.then((data) => {
+      clearTimeout(timeoutID)
+      return data
+    }),
+  ]
+  // const timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
+  return Promise.race(promises)
+}
+const wrapPromise2 = (promise: Promise<void>, delay: number, reason: string) => {
+  let timeoutID: string | number | NodeJS.Timeout
+  const promises = [
+    new Promise<void>((resolve, reject) => {
+      timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
+    }),
+    promise.then((data) => {
+      clearTimeout(timeoutID)
+      return data
+    }),
+  ]
+  // const timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
+  return Promise.race(promises)
+}
 
 async function searchAPILoop() {
   let pass = 1
