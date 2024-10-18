@@ -16,6 +16,8 @@ import {
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
+import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
+import AvailabilityOptionsForm from '../components/assisted-installer/AvailiabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -70,8 +72,7 @@ export const getControlDataKubeVirt = (
   localCluster
 ) => {
   const controlData = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
+    //////////////////////////////////  AI form  //////////////////////////////////
     {
       id: 'kubevirtDetailStep',
       type: 'step',
@@ -95,7 +96,7 @@ export const getControlDataKubeVirt = (
       hidden: false, // toggled in CreateCluster.tsx
       component: operatorAlert(localCluster, t),
     },
-    /////////////////////// ACM Credentials  /////////////////////////////////////
+    /////////////////////// ACM Credentials /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
       tooltip: t('tooltip.creation.ocp.cloud.connection'),
@@ -163,6 +164,7 @@ export const getControlDataKubeVirt = (
       },
       reverse: reverseStorageClass,
     },
+    /////////////////////// Availability Options Step ////////////////////////////////
     {
       id: 'additionalLabels',
       name: t('creation.ocp.addition.labels'),
@@ -172,6 +174,17 @@ export const getControlDataKubeVirt = (
         'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
       ),
     },
+    {
+      id: 'availabilityStep',
+      type: 'step',
+      title: t('Availability options'),
+    },
+    {
+      id: 'availabilityOptions',
+      type: 'custom',
+      component: <AvailabilityOptionsForm />,
+    },
+    ///////////////////////////// Node Pools Step /////////////////////////////
     {
       id: 'nodepoolsStep',
       type: 'step',
