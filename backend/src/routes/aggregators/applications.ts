@@ -108,32 +108,17 @@ export function startAggregatingApplications() {
 
 // timeout failsafe to make sure search loop keeps running
 const SEARCH_TIMEOUT = 5 * 60 * 1000
-const wrapPromise = (promise: Promise<Set<string>>, delay: number, reason: string) => {
+const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
   let timeoutID: string | number | NodeJS.Timeout
   const promises = [
-    new Promise<void>((resolve, reject) => {
-      timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
+    new Promise<void>((_resolve, reject) => {
+      timeoutID = setTimeout(() => reject(new Error(`timeout of ${delay} exceeded`)), delay)
     }),
     promise.then((data) => {
       clearTimeout(timeoutID)
       return data
     }),
   ]
-  // const timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
-  return Promise.race(promises)
-}
-const wrapPromise2 = (promise: Promise<void>, delay: number, reason: string) => {
-  let timeoutID: string | number | NodeJS.Timeout
-  const promises = [
-    new Promise<void>((resolve, reject) => {
-      timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
-    }),
-    promise.then((data) => {
-      clearTimeout(timeoutID)
-      return data
-    }),
-  ]
-  // const timeoutID = setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay)
   return Promise.race(promises)
 }
 
@@ -141,7 +126,7 @@ async function searchAPILoop() {
   let pass = 1
   while (!stopping) {
     try {
-      await wrapPromise2(aggregateSearchAPIApplications(pass), SEARCH_TIMEOUT * 2, 'timeout').catch((e) =>
+      await promiseTimeout(aggregateSearchAPIApplications(pass), SEARCH_TIMEOUT * 2).catch((e) =>
         logger.error(`searchAPILoop exception ${e}`)
       )
     } catch (e) {
@@ -175,7 +160,7 @@ let argoAppSet = new Set<string>()
 export async function aggregateSearchAPIApplications(pass: number) {
   // Argo Apps
   logger.info(`search begin ArgoCD`)
-  await wrapPromise(getArgoApps(applicationCache, pass), SEARCH_TIMEOUT, 'timeout')
+  await promiseTimeout(getArgoApps(applicationCache, pass), SEARCH_TIMEOUT)
     .then((data) => {
       if (data) argoAppSet = data
     })
@@ -183,20 +168,16 @@ export async function aggregateSearchAPIApplications(pass: number) {
 
   // OCP Apps/FLUX
   logger.info(`search begin Openshift/Flux`)
-  await wrapPromise2(
-    getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass),
-    SEARCH_TIMEOUT,
-    'timeout'
-  ).catch((e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`))
+  await promiseTimeout(getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass), SEARCH_TIMEOUT).catch(
+    (e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`)
+  )
 
   // system apps -- because system apps shouldn't change much, don't do it every time
   if (pass <= 3 || pass % 3 === 0) {
     logger.info(`search begin System`)
-    await wrapPromise2(
-      getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass),
-      SEARCH_TIMEOUT,
-      'timeout'
-    ).catch((e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`))
+    await promiseTimeout(getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass), SEARCH_TIMEOUT).catch(
+      (e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`)
+    )
   }
 }
 
