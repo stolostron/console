@@ -108,8 +108,6 @@ export function startAggregatingApplications() {
 
 // timeout failsafe to make sure search loop keeps running
 const SEARCH_TIMEOUT = 5 * 60 * 1000
-const awaitTimeout = (delay: number, reason: string) =>
-  new Promise<void>((resolve, reject) => setTimeout(() => (reason === undefined ? resolve() : reject(reason)), delay))
 const wrapPromise = (promise: Promise<Set<string>>, delay: number, reason: string) => {
   let timeoutID: string | number | NodeJS.Timeout
   const promises = [
