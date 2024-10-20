@@ -1159,7 +1159,6 @@ describe('Import cluster RHOCM mode', () => {
   it('responds to changes in available RHOCM credentials', async () => {
     const setSetSecrets = jest.fn()
     render(<Component secrets={[mockCRHCredential1, mockCRHCredential2]} setSetSecrets={setSetSecrets} />)
-    await clickByText('Run import commands manually')
     await clickByText('Import from Red Hat OpenShift Cluster Manager')
     await clickByText('Select a namespace')
     await clickByText(mockCRHCredential1.metadata.namespace!)
