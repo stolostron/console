@@ -36,7 +36,7 @@ import {
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
-import { RecoilRoot } from 'recoil'
+import { RecoilRoot, useSetRecoilState } from 'recoil'
 import {
   clusterCuratorsState,
   discoveredClusterState,
@@ -78,6 +78,7 @@ import ImportClusterPage from './ImportCluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import { useEffect } from 'react'
 
 const mockProject: ProjectRequest = {
   apiVersion: ProjectRequestApiVersion,
@@ -1125,6 +1126,50 @@ describe('Import Discovered Cluster with import credentials', () => {
     await clickByText('Import')
 
     await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock, autoImportSecretNock])
+  })
+})
+describe('Import cluster RHOCM mode', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+  const RecoilCaptureSecretsSetter = ({ setSetSecrets, children }: PropsWithChildren<{ setSetSecrets: jest.Mock }>) => {
+    const setSecrets = useSetRecoilState(secretsState)
+    useEffect(() => {
+      setSetSecrets(setSecrets)
+    }, [setSetSecrets, setSecrets])
+    return children
+  }
+  const Component = ({ secrets, setSetSecrets }: { secrets: Secret[]; setSetSecrets: jest.Mock }) => (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(secretsState, secrets)
+        snapshot.set(namespacesState, mockNamepaces)
+      }}
+    >
+      <RecoilCaptureSecretsSetter setSetSecrets={setSetSecrets} />
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<ImportClusterPage />} />
+        </Routes>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  it('responds to changes in available RHOCM credentials', async () => {
+    const setSetSecrets = jest.fn()
+    render(<Component secrets={[mockCRHCredential1, mockCRHCredential2]} setSetSecrets={setSetSecrets} />)
+    await clickByText('Run import commands manually')
+    await clickByText('Import from Red Hat OpenShift Cluster Manager')
+    await clickByText('Select a namespace')
+    await clickByText(mockCRHCredential1.metadata.namespace!)
+    await waitForText(mockCRHCredential1.metadata.name!)
+
+    // Remove the 1st credential (setSecrets is the 1st argument to the most recent call to setSetSecrets)
+    setSetSecrets.mock.calls.slice(-1)[0][0]([mockCRHCredential2])
+
+    // Second credential should now be selected
+    await waitForText(mockCRHCredential2.metadata.name!)
   })
 })
 describe('Credential Edge Cases 1', () => {
