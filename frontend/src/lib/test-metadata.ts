@@ -110,6 +110,18 @@ export const mockCRHCredential2: Secret = {
   },
 }
 
+export const mockCRHCredential3: Secret = {
+  apiVersion: SecretApiVersion,
+  kind: SecretKind,
+  metadata: {
+    name: 'test-credential',
+    namespace: 'ocm',
+    labels: {
+      'cluster.open-cluster-management.io/type': Provider.redhatcloud,
+    },
+  },
+}
+
 export const mockDiscoveryConfig: DiscoveryConfig = {
   apiVersion: DiscoveryConfigApiVersion,
   kind: DiscoveryConfigKind,
