@@ -330,35 +330,6 @@ export default function ImportClusterPage() {
           return state.importMode === ImportMode.discoveryOCM ? { ...state, credential: action.credential } : state
         case 'setKubeconfig':
           return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
-        // case 'updateCredentials': {
-        //   const namespaceExists = doesNamespaceExist(ocmCredentials, state.namespace)
-
-        //   if (!namespaceExists) {
-        //     return {
-        //       ...state,
-        //       namespace: '',
-        //       credential: '',
-        //     }
-        //   }
-
-        //   const filteredCredentials = getFilteredCredentials(ocmCredentials, state.namespace)
-        //   const credentialExists = doesCredentialExist(filteredCredentials, state.credential)
-
-        //   if (!credentialExists) {
-        //     return {
-        //       ...state,
-        //       credential:
-        //         filteredCredentials.length > 0 && filteredCredentials[0].metadata.name
-        //           ? filteredCredentials[0].metadata.name
-        //           : '',
-        //       credentials: filteredCredentials,
-        //     }
-        //   }
-        //   return {
-        //     ...state,
-        //     credentials: filteredCredentials,
-        //   }
-        // }
         case 'updateCredentials': {
           const namespaceExists = doesNamespaceExist(ocmCredentials, state.namespace)
           const filteredCredentials = namespaceExists ? getFilteredCredentials(ocmCredentials, state.namespace) : []
