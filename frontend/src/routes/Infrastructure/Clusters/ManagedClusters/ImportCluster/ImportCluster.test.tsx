@@ -33,7 +33,7 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../../../resources'
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot, useSetRecoilState } from 'recoil'
@@ -58,6 +58,7 @@ import {
   mockCRHCredential,
   mockCRHCredential1,
   mockCRHCredential2,
+  mockCRHCredential3,
   mockDiscoveryConfig,
   mockManagedClusterSet,
 } from '../../../../../lib/test-metadata'
@@ -78,7 +79,7 @@ import ImportClusterPage from './ImportCluster'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
-import { useEffect } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 
 const mockProject: ProjectRequest = {
   apiVersion: ProjectRequestApiVersion,
@@ -1139,7 +1140,7 @@ describe('Import cluster RHOCM mode', () => {
     useEffect(() => {
       setSetSecrets(setSecrets)
     }, [setSetSecrets, setSecrets])
-    return children
+    return <>{children}</>
   }
   const Component = ({ secrets, setSetSecrets }: { secrets: Secret[]; setSetSecrets: jest.Mock }) => (
     <RecoilRoot
@@ -1169,6 +1170,47 @@ describe('Import cluster RHOCM mode', () => {
 
     // Second credential should now be selected
     await waitForText(mockCRHCredential2.metadata.name!)
+  })
+  it('assert that deleted RHOCM credential does not exist in the credentials dropdown', async () => {
+    const setSetSecrets = jest.fn()
+    render(
+      <Component secrets={[mockCRHCredential1, mockCRHCredential2, mockCRHCredential3]} setSetSecrets={setSetSecrets} />
+    )
+
+    await clickByText('Import from Red Hat OpenShift Cluster Manager')
+    await clickByText('Select a namespace')
+    await clickByText(mockCRHCredential1.metadata.namespace!)
+    await waitForText(mockCRHCredential1.metadata.name!)
+
+    // Remove the 1st credential (setSecrets is the 1st argument to the most recent call to setSetSecrets)
+    setSetSecrets.mock.calls.slice(-1)[0][0]([mockCRHCredential2, mockCRHCredential3])
+
+    // Second credential should now be selected
+    await waitForText(mockCRHCredential2.metadata.name!)
+
+    // Click on the button with the name "Credential Options menu"
+    await userEvent.click(
+      screen.getByRole('button', {
+        name: /Credential Options menu/i,
+      })
+    )
+    // Assert the removed credential does not exist
+    expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
+    expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
+    screen.logTestingPlaygroundURL()
+    // Remove the 2nd credential (now the 1st in the list)
+    setSetSecrets.mock.calls.slice(-1)[0][0]([mockCRHCredential3])
+
+    // Assert the second removed credential does not exist
+    expect(screen.queryByText(mockCRHCredential2.metadata.name!)).not.toBeInTheDocument()
+    // Third credential should now be selected
+    // Click on the button with the name "Credential Options menu"
+    await userEvent.click(
+      screen.getByRole('button', {
+        name: /Credential Options menu/i,
+      })
+    )
+    expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
   })
 })
 describe('Credential Edge Cases 1', () => {
