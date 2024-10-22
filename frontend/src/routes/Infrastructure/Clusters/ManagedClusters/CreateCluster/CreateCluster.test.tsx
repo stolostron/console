@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -1063,7 +1063,7 @@ describe('CreateCluster on premise', () => {
   )
 })
 
-describe('CreateCluster KubeVirt', () => {
+describe.skip('CreateCluster KubeVirt', () => {
   const Component = () => {
     return (
       <RecoilRoot
@@ -1239,5 +1239,402 @@ describe('CreateCluster KubeVirt', () => {
     // Review and Save step
     await clickByText('Next')
     await waitForText('Infrastructure provider credential')
+  })
+})
+
+describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has no external infrastructure', () => {
+  const pullSecret = '{"pullSecret":"secret"}\n'
+  const Component = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'test-ns' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [
+            {
+              apiVersion: ProviderConnectionApiVersion,
+              kind: ProviderConnectionKind,
+              metadata: {
+                name: 'connectionKubeVirt',
+                namespace: 'test-ns',
+                labels: {
+                  'cluster.open-cluster-management.io/type': 'kubevirt',
+                },
+              },
+              stringData: {
+                pullSecret: pullSecret,
+                'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+              },
+              type: 'kubernetes.io/dockerconfigjson',
+            } as Secret,
+          ])
+          snapshot.set(clusterCuratorsState, mockClusterCurators)
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+
+  test('KubeVirt cluster creation with a kubervirt credential that has no external infrastructure', async () => {
+    const clusterImageSet415: ClusterImageSetK8sResource = {
+      apiVersion: ClusterImageSetApiVersion,
+      kind: ClusterImageSetKind,
+      metadata: {
+        name: 'ocp-release415',
+      },
+      spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+      },
+    }
+    const storageClass = {
+      kind: 'StorageClass',
+      apiVersion: 'storage.k8s.io/v1',
+      metadata: {
+        name: 'gp3-csi',
+        annotations: {
+          'storageclass.kubernetes.io/is-default-class': 'true',
+        },
+      },
+      provisioner: 'ebs.csi.aws.com',
+      parameters: {
+        encrypted: 'true',
+        type: 'gp3',
+      },
+      reclaimPolicy: 'Delete',
+      allowVolumeExpansion: true,
+      volumeBindingMode: 'WaitForFirstConsumer',
+    }
+
+    const expectedSecret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: 'kubevirt-noei',
+        namespace: 'test-ns',
+        labels: {
+          'cluster.open-cluster-management.io/type': 'kubevirt',
+          'cluster.open-cluster-management.io/credentials': '',
+        },
+      },
+      stringData: {
+        pullSecret: pullSecret,
+        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+      },
+    }
+    const initialNocks: Scope[] = [
+      nockList(clusterImageSet415 as IResource, [clusterImageSet415] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component />)
+
+    // wait for tables/combos to fill in
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+    await waitForText('Node pools')
+    await waitForText('Review and create')
+
+    // fill-in Cluster details
+    await typeByTestId('clusterName', clusterName)
+
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByText('OpenShift 4.15.0')
+
+    await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+
+    await clickByPlaceholderText('Select a credential')
+    await clickByText('Add credential')
+    await typeByTestId('credentialsName', 'kubevirt-noei')
+    await clickByTestId('namespaceName-input-toggle-select-typeahead')
+    await clickByText('test-ns')
+    await clickByText('Next', 1)
+    await clickByText('Next', 1)
+    await pasteByTestId('pullSecret', pullSecret)
+    await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
+    screen.logTestingPlaygroundURL()
+    await clickByText('Next', 1)
+    await clickByText('Add')
+
+    // wait for kubevirt credential creation
+    await waitForNocks([nockCreate(expectedSecret)])
+
+    await clickByPlaceholderText('Select a credential')
+    await clickByText('connectionKubeVirt')
+
+    // transition to NodePools
+    await clickByText('Next')
+
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // Review and Save step
+    await clickByText('Next')
+    await clickByText('Create')
+  })
+})
+
+describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
+  const kubeConfig = {
+    clusters: [
+      {
+        name: 'my-cluster',
+        cluster: {
+          'certificate-authority-data': 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg==',
+          server: 'https://my-cluster.example.com',
+        },
+      },
+    ],
+    contexts: [
+      {
+        name: 'my-context',
+        context: {
+          cluster: 'my-cluster',
+          user: 'my-user',
+        },
+      },
+    ],
+    'current-context': 'my-context',
+    preferences: {},
+    users: [
+      {
+        name: 'my-user',
+        user: {
+          'client-certificate-data': 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg==',
+          'client-key-data': 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQo=',
+        },
+      },
+    ],
+  }
+
+  const pullSecret = '{"pullSecret":"secret"}\n'
+  const Component = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'testNs' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [
+            {
+              apiVersion: ProviderConnectionApiVersion,
+              kind: ProviderConnectionKind,
+              metadata: {
+                name: 'connectionKubeVirt',
+                namespace: 'testNs',
+                labels: {
+                  'cluster.open-cluster-management.io/type': 'kubevirt',
+                },
+              },
+              stringData: {
+                pullSecret: pullSecret,
+                'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+                externalInfraKubeconfig: JSON.stringify(kubeConfig),
+                externalInfraNamespace: 'kubevirt-namespace',
+              },
+              type: 'kubernetes.io/dockerconfigjson',
+            } as Secret,
+          ])
+          snapshot.set(clusterCuratorsState, mockClusterCurators)
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+
+  test('KubeVirt cluster creation with a kubevirt credential that has external infrastructure', async () => {
+    const clusterImageSet415: ClusterImageSetK8sResource = {
+      apiVersion: ClusterImageSetApiVersion,
+      kind: ClusterImageSetKind,
+      metadata: {
+        name: 'ocp-release415',
+      },
+      spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+      },
+    }
+    const storageClass = {
+      kind: 'StorageClass',
+      apiVersion: 'storage.k8s.io/v1',
+      metadata: {
+        name: 'gp3-csi',
+        annotations: {
+          'storageclass.kubernetes.io/is-default-class': 'true',
+        },
+      },
+      provisioner: 'ebs.csi.aws.com',
+      parameters: {
+        encrypted: 'true',
+        type: 'gp3',
+      },
+      reclaimPolicy: 'Delete',
+      allowVolumeExpansion: true,
+      volumeBindingMode: 'WaitForFirstConsumer',
+    }
+
+    const initialNocks: Scope[] = [
+      nockList(clusterImageSet415 as IResource, [clusterImageSet415] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+
+    const expectedSecret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: 'kubevirt-with-ei',
+        namespace: 'testNs',
+        labels: {
+          'cluster.open-cluster-management.io/type': 'kubevirt',
+          'cluster.open-cluster-management.io/credentials': '',
+        },
+      },
+      stringData: {
+        pullSecret: pullSecret,
+        'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+        externalInfraKubeconfig: JSON.stringify(kubeConfig),
+        externalInfraNamespace: 'kubevirt-namespace',
+      },
+    }
+
+    render(<Component />)
+
+    // wait for tables/combos to fill in
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+    await waitForText('Node pools')
+    await waitForText('Review and create')
+
+    // fill-in Cluster details
+    await typeByTestId('clusterName', clusterName)
+
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByText('OpenShift 4.15.0')
+
+    await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+
+    await clickByPlaceholderText('Select a credential')
+    await clickByText('Add credential')
+    await clickByTestId('credentialsName')
+    await typeByTestId('credentialsName', 'kubevirt-with-ei')
+    await clickByTestId('namespaceName-input-toggle-select-typeahead')
+    await clickByText('testNs')
+    await clickByText('Next', 1)
+    await clickByTestId('isExternalInfra')
+    await typeByTestId('externalInfraKubeconfig', JSON.stringify(kubeConfig))
+    console.log(JSON.stringify(kubeConfig))
+    await typeByTestId('externalInfraNamespace', 'kubevirt-namespace')
+    await clickByText('Next', 1)
+    await pasteByTestId('pullSecret', pullSecret)
+    await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
+    await clickByText('Next', 1)
+    await clickByText('Add')
+
+    await waitForNocks([nockCreate(expectedSecret)])
+    await clickByPlaceholderText('Select a credential')
+    await clickByText('connectionKubeVirt')
+
+    // transition to NodePools
+    await clickByText('Next')
+
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // Review and Save step
+    await clickByText('Next')
+    await clickByText('Create')
+    screen.logTestingPlaygroundURL()
   })
 })
