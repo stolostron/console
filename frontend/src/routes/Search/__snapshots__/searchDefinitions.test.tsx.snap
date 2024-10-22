@@ -2419,7 +2419,7 @@ Array [
       }
       t={[Function]}
     />,
-    "header": "Console URL",
+    "header": "VM details",
   },
   Object {
     "cell": "in a month",
@@ -2562,7 +2562,7 @@ Array [
       }
       t={[Function]}
     />,
-    "header": "Console URL",
+    "header": "VM details",
   },
   Object {
     "cell": "in a month",
