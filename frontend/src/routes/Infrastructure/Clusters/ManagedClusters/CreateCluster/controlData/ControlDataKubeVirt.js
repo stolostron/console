@@ -44,16 +44,20 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-export const setKubeVirtSecrets = (control) => {
+export const onChangeKubeVirtConnection = (control, controlData) => {
   const { active, availableMap = {} } = control
   const replacements = get(availableMap[active], 'replacements')
+  const isEncoded = replacements?.encoded && replacements?.encoded === true
   const activePullSecret = replacements?.pullSecret ?? ''
   const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
-  const isEncoded = replacements?.encoded && replacements?.encoded === true
+  const activeExternalInfraKubeconfig = replacements?.externalInfraKubeconfig ?? ''
+  const activeExternalInfraNamespace = replacements?.externalInfraNamespace ?? ''
 
   if (active && !isEncoded && activePullSecret !== '') {
     control.availableMap[active] = {
       replacements: {
+        externalInfraKubeconfig: Buffer.from(activeExternalInfraKubeconfig, 'ascii').toString('base64'),
+        externalInfraNamespace: activeExternalInfraNamespace,
         pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
         'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
         encoded: true,
@@ -109,8 +113,14 @@ export const getControlDataKubeVirt = (
       },
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
-      onSelect: setKubeVirtSecrets,
+      onSelect: onChangeKubeVirtConnection,
+      encode: ['pullSecret', 'sshPublicKey', 'externalInfraKubeconfig'],
       hasReplacements: true,
+    },
+    {
+      id: 'showSecrets',
+      type: 'hidden',
+      active: true,
     },
     {
       name: t('creation.ocp.name'),
