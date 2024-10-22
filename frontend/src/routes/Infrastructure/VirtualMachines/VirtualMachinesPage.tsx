@@ -41,6 +41,7 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult, useGetRowActions } from '../../Search/SearchResults/utils'
+import { OCP_DOC } from '../../../lib/doc-util'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -161,7 +162,7 @@ function VirtualMachineTable() {
               <AcmButton
                 variant={'link'}
                 component={TextVariants.a}
-                href={`https://docs.openshift.com/container-platform/${ocpVersion}/virt/about_virt/about-virt.html`}
+                href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
                 target="_blank"
               >
                 {t('Learn more about OpenShift Virtualization')}
