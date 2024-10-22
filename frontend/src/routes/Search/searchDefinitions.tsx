@@ -376,7 +376,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('ready', t('Ready')),
         {
-          header: t('Console URL'),
+          header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
@@ -394,7 +394,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('node', t('Node')),
         AddColumn('ipaddress', t('IP address')),
         {
-          header: t('Console URL'),
+          header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
