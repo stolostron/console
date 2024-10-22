@@ -30,7 +30,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
             <>
               {t('page.header.create-cluster.tooltip')}
               <a
-                href={DOC_LINKS.CREATE_CLUSTER_HOSTED_AWS}
+                href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS}
                 target="_blank"
                 rel="noreferrer"
                 style={{ display: 'block', marginTop: '4px' }}

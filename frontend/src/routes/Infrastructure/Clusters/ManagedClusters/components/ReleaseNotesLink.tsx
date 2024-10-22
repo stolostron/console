@@ -2,7 +2,7 @@
 
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { OCP_DOC_BASE_PATH } from '../../../../../lib/doc-util'
+import { OCP_DOC } from '../../../../../lib/doc-util'
 
 // must be x.y.z version prop
 export const ReleaseNotesLink = (props: { version?: string }) => {
@@ -15,7 +15,7 @@ export const ReleaseNotesLink = (props: { version?: string }) => {
 
   return (
     <a
-      href={`${OCP_DOC_BASE_PATH}/${x}.${y}/html/release_notes/ocp-${x}-${y}-release-notes.html#ocp-${x}-${y}-${z}`}
+      href={`${OCP_DOC}/${x}.${y}/html/release_notes/ocp-${x}-${y}-release-notes.html#ocp-${x}-${y}-${z}`}
       target="_blank"
       rel="noreferrer"
       style={{ display: 'block', marginTop: '6px' }}
