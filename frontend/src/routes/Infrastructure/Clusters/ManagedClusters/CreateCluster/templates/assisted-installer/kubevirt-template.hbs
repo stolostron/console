@@ -54,15 +54,37 @@ spec:
   - service: Ignition
     servicePublishingStrategy:
       type: Route
-
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: infra-cluster-{{{clusterName}}}
+{{#if (and externalInfraKubeconfig externalInfraNamespace)}}
+credentials:
+  infraKubeConfigSecret:
+    name: infra-cluster-{{{clusterName}}}
+data:
+  {{#if showSecrets}}          
+  key: {{{externalInfraKubeconfig}}}
+  infraNamespace: {{{externalInfraNamespace}}}
+  {{else}}
+  key: |-
+  infraNamespace: |- 
+  {{/if}}
+{{/if}}
+---
+
 apiVersion: v1
 kind: Secret
 metadata:
   name: pullsecret-cluster-{{{clusterName}}}
   namespace: clusters
 data:
+  {{#if showSecrets}}
   '.dockerconfigjson': {{{pullSecret}}}
+  {{else}}
+  '.dockerconfigjson': |-
+  {{/if}}
 type: kubernetes.io/dockerconfigjson
 
 ---
@@ -72,7 +94,11 @@ metadata:
   name: sshkey-cluster-{{{clusterName}}}
   namespace: 'clusters'
 data:
+  {{#if showSecrets}}
   id_rsa.pub: {{{ssh-publickey}}}
+  {{else}}
+  id_rsa.pub: |-
+  {{/if}}
 
 {{#each nodepools}}
 ---
