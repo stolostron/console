@@ -2,6 +2,10 @@
 import { css } from '@emotion/css'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
+// Register the custom 'and' helper
+Handlebars.registerHelper('and', function (a, b) {
+  return a && b
+})
 import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
@@ -59,7 +63,7 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
-import { getControlDataKubeVirt, setKubeVirtSecrets } from './controlData/ControlDataKubeVirt'
+import { getControlDataKubeVirt, onChangeKubeVirtConnection } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
@@ -147,23 +151,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const onControlChange = useCallback(
     (control: any) => {
       if (control.id === 'connection') {
-        if (newSecret && control.setActive) {
-          const secretName = newSecret?.metadata.name ?? ''
-          if (control.providerId === 'kubevirt') {
-            // preset replacement fields to get around delayed control state from setAvailableConnections
-            control.availableMap[secretName] = {
-              replacements: {
-                pullSecret: newSecret.data?.pullSecret ?? '',
-                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
-                encoded: true,
-              },
-            }
-          }
-          control.setActive(secretName)
-          setNewSecret(undefined) // override with the new secret once
-        }
         if (!newSecret && control.providerId === 'kubevirt') {
-          setKubeVirtSecrets(control)
+          onChangeKubeVirtConnection(control, controlData)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
