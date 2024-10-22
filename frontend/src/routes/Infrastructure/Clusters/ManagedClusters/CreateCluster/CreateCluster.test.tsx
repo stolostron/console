@@ -1398,7 +1398,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByText('Next', 1)
     await pasteByTestId('pullSecret', pullSecret)
     await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
-    screen.logTestingPlaygroundURL()
     await clickByText('Next', 1)
     await clickByText('Add')
 
@@ -1635,6 +1634,5 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
     await clickByText('Create')
-    screen.logTestingPlaygroundURL()
   })
 })
