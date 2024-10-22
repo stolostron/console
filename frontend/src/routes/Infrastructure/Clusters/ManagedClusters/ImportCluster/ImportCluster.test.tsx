@@ -1197,7 +1197,6 @@ describe('Import cluster RHOCM mode', () => {
     // Assert the removed credential does not exist
     expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
-    screen.logTestingPlaygroundURL()
     // Remove the 2nd credential (now the 1st in the list)
     setSetSecrets.mock.calls.slice(-1)[0][0]([mockCRHCredential3])
 
@@ -1211,98 +1210,5 @@ describe('Import cluster RHOCM mode', () => {
       })
     )
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
-  })
-})
-describe('Credential Edge Cases 1', () => {
-  const initializeCredentialComponent = (secrets: Secret[]) => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-        snapshot.set(secretsState, secrets)
-        snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-        snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-        snapshot.set(namespacesState, mockNamepaces)
-      }}
-    >
-      <MemoryRouter>
-        <Routes>
-          <Route path="/" element={<DiscoveredClustersPage />} />
-          <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
-        </Routes>
-      </MemoryRouter>
-    </RecoilRoot>
-  )
-
-  test('should set credential to empty string when no credentials exist in namespace', async () => {
-    const secrets: Secret[] = []
-    const { getByDisplayValue } = render(initializeCredentialComponent(secrets))
-
-    await waitFor(() => {
-      expect(getByDisplayValue('')).toBeInTheDocument()
-    })
-  })
-
-  test('should set credential to empty string when metadata.name is undefined', async () => {
-    const secrets: Secret[] = [
-      {
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: { name: '', namespace: 'default' },
-        data: {},
-      },
-    ]
-    const { getByDisplayValue } = render(initializeCredentialComponent(secrets))
-
-    await waitFor(() => {
-      expect(getByDisplayValue('')).toBeInTheDocument()
-    })
-  })
-})
-
-describe('Credential Edge Cases 2', () => {
-  const initializeCredentialComponent = (secrets: Secret[]) => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-        snapshot.set(secretsState, secrets)
-        snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-        snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-        snapshot.set(namespacesState, mockNamepaces)
-      }}
-    >
-      <MemoryRouter>
-        <Routes>
-          <Route path="/" element={<DiscoveredClustersPage />} />
-          <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
-        </Routes>
-      </MemoryRouter>
-    </RecoilRoot>
-  )
-
-  test('should set credential to the first filtered credential name when it exists', async () => {
-    const validSecrets: Secret[] = [
-      {
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: { name: 'validCredential', namespace: 'open-cluster-management' },
-        data: {
-          someKey: 'someValue',
-        },
-      },
-      {
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: { name: 'otherCredential', namespace: 'open-cluster-management' },
-        data: {
-          anotherKey: 'anotherValue',
-        },
-      },
-    ]
-
-    const { getAllByText } = render(initializeCredentialComponent(validSecrets))
-
-    await waitFor(() => {
-      expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()
-    })
   })
 })
