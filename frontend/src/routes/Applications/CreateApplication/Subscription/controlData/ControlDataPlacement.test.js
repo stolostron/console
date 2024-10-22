@@ -22,10 +22,20 @@ describe('getLabels normal operation', () => {
         key: 'cloud',
         operator: 'In',
       },
+      {
+        key: 'local-cluster',
+        operator: 'DoesNotExist',
+      },
+      {
+        key: 'app',
+        operator: 'Exists',
+      },
     ],
   }
 
   it('should get labels from clusterselector', () => {
-    expect(getLabels(clusterSelector)).toEqual('name "In" local-cluster; #invalidExpr; #invalidExpr; #invalidExpr')
+    expect(getLabels(clusterSelector)).toEqual(
+      'name "In" local-cluster; #invalidExpr; #invalidExpr; #invalidExpr; local-cluster "DoesNotExist"; app "Exists"'
+    )
   })
 })
