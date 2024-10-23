@@ -40,7 +40,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, OCP_DOC_BASE_PATH, ViewDocumentationLink } from '../../../lib/doc-util'
+import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
@@ -424,7 +424,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const isCIMWorking = isStorage && isCIMConfigured({ agentServiceConfig })
 
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
-  const docStorageUrl = `${OCP_DOC_BASE_PATH}/${ocpVersion}/post_installation_configuration/storage-configuration.html`
+  const docStorageUrl = `${OCP_DOC}/${ocpVersion}/post_installation_configuration/storage-configuration.html`
 
   const getDateTimeCellValue = (infraEnv: InfraEnvK8sResource) => {
     const dateTimeCell = getDateTimeCell(
