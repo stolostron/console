@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'
 import { debounce } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
