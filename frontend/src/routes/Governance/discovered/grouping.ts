@@ -110,6 +110,14 @@ export function grouping(): {
     } else if (policy.apigroup === 'constraints.gatekeeper.sh') {
       // The default is deny when unset.
       return 'deny'
+    } else if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+      // Required field
+      if (policy.validationActions) {
+        return policy.validationActions
+          .split('; ')
+          .sort() //NOSONAR
+          .join('/')
+      }
     }
 
     return null
@@ -134,20 +142,26 @@ export function grouping(): {
     const parseStringMap = eval(parseStringMapStr) as TParseStringMap
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
-    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])?.map((policy: any): any => {
-      return {
-        ...policy,
-        source: getPolicySource(
-          policy,
-          helmReleases,
-          channels,
-          subscriptions,
-          resolveSource,
-          getSourceText,
-          parseStringMap
-        ),
-      }
-    })
+    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
+      ?.filter(
+        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
+        (policy: any): any =>
+          !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
+      )
+      .map((policy: any): any => {
+        return {
+          ...policy,
+          source: getPolicySource(
+            policy,
+            helmReleases,
+            channels,
+            subscriptions,
+            resolveSource,
+            getSourceText,
+            parseStringMap
+          ),
+        }
+      })
 
     const groupByNameKindGroup: { [nameKindGroup: string]: any[] } = {}
     // Group by policy name, kind and apigroup
@@ -180,7 +194,13 @@ export function grouping(): {
 
         if (responseAction) {
           policy.responseAction = responseAction
-          allResponseActions.add(responseAction)
+          if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+            for (const action of responseAction.split('/')) {
+              allResponseActions.add(action)
+            }
+          } else {
+            allResponseActions.add(responseAction)
+          }
         }
 
         if (source.type === 'Multiple') {

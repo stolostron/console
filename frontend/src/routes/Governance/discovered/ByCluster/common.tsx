@@ -82,6 +82,7 @@ export const byClusterCols = (
   helmReleases: HelmRelease[],
   subscriptions: Subscription[],
   channels: Channel[],
+  policyKind: string,
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
 ): IAcmTableColumn<DiscoveredPolicyItem>[] => [
   {
@@ -126,69 +127,73 @@ export const byClusterCols = (
     tooltip: t('discoveredPolicies.tooltip.severity'),
     exportContent: (item) => item.severity,
   },
-  {
-    header: t('Violations'),
-    tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
-    cell: (item: DiscoveredPolicyItem) => {
-      let compliant: string
+  ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
+    ? [
+        {
+          header: t('Violations'),
+          tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
+          cell: (item: DiscoveredPolicyItem) => {
+            let compliant: string
 
-      if (item.apigroup === 'constraints.gatekeeper.sh') {
-        compliant = getConstraintCompliance(item?.totalViolations)
-      } else {
-        compliant = item?.compliant?.toLowerCase() ?? ''
-      }
+            if (item.apigroup === 'constraints.gatekeeper.sh') {
+              compliant = getConstraintCompliance(item?.totalViolations)
+            } else {
+              compliant = item?.compliant?.toLowerCase() ?? ''
+            }
 
-      switch (compliant) {
-        case 'compliant':
-          return (
-            <div>
-              <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-            </div>
-          )
-        case 'noncompliant':
-          return (
-            <div>
-              {item?.totalViolations ? (
-                <>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {item.totalViolations}
-                </>
-              ) : (
-                <>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
-                </>
-              )}
-            </div>
-          )
-        case 'pending':
-          return (
-            <div>
-              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
-            </div>
-          )
-        default:
-          return (
-            <div>
-              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-            </div>
-          )
-      }
-    },
-    sort: 'compliant',
-    id: 'violations',
-    exportContent: (item: DiscoveredPolicyItem) => {
-      if (item.apigroup === 'constraints.gatekeeper.sh') {
-        const compliant = getConstraintCompliance(item?.totalViolations)
+            switch (compliant) {
+              case 'compliant':
+                return (
+                  <div>
+                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                  </div>
+                )
+              case 'noncompliant':
+                return (
+                  <div>
+                    {item?.totalViolations ? (
+                      <>
+                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {item.totalViolations}
+                      </>
+                    ) : (
+                      <>
+                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                      </>
+                    )}
+                  </div>
+                )
+              case 'pending':
+                return (
+                  <div>
+                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+                  </div>
+                )
+              default:
+                return (
+                  <div>
+                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  </div>
+                )
+            }
+          },
+          sort: 'compliant',
+          id: 'violations',
+          exportContent: (item: DiscoveredPolicyItem) => {
+            if (item.apigroup === 'constraints.gatekeeper.sh') {
+              const compliant = getConstraintCompliance(item?.totalViolations)
 
-        if (compliant === 'noncompliant') {
-          return compliant + ' (' + item.totalViolations + ')'
-        }
+              if (compliant === 'noncompliant') {
+                return compliant + ' (' + item.totalViolations + ')'
+              }
 
-        return compliant ?? '-'
-      }
+              return compliant ?? '-'
+            }
 
-      return item?.compliant?.toLowerCase() ?? '-'
-    },
-  },
+            return item?.compliant?.toLowerCase() ?? '-'
+          },
+        },
+      ]
+    : []),
   {
     header: t('Source'),
     cell: (item: DiscoveredPolicyItem) => {
@@ -318,6 +323,10 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
     ],
     tableFilterFn: (selectedValues, item) => {
       for (const selectedValue of selectedValues) {
+        if (!item.responseAction) {
+          return false
+        }
+
         for (const responseAction of item.responseAction.split('/')) {
           if (selectedValue === responseAction) {
             return true

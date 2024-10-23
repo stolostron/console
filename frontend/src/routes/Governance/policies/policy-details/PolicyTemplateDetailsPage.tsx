@@ -12,11 +12,13 @@ import { TemplateDetailTitle } from '../../components/TemplateDetailTitle'
 export type TemplateDetailsContext = {
   clusterName: string
   template: any
+  templateLoading: boolean
 }
 
 export function PolicyTemplateDetailsPage() {
   const { t } = useTranslation()
   const [template, setTemplate] = useState<any>()
+  const [templateLoading, setTemplateLoading] = useState<boolean>(true)
   const [templateError, setTemplateError] = useState<string>()
   const { managedClusterAddonsState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
@@ -105,27 +107,39 @@ export function PolicyTemplateDetailsPage() {
       return
     }
 
-    const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-    fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
-      .then((viewResponse) => {
-        if (viewResponse?.message) {
-          setTemplateError(viewResponse.message)
-        } else {
-          setTemplate(viewResponse.result)
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting resource: ', err)
-        setTemplateError(err)
-      })
+    let namespace = templateNamespace
+    // Apply both to ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding
+    if (kind.startsWith('ValidatingAdmissionPolicy')) {
+      namespace = ''
+    }
+
+    // This condition is added to enhance performance and reduce ManagedClusterView errors.
+    if (templateClusterName && kind && templateName && apiVersion) {
+      setTemplateLoading(true)
+      const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
+      fireManagedClusterView(templateClusterName, kind, version, templateName, namespace)
+        .then((viewResponse) => {
+          if (viewResponse?.message) {
+            setTemplateError(viewResponse.message)
+          } else {
+            setTemplate(viewResponse.result)
+          }
+        })
+        .catch((err) => {
+          console.error('Error getting resource: ', err)
+          setTemplateError(err)
+        })
+      setTemplateLoading(false)
+    }
   }, [t, clusterName, kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
 
   const templateDetailsContext = useMemo<TemplateDetailsContext>(
     () => ({
       template,
       clusterName,
+      templateLoading,
     }),
-    [template, clusterName]
+    [template, clusterName, templateLoading]
   )
 
   return (

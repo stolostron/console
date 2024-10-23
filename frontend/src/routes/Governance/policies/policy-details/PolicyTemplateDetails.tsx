@@ -1,21 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Grid, GridItem, PageSection, Title } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { Badge, Grid, GridItem, PageSection, Skeleton, Title } from '@patternfly/react-core'
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  ExternalLinkAltIcon,
+} from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
+  AcmAlert,
   AcmDescriptionList,
   AcmEmptyState,
   AcmTable,
   AcmTablePaginationContextProvider,
   compareStrings,
+  ListItems,
 } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
-import { useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
 import { Grid as MuiGrid } from '@mui/material'
+import { useGetParamKind, useFetchVapb } from './PolicyTemplateDetailHooks'
 
 interface IKinds {
   apiGroups: string[]
@@ -27,8 +35,13 @@ export function PolicyTemplateDetails() {
   const name = urlParams.templateName ?? '-'
   const kind = urlParams.kind ?? ''
   const apiGroup = urlParams.apiGroup ?? ''
-  const { clusterName, template } = useTemplateDetailsContext()
-  const [relatedObjects, setRelatedObjects] = useState<any>()
+  const apiVersion = urlParams.apiVersion ?? ''
+  const { clusterName, template, templateLoading } = useTemplateDetailsContext()
+  const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
+  // This is for gatekeeper constraint
+  const vapb = useFetchVapb()
+  // This is for ValidatingAdmissionPolicyBinding
+  const paramKind = useGetParamKind()
 
   useEffect(() => {
     if (template?.status?.relatedObjects?.length) {
@@ -67,11 +80,14 @@ export function PolicyTemplateDetails() {
 
       return
     }
-    setRelatedObjects([])
-  }, [apiGroup, clusterName, template])
+
+    if (!templateLoading) {
+      setRelatedObjects([])
+    }
+  }, [apiGroup, clusterName, template, templateLoading])
 
   const descriptionItems = useMemo(() => {
-    const cols = [
+    const cols: ListItems[] = [
       {
         key: t('Name'),
         value: name,
@@ -82,7 +98,7 @@ export function PolicyTemplateDetails() {
       },
       {
         key: t('Cluster'),
-        value: template ? clusterName : '-',
+        value: clusterName || '-',
       },
       {
         key: t('Kind'),
@@ -90,11 +106,46 @@ export function PolicyTemplateDetails() {
       },
       {
         key: t('API groups'),
-        value: template?.apiVersion ?? '-',
+        value: apiVersion ? apiGroup + '/' + apiVersion : apiGroup,
       },
     ]
 
-    if (template?.spec?.match?.kinds) {
+    if (apiGroup === 'constraints.gatekeeper.sh') {
+      // Loading to fetch VAPB
+      if (!vapb.vapbItems) {
+        cols.push({
+          key: 'Validating Admission Policy Binding',
+          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
+        })
+      } else if (vapb.vapbItems && vapb.vapbItems.length > 0 && !vapb.loading) {
+        cols.push({
+          key: 'Validating Admission Policy Binding',
+          value: (
+            <Link
+              to={generatePath(NavigationPath.discoveredPolicyDetails, {
+                clusterName,
+                apiVersion: 'v1',
+                apiGroup: 'admissionregistration.k8s.io',
+                kind: 'ValidatingAdmissionPolicyBinding',
+                templateName: `gatekeeper-${name}`,
+                templateNamespace: null,
+              })}
+              target="_blank"
+            >
+              gatekeeper-{name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+            </Link>
+          ),
+        })
+      } else if (vapb.vapbItems && vapb.vapbItems.length == 0 && !vapb.loading) {
+        cols.push({
+          key: 'Validating Admission Policy Binding',
+          value: '-',
+        })
+      }
+    }
+
+    // Gatekeeper Constraint
+    if (template?.spec?.match?.kinds && apiGroup === 'constraints.gatekeeper.sh') {
       return [
         ...cols.slice(0, 2),
         {
@@ -118,8 +169,75 @@ export function PolicyTemplateDetails() {
       cols.push({ key: t('Message'), value: value })
     }
 
+    if (kind === 'ValidatingAdmissionPolicyBinding') {
+      // Add a row forValidatingAdmissionPolicy
+      if (!template) {
+        cols.push({
+          key: 'Validating Admission Policy',
+          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
+        })
+        cols.push({
+          key: 'Parameter resource',
+          value: <Skeleton width="100%" screenreaderText="Fetching paramRef resource" />,
+        })
+      } else {
+        const policyName = template?.spec?.policyName
+        if (policyName) {
+          cols.push({
+            key: 'Validating Admission Policy',
+            value: (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ValidatingAdmissionPolicy&apiversion=v1&name=${policyName}`}
+              >
+                {policyName}
+                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+              </a>
+            ),
+          })
+        } else {
+          cols.push({
+            key: 'Validating Admission Policy',
+            value: '-',
+          })
+        }
+
+        // Add a row paramRef
+        // paramKind is not ready yet
+        if (template?.spec?.paramRef.name && paramKind.paramKindObj && !paramKind.loading) {
+          const { apiVersion, kind } = paramKind.paramKindObj
+          const { namespace, name } = template.spec.paramRef
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          cols.push({
+            key: 'Parameter resource',
+            value: (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
+              >
+                {t('View YAML')}
+                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+              </a>
+            ),
+          })
+        } else if (paramKind.loading) {
+          cols.push({
+            key: 'Parameter resource',
+            value: <Skeleton width="100%" screenreaderText="Fetching paramRef resource" />,
+          })
+        } else {
+          cols.push({
+            key: 'Parameter resource',
+            value: '-',
+          })
+        }
+      }
+    }
+
     return cols
-  }, [t, name, kind, apiGroup, template, clusterName])
+  }, [t, name, kind, apiGroup, template, clusterName, vapb, apiVersion, paramKind.loading, paramKind.paramKindObj])
 
   const relatedResourceColumns = useMemo(
     () => [
@@ -147,50 +265,71 @@ export function PolicyTemplateDetails() {
         sort: 'object.apiVersion',
         search: 'object.apiVersion',
       },
-      {
-        header: t('Violations'),
-        sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
-        cell: (item: any) => {
-          let compliant = item.compliant ?? '-'
-          compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
+      ...(kind === 'ValidatingAdmissionPolicyBinding'
+        ? []
+        : [
+            {
+              header: t('Violations'),
+              sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
+              cell: (item: any) => {
+                let compliant = item.compliant ?? '-'
+                compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
 
-          switch (compliant) {
-            case 'compliant':
-              compliant = (
-                <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-                </div>
-              )
-              break
-            case 'noncompliant':
-              compliant = (
-                <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
-                  <DiffModal
-                    diff={item.properties?.diff}
-                    kind={item.object?.kind}
-                    namespace={item.object?.metadata?.namespace}
-                    name={item.object?.metadata?.name}
-                  />
-                </div>
-              )
-              break
-            case 'unknowncompliancy':
-              if (kind === 'OperatorPolicy') {
-                switch (item.object?.kind) {
-                  case 'Deployment':
+                switch (compliant) {
+                  case 'compliant':
                     compliant = (
                       <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                        <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
                       </div>
                     )
                     break
-                  case 'CustomResourceDefinition':
+                  case 'noncompliant':
                     compliant = (
                       <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                        <DiffModal
+                          diff={item.properties?.diff}
+                          kind={item.object?.kind}
+                          namespace={item.object?.metadata?.namespace}
+                          name={item.object?.metadata?.name}
+                        />
                       </div>
                     )
+                    break
+                  case 'unknowncompliancy':
+                    if (kind === 'OperatorPolicy') {
+                      switch (item.object?.kind) {
+                        case 'Deployment':
+                          compliant = (
+                            <div>
+                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                              {t('Inapplicable')}
+                            </div>
+                          )
+                          break
+                        case 'CustomResourceDefinition':
+                          compliant = (
+                            <div>
+                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                              {t('Inapplicable')}
+                            </div>
+                          )
+                          break
+                        default:
+                          compliant = (
+                            <div>
+                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                            </div>
+                          )
+                          break
+                      }
+                    } else {
+                      compliant = (
+                        <div>
+                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                        </div>
+                      )
+                    }
                     break
                   default:
                     compliant = (
@@ -200,26 +339,11 @@ export function PolicyTemplateDetails() {
                     )
                     break
                 }
-              } else {
-                compliant = (
-                  <div>
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                  </div>
-                )
-              }
-              break
-            default:
-              compliant = (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                </div>
-              )
-              break
-          }
 
-          return compliant
-        },
-      },
+                return compliant
+              },
+            },
+          ]),
       {
         header: t('Reason'),
         cell: 'reason',
@@ -248,7 +372,7 @@ export function PolicyTemplateDetails() {
                 rel="noopener noreferrer"
                 href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
               >
-                {t('View YAML')}
+                {t('View YAML')} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
               </a>
             )
           }
@@ -261,6 +385,16 @@ export function PolicyTemplateDetails() {
 
   return (
     <div>
+      {vapb.err && (
+        <PageSection style={{ paddingBottom: '0' }}>
+          <AcmAlert variant="danger" title={vapb.err} isInline noClose />
+        </PageSection>
+      )}
+      {paramKind.err && (
+        <PageSection style={{ paddingBottom: '0' }}>
+          <AcmAlert variant="danger" title={paramKind.err} isInline noClose />
+        </PageSection>
+      )}
       <PageSection style={{ paddingBottom: '0' }}>
         <Grid hasGutter>
           <GridItem span={12}>
