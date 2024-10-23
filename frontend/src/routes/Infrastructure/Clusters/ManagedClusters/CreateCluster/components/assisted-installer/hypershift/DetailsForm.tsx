@@ -34,6 +34,7 @@ type FormControl = {
     }[]
     releaseImage?: string
     sshPublicKey?: string
+    userManagedNetworking?: boolean
   }
   disabled?: VoidFunction
   reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
