@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
-import { TextContent } from '@patternfly/react-core'
 import { useTranslation } from './acm-i18next'
 
 export const DOC_VERSION = '2.12'
@@ -50,7 +50,7 @@ export const DOC_LINKS = {
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
-  POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#policy-overview`,
+  POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#hub-policy-framework`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/gitops/gitops-overview`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_BASE_PATH}/observability/observing-environments-intro#enabling-observability-service`,
