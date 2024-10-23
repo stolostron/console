@@ -21,7 +21,7 @@ export interface DiscoveredPolicyItem {
   compliant?: string
   responseAction: string
   severity?: string
-  _isExternal: boolean
+  _isExternal?: boolean
   annotation: string
   created: string
   label: string
@@ -37,6 +37,10 @@ export interface DiscoveredPolicyItem {
   totalViolations?: number
   // Not from search-collector. Attached in grouping function
   source?: ISourceType
+  // ValidatingAdmissionPolicyBinding
+  policyName?: string
+  _ownedByGatekeeper?: boolean
+  validationActions?: string
 }
 
 export interface DiscoverdPolicyTableItem {
@@ -87,11 +91,11 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
         filters: [
           {
             property: 'apigroup',
-            values: ['policy.open-cluster-management.io'],
+            values: ['policy.open-cluster-management.io', 'admissionregistration.k8s.io'],
           },
           {
             property: 'kind',
-            values: ['CertificatePolicy', 'ConfigurationPolicy', 'OperatorPolicy'],
+            values: ['CertificatePolicy', 'ConfigurationPolicy', 'OperatorPolicy', 'ValidatingAdmissionPolicyBinding'],
           },
         ],
         limit: 100000,

@@ -356,4 +356,67 @@ describe('useFetchPolicies custom hook', () => {
       ])
     )
   })
+
+  test('Should render ValidatingAdmissionPolicyBinding', async () => {
+    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+      isFetching: false,
+      data: [
+        {
+          id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
+          apigroup: 'admissionregistration.k8s.io',
+          name: 'machine-configuration-guards-binding',
+          kind: 'ValidatingAdmissionPolicyBinding',
+          severity: 'unknown',
+          responseAction: 'audit/deny',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _ownedByGatekeeper: false,
+              _uid: 'local-cluster/0',
+              apigroup: 'admissionregistration.k8s.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-10-22T11:13:54Z',
+              kind: 'ValidatingAdmissionPolicyBinding',
+              kind_plural: 'validatingadmissionpolicybindings',
+              name: 'machine-configuration-guards-binding',
+              policyName: 'machine-configuration-guards',
+              validationActions: 'audit; deny',
+              severity: '',
+              responseAction: 'audit/deny',
+              source: { type: 'Local', parentNs: '', parentName: '' },
+              annotation: '',
+              label: '',
+            },
+          ],
+          source: { type: 'Local', parentNs: '', parentName: '' },
+        },
+      ],
+      err: undefined,
+    })
+
+    const { container } = render(
+      <MemoryRouter>
+        <DiscoveredPolicies />
+      </MemoryRouter>
+    )
+
+    await waitForText('Name')
+    await waitForText('machine-configuration-guards-binding')
+
+    await waitForText('Engine')
+    await waitForText('Kubernetes')
+
+    await waitForText('Kind')
+    await waitForText('ValidatingAdmissionPolicyBinding')
+
+    await waitForText('Response action')
+    await waitForText('audit/deny')
+
+    await waitForText('Severity')
+    expect(container.querySelector('td[data-label="Cluster violations"]')).toHaveTextContent('-')
+    expect(container.querySelector('td[data-label="Severity"]')).toHaveTextContent('-')
+    await waitForText('Source')
+    await waitForText('Local')
+  })
 })
