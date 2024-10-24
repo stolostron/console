@@ -311,6 +311,94 @@ getOppolResourceResponse.status = {
   },
 }
 
+const getVapbResourceRequest = {
+  apiVersion: 'view.open-cluster-management.io/v1beta1',
+  kind: 'ManagedClusterView',
+  metadata: {
+    name: '9b3c685c8462128e263c6c950f89adb378c2ffcd',
+    namespace: 'test-cluster',
+    labels: { viewName: '9b3c685c8462128e263c6c950f89adb378c2ffcd' },
+  },
+  spec: {
+    scope: {
+      name: 'gatekeeper-ns-must-have-gk',
+      resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
+    },
+  },
+}
+
+const getVapbResourceResponse = JSON.parse(JSON.stringify(getVapbResourceRequest))
+getVapbResourceResponse.status = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
+    },
+  ],
+  result: {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicyBinding',
+    metadata: {
+      labels: {
+        'cluster-name': 'local-cluster',
+        'cluster-namespace': 'local-cluster',
+        'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+        'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+      },
+      name: 'gatekeeper-ns-must-have-gk',
+    },
+    spec: {
+      policyName: 'gatekeeper-k8srequiredlabels',
+      validationActions: ['Deny'],
+      paramRef: { name: 'pod-1', namespace: 'test1' },
+    },
+  },
+}
+
+const getVapResourceRequest = {
+  apiVersion: 'view.open-cluster-management.io/v1beta1',
+  kind: 'ManagedClusterView',
+  metadata: {
+    name: 'e8f2704b05c51c7d64778e9064b5f22e6f7c4a96',
+    namespace: 'test-cluster',
+    labels: { viewName: 'e8f2704b05c51c7d64778e9064b5f22e6f7c4a96' },
+  },
+  spec: {
+    scope: {
+      name: 'gatekeeper-k8srequiredlabels',
+      resource: 'validatingadmissionpolicy.v1.admissionregistration.k8s.io',
+    },
+  },
+}
+
+const getVapResourceResponse = JSON.parse(JSON.stringify(getVapResourceRequest))
+getVapResourceResponse.status = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
+    },
+  ],
+  result: {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicy',
+    metadata: {
+      name: 'gatekeeper-k8srequiredlabels',
+    },
+    spec: {
+      failurePolicy: 'Fail',
+      paramKind: {
+        apiVersion: 'v1',
+        kind: 'Pod',
+      },
+    },
+  },
+}
+
 describe('Policy Template Details Page', () => {
   beforeEach(() => nockIgnoreApiPaths())
 
@@ -446,6 +534,7 @@ describe('Policy Template Details Page', () => {
     // Ensure the hosting cluster name isn't shown as the cluster name
     await waitForText(clusterName)
     await waitForText('ConfigurationPolicy')
+    await waitForText('View YAML')
     const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
@@ -552,6 +641,7 @@ describe('Policy Template Details Page', () => {
     }
 
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const getVapbResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
 
     render(
       <RecoilRoot
@@ -571,7 +661,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([getResourceNock, getVapbResourceNock])
 
     await waitForText('K8sRequiredLabels details')
 
@@ -591,6 +681,21 @@ describe('Policy Template Details Page', () => {
     )
     expect(viewYamlLinks[1].getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
+    )
+
+    // Verify the generated ValidatingAdmissionPolicyBinding
+    await waitForText('gatekeeper-ns-must-have-gk')
+    await waitForText('Validating Admission Policy Binding')
+    expect(screen.getByRole('link', { name: 'gatekeeper-ns-must-have-gk' })).toHaveAttribute(
+      'href',
+      generatePath(NavigationPath.discoveredPolicyDetails, {
+        clusterName: 'test-cluster',
+        apiVersion: 'v1',
+        apiGroup: 'admissionregistration.k8s.io',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        templateName: `gatekeeper-ns-must-have-gk`,
+        templateNamespace: null,
+      })
     )
   })
 
@@ -971,5 +1076,58 @@ describe('Policy Template Details Page', () => {
     userEvent.click(yamlButton[1])
 
     await waitForText('Yaml Editor Open')
+  })
+
+  test('Should render ValidatingAdmissionPolicyBinding page successfully', async () => {
+    const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
+    const getVapResourceNock = nockGet(getVapResourceRequest, getVapResourceResponse)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, {})
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'admissionregistration.k8s.io',
+              apiVersion: 'v1',
+              kind: 'ValidatingAdmissionPolicyBinding',
+              templateName: 'gatekeeper-ns-must-have-gk',
+              templateNamespace: '',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([getResourceNock, getVapResourceNock])
+
+    // wait for page load - looking for breadcrumb items
+    await waitForText('Discovered policies')
+
+    expect(screen.getByRole('link', { name: 'gatekeeper-ns-must-have-gk' })).toBeInTheDocument()
+
+    await waitForText('ValidatingAdmissionPolicyBinding details')
+
+    // Find ValidatingAdmissionPolicy name
+    await waitForText('gatekeeper-k8srequiredlabels', true)
+    expect(screen.getByRole('link', { name: 'gatekeeper-k8srequiredlabels' })).toBeInTheDocument()
+
+    await waitForText('Parameter resource', true)
+    expect(screen.getByRole('link', { name: 'View YAML' })).toHaveAttribute(
+      'href',
+      `${NavigationPath.resourceYAML}?cluster=test-cluster&kind=Pod&apiversion=v1&name=pod-1&namespace=test1`
+    )
   })
 })

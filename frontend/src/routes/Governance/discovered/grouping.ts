@@ -110,6 +110,11 @@ export function grouping(): {
     } else if (policy.apigroup === 'constraints.gatekeeper.sh') {
       // The default is deny when unset.
       return 'deny'
+    } else if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+      // Required field
+      if (policy.validationActions) {
+        return policy.validationActions.split('; ').sort().join('/')
+      }
     }
 
     return null
@@ -134,20 +139,26 @@ export function grouping(): {
     const parseStringMap = eval(parseStringMapStr) as TParseStringMap
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
-    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])?.map((policy: any): any => {
-      return {
-        ...policy,
-        source: getPolicySource(
-          policy,
-          helmReleases,
-          channels,
-          subscriptions,
-          resolveSource,
-          getSourceText,
-          parseStringMap
-        ),
-      }
-    })
+    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
+      ?.filter(
+        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
+        (policy: any): any =>
+          !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
+      )
+      .map((policy: any): any => {
+        return {
+          ...policy,
+          source: getPolicySource(
+            policy,
+            helmReleases,
+            channels,
+            subscriptions,
+            resolveSource,
+            getSourceText,
+            parseStringMap
+          ),
+        }
+      })
 
     const groupByNameKindGroup: { [nameKindGroup: string]: any[] } = {}
     // Group by policy name, kind and apigroup
@@ -212,8 +223,14 @@ export function grouping(): {
       ) {
         responseAction = 'inform/enforce'
       } else {
-        // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
-        responseAction = allResponseActionsList.sort().join('/') //NOSONAR
+        if (group[0].kind === 'ValidatingAdmissionPolicyBinding') {
+          responseAction = [...new Set(allResponseActionsList.map((str: string) => str.split('/')).flat())]
+            .sort()
+            .join('/')
+        } else {
+          // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
+          responseAction = allResponseActionsList.sort().join('/') //NOSONAR
+        }
       }
 
       return {
