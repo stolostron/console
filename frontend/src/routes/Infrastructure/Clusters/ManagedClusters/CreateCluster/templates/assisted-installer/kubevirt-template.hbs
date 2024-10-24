@@ -40,6 +40,11 @@ spec:
     type: KubeVirt
     kubevirt:
       baseDomainPassthrough: true
+      credentials:
+        infraNamespace: '{{{externalInfraNamespace}}}'
+        infraKubeConfigSecret:
+          name: infra-cluster-{{{clusterName}}}
+          key: externalInfraKubeconfig
   infraID: '{{{clusterName}}}'
   services:
   - service: OAuthServer
@@ -58,22 +63,15 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: infra-cluster-{{{clusterName}}}
-{{#if (and externalInfraKubeconfig externalInfraNamespace)}}
-credentials:
-  infraKubeConfigSecret:
-    name: infra-cluster-{{{clusterName}}}
+  name: {{{clusterName}}}
+  namespace: 'clusters'
 data:
-  {{#if showSecrets}}          
-  key: {{{externalInfraKubeconfig}}}
-  infraNamespace: {{{externalInfraNamespace}}}
+{{#if showSecrets}}  
+  externalInfraKubeconfig: {{{externalInfraKubeconfig}}}
   {{else}}
-  key: |-
-  infraNamespace: |- 
-  {{/if}}
+  externalInfraKubeconfig: #injected on create
 {{/if}}
 ---
-
 apiVersion: v1
 kind: Secret
 metadata:
