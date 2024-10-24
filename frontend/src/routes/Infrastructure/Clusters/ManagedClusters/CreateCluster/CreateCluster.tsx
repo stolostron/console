@@ -59,7 +59,7 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
-import { getControlDataKubeVirt, setKubeVirtSecrets } from './controlData/ControlDataKubeVirt'
+import { getControlDataKubeVirt, onChangeKubeVirtConnection } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
@@ -146,24 +146,28 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
   const onControlChange = useCallback(
     (control: any) => {
-      if (control.id === 'connection') {
-        if (newSecret && control.setActive) {
-          const secretName = newSecret?.metadata.name ?? ''
-          if (control.providerId === 'kubevirt') {
-            // preset replacement fields to get around delayed control state from setAvailableConnections
-            control.availableMap[secretName] = {
-              replacements: {
-                pullSecret: newSecret.data?.pullSecret ?? '',
-                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
-                encoded: true,
-              },
-            }
+      if (newSecret && control.setActive) {
+        const secretName = newSecret?.metadata.name ?? ''
+
+        // Handle new secret when it's available
+        if (control.providerId === 'kubevirt') {
+          // preset replacement fields to get around delayed control state from setAvailableConnections
+          control.availableMap[secretName] = {
+            replacements: {
+              pullSecret: newSecret.data?.pullSecret ?? '',
+              'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
+              externalInfraKubeconfig: newSecret.data?.externalInfraKubeconfig ?? '',
+              externalInfraNamespace: newSecret.data?.externalInfraNamespace ?? '',
+              encoded: true,
+            },
           }
-          control.setActive(secretName)
-          setNewSecret(undefined) // override with the new secret once
         }
+        control.setActive(secretName)
+        setNewSecret(undefined) // Reset the new secret once it's used
+      }
+      if (control.id === 'connection') {
         if (!newSecret && control.providerId === 'kubevirt') {
-          setKubeVirtSecrets(control)
+          onChangeKubeVirtConnection(control)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
