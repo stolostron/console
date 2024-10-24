@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'
 import { debounce } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
@@ -8,6 +7,7 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
 import './YAMLEditor.css'
+import '../theme'
 
 /**
  *
@@ -90,26 +90,6 @@ export default function YAMLEditor(props: {
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
-    if (process.env.NODE_ENV !== 'test') {
-      monaco.editor.defineTheme('console', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
-          { token: 'number', foreground: 'ace12e' },
-          { token: 'type', foreground: '73bcf7' },
-          { token: 'string', foreground: 'f0ab00' },
-          { token: 'keyword', foreground: 'cbc0ff' },
-        ],
-        colors: {
-          'editor.background': global_BackgroundColor_dark_100.value,
-          'editorGutter.background': '#292e34', // no pf token defined
-          'editorLineNumber.activeForeground': '#fff',
-          'editorLineNumber.foreground': '#f0f0f0',
-        },
-      })
-      monaco.editor.setTheme('console')
-    }
     editor.changeViewZones(
       (changeAccessor: {
         addZone: (arg0: { afterLineNumber: number; heightInPx: number; domNode: HTMLDivElement }) => void
@@ -150,6 +130,7 @@ export default function YAMLEditor(props: {
         value={resourceYAML}
         options={{
           readOnly,
+          theme: 'console',
           wordWrap: 'wordWrapColumn',
           wordWrapColumn: 132,
           scrollBeyondLastLine: true,

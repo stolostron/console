@@ -3,8 +3,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { DecorationType } from '../utils/source-utils'
+import '../../theme'
 
 class YamlEditor extends React.Component {
   static propTypes = {
@@ -16,7 +16,6 @@ class YamlEditor extends React.Component {
     onYamlChange: PropTypes.func,
     readOnly: PropTypes.bool,
     showCondensed: PropTypes.bool,
-    theme: PropTypes.string,
     yaml: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   }
 
@@ -51,39 +50,7 @@ class YamlEditor extends React.Component {
     }
   }
 
-  editorWillMount(monaco) {
-    monaco.editor.defineTheme('resource-editor', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'number', foreground: 'ace12e' },
-        { token: 'type', foreground: '73bcf7' },
-        { token: 'string', foreground: 'f0ab00' },
-        { token: 'keyword', foreground: 'cbc0ff' },
-      ],
-      colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34', // no pf token defined
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
-      },
-    })
-    monaco.editor.defineTheme('readonly-resource-editor', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'number', foreground: 'b0b0b0' },
-        { token: 'type', foreground: 'b0b0b0' },
-        { token: 'string.yaml', foreground: '#b0b0b0' },
-        { token: 'keyword', foreground: 'b0b0b0' },
-      ],
-      colors: {
-        'editor.background': '#e0e0e0',
-        'editorGutter.background': '#e0e0e0', // no pf token defined
-        'editorLineNumber.activeForeground': '#000000',
-        'editorLineNumber.foreground': '#000000',
-      },
-    })
+  editorWillMount() {
     // Monaco uses <span> to measure character sizes
     // therefore make sure <span> has the right font
     let stylesheet = document.querySelector('link[href*=main]')
@@ -182,7 +149,6 @@ class YamlEditor extends React.Component {
 
   render() {
     const { yaml, readOnly, hide = false, showCondensed } = this.props
-    let { theme = 'resource-editor' } = this.props
     const { editor } = this.state
     const style = {
       display: hide ? 'none' : 'block',
@@ -190,14 +156,13 @@ class YamlEditor extends React.Component {
     }
     if (readOnly) {
       style.borderLeft = '1px solid #c8c8c8'
-      theme = 'readonly-resource-editor'
     }
     return (
       <div className="yamlEditorContainer" style={style}>
         {editor &&
           React.cloneElement(editor, {
             value: yaml,
-            theme,
+            theme: 'console',
             options: {
               ...this.state.editor.props.options,
               wordWrapColumn: showCondensed ? 512 : 256,
