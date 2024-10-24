@@ -16,7 +16,6 @@ import {
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
-import HostsForm from '../components/assisted-installer/hypershift/HostsForm'
 import AvailabilityOptionsForm from '../components/assisted-installer/AvailiabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
@@ -164,7 +163,6 @@ export const getControlDataKubeVirt = (
       },
       reverse: reverseStorageClass,
     },
-    /////////////////////// Availability Options Step ////////////////////////////////
     {
       id: 'additionalLabels',
       name: t('creation.ocp.addition.labels'),
@@ -174,6 +172,7 @@ export const getControlDataKubeVirt = (
         'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
       ),
     },
+    /////////////////////// Availability Options Step ////////////////////////////////
     {
       id: 'availabilityStep',
       type: 'step',
@@ -183,6 +182,7 @@ export const getControlDataKubeVirt = (
       id: 'availabilityOptions',
       type: 'custom',
       component: <AvailabilityOptionsForm />,
+      active: [],
     },
     ///////////////////////////// Node Pools Step /////////////////////////////
     {

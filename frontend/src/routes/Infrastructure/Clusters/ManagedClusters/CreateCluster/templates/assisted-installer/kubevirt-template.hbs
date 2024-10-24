@@ -35,12 +35,8 @@ spec:
     serviceNetwork:
       - cidr: 172.31.0.0/16
     networkType: OVNKubernetes
-  {{#if availabilityOptions.controllerAvailabilityPolicy}}
-  controllerAvailabilityPolicy: {{{availabilityOptions.controllerAvailabilityPolicy}}}
-  {{/if}}
-  {{#if availabilityOptions.infrastructureAvailabilityPolicy}}
-  infrastructureAvailabilityPolicy: {{{availabilityOptions.infrastructureAvailabilityPolicy}}}
-  {{/if}}
+  controllerAvailabilityPolicy: {{{availabilityOptions.controller}}}
+  infrastructureAvailabilityPolicy: {{{availabilityOptions.infra}}}
   platform:
     type: KubeVirt
     kubevirt:

@@ -3,75 +3,104 @@ import { PopoverIcon } from '@openshift-assisted/ui-lib/common'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { FormGroup, Radio } from '@patternfly/react-core'
 import { AcmForm } from '../../../../../../../ui-components'
+import _ from 'lodash'
 
-export function AvailabilityOptionsForm() {
+const AvailabilityOptionsForm = (props: any) => {
+  const { control } = props
   const { t } = useTranslation()
+
+  // Set default option to "Highly Available"
+  if (_.isEmpty(control.active)) {
+    props.control.active = {
+      controller: 'HighlyAvailable',
+      infra: 'HighlyAvailable',
+    }
+  }
+  const { controller, infra } = props.control.active
+  const handleChange = (_: any, event: any) => {
+    let targetName = ''
+    try {
+      targetName = event.target.name
+    } catch (event) {
+      targetName = ''
+    }
+    if (targetName) {
+      if (targetName === 'controllerAvailabilityPolicy') {
+        control.active.controller = event.target.value
+      } else if (targetName === 'infraAvailabilityPolicy') {
+        control.active.infra = event.target.value
+      }
+    }
+  }
+
+  const labelHA = () => {
+    return (
+      <>
+        {t('Highly available')}{' '}
+        <PopoverIcon
+          bodyContent={t(
+            'Highly available means components should be resilient to problems across fault boundaries as defined by the component to which the policy is attached. This usually means running critical workloads with 3 replicas and with little or no toleration of disruption of the component.'
+          )}
+        />
+      </>
+    )
+  }
+
+  const labelSingle = () => {
+    return (
+      <>
+        {t('Single replica')}{' '}
+        <PopoverIcon
+          bodyContent={t(
+            'Single replica means components are not expected to be resilient to problems across most fault boundaries associated with high availability. This usually means running critical workloads with just 1 replica and with toleration of full disruption of the component.'
+          )}
+        />
+      </>
+    )
+  }
 
   return (
     <AcmForm>
-      <FormGroup fieldId="1" isInline label={<>{t('Controller availability policy')}</>} isRequired>
+      <FormGroup role="radiogroup" isInline fieldId="controller" label={t('Controller availability policy')} isRequired>
         <Radio
-          name={'controllerAvailabilityPolicy'}
           id={'controller-ha'}
-          label={
-            <>
-              {t('Highly available')}{' '}
-              <PopoverIcon
-                bodyContent={t(
-                  'Highly available means components should be resilient to problems across fault boundaries as defined by the component to which the policy is attached. This usually means running critical workloads with 3 replicas and with little or no toleration of disruption of the component.'
-                )}
-              />
-            </>
-          }
+          name={'controllerAvailabilityPolicy'}
+          label={labelHA()}
           value={'HighlyAvailable'}
-          // defaultChecked={isChecked}
+          defaultChecked={controller === 'HighlyAvailable'}
+          onChange={handleChange}
         />
         <Radio
-          name={'controllerAvailabilityPolicy'}
           id={'controller-single'}
-          label={
-            <>
-              {t('Single replica')}{' '}
-              <PopoverIcon
-                bodyContent={t(
-                  'Single replica means components are not expected to be resilient to problems across most fault boundaries associated with high availability. This usually means running critical workloads with just 1 replica and with toleration of full disruption of the component.'
-                )}
-              />
-            </>
-          }
+          name={'controllerAvailabilityPolicy'}
+          label={labelSingle()}
           value={'SingleReplica'}
+          defaultChecked={controller === 'SingleReplica'}
+          onChange={handleChange}
         />
       </FormGroup>
-      <FormGroup fieldId="2" isInline label={<>{t('Infrastructure availability policy')}</>} isRequired>
+      <FormGroup
+        role="radiogroup"
+        isInline
+        fieldId="infrastructure"
+        label={t('Infrastructure availability policy')}
+        isRequired
+      >
         <Radio
-          name={'infrastructureAvailabilityPolicy'}
           id={'infra-ha'}
-          label={
-            <>
-              {t('Highly available')}{' '}
-              <PopoverIcon
-                bodyContent={t(
-                  'Highly available means components should be resilient to problems across fault boundaries as defined by the component to which the policy is attached. This usually means running critical workloads with 3 replicas and with little or no toleration of disruption of the component.'
-                )}
-              />
-            </>
-          }
+          name={'infraAvailabilityPolicy'}
+          label={labelHA()}
           value={'HighlyAvailable'}
+          defaultChecked={infra === 'HighlyAvailable'}
+          onChange={handleChange}
         />
         <Radio
           id={'infra-single'}
-          name={'infrastructureAvailabilityPolicy'}
-          label={
-            <>
-              {t('Single replica')}{' '}
-              <PopoverIcon
-                bodyContent={t(
-                  'Single replica means components are not expected to be resilient to problems across most fault boundaries associated with high availability. This usually means running critical workloads with just 1 replica and with toleration of full disruption of the component.'
-                )}
-              />
-            </>
-          }
+          name={'infraAvailabilityPolicy'}
+          label={labelSingle()}
           value={'SingleReplica'}
+          defaultChecked={infra === 'SingleReplica'}
+          onChange={handleChange}
         />
       </FormGroup>
     </AcmForm>
