@@ -7,6 +7,7 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
 import './YAMLEditor.css'
+import '../theme'
 
 /**
  *
@@ -129,6 +130,7 @@ export default function YAMLEditor(props: {
         value={resourceYAML}
         options={{
           readOnly,
+          theme: 'console',
           wordWrap: 'wordWrapColumn',
           wordWrapColumn: 132,
           scrollBeyondLastLine: true,
