@@ -152,7 +152,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     (control: any) => {
       if (control.id === 'connection') {
         if (!newSecret && control.providerId === 'kubevirt') {
-          onChangeKubeVirtConnection(control, controlData)
+          onChangeKubeVirtConnection(control)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
