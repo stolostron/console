@@ -44,7 +44,7 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-export const onChangeKubeVirtConnection = (control, controlData) => {
+export const onChangeKubeVirtConnection = (control) => {
   const { active, availableMap = {} } = control
   const replacements = get(availableMap[active], 'replacements')
   const isEncoded = replacements?.encoded && replacements?.encoded === true
