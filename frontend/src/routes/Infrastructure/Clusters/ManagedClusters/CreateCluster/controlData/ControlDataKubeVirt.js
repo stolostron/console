@@ -16,7 +16,7 @@ import {
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
-import AvailabilityOptionsForm from '../components/assisted-installer/AvailiabilityOptionsForm'
+import AvailabilityOptionsForm from '../components/AvailabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -164,6 +164,13 @@ export const getControlDataKubeVirt = (
       reverse: reverseStorageClass,
     },
     {
+      id: 'availabilityOptions',
+      name: t('Availability Options'),
+      type: 'custom',
+      component: <AvailabilityOptionsForm />,
+      active: [],
+    },
+    {
       id: 'additionalLabels',
       name: t('creation.ocp.addition.labels'),
       type: 'labels',
@@ -171,18 +178,6 @@ export const getControlDataKubeVirt = (
       tooltip: t(
         'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
       ),
-    },
-    /////////////////////// Availability Options Step ////////////////////////////////
-    {
-      id: 'availabilityStep',
-      type: 'step',
-      title: t('Availability options'),
-    },
-    {
-      id: 'availabilityOptions',
-      type: 'custom',
-      component: <AvailabilityOptionsForm />,
-      active: [],
     },
     ///////////////////////////// Node Pools Step /////////////////////////////
     {

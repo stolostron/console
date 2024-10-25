@@ -1,9 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PopoverIcon } from '@openshift-assisted/ui-lib/common'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { FormGroup, Radio } from '@patternfly/react-core'
-import { AcmForm } from '../../../../../../../ui-components'
+import { AcmForm } from '../../../../../../ui-components'
+import { css } from '@emotion/css'
 import _ from 'lodash'
+
+const formWrapper = css({
+  paddingBottom: '25px',
+  '& .pf-c-form__group-label': {
+    padding: `0px 0px 6px 0px !important`,
+  },
+})
 
 const AvailabilityOptionsForm = (props: any) => {
   const { control } = props
@@ -18,12 +26,15 @@ const AvailabilityOptionsForm = (props: any) => {
   }
   const { controller, infra } = props.control.active
   const handleChange = (_: any, event: any) => {
+    const { control, handleChange } = props
+
     let targetName = ''
     try {
       targetName = event.target.name
     } catch (event) {
       targetName = ''
     }
+
     if (targetName) {
       if (targetName === 'controllerAvailabilityPolicy') {
         control.active.controller = event.target.value
@@ -31,6 +42,7 @@ const AvailabilityOptionsForm = (props: any) => {
         control.active.infra = event.target.value
       }
     }
+    handleChange(control)
   }
 
   const labelHA = () => {
@@ -60,7 +72,7 @@ const AvailabilityOptionsForm = (props: any) => {
   }
 
   return (
-    <AcmForm>
+    <AcmForm className={formWrapper}>
       <FormGroup role="radiogroup" isInline fieldId="controller" label={t('Controller availability policy')} isRequired>
         <Radio
           id={'controller-ha'}
