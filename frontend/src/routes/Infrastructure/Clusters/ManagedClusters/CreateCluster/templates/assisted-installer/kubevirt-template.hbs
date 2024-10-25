@@ -63,7 +63,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{{clusterName}}}
+  name: infra-cluster-{{{clusterName}}}
   namespace: 'clusters'
 data:
 {{#if showSecrets}}  
