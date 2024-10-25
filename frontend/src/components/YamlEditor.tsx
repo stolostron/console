@@ -7,7 +7,9 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
 import './YAMLEditor.css'
-import '../theme'
+import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
+import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
+import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
 
 /**
  *
@@ -90,6 +92,24 @@ export default function YAMLEditor(props: {
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
+    monaco?.editor?.defineTheme('console', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
+        { token: 'number', foreground: 'ace12e' },
+        { token: 'type', foreground: '73bcf7' },
+        { token: 'string', foreground: 'f0ab00' },
+        { token: 'keyword', foreground: 'cbc0ff' },
+      ],
+      colors: {
+        'editor.background': darkEditorBackground.value,
+        'editorGutter.background': '#292e34', // no pf token defined
+        'editorLineNumber.activeForeground': globalColorLight100.value,
+        'editorLineNumber.foreground': globalBackground200.value,
+      },
+    })
+    monaco?.editor?.setTheme('console')
     ;(window as any).monaco?.editor?.setTheme('console')
     editor.changeViewZones(
       (changeAccessor: {
