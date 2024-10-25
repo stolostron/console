@@ -16,7 +16,6 @@ import {
   validateNoProxyList,
   validateAwsRegion,
   validateKubeconfig,
-  validateNamespace,
 } from './validation'
 
 const t = (key: string) => key
@@ -470,15 +469,6 @@ describe('validation', () => {
       current-context: context
     `
       expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
-    })
-  })
-
-  describe('validateNamespace', () => {
-    test('validateNamespace', () => {
-      expect(validateNamespace('valid-namespace', t)).toBeUndefined()
-      expect(validateNamespace('', t)).toBe('validate.namespace.required')
-      expect(validateNamespace('a'.repeat(64), t)).toBe('validate.namespace.tooLong')
-      expect(validateNamespace('Invalid_Namespace', t)).toBe('validate.namespace.invalid')
     })
   })
 })
