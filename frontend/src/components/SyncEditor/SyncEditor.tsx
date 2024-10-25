@@ -126,7 +126,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
 
   function onEditorDidMount(editor: any, monaco: any) {
-    // ;(window as any).monaco?.editor?.setTheme('vs-light')
+    ;(window as any).monaco?.editor?.setTheme('console')
 
     // a little breathing space above top line
     editor.changeViewZones(

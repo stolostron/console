@@ -31,6 +31,7 @@ class YamlEditor extends React.Component {
           height: '100%',
           width: '100%',
           options: {
+            theme: 'console',
             wordWrap: 'wordWrapColumn',
             wordWrapColumn: 132,
             wordWrapMinified: false,
@@ -62,6 +63,7 @@ class YamlEditor extends React.Component {
 
   editorDidMount(id, editor, monaco) {
     const { addEditor } = this.props
+    window.monaco?.editor?.setTheme('console')
     editor.layout()
     editor.focus()
     editor.monaco = monaco
@@ -162,9 +164,9 @@ class YamlEditor extends React.Component {
         {editor &&
           React.cloneElement(editor, {
             value: yaml,
-            theme: 'console',
             options: {
               ...this.state.editor.props.options,
+              theme: 'console',
               wordWrapColumn: showCondensed ? 512 : 256,
               minimap: {
                 enabled: !showCondensed,

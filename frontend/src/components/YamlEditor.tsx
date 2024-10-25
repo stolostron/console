@@ -90,6 +90,7 @@ export default function YAMLEditor(props: {
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
+    ;(window as any).monaco?.editor?.setTheme('console')
     editor.changeViewZones(
       (changeAccessor: {
         addZone: (arg0: { afterLineNumber: number; heightInPx: number; domNode: HTMLDivElement }) => void
