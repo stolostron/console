@@ -360,48 +360,6 @@ getVapbResourceResponse.status = {
   },
 }
 
-const getVapResourceRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: 'e8f2704b05c51c7d64778e9064b5f22e6f7c4a96',
-    namespace: 'test-cluster',
-    labels: { viewName: 'e8f2704b05c51c7d64778e9064b5f22e6f7c4a96' },
-  },
-  spec: {
-    scope: {
-      name: 'gatekeeper-k8srequiredlabels',
-      resource: 'validatingadmissionpolicy.v1.admissionregistration.k8s.io',
-    },
-  },
-}
-
-const getVapResourceResponse = JSON.parse(JSON.stringify(getVapResourceRequest))
-getVapResourceResponse.status = {
-  conditions: [
-    {
-      message: 'Watching resources successfully',
-      reason: 'GetResourceProcessing',
-      status: 'True',
-      type: 'Processing',
-    },
-  ],
-  result: {
-    apiVersion: 'admissionregistration.k8s.io/v1',
-    kind: 'ValidatingAdmissionPolicy',
-    metadata: {
-      name: 'gatekeeper-k8srequiredlabels',
-    },
-    spec: {
-      failurePolicy: 'Fail',
-      paramKind: {
-        apiVersion: 'v1',
-        kind: 'Pod',
-      },
-    },
-  },
-}
-
 describe('Policy Template Details Page', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
@@ -1113,7 +1071,6 @@ describe('Policy Template Details Page', () => {
 
   test('Should render ValidatingAdmissionPolicyBinding page successfully', async () => {
     const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
-    const getVapResourceNock = nockGet(getVapResourceRequest, getVapResourceResponse)
 
     render(
       <RecoilRoot
@@ -1144,7 +1101,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock, getVapResourceNock])
+    await waitForNocks([getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1156,12 +1113,5 @@ describe('Policy Template Details Page', () => {
     // Find ValidatingAdmissionPolicy name
     await waitForText('gatekeeper-k8srequiredlabels', true)
     expect(screen.getByRole('link', { name: 'gatekeeper-k8srequiredlabels' })).toBeInTheDocument()
-
-    await waitForText('Parameter resource')
-    await waitForText('View YAML')
-    expect(screen.getByRole('link', { name: 'View YAML' })).toHaveAttribute(
-      'href',
-      `${NavigationPath.resourceYAML}?cluster=test-cluster&kind=Pod&apiversion=v1&name=pod-1&namespace=test1`
-    )
   })
 })

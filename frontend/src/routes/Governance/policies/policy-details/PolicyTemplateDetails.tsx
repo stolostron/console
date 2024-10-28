@@ -23,7 +23,7 @@ import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { generatePath, Link, useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
 import { Grid as MuiGrid } from '@mui/material'
-import { useGetParamKind, useFetchVapb } from './PolicyTemplateDetailHooks'
+import { useFetchVapb } from './PolicyTemplateDetailHooks'
 
 interface IKinds {
   apiGroups: string[]
@@ -40,8 +40,6 @@ export function PolicyTemplateDetails() {
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
   // This is for gatekeeper constraint
   const vapb = useFetchVapb()
-  // This is for ValidatingAdmissionPolicyBinding
-  const paramKind = useGetParamKind()
 
   useEffect(() => {
     if (template?.status?.relatedObjects?.length) {
@@ -176,10 +174,6 @@ export function PolicyTemplateDetails() {
           key: 'Validating Admission Policy',
           value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
         })
-        cols.push({
-          key: 'Parameter resource',
-          value: <Skeleton width="100%" screenreaderText="Fetching paramRef resource" />,
-        })
       } else {
         const policyName = template?.spec?.policyName
         if (policyName) {
@@ -202,42 +196,11 @@ export function PolicyTemplateDetails() {
             value: '-',
           })
         }
-
-        // Add a row paramRef
-        // paramKind is not ready yet
-        if (template?.spec?.paramRef.name && paramKind.paramKindObj && !paramKind.loading) {
-          const { apiVersion, kind } = paramKind.paramKindObj
-          const { namespace, name } = template.spec.paramRef
-          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
-          cols.push({
-            key: 'Parameter resource',
-            value: (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
-              >
-                {t('View YAML')}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
-            ),
-          })
-        } else if (paramKind.loading) {
-          cols.push({
-            key: 'Parameter resource',
-            value: <Skeleton width="100%" screenreaderText="Fetching paramRef resource" />,
-          })
-        } else {
-          cols.push({
-            key: 'Parameter resource',
-            value: '-',
-          })
-        }
       }
     }
 
     return cols
-  }, [t, name, kind, apiGroup, template, clusterName, vapb, apiVersion, paramKind.loading, paramKind.paramKindObj])
+  }, [t, name, kind, apiGroup, template, clusterName, vapb, apiVersion])
 
   const relatedResourceColumns = useMemo(
     () => [
@@ -388,11 +351,6 @@ export function PolicyTemplateDetails() {
       {vapb.err && (
         <PageSection style={{ paddingBottom: '0' }}>
           <AcmAlert variant="danger" title={vapb.err} isInline noClose />
-        </PageSection>
-      )}
-      {paramKind.err && (
-        <PageSection style={{ paddingBottom: '0' }}>
-          <AcmAlert variant="danger" title={paramKind.err} isInline noClose />
         </PageSection>
       )}
       <PageSection style={{ paddingBottom: '0' }}>
