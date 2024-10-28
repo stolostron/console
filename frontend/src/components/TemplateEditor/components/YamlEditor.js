@@ -65,6 +65,7 @@ class YamlEditor extends React.Component {
 
   editorDidMount(id, editor, monaco) {
     const { addEditor } = this.props
+    // make sure this instance of monaco editor has a console theme
     monaco?.editor?.defineTheme('console', {
       base: 'vs-dark',
       inherit: true,
@@ -82,8 +83,14 @@ class YamlEditor extends React.Component {
         'editorLineNumber.foreground': globalBackground200.value,
       },
     })
+    // reset the themes to vs
     monaco?.editor?.setTheme('vs')
     window.monaco?.editor?.setTheme('vs')
+    // set theme to console
+    // --if we didn't reset the themes above to vs
+    // --and console was set, monaco wouldn't
+    // --update the 'monoco-colors' style
+    // -- with the right colors
     monaco?.editor?.setTheme('console')
     window.monaco?.editor?.setTheme('console')
     editor.layout()

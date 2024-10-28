@@ -92,6 +92,7 @@ export default function YAMLEditor(props: {
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
+    // make sure this instance of monaco editor has a console theme
     monaco?.editor?.defineTheme('console', {
       base: 'vs-dark',
       inherit: true,
@@ -111,8 +112,14 @@ export default function YAMLEditor(props: {
     })
     monaco?.editor?.setTheme('vs')
     ;(window as any).monaco?.editor?.setTheme('vs')
+    // set theme to console
+    // --if we didn't reset the themes above to vs
+    // --and console was set, monaco wouldn't
+    // --update the 'monoco-colors' style
+    // -- with the right colors
     monaco?.editor?.setTheme('console')
     ;(window as any).monaco?.editor?.setTheme('console')
+
     editor.changeViewZones(
       (changeAccessor: {
         addZone: (arg0: { afterLineNumber: number; heightInPx: number; domNode: HTMLDivElement }) => void

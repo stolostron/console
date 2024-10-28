@@ -128,6 +128,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
 
   function onEditorDidMount(editor: any, monaco: any) {
+    // make sure this instance of monaco editor has a console theme
     monaco?.editor?.defineTheme('console', {
       base: 'vs-dark',
       inherit: true,
@@ -145,6 +146,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         'editorLineNumber.foreground': globalBackground200.value,
       },
     })
+    // set theme to console
+    // --if we didn't reset the themes above to vs
+    // --and console was set, monaco wouldn't
+    // --update the 'monoco-colors' style
+    // -- with the right colors
     monaco?.editor?.setTheme('vs')
     ;(window as any).monaco?.editor?.setTheme('vs')
     monaco?.editor?.setTheme('console')
