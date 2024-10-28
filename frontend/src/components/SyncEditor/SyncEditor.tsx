@@ -3,7 +3,6 @@
 import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
 import { Alert, ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
@@ -12,6 +11,9 @@ import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
+import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
+import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
+import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
 import './SyncEditor.css'
 import { useTranslation } from '../../lib/acm-i18next'
 import { ChangeHandler } from 'react-monaco-editor'
@@ -126,41 +128,33 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
 
   function onEditorDidMount(editor: any, monaco: any) {
-    // create 'resource-editor' theme
-    monaco.editor.defineTheme('resource-editor', {
+    // make sure this instance of monaco editor has a console theme
+    monaco?.editor?.defineTheme('console', {
       base: 'vs-dark',
       inherit: true,
       rules: [
+        // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
         { token: 'number', foreground: 'ace12e' },
         { token: 'type', foreground: '73bcf7' },
-        { token: 'string.yaml', foreground: 'f0ab00' },
+        { token: 'string', foreground: 'f0ab00' },
         { token: 'keyword', foreground: 'cbc0ff' },
       ],
       colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34',
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
+        'editor.background': darkEditorBackground.value,
+        'editorGutter.background': '#292e34', // no pf token defined
+        'editorLineNumber.activeForeground': globalColorLight100.value,
+        'editorLineNumber.foreground': globalBackground200.value,
       },
     })
-
-    // create 'readonly-resource-editor' theme
-    monaco.editor.defineTheme('readonly-resource-editor', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'number', foreground: 'b0b0b0' },
-        { token: 'type', foreground: 'b0b0b0' },
-        { token: 'string.yaml', foreground: '#b0b0b0' },
-        { token: 'keyword', foreground: 'b0b0b0' },
-      ],
-      colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34',
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
-      },
-    })
+    // set theme to console
+    // --if we didn't reset the themes above to vs
+    // --and console was set, monaco wouldn't
+    // --update the 'monoco-colors' style
+    // -- with the right colors
+    monaco?.editor?.setTheme('vs')
+    ;(window as any).monaco?.editor?.setTheme('vs')
+    monaco?.editor?.setTheme('console')
+    ;(window as any).monaco?.editor?.setTheme('console')
 
     // a little breathing space above top line
     editor.changeViewZones(
@@ -246,10 +240,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       window.getEditorValue = undefined
     }
   }, [])
-
-  useEffect(() => {
-    monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
-  }, [readonly])
 
   // prevent editor from flashing when typing in form
   useEffect(() => {
@@ -735,6 +725,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         customControls={variant === 'toolbar' ? toolbarControls : undefined}
         onEditorDidMount={onEditorDidMount}
         options={{
+          theme: 'console',
           wordWrap: 'wordWrapColumn',
           wordWrapColumn: showCondensed ? 512 : 256,
           scrollBeyondLastLine: true,
