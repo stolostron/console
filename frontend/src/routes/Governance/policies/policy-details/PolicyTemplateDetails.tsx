@@ -246,14 +246,13 @@ export function PolicyTemplateDetails() {
 
         switch (compliant) {
           case 'compliant':
-            compliant = (
+            return (
               <div>
                 <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
               </div>
             )
-            break
           case 'noncompliant':
-            compliant = (
+            return (
               <div>
                 <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
                 <DiffModal
@@ -264,50 +263,38 @@ export function PolicyTemplateDetails() {
                 />
               </div>
             )
-            break
+          case 'inapplicable':
+            return (
+              <div>
+                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+              </div>
+            )
+          // @ts-expect-error: Falls through to 'No status'
           case 'unknowncompliancy':
             if (kind === 'OperatorPolicy') {
               switch (item.object?.kind) {
                 case 'Deployment':
-                  compliant = (
+                  return (
                     <div>
                       <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
-                  break
                 case 'CustomResourceDefinition':
-                  compliant = (
+                  return (
                     <div>
                       <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
-                  break
-                default:
-                  compliant = (
-                    <div>
-                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                    </div>
-                  )
-                  break
               }
-            } else {
-              compliant = (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                </div>
-              )
             }
-            break
+          // falls through to 'No status'
           default:
-            compliant = (
+            return (
               <div>
                 <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
               </div>
             )
-            break
         }
-
-        return compliant
       },
     }
   }, [t, kind])

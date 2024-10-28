@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Label, Tooltip } from '@patternfly/react-core'
-import { AsleepIcon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AsleepIcon, CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 
@@ -58,24 +58,10 @@ export function TemplateDetailTitle({
             {t('No violations')}
           </Label>
         )
-      case 'UnknownCompliancy':
-        return (
-          <Label
-            color="orange"
-            icon={
-              <ExclamationTriangleIcon
-                color="var(--pf-global--warning-color--100)"
-                style={{ verticalAlign: 'middle' }}
-              />
-            }
-          >
-            {compliant}
-          </Label>
-        )
       case 'Terminating':
         return (
           <Label color="purple" icon={<AsleepIcon />} style={{ verticalAlign: 'middle' }}>
-            {compliant}
+            {t('Terminating')}
           </Label>
         )
       default:
