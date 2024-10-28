@@ -263,7 +263,7 @@ const InfraEnvironmentsPage: React.FC = () => {
   )
 }
 
-const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv.metadata?.uid!
+const keyFn = (infraEnv: InfraEnvK8sResource) => infraEnv?.metadata?.uid!
 
 type InfraEnvsTableProps = {
   infraEnvs: InfraEnvK8sResource[]
