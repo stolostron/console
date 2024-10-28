@@ -145,6 +145,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         'editorLineNumber.foreground': globalBackground200.value,
       },
     })
+    monaco?.editor?.setTheme('vs')
+    ;(window as any).monaco?.editor?.setTheme('vs')
     monaco?.editor?.setTheme('console')
     ;(window as any).monaco?.editor?.setTheme('console')
 

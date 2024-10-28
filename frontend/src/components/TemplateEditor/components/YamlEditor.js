@@ -82,6 +82,8 @@ class YamlEditor extends React.Component {
         'editorLineNumber.foreground': globalBackground200.value,
       },
     })
+    monaco?.editor?.setTheme('vs')
+    window.monaco?.editor?.setTheme('vs')
     monaco?.editor?.setTheme('console')
     window.monaco?.editor?.setTheme('console')
     editor.layout()
