@@ -30,6 +30,7 @@ import { LostChangesContext } from '../../../components/LostChanges'
 import { DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
 import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
+import Kubernetes from '../../../logos/kubernetes.svg'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -711,6 +712,8 @@ export function getEngineString(apiGroup: string): string {
     case 'constraints.gatekeeper.sh':
     case 'templates.gatekeeper.sh':
       return 'Gatekeeper'
+    case 'admissionregistration.k8s.io':
+      return 'Kubernetes'
     default:
       return 'Unknown'
   }
@@ -727,12 +730,15 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
     case 'Gatekeeper':
       logo = <GatekeeperSvg />
       break
+    case 'Kubernetes':
+      logo = <Kubernetes />
+      break
     default:
       return <>Unknown</>
   }
 
   return (
-    <>
+    <div>
       <div
         style={{
           display: 'inline-block',
@@ -747,7 +753,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
         {logo}
       </div>
       <>{engine}</>{' '}
-    </>
+    </div>
   )
 }
 

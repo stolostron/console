@@ -396,4 +396,86 @@ describe('OnMessage test', () => {
     )
     expect(result).toEqual([])
   })
+
+  test('Should filter out ValidatingAdmissionPolicyBinding created by Gatekeeper constraints', () => {
+    const mock = [
+      {
+        _hubClusterResource: 'true',
+        _ownedByGatekeeper: 'false',
+        _uid: 'local-cluster/0',
+        apigroup: 'admissionregistration.k8s.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2024-10-22T11:13:54Z',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        kind_plural: 'validatingadmissionpolicybindings',
+        name: 'machine-configuration-guards-binding',
+        policyName: 'machine-configuration-guards',
+        validationActions: 'warn; audit',
+      },
+      {
+        _hubClusterResource: 'true',
+        _ownedByGatekeeper: 'true',
+        _uid: 'local-cluster/1',
+        apigroup: 'admissionregistration.k8s.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2024-10-22T11:13:54Z',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        kind_plural: 'validatingadmissionpolicybindings',
+        name: 'owner-gatekeeper',
+        policyName: 'machine-configuration-guards',
+        validationActions: 'deny; audit',
+      },
+      {
+        _hubClusterResource: 'true',
+        _ownedByGatekeeper: 'false',
+        _uid: 'local-cluster/0',
+        apigroup: 'admissionregistration.k8s.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2024-10-22T11:13:54Z',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        kind_plural: 'validatingadmissionpolicybindings',
+        name: 'machine-configuration-guards-binding',
+        policyName: 'machine-configuration-guards',
+        validationActions: 'deny; audit',
+      },
+    ]
+    const result = createMessage(
+      mock,
+      helmRelease,
+      channels,
+      subscriptions,
+      resolveSource.toString(),
+      getSourceText.toString(),
+      parseStringMap.toString(),
+      parseDiscoveredPolicies.toString()
+    )
+    expect(result).toEqual([
+      {
+        id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
+        apigroup: 'admissionregistration.k8s.io',
+        name: 'machine-configuration-guards-binding',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        severity: 'unknown',
+        responseAction: 'audit/deny/warn',
+        policies: [
+          {
+            ...parseDiscoveredPolicies(mock[0]),
+            severity: '',
+            responseAction: 'audit/warn',
+            source: { type: 'Local', parentNs: '', parentName: '' },
+          },
+          {
+            ...parseDiscoveredPolicies(mock[2]),
+            severity: '',
+            responseAction: 'audit/deny',
+            source: { type: 'Local', parentNs: '', parentName: '' },
+          },
+        ],
+        source: { type: 'Local', parentNs: '', parentName: '' },
+      },
+    ])
+  })
 })
