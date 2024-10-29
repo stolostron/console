@@ -266,13 +266,23 @@ export default function DetailsPage() {
         />
       }
     >
-      <DeleteResourceModal
-        open={isDeleteResourceModalOpen}
-        close={() => setIsDeleteResourceModalOpen(false)}
-        resource={resource}
-        currentQuery={''}
-        relatedResource={false}
-      />
+      {resource && (
+        <DeleteResourceModal
+          open={isDeleteResourceModalOpen}
+          close={() => setIsDeleteResourceModalOpen(false)}
+          resource={{
+            apiversion: resource.apiVersion ?? '',
+            cluster,
+            kind,
+            namespace,
+            name,
+            _uid: resource.metadata?.uid ?? '',
+            _hubClusterResource: isHubClusterResource,
+          }}
+          currentQuery={''}
+          relatedResource={false}
+        />
+      )}
       <Outlet context={searchDetailsContext} />
     </AcmPage>
   )

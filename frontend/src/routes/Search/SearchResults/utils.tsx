@@ -258,7 +258,6 @@ export function getRowActions(
             open: true,
             close: () => setDeleteResource(ClosedDeleteModalProps),
             resource: item,
-            isHubClusterResource: item._hubClusterResource === 'true',
             currentQuery,
             relatedResource,
           })
