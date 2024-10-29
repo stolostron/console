@@ -40,6 +40,10 @@ export const typeToIconMap: TypeToIcon = Object.freeze({
     shape: 'daemonset',
     className: 'daemonset',
   },
+  datavolume: {
+    shape: 'datavolume',
+    className: 'datavolume',
+  },
   deployable: {
     shape: 'deployable',
     className: 'design',
@@ -136,5 +140,13 @@ export const typeToIconMap: TypeToIcon = Object.freeze({
   subscriptionblocked: {
     shape: 'subscriptionblocked',
     className: 'design',
+  },
+  virtualmachine: {
+    shape: 'virtualmachine',
+    className: 'virtualmachine',
+  },
+  virtualmachineinstance: {
+    shape: 'virtualmachineinstance',
+    className: 'virtualmachineinstance',
   },
 })
