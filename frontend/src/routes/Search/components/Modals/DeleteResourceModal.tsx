@@ -21,7 +21,6 @@ export interface IDeleteModalProps {
   open: boolean
   close: () => void
   resource: any
-  isHubClusterResource: boolean
   currentQuery: string
   relatedResource: boolean
 }
@@ -30,7 +29,6 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
   open: false,
   close: () => {},
   resource: undefined,
-  isHubClusterResource: false,
   currentQuery: '',
   relatedResource: false,
 }
@@ -203,7 +201,7 @@ export function deleteResourceFn(
 
 export const DeleteResourceModal = (props: any) => {
   const { t } = useTranslation()
-  const { open, close, resource, isHubClusterResource, currentQuery, relatedResource } = props
+  const { open, close, resource, currentQuery, relatedResource } = props
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const [canDelete, setCanDelete] = useState<boolean>(false)
@@ -215,36 +213,36 @@ export const DeleteResourceModal = (props: any) => {
     apiGroup = resource.apigroup ? `${resource.apigroup}/${resource.apiversion}` : resource.apiversion
   }
   useEffect(() => {
-    if (!resource) {
-      return
-    }
-    const { cluster, kind, name, namespace } = resource
-    const canDeleteResource = canUser(
-      'delete',
-      {
-        apiVersion: apiGroup,
-        kind: kind,
-        metadata: {
-          name: name,
-          namespace: namespace,
+    if (resource) {
+      const { cluster, kind, name, namespace, _hubClusterResource } = resource
+      const canDeleteResource = canUser(
+        'delete',
+        {
+          apiVersion: apiGroup,
+          kind: kind,
+          metadata: {
+            name: name,
+            namespace: namespace,
+          },
         },
-      },
-      isHubClusterResource ? namespace : cluster,
-      name
-    )
+        _hubClusterResource ? namespace : cluster,
+        name
+      )
 
-    canDeleteResource.promise
-      .then((result) => {
-        setLoadingAccessRequest(false)
-        setCanDelete(result.status?.allowed!)
-      })
-      .catch((err) => {
-        console.error(err)
-        setLoadingAccessRequest(false)
-        setAccessError(err)
-      })
-    return () => canDeleteResource.abort()
-  }, [apiGroup, resource, isHubClusterResource])
+      canDeleteResource.promise
+        .then((result) => {
+          setLoadingAccessRequest(false)
+          setCanDelete(result.status?.allowed!)
+          setAccessError(null)
+        })
+        .catch((err) => {
+          console.error(err.message)
+          setLoadingAccessRequest(false)
+          setAccessError(err)
+        })
+      return () => canDeleteResource.abort()
+    }
+  }, [apiGroup, resource])
 
   return (
     <AcmModal
@@ -262,7 +260,7 @@ export const DeleteResourceModal = (props: any) => {
           onClick={() =>
             deleteResourceFn(
               resource,
-              isHubClusterResource,
+              resource._hubClusterResource,
               apiGroup,
               relatedResource,
               currentQuery,
@@ -279,15 +277,15 @@ export const DeleteResourceModal = (props: any) => {
         </AcmButton>,
       ]}
     >
-      {accessError ? (
+      {accessError && (
         <AcmAlert data-testid={'user-access-error'} noClose={true} variant={'danger'} title={accessError} />
-      ) : null}
-      {!accessError && !canDelete && !loadingAccessRequest ? (
+      )}
+      {!accessError && !canDelete && !loadingAccessRequest && (
         <AcmAlert noClose={true} variant={'danger'} title={t('You are not authorized to delete this resource.')} />
-      ) : null}
-      {deleteResourceError ? (
+      )}
+      {deleteResourceError && (
         <AcmAlert data-testid={'delete-resource-error'} noClose={true} variant={'danger'} title={deleteResourceError} />
-      ) : null}
+      )}
       <div style={{ paddingTop: '1rem' }}>
         {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
       </div>
