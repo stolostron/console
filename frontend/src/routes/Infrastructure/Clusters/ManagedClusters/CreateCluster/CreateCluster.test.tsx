@@ -1583,260 +1583,261 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       },
     }
 
-// ProjectRequest and Project types
-const mockClusterProject: ProjectRequest = {
-  apiVersion: 'project.openshift.io/v1',
-  kind: 'Project',
-  metadata: { name: 'clusters' },
-}
+    // ProjectRequest and Project types
+    const mockClusterProject: ProjectRequest = {
+      apiVersion: 'project.openshift.io/v1',
+      kind: 'Project',
+      metadata: { name: 'clusters' },
+    }
 
-const mockClusterProjectResponse: Project = {
-  apiVersion: 'project.openshift.io/v1',
-  kind: 'Project',
-  metadata: {
-    name: 'clusters',
-  },
-}
+    const mockClusterProjectResponse: Project = {
+      apiVersion: 'project.openshift.io/v1',
+      kind: 'Project',
+      metadata: {
+        name: 'clusters',
+      },
+    }
 
-// Secret for 'infra-cluster-test'
-const mockInfraClusterTest: SecretRequest = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'infra-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    kubeconfig: 'IntcImNsdXN0ZXJzXCI6W3tcIm5hbWVcIjpcIm15LWNsdXN0ZXJcIixcImNsdXN0ZXJcIjp7XCJzZXJ2ZXJcIjpcImh0dHBzOi8vbXktY2x1c3Rlci5leGFtcGxlLmNvbVwifX1dLFwiY29udGV4dHNcIjpbe1wibmFtZVwiOlwibXktY29udGV4dFwiLFwiY29udGV4dFwiOntcImNsdXN0ZXJcIjpcIm15LWNsdXN0ZXJcIixcInVzZXJcIjpcIm15LXVzZXJcIn19XSxcImN1cnJlbnQtY29udGV4dFwiOlwibXktY29udGV4dFwiLFwidXNlcnNcIjpbe1wibmFtZVwiOlwibXktdXNlclwiLFwidXNlclwiOntcInRva2VuXCI6XCJhYmMxMjNcIn19XX0i',
-  },
-}
-
-const mockInfraClusterTestResponse: Secret = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'infra-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    kubeconfig: 'IntcImNsdXN0ZXJzXCI6W3tcIm5hbWVcIjpcIm15LWNsdXN0ZXJcIixcImNsdXN0ZXJcIjp7XCJzZXJ2ZXJcIjpcImh0dHBzOi8vbXktY2x1c3Rlci5leGFtcGxlLmNvbVwifX1dLFwiY29udGV4dHNcIjpbe1wibmFtZVwiOlwibXktY29udGV4dFwiLFwiY29udGV4dFwiOntcImNsdXN0ZXJcIjpcIm15LWNsdXN0ZXJcIixcInVzZXJcIjpcIm15LXVzZXJcIn19XSxcImN1cnJlbnQtY29udGV4dFwiOlwibXktY29udGV4dFwiLFwidXNlcnNcIjpbe1wibmFtZVwiOlwibXktdXNlclwiLFwidXNlclwiOntcInRva2VuXCI6XCJhYmMxMjNcIn19XX0i',
-  },
-}
-
-// Secret for 'pullsecret-cluster-test'
-const mockPullSecretClusterTest: SecretRequest = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'pullsecret-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    '.dockerconfigjson': 'eyJwdWxsU2VjcmV0Ijoic2VjcmV0In0K',
-  },
-}
-
-const mockPullSecretClusterTestResponse: Secret = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'pullsecret-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    '.dockerconfigjson': 'eyJwdWxsU2VjcmV0Ijoic2VjcmV0In0K',
-  },
-}
-
-// Secret for 'sshkey-cluster-test'
-const mockSshKeyClusterTest: SecretRequest = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'sshkey-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    'id_rsa.pub': 'c3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20=',
-  },
-}
-
-const mockSshKeyClusterTestResponse: Secret = {
-  apiVersion: 'v1',
-  kind: 'Secret',
-  metadata: {
-    name: 'sshkey-cluster-test',
-    namespace: 'clusters',
-    labels: {
-      'cluster.open-cluster-management.io/backup': 'cluster',
-      'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-      'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
-    },
-  },
-  data: {
-    'id_rsa.pub': 'c3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20=',
-  },
-}
-
-// ManagedCluster
-const mockManagedCluster: ManagedClusterRequest = {
-  apiVersion: 'cluster.open-cluster-management.io/v1',
-  kind: 'ManagedCluster',
-  metadata: {
-    annotations: {
-      'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
-      'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-      'open-cluster-management/created-via': 'hypershift',
-    },
-    labels: {
-      cloud: 'BareMetal',
-      vendor: 'OpenShift',
-      name: 'test',
-      myLabelKey: 'myValue',
-    },
-    name: 'test',
-  },
-  spec: {
-    hubAcceptsClient: true,
-  },
-}
-
-const mockManagedClusterResponse: ManagedCluster = {
-  apiVersion: 'cluster.open-cluster-management.io/v1',
-  kind: 'ManagedCluster',
-  metadata: {
-    annotations: {
-      'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
-      'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-      'open-cluster-management/created-via': 'hypershift',
-    },
-    labels: {
-      cloud: 'BareMetal',
-      vendor: 'OpenShift',
-      name: 'test',
-      myLabelKey: 'myValue',
-    },
-    name: 'test',
-  },
-  spec: {
-    hubAcceptsClient: true,
-  },
-}
-
-// HostedCluster
-const mockHostedCluster: HostedCluster = {
-  apiVersion: 'hypershift.openshift.io/v1beta1',
-  kind: 'HostedCluster',
-  metadata: {
-    name: 'test',
-    namespace: 'clusters',
-    labels: null,
-  },
-  spec: {
-    etcd: {
-      managed: {
-        storage: {
-          persistentVolume: {
-            size: '8Gi',
-          },
-          type: 'PersistentVolume',
+    // Secret for 'infra-cluster-test'
+    const mockInfraClusterTest: SecretRequest = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'infra-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
         },
       },
-      managementType: 'Managed',
-    },
-    release: {
-      image: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
-    },
-    pullSecret: {
-      name: 'pullsecret-cluster-test',
-    },
-    sshKey: {
-      name: 'sshkey-cluster-test',
-    },
-    networking: {
-      clusterNetwork: [
-        {
-          cidr: '10.132.0.0/14',
-        },
-      ],
-      serviceNetwork: [
-        {
-          cidr: '172.31.0.0/16',
-        },
-      ],
-    },
-  },
-}
+      data: {
+        kubeconfig:
+          'IntcImNsdXN0ZXJzXCI6W3tcIm5hbWVcIjpcIm15LWNsdXN0ZXJcIixcImNsdXN0ZXJcIjp7XCJzZXJ2ZXJcIjpcImh0dHBzOi8vbXktY2x1c3Rlci5leGFtcGxlLmNvbVwifX1dLFwiY29udGV4dHNcIjpbe1wibmFtZVwiOlwibXktY29udGV4dFwiLFwiY29udGV4dFwiOntcImNsdXN0ZXJcIjpcIm15LWNsdXN0ZXJcIixcInVzZXJcIjpcIm15LXVzZXJcIn19XSxcImN1cnJlbnQtY29udGV4dFwiOlwibXktY29udGV4dFwiLFwidXNlcnNcIjpbe1wibmFtZVwiOlwibXktdXNlclwiLFwidXNlclwiOntcInRva2VuXCI6XCJhYmMxMjNcIn19XX0i',
+      },
+    }
 
-const mockHostedClusterResponse: HostedCluster = {
-  apiVersion: 'hypershift.openshift.io/v1beta1',
-  kind: 'HostedCluster',
-  metadata: {
-    name: 'test',
-    namespace: 'clusters',
-    labels: null,
-  },
-  spec: {
-    etcd: {
-      managed: {
-        storage: {
-          persistentVolume: {
-            size: '8Gi',
-          },
-          type: 'PersistentVolume',
+    const mockInfraClusterTestResponse: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'infra-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
         },
       },
-      managementType: 'Managed',
-    },
-    release: {
-      image: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
-    },
-    pullSecret: {
-      name: 'pullsecret-cluster-test',
-    },
-    sshKey: {
-      name: 'sshkey-cluster-test',
-    },
-    networking: {
-      clusterNetwork: [
-        {
-          cidr: '10.132.0.0/14',
-        },
-      ],
-      serviceNetwork: [
-        {
-          cidr: '172.31.0.0/16',
-        },
-      ],
-    },
-  },
-}
+      data: {
+        kubeconfig:
+          'IntcImNsdXN0ZXJzXCI6W3tcIm5hbWVcIjpcIm15LWNsdXN0ZXJcIixcImNsdXN0ZXJcIjp7XCJzZXJ2ZXJcIjpcImh0dHBzOi8vbXktY2x1c3Rlci5leGFtcGxlLmNvbVwifX1dLFwiY29udGV4dHNcIjpbe1wibmFtZVwiOlwibXktY29udGV4dFwiLFwiY29udGV4dFwiOntcImNsdXN0ZXJcIjpcIm15LWNsdXN0ZXJcIixcInVzZXJcIjpcIm15LXVzZXJcIn19XSxcImN1cnJlbnQtY29udGV4dFwiOlwibXktY29udGV4dFwiLFwidXNlcnNcIjpbe1wibmFtZVwiOlwibXktdXNlclwiLFwidXNlclwiOntcInRva2VuXCI6XCJhYmMxMjNcIn19XX0i',
+      },
+    }
 
+    // Secret for 'pullsecret-cluster-test'
+    const mockPullSecretClusterTest: SecretRequest = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'pullsecret-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
+        },
+      },
+      data: {
+        '.dockerconfigjson': 'eyJwdWxsU2VjcmV0Ijoic2VjcmV0In0K',
+      },
+    }
+
+    const mockPullSecretClusterTestResponse: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'pullsecret-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
+        },
+      },
+      data: {
+        '.dockerconfigjson': 'eyJwdWxsU2VjcmV0Ijoic2VjcmV0In0K',
+      },
+    }
+
+    // Secret for 'sshkey-cluster-test'
+    const mockSshKeyClusterTest: SecretRequest = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'sshkey-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
+        },
+      },
+      data: {
+        'id_rsa.pub': 'c3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20=',
+      },
+    }
+
+    const mockSshKeyClusterTestResponse: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'sshkey-cluster-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionKubeVirt',
+        },
+      },
+      data: {
+        'id_rsa.pub': 'c3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20=',
+      },
+    }
+
+    // ManagedCluster
+    const mockManagedCluster: ManagedClusterRequest = {
+      apiVersion: 'cluster.open-cluster-management.io/v1',
+      kind: 'ManagedCluster',
+      metadata: {
+        annotations: {
+          'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+          'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+          'open-cluster-management/created-via': 'hypershift',
+        },
+        labels: {
+          cloud: 'BareMetal',
+          vendor: 'OpenShift',
+          name: 'test',
+          myLabelKey: 'myValue',
+        },
+        name: 'test',
+      },
+      spec: {
+        hubAcceptsClient: true,
+      },
+    }
+
+    const mockManagedClusterResponse: ManagedCluster = {
+      apiVersion: 'cluster.open-cluster-management.io/v1',
+      kind: 'ManagedCluster',
+      metadata: {
+        annotations: {
+          'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+          'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+          'open-cluster-management/created-via': 'hypershift',
+        },
+        labels: {
+          cloud: 'BareMetal',
+          vendor: 'OpenShift',
+          name: 'test',
+          myLabelKey: 'myValue',
+        },
+        name: 'test',
+      },
+      spec: {
+        hubAcceptsClient: true,
+      },
+    }
+
+    // HostedCluster
+    const mockHostedCluster: HostedCluster = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'HostedCluster',
+      metadata: {
+        name: 'test',
+        namespace: 'clusters',
+        labels: null,
+      },
+      spec: {
+        etcd: {
+          managed: {
+            storage: {
+              persistentVolume: {
+                size: '8Gi',
+              },
+              type: 'PersistentVolume',
+            },
+          },
+          managementType: 'Managed',
+        },
+        release: {
+          image: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+        },
+        pullSecret: {
+          name: 'pullsecret-cluster-test',
+        },
+        sshKey: {
+          name: 'sshkey-cluster-test',
+        },
+        networking: {
+          clusterNetwork: [
+            {
+              cidr: '10.132.0.0/14',
+            },
+          ],
+          serviceNetwork: [
+            {
+              cidr: '172.31.0.0/16',
+            },
+          ],
+        },
+      },
+    }
+
+    const mockHostedClusterResponse: HostedCluster = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'HostedCluster',
+      metadata: {
+        name: 'test',
+        namespace: 'clusters',
+        labels: null,
+      },
+      spec: {
+        etcd: {
+          managed: {
+            storage: {
+              persistentVolume: {
+                size: '8Gi',
+              },
+              type: 'PersistentVolume',
+            },
+          },
+          managementType: 'Managed',
+        },
+        release: {
+          image: 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+        },
+        pullSecret: {
+          name: 'pullsecret-cluster-test',
+        },
+        sshKey: {
+          name: 'sshkey-cluster-test',
+        },
+        networking: {
+          clusterNetwork: [
+            {
+              cidr: '10.132.0.0/14',
+            },
+          ],
+          serviceNetwork: [
+            {
+              cidr: '172.31.0.0/16',
+            },
+          ],
+        },
+      },
+    }
 
     const initialNocks: Scope[] = [
       nockList(clusterImageSet415 as IResource, [clusterImageSet415] as IResource[]),
@@ -1889,14 +1890,14 @@ const mockHostedClusterResponse: HostedCluster = {
     await clickByText('Next')
 
     const createNocks = [
-    nockCreate(mockClusterProject, mockClusterProjectResponse),
-    nockCreate(mockInfraClusterTest, mockInfraClusterTestResponse),
-    nockCreate(mockPullSecretClusterTest, mockPullSecretClusterTestResponse),
-    nockCreate(mockSshKeyClusterTest, mockSshKeyClusterTestResponse),
-    nockCreate(mockManagedCluster, mockManagedClusterResponse),
-    nockCreate(mockHostedCluster, mockHostedClusterResponse),
+      nockCreate(mockClusterProject, mockClusterProjectResponse),
+      nockCreate(mockInfraClusterTest, mockInfraClusterTestResponse),
+      nockCreate(mockPullSecretClusterTest, mockPullSecretClusterTestResponse),
+      nockCreate(mockSshKeyClusterTest, mockSshKeyClusterTestResponse),
+      nockCreate(mockManagedCluster, mockManagedClusterResponse),
+      nockCreate(mockHostedCluster, mockHostedClusterResponse),
     ]
-    
+
     await clickByText('Create')
     await waitForText('Creating cluster ...')
     // make sure creating
