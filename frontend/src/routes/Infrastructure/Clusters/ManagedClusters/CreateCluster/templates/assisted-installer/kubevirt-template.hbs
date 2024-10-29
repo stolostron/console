@@ -44,7 +44,7 @@ spec:
         infraNamespace: '{{{externalInfraNamespace}}}'
         infraKubeConfigSecret:
           name: infra-cluster-{{{clusterName}}}
-          key: externalInfraKubeconfig
+          key: kubeconfig
   infraID: '{{{clusterName}}}'
   services:
   - service: OAuthServer
@@ -67,9 +67,9 @@ metadata:
   namespace: 'clusters'
 data:
 {{#if showSecrets}}  
-  externalInfraKubeconfig: {{{externalInfraKubeconfig}}}
+  kubeconfig: {{{kubeconfig}}}
   {{else}}
-  externalInfraKubeconfig: #injected on create
+  kubeconfig: #injected on create
 {{/if}}
 ---
 apiVersion: v1
@@ -81,7 +81,7 @@ data:
   {{#if showSecrets}}
   '.dockerconfigjson': {{{pullSecret}}}
   {{else}}
-  '.dockerconfigjson': |-
+  '.dockerconfigjson': #injected on create
   {{/if}}
 type: kubernetes.io/dockerconfigjson
 
@@ -95,7 +95,7 @@ data:
   {{#if showSecrets}}
   id_rsa.pub: {{{ssh-publickey}}}
   {{else}}
-  id_rsa.pub: |-
+  id_rsa.pub: #injected on create
   {{/if}}
 
 {{#each nodepools}}

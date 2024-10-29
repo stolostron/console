@@ -569,7 +569,7 @@ current-context: 'mock-context'
     const providerConnection = createProviderConnection('kubevirt', {
       pullSecret: '{"pull":"secret"}\n',
       'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
-      externalInfraKubeconfig: mockKubeconfig,
+      kubeconfig: mockKubeconfig,
       externalInfraNamespace: 'external-namespace',
     })
 
@@ -582,7 +582,7 @@ current-context: 'mock-context'
     await clickByTestId('isExternalInfra')
 
     // Fill in Kubeconfig and Namespace
-    await typeByTestId('externalInfraKubeconfig', providerConnection.stringData?.externalInfraKubeconfig! ?? '')
+    await typeByTestId('kubeconfig', providerConnection.stringData?.kubeconfig! ?? '')
     await typeByTestId('externalInfraNamespace', providerConnection.stringData?.externalInfraNamespace ?? '')
     await clickByText('Next')
 

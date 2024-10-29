@@ -185,21 +185,15 @@ export function CredentialsForm(
 
   // External Infrastructure
   const [isExternalInfra, setIsExternalInfra] = useState(
-    () =>
-      !!(
-        providerConnection?.stringData?.externalInfraKubeconfig ||
-        providerConnection?.stringData?.externalInfraNamespace
-      )
+    () => !!(providerConnection?.stringData?.kubeconfig ?? providerConnection?.stringData?.externalInfraNamespace)
   )
-  const [externalInfraKubeconfig, setExternalInfraKubeconfig] = useState(
-    () => providerConnection?.stringData?.externalInfraKubeconfig ?? ''
-  )
+  const [kubeconfig, setKubeconfig] = useState(() => providerConnection?.stringData?.kubeconfig ?? '')
   const [externalInfraNamespace, setExternalInfraNamespace] = useState(
     () => providerConnection?.stringData?.externalInfraNamespace ?? ''
   )
 
   const hasExternalInfraData = () => {
-    return !!(externalInfraKubeconfig || externalInfraNamespace)
+    return !!(kubeconfig || externalInfraNamespace)
   }
 
   // Amazon Web Services State
@@ -483,7 +477,7 @@ export function CredentialsForm(
       case Provider.kubevirt:
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
-        isExternalInfra && (stringData.externalInfraKubeconfig = externalInfraKubeconfig)
+        isExternalInfra && (stringData.kubeconfig = kubeconfig)
         isExternalInfra && (stringData.externalInfraNamespace = externalInfraNamespace)
         break
     }
@@ -553,7 +547,7 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
       { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
-      { path: 'Secret[0].stringData.externalInfraKubeconfig', setState: setExternalInfraKubeconfig },
+      { path: 'Secret[0].stringData.kubeconfig', setState: setKubeconfig },
       { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
     ]
     return syncs
@@ -1313,16 +1307,16 @@ export function CredentialsForm(
                   onChange: () => setIsExternalInfra((enabled) => !enabled),
                 },
                 {
-                  id: 'externalInfraKubeconfig',
+                  id: 'kubeconfig',
                   type: 'TextArea',
                   label: t('Kubeconfig'),
                   labelHelp: t(
                     'Provide a kubeconfig that grants access to an external infrastructure cluster running OpenShift Virtualization.'
                   ),
                   placeholder: t('Copy and paste your kubeconfig content'),
-                  value: externalInfraKubeconfig,
+                  value: kubeconfig,
                   isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
-                  onChange: setExternalInfraKubeconfig,
+                  onChange: setKubeconfig,
                   isRequired: true,
                   isSecret: true,
                   validation: (value) => validateKubeconfig(value, t),
@@ -1575,7 +1569,7 @@ export function CredentialsForm(
         '*.stringData.osServicePrincipal.json',
         '*.stringData.osServiceAccount.json',
         '*.stringData.clouds.yaml',
-        '*.stringData.externalInfraKubeconfig',
+        '*.stringData.kubeconfig',
       ]}
       immutables={
         isHostedControlPlane

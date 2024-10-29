@@ -50,13 +50,13 @@ export const onChangeKubeVirtConnection = (control) => {
   const isEncoded = replacements?.encoded && replacements?.encoded === true
   const activePullSecret = replacements?.pullSecret ?? ''
   const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
-  const activeExternalInfraKubeconfig = replacements?.externalInfraKubeconfig ?? ''
+  const activeKubeconfig = replacements?.kubeconfig ?? ''
   const activeExternalInfraNamespace = replacements?.externalInfraNamespace ?? ''
 
   if (active && !isEncoded && activePullSecret !== '') {
     control.availableMap[active] = {
       replacements: {
-        externalInfraKubeconfig: Buffer.from(activeExternalInfraKubeconfig, 'ascii').toString('base64'),
+        kubeconfig: Buffer.from(activeKubeconfig, 'ascii').toString('base64'),
         externalInfraNamespace: activeExternalInfraNamespace,
         pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
         'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
@@ -114,7 +114,7 @@ export const getControlDataKubeVirt = (
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
       onSelect: onChangeKubeVirtConnection,
-      encode: ['pullSecret', 'sshPublicKey', 'externalInfraKubeconfig'],
+      encode: ['pullSecret', 'sshPublicKey', 'kubeconfig'],
       hasReplacements: true,
     },
     {
