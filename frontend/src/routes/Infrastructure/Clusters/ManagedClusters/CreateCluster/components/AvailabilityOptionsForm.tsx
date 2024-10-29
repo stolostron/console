@@ -120,3 +120,13 @@ const AvailabilityOptionsForm = (props: any) => {
 }
 
 export default AvailabilityOptionsForm
+
+//
+export const summarize = (control: any, controlData: any, summary: string[]) => {
+  const { controller, infra } = control.active || {}
+  // console.log('controller', controller)
+  // console.log('infra', infra)
+  controller && summary.push(controller)
+  infra && summary.push(infra)
+  // console.log('summary', summary)
+}
