@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Grid, GridItem, PageSection, Skeleton, Title } from '@patternfly/react-core'
+import { Badge, Divider, Flex, Grid, GridItem, LabelGroup, PageSection, Skeleton, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -21,9 +21,9 @@ import {
 import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { generatePath, Link, useParams } from 'react-router-dom-v5-compat'
-import { getEngineWithSvg } from '../../common/util'
+import { collectKinds, getEngineWithSvg } from '../../common/util'
 import { Grid as MuiGrid } from '@mui/material'
-import { useFetchVapb } from './PolicyTemplateDetailHooks'
+import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
 
 interface IKinds {
   apiGroups: string[]
@@ -40,6 +40,14 @@ export function PolicyTemplateDetails() {
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
   // This is for gatekeeper constraint
   const vapb = useFetchVapb()
+  const kyvernoRelated = useFetchKyvernoRelated()
+  const isFromSearch = ['kyverno.io'].includes(apiGroup)
+
+  useEffect(() => {
+    if (isFromSearch && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
+      setRelatedObjects(kyvernoRelated.relatedItems)
+    }
+  }, [kyvernoRelated, apiGroup, isFromSearch])
 
   useEffect(() => {
     if (template?.status?.relatedObjects?.length) {
@@ -79,10 +87,11 @@ export function PolicyTemplateDetails() {
       return
     }
 
-    if (!templateLoading) {
+    // Data from Search-api handles their loading page
+    if (!templateLoading && !isFromSearch) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading])
+  }, [apiGroup, clusterName, template, templateLoading, isFromSearch])
 
   const descriptionItems = useMemo(() => {
     const cols: ListItems[] = [
@@ -197,6 +206,18 @@ export function PolicyTemplateDetails() {
           })
         }
       }
+    }
+
+    // kyverno
+    if (template?.spec?.rules && apiGroup === 'kyverno.io') {
+      return [
+        ...cols.slice(0, 2),
+        {
+          key: t('Matches'),
+          value: kyvernoMatchesBadges(template?.spec?.rules),
+        },
+        ...cols.slice(2),
+      ]
     }
 
     return cols
@@ -346,11 +367,93 @@ export function PolicyTemplateDetails() {
     [t, kind]
   )
 
+  const relatedResourceFromSearchAPIColumns = useMemo(
+    () => [
+      {
+        header: t('Name'),
+        cell: 'name',
+        sort: 'name',
+        search: 'name',
+      },
+      {
+        header: t('Namespace'),
+        cell: (item: any) => item.namespace ?? '-',
+        search: (item: any) => item.namespace,
+        sort: (a: any, b: any) => compareStrings(a.namespace, b.namespace),
+      },
+      {
+        header: t('Kind'),
+        cell: 'kind',
+        sort: 'kind',
+        search: 'kind',
+      },
+      {
+        header: t('API groups'),
+        cell: (item: any) => item.apigroup ?? '-',
+        sort: 'apigroup',
+        search: 'apigroup',
+      },
+      {
+        header: '',
+        cell: (item: any) => {
+          let policyReportLink: ReactNode = <></>
+          if (item.policyReport) {
+            const { cluster, kind, name, namespace, apiversion } = item.policyReport
+            const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+            policyReportLink = (
+              <>
+                <span>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&&name=${name}${namespaceArg}`}
+                  >
+                    {t('View policy report')}{' '}
+                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                  </a>
+                </span>{' '}
+                <Divider
+                  orientation={{
+                    default: 'vertical',
+                  }}
+                  inset={{
+                    default: 'insetMd',
+                    md: 'insetNone',
+                    lg: 'insetSm',
+                    xl: 'insetXs',
+                  }}
+                />
+              </>
+            )
+          }
+
+          const { cluster, kind, name, namespace, apiversion } = item
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          return (
+            <Flex>
+              {policyReportLink}
+
+              <span>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&&name=${name}${namespaceArg}`}
+                >
+                  {t('View YAML')} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                </a>
+              </span>
+            </Flex>
+          )
+        },
+      },
+    ],
+    [t]
+  )
   return (
     <div>
-      {vapb.err && (
+      {(vapb.err || kyvernoRelated.err) && (
         <PageSection style={{ paddingBottom: '0' }}>
-          <AcmAlert variant="danger" title={vapb.err} isInline noClose />
+          <AcmAlert variant="danger" title={vapb.err ?? kyvernoRelated.err} isInline noClose />
         </PageSection>
       )}
       <PageSection style={{ paddingBottom: '0' }}>
@@ -376,8 +479,10 @@ export function PolicyTemplateDetails() {
                 message={t('There are no resources related to this policy template.')}
               />
             }
-            columns={relatedResourceColumns}
-            keyFn={(item) => `${item.object.kind}.${item.object.metadata.name}`}
+            columns={isFromSearch ? relatedResourceFromSearchAPIColumns : relatedResourceColumns}
+            keyFn={(item) =>
+              isFromSearch ? `${item.kind}.${item.name}` : `${item?.object?.kind}.${item?.object?.metadata.name}`
+            }
             initialSort={{
               index: 0,
               direction: 'asc',
@@ -414,6 +519,26 @@ const matchesBadges = (kinds: IKinds[]): ReactNode => {
             )
           })
         })
+      })}
+    </MuiGrid>
+  )
+}
+
+const kyvernoMatchesBadges = (rules: any[]): ReactNode => {
+  return (
+    <MuiGrid container style={{ maxWidth: '500px', gap: 8 }}>
+      {rules.map((r) => {
+        const kinds: string[] = collectKinds(r)
+
+        return (
+          <LabelGroup categoryName={r.name} key={r.name}>
+            {kinds.map((kind: string) => (
+              <Badge isRead key={`${r.name}/${kind}`}>
+                {kind}
+              </Badge>
+            ))}
+          </LabelGroup>
+        )
       })}
     </MuiGrid>
   )

@@ -109,7 +109,7 @@ export function PolicyTemplateDetailsPage() {
 
     let namespace = templateNamespace
     // Apply both to ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding
-    if (kind.startsWith('ValidatingAdmissionPolicy')) {
+    if (kind.startsWith('ValidatingAdmissionPolicy') || (kind === 'ClusterPolicy' && apiGroup === 'kyverno.io')) {
       namespace = ''
     }
 

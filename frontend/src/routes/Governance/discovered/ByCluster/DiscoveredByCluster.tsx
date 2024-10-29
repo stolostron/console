@@ -11,7 +11,7 @@ import {
   getSeverityFilter,
   getSourceFilterOptions,
   DiscoveredViolationsCard,
-  getConstraintCompliance,
+  getTotalViolationsCompliance,
   policyViolationSummary,
 } from './common'
 import { useMemo } from 'react'
@@ -127,7 +127,7 @@ export default function DiscoveredByCluster({
                 let compliant: string
 
                 if (item.apigroup === 'constraints.gatekeeper.sh') {
-                  compliant = getConstraintCompliance(item?.totalViolations)
+                  compliant = getTotalViolationsCompliance(item?.totalViolations)
                 } else {
                   compliant = item?.compliant?.toLowerCase() ?? ''
                 }

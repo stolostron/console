@@ -24,6 +24,7 @@ export function grouping(): {
   ) => ISourceType
   createMessage: (
     data: any[],
+    kyvernoPolicyReports: any[],
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -118,6 +119,8 @@ export function grouping(): {
           .sort() //NOSONAR
           .join('/')
       }
+    } else if (policy.apigroup === 'kyverno.io') {
+      return policy.validationFailureAction
     }
 
     return null
@@ -125,6 +128,7 @@ export function grouping(): {
 
   const createMessage = (
     data: any[],
+    kyvernoPolicyReports: any[],
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -142,6 +146,16 @@ export function grouping(): {
     const parseStringMap = eval(parseStringMapStr) as TParseStringMap
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
+    const kyvernoViolationMap: { [policyNamespaceName: string]: number } = {}
+
+    if (kyvernoPolicyReports.length > 0) {
+      kyvernoPolicyReports.forEach((cr) => {
+        const kindNameViolation = cr.policyViolationCounts?.split('=') ?? []
+        kyvernoViolationMap[kindNameViolation[0]] =
+          (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
+      })
+    }
+
     const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
       ?.filter(
         // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
@@ -149,7 +163,7 @@ export function grouping(): {
           !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
       )
       .map((policy: any): any => {
-        return {
+        const sourceAdded = {
           ...policy,
           source: getPolicySource(
             policy,
@@ -161,6 +175,18 @@ export function grouping(): {
             parseStringMap
           ),
         }
+        // Add violation to kyverno
+        if (policy.apigroup === 'kyverno.io') {
+          const key = policy.namespace ? policy.namespace + '/' + policy.name : policy.name
+          return {
+            ...sourceAdded,
+            responseAction: policy.validationFailureAction,
+            // Possibility that a Policy or ClusterPolicy may not have a PolicyReport.
+            totalViolations: kyvernoViolationMap[key] ?? 0,
+          }
+        }
+
+        return sourceAdded
       })
 
     const groupByNameKindGroup: { [nameKindGroup: string]: any[] } = {}
@@ -252,6 +278,7 @@ export function grouping(): {
   self.onmessage = (e: MessageEvent<any>) => {
     const {
       data,
+      kyvernoPolicyReports,
       helmReleases,
       channels,
       subscriptions,
@@ -264,6 +291,7 @@ export function grouping(): {
     self.postMessage(
       createMessage(
         data,
+        kyvernoPolicyReports,
         helmReleases,
         channels,
         subscriptions,
