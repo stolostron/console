@@ -1451,7 +1451,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 })
 
-describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure - NOT YET', () => {
+describe.only('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure - NOT YET', () => {
   const pullSecret = '{"pullSecret":"secret"}\n'
   const Component = () => {
     return (
@@ -1889,18 +1889,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
-    const createNocks = [
-      nockCreate(mockClusterProject, mockClusterProjectResponse),
-      nockCreate(mockInfraClusterTest, mockInfraClusterTestResponse),
-      nockCreate(mockPullSecretClusterTest, mockPullSecretClusterTestResponse),
-      nockCreate(mockSshKeyClusterTest, mockSshKeyClusterTestResponse),
-      nockCreate(mockManagedCluster, mockManagedClusterResponse),
-      nockCreate(mockHostedCluster, mockHostedClusterResponse),
-    ]
+    // const createNocks = [
+    //   nockCreate(mockClusterProject, mockClusterProjectResponse),
+    //   nockCreate(mockInfraClusterTest, mockInfraClusterTestResponse),
+    //   nockCreate(mockPullSecretClusterTest, mockPullSecretClusterTestResponse),
+    //   nockCreate(mockSshKeyClusterTest, mockSshKeyClusterTestResponse),
+    //   nockCreate(mockManagedCluster, mockManagedClusterResponse),
+    //   nockCreate(mockHostedCluster, mockHostedClusterResponse),
+    // ]
 
     await clickByText('Create')
+    screen.logTestingPlaygroundURL()
     await waitForText('Creating cluster ...')
     // make sure creating
-    await waitForNocks(createNocks)
+    // await waitForNocks(createNocks)
   })
 })

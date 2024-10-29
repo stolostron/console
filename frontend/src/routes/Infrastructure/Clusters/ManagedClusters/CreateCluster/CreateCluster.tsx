@@ -155,7 +155,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
               replacements: {
                 pullSecret: newSecret.data?.pullSecret ?? '',
                 'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
-                externalInfraKubeconfig: newSecret.data?.externalInfraKubeconfig ?? '',
+                kubeconfig: newSecret.data?.externalInfraKubeconfig ?? '',
                 externalInfraNamespace: newSecret.data?.externalInfraNamespace ?? '',
                 encoded: true,
               },
