@@ -100,7 +100,7 @@ Array [
     "encode": Array [
       "pullSecret",
       "sshPublicKey",
-      "externalInfraKubeconfig",
+      "kubeconfig",
     ],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
@@ -393,7 +393,7 @@ Array [
     "encode": Array [
       "pullSecret",
       "sshPublicKey",
-      "externalInfraKubeconfig",
+      "kubeconfig",
     ],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
