@@ -4,7 +4,6 @@ import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { FormGroup, Radio } from '@patternfly/react-core'
 import { AcmForm } from '../../../../../../ui-components'
 import { css } from '@emotion/css'
-import _ from 'lodash'
 import { TFunction } from 'i18next'
 
 const formWrapper = css({
@@ -14,7 +13,16 @@ const formWrapper = css({
   },
 })
 
-const AvailabilityOptionsForm = (props: any) => {
+type FormControl = {
+  active: any
+}
+
+type AvailabilityOptionsFormProps = {
+  control: FormControl
+  handleChange: (control: FormControl) => void
+}
+
+const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: any) => {
   const { control } = props
   const { t } = useTranslation()
 
