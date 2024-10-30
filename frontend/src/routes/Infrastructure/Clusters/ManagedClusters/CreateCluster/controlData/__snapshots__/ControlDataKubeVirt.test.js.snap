@@ -176,6 +176,17 @@ Array [
     },
   },
   Object {
+    "active": Object {
+      "controller": "HighlyAvailable",
+      "infra": "HighlyAvailable",
+    },
+    "component": <AvailabilityOptionsForm />,
+    "id": "availabilityOptions",
+    "name": "Availability Options",
+    "summary": [Function],
+    "type": "custom",
+  },
+  Object {
     "active": Array [],
     "id": "additionalLabels",
     "name": "Additional labels",
@@ -457,6 +468,17 @@ Array [
       "notification": "Select a storage class",
       "required": false,
     },
+  },
+  Object {
+    "active": Object {
+      "controller": "HighlyAvailable",
+      "infra": "HighlyAvailable",
+    },
+    "component": <AvailabilityOptionsForm />,
+    "id": "availabilityOptions",
+    "name": "Availability Options",
+    "summary": [Function],
+    "type": "custom",
   },
   Object {
     "active": Array [],
