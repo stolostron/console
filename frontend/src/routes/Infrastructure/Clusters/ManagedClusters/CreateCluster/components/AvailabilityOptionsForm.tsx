@@ -5,6 +5,7 @@ import { FormGroup, Radio } from '@patternfly/react-core'
 import { AcmForm } from '../../../../../../ui-components'
 import { css } from '@emotion/css'
 import _ from 'lodash'
+import { TFunction } from 'i18next'
 
 const formWrapper = css({
   paddingBottom: '25px',
@@ -17,14 +18,6 @@ const AvailabilityOptionsForm = (props: any) => {
   const { control } = props
   const { t } = useTranslation()
 
-  // Set default option to "Highly Available"
-  if (_.isEmpty(control.active)) {
-    props.control.active = {
-      controller: 'HighlyAvailable',
-      infra: 'HighlyAvailable',
-    }
-  }
-  const { controller, infra } = props.control.active
   const handleChange = (_: any, event: any) => {
     const { control, handleChange } = props
 
@@ -79,7 +72,7 @@ const AvailabilityOptionsForm = (props: any) => {
           name={'controllerAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
-          defaultChecked={controller === 'HighlyAvailable'}
+          defaultChecked={control.active.controller === 'HighlyAvailable'}
           onChange={handleChange}
         />
         <Radio
@@ -87,7 +80,7 @@ const AvailabilityOptionsForm = (props: any) => {
           name={'controllerAvailabilityPolicy'}
           label={labelSingle()}
           value={'SingleReplica'}
-          defaultChecked={controller === 'SingleReplica'}
+          defaultChecked={control.active.controller === 'SingleReplica'}
           onChange={handleChange}
         />
       </FormGroup>
@@ -103,7 +96,7 @@ const AvailabilityOptionsForm = (props: any) => {
           name={'infraAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
-          defaultChecked={infra === 'HighlyAvailable'}
+          defaultChecked={control.active.infra === 'HighlyAvailable'}
           onChange={handleChange}
         />
         <Radio
@@ -111,7 +104,7 @@ const AvailabilityOptionsForm = (props: any) => {
           name={'infraAvailabilityPolicy'}
           label={labelSingle()}
           value={'SingleReplica'}
-          defaultChecked={infra === 'SingleReplica'}
+          defaultChecked={control.active.infra === 'SingleReplica'}
           onChange={handleChange}
         />
       </FormGroup>
@@ -121,12 +114,11 @@ const AvailabilityOptionsForm = (props: any) => {
 
 export default AvailabilityOptionsForm
 
-//
-export const summarize = (control: any, controlData: any, summary: string[]) => {
+export const summary = (control: any, t: TFunction) => {
   const { controller, infra } = control.active || {}
-  // console.log('controller', controller)
-  // console.log('infra', infra)
-  controller && summary.push(controller)
-  infra && summary.push(infra)
-  // console.log('summary', summary)
+
+  return [
+    { term: t('Controller availability policy'), desc: controller },
+    { term: t('Infrastructure availability policy'), desc: infra },
+  ]
 }

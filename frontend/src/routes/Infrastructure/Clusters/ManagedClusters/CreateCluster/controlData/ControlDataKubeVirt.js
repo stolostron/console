@@ -16,9 +16,7 @@ import {
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
-import AvailabilityOptionsForm, {
-  summarize as summarizeAvailabilityOptions,
-} from '../components/AvailabilityOptionsForm'
+import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -170,8 +168,8 @@ export const getControlDataKubeVirt = (
       name: t('Availability Options'),
       type: 'custom',
       component: <AvailabilityOptionsForm />,
-      active: [],
-      summarize: summarizeAvailabilityOptions,
+      active: { controller: 'HighlyAvailable', infra: 'HighlyAvailable' },
+      summary: summary,
     },
     {
       id: 'additionalLabels',
