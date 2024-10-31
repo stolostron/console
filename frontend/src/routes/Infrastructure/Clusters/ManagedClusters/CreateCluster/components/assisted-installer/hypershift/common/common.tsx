@@ -2,7 +2,7 @@
 
 import { ClipboardCopyButton, CodeBlockAction, Text, TextVariants } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
-import { useTranslation } from '../../../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../../../lib/acm-i18next'
 
 export function Actions(code: string, id: string) {
   const { t } = useTranslation()
@@ -33,16 +33,9 @@ export function Actions(code: string, id: string) {
 }
 
 export function GetOCLogInCommand() {
-  const { t } = useTranslation()
   return (
-    <Text
-      component={TextVariants.a}
-      onClick={() => {
-        window.open(window.SERVER_FLAGS?.requestTokenURL)
-      }}
-      target="_blank"
-    >
-      {t('Run the following `oc login` command')}
+    <Text component={TextVariants.p}>
+      <Trans i18nKey="copy.login.command.instructions" components={{ bold: <strong />, code: <code /> }} />
     </Text>
   )
 }

@@ -105,7 +105,7 @@ hcp create cluster aws \\
       title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
-          <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform.')}</Text>
+          <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform')}</Text>
           {GetOCLogInCommand()}
           <Text component={TextVariants.h4}>{t('Run command')}</Text>
           <Text component={TextVariants.p}>
