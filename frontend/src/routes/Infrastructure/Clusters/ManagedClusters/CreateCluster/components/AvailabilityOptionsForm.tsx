@@ -124,9 +124,11 @@ export default AvailabilityOptionsForm
 
 export const summary = (control: any, t: TFunction) => {
   const { controller, infra } = control.active || {}
+  const controlDesc: string = controller === 'HighlyAvailable' ? t('Highly Available') : t('Single Replica')
+  const infraDesc: string = infra === 'HighlyAvailable' ? t('Highly Available') : t('Single Replica')
 
   return [
-    { term: t('Controller availability policy'), desc: controller },
-    { term: t('Infrastructure availability policy'), desc: infra },
+    { term: t('Controller availability policy'), desc: controlDesc },
+    { term: t('Infrastructure availability policy'), desc: infraDesc },
   ]
 }

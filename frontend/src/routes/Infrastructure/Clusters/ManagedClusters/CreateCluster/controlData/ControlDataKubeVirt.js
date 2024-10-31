@@ -165,7 +165,6 @@ export const getControlDataKubeVirt = (
     },
     {
       id: 'availabilityOptions',
-      name: t('Availability Options'),
       type: 'custom',
       component: <AvailabilityOptionsForm />,
       active: { controller: 'HighlyAvailable', infra: 'HighlyAvailable' },
