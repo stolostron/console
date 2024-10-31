@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../../../../lib/test-metadata'
-import { clickByText, waitForNocks, waitForTestId, waitForText } from '../../../../../../../../lib/test-util'
+import { waitForNocks, waitForTestId, waitForText } from '../../../../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { HypershiftAWSCLI } from './HypershiftAWSCLI'
 
@@ -33,6 +33,6 @@ describe('HypershiftAWSCLI', () => {
     // find code block
     await waitForTestId('code-content')
     await waitForTestId('helper-command')
-    await clickByText('Run the following `oc login` command')
+    await waitForText('Copy login command')
   })
 })
