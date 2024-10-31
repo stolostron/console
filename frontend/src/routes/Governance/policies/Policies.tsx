@@ -228,7 +228,11 @@ export default function PoliciesPage() {
         isDefault: false,
         isFirstVisitChecked: true,
         exportContent: (item) => {
-          return item.source ?? '-'
+          let type = item.source ? item.source : '-'
+          if (typeof item.source === 'object') {
+            type = getResourceLabel(item.source.props?.appRepos[0]?.type?.toLowerCase() ?? '', 1, t)
+          }
+          return type
         },
       },
       {
