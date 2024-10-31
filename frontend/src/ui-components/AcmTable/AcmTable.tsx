@@ -4,6 +4,7 @@ import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
+  MenuToggle,
   PageSection,
   Pagination,
   PaginationProps,
@@ -32,9 +33,10 @@ import {
   SelectOptionObject,
   SelectVariant,
 } from '@patternfly/react-core/deprecated'
-import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
+import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
+  CustomActionsToggleProps,
   expandable,
   IAction,
   IExtraData,
@@ -1239,6 +1241,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // Parse static actions
   const actions = useMemo(() => parseRowAction(rowActions), [parseRowAction, rowActions])
 
+  const actionsToggle = useCallback(
+    ({ onToggle, isOpen, isDisabled, toggleRef }: CustomActionsToggleProps) => (
+      <MenuToggle
+        aria-label={t('Actions')}
+        ref={toggleRef}
+        onClick={onToggle}
+        isExpanded={isOpen}
+        isDisabled={isDisabled}
+        variant="plain"
+      >
+        <EllipsisVIcon />
+      </MenuToggle>
+    ),
+    [t]
+  )
+
   // Wrap provided action resolver
   const actionResolver = useMemo(
     () =>
@@ -1466,6 +1484,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 rowWrapper={OuiaIdRowWrapper}
                 actionResolver={actionResolver}
                 actions={actions}
+                actionsToggle={actionsToggle}
                 aria-label={t('Simple Table')}
                 sortBy={adjustedSort}
                 onSort={(_event, index, direction) => updateSort({ index, direction })}

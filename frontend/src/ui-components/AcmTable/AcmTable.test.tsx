@@ -2,7 +2,7 @@
 
 import { ButtonVariant, ToggleGroup, ToggleGroupItem, TooltipPosition } from '@patternfly/react-core'
 import { fitContent, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
@@ -314,7 +314,7 @@ describe('AcmTable', () => {
   test('renders without actions', () => {
     const { container } = render(<Table useTableActions={false} useRowActions={false} />)
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeNull()
+    expect(container.querySelector('table .pf-v5-c-table__action buton')).toBeNull()
   })
   test('renders actions given an actionResolver', () => {
     const tableActionResolver = (item: IExampleData) => {
@@ -335,7 +335,7 @@ describe('AcmTable', () => {
       <Table useTableActions={false} useRowActions={false} rowActionResolver={tableActionResolver} />
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
+    expect(container.querySelector('table .pf-v5-c-table__action button')).toBeInTheDocument()
   })
   test('renders actions given an actionResolver with an expandable table', () => {
     const tableActionResolver = (item: IExampleData) => {
@@ -410,7 +410,7 @@ describe('AcmTable', () => {
       </MemoryRouter>
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
+    expect(container.querySelector('table .pf-v5-c-table__action button')).toBeInTheDocument()
   })
   test('renders pagination with autoHidePagination when more that perPage items', () => {
     const { container } = render(<Table items={exampleData} autoHidePagination />)
@@ -506,47 +506,38 @@ describe('AcmTable', () => {
     expect(secondaryTableActionFunction).toHaveBeenCalled()
   })
 
-  test('can support table row actions', () => {
+  test('can support table row actions', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
     userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Delete item')).toBeVisible()
     userEvent.click(getByText('Delete item'))
     expect(deleteAction).toHaveBeenCalled()
   })
-  test('can support table row actions', () => {
+  test('can support disabled table row actions', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
     userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByRole('menu')).toBeVisible()
-    expect(getByText('Delete item')).toBeVisible()
-    userEvent.click(getByText('Delete item'))
-    expect(deleteAction).toHaveBeenCalled()
-  })
-  test('can support disabled table row actions', () => {
-    const { getAllByLabelText, getByRole, getByText } = render(<Table />)
-    expect(getAllByLabelText('Actions')).toHaveLength(10)
-    userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Disabled item')).toBeVisible()
     userEvent.click(getByText('Disabled item'))
     expect(deleteAction).not.toHaveBeenCalled()
   })
-  test('can support disabled table row actions with tooltips', () => {
+  test('can support disabled table row actions with tooltips', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
     userEvent.click(getAllByLabelText('Actions')[1])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Disabled delete item')).toBeVisible()
     userEvent.click(getByText('Disabled delete item'))
     expect(deleteAction).not.toHaveBeenCalled()
   })
-  test('can support table row actions with tooltips', () => {
+  test('can support table row actions with tooltips', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
     userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Tooltipped delete item')).toBeVisible()
     userEvent.click(getByText('Tooltipped delete item'))
     expect(deleteAction).toHaveBeenCalled()
@@ -693,17 +684,17 @@ describe('AcmTable', () => {
     userEvent.click(getByText('First Name'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Abran')
   })
-  test('page size can be updated', () => {
+  test('page size can be updated', async () => {
     const { getByLabelText, getAllByLabelText, getByText, container } = render(
       <Table useExtraToolbarControls={false} useSearch={false} useTableActions={false} />
     )
 
     expect(container.querySelectorAll('tbody tr')).toHaveLength(10)
-    expect(getAllByLabelText('Items per page').length).toBeGreaterThan(0)
+    expect(getAllByLabelText('items per page').length).toBeGreaterThan(0)
 
     // Switch to 50 items per page
-    userEvent.click(getAllByLabelText('Items per page')[0])
-    expect(getByText('50 per page')).toBeVisible()
+    userEvent.click(getAllByLabelText('items per page')[0])
+    await waitFor(() => expect(getByText('50 per page')).toBeVisible())
     userEvent.click(getByText('50 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(50)
 
@@ -712,8 +703,8 @@ describe('AcmTable', () => {
     expect(getAllByLabelText('Current page')[0]).toHaveValue(2)
 
     // Switch to 10 items per page; verify automatic move to page 6
-    userEvent.click(getAllByLabelText('Items per page')[0])
-    expect(getByText('10 per page')).toBeVisible()
+    userEvent.click(getAllByLabelText('items per page')[0])
+    await waitFor(() => expect(getByText('10 per page')).toBeVisible())
     userEvent.click(getByText('10 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(10)
     expect(getByLabelText('Current page')).toHaveValue(6)
@@ -737,11 +728,11 @@ describe('AcmTable', () => {
     const { container } = render(<Table />)
     expect(
       container.querySelector(
-        '[data-ouia-component-type="PF4/TableRow"][data-ouia-component-id="25"] [data-label="First Name"]'
+        '[data-ouia-component-type="PF5/TableRow"][data-ouia-component-id="25"] [data-label="First Name"]'
       )
     ).toHaveTextContent('Arabela')
   })
-  test('can use saved pagination', () => {
+  test('can use saved pagination', async () => {
     const { getAllByLabelText, getByText, container } = render(
       <AcmTablePaginationContextProvider localStorageKey="my-table">
         <Table />
@@ -749,8 +740,8 @@ describe('AcmTable', () => {
       </AcmTablePaginationContextProvider>
     )
     // set pagination on first table
-    userEvent.click(getAllByLabelText('Items per page')[0])
-    expect(getByText('100 per page')).toBeVisible()
+    userEvent.click(getAllByLabelText('items per page')[0])
+    await waitFor(() => expect(getByText('100 per page')).toBeVisible())
     userEvent.click(getByText('100 per page'))
     // verify pagination changes on both tables
     expect(container.querySelectorAll('tbody tr')).toHaveLength(200)
@@ -824,7 +815,7 @@ describe('AcmTable', () => {
     // verify sort selection sticks
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
   })
-  test('renders a table with expandable rows', () => {
+  test('renders a table with expandable rows', async () => {
     const expandedDeleteAction = jest.fn()
     const { getAllByLabelText, getByRole, getByTestId, getByText } = render(
       <MemoryRouter>
@@ -905,14 +896,14 @@ describe('AcmTable', () => {
 
     // Run delete action for code coverage (no delete support on expanded content)
     userEvent.click(getAllByLabelText('Actions')[1])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Delete item')).toBeVisible()
     userEvent.click(getByText('Delete item'))
     expect(expandedDeleteAction).not.toHaveBeenCalled()
 
     // Run tooltipped delete action for code coverage (no delete support on expanded content)
     userEvent.click(getAllByLabelText('Actions')[1])
-    expect(getByRole('menu')).toBeVisible()
+    await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Delete item tooltip')).toBeVisible()
     userEvent.click(getByText('Delete item tooltip'))
     expect(expandedDeleteAction).not.toHaveBeenCalled()
@@ -1001,17 +992,17 @@ describe('AcmTable', () => {
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
-    userEvent.click(getAllByText('Clear all filters')[1])
+    userEvent.click(getAllByText('Clear all filters')[0])
     expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
   test('renders with customTableAction', () => {
-    const { container, getByTestId } = render(
+    const { container, getByRole } = render(
       <Table useCustomTableAction={true} useTableActions={false} useRowActions={false} />
     )
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('div .pf-v5-c-dropdown__toggle')).toBeInTheDocument()
-    userEvent.click(getByTestId('create'))
+    expect(getByRole('button', { name: 'Create' })).toBeVisible()
+    userEvent.click(getByRole('button', { name: 'Create' }))
   })
 
   test('renders with export button', () => {
