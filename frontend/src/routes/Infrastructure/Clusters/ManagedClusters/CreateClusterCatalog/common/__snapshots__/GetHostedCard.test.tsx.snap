@@ -9,11 +9,7 @@ exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
   >
     View documentation
      
-    <ExternalLinkAltIcon
-      color="currentColor"
-      noVerticalAlign={false}
-      size="sm"
-    />
+    <ExternalLinkAltIcon />
   </a>,
   "alertTitle": undefined,
   "alertVariant": "info",
@@ -24,11 +20,11 @@ exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
       "type": "description",
     },
     {
-      "icon": <CheckIcon
-        color="var(--pf-global--success-color--100)"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <Icon
+        status="success"
+      >
+        <CheckIcon />
+      </Icon>,
       "items": [
         {
           "text": "Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.",
