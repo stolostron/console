@@ -2,14 +2,16 @@
 
 import { useMemo } from 'react'
 import { useTranslation } from './acm-i18next'
+import { PaginationTitles } from '@patternfly/react-core'
 
-export const usePaginationTitles = () => {
+export const usePaginationTitles = (): PaginationTitles => {
   const { t } = useTranslation()
   return useMemo(
     () => ({
       currPage: t('Current page'),
       items: t('items'),
       itemsPerPage: t('items per page'),
+      optionsToggleAriaLabel: t('items per page'),
       ofWord: t('of'),
       page: t('page'),
       pages: t('pages'),
