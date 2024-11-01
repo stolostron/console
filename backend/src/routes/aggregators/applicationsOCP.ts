@@ -188,7 +188,7 @@ export async function getOCPApps(
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
+      applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, undefined, true)
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }
@@ -253,7 +253,7 @@ function fillRemoteSystemCache(
   clusterNameChunk.forEach((clustername) => {
     applicationCache['remoteSysApps'].resourceMap[clustername] = []
   })
-  const resources = generateTransforms(remoteSysApps, true).resources
+  const resources = generateTransforms(remoteSysApps, undefined, true).resources
   resources.forEach((transform) => {
     const clustername = transform.transform[AppColumns.clusters].join()
     const transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
