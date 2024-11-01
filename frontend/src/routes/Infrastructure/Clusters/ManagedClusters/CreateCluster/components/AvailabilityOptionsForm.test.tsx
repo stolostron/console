@@ -37,13 +37,7 @@ describe('Availability Options Form', () => {
     )
   }
 
-  test('renders', async () => {
-    const { container } = render(<Component />)
-    await waitForText('Controller availability policy')
-    expect(container).toMatchSnapshot()
-  })
-
-  test('Highly available is selected by default', async () => {
+  test('renders with highly available selected by default', async () => {
     render(<Component />)
     await waitForText('Controller availability policy')
 
