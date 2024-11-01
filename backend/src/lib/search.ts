@@ -160,6 +160,28 @@ export function getSearchResults(
   })
 }
 
+const ping = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['Pod'],
+          },
+          {
+            property: 'name',
+            values: ['search-api*'],
+          },
+        ],
+        limit: 1,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
 export async function pingSearchAPI() {
   const options = await getServiceAccountOptions()
   return new Promise<boolean>((resolve, reject) => {
@@ -184,9 +206,7 @@ export async function pingSearchAPI() {
     req.on('error', (e) => {
       reject(e)
     })
-    req.write(
-      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":["a*","i*","n*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
-    )
+    req.write(JSON.stringify(ping))
     req.end()
   })
 }
