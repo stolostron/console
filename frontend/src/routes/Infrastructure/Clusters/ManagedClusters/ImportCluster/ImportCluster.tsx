@@ -132,6 +132,7 @@ type Action =
   | ({ type: 'setClusterID' } & Pick<State, 'clusterID'>)
   | ({ type: 'setNamespace' } & Pick<State, 'namespace'>)
   | ({ type: 'setCredential' } & Pick<State, 'credential'>)
+  | { type: 'updateCredentials' }
 
 const getImportMode = (presetDiscoveredCluster: boolean, discoveryClusterType?: string) => {
   if (presetDiscoveredCluster) {
@@ -206,6 +207,21 @@ function getInitialState({
 }
 
 const description = css({ margin: '16px 0 16px 0' })
+
+// Helper function to check if the namespace exists
+function doesNamespaceExist(ocmCredentials: ProviderConnection[], namespace: string): boolean {
+  return ocmCredentials.some((credential) => credential.metadata.namespace === namespace)
+}
+
+// Helper function to filter credentials based on namespace
+function getFilteredCredentials(ocmCredentials: ProviderConnection[], namespace: string): ProviderConnection[] {
+  return ocmCredentials.filter((credential) => credential.metadata.namespace === namespace)
+}
+
+// Helper function to check if a credential exists within the filtered credentials
+function doesCredentialExist(filteredCredentials: ProviderConnection[], credentialName: string): boolean {
+  return filteredCredentials.some((credential) => credential.metadata.name === credentialName)
+}
 
 export default function ImportClusterPage() {
   const { t } = useTranslation()
@@ -314,6 +330,23 @@ export default function ImportClusterPage() {
           return state.importMode === ImportMode.discoveryOCM ? { ...state, credential: action.credential } : state
         case 'setKubeconfig':
           return state.importMode === ImportMode.kubeconfig ? { ...state, kubeconfig: action.kubeconfig } : state
+        case 'updateCredentials': {
+          const namespaceExists = doesNamespaceExist(ocmCredentials, state.namespace)
+          const filteredCredentials = namespaceExists ? getFilteredCredentials(ocmCredentials, state.namespace) : []
+
+          const credentialExists = doesCredentialExist(filteredCredentials, state.credential)
+
+          return {
+            ...state,
+            namespace: namespaceExists ? state.namespace : '',
+            credential: credentialExists
+              ? state.credential
+              : filteredCredentials.length > 0
+                ? filteredCredentials[0].metadata.name || ''
+                : '',
+            credentials: filteredCredentials,
+          }
+        }
       }
     },
     [ocmCredentials]
@@ -332,6 +365,14 @@ export default function ImportClusterPage() {
     },
     getInitialState
   )
+
+  const prevOcmCredentials = usePrevious(ocmCredentials)
+
+  useEffect(() => {
+    if (prevOcmCredentials !== ocmCredentials) {
+      dispatch({ type: 'updateCredentials' })
+    }
+  }, [ocmCredentials, prevOcmCredentials])
 
   useEffect(() => {
     if (state.importMode !== 'manual') {

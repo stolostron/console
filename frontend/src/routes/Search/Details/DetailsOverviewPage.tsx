@@ -234,7 +234,7 @@ export default function DetailsOverviewPage() {
 
   useEffect(() => {
     if (resource) {
-      const canDeleteSubscriptionPromise = canUser('update', {
+      const canEditResourcePromise = canUser('update', {
         apiVersion: resource.apiVersion,
         kind: resource.kind,
         metadata: {
@@ -242,10 +242,10 @@ export default function DetailsOverviewPage() {
           namespace: resource.metadata?.namespace ?? '',
         },
       })
-      canDeleteSubscriptionPromise.promise
+      canEditResourcePromise.promise
         .then((result) => setCanEditResource(result.status?.allowed!))
         .catch((err) => console.error(err))
-      return () => canDeleteSubscriptionPromise.abort()
+      return () => canEditResourcePromise.abort()
     }
   }, [resource])
 

@@ -97,12 +97,12 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
               } else {
                 logger.error({
                   msg: 'Error in VirtualMachine action response',
-                  error: results.body.message,
+                  error: results.body?.message ?? '',
                 })
                 res.setHeader('Content-Type', 'application/json')
                 res.writeHead(results.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
                 delete results.body?.code // code is added via writeHead
-                res.end(JSON.stringify(results.body))
+                res.end(JSON.stringify(results.body ?? ''))
               }
             })
             .catch((err: Error) => {

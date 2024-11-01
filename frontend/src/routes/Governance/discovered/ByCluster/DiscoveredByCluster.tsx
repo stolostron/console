@@ -11,7 +11,7 @@ import {
   getSeverityFilter,
   getSourceFilterOptions,
   DiscoveredViolationsCard,
-  getConstraintCompliance,
+  getTotalViolationsCompliance,
   policyViolationSummary,
 } from './common'
 import { useMemo } from 'react'
@@ -36,6 +36,7 @@ export default function DiscoveredByCluster({
         helmReleases,
         subscriptions,
         channels,
+        policyKind,
         kindHead == 'operator'
           ? [
               {
@@ -57,7 +58,7 @@ export default function DiscoveredByCluster({
             ]
           : []
       ),
-    [channels, helmReleases, kindHead, subscriptions, t]
+    [channels, helmReleases, kindHead, subscriptions, policyKind, t]
   )
 
   const operatorPolicyStats: any = useMemo(() => {
@@ -103,49 +104,53 @@ export default function DiscoveredByCluster({
 
   const filters = useMemo<ITableFilter<DiscoveredPolicyItem>[]>(() => {
     let filters = [
-      {
-        id: 'violations',
-        label: t('Cluster violations'),
-        options: [
-          {
-            label: t('No violations'),
-            value: 'no-violations',
-          },
-          {
-            label: t('Violations'),
-            value: 'violations',
-          },
-          {
-            label: t('No status'),
-            value: 'no-status',
-          },
-        ],
-        tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
-          let compliant: string
+      ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
+        ? [
+            {
+              id: 'violations',
+              label: t('Cluster violations'),
+              options: [
+                {
+                  label: t('No violations'),
+                  value: 'no-violations',
+                },
+                {
+                  label: t('Violations'),
+                  value: 'violations',
+                },
+                {
+                  label: t('No status'),
+                  value: 'no-status',
+                },
+              ],
+              tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
+                let compliant: string
 
-          if (item.apigroup === 'constraints.gatekeeper.sh') {
-            compliant = getConstraintCompliance(item?.totalViolations)
-          } else {
-            compliant = item?.compliant?.toLowerCase() ?? ''
-          }
+                if (item.apigroup === 'constraints.gatekeeper.sh') {
+                  compliant = getTotalViolationsCompliance(item?.totalViolations)
+                } else {
+                  compliant = item?.compliant?.toLowerCase() ?? ''
+                }
 
-          for (const value of selectedValues) {
-            if (value === 'no-violations' && compliant === 'compliant') {
-              return true
-            }
+                for (const value of selectedValues) {
+                  if (value === 'no-violations' && compliant === 'compliant') {
+                    return true
+                  }
 
-            if (value === 'violations' && compliant === 'noncompliant') {
-              return true
-            }
+                  if (value === 'violations' && compliant === 'noncompliant') {
+                    return true
+                  }
 
-            if (value === 'no-status' && (!compliant || compliant === 'pending')) {
-              return true
-            }
-          }
+                  if (value === 'no-status' && (!compliant || compliant === 'pending')) {
+                    return true
+                  }
+                }
 
-          return false
-        },
-      },
+                return false
+              },
+            },
+          ]
+        : []),
       getResponseActionFilter(t),
       getSeverityFilter(t),
       {
@@ -202,7 +207,7 @@ export default function DiscoveredByCluster({
 
   return (
     <>
-      {policies && policies.length > 0 && (
+      {policies && policies.length > 0 && policyKind !== 'ValidatingAdmissionPolicyBinding' && (
         <PageSection style={{ paddingBottom: '0' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flexShrink: '0' }}>
             <DiscoveredViolationsCard

@@ -11,12 +11,18 @@ import { ManagedClusterAddOn } from '../../../../resources'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import PolicyTemplateYaml from './PolicyTemplateYaml'
+import {
+  useSearchResultItemsLazyQuery,
+  useSearchResultRelatedItemsLazyQuery,
+} from '../../../Search/search-sdk/search-sdk'
 
 jest.mock('../../../../components/YamlEditor', () => {
   return function YamlEditor() {
     return <div>Yaml Editor Open</div>
   }
 })
+
+jest.mock('../../../Search/search-sdk/search-sdk')
 
 const getResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
@@ -311,9 +317,147 @@ getOppolResourceResponse.status = {
   },
 }
 
-describe('Policy Template Details Page', () => {
-  beforeEach(() => nockIgnoreApiPaths())
+const getVapbResourceRequest = {
+  apiVersion: 'view.open-cluster-management.io/v1beta1',
+  kind: 'ManagedClusterView',
+  metadata: {
+    name: '9b3c685c8462128e263c6c950f89adb378c2ffcd',
+    namespace: 'test-cluster',
+    labels: { viewName: '9b3c685c8462128e263c6c950f89adb378c2ffcd' },
+  },
+  spec: {
+    scope: {
+      name: 'gatekeeper-ns-must-have-gk',
+      resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
+    },
+  },
+}
 
+const getVapbResourceResponse = JSON.parse(JSON.stringify(getVapbResourceRequest))
+getVapbResourceResponse.status = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
+    },
+  ],
+  result: {
+    apiVersion: 'admissionregistration.k8s.io/v1',
+    kind: 'ValidatingAdmissionPolicyBinding',
+    metadata: {
+      labels: {
+        'cluster-name': 'local-cluster',
+        'cluster-namespace': 'local-cluster',
+        'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+        'policy.open-cluster-management.io/cluster-namespace': 'local-cluster',
+      },
+      name: 'gatekeeper-ns-must-have-gk',
+    },
+    spec: {
+      policyName: 'gatekeeper-k8srequiredlabels',
+      validationActions: ['Deny'],
+      paramRef: { name: 'pod-1', namespace: 'test1' },
+    },
+  },
+}
+
+describe('Policy Template Details Page', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+    ;(useSearchResultItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      {
+        data: {
+          searchResult: [
+            {
+              items: [
+                {
+                  _hubClusterResource: 'true',
+                  _ownedByGatekeeper: 'true',
+                  _uid: 'local-cluster/acc7a127-8af9-4f66-ae6a-2bdbfe022e1a',
+                  apigroup: 'admissionregistration.k8s.io',
+                  apiversion: 'v1',
+                  cluster: 'local-cluster',
+                  created: '2024-10-28T15:15:59Z',
+                  kind: 'ValidatingAdmissionPolicyBinding',
+                  kind_plural: 'validatingadmissionpolicybindings',
+                  name: 'gatekeeper-all-must-have-owner',
+                  policyName: 'gatekeeper-k8srequiredlabels',
+                  validationActions: 'deny',
+                },
+              ],
+              __typename: 'SearchResult',
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      },
+    ])()
+    ;(useSearchResultRelatedItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      {
+        data: {
+          searchResult: [
+            {
+              related: [
+                {
+                  kind: 'Namespace',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/a9c329fb-db5b-4514-8688-01862b16d22f'],
+                      _uid: 'local-cluster/6cdec79f-980f-4947-95ab-3ce9789b270f',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      created: '2024-10-31T11:10:45Z',
+                      kind: 'Namespace',
+                      kind_plural: 'namespaces',
+                      label:
+                        'kubernetes.io/metadata.name=openshift-etcd-operator; olm.operatorgroup.uid/4a2d0c68-f76d-4078-8ed6-26f586a3cc75=; openshift.io/cluster-monitoring=true; openshift.io/run-level=0; pod-security.kubernetes.io/audit=restricted; pod-security.kubernetes.io/enforce=restricted; pod-security.kubernetes.io/warn=restricted',
+                      name: 'openshift-etcd-operator',
+                      status: 'Active',
+                    },
+                  ],
+                },
+                {
+                  kind: 'ClusterPolicyReport',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/6cdec79f-980f-4947-95ab-3ce9789b270f'],
+                      _uid: 'local-cluster/436cd10e-a08b-4afd-a42e-e2d608eb7dca',
+                      apigroup: 'wgpolicyk8s.io',
+                      apiversion: 'v1alpha2',
+                      category: '',
+                      cluster: 'local-cluster',
+                      created: '2024-10-31T16:23:15Z',
+                      critical: '0',
+                      important: '0',
+                      kind: 'ClusterPolicyReport',
+                      kind_plural: 'clusterpolicyreports',
+                      label: 'app.kubernetes.io/managed-by=kyverno',
+                      low: '0',
+                      moderate: '0',
+                      name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
+                      numRuleViolations: '1',
+                      policyViolationCounts: 'require-owner-labels=1',
+                      rules: 'require-owner-labels',
+                      scope: 'e2e-rbac-test-1',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          loading: false,
+          error: undefined,
+        },
+      },
+    ])()
+  })
   test('Should render Policy Template Details Page', async () => {
     const path =
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
@@ -446,6 +590,7 @@ describe('Policy Template Details Page', () => {
     // Ensure the hosting cluster name isn't shown as the cluster name
     await waitForText(clusterName)
     await waitForText('ConfigurationPolicy')
+    await waitForText('View YAML')
     const viewYamlLink = screen.getByText('View YAML')
     expect(viewYamlLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
@@ -591,6 +736,21 @@ describe('Policy Template Details Page', () => {
     )
     expect(viewYamlLinks[1].getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
+    )
+
+    // Verify the generated ValidatingAdmissionPolicyBinding
+    await waitForText('gatekeeper-ns-must-have-gk')
+    await waitForText('Validating Admission Policy Binding')
+    expect(screen.getByRole('link', { name: 'gatekeeper-ns-must-have-gk' })).toHaveAttribute(
+      'href',
+      generatePath(NavigationPath.discoveredPolicyDetails, {
+        clusterName: 'test-cluster',
+        apiVersion: 'v1',
+        apiGroup: 'admissionregistration.k8s.io',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        templateName: `gatekeeper-ns-must-have-gk`,
+        templateNamespace: null,
+      })
     )
   })
 
@@ -971,5 +1131,177 @@ describe('Policy Template Details Page', () => {
     userEvent.click(yamlButton[1])
 
     await waitForText('Yaml Editor Open')
+  })
+
+  test('Should render ValidatingAdmissionPolicyBinding page successfully', async () => {
+    const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, {})
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'admissionregistration.k8s.io',
+              apiVersion: 'v1',
+              kind: 'ValidatingAdmissionPolicyBinding',
+              templateName: 'gatekeeper-ns-must-have-gk',
+              templateNamespace: '',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for page load - looking for breadcrumb items
+    await waitForText('Discovered policies')
+
+    expect(screen.getByRole('link', { name: 'gatekeeper-ns-must-have-gk' })).toBeInTheDocument()
+
+    await waitForText('ValidatingAdmissionPolicyBinding details')
+
+    // Find ValidatingAdmissionPolicy name
+    await waitForText('gatekeeper-k8srequiredlabels', true)
+    expect(screen.getByRole('link', { name: 'gatekeeper-k8srequiredlabels' })).toBeInTheDocument()
+  })
+
+  test('Should render Kyverno policy page successfully', async () => {
+    const getClusterPolicyResourceRequest = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: 'ff0861ca95ffc8c791c974681ad9bf84341f9419',
+        namespace: 'test-cluster',
+        labels: {
+          viewName: 'ff0861ca95ffc8c791c974681ad9bf84341f9419',
+        },
+      },
+      spec: {
+        scope: {
+          name: 'require-owner-labels',
+          resource: 'clusterpolicy.v1.kyverno.io',
+        },
+      },
+    }
+
+    const getClusterPolicyResourceResponse = JSON.parse(JSON.stringify(getClusterPolicyResourceRequest))
+    getClusterPolicyResourceResponse.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'kyverno.io/v1',
+        kind: 'ClusterPolicy',
+        metadata: {
+          name: 'require-owner-labels',
+          annotations: {
+            'policies.kyverno.io/title': 'Require Owner Labels',
+            'policies.kyverno.io/severity': 'medium',
+          },
+        },
+        spec: {
+          validationFailureAction: 'Audit',
+          background: true,
+          rules: [
+            {
+              name: 'require-labels',
+              match: {
+                any: [
+                  {
+                    resources: {
+                      kinds: ['Namespace'],
+                    },
+                  },
+                ],
+              },
+              validate: {
+                message: 'The label `owner` is required',
+                pattern: {
+                  metadata: {
+                    labels: {
+                      owner: '?*',
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    }
+
+    const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, {})
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'kyverno.io',
+              apiVersion: 'v1',
+              kind: 'ClusterPolicy',
+              templateName: 'require-owner-labels',
+              templateNamespace: '',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for page load - looking for breadcrumb items
+    await waitForText('Discovered policies')
+
+    expect(screen.getByRole('link', { name: 'require-owner-labels' })).toBeInTheDocument()
+
+    await waitForText('ClusterPolicy details')
+
+    // ClusterPolicyReport and PoliyReport should be filtered
+    await waitForNotText('ClusterPolicyReport')
+
+    // Find Matches
+    await waitForText('Matches')
+    await waitForText('require-labels')
+    await waitForText('Namespace', true)
+    expect(screen.getByRole('link', { name: 'View YAML' })).toBeInTheDocument()
+
+    await waitForText('View policy report', true)
+    const viewYamlLink = screen.getByText('View policy report')
+    expect(viewYamlLink.getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=v1alpha2&&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
+    )
   })
 })

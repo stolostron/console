@@ -40,11 +40,12 @@ function loadResource(
   apiversion: string,
   name: string,
   namespace: string,
+  isHubClusterResource: boolean,
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
   setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
-  if (cluster === 'local-cluster') {
+  if (isHubClusterResource) {
     getResource({
       apiVersion: apiversion,
       kind,
@@ -83,17 +84,28 @@ function updateResource(
   name: string,
   namespace: string,
   resourceYaml: string,
+  isHubClusterResource: boolean,
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
   setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
   setResourceVersion: Dispatch<SetStateAction<string>>
 ) {
-  if (cluster === 'local-cluster') {
+  if (isHubClusterResource) {
     try {
       const parsedYaml = jsYaml.load(resourceYaml) as IResource
       replaceResource(parsedYaml)
         .promise.then(() => {
-          loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
+          loadResource(
+            cluster,
+            kind,
+            apiversion,
+            name,
+            namespace,
+            isHubClusterResource,
+            setResourceYaml,
+            setUpdateError,
+            setResourceVersion
+          )
           setUpdateSuccess(true)
         })
         .catch((err) => {
@@ -108,7 +120,17 @@ function updateResource(
     fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
       .then((actionResponse) => {
         if (actionResponse.actionDone === 'ActionDone') {
-          loadResource(cluster, kind, apiversion, name, namespace, setResourceYaml, setUpdateError, setResourceVersion)
+          loadResource(
+            cluster,
+            kind,
+            apiversion,
+            name,
+            namespace,
+            isHubClusterResource,
+            setResourceYaml,
+            setUpdateError,
+            setResourceVersion
+          )
           setUpdateSuccess(true)
         } else {
           setUpdateError(actionResponse.message)
@@ -157,6 +179,7 @@ export function EditorActionBar(props: {
   apiversion: string
   name: string
   namespace: string
+  isHubClusterResource: boolean
   resourceYaml: string
   setResourceYaml: Dispatch<SetStateAction<string>>
   handleResize: () => void
@@ -168,6 +191,7 @@ export function EditorActionBar(props: {
     apiversion,
     name,
     namespace,
+    isHubClusterResource,
     resourceYaml,
     setResourceYaml,
     handleResize,
@@ -226,6 +250,7 @@ export function EditorActionBar(props: {
                   name,
                   namespace,
                   resourceYaml,
+                  isHubClusterResource,
                   setResourceYaml,
                   setUpdateError,
                   setUpdateSuccess,
@@ -247,6 +272,7 @@ export function EditorActionBar(props: {
                   apiversion,
                   name,
                   namespace,
+                  isHubClusterResource,
                   setResourceYaml,
                   setUpdateError,
                   setResourceVersion
@@ -282,8 +308,18 @@ export function EditorActionBar(props: {
 }
 
 export default function YAMLPage() {
-  const { resource, resourceLoading, resourceError, name, namespace, cluster, kind, apiversion, setResourceVersion } =
-    useSearchDetailsContext()
+  const {
+    resource,
+    resourceLoading,
+    resourceError,
+    isHubClusterResource,
+    name,
+    namespace,
+    cluster,
+    kind,
+    apiversion,
+    setResourceVersion,
+  } = useSearchDetailsContext()
   const { t } = useTranslation()
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
   const [resourceYaml, setResourceYaml] = useState<string>('')
@@ -343,7 +379,7 @@ export default function YAMLPage() {
           namespace,
         },
       },
-      cluster === 'local-cluster' ? namespace : cluster,
+      isHubClusterResource ? namespace : cluster,
       name
     )
 
@@ -351,7 +387,7 @@ export default function YAMLPage() {
       .then((result) => setUserCanEdit(result.status?.allowed! ?? false))
       .catch((err) => console.error(err))
     return () => canUpdateResource.abort()
-  }, [apiversion, cluster, resourceYaml, kind, name, namespace])
+  }, [apiversion, cluster, resourceYaml, kind, name, namespace, isHubClusterResource])
 
   if (resourceError) {
     return (
@@ -393,6 +429,7 @@ export default function YAMLPage() {
         apiversion={apiversion}
         name={name}
         namespace={namespace}
+        isHubClusterResource={isHubClusterResource}
         resourceYaml={resourceYaml}
         setResourceYaml={setResourceYaml}
         handleResize={handleResize}

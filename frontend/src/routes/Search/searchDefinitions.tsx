@@ -15,10 +15,6 @@ import { NavigationPath } from '../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-
-export interface SearchDefinitions {
-  (t: TFunction, isGlobalHub?: boolean): ResourceDefinitions
-}
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -376,7 +372,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('ready', t('Ready')),
         {
-          header: t('Console URL'),
+          header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
@@ -394,7 +390,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('node', t('Node')),
         AddColumn('ipaddress', t('IP address')),
         {
-          header: t('Console URL'),
+          header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
@@ -417,7 +413,7 @@ export const useSearchDefinitions = () => {
 
 export function GetAge(item: any, key: string) {
   const createdTime = _.get(item, key)
-  if (createdTime && createdTime.includes('T')) {
+  if (createdTime?.includes('T')) {
     return moment(createdTime, 'YYYY-MM-DDTHH:mm:ssZ').fromNow()
   } else if (createdTime) {
     return moment(createdTime, 'YYYY-MM-DD HH:mm:ss').fromNow()
@@ -441,10 +437,13 @@ export const GetUrlSearchParam = (resource: any) => {
   if (resource.name) {
     searchString = `${searchString}&name=${resource.name}`
   }
+  if (resource._hubClusterResource && resource._hubClusterResource === 'true') {
+    searchString = `${searchString}&_hubClusterResource=true`
+  }
   return `?${encodeURIComponent(searchString)}`
 }
 
-export function CreateDetailsLink(props: { item: any }) {
+export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
 
   const defaultSearchLink = (
@@ -464,6 +463,7 @@ export function CreateDetailsLink(props: { item: any }) {
 
   switch (item.kind.toLowerCase()) {
     case 'cluster':
+    case 'managedcluster':
       return (
         <Link to={generatePath(NavigationPath.clusterOverview, { name: item.name, namespace: item.name })}>
           {item.name}
@@ -475,8 +475,8 @@ export function CreateDetailsLink(props: { item: any }) {
         // only redirect to apps page if it is an ACM application
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
-          cluster: cluster === 'local-cluster' ? undefined : cluster,
-          applicationset: applicationSet == null ? undefined : applicationSet,
+          cluster: item._hubClusterResource ? undefined : cluster,
+          applicationset: applicationSet ?? undefined,
         })
         return (
           <Link
@@ -555,7 +555,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         return <Link to={{ pathname: path, search: params }}>{item.name}</Link>
       case 'external':
         return (
-          <AcmButton {...linkProps} href={`${managedHub?.consoleURL}${path}${params ? params : ''}`}>
+          <AcmButton {...linkProps} href={`${managedHub?.consoleURL}${path}${params ?? ''}`}>
             {item.name}
           </AcmButton>
         )
@@ -565,7 +565,8 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 
   switch (item.kind.toLowerCase()) {
-    case 'cluster': {
+    case 'cluster':
+    case 'managedcluster': {
       if (item.managedHub === 'global-hub') {
         return generateLink(
           'internal',
@@ -583,17 +584,17 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
-          cluster: cluster === 'local-cluster' ? undefined : cluster,
-          applicationset: applicationSet == null ? undefined : applicationSet,
+          cluster: item._hubClusterResource ? undefined : cluster,
+          applicationset: applicationSet ?? undefined,
         })
         const path = generatePath(NavigationPath.applicationOverview, { namespace, name })
-        if (item.managedHub === 'global-hub' && item.cluster !== 'local-cluster') {
+        if (item.managedHub === 'global-hub' && !item._hubClusterResource) {
           return generateLink('external', path, `?${params}`)
         }
         return generateLink('internal', path, `?${params}`)
       }
       return generateLink(
-        item.managedHub === 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
         NavigationPath.resources,
         GetUrlSearchParam(item)
       )
@@ -604,10 +605,10 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         !item.label?.includes('policy.open-cluster-management.io/root-policy')
       ) {
         const path = generatePath(NavigationPath.policyDetails, { name: item.name, namespace: item.namespace })
-        return item.cluster === 'local-cluster' ? generateLink('internal', path) : generateLink('external', path)
+        return item._hubClusterResource ? generateLink('internal', path) : generateLink('external', path)
       }
       return generateLink(
-        item.managedHub !== 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        item.managedHub !== 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
         NavigationPath.resources,
         GetUrlSearchParam(item)
       )
@@ -615,7 +616,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     case 'policyreport': {
       const path = generatePath(NavigationPath.clusterOverview, { name: item.namespace, namespace: item.namespace })
       return generateLink(
-        item.managedHub === 'global-hub' && item.cluster !== 'local-cluster' ? 'external' : 'internal',
+        item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
         path,
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
@@ -628,7 +629,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   }
 }
 
-export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }) {
+export function CreateApplicationTopologyLink(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const allClusters = useAllClusters(true)
   if (item?.apiversion && item?.apigroup) {
@@ -637,7 +638,7 @@ export function CreateApplicationTopologyLink(props: { item: any; t: TFunction }
       pathname: generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace }),
       search: `?apiVersion=${apiversion}`,
     }
-    if (item.managedHub && item.cluster !== 'local-cluster') {
+    if (item.managedHub && !item._hubClusterResource) {
       const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
       const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
       return (
@@ -768,7 +769,7 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
   }
 }
 
-export function CreateExternalVMLink(props: { item: any; t: TFunction }) {
+export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const allClusters = useAllClusters(true)
   const vmCluster = item.cluster

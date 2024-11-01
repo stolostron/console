@@ -1,15 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
-import { TextContent } from '@patternfly/react-core'
 import { useTranslation } from './acm-i18next'
 
 export const DOC_VERSION = '2.13'
+export const OCP_DOC_VERSION = '4.18'
 
 export const DOC_HOME = `https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
-export const OCP_DOC_BASE_PATH = 'https://docs.redhat.com/en/documentation/openshift_container_platform'
+export const OCP_DOC = 'https://docs.redhat.com/en/documentation/openshift_container_platform'
+const OCP_DOC_HOME = `https://docs.redhat.com/en/documentation/openshift_container_platform/${OCP_DOC_VERSION}`
+const OCP_DOC_BASE_PATH = `${OCP_DOC_HOME}/html-single`
 
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
@@ -19,7 +22,6 @@ export const DOC_LINKS = {
   CREATE_CONNECTION_GCP: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-google-cloud-platform`,
   CREATE_CONNECTION_VMWARE: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-vmware-vsphere`,
   CREATE_CONNECTION_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-openstack`,
-  CREATE_CONNECTION_VIRTUALIZATION: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-virtualization`,
   CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-ansible`,
   CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/clusters/index#creating-a-credential-for-openshift-cluster-manager`,
   CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
@@ -30,10 +32,8 @@ export const DOC_LINKS = {
   CREATE_CONNECTION_PROXY_OPENSTACK: `${DOC_BASE_PATH}/clusters/index#proxy-openstack`,
   CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/clusters/index#proxy-virtualization`,
   CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/index#create-intro`,
-  CREATE_CLUSTER_HOSTED_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-deploy-cluster-aws`,
   CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/index#creating-a-cluster-on-premises`,
   CREATE_CLUSTER_PREREQ: `${DOC_BASE_PATH}/clusters/index#create-a-cluster-prereq`,
-  CREATE_CLUSTER_STS_ARN: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#create-role-sts-aws`,
   IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/index#import-intro`,
   CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/index#managedclustersets-intro`,
   GLOBAL_CLUSTER_SET: `${DOC_BASE_PATH}/clusters/index#managedclustersets_global`,
@@ -50,17 +50,20 @@ export const DOC_LINKS = {
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
-  POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#policy-overview`,
-  HYPERSHIFT_INTRO: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-intro`,
-  HYPERSHIFT_DEPLOY_AWS: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-aws`,
-  HYPERSHIFT_MANAGE_KUBEVIRT: `${DOC_BASE_PATH}/clusters/index#hosted-control-planes-manage-kubevirt`,
-  HOSTED_ENABLE_FEATURE_AWS: `${DOC_BASE_PATH}/clusters/index#enable-or-disable-hosted-control-planes`,
-  HYPERSHIFT_OIDC: `${DOC_BASE_PATH}/clusters/index#hosted-create-aws-secret`,
-  GITOPS_CONFIG: `${DOC_BASE_PATH}/applications/index#gitops-overview`,
+  POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#hub-policy-framework`,
+  GITOPS_CONFIG: `${DOC_BASE_PATH}/gitops/gitops-overview`,
   DEPRECATIONS_AND_REMOVALS: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations-removals`,
   ENABLE_OBSERVABILITY: `${DOC_BASE_PATH}/observability/observing-environments-intro#enabling-observability-service`,
   ACCESSING_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console#accessing-your-console`,
-  ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#import-discover-rosa`,
+  ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_BASE_PATH}/multicluster_engine_operator_with_red_hat_advanced_cluster_management/mce-acm-integration#import-discover-rosa`,
+  // OCP doc links
+  HYPERSHIFT_INTRO: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hosted-control-planes-overview_hcp-overview`,
+  HYPERSHIFT_DEPLOY_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-aws`,
+  HYPERSHIFT_STS_ARN: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-aws-create-role-sts-creds_hcp-deploy-aws`,
+  HYPERSHIFT_MANAGE_KUBEVIRT: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-openshift-virtualization`,
+  HOSTED_ENABLE_FEATURE_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable`,
+  HYPERSHIFT_OIDC: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-aws-prereqs_hcp-deploy-aws`,
+  // AI doc links
   NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
 }
 

@@ -24,6 +24,7 @@ export function grouping(): {
   ) => ISourceType
   createMessage: (
     data: any[],
+    kyvernoPolicyReports: any[],
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -110,6 +111,16 @@ export function grouping(): {
     } else if (policy.apigroup === 'constraints.gatekeeper.sh') {
       // The default is deny when unset.
       return 'deny'
+    } else if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+      // Required field
+      if (policy.validationActions) {
+        return policy.validationActions
+          .split('; ')
+          .sort() //NOSONAR
+          .join('/')
+      }
+    } else if (policy.apigroup === 'kyverno.io') {
+      return policy.validationFailureAction
     }
 
     return null
@@ -117,6 +128,7 @@ export function grouping(): {
 
   const createMessage = (
     data: any[],
+    kyvernoPolicyReports: any[],
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -134,20 +146,48 @@ export function grouping(): {
     const parseStringMap = eval(parseStringMapStr) as TParseStringMap
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
-    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])?.map((policy: any): any => {
-      return {
-        ...policy,
-        source: getPolicySource(
-          policy,
-          helmReleases,
-          channels,
-          subscriptions,
-          resolveSource,
-          getSourceText,
-          parseStringMap
-        ),
-      }
-    })
+    const kyvernoViolationMap: { [policyNamespaceName: string]: number } = {}
+
+    if (kyvernoPolicyReports.length > 0) {
+      kyvernoPolicyReports.forEach((cr) => {
+        const kindNameViolation = cr.policyViolationCounts?.split('=') ?? []
+        kyvernoViolationMap[kindNameViolation[0]] =
+          (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
+      })
+    }
+
+    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
+      ?.filter(
+        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
+        (policy: any): any =>
+          !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
+      )
+      .map((policy: any): any => {
+        const sourceAdded = {
+          ...policy,
+          source: getPolicySource(
+            policy,
+            helmReleases,
+            channels,
+            subscriptions,
+            resolveSource,
+            getSourceText,
+            parseStringMap
+          ),
+        }
+        // Add violation to kyverno
+        if (policy.apigroup === 'kyverno.io') {
+          const key = policy.namespace ? policy.namespace + '/' + policy.name : policy.name
+          return {
+            ...sourceAdded,
+            responseAction: policy.validationFailureAction,
+            // Possibility that a Policy or ClusterPolicy may not have a PolicyReport.
+            totalViolations: kyvernoViolationMap[key] ?? 0,
+          }
+        }
+
+        return sourceAdded
+      })
 
     const groupByNameKindGroup: { [nameKindGroup: string]: any[] } = {}
     // Group by policy name, kind and apigroup
@@ -180,7 +220,13 @@ export function grouping(): {
 
         if (responseAction) {
           policy.responseAction = responseAction
-          allResponseActions.add(responseAction)
+          if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+            for (const action of responseAction.split('/')) {
+              allResponseActions.add(action)
+            }
+          } else {
+            allResponseActions.add(responseAction)
+          }
         }
 
         if (source.type === 'Multiple') {
@@ -232,6 +278,7 @@ export function grouping(): {
   self.onmessage = (e: MessageEvent<any>) => {
     const {
       data,
+      kyvernoPolicyReports,
       helmReleases,
       channels,
       subscriptions,
@@ -244,6 +291,7 @@ export function grouping(): {
     self.postMessage(
       createMessage(
         data,
+        kyvernoPolicyReports,
         helmReleases,
         channels,
         subscriptions,

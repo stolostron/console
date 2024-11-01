@@ -76,15 +76,32 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
     compress: true,
   })
     .then(async (response) => {
-      try {
-        const resBody = (await response.json()) as unknown
-        return {
-          statusCode: response.status,
-          body: resBody,
+      let responseData = undefined
+      if (response.headers.get('content-type')?.includes('text/plain')) {
+        try {
+          responseData = await response.text()
+          return {
+            statusCode: response.status,
+            body: responseData,
+          }
+        } catch (err) {
+          return {
+            statusCode: response.status,
+            body: 'Error getting resource text response.',
+          }
         }
-      } catch (err) {
-        return {
-          statusCode: response.status,
+      } else {
+        try {
+          responseData = (await response.json()) as unknown
+          return {
+            statusCode: response.status,
+            body: responseData,
+          }
+        } catch (err) {
+          return {
+            statusCode: response.status,
+            body: 'Error getting resource json response.',
+          }
         }
       }
     })

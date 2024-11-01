@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { logger } from '../../lib/logger'
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
@@ -65,8 +66,17 @@ interface IArgoAppRemoteResource {
 
 export async function getArgoApps(applicationCache: ApplicationCacheType, pass: number) {
   const argoAppSet = new Set<string>()
-  applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet))
-  applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
+  try {
+    applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet))
+  } catch (e) {
+    logger.error(`getLocalArgoApps exception ${e}`)
+  }
+  logger.info(`search begin Remote ArgoCD`)
+  try {
+    applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
+  } catch (e) {
+    logger.error(`getRemoteArgoApps exception ${e}`)
+  }
   return argoAppSet
 }
 
@@ -93,7 +103,12 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 
 let usePagedQuery = true
 async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
-  const argoApps = (await getPagedSearchResources(query, usePagedQuery, pass)) as unknown as IArgoAppRemoteResource[]
+  const argoApps = (await getPagedSearchResources(
+    query,
+    usePagedQuery,
+    'Remote ArgoCD',
+    pass
+  )) as unknown as IArgoAppRemoteResource[]
   usePagedQuery = argoApps.length > 1000
 
   const apps: IResource[] = []

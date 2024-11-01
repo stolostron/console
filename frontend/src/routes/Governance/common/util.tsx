@@ -30,6 +30,9 @@ import { LostChangesContext } from '../../../components/LostChanges'
 import { DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
 import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
+import Kubernetes from '../../../logos/kubernetes.svg'
+import KyvernoSvg from '../../../logos/kyverno.svg'
+import { uniq } from 'lodash'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -711,6 +714,10 @@ export function getEngineString(apiGroup: string): string {
     case 'constraints.gatekeeper.sh':
     case 'templates.gatekeeper.sh':
       return 'Gatekeeper'
+    case 'admissionregistration.k8s.io':
+      return 'Kubernetes'
+    case 'kyverno.io':
+      return 'Kyverno'
     default:
       return 'Unknown'
   }
@@ -727,12 +734,18 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
     case 'Gatekeeper':
       logo = <GatekeeperSvg />
       break
+    case 'Kubernetes':
+      logo = <Kubernetes />
+      break
+    case 'Kyverno':
+      logo = <KyvernoSvg />
+      break
     default:
       return <>Unknown</>
   }
 
   return (
-    <>
+    <div>
       <div
         style={{
           display: 'inline-block',
@@ -747,7 +760,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
         {logo}
       </div>
       <>{engine}</>{' '}
-    </>
+    </div>
   )
 }
 
@@ -765,4 +778,22 @@ export const parseDiscoveredPolicies = (data: any): any => {
 
     return v
   })
+}
+
+// Used for collecting all kinds in Kyverno Policy
+export const collectKinds = (obj: object): string[] => {
+  let collected: string[] = []
+  const fnd = (obj: object) => {
+    for (const [k, v] of Object.entries(obj)) {
+      if (k === 'kinds') {
+        collected = collected.concat(v)
+      }
+      if (typeof v === 'object') {
+        fnd(v)
+      }
+    }
+  }
+
+  fnd(obj)
+  return uniq(collected)
 }
