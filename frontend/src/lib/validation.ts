@@ -423,18 +423,3 @@ export function validateKubeconfig(value: string, t: TFunction) {
   }
   return undefined
 }
-
-const namespaceRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
-
-export function validateNamespace(value: string, t: TFunction) {
-  if (!value) {
-    return t('validate.namespace.required')
-  }
-  if (value.length > 63) {
-    return t('validate.namespace.tooLong')
-  }
-  if (!namespaceRegex.test(value)) {
-    return t('validate.namespace.invalid')
-  }
-  return undefined
-}
