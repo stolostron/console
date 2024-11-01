@@ -24,3 +24,30 @@ export interface IResource {
     creationTimestamp?: string | number | Date
   }
 }
+
+export type Cluster = {
+  name: string
+  kubeApiServer?: string
+}
+export interface ClusterDeployment extends IResource {
+  spec?: {
+    // from ClusterDeployment
+    baseDomain?: string
+    clusterName?: string
+    clusterInstallRef?: {
+      group: string
+      kind: string
+      version: string
+      name: string
+    }
+  }
+  status?: {
+    // from ClusterDeployment
+    apiURL?: string
+  }
+}
+export interface ManagedClusterInfo extends IResource {
+  spec?: {
+    masterEndpoint: string
+  }
+}
