@@ -13,7 +13,7 @@ import { randomString } from './random-string'
 
 // If a client hasn't finished receiving a broadcast in PURGE_CLIENT_TIMEOUT
 // assume the browser has been refreshed or closed
-const PURGE_CLIENT_TIMEOUT = 10 * 60 * 1000
+const PURGE_CLIENT_TIMEOUT = 4 * 60 * 60 * 1000
 
 const instanceID = randomString(8)
 
@@ -39,8 +39,7 @@ export interface ServerSideEventClient {
   writableStream: NodeJS.WritableStream
   compressionStream: Transform & Zlib
   eventQueue: Promise<ServerSideEvent | undefined>[]
-  processing?: boolean
-  processingStart?: number
+  processing?: NodeJS.Timeout
 }
 
 export class ServerSideEvents {
@@ -75,7 +74,6 @@ export class ServerSideEvents {
     const eventID = ++this.eventID
     event.id = eventID.toString()
     this.events[eventID] = event
-    this.purgeClients()
     this.broadcastEvent(event)
 
     this.removeEvent(this.lastLoadedID)
@@ -88,18 +86,6 @@ export class ServerSideEvents {
     this.broadcastEvent(loadedEvent)
 
     return eventID
-  }
-
-  // delete clients that have been streaming for more then 3 minutes
-  // could be a browser that's no longer there
-  private static purgeClients(): void {
-    const now = Date.now()
-    for (const clientID in this.clients) {
-      const client = this.clients[clientID]
-      if (!client || (client.processing && now - this.clients[clientID].processingStart > PURGE_CLIENT_TIMEOUT)) {
-        delete this.clients[clientID]
-      }
-    }
   }
 
   private static broadcastEvent(event: ServerSideEvent): void {
@@ -129,8 +115,12 @@ export class ServerSideEvents {
     const client = this.clients[clientID]
     if (!client) return
     if (client.processing) return
-    client.processing = true
-    client.processingStart = Date.now()
+    // we will deactivate this browser's updates
+    // if it hasn't accepted new stream data for
+    // PURGE_CLIENT_TIMEOUT
+    client.processing = setTimeout(() => {
+      delete this.clients[clientID]
+    }, PURGE_CLIENT_TIMEOUT)
     while (client.eventQueue.length) {
       try {
         const event = await client.eventQueue.shift()
@@ -172,7 +162,8 @@ export class ServerSideEvents {
     } catch (err) {
       logger.error(err)
     }
-    client.processing = false
+    clearTimeout(client.processing)
+    delete client.processing
   }
 
   private static createEventString(event: ServerSideEvent): string {
