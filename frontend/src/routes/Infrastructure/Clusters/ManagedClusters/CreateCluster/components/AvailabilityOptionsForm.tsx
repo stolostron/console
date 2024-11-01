@@ -77,6 +77,7 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
       <FormGroup role="radiogroup" isInline fieldId="controller" label={t('Controller availability policy')} isRequired>
         <Radio
           id={'controller-ha'}
+          data-testid="controller-ha"
           name={'controllerAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
@@ -85,6 +86,7 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
         />
         <Radio
           id={'controller-single'}
+          data-testid="controller-single"
           name={'controllerAvailabilityPolicy'}
           label={labelSingle()}
           value={'SingleReplica'}
@@ -101,6 +103,7 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
       >
         <Radio
           id={'infra-ha'}
+          data-testid="infra-ha"
           name={'infraAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
@@ -108,6 +111,7 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
           onChange={handleChange}
         />
         <Radio
+          data-testid="infra-single"
           id={'infra-single'}
           name={'infraAvailabilityPolicy'}
           label={labelSingle()}

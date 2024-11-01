@@ -40,10 +40,12 @@ exports[`Availability Options Form renders 1`] = `
         >
           <input
             aria-invalid="false"
+            checked=""
             class="pf-c-radio__input"
             data-ouia-component-id="OUIA-Generated-Radio-1"
             data-ouia-component-type="PF4/Radio"
             data-ouia-safe="true"
+            data-testid="controller-ha"
             id="controller-ha"
             name="controllerAvailabilityPolicy"
             type="radio"
@@ -88,6 +90,7 @@ exports[`Availability Options Form renders 1`] = `
             data-ouia-component-id="OUIA-Generated-Radio-2"
             data-ouia-component-type="PF4/Radio"
             data-ouia-safe="true"
+            data-testid="controller-single"
             id="controller-single"
             name="controllerAvailabilityPolicy"
             type="radio"
@@ -159,10 +162,12 @@ exports[`Availability Options Form renders 1`] = `
         >
           <input
             aria-invalid="false"
+            checked=""
             class="pf-c-radio__input"
             data-ouia-component-id="OUIA-Generated-Radio-3"
             data-ouia-component-type="PF4/Radio"
             data-ouia-safe="true"
+            data-testid="infra-ha"
             id="infra-ha"
             name="infraAvailabilityPolicy"
             type="radio"
@@ -207,6 +212,7 @@ exports[`Availability Options Form renders 1`] = `
             data-ouia-component-id="OUIA-Generated-Radio-4"
             data-ouia-component-type="PF4/Radio"
             data-ouia-safe="true"
+            data-testid="infra-single"
             id="infra-single"
             name="infraAvailabilityPolicy"
             type="radio"
