@@ -71,7 +71,6 @@ export async function getArgoApps(applicationCache: ApplicationCacheType, pass: 
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
-  logger.info(`search begin Remote ArgoCD`)
   try {
     applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
   } catch (e) {

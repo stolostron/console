@@ -110,10 +110,6 @@ export async function getPagedSearchResources(
     if (!usePagedQuery) break
     i++
   }
-  logger.info({
-    msg: `search end ${kind}`,
-    count: resources.length,
-  })
   return resources
 }
 
@@ -138,8 +134,9 @@ export function getSearchResults(
       res.on('end', () => {
         try {
           const result = JSON.parse(body) as ISearchResult
-          if (result.message) {
-            logger.error(`getSearchResults ${kind} return error ${result.message}`)
+          const message = typeof result === 'string' ? result : result.message
+          if (message) {
+            logger.error(`getSearchResults ${kind} return error ${message}`)
             reject(Error(result.message))
           }
           resolve(result)
@@ -159,6 +156,37 @@ export function getSearchResults(
       reject(e)
     })
     req.write(variables)
+    req.end()
+  })
+}
+
+export async function pingSearchAPI() {
+  const options = await getServiceAccountOptions()
+  return new Promise<boolean>((resolve, reject) => {
+    let body = ''
+    const req = request(options, (res) => {
+      res.on('data', (data) => {
+        body += data
+      })
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(body) as { data: unknown }
+          if (result.data) {
+            resolve(true)
+          } else {
+            reject('nope')
+          }
+        } catch (e) {
+          reject(e)
+        }
+      })
+    })
+    req.on('error', (e) => {
+      reject(e)
+    })
+    req.write(
+      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":["a*","i*","n*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+    )
     req.end()
   })
 }
