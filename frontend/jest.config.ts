@@ -14,7 +14,6 @@ const config: Config.InitialOptions = {
     '\\.(svg)$': '<rootDir>/src/svg.mock.js',
     '\\.(css|less|jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/src/file.mock.js',
-    '@patternfly/react-topology': '<rootDir>/node_modules/@patternfly/react-topology',
     'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
     '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cjs/cim',
