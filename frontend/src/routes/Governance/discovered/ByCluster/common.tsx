@@ -23,9 +23,9 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   let unknown = 0
   for (const policy of discoveredPolicyItems) {
     let compliance: string
-
-    if (policy.apigroup === 'constraints.gatekeeper.sh') {
-      compliance = getConstraintCompliance(policy?.totalViolations)
+    // Kyverno resources also use the totalViolations field
+    if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(policy.apigroup)) {
+      compliance = getTotalViolationsCompliance(policy?.totalViolations)
     } else {
       compliance = policy?.compliant?.toLowerCase() ?? ''
     }
@@ -49,7 +49,7 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   return { noncompliant, compliant, pending, unknown }
 }
 
-export const getConstraintCompliance = (totalViolations?: number): string => {
+export const getTotalViolationsCompliance = (totalViolations?: number): string => {
   totalViolations = totalViolations ?? -1
 
   if (totalViolations === 0) {
@@ -135,8 +135,8 @@ export const byClusterCols = (
           cell: (item: DiscoveredPolicyItem) => {
             let compliant: string
 
-            if (item.apigroup === 'constraints.gatekeeper.sh') {
-              compliant = getConstraintCompliance(item?.totalViolations)
+            if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
+              compliant = getTotalViolationsCompliance(item?.totalViolations)
             } else {
               compliant = item?.compliant?.toLowerCase() ?? ''
             }
@@ -180,7 +180,7 @@ export const byClusterCols = (
           id: 'violations',
           exportContent: (item: DiscoveredPolicyItem) => {
             if (item.apigroup === 'constraints.gatekeeper.sh') {
-              const compliant = getConstraintCompliance(item?.totalViolations)
+              const compliant = getTotalViolationsCompliance(item?.totalViolations)
 
               if (compliant === 'noncompliant') {
                 return compliant + ' (' + item.totalViolations + ')'

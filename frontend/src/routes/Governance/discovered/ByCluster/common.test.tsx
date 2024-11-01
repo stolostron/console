@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
-import { convertYesNoCell, getConstraintCompliance, DiscoveredViolationsCard, policyViolationSummary } from './common'
+import {
+  convertYesNoCell,
+  getTotalViolationsCompliance,
+  DiscoveredViolationsCard,
+  policyViolationSummary,
+} from './common'
 import { waitForText } from '../../../../lib/test-util'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
@@ -150,10 +155,10 @@ describe('ByCluster common component test', () => {
   })
 })
 
-describe('getConstraintCompliance', () => {
-  test('getConstraintCompliance should work properly', () => {
-    expect(getConstraintCompliance(0)).toEqual('compliant')
-    expect(getConstraintCompliance(1)).toEqual('noncompliant')
-    expect(getConstraintCompliance(undefined)).toEqual('-')
+describe('getTotalViolationsCompliance', () => {
+  test('getTotalViolationsCompliance should work properly', () => {
+    expect(getTotalViolationsCompliance(0)).toEqual('compliant')
+    expect(getTotalViolationsCompliance(1)).toEqual('noncompliant')
+    expect(getTotalViolationsCompliance(undefined)).toEqual('-')
   })
 })
