@@ -40,36 +40,41 @@ spec:
     type: KubeVirt
     kubevirt:
       baseDomainPassthrough: true
+      {{#if (and kubeconfig externalInfraNamespace)}}
       credentials:
-        infraNamespace: '{{{externalInfraNamespace}}}'
         infraKubeConfigSecret:
           name: infra-cluster-{{{clusterName}}}
           key: kubeconfig
+        infraNamespace: {{{externalInfraNamespace}}}
+      {{/if}}
   infraID: '{{{clusterName}}}'
   services:
-  - service: OAuthServer
-    servicePublishingStrategy:
-      type: Route
-  - service: OIDC
-    servicePublishingStrategy:
-      type: Route
-  - service: Konnectivity
-    servicePublishingStrategy:
-      type: Route
-  - service: Ignition
-    servicePublishingStrategy:
-      type: Route
+    - service: OAuthServer
+      servicePublishingStrategy:
+        type: Route
+    - service: OIDC
+      servicePublishingStrategy:
+        type: Route
+    - service: Konnectivity
+      servicePublishingStrategy:
+        type: Route
+    - service: Ignition
+      servicePublishingStrategy:
+        type: Route
 ---
+{{#if (and kubeconfig externalInfraNamespace)}}
 apiVersion: v1
 kind: Secret
 metadata:
   name: infra-cluster-{{{clusterName}}}
   namespace: 'clusters'
-data:
-{{#if showSecrets}}  
-  kubeconfig: {{{kubeconfig}}}
+stringData:
+  {{#if showSecrets}}
+  kubeconfig: |
+    {{{kubeconfig}}}
   {{else}}
   kubeconfig: #injected on create
+  {{/if}}
 {{/if}}
 ---
 apiVersion: v1
@@ -77,27 +82,26 @@ kind: Secret
 metadata:
   name: pullsecret-cluster-{{{clusterName}}}
   namespace: clusters
-data:
+stringData:
   {{#if showSecrets}}
-  '.dockerconfigjson': {{{pullSecret}}}
+  '.dockerconfigjson': |-
+    {{{pullSecret}}}
   {{else}}
   '.dockerconfigjson': #injected on create
   {{/if}}
 type: kubernetes.io/dockerconfigjson
-
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: sshkey-cluster-{{{clusterName}}}
   namespace: 'clusters'
-data:
+stringData:
   {{#if showSecrets}}
-  id_rsa.pub: {{{ssh-publickey}}}
+  'id_rsa.pub': {{{ssh-publickey}}}
   {{else}}
-  id_rsa.pub: #injected on create
+  'id_rsa.pub': #injected on create
   {{/if}}
-
 {{#each nodepools}}
 ---
 apiVersion: hypershift.openshift.io/v1beta1
@@ -110,11 +114,7 @@ spec:
   clusterName: '{{{@root.clusterName}}}'
   replicas: {{{this.nodePoolReplica}}}
   management:
-    {{#if this.nodePoolAutoRepair}}
-    autoRepair: {{{this.nodePoolAutoRepair}}}
-    {{else}}
-    autoRepair: false
-    {{/if}}
+    autoRepair: {{#if this.nodePoolAutoRepair}}{{{this.nodePoolAutoRepair}}}{{else}}false{{/if}}
     upgradeType: Replace
   platform:
     type: KubeVirt
@@ -138,7 +138,6 @@ spec:
           {{/if}}
   release:
     image: {{{@root.releaseImage}}}
-
 {{/each}}
 ---
 apiVersion: cluster.open-cluster-management.io/v1
@@ -161,7 +160,6 @@ metadata:
   name: '{{{clusterName}}}'
 spec:
   hubAcceptsClient: true
-
 {{#if includeKlusterletAddonConfig}}
 ---
 apiVersion: agent.open-cluster-management.io/v1
@@ -184,4 +182,3 @@ spec:
   certPolicyController:
     enabled: true
 {{/if}}
----
