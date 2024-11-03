@@ -15,6 +15,7 @@ import {
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
+  onChangeConnection,
 } from './ControlDataHelpers'
 
 const operatorAlert = (localCluster, t) => {
@@ -43,29 +44,6 @@ const operatorAlert = (localCluster, t) => {
     </Alert>
   )
 }
-
-export const onChangeKubeVirtConnection = (control) => {
-  const { active, availableMap = {} } = control
-  const replacements = get(availableMap[active], 'replacements')
-  const isEncoded = replacements?.encoded && replacements?.encoded === true
-  const activePullSecret = replacements?.pullSecret ?? ''
-  const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
-  const activeKubeconfig = replacements?.kubeconfig ?? ''
-  const activeExternalInfraNamespace = replacements?.externalInfraNamespace ?? ''
-
-  if (active && !isEncoded && activePullSecret !== '') {
-    control.availableMap[active] = {
-      replacements: {
-        kubeconfig: Buffer.from(activeKubeconfig, 'ascii').toString('base64'),
-        externalInfraNamespace: activeExternalInfraNamespace,
-        pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
-        'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
-        encoded: true,
-      },
-    }
-  }
-}
-
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
@@ -113,8 +91,7 @@ export const getControlDataKubeVirt = (
       },
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
-      onSelect: onChangeKubeVirtConnection,
-      encode: ['pullSecret', 'sshPublicKey', 'kubeconfig'],
+      onSelect: onChangeConnection,
       hasReplacements: true,
     },
     {
