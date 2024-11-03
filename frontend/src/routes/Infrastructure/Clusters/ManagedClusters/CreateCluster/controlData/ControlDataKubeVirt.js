@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { get } from 'lodash'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
