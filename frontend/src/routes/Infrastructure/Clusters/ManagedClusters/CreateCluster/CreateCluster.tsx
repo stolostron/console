@@ -59,10 +59,14 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
-import { getControlDataKubeVirt, onChangeKubeVirtConnection } from './controlData/ControlDataKubeVirt'
+import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
+// Register the custom 'and' helper
+Handlebars.registerHelper('and', function (a, b) {
+  return a && b
+})
 
 interface CreationStatus {
   status: string
@@ -148,24 +152,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     (control: any) => {
       if (control.id === 'connection') {
         if (newSecret && control.setActive) {
-          const secretName = newSecret?.metadata.name ?? ''
-          if (control.providerId === 'kubevirt') {
-            // preset replacement fields to get around delayed control state from setAvailableConnections
-            control.availableMap[secretName] = {
-              replacements: {
-                pullSecret: newSecret.data?.pullSecret ?? '',
-                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
-                kubeconfig: newSecret.data?.kubeconfig ?? '',
-                externalInfraNamespace: newSecret.data?.externalInfraNamespace ?? '',
-                encoded: true,
-              },
-            }
-          }
-          control.setActive(secretName)
+          control.setActive(newSecret.metadata.name)
           setNewSecret(undefined) // override with the new secret once
-        }
-        if (!newSecret && control.providerId === 'kubevirt') {
-          onChangeKubeVirtConnection(control)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
