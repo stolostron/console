@@ -97,11 +97,6 @@ Array [
   },
   Object {
     "available": Array [],
-    "encode": Array [
-      "pullSecret",
-      "sshPublicKey",
-      "kubeconfig",
-    ],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
@@ -390,11 +385,6 @@ Array [
   },
   Object {
     "available": Array [],
-    "encode": Array [
-      "pullSecret",
-      "sshPublicKey",
-      "kubeconfig",
-    ],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
