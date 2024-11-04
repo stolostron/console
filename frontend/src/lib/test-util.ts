@@ -380,3 +380,15 @@ export const ocpApi: {
 } = {
   useK8sWatchResource: () => [[] as any, true, undefined],
 }
+export const getCSVExportSpies = () => {
+  const blobConstructorSpy = jest.fn()
+  jest.spyOn(global, 'Blob').mockImplementationOnce(blobConstructorSpy)
+  const createElementSpy = jest.spyOn(document, 'createElement')
+  return { blobConstructorSpy, createElementSpy }
+}
+
+export const getCSVDownloadLink = (createElementSpy: jest.SpyInstance<HTMLElement>) =>
+  createElementSpy.mock.results.find(
+    ({ type, value }, index) =>
+      createElementSpy.mock.calls[index][0] === 'a' && type === 'return' && value.getAttribute('download')
+  )
