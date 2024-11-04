@@ -1337,6 +1337,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         networkType: 'OVNKubernetes',
       },
       controllerAvailabilityPolicy: 'HighlyAvailable',
+      infrastructureAvailabilityPolicy: 'HighlyAvailable',
       platform: {
         type: 'KubeVirt',
         kubevirt: {
