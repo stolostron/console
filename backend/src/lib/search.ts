@@ -186,6 +186,13 @@ export async function pingSearchAPI() {
   const options = await getServiceAccountOptions()
   return new Promise<boolean>((resolve, reject) => {
     let body = ''
+    const id = setTimeout(
+      () => {
+        logger.error(`ping searchAPI timeout`)
+        reject(Error('request timeout'))
+      },
+      4 * 60 * 1000
+    )
     const req = request(options, (res) => {
       res.on('data', (data) => {
         body += data
@@ -201,6 +208,7 @@ export async function pingSearchAPI() {
         } catch (e) {
           reject(e)
         }
+        clearTimeout(id)
       })
     })
     req.on('error', (e) => {

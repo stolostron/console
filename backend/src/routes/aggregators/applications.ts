@@ -142,7 +142,7 @@ async function searchAPILoop() {
       exists = await pingSearchAPI()
       if (!exists) {
         if (!searchAPIMissing) {
-          logger.info('search API missing')
+          logger.error('search API missing')
           searchAPIMissing = true
         }
         await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
@@ -205,10 +205,10 @@ export async function aggregateSearchAPIApplications(pass: number) {
       (e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`)
     )
   }
-  logSearchCountChanges()
+  logSearchCountChanges(pass)
 }
 
-function logSearchCountChanges() {
+function logSearchCountChanges(pass: number) {
   let change = false
   searchKeys.forEach((key) => {
     let count
@@ -225,6 +225,11 @@ function logSearchCountChanges() {
   if (change) {
     logger.info({
       msg: 'search change',
+      searchCount,
+    })
+  } else if (pass % 50 === 0) {
+    logger.info({
+      msg: 'search',
       searchCount,
     })
   }
