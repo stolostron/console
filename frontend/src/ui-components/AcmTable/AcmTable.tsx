@@ -599,6 +599,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const sort = props.sort || stateSort
   const setSort = props.setSort || stateSetSort
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
+  const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
+    { operator: undefined, value: '', columnId: '' },
+  ])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
@@ -1098,7 +1101,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
     clearFilters()
-  }, [clearSearch, clearFilters])
+    setActiveAdvancedFilters([])
+    setPendingConstraints([{ operator: undefined, value: '', columnId: '' }])
+  }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
     (input: any) => {
@@ -1326,6 +1331,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       canAddConstraints
                       useAdvancedSearchPopper={advancedFilters.length > 0}
                       setActiveConstraints={setActiveAdvancedFilters}
+                      pendingConstraints={pendingConstraints}
+                      setPendingConstraints={setPendingConstraints}
                       searchableColumns={advancedFilters.map((filter) => ({
                         columnId: filter.id,
                         columnDisplayName: filter.label,

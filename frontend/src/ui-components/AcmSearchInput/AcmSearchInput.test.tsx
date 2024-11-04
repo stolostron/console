@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useState } from 'react'
 import { render } from '@testing-library/react'
-import { AcmSearchInput, SearchableColumn, SearchOperator } from '../AcmSearchInput'
+import { AcmSearchInput, SearchableColumn, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { axe } from 'jest-axe'
 import userEvent from '@testing-library/user-event'
 
@@ -21,14 +22,22 @@ describe('AcmSearchInput', () => {
       ],
     },
   ]
-  const AcmSearchInputComponent = () => (
-    <AcmSearchInput
-      useAdvancedSearchPopper
-      canAddConstraints
-      setActiveConstraints={() => {}}
-      searchableColumns={columns}
-    />
-  )
+
+  const AcmSearchInputComponent = () => {
+    const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
+      { operator: undefined, value: '', columnId: '' },
+    ])
+    return (
+      <AcmSearchInput
+        useAdvancedSearchPopper
+        canAddConstraints
+        setActiveConstraints={() => {}}
+        pendingConstraints={pendingConstraints}
+        setPendingConstraints={setPendingConstraints}
+        searchableColumns={columns}
+      />
+    )
+  }
 
   test('renders', () => {
     const { getByLabelText } = render(<AcmSearchInputComponent />)
