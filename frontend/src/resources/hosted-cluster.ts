@@ -50,6 +50,7 @@ export interface HostedCluster extends IResource {
       networkType: string
     }
     controllerAvailabilityPolicy: string
+    infrastructureAvailabilityPolicy: string
     platform: {
       type: string
       kubevirt: {
