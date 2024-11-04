@@ -35,7 +35,7 @@ import { append, arrayItemHasKey, getName, setAvailableConnections } from './con
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
 import cimTemplate from './templates/assisted-installer/cim-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
-import kubevirtTemplate from './templates/assisted-installer/kubevirt-template.hbs'
+import kubevirtTemplate from './templates/kubevirt-template.hbs'
 import nutanixAiTemplate from './templates/assisted-installer/nutanix-ai-template.hbs'
 import nutanixCimTemplate from './templates/assisted-installer/nutanix-cim-template.hbs'
 import clusterCuratorTemplate from './templates/cluster-curator.hbs'

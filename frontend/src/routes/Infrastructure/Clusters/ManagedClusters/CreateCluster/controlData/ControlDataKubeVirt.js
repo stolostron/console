@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
+import { useState } from 'react'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { get } from 'lodash'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
@@ -11,10 +13,10 @@ import {
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
+  onChangeConnection,
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
-  onChangeConnection,
 } from './ControlDataHelpers'
 
 const operatorAlert = (localCluster, t) => {
@@ -43,6 +45,7 @@ const operatorAlert = (localCluster, t) => {
     </Alert>
   )
 }
+
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
@@ -51,8 +54,7 @@ export const getControlDataKubeVirt = (
   localCluster
 ) => {
   const controlData = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
+    //////////////////////////////////  AI form  //////////////////////////////////
     {
       id: 'kubevirtDetailStep',
       type: 'step',
@@ -76,7 +78,7 @@ export const getControlDataKubeVirt = (
       hidden: false, // toggled in CreateCluster.tsx
       component: operatorAlert(localCluster, t),
     },
-    /////////////////////// ACM Credentials  /////////////////////////////////////
+    /////////////////////// ACM Credentials /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
       tooltip: t('tooltip.creation.ocp.cloud.connection'),
@@ -158,6 +160,7 @@ export const getControlDataKubeVirt = (
         'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
       ),
     },
+    ///////////////////////////// Node Pools Step /////////////////////////////
     {
       id: 'nodepoolsStep',
       type: 'step',

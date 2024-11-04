@@ -547,6 +547,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
       { path: 'Secret[0].stringData.auth_method', setState: setAuthMethod },
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
+      { path: 'Secret[0].stringData.client_id', setState: setServiceAccClientId },
+      { path: 'Secret[0].stringData.client_secret', setState: setServiceAccClientSecret },
       { path: 'Secret[0].stringData.kubeconfig', setState: setKubeconfig },
       { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
     ]

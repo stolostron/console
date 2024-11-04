@@ -1301,7 +1301,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     metadata: {
       name: 'test',
       namespace: 'clusters',
-      labels: null,
     },
     spec: {
       etcd: {
