@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
-import { AcmDonutChart, AcmEmptyState, AcmTable, ITableFilter, colorThemes } from '../../../../ui-components'
+import {
+  AcmDonutChart,
+  AcmEmptyState,
+  AcmTable,
+  IAcmTableColumn,
+  ITableFilter,
+  colorThemes,
+} from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
@@ -20,7 +27,8 @@ import { useLocation } from 'react-router-dom-v5-compat'
 export default function DiscoveredByCluster({
   policies = [],
   policyKind,
-}: Readonly<{ policies: DiscoveredPolicyItem[] | undefined | null; policyKind: string }>) {
+  apiGroup,
+}: Readonly<{ policies: DiscoveredPolicyItem[] | undefined | null; policyKind: string; apiGroup: string }>) {
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
@@ -29,37 +37,43 @@ export default function DiscoveredByCluster({
   const locationPath = useLocation().pathname
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''
-  const cols = useMemo(
-    () =>
-      byClusterCols(
-        t,
-        helmReleases,
-        subscriptions,
-        channels,
-        policyKind,
-        kindHead == 'operator'
-          ? [
-              {
-                header: t('Deployment available'),
-                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
-                sort: 'deploymentAvailable',
-                search: 'deploymentAvailable',
-                id: 'deploymentAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
-              },
-              {
-                header: t('Upgrade available'),
-                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
-                sort: 'upgradeAvailable',
-                search: 'upgradeAvailable',
-                id: 'upgradeAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
-              },
-            ]
-          : []
-      ),
-    [channels, helmReleases, kindHead, subscriptions, policyKind, t]
-  )
+  const cols = useMemo(() => {
+    let extraColumns: IAcmTableColumn<DiscoveredPolicyItem>[] = []
+
+    if (kindHead === 'operator') {
+      extraColumns = [
+        {
+          header: t('Deployment available'),
+          cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
+          sort: 'deploymentAvailable',
+          search: 'deploymentAvailable',
+          id: 'deploymentAvailable',
+          exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
+        },
+        {
+          header: t('Upgrade available'),
+          cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
+          sort: 'upgradeAvailable',
+          search: 'upgradeAvailable',
+          id: 'upgradeAvailable',
+          exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
+        },
+      ]
+    } else if (apiGroup === 'kyverno.io' && policyKind === 'Policy') {
+      extraColumns = [
+        {
+          header: t('Namespace'),
+          cell: (item: DiscoveredPolicyItem) => item.namespace ?? '-',
+          sort: 'namespace',
+          search: 'namespace',
+          id: 'namespace',
+          exportContent: (item: DiscoveredPolicyItem) => item.namespace ?? '-',
+        },
+      ]
+    }
+
+    return byClusterCols(t, helmReleases, subscriptions, channels, policyKind, extraColumns)
+  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t])
 
   const operatorPolicyStats: any = useMemo(() => {
     if (policyKind !== 'OperatorPolicy') {

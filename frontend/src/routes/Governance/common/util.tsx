@@ -701,7 +701,7 @@ export function getPolicySource(
   if (isExternal) {
     const policySource = isPolicy(policy)
       ? resolveSource(policy.metadata.annotations ?? {}, helmReleases, channels, subscriptions)
-      : resolveSource(parseStringMap(policy.annotation), helmReleases, channels, subscriptions)
+      : resolveSource(parseStringMap(policy.annotation ?? ''), helmReleases, channels, subscriptions)
     source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
   }
   return source
