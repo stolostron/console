@@ -16,7 +16,6 @@
       "request": "launch",
       "type": "chrome",
       "webRoot": "${workspaceFolder}/frontend",
-      "runtimeArgs": ["--incognito"],
       "url": "https://localhost:3000/multicloud/welcome"
     },
     {
@@ -24,7 +23,6 @@
       "request": "launch",
       "type": "chrome",
       "webRoot": "${workspaceFolder}/frontend",
-      "runtimeArgs": ["--incognito"],
       "url": "https://localhost:3000/multicloud/welcome",
       "preLaunchTask": "Delay"
     },
