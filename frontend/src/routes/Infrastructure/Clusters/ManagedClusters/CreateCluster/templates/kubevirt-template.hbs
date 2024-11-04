@@ -8,8 +8,8 @@ kind: HostedCluster
 metadata:
   name: '{{{clusterName}}}'
   namespace: 'clusters'
-  labels:
   {{#if clusterSet}}
+  labels:
     "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
   {{/if}}
 spec:
