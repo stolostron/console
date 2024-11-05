@@ -24,7 +24,7 @@
     "abort-controller": "3.0.0",
     "dotenv": "16.0.1",
     "event-stream": "4.0.1",
-    "find-my-way": "5.6.0",
+    "find-my-way": "^9.1.0",
     "get-value": "3.0.1",
     "got": "^12.5.3",
     "https-proxy-agent": "^7.0.4",
