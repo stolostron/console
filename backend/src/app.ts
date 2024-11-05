@@ -91,7 +91,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   }
 
   try {
-    const result: unknown = route.handler(req, res, route.params, route.store)
+    const result: unknown = route.handler(req, res, route.params, route.store, route.searchParams)
     if (result instanceof Promise) await result
   } catch (err) {
     logger.error(err)
