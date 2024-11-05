@@ -21,6 +21,11 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   let noncompliant = 0
   let pending = 0
   let unknown = 0
+
+  // Kyverno Policy kinds are grouped together even though there could be multiple on the same cluster with the same
+  // name. Only one violation should count as a cluster violation.
+  const kyvernoPolicyViolations: { [key: string]: { [key: string]: boolean } } = {}
+
   for (const policy of discoveredPolicyItems) {
     let compliance: string
     // Kyverno resources also use the totalViolations field
@@ -28,6 +33,17 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
       compliance = getTotalViolationsCompliance(policy?.totalViolations)
     } else {
       compliance = policy?.compliant?.toLowerCase() ?? ''
+    }
+
+    if (policy.apigroup === 'kyverno.io' && policy.kind === 'Policy') {
+      const key = `${policy.cluster}:${policy.name}`
+      if (!kyvernoPolicyViolations[key]) {
+        kyvernoPolicyViolations[key] = {}
+      }
+
+      kyvernoPolicyViolations[key][compliance] = true
+
+      continue
     }
 
     if (policy.disabled || !compliance) continue
@@ -46,6 +62,17 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
         break
     }
   }
+
+  for (const key in kyvernoPolicyViolations) {
+    if (kyvernoPolicyViolations[key]['noncompliant']) {
+      noncompliant++
+    } else if (kyvernoPolicyViolations[key]['compliant']) {
+      compliant++
+    } else {
+      unknown++
+    }
+  }
+
   return { noncompliant, compliant, pending, unknown }
 }
 

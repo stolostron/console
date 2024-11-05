@@ -46,8 +46,8 @@ export default function DiscoveredByClusterPage() {
       )
     }
 
-    return <DiscoveredByCluster policies={data?.[0]?.policies || []} {...{ policyKind }} />
-  }, [policyKind, isFetching, data, err])
+    return <DiscoveredByCluster policies={data?.[0]?.policies || []} policyKind={policyKind} apiGroup={apiGroup} />
+  }, [policyKind, apiGroup, isFetching, data, err])
 
   return (
     <AcmPage

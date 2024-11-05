@@ -669,4 +669,110 @@ describe('DiscoveredByClusterPage', () => {
     const err = screen.queryByText('Error getting fetching data')
     expect(err).not.toBeInTheDocument()
   })
+
+  test('Should render DiscoveredByCluster for Kyverno Policy in multiple namespaces', async () => {
+    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+      isFetching: false,
+      data: [
+        {
+          id: 'require-team-labelPolicykyverno.io',
+          apigroup: 'kyverno.io',
+          name: 'require-team-label',
+          kind: 'Policy',
+          severity: 'critical',
+          responseAction: 'Audit',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/3575a113-174b-4ea0-b42e-004f48dd9080',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-11-04T15:19:37Z',
+              kind: 'Policy',
+              kind_plural: 'policies',
+              name: 'require-team-label',
+              namespace: 'open-cluster-management-agent-addon',
+              severity: 'critical',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 176,
+            },
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/7bdb93f9-fb25-480b-a971-2b2b32d3f9c3',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-11-04T15:20:06Z',
+              kind: 'Policy',
+              kind_plural: 'policies',
+              name: 'require-team-label',
+              namespace: 'default',
+              severity: 'critical',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 0,
+            },
+          ],
+          source: {
+            type: 'Local',
+            parentNs: '',
+            parentName: '',
+          },
+        },
+      ],
+      err: undefined,
+    })
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'Policy',
+              policyName: 'require-team-label',
+              apiGroup: 'kyverno.io',
+              apiVersion: 'v1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByText('1 with violations')).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('row', {
+        name: /local-cluster open-cluster-management-agent-addon Audit Critical 176 Local/,
+      })
+    ).toBeInTheDocument()
+
+    expect(
+      screen.getByRole('row', {
+        name: /local-cluster default Audit Critical No violations Local/,
+      })
+    ).toBeInTheDocument()
+  })
 })

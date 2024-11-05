@@ -7,6 +7,7 @@ import { searchClient } from '../../../Search/search-sdk/search-client'
 import {
   useSearchResultRelatedItemsLazyQuery,
   useSearchResultItemsLazyQuery,
+  SearchFilter,
 } from '../../../Search/search-sdk/search-sdk'
 
 export function useFetchVapb() {
@@ -67,6 +68,7 @@ export function useFetchKyvernoRelated() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
   const kind = urlParams.kind ?? '-'
+  const namespace = urlParams.templateNamespace
   const apiGroup = urlParams.apiGroup ?? ''
   const { clusterName, template, templateLoading } = useTemplateDetailsContext()
   const [getKyverno, { loading, error, data }] = useSearchResultRelatedItemsLazyQuery({
@@ -85,6 +87,16 @@ export function useFetchKyvernoRelated() {
       !error &&
       !data
     ) {
+      let extraFilters: SearchFilter[] = []
+      if (namespace) {
+        extraFilters = [
+          {
+            property: 'namespace',
+            values: [namespace],
+          },
+        ]
+      }
+
       getKyverno({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
@@ -107,6 +119,7 @@ export function useFetchKyvernoRelated() {
                   property: 'cluster',
                   values: [clusterName],
                 },
+                ...extraFilters,
               ],
               limit: 1000000,
             },
@@ -114,7 +127,7 @@ export function useFetchKyvernoRelated() {
         },
       })
     }
-  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getKyverno])
+  }, [apiGroup, clusterName, name, namespace, template, templateLoading, data, loading, error, kind, getKyverno])
 
   useEffect(() => {
     if (data) {
@@ -133,11 +146,29 @@ export function useFetchKyvernoRelated() {
           .map((item: any) => {
             // Items are always clusterName + '/' + uid
             const uid = item._uid.split('/').slice(-1)[0]
-            return { ...item, policyReport: reportMap[uid] }
+            const policyReport = reportMap[uid]
+            let compliant = ''
+            const policyKey = namespace ? `${namespace}/${name}` : name
+
+            for (const violationMapValue of ((policyReport['policyViolationCounts'] as string) ?? '').split('; ')) {
+              if (!violationMapValue.startsWith(policyKey + '=')) {
+                continue
+              }
+
+              if (Number(violationMapValue.split('=', 2)[1]) > 0) {
+                compliant = 'noncompliant'
+              } else {
+                compliant = 'compliant'
+              }
+
+              break
+            }
+
+            return { ...item, policyReport, compliant }
           })
       )
     }
-  }, [data])
+  }, [data, name, namespace])
 
   return useMemo(
     () => ({
