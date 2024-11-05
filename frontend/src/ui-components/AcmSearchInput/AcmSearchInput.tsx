@@ -53,7 +53,8 @@ export interface AcmSearchInputProps extends SearchInputProps {
   searchableColumns?: SearchableColumn[]
   canAddConstraints?: boolean
   disableAddConstraint?: boolean
-  pendingConstraints?: SearchConstraint[]
+  pendingConstraints: SearchConstraint[]
+  setPendingConstraints: (constraints: SearchConstraint[]) => void
   setActiveConstraints?: (constraints: SearchConstraint[]) => void
   fuzzySearchOnChange?: (value: string) => void
   fuzzySearchOnClear?: () => void
@@ -66,6 +67,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
     canAddConstraints,
     disableAddConstraint,
     pendingConstraints = [{ operator: undefined, value: '', columnId: '' }],
+    setPendingConstraints,
     fuzzySearchValue,
     fuzzySearchOnChange,
     fuzzySearchOnClear,
@@ -81,13 +83,12 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const advancedSearchPaneRef = useRef<HTMLDivElement | null>(null)
   const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false)
-  const [searchConstraints, setSearchConstraints] = useState<SearchConstraint[]>(pendingConstraints || [])
 
   const onClear = useCallback(() => {
     fuzzySearchOnClear?.()
-    setSearchConstraints([{ operator: undefined, value: '', columnId: '' }])
-    setActiveConstraints?.([{ operator: undefined, value: '', columnId: '' }])
-  }, [fuzzySearchOnClear, setActiveConstraints])
+    setActiveConstraints?.([])
+    setPendingConstraints([{ operator: undefined, value: '', columnId: '' }])
+  }, [fuzzySearchOnClear, setActiveConstraints, setPendingConstraints])
 
   const onChange = useCallback(
     (value: any) => {
@@ -148,7 +149,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
     })
   }
 
-  const activeConstraints = searchConstraints.filter(
+  const activeConstraints = pendingConstraints.filter(
     (constraint) => constraint.columnId && constraint.value && constraint.operator
   ).length
   const showResultCount = !!fuzzySearchValue || !!activeConstraints
@@ -193,7 +194,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                   onChange(value)
                 }}
               />
-              {searchConstraints?.map((constraint, index) => {
+              {pendingConstraints?.map((constraint, index) => {
                 return (
                   <Flex alignItems={{ default: 'alignItemsFlexStart' }} key={`${constraint.columnId}-${index}`}>
                     <FlexItem style={{ width: '28%' }}>
@@ -203,9 +204,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         value={constraint.columnId}
                         placeholder={t('Select a column')}
                         onChange={(columnId) => {
-                          const newConstraintArray = [...searchConstraints]
+                          const newConstraintArray = [...pendingConstraints]
                           newConstraintArray[index].columnId = columnId
-                          setSearchConstraints(newConstraintArray)
+                          setPendingConstraints(newConstraintArray)
                           setActiveConstraints && setActiveConstraints(newConstraintArray)
                         }}
                       >
@@ -224,9 +225,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                           value={constraint.operator}
                           placeholder={t('Select an operator')}
                           onChange={(operator) => {
-                            const newConstraintArray = [...searchConstraints]
+                            const newConstraintArray = [...pendingConstraints]
                             newConstraintArray[index].operator = operator as SearchOperator
-                            setSearchConstraints(newConstraintArray)
+                            setPendingConstraints(newConstraintArray)
                             setActiveConstraints && setActiveConstraints(newConstraintArray)
                           }}
                           isDisabled={!constraint.columnId}
@@ -242,9 +243,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         id="search-value"
                         value={constraint.value}
                         onChange={(newValue) => {
-                          const newConstraintArray = [...searchConstraints]
+                          const newConstraintArray = [...pendingConstraints]
                           newConstraintArray[index].value = newValue
-                          setSearchConstraints(newConstraintArray)
+                          setPendingConstraints(newConstraintArray)
                           setActiveConstraints && setActiveConstraints(newConstraintArray)
                         }}
                       />
@@ -255,9 +256,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         style={{ marginTop: '2em' }}
                         variant={ButtonVariant.link}
                         onClick={(event) => {
-                          const newConstraintArray = [...searchConstraints]
+                          const newConstraintArray = [...pendingConstraints]
                           newConstraintArray.splice(index, 1)
-                          setSearchConstraints(newConstraintArray)
+                          setPendingConstraints(newConstraintArray)
                           setActiveConstraints && setActiveConstraints(newConstraintArray)
                           event?.stopPropagation()
                         }}
@@ -274,8 +275,8 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                   variant={ButtonVariant.link}
                   onClick={(event) => {
                     event.stopPropagation()
-                    searchConstraints &&
-                      setSearchConstraints([...searchConstraints, { operator: undefined, value: '', columnId: '' }])
+                    pendingConstraints &&
+                      setPendingConstraints([...pendingConstraints, { operator: undefined, value: '', columnId: '' }])
                   }}
                   icon={<PlusCircleIcon />}
                 >
