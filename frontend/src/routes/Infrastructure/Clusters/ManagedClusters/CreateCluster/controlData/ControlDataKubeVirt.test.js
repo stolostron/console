@@ -5,7 +5,7 @@
 import i18next from 'i18next'
 import { Warning } from '../Warning'
 import { setAvailableStorageClasses } from './ControlDataHelpers'
-import { getControlDataKubeVirt, setKubeVirtSecrets } from './ControlDataKubeVirt'
+import { getControlDataKubeVirt } from './ControlDataKubeVirt'
 
 const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
@@ -52,44 +52,6 @@ describe('Cluster creation control data for KubeVirt', () => {
   })
   it('generates correctly for MCE', () => {
     expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, false, localCluster)).toMatchSnapshot()
-  })
-  it('Correctly returns setKubeVirtSecrets with pull secret & ssh key', () => {
-    const control = {
-      active: 'kube-virt-cred-test',
-      availableMap: {
-        'kube-virt-cred-test': {
-          replacements: {
-            pullSecret: 'pullSecretData',
-            'ssh-publickey': 'ssh-publickey TESTING johndoe@email.com',
-          },
-        },
-      },
-      available: ['kube-virt-cred-test'],
-    }
-    setKubeVirtSecrets(control)
-    expect(control.availableMap['kube-virt-cred-test'].replacements.pullSecret).toEqual('cHVsbFNlY3JldERhdGE=') // notsecret
-    expect(control.availableMap['kube-virt-cred-test'].replacements['ssh-publickey']).toEqual(
-      'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t' // notsecret
-    )
-  })
-  it('Correctly returns setKubeVirtSecrets without pull secret & ssh key', () => {
-    const emptyControl = {
-      availableMap: {
-        'kube-virt-cred-test': {
-          replacements: {
-            pullSecret: 'cHVsbFNlY3JldERhdGE=', // notsecret
-            'ssh-publickey': 'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t', // notsecret
-            encoded: true,
-          },
-        },
-      },
-      available: ['kube-virt-cred-test'],
-    }
-    setKubeVirtSecrets(emptyControl)
-    expect(emptyControl.availableMap['kube-virt-cred-test'].replacements.pullSecret).toEqual('cHVsbFNlY3JldERhdGE=') // notsecret
-    expect(emptyControl.availableMap['kube-virt-cred-test'].replacements['ssh-publickey']).toEqual(
-      'c3NoLXB1YmxpY2tleSBURVNUSU5HIGpvaG5kb2VAZW1haWwuY29t' // notsecret
-    )
   })
   it('Correctly sets available storage classes', () => {
     const control = {

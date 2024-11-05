@@ -202,10 +202,10 @@ export const setAvailableStorageClasses = (control, result) => {
 
 export const setAvailableConnections = (control, secrets) => {
   const connections = secrets.filter((secret) => {
-    const cedentalsType = secret.metadata.labels?.['cluster.open-cluster-management.io/type']
+    const credentialsType = secret.metadata.labels?.['cluster.open-cluster-management.io/type']
     return Array.isArray(control.providerId)
-      ? control.providerId.includes(cedentalsType)
-      : control.providerId === cedentalsType
+      ? control.providerId.includes(credentialsType)
+      : control.providerId === credentialsType
   })
   control.availableMap = {}
   connections?.forEach?.((c) => {
@@ -244,9 +244,9 @@ export const setAvailableConnections = (control, secrets) => {
   control.available = connections.map((secret) => secret.metadata.name).sort((a, b) => a.localeCompare(b))
   const perPostSection = control.groupControlData?.find(({ id }) => id === 'perPostSection')
   if (
-    Array.isArray(control.providerId)
-      ? !control.providerId.some((provider) => ['hostinventory', 'nutanix', 'kubevirt'].includes(provider))
-      : !['hostinventory', 'nutanix', 'kubevirt'].includes(control.providerId)
+    !(Array.isArray(control.providerId) ? control.providerId : [control.providerId]).some((provider) =>
+      ['hostinventory', 'nutanix'].includes(provider)
+    )
   ) {
     // unset default ansible secret for subscription wizard as it's not required
     if (control.setActive && !control.active && !perPostSection) {

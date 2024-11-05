@@ -71,6 +71,10 @@ export interface ProviderConnectionStringData {
   ['ssh-privatekey']?: string
   ['ssh-publickey']?: string
 
+  // OpenShift Virtualization
+  kubeconfig?: string
+  externalInfraNamespace?: string
+
   httpProxy?: any
   httpsProxy?: any
   noProxy?: any

@@ -15,6 +15,7 @@ import {
   validateNoProxy,
   validateNoProxyList,
   validateAwsRegion,
+  validateKubeconfig,
 } from './validation'
 
 const t = (key: string) => key
@@ -276,6 +277,198 @@ describe('validation', () => {
       } else {
         expect(validateAwsRegion(value, t)).toBeUndefined()
       }
+    })
+  })
+
+  describe('validateKubeconfig2', () => {
+    test('valid kubeconfig', () => {
+      const validYaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(validYaml, t)).toBeUndefined()
+    })
+
+    test('invalid YAML', () => {
+      expect(validateKubeconfig('invalid: yaml: :', t)).toBe('validate.kubeconfig.invalidYaml')
+    })
+
+    test('missing clusters', () => {
+      const yaml = `
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('missing contexts', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('missing users', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('missing current-context', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users:
+        - name: user
+          user:
+            token: token
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('clusters not an array', () => {
+      const yaml = `
+      clusters: {}
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidArrayStructure')
+    })
+
+    test('contexts not an array', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts: {}
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidArrayStructure')
+    })
+
+    test('users not an array', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users: {}
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidArrayStructure')
+    })
+
+    test('empty clusters array', () => {
+      const yaml = `
+      clusters: []
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('empty contexts array', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts: []
+      users:
+        - name: user
+          user:
+            token: token
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
+    })
+
+    test('empty users array', () => {
+      const yaml = `
+      clusters:
+        - name: cluster
+          cluster:
+            server: https://example.com
+      contexts:
+        - name: context
+          context:
+            cluster: cluster
+            user: user
+      users: []
+      current-context: context
+    `
+      expect(validateKubeconfig(yaml, t)).toBe('validate.kubeconfig.invalidStructure')
     })
   })
 })

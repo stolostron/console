@@ -394,3 +394,32 @@ export function validateCidr(value: string, t: TFunction) {
   }
   return t('Value must be a valid IPv4 CIDR.')
 }
+
+export function validateKubeconfig(value: string, t: TFunction) {
+  if (value) {
+    try {
+      const parsedYaml = YAML.parse(value)
+      // Performs basic validation for the kubeconfig required fields
+      if (!parsedYaml.clusters || !parsedYaml.contexts || !parsedYaml.users || !parsedYaml['current-context']) {
+        return t('validate.kubeconfig.invalidStructure')
+      }
+
+      // Performs additional validations for the array structure
+      if (
+        !Array.isArray(parsedYaml.clusters) ||
+        !Array.isArray(parsedYaml.contexts) ||
+        !Array.isArray(parsedYaml.users)
+      ) {
+        return t('validate.kubeconfig.invalidArrayStructure')
+      }
+
+      // Checking for empty arrays
+      if (parsedYaml.clusters.length === 0 || parsedYaml.contexts.length === 0 || parsedYaml.users.length === 0) {
+        return t('validate.kubeconfig.invalidStructure')
+      }
+    } catch (e) {
+      return `${t('validate.kubeconfig.invalidYaml')}`
+    }
+  }
+  return undefined
+}

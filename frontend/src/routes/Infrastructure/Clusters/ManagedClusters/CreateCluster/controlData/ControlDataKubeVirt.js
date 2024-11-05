@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { get } from 'lodash'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
@@ -12,6 +11,7 @@ import {
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
+  onChangeConnection,
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
@@ -43,24 +43,6 @@ const operatorAlert = (localCluster, t) => {
       </div>
     </Alert>
   )
-}
-
-export const setKubeVirtSecrets = (control) => {
-  const { active, availableMap = {} } = control
-  const replacements = get(availableMap[active], 'replacements')
-  const activePullSecret = replacements?.pullSecret ?? ''
-  const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
-  const isEncoded = replacements?.encoded && replacements?.encoded === true
-
-  if (active && !isEncoded && activePullSecret !== '') {
-    control.availableMap[active] = {
-      replacements: {
-        pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
-        'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
-        encoded: true,
-      },
-    }
-  }
 }
 
 export const getControlDataKubeVirt = (
@@ -109,8 +91,13 @@ export const getControlDataKubeVirt = (
       },
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
-      onSelect: setKubeVirtSecrets,
+      onSelect: onChangeConnection,
       hasReplacements: true,
+    },
+    {
+      id: 'showSecrets',
+      type: 'hidden',
+      active: true,
     },
     {
       name: t('creation.ocp.name'),

@@ -114,6 +114,11 @@ Array [
     },
   },
   Object {
+    "active": true,
+    "id": "showSecrets",
+    "type": "hidden",
+  },
+  Object {
     "id": "clusterName",
     "name": "Cluster name",
     "placeholder": "Enter cluster name",
@@ -405,6 +410,11 @@ Array [
       "notification": "Select a connection",
       "required": true,
     },
+  },
+  Object {
+    "active": true,
+    "id": "showSecrets",
+    "type": "hidden",
   },
   Object {
     "id": "clusterName",
