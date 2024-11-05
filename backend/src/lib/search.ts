@@ -110,10 +110,6 @@ export async function getPagedSearchResources(
     if (!usePagedQuery) break
     i++
   }
-  logger.info({
-    msg: `search end ${kind}`,
-    count: resources.length,
-  })
   return resources
 }
 
@@ -138,8 +134,9 @@ export function getSearchResults(
       res.on('end', () => {
         try {
           const result = JSON.parse(body) as ISearchResult
-          if (result.message) {
-            logger.error(`getSearchResults ${kind} return error ${result.message}`)
+          const message = typeof result === 'string' ? result : result.message
+          if (message) {
+            logger.error(`getSearchResults ${kind} return error ${message}`)
             reject(Error(result.message))
           }
           resolve(result)
@@ -159,6 +156,65 @@ export function getSearchResults(
       reject(e)
     })
     req.write(variables)
+    req.end()
+  })
+}
+
+const ping = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['Pod'],
+          },
+          {
+            property: 'name',
+            values: ['search-api*'],
+          },
+        ],
+        limit: 1,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export async function pingSearchAPI() {
+  const options = await getServiceAccountOptions()
+  return new Promise<boolean>((resolve, reject) => {
+    let body = ''
+    const id = setTimeout(
+      () => {
+        logger.error(`ping searchAPI timeout`)
+        reject(Error('request timeout'))
+      },
+      4 * 60 * 1000
+    )
+    const req = request(options, (res) => {
+      res.on('data', (data) => {
+        body += data
+      })
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(body) as { data: unknown }
+          if (result.data) {
+            resolve(true)
+          } else {
+            reject('nope')
+          }
+        } catch (e) {
+          reject(e)
+        }
+        clearTimeout(id)
+      })
+    })
+    req.on('error', (e) => {
+      reject(e)
+    })
+    req.write(JSON.stringify(ping))
     req.end()
   })
 }
