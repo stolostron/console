@@ -62,8 +62,8 @@ spec:
     - service: Ignition
       servicePublishingStrategy:
         type: Route
----
 {{#if (and kubeconfig externalInfraNamespace)}}
+---
 apiVersion: v1
 kind: Secret
 metadata:
