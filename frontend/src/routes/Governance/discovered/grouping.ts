@@ -150,7 +150,7 @@ export function grouping(): {
 
     if (kyvernoPolicyReports.length > 0) {
       kyvernoPolicyReports.forEach((cr) => {
-        const kindNameViolation = cr.policyViolationCounts?.split('=') ?? []
+        const kindNameViolation = cr._policyViolationCounts?.split('=') ?? []
         kyvernoViolationMap[kindNameViolation[0]] =
           (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
       })
