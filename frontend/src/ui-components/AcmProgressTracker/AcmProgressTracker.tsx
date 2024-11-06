@@ -106,7 +106,7 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
                   onClick={() => {
                     /* istanbul ignore next */
                     if (step.link?.linkUrl) {
-                      window.open(step.link?.linkUrl)
+                      window.open(step.link.linkUrl)
                     }
                     /* istanbul ignore next */
                     step.link?.linkCallback?.()
