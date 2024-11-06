@@ -267,23 +267,22 @@ function getValues(labels: { annotation: any; value: any }[]) {
   let argoInstanceLabelValue = ''
   let isManagedByHelm
 
-  labels &&
-    labels.forEach(({ annotation, value }) => {
-      value = value as string
-      if (annotation === 'app') {
+  labels?.forEach(({ annotation, value }) => {
+    value = value as string
+    if (annotation === 'app') {
+      itemLabel = value as string
+    } else if (annotation === 'app.kubernetes.io/part-of') {
+      if (!itemLabel) {
         itemLabel = value as string
-      } else if (annotation === 'app.kubernetes.io/part-of') {
-        if (!itemLabel) {
-          itemLabel = value as string
-        }
       }
-      if (annotation === 'app.kubernetes.io/instance') {
-        argoInstanceLabelValue = value as string
-      }
-      if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
-        isManagedByHelm = true
-      }
-    })
+    }
+    if (annotation === 'app.kubernetes.io/instance') {
+      argoInstanceLabelValue = value as string
+    }
+    if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+      isManagedByHelm = true
+    }
+  })
   return {
     itemLabel,
     isManagedByHelm,
