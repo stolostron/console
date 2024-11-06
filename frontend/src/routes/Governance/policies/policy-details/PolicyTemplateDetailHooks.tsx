@@ -150,7 +150,7 @@ export function useFetchKyvernoRelated() {
             let compliant = ''
             const policyKey = namespace ? `${namespace}/${name}` : name
 
-            for (const violationMapValue of ((policyReport['policyViolationCounts'] as string) ?? '').split('; ')) {
+            for (const violationMapValue of ((policyReport['_policyViolationCounts'] as string) ?? '').split('; ')) {
               if (!violationMapValue.startsWith(policyKey + '=')) {
                 continue
               }
