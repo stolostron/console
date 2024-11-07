@@ -270,7 +270,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         id: 'manageNodepool',
         title: t('Manage node pool'),
         click: () => {
-          !!hostedCluster &&
+          if (hostedCluster) {
             setManageNodepoolModalProps({
               open: true,
               close: () => {
@@ -279,6 +279,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
               hostedCluster,
               nodepool,
             })
+          }
         },
         tooltip: cluster?.hypershift?.isUpgrading
           ? t('Node pools cannot be managed during hosted cluster upgrade.')

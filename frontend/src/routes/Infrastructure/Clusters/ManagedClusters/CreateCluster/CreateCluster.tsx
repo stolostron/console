@@ -35,7 +35,7 @@ import { append, arrayItemHasKey, getName, setAvailableConnections } from './con
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
 import cimTemplate from './templates/assisted-installer/cim-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
-import kubevirtTemplate from './templates/assisted-installer/kubevirt-template.hbs'
+import kubevirtTemplate from './templates/kubevirt-template.hbs'
 import nutanixAiTemplate from './templates/assisted-installer/nutanix-ai-template.hbs'
 import nutanixCimTemplate from './templates/assisted-installer/nutanix-cim-template.hbs'
 import clusterCuratorTemplate from './templates/cluster-curator.hbs'
@@ -59,10 +59,14 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import getControlDataCIM from './controlData/ControlDataCIM'
 import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataHypershift from './controlData/ControlDataHypershift'
-import { getControlDataKubeVirt, setKubeVirtSecrets } from './controlData/ControlDataKubeVirt'
+import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
+// Register the custom 'and' helper
+Handlebars.registerHelper('and', function (a, b) {
+  return a && b
+})
 
 interface CreationStatus {
   status: string
@@ -148,22 +152,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     (control: any) => {
       if (control.id === 'connection') {
         if (newSecret && control.setActive) {
-          const secretName = newSecret?.metadata.name ?? ''
-          if (control.providerId === 'kubevirt') {
-            // preset replacement fields to get around delayed control state from setAvailableConnections
-            control.availableMap[secretName] = {
-              replacements: {
-                pullSecret: newSecret.data?.pullSecret ?? '',
-                'ssh-publickey': newSecret.data?.['ssh-publickey'] ?? '',
-                encoded: true,
-              },
-            }
+          const secretName = newSecret.metadata.name!
+          if (control.available?.includes(secretName)) {
+            control.setActive(newSecret.metadata.name)
+            setNewSecret(undefined) // override with the new secret once
           }
-          control.setActive(secretName)
-          setNewSecret(undefined) // override with the new secret once
-        }
-        if (!newSecret && control.providerId === 'kubevirt') {
-          setKubeVirtSecrets(control)
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {

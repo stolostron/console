@@ -247,20 +247,22 @@ export function getRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      item.managedHub && item.managedHub !== 'global-hub'
-        ? setDeleteExternalResource({
-            open: true,
-            close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-            resource: item,
-            hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-          })
-        : setDeleteResource({
-            open: true,
-            close: () => setDeleteResource(ClosedDeleteModalProps),
-            resource: item,
-            currentQuery,
-            relatedResource,
-          })
+      if (item?.managedHub !== 'global-hub') {
+        setDeleteExternalResource({
+          open: true,
+          close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
+          resource: item,
+          hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
+        })
+      } else {
+        setDeleteResource({
+          open: true,
+          close: () => setDeleteResource(ClosedDeleteModalProps),
+          resource: item,
+          currentQuery,
+          relatedResource,
+        })
+      }
     },
   }
 

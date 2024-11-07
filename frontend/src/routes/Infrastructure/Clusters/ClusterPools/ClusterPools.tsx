@@ -216,27 +216,26 @@ export function ClusterPoolsTable(props: {
   >()
   const clusterPoolClusters: Record<string, Cluster[]> = {}
 
-  props.clusterPools &&
-    props.clusterPools.forEach((clusterPool) => {
-      if (clusterPool.metadata.name) {
-        const clusters = getMappedClusterPoolClusters({
-          managedClusters,
-          clusterDeployments,
-          managedClusterInfos,
-          certificateSigningRequests,
-          managedClusterAddOns: managedClusterAddons,
-          clusterManagementAddOns: clusterManagementAddons,
-          clusterClaims,
-          clusterCurators,
-          agentClusterInstalls,
-          hostedClusters,
-          nodePools,
-          discoveredClusters,
-          clusterPool,
-        })
-        clusterPoolClusters[clusterPool.metadata.name] = clusters
-      }
-    })
+  props.clusterPools?.forEach((clusterPool) => {
+    if (clusterPool.metadata.name) {
+      const clusters = getMappedClusterPoolClusters({
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddOns: managedClusterAddons,
+        clusterManagementAddOns: clusterManagementAddons,
+        clusterClaims,
+        clusterCurators,
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        discoveredClusters,
+        clusterPool,
+      })
+      clusterPoolClusters[clusterPool.metadata.name] = clusters
+    }
+  })
 
   const modalColumns = useMemo(
     () => [

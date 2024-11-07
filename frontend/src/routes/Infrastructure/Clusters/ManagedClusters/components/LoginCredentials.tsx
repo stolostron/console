@@ -76,7 +76,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
         const { stringData } = unpackSecret(secret)
         setCredentials(stringData as LoginCredential)
         setVisible(!isVisible)
-      } catch (err) {
+      } catch {
         setError(true)
       } finally {
         setLoading(false)

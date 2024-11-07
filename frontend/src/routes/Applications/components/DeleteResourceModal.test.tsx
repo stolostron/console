@@ -12,16 +12,13 @@ import {
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
-import { nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { nockDelete, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { waitForNock } from '../../../lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
-jest.mock('../../../resources/utils/resource-request', () => ({
-  deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
-}))
-
 describe('DeleteResourceModal', () => {
-  it('should render delete ACM app no related resources', () => {
+  it('should render delete ACM app no related resources', async () => {
     const resource: IResource = {
       apiVersion: ApplicationApiVersion,
       kind: ApplicationKind,
@@ -30,6 +27,7 @@ describe('DeleteResourceModal', () => {
         namespace: 'acmapp-ns',
       },
     }
+    const deleteApp = nockDelete(resource)
 
     const { getByText } = render(
       <MemoryRouter>
@@ -57,6 +55,7 @@ describe('DeleteResourceModal', () => {
     expect(screen.getByRole('button', { name: /delete/i })).toBeTruthy()
     nockIgnoreApiPaths()
     userEvent.click(screen.getByRole('button', { name: /delete/i }))
+    await waitForNock(deleteApp)
   })
 
   it('should render delete ACM app with some related resources', () => {
@@ -252,7 +251,7 @@ describe('DeleteResourceModal', () => {
     ).toBeTruthy()
   })
 
-  it('should render delete appset without placement', () => {
+  it('should render delete appset without placement', async () => {
     const resource: IResource = {
       apiVersion: ApplicationSetApiVersion,
       kind: ApplicationSetKind,
@@ -261,6 +260,8 @@ describe('DeleteResourceModal', () => {
         namespace: 'appset1-ns',
       },
     }
+
+    const deleteApp = nockDelete(resource)
 
     const { getByText } = render(
       <MemoryRouter>
@@ -285,7 +286,9 @@ describe('DeleteResourceModal', () => {
     )
 
     expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
+    nockIgnoreApiPaths()
     userEvent.click(screen.getByRole('button', { name: /delete/i }))
+    await waitForNock(deleteApp)
   })
 
   it('should render delete appset with placement', () => {

@@ -23,7 +23,9 @@ export function AcmExpandableCard(
   }>
 ) {
   const acmCardID = window.location.href + props.id
-  localStorage.getItem(acmCardID) ?? localStorage.setItem(acmCardID, 'show')
+  if (!localStorage.getItem(acmCardID)) {
+    localStorage.setItem(acmCardID, 'show')
+  }
 
   const [open, setOpen] = useState<boolean>(props.defaultOpen ?? localStorage.getItem(acmCardID) === 'show')
   const { t } = useTranslation()

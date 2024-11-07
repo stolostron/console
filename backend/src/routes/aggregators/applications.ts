@@ -5,8 +5,8 @@ import { getArgoApps } from './applicationsArgo'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getGiganticApps } from '../../../test/mock-gigantic'
+import { pingSearchAPI } from '../../lib/search'
 
 export enum AppColumns {
   'name' = 0,
@@ -88,6 +88,14 @@ const appKeys = [
 appKeys.forEach((key) => {
   applicationCache[key] = { resources: [] }
 })
+export type SearchCountType = {
+  [type: string]: number
+}
+const searchCount: SearchCountType = {}
+const searchKeys = ['localArgoApps', 'remoteArgoApps', 'localOCPApps', 'remoteOCPApps', 'localSysApps', 'remoteSysApps']
+searchKeys.forEach((key) => {
+  searchCount[key] = 0
+})
 
 export function getApplications() {
   const items: ITransformedResource[] = []
@@ -130,17 +138,27 @@ const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 
 async function searchAPILoop() {
   let pass = 1
+  let searchAPIMissing = false
   while (!stopping) {
-    try {
-      // if hub is missing, so is search --  check every 5 minutes
-      let mch
-      do {
-        mch = await getMultiClusterHub()
-        if (!mch) {
-          await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
+    // make sure there's an active search api
+    // otherwise there's no point
+    let exists
+    do {
+      exists = await pingSearchAPI()
+      if (!exists) {
+        if (!searchAPIMissing) {
+          logger.error('search API missing')
+          searchAPIMissing = true
         }
-      } while (!mch)
+        await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
+      }
+    } while (!exists)
+    if (searchAPIMissing) {
+      logger.info('search API found')
+      searchAPIMissing = false
+    }
 
+    try {
       await promiseTimeout(aggregateSearchAPIApplications(pass), SEARCH_TIMEOUT * 2).catch((e) =>
         logger.error(`searchAPILoop exception ${e}`)
       )
@@ -175,7 +193,6 @@ let argoAppSet = new Set<string>()
 export async function aggregateSearchAPIApplications(pass: number) {
   const clusters: Cluster[] = getClusters()
   // Argo Apps
-  logger.info(`search begin ArgoCD`)
   await promiseTimeout(getArgoApps(applicationCache, clusters, pass), SEARCH_TIMEOUT)
     .then((data) => {
       if (data) argoAppSet = data
@@ -183,17 +200,43 @@ export async function aggregateSearchAPIApplications(pass: number) {
     .catch((e) => logger.error(`aggregateSearchAPIApplications ArgoCD exception ${e}`))
 
   // OCP Apps/FLUX
-  logger.info(`search begin Openshift/Flux`)
   await promiseTimeout(getOCPApps(applicationCache, argoAppSet, MODE.ExcludeSystemApps, pass), SEARCH_TIMEOUT).catch(
     (e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`)
   )
 
   // system apps -- because system apps shouldn't change much, don't do it every time
   if (pass <= 3 || pass % 3 === 0) {
-    logger.info(`search begin System`)
     await promiseTimeout(getOCPApps(applicationCache, argoAppSet, MODE.OnlySystemApps, pass), SEARCH_TIMEOUT).catch(
       (e) => logger.error(`aggregateSearchAPIApplications OCP/Flux exception ${e}`)
     )
+  }
+  logSearchCountChanges(pass)
+}
+
+function logSearchCountChanges(pass: number) {
+  let change = false
+  searchKeys.forEach((key) => {
+    let count
+    if (key !== 'remoteSysApps') {
+      count = applicationCache[key].resources.length
+    } else {
+      count = Object.values(applicationCache['remoteSysApps'].resourceMap).flat().length
+    }
+    if (count !== searchCount[key]) {
+      change = true
+      searchCount[key] = count
+    }
+  })
+  if (change) {
+    logger.info({
+      msg: 'search change',
+      searchCount,
+    })
+  } else if (pass % 50 === 0) {
+    logger.info({
+      msg: 'search',
+      searchCount,
+    })
   }
 }
 

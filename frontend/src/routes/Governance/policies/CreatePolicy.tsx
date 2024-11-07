@@ -75,13 +75,14 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
           policy.metadata.name === createdPolicy.metadata?.name
       )
 
-      found &&
+      if (found) {
         navigate(
           generatePath(NavigationPath.policyDetails, {
             namespace: createdPolicy.metadata?.namespace ?? '',
             name: createdPolicy.metadata?.name ?? '',
           })
         )
+      }
     }
   }, [policies, createdPolicy, navigate])
 

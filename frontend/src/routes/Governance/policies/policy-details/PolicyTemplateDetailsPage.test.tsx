@@ -443,7 +443,51 @@ describe('Policy Template Details Page', () => {
                       moderate: '0',
                       name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
                       numRuleViolations: '1',
-                      policyViolationCounts: 'require-owner-labels=1',
+                      _policyViolationCounts: 'require-owner-labels=1',
+                      rules: 'require-owner-labels',
+                      scope: 'e2e-rbac-test-1',
+                    },
+                  ],
+                },
+                {
+                  kind: 'Namespace',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/97c60893-ea66-47ac-8e2f-0c191246ad32'],
+                      _uid: 'local-cluster/b56b0432-75f8-4440-ac53-86a993c3c2f6',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      created: '2024-10-31T11:10:45Z',
+                      kind: 'Namespace',
+                      kind_plural: 'namespaces',
+                      name: 'my-app',
+                      status: 'Active',
+                    },
+                  ],
+                },
+                {
+                  kind: 'ClusterPolicyReport',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/b56b0432-75f8-4440-ac53-86a993c3c2f6'],
+                      _uid: 'local-cluster/97c60893-ea66-47ac-8e2f-0c191246ad32',
+                      apigroup: 'wgpolicyk8s.io',
+                      apiversion: 'v1alpha2',
+                      category: '',
+                      cluster: 'local-cluster',
+                      created: '2024-10-31T16:23:15Z',
+                      critical: '0',
+                      important: '0',
+                      kind: 'ClusterPolicyReport',
+                      kind_plural: 'clusterpolicyreports',
+                      label: 'app.kubernetes.io/managed-by=kyverno',
+                      low: '0',
+                      moderate: '0',
+                      name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
+                      numRuleViolations: '0',
+                      _policyViolationCounts: 'require-owner-labels=0',
                       rules: 'require-owner-labels',
                       scope: 'e2e-rbac-test-1',
                     },
@@ -1089,7 +1133,7 @@ describe('Policy Template Details Page', () => {
               apiVersion: 'v1',
               kind: 'ConfigurationPolicy',
               templateName: 'config-policy',
-              templateNamespace: 'test-cluster',
+              templateNamespace: 'open-cluster-management-policies',
             }),
           ]}
         >
@@ -1120,6 +1164,7 @@ describe('Policy Template Details Page', () => {
     // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
     await waitForText('test-cluster', true)
 
+    await waitForText('open-cluster-management-policies')
     await waitForText('config-policy', true)
     await waitForText('ConfigurationPolicy', true)
 
@@ -1296,12 +1341,28 @@ describe('Policy Template Details Page', () => {
     await waitForText('Matches')
     await waitForText('require-labels')
     await waitForText('Namespace', true)
-    expect(screen.getByRole('link', { name: 'View YAML' })).toBeInTheDocument()
+
+    // Verify the "Related resources" table rows
+    const violationRow = screen.getByRole('row', {
+      name: 'openshift-etcd-operator - Namespace v1 Violations View policy report View YAML',
+    })
+    expect(violationRow).toBeInTheDocument()
+    expect(within(violationRow).getByRole('link', { name: 'View YAML' })).toBeInTheDocument()
 
     await waitForText('View policy report', true)
-    const viewYamlLink = screen.getByText('View policy report')
-    expect(viewYamlLink.getAttribute('href')).toEqual(
-      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=v1alpha2&&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
+    const violationPolicyReportLink = within(violationRow).getByRole('link', { name: 'View policy report' })
+    expect(violationPolicyReportLink.getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
+    )
+
+    const passingRow = screen.getByRole('row', {
+      name: 'my-app - Namespace v1 No violations View policy report View YAML',
+    })
+    expect(passingRow).toBeInTheDocument()
+    await waitForText('View policy report', true)
+    const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View policy report' })
+    expect(passingPolicyReportLink.getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
     )
   })
 })

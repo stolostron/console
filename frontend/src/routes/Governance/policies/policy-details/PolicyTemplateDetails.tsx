@@ -33,6 +33,7 @@ export function PolicyTemplateDetails() {
   const { t } = useTranslation()
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
+  const namespace = urlParams.templateNamespace
   const kind = urlParams.kind ?? ''
   const apiGroup = urlParams.apiGroup ?? ''
   const apiVersion = urlParams.apiVersion ?? ''
@@ -94,7 +95,7 @@ export function PolicyTemplateDetails() {
   }, [apiGroup, clusterName, template, templateLoading, isFromSearch])
 
   const descriptionItems = useMemo(() => {
-    const cols: ListItems[] = [
+    let cols: ListItems[] = [
       {
         key: t('Name'),
         value: name,
@@ -112,10 +113,22 @@ export function PolicyTemplateDetails() {
         value: kind ?? '-',
       },
       {
-        key: t('API groups'),
+        key: t('API version'),
         value: apiVersion ? apiGroup + '/' + apiVersion : apiGroup,
       },
     ]
+
+    // Namespaced policy
+    if (namespace) {
+      cols = [
+        ...cols.slice(0, 1),
+        {
+          key: t('Namespace'),
+          value: namespace,
+        },
+        ...cols.slice(1),
+      ]
+    }
 
     if (apiGroup === 'constraints.gatekeeper.sh') {
       // Loading to fetch VAPB
@@ -221,7 +234,83 @@ export function PolicyTemplateDetails() {
     }
 
     return cols
-  }, [t, name, kind, apiGroup, template, clusterName, vapb, apiVersion])
+  }, [t, name, namespace, kind, apiGroup, template, clusterName, vapb, apiVersion])
+
+  const violationColumn = useMemo(() => {
+    return {
+      header: t('Violations'),
+      sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
+      cell: (item: any) => {
+        let compliant = item.compliant ?? '-'
+        compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
+
+        switch (compliant) {
+          case 'compliant':
+            compliant = (
+              <div>
+                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+              </div>
+            )
+            break
+          case 'noncompliant':
+            compliant = (
+              <div>
+                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                <DiffModal
+                  diff={item.properties?.diff}
+                  kind={item.object?.kind}
+                  namespace={item.object?.metadata?.namespace}
+                  name={item.object?.metadata?.name}
+                />
+              </div>
+            )
+            break
+          case 'unknowncompliancy':
+            if (kind === 'OperatorPolicy') {
+              switch (item.object?.kind) {
+                case 'Deployment':
+                  compliant = (
+                    <div>
+                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                    </div>
+                  )
+                  break
+                case 'CustomResourceDefinition':
+                  compliant = (
+                    <div>
+                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                    </div>
+                  )
+                  break
+                default:
+                  compliant = (
+                    <div>
+                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                    </div>
+                  )
+                  break
+              }
+            } else {
+              compliant = (
+                <div>
+                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                </div>
+              )
+            }
+            break
+          default:
+            compliant = (
+              <div>
+                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+              </div>
+            )
+            break
+        }
+
+        return compliant
+      },
+    }
+  }, [t, kind])
 
   const relatedResourceColumns = useMemo(
     () => [
@@ -244,90 +333,12 @@ export function PolicyTemplateDetails() {
         search: 'object.kind',
       },
       {
-        header: t('API groups'),
+        header: t('API version'),
         cell: 'object.apiVersion',
         sort: 'object.apiVersion',
         search: 'object.apiVersion',
       },
-      ...(kind === 'ValidatingAdmissionPolicyBinding'
-        ? []
-        : [
-            {
-              header: t('Violations'),
-              sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
-              cell: (item: any) => {
-                let compliant = item.compliant ?? '-'
-                compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
-
-                switch (compliant) {
-                  case 'compliant':
-                    compliant = (
-                      <div>
-                        <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-                      </div>
-                    )
-                    break
-                  case 'noncompliant':
-                    compliant = (
-                      <div>
-                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
-                        <DiffModal
-                          diff={item.properties?.diff}
-                          kind={item.object?.kind}
-                          namespace={item.object?.metadata?.namespace}
-                          name={item.object?.metadata?.name}
-                        />
-                      </div>
-                    )
-                    break
-                  case 'unknowncompliancy':
-                    if (kind === 'OperatorPolicy') {
-                      switch (item.object?.kind) {
-                        case 'Deployment':
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
-                              {t('Inapplicable')}
-                            </div>
-                          )
-                          break
-                        case 'CustomResourceDefinition':
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
-                              {t('Inapplicable')}
-                            </div>
-                          )
-                          break
-                        default:
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                            </div>
-                          )
-                          break
-                      }
-                    } else {
-                      compliant = (
-                        <div>
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                        </div>
-                      )
-                    }
-                    break
-                  default:
-                    compliant = (
-                      <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                      </div>
-                    )
-                    break
-                }
-
-                return compliant
-              },
-            },
-          ]),
+      ...(kind === 'ValidatingAdmissionPolicyBinding' ? [] : [violationColumn]),
       {
         header: t('Reason'),
         cell: 'reason',
@@ -364,7 +375,7 @@ export function PolicyTemplateDetails() {
         },
       },
     ],
-    [t, kind]
+    [t, violationColumn, kind]
   )
 
   const relatedResourceFromSearchAPIColumns = useMemo(
@@ -388,25 +399,27 @@ export function PolicyTemplateDetails() {
         search: 'kind',
       },
       {
-        header: t('API groups'),
-        cell: (item: any) => item.apigroup ?? '-',
+        header: t('API version'),
+        cell: (item: any) => (item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion),
         sort: 'apigroup',
         search: 'apigroup',
       },
+      violationColumn,
       {
         header: '',
         cell: (item: any) => {
           let policyReportLink: ReactNode = <></>
           if (item.policyReport) {
-            const { cluster, kind, name, namespace, apiversion } = item.policyReport
+            const { cluster, kind, name, namespace, apigroup, apiversion } = item.policyReport
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+            const apigroupArg = apigroup ? `${apigroup}%2F` : ''
             policyReportLink = (
               <>
                 <span>
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&&name=${name}${namespaceArg}`}
+                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
                   >
                     {t('View policy report')}{' '}
                     <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
@@ -447,7 +460,7 @@ export function PolicyTemplateDetails() {
         },
       },
     ],
-    [t]
+    [t, violationColumn]
   )
   return (
     <div>

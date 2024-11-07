@@ -134,7 +134,7 @@ export function AcmSubmit(props: AcmSubmitProps) {
           if (props.onClick) {
             try {
               await props.onClick(event)
-            } catch (err) {
+            } catch {
               // Do Nothing
             }
 

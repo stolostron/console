@@ -73,7 +73,7 @@ export const logSourceErrors = (logging, templateYAML, controlData, otherYAMLTab
         lineWidth: 200,
       })
       console.info(input)
-    } catch (e) {
+    } catch {
       // nothing
     }
     console.groupEnd()
@@ -99,7 +99,7 @@ export const logCreateErrors = (logging, creationMsg, resourceJSON) => {
         lineWidth: 200,
       })
       console.info(input)
-    } catch (e) {
+    } catch {
       // nothing
     }
     console.groupEnd()

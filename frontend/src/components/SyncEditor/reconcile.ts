@@ -182,7 +182,7 @@ export const mapResources = (customResources: any[], formResources: any[]) => {
               try {
                 Buffer.from(v, 'base64').toString('ascii')
                 return ''
-              } catch (e) {}
+              } catch {}
             }
             return v
           }

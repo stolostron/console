@@ -200,12 +200,11 @@ class ChannelControl extends Component {
     const selectedSubscription = displayChannels.length > selectedIdx ? displayChannels[selectedIdx] : null
 
     let selectedPageForCurrentSubs = -1
-    selectedSubscription &&
-      selectedSubscription.subchannels.forEach((item) => {
-        if (_.get(item, 'chnl', '') === activeChannel) {
-          selectedPageForCurrentSubs = selectedSubscription.subchannels.indexOf(item)
-        }
-      })
+    selectedSubscription?.subchannels.forEach((item) => {
+      if (_.get(item, 'chnl', '') === activeChannel) {
+        selectedPageForCurrentSubs = selectedSubscription.subchannels.indexOf(item)
+      }
+    })
 
     return { selectedSubscription, selectedPageForCurrentSubs }
   }
