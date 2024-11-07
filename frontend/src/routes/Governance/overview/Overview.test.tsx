@@ -2,10 +2,16 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { policiesState } from '../../../atoms'
+import { managedClustersState, policiesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import { waitForNock } from '../../../lib/test-util'
-import { mockEmptyPolicy, mockPendingPolicy, mockPolicy, mockPolicyNoStatus } from '../governance.sharedMocks'
+import {
+  mockEmptyPolicy,
+  mockManagedClusters,
+  mockPendingPolicy,
+  mockPolicy,
+  mockPolicyNoStatus,
+} from '../governance.sharedMocks'
 import GovernanceOverview from './Overview'
 
 describe('Overview Page', () => {
@@ -51,6 +57,7 @@ describe('Overview Page', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
@@ -69,6 +76,7 @@ describe('Overview Page', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPendingPolicy)
+          snapshot.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
