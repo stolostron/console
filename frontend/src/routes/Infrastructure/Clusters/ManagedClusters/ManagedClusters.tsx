@@ -765,7 +765,7 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
+export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
   const clusterHasControlPlane = () => {
     const nodeList = cluster.nodes?.nodeList
     const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
