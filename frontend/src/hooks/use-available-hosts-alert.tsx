@@ -21,15 +21,20 @@ const useNoAvailableHostsAlert = (
     if (!infraEnvs.length) {
       return {
         title: t('No infrastructure environments found'),
-        content: (
-          <Trans
-            values={{ controlPlaneTypeTxt: controlPlaneTypeTxt }}
-            i18nKey="createCluster.card.noInfraEnvs.alert"
-            components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
-          />
-        ),
+        content:
+          controlPlaneType === 'standalone' ? (
+            <Trans
+              i18nKey={'createCluster.card.noInfraEnvsOrHosts.alert'}
+              components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
+            />
+          ) : (
+            <Trans
+              i18nKey={'createCluster.card.noInfraEnvs.alert'}
+              components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
+            />
+          ),
       }
-    } else if (!availableAgnets.length) {
+    } else if (controlPlaneType === 'standalone' && !availableAgnets.length) {
       return {
         title: t('No available hosts found'),
         content: (
