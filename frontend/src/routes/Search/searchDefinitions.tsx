@@ -663,9 +663,17 @@ export function CreateApplicationTopologyLink(props: Readonly<{ item: any; t: TF
 export function CreateExternalLink(item: any, t: TFunction) {
   if (item.consoleURL) {
     return (
-      <a target="_blank" rel="noopener noreferrer" href={`${item.consoleURL}`}>
+      <AcmButton
+        variant="link"
+        component="a"
+        target="_blank"
+        isInline={true}
+        href={`${item.consoleURL}`}
+        icon={<ExternalLinkAltIcon />}
+        iconPosition="right"
+      >
         {t('Launch')}
-      </a>
+      </AcmButton>
     )
   } else if (item.clusterip) {
     return item.clusterip
@@ -783,8 +791,10 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
         target="_blank"
         isInline={true}
         href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`}
+        icon={<ExternalLinkAltIcon />}
+        iconPosition="right"
       >
-        {t('Launch')}
+        {t('Details')}
       </AcmButton>
     )
   }
