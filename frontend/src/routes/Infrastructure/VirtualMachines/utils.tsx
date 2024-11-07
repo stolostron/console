@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next'
 import { NavigateFunction } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources'
-import { IAlertContext } from '../../../ui-components'
+import { IAcmRowAction, IAlertContext } from '../../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
@@ -38,7 +38,7 @@ export function getVirtualMachineRowActions(
   toast: IAlertContext,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>
-) {
+): IAcmRowAction<any>[] {
   const printableStatus = item?.status
 
   const editButton = {
