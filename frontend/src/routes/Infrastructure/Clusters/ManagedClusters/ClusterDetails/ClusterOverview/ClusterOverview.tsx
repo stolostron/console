@@ -53,6 +53,7 @@ import TemplateSummaryModal from '../../../../../../components/TemplateSummaryMo
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
+import { getControlPlaneString } from '../../ManagedClusters'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
@@ -82,23 +83,6 @@ export function ClusterOverviewPageContent(props: {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
-
-  const renderControlPlaneType = () => {
-    if (cluster?.name === 'local-cluster') {
-      return t('Hub')
-    }
-    if (cluster?.isRegionalHubCluster) {
-      if (cluster?.isHostedCluster || cluster?.isHypershift) {
-        return t('Hub, Hosted')
-      }
-      return t('Hub')
-    }
-    if (cluster?.isHostedCluster || cluster?.isHypershift) {
-      return t('Hosted')
-    } else {
-      return t('Standalone')
-    }
-  }
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
     /*
@@ -130,7 +114,7 @@ export function ClusterOverviewPageContent(props: {
     },
     clusterControlPlaneType: {
       key: t('table.clusterControlPlaneType'),
-      value: renderControlPlaneType(),
+      value: cluster && getControlPlaneString(cluster, t),
     },
     clusterClaim: {
       key: t('table.clusterClaim'),

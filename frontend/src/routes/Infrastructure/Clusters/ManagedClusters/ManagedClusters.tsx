@@ -72,6 +72,7 @@ import { StatusField } from './components/StatusField'
 import { UpdateAutomationModal } from './components/UpdateAutomationModal'
 import { useAllClusters } from './components/useAllClusters'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './utils/cluster-actions'
+import { TFunction } from 'react-i18next'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -696,38 +697,42 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
+export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
+  const clusterHasControlPlane = () => {
+    const nodeList = cluster.nodes?.nodeList
+    const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
+    const hasControlPlane = roleList?.filter((str) => {
+      return str.indexOf('control-plane') > -1
+    })
+    return hasControlPlane ? hasControlPlane.length > 0 : false
+  }
+
+  if (cluster.name === 'local-cluster') {
+    return t('Hub')
+  }
+  if (cluster.isRegionalHubCluster) {
+    if (cluster.isHostedCluster || cluster.isHypershift) {
+      return t('Hub, Hosted')
+    }
+    return t('Hub')
+  }
+  if (
+    cluster.isHostedCluster ||
+    cluster.isHypershift ||
+    (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
+  ) {
+    return t('Hosted')
+  } else {
+    return t('Standalone')
+  }
+}
+
 export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
     header: t('table.controlplane'),
     cell: (cluster) => {
-      const clusterHasControlPlane = () => {
-        const nodeList = cluster.nodes?.nodeList
-        const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
-        const hasControlPlane = roleList?.filter((str) => {
-          return str.indexOf('control-plane') > -1
-        })
-        return hasControlPlane ? hasControlPlane.length > 0 : false
-      }
-
-      if (cluster.name === 'local-cluster') {
-        return t('Hub')
-      }
-      if (cluster.isRegionalHubCluster) {
-        if (cluster.isHostedCluster || cluster.isHypershift) {
-          return t('Hub, Hosted')
-        }
-        return t('Hub')
-      }
-      if (
-        cluster.isHostedCluster ||
-        cluster.isHypershift ||
-        (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
-      ) {
-        return t('Hosted')
-      } else {
-        return t('Standalone')
-      }
+      return getControlPlaneString(cluster, t)
     },
   }
 }
