@@ -6,6 +6,7 @@ import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../..
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
+import { getGiganticApps } from '../../../test/mock-gigantic'
 
 export enum AppColumns {
   'name' = 0,
@@ -99,6 +100,10 @@ export function getApplications() {
       items.push(...allResources.flat())
     }
   })
+  // mock a large environment
+  if (process.env.MOCK_CLUSTERS) {
+    items.push(...generateTransforms(getGiganticApps()).resources)
+  }
   return items
 }
 

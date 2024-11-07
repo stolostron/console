@@ -7,6 +7,7 @@ import { getEncodeStream } from './compression'
 import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
+import { getGiganticEvents } from '../../test/mock-gigantic'
 
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
@@ -277,11 +278,23 @@ export class ServerSideEvents {
     }
 
     let sentCount = 0
+    let allEvents: ServerSideEvent[] = []
     for (const eventID in this.events) {
       if (Number(eventID) <= lastEventID) continue
-      this.sendEvent(clientID, this.events[eventID])
-      sentCount++
+      allEvents.push(this.events[eventID])
     }
+
+    // mock a large environment
+    if (process.env.MOCK_CLUSTERS) {
+      const loaded = allEvents.pop()
+      allEvents = [...allEvents, ...getGiganticEvents()]
+      allEvents.push(loaded)
+    }
+
+    allEvents.forEach((event) => {
+      this.sendEvent(clientID, event)
+      sentCount++
+    })
 
     logger.info({ msg: 'event stream start', events: sentCount })
 
