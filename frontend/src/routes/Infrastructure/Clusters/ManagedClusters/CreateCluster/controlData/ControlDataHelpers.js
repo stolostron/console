@@ -14,6 +14,7 @@ import {
   VALIDATE_BASE_DNS_NAME_REQUIRED,
   VALID_DNS_LABEL,
 } from '../../../../../../components/TemplateEditor'
+import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -785,6 +786,22 @@ const versionRegex = /release:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
   const matches = version.match(versionRegex)
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
+}
+
+export const isHidden_lt_OCP412 = (_control, controlData) => {
+  const imageSet = getControlByID(controlData, 'imageSet')
+  if (imageSet && imageSet.active) {
+    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '<')
+  }
+  return false
+}
+
+export const isHidden_gteq_OCP412 = (_control, controlData) => {
+  const imageSet = getControlByID(controlData, 'imageSet')
+  if (imageSet && imageSet.active) {
+    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '>=')
+  }
+  return true
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {

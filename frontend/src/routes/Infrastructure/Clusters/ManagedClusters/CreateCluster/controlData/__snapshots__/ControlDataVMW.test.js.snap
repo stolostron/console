@@ -358,11 +358,37 @@ Array [
   },
   Object {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": Object {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  Object {
+    "active": Object {
+      "multitextEntries": Array [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": Array [
+      Object {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": Object {
       "contextTester": [Function],
       "required": true,
@@ -1034,11 +1060,37 @@ Array [
   },
   Object {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": Object {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  Object {
+    "active": Object {
+      "multitextEntries": Array [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": Array [
+      Object {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": Object {
       "contextTester": [Function],
       "required": true,
@@ -1710,11 +1762,37 @@ Array [
   },
   Object {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": Object {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  Object {
+    "active": Object {
+      "multitextEntries": Array [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": Array [
+      Object {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": Object {
       "contextTester": [Function],
       "required": true,
