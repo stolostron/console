@@ -20,6 +20,7 @@ import ControlPanelSingleSelect from './ControlPanelSingleSelect'
 import ControlPanelSkeleton from './ControlPanelSkeleton'
 import ControlPanelTextArea from './ControlPanelTextArea'
 import ControlPanelTextInput from './ControlPanelTextInput'
+import ControlPanelMultiTextInput from './ControlPanelMultiTextInput'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import ControlPanelValues from './ControlPanelValues'
 import ControlPanelWizard from './ControlPanelWizard'
@@ -444,6 +445,18 @@ class ControlPanel extends React.Component {
             controlData={controlData}
             handleChange={this.handleChange.bind(this, control)}
             i18n={i18n}
+          />
+        )
+      case 'multitext':
+        return (
+          <ControlPanelMultiTextInput
+            key={controlId}
+            controlId={controlId}
+            control={control}
+            controlData={controlData}
+            handleChange={this.handleControlChange.bind(this, control)}
+            i18n={i18n}
+            addButtonText={control.addButtonText}
           />
         )
       case 'textarea':

@@ -14,8 +14,9 @@ const ControlPanelFormGroup = (props: {
   controlId: string
   showTip?: boolean
   i18n: TFunction
+  hideLabel?: boolean
 }) => {
-  const { controlId, control, controlData, showTip, children, i18n } = props
+  const { controlId, control, controlData, showTip, children, i18n, hideLabel } = props
   const { name, exception, opaque, tooltip, tip, validation = {}, icon } = control
   const { info } = useDynamicPropertyValues(control, controlData, i18n, ['info'])
   return (
@@ -23,7 +24,7 @@ const ControlPanelFormGroup = (props: {
       <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
         <FormGroup
           id={`${controlId}-label`}
-          label={name}
+          label={!hideLabel && name}
           isRequired={validation.required}
           fieldId={controlId}
           helperText={info}
