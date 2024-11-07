@@ -92,8 +92,7 @@ export function getVirtualMachineRowActions(
     id: 'delete',
     title: t('Delete VirtualMachine'),
     click: (item: any) => {
-      // Maybe just refetch the query???
-      item.managedHub && item.managedHub !== 'global-hub'
+      return item.managedHub && item.managedHub !== 'global-hub'
         ? setDeleteExternalResource({
             open: true,
             close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
