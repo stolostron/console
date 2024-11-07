@@ -203,10 +203,10 @@ export async function pingSearchAPI() {
           if (result.data) {
             resolve(true)
           } else {
-            reject('nope')
+            reject(new Error('no data'))
           }
         } catch (e) {
-          reject(e)
+          reject(new Error(new String(e).valueOf()))
         }
         clearTimeout(id)
       })

@@ -123,8 +123,7 @@ export const createDeployableYamlLink = (node, details, t) => {
     node.specs.isDesign // only for top-level resources
   ) {
     const editLink = createEditLink(node)
-    editLink &&
-      isSearchAvailable() &&
+    if (editLink && isSearchAvailable()) {
       details.push({
         type: 'link',
         value: {
@@ -136,6 +135,7 @@ export const createDeployableYamlLink = (node, details, t) => {
           },
         },
       })
+    }
   }
 
   return details
@@ -541,10 +541,11 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     })
   }
 
-  !typeObject &&
+  if (!typeObject) {
     details.push({
       type: 'spacer',
     })
+  }
 
   return details
 }

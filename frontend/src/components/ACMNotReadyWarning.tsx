@@ -11,7 +11,7 @@ import { PluginContext } from '../lib/PluginContext'
 
 const SUPPRESS_MESSAGE_PREFIX = 'acm-not-ready-suppress-'
 
-export const ACMNotReadyWarning = (props: PropsWithChildren<{}>) => {
+export const ACMNotReadyWarning = (props: PropsWithChildren) => {
   const { t } = useTranslation()
   const { acmOperatorSubscriptionsValue } = useSharedSelectors()
   const acmOperator = useOperatorCheck(SupportedOperator.acm, acmOperatorSubscriptionsValue)

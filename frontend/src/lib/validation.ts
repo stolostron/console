@@ -43,7 +43,7 @@ export function validatePublicSshKey(value: string, t: TFunction, required: bool
             // Valid key; exit validation
             return undefined
           }
-        } catch (e) {
+        } catch {
           // Fall through to error case
         }
       }
@@ -83,7 +83,7 @@ export function validateJSON(value: string, t: TFunction) {
     if (Object.entries(obj).length <= 0) {
       return t('validate.json')
     }
-  } catch (e) {
+  } catch {
     return t('validate.json')
   }
   return undefined
@@ -170,7 +170,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, osCABu
       if (cloud?.auth?.cacert && !osCABundle) {
         return t('validate.yaml.cloud.cacert.was.found')
       }
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
   }
@@ -225,7 +225,7 @@ export function validateImageContentSources(value: string, t: TFunction) {
       if (!isValid) {
         return t('validate.yaml.not.valid')
       }
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
   }
@@ -236,7 +236,7 @@ export function validateYAML(value: string, t: TFunction) {
   if (value) {
     try {
       YAML.parse(value)
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
   }
@@ -417,7 +417,7 @@ export function validateKubeconfig(value: string, t: TFunction) {
       if (parsedYaml.clusters.length === 0 || parsedYaml.contexts.length === 0 || parsedYaml.users.length === 0) {
         return t('validate.kubeconfig.invalidStructure')
       }
-    } catch (e) {
+    } catch {
       return `${t('validate.kubeconfig.invalidYaml')}`
     }
   }

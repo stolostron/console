@@ -175,7 +175,9 @@ export function deleteResourceFn(
       },
     })
       .promise.then(() => {
-        currentQuery !== '' && updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+        if (currentQuery !== '') {
+          updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+        }
         onCloseModal()
       })
       .catch((err) => {
@@ -186,7 +188,9 @@ export function deleteResourceFn(
     fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
       .then(async (actionResponse) => {
         if (actionResponse.actionDone === 'ActionDone') {
-          currentQuery !== '' && updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+          if (currentQuery !== '') {
+            updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+          }
           onCloseModal()
         } else {
           setDeleteResourceError(actionResponse.message)

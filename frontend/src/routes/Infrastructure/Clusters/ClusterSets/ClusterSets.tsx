@@ -157,27 +157,26 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
 
   const managedClusterSetClusters: Record<string, Cluster[]> = {}
 
-  props.managedClusterSets &&
-    props.managedClusterSets.forEach((managedClusterSet) => {
-      if (managedClusterSet.metadata.name) {
-        const clusters = getMappedClusterSetClusters({
-          managedClusters,
-          clusterDeployments,
-          managedClusterInfos,
-          certificateSigningRequests,
-          managedClusterAddOns,
-          clusterManagementAddOns,
-          clusterClaims,
-          clusterCurators,
-          agentClusterInstalls,
-          hostedClusters,
-          nodePools,
-          discoveredClusters,
-          managedClusterSet,
-        })
-        managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
-      }
-    })
+  props.managedClusterSets?.forEach((managedClusterSet) => {
+    if (managedClusterSet.metadata.name) {
+      const clusters = getMappedClusterSetClusters({
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddOns,
+        clusterManagementAddOns,
+        clusterClaims,
+        clusterCurators,
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        discoveredClusters,
+        managedClusterSet,
+      })
+      managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
+    }
+  })
 
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {

@@ -17,10 +17,10 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
-import { clickByTestId, clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
+import { clickByTestId, clickByText, waitForCalled, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ProgressStepBar } from './ProgressStepBar'
-import { nockGet, nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockList } from '../../../../../lib/nock-util'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -292,7 +292,16 @@ const ansibleJobFailedPosthook: AnsibleJob = {
   },
 }
 
-const FailedAnsibleJob: Pod = {
+const FailedAnsibleJobPrehook: Pod = {
+  apiVersion: PodApiVersion,
+  kind: PodKind,
+  metadata: {
+    name: 'prehookjob-9876',
+    namespace: 'cluster',
+  },
+}
+
+const FailedAnsibleJobPosthook: Pod = {
   apiVersion: PodApiVersion,
   kind: PodKind,
   metadata: {
@@ -376,6 +385,13 @@ describe('ProgressStepBar', () => {
   test('OCP job logs links for prehook job', async () => {
     window.open = jest.fn()
     nockIgnoreApiPaths()
+    const nocks = [
+      nockList(
+        { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: mockCluster.namespace } },
+        [FailedAnsibleJobPrehook],
+        ['job-name=prehookjob']
+      ),
+    ]
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
       <RecoilRoot
@@ -394,42 +410,19 @@ describe('ProgressStepBar', () => {
       </RecoilRoot>
     )
     await clickByText('View logs')
+    await waitForNocks(nocks)
+    expect(window.open).toHaveBeenLastCalledWith('/k8s/ns/test-cluster/pods/prehookjob-9876/logs')
   })
   test('OCP job logs links for posthook job', async () => {
     window.open = jest.fn()
     nockIgnoreApiPaths()
-    nockNamespacedList(
-      {
-        apiVersion: 'v1',
-        kind: 'pods',
-        metadata: {
-          namespace: 'test-cluster',
-        },
-      },
-      [],
-      ['job-name=prehookjob']
-    )
-    nockNamespacedList(
-      {
-        apiVersion: 'v1',
-        kind: 'pods',
-        metadata: {
-          namespace: 'test-cluster',
-        },
-      },
-      [FailedAnsibleJob],
-      ['job-name=posthookjob']
-    )
-    nockGet(
-      {
-        apiVersion: 'v1',
-        kind: 'pods',
-        metadata: {
-          namespace: 'test-cluster',
-        },
-      },
-      FailedAnsibleJob
-    )
+    const nocks = [
+      nockList(
+        { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: mockCluster.namespace } },
+        [FailedAnsibleJobPosthook],
+        ['job-name=posthookjob-k92td']
+      ),
+    ]
     const context: Partial<ClusterDetailsContext> = { cluster: mockClusterPosthook }
     render(
       <RecoilRoot
@@ -448,5 +441,7 @@ describe('ProgressStepBar', () => {
       </RecoilRoot>
     )
     await clickByTestId('posthook-link')
+    await waitForNocks(nocks)
+    expect(window.open).toHaveBeenLastCalledWith('/k8s/ns/test-cluster/pods/posthookjob-k92td-1234/logs')
   })
 })

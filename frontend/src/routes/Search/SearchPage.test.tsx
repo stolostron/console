@@ -213,7 +213,8 @@ describe('SearchPage', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+          snapshot.set(isGlobalHubState, true)
+          snapshot.set(settingsState, mockSettings)
           snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >

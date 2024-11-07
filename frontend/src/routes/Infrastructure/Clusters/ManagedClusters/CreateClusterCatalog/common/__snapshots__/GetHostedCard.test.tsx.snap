@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
-Object {
+{
   "alertContent": <a
     href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html-single/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable"
     rel="noopener noreferrer"
@@ -18,22 +18,22 @@ Object {
   "alertTitle": undefined,
   "alertVariant": "info",
   "id": "hosted",
-  "items": Array [
-    Object {
+  "items": [
+    {
       "description": "Run an OpenShift cluster where the control plane is decoupled from the data plane, and is treated like a multi-tenant workload on a hosting service cluster. The data plane is on a separate network domain that allows segmentation between management and workload traffic.",
       "type": "description",
     },
-    Object {
+    {
       "icon": <CheckIcon
         color="var(--pf-global--success-color--100)"
         noVerticalAlign={false}
         size="sm"
       />,
-      "items": Array [
-        Object {
+      "items": [
+        {
           "text": "Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.",
         },
-        Object {
+        {
           "text": "Quickly provisions clusters.",
         },
       ],

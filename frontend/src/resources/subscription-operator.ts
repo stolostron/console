@@ -17,7 +17,7 @@ export interface SubscriptionOperator extends IResource {
   apiVersion: SubscriptionOperatorApiVersionType
   kind: SubscriptionOperatorKindType
   metadata: Metadata
-  spec: {}
+  spec: object
   status?: {
     conditions: {
       lastTransitionTime?: string

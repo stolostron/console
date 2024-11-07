@@ -20,19 +20,17 @@ export const Warning = () => {
 
   let actionLinks
   if (warning.linkTo) {
-    warning.isExternalLink
-      ? (actionLinks = (
-          <a href={warning.linkTo} target="_blank" rel="noopener noreferrer" style={{ paddingLeft: 0 }}>
-            {warning.linkText}
-          </a>
-        ))
-      : (actionLinks = (
-          <Link to={warning.linkTo}>
-            <AcmButton variant={ButtonVariant.link} style={{ paddingLeft: 0 }}>
-              {warning.linkText}
-            </AcmButton>
-          </Link>
-        ))
+    actionLinks = warning.isExternalLink ? (
+      <a href={warning.linkTo} target="_blank" rel="noopener noreferrer" style={{ paddingLeft: 0 }}>
+        {warning.linkText}
+      </a>
+    ) : (
+      <Link to={warning.linkTo}>
+        <AcmButton variant={ButtonVariant.link} style={{ paddingLeft: 0 }}>
+          {warning.linkText}
+        </AcmButton>
+      </Link>
+    )
   }
 
   return (

@@ -15,8 +15,7 @@ import 'regenerator-runtime/runtime'
 import { initReactI18next } from 'react-i18next'
 import './lib/test-shots'
 import { TextEncoder } from 'util'
-
-require('react')
+import * as translation from '../public/locales/en/translation.json'
 
 process.env.NODE_ENV = 'test'
 process.env.JEST_DEFAULT_HOST = 'http://localhost'
@@ -37,18 +36,20 @@ global.fetch = jest.fn((input, reqInit) => {
       : input
   return fetchMock(newInput, reqInit)
 })
+
 global.EventSource = class EventSource {
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
+  static CONNECTING = 0 as const
+  static OPEN = 1 as const
+  static CLOSED = 2 as const
 
   constructor(url: string | URL, eventSourceInitDict?: EventSourceInit | undefined) {
     this.url = url.toString()
     this.withCredentials = !!eventSourceInitDict?.withCredentials
   }
-  CONNECTING = 0
-  OPEN = 1
-  CLOSED = 2
+
+  CONNECTING = 0 as const
+  OPEN = 1 as const
+  CLOSED = 2 as const
 
   url: string
   readyState = 0
@@ -278,7 +279,7 @@ i18n
     ns: 'translation',
     resources: {
       en: {
-        translation: require('../public/locales/en/translation.json'),
+        translation,
       },
     },
   })
