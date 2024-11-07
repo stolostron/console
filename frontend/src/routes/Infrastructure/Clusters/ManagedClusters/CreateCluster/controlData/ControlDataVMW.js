@@ -8,6 +8,8 @@ import {
   automationControlData,
   getWorkerName,
   isHidden_lt_OCP48,
+  isHidden_lt_OCP412,
+  isHidden_gteq_OCP412,
   isHidden_SNO,
   onChangeSNO,
   onChangeConnection,
@@ -21,12 +23,21 @@ import {
   disabledForFirstInGroup,
   reverseImageSet,
 } from './ControlDataHelpers'
+import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
+const INGRESSVIPS_MIN_SUPPORT_VERSION = '4.12.0'
+
+Handlebars.registerHelper('isSingleIngressVipSupported', function (version) {
+  if (version) {
+    return handleSemverOperatorComparison(version, INGRESSVIPS_MIN_SUPPORT_VERSION, '<')
+  }
+  return false
+})
 
 export const getControlDataVMW = (
   t,
@@ -309,11 +320,33 @@ export const getControlDataVMW = (
       name: t('creation.ocp.ingress.vip'),
       tooltip: t('tooltip.creation.ocp.ingress.vip'),
       placeholder: t('creation.ocp.ingress.vip.placeholder'),
+      hidden: isHidden_gteq_OCP412,
       active: '',
       validation: getIPValidator({
         subnet: { controlID: 'machineCIDR', groupID: 'networks' },
         differentFrom: ['apiVIP'],
       }),
+    },
+    {
+      id: 'ingressVIPs',
+      type: 'multitext',
+      hidden: isHidden_lt_OCP412,
+      name: t('Ingress VIPs'),
+      tooltip: t('tooltip.creation.ocp.ingress.vip'),
+      placeholder: t('creation.ocp.ingress.vip.placeholder'),
+      active: { multitextEntries: [''] },
+      controlData: [
+        {
+          id: 'ingressVIPs',
+          type: 'multitextMember',
+          active: '',
+        },
+      ],
+      validation: getIPValidator({
+        subnet: { controlID: 'machineCIDR', groupID: 'networks' },
+        differentFrom: ['apiVIP'],
+      }),
+      addButtonText: t('Add Ingress VIP'),
     },
     ...networkingControlData(t),
     ...proxyControlData(t),
