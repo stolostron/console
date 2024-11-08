@@ -2811,6 +2811,7 @@
   "template.workflow.modal.name.placeholder": "Search or select a workflow job template name",
   "Templates": "Templates",
   "Tenant ID": "Tenant ID",
+  "Terminating": "Terminating",
   "The <bold>{{clusterName}}</bold> cluster can only be destroyed through the CLI": "The <bold>{{clusterName}}</bold> cluster can only be destroyed through the CLI",
   "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.": "The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.",
   "The authentication method to use to connect to OpenShift Cluster Manager.": "The authentication method to use to connect to OpenShift Cluster Manager.",
