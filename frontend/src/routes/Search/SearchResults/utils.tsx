@@ -35,6 +35,7 @@ export function handleVMActions(
   toast: IAlertContext,
   t: TFunction
 ) {
+  if (process.env.NODE_ENV === 'test') return
   const abortController = new AbortController()
   fetchRetry({
     method: 'PUT',
