@@ -60,6 +60,9 @@ const SubmarinerConnectionDegraded: SubmarinerConnectionDegradedType = 'Submarin
 type SubmarinerBrokerConfigAppliedType = 'SubmarinerBrokerConfigApplied'
 const SubmarinerBrokerConfigApplied: SubmarinerBrokerConfigAppliedType = 'SubmarinerBrokerConfigApplied'
 
+type RouteAgentConnectionDegradedType = 'RouteAgentConnectionDegraded'
+const RouteAgentConnectionDegraded: RouteAgentConnectionDegradedType = 'RouteAgentConnectionDegraded'
+
 export enum SubmarinerStatus {
   'progressing' = 'progressing',
   'healthy' = 'healthy',
@@ -70,19 +73,25 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
   const connectionDegradedCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerConnectionDegraded)
   const agentCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerAgentDegraded)
   const nodeLabeledCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerGatewayNodesLabeled)
+  const routeAgentConnectionDegradedCondition = mca.status?.conditions?.find(
+    (c) => c.type === RouteAgentConnectionDegraded
+  )
 
   const isConnectionProgressing = connectionDegradedCondition?.status === undefined
+  const isRouteAgentProgressing = routeAgentConnectionDegradedCondition?.status === undefined
   const isAgentProgressing = agentCondition?.status === undefined
   const isNodeLabeledProgressing = nodeLabeledCondition?.status === undefined
 
-  if (isConnectionProgressing || isAgentProgressing || isNodeLabeledProgressing) {
+  if (isConnectionProgressing || isRouteAgentProgressing || isAgentProgressing || isNodeLabeledProgressing) {
     return SubmarinerStatus.progressing
   } else {
     const isHealthyConnection = connectionDegradedCondition?.status === 'False'
+    const isHealthyRouteAgent = routeAgentConnectionDegradedCondition?.status === 'False'
     const isHealthyAgent = agentCondition?.status === 'False'
     const isNodeLabeled = nodeLabeledCondition?.status === 'True'
+    const isConnectionHealthy = isHealthyConnection && isHealthyRouteAgent
 
-    if (isHealthyConnection && isHealthyAgent && isNodeLabeled) {
+    if (isHealthyAgent && isNodeLabeled && isConnectionHealthy) {
       return SubmarinerStatus.healthy
     } else {
       return SubmarinerStatus.degraded
@@ -154,17 +163,34 @@ export function ClusterSetSubmarinerPageContent() {
       header: t('table.submariner.connection'),
       cell: (mca: ManagedClusterAddOn) => {
         const connectionDegradedCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerConnectionDegraded)
+        const routeAgentConnectionDegradedCondition = mca.status?.conditions?.find(
+          (c) => c.type === RouteAgentConnectionDegraded
+        )
+
         let type: StatusType = StatusType.progress
         let status: string = t('status.submariner.progressing')
         let message: string | undefined = t('status.submariner.progressing.message')
-        if (connectionDegradedCondition) {
-          status =
-            connectionDegradedCondition?.status === 'True'
-              ? t('status.submariner.connection.degraded')
-              : t('status.submariner.connection.healthy')
-          type = connectionDegradedCondition?.status === 'True' ? StatusType.danger : StatusType.healthy
-          message = connectionDegradedCondition.message
+
+        const isSubmarinerDegraded = connectionDegradedCondition?.status === 'True'
+        const isRouteAgentDegraded = routeAgentConnectionDegradedCondition?.status === 'True'
+
+        if (isSubmarinerDegraded || isRouteAgentDegraded) {
+          status = t('status.submariner.connection.degraded')
+          type = StatusType.danger
+          if (isSubmarinerDegraded) {
+            message = connectionDegradedCondition?.message
+          } else {
+            message = routeAgentConnectionDegradedCondition?.message
+          }
+        } else if (
+          connectionDegradedCondition?.status === 'False' &&
+          routeAgentConnectionDegradedCondition?.status === 'False'
+        ) {
+          type = StatusType.healthy
+          status = t('status.submariner.connection.healthy')
+          message = connectionDegradedCondition?.message
         }
+
         return <AcmInlineStatus type={type} status={status} popover={message ? { bodyContent: message } : undefined} />
       },
     },
