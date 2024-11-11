@@ -230,8 +230,61 @@ test('Correctly return VirtualMachine with actions disabled', () => {
   )
   expect(res).toMatchSnapshot()
 })
-test('should handle vm action buttons', () => {
-  const item = { managedHub: 'cluster1' }
+test('should handle managed vm action buttons', () => {
+  const item = {
+    _uid: 'cluster1/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+    apigroup: 'kubevirt.io',
+    apiversion: 'v1',
+    cluster: 'cluster1',
+    created: '2024-09-09T20:00:42Z',
+    kind: 'VirtualMachine',
+    kind_plural: 'virtualmachines',
+    name: 'centos7-gray-owl-35',
+    namespace: 'openshift-cnv',
+    ready: 'False',
+    status: 'Paused',
+  }
+  const vmActionsEnabled = true
+  const actions = getRowActions(
+    'VirtualMachine',
+    'kind:VirtualMachine',
+    false,
+    () => {},
+    () => {},
+    allClusters,
+    navigate,
+    toastContextMock,
+    vmActionsEnabled,
+    t
+  )
+  const startVMAction = actions.find((action) => action.id === 'startVM')
+  const stopVMAction = actions.find((action) => action.id === 'stopVM')
+  const restartVMAction = actions.find((action) => action.id === 'restartVM')
+  const pauseVMAction = actions.find((action) => action.id === 'pauseVM')
+  const unpauseVMAction = actions.find((action) => action.id === 'unpauseVM')
+
+  startVMAction?.click(item)
+  stopVMAction?.click(item)
+  restartVMAction?.click(item)
+  pauseVMAction?.click(item)
+  unpauseVMAction?.click(item)
+})
+
+test('should handle hub vm action buttons', () => {
+  const item = {
+    _hubClusterResource: 'true',
+    _uid: 'local-cluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+    apigroup: 'kubevirt.io',
+    apiversion: 'v1',
+    cluster: 'local-cluster',
+    created: '2024-09-09T20:00:42Z',
+    kind: 'VirtualMachine',
+    kind_plural: 'virtualmachines',
+    name: 'centos7-gray-owl-35',
+    namespace: 'openshift-cnv',
+    ready: 'False',
+    status: 'Paused',
+  }
   const vmActionsEnabled = true
   const actions = getRowActions(
     'VirtualMachine',

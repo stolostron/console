@@ -356,4 +356,218 @@ describe('useFetchPolicies custom hook', () => {
       ])
     )
   })
+
+  test('Should render ValidatingAdmissionPolicyBinding', async () => {
+    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+      isFetching: false,
+      data: [
+        {
+          id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
+          apigroup: 'admissionregistration.k8s.io',
+          name: 'machine-configuration-guards-binding',
+          kind: 'ValidatingAdmissionPolicyBinding',
+          severity: 'unknown',
+          responseAction: 'audit/deny',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _ownedByGatekeeper: false,
+              _uid: 'local-cluster/0',
+              apigroup: 'admissionregistration.k8s.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-10-22T11:13:54Z',
+              kind: 'ValidatingAdmissionPolicyBinding',
+              kind_plural: 'validatingadmissionpolicybindings',
+              name: 'machine-configuration-guards-binding',
+              policyName: 'machine-configuration-guards',
+              validationActions: 'audit; deny',
+              severity: '',
+              responseAction: 'audit/deny',
+              source: { type: 'Local', parentNs: '', parentName: '' },
+              annotation: '',
+              label: '',
+            },
+          ],
+          source: { type: 'Local', parentNs: '', parentName: '' },
+        },
+      ],
+      err: undefined,
+    })
+
+    const { container } = render(
+      <MemoryRouter>
+        <DiscoveredPolicies />
+      </MemoryRouter>
+    )
+
+    await waitForText('Name')
+    await waitForText('machine-configuration-guards-binding')
+
+    await waitForText('Engine')
+    await waitForText('Kubernetes')
+
+    await waitForText('Kind')
+    await waitForText('ValidatingAdmissionPolicyBinding')
+
+    await waitForText('Response action')
+    await waitForText('audit/deny')
+
+    await waitForText('Severity')
+    expect(container.querySelector('td[data-label="Cluster violations"]')).toHaveTextContent('-')
+    expect(container.querySelector('td[data-label="Severity"]')).toHaveTextContent('-')
+    await waitForText('Source')
+    await waitForText('Local')
+  })
+
+  test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
+    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+      isFetching: false,
+      data: [
+        {
+          id: 'require-owner-labelsClusterPolicykyverno.io',
+          apigroup: 'kyverno.io',
+          name: 'require-owner-labels',
+          kind: 'ClusterPolicy',
+          severity: 'medium',
+          responseAction: 'Audit',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/10716b79-0c21-4d0d-ae75-3a28a8501b58',
+              annotation: '',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-11-04T15:19:46Z',
+              kind: 'ClusterPolicy',
+              kind_plural: 'clusterpolicies',
+              label: '',
+              name: 'require-owner-labels',
+              severity: 'medium',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 625,
+            },
+          ],
+          source: {
+            type: 'Local',
+            parentNs: '',
+            parentName: '',
+          },
+        },
+        {
+          id: 'require-team-labelPolicykyverno.io',
+          apigroup: 'kyverno.io',
+          name: 'require-team-label',
+          kind: 'Policy',
+          severity: 'critical',
+          responseAction: 'Audit',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/3575a113-174b-4ea0-b42e-004f48dd9080',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-11-04T15:19:37Z',
+              kind: 'Policy',
+              kind_plural: 'policies',
+              name: 'require-team-label',
+              namespace: 'open-cluster-management-agent-addon',
+              severity: 'critical',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 178,
+            },
+            {
+              _hubClusterResource: true,
+              _isExternal: false,
+              _uid: 'local-cluster/7bdb93f9-fb25-480b-a971-2b2b32d3f9c3',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'local-cluster',
+              created: '2024-11-04T15:20:06Z',
+              kind: 'Policy',
+              kind_plural: 'policies',
+              name: 'require-team-label',
+              namespace: 'default',
+              severity: 'critical',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 0,
+            },
+            {
+              _hubClusterResource: false,
+              _isExternal: false,
+              _uid: 'managed-cluster1/91db93f9-fb25-480b-a971-2b2b32d3f9df',
+              apigroup: 'kyverno.io',
+              apiversion: 'v1',
+              cluster: 'managed-cluster1',
+              created: '2024-11-04T15:21:06Z',
+              kind: 'Policy',
+              kind_plural: 'policies',
+              name: 'require-team-label',
+              namespace: 'default',
+              severity: 'critical',
+              validationFailureAction: 'Audit',
+              source: {
+                type: 'Local',
+                parentNs: '',
+                parentName: '',
+              },
+              responseAction: 'Audit',
+              totalViolations: 0,
+            },
+          ],
+          source: {
+            type: 'Local',
+            parentNs: '',
+            parentName: '',
+          },
+        },
+      ],
+      err: undefined,
+    })
+
+    render(
+      <MemoryRouter>
+        <DiscoveredPolicies />
+      </MemoryRouter>
+    )
+
+    await waitForText('Name')
+    expect(screen.getByRole('link', { name: 'require-owner-labels' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'require-team-label' })).toBeInTheDocument()
+
+    await waitForText('Engine')
+    await waitForText('Kyverno', true)
+
+    await waitForText('Kind')
+    await waitForText('Policy')
+    await waitForText('ClusterPolicy')
+
+    expect(
+      screen.getByRole('row', {
+        name: /require-owner-labels Kyverno ClusterPolicy Audit Medium 1 Local/,
+      })
+    ).toBeInTheDocument()
+  })
 })

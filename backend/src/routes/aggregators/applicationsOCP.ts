@@ -1,5 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getClusterMap } from '../../lib/clusters'
+import { logger } from '../../lib/logger'
+import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
+import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
@@ -62,6 +65,7 @@ export async function getOCPApps(
 ) {
   const _query = structuredClone(query)
   const filters = _query.variables.input[0].filters
+  let kind = 'Openshift/Flux'
   let clusterNameChunk
   if (mode === MODE.ExcludeSystemApps) {
     // NO system apps
@@ -88,99 +92,121 @@ export async function getOCPApps(
       property: 'cluster',
       values: clusterNameChunk,
     })
+    kind = 'System'
   }
 
   // if system mode, don't use paged
   // if not but last ocp apps > 1000, use paged
   const isSystemMode = mode === MODE.OnlySystemApps
   const pagedQuery = isSystemMode ? false : usePagedQuery
-  const ocpApps = (await getPagedSearchResources(_query, pagedQuery, pass)) as unknown as IOCPAppResource[]
+  const ocpApps = (await getPagedSearchResources(_query, pagedQuery, kind, pass)) as unknown as IOCPAppResource[]
   usePagedQuery = !isSystemMode && ocpApps.length > 1000
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
-  const openShiftAppResourceMaps: Record<string, IOCPAppResource> = {}
-  ocpApps.forEach((ocpApp: IOCPAppResource) => {
-    if (ocpApp._hostingSubscription) {
-      // don't list subscription apps as ocp
-      return
-    }
-
-    const labels = (ocpApp.label || '')
-      .replace(/\s/g, '')
-      .split(';')
-      .map((label: string) => {
-        const [annotation, value] = label.split('=')
-        return { annotation, value } as { annotation: string; value: string }
-      })
-
-    const { itemLabel, isManagedByHelm, argoInstanceLabelValue } = getValues(labels)
-
-    if (itemLabel && isManagedByHelm) {
-      const helmRelease = helmReleases.find(
-        (hr) => hr.metadata.name === itemLabel && hr.metadata.namespace === ocpApp.namespace
-      )
-      if (helmRelease && helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']) {
-        // don't list helm subscription apps as ocp
-        return
-      }
-    }
-    if (itemLabel) {
-      const key = `${itemLabel}-${ocpApp.namespace}-${ocpApp.cluster}`
-      const argoKey = `${argoInstanceLabelValue}-${ocpApp.namespace}-${ocpApp.cluster}`
-      if (!argAppSet.has(argoKey)) {
-        openShiftAppResourceMaps[key] = ocpApp
-      }
-    }
-  })
-
   const localOCPApps: IResource[] = []
   const remoteOCPApps: IResource[] = []
-  Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
-    let labelIdx
-    let i
-    for (i = 0; i < labelArr.length; i++) {
-      labelIdx = value.label?.indexOf(labelArr[i])
-      if (labelIdx > -1) {
-        break
+  try {
+    const openShiftAppResourceMaps: Record<string, IOCPAppResource> = {}
+    ocpApps.forEach((ocpApp: IOCPAppResource) => {
+      if (ocpApp._hostingSubscription) {
+        // don't list subscription apps as ocp
+        return
       }
-    }
-    labelIdx += labelArr[i].length
 
-    const semicolon = value.label?.indexOf(';', labelIdx)
-    const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
-    const resourceName = value.name
-    let apps
-    if (value.cluster === 'local-cluster') {
-      apps = localOCPApps
-    } else {
-      apps = remoteOCPApps
-    }
-    apps.push({
-      apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
-      kind: value.kind,
-      label: value.label,
-      metadata: {
-        name: appLabel,
-        namespace: value.namespace,
-        creationTimestamp: value.created,
-      },
-      status: {
-        cluster: value.cluster,
-        resourceName,
-      },
-    } as unknown as IResource)
-  })
+      const labels = (ocpApp.label || '')
+        .replace(/\s/g, '')
+        .split(';')
+        .map((label: string) => {
+          const [annotation, value] = label.split('=')
+          return { annotation, value } as { annotation: string; value: string }
+        })
+
+      const { itemLabel, isManagedByHelm, argoInstanceLabelValue } = getValues(labels)
+
+      if (itemLabel && isManagedByHelm) {
+        const helmRelease = helmReleases.find(
+          (hr) => hr.metadata.name === itemLabel && hr.metadata.namespace === ocpApp.namespace
+        )
+        if (helmRelease && helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']) {
+          // don't list helm subscription apps as ocp
+          return
+        }
+      }
+      if (itemLabel) {
+        const key = `${itemLabel}-${ocpApp.namespace}-${ocpApp.cluster}`
+        const argoKey = `${argoInstanceLabelValue}-${ocpApp.namespace}-${ocpApp.cluster}`
+        if (!argAppSet.has(argoKey)) {
+          openShiftAppResourceMaps[key] = ocpApp
+        }
+      }
+    })
+
+    Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+      let labelIdx
+      let i
+      for (i = 0; i < labelArr.length; i++) {
+        labelIdx = value.label?.indexOf(labelArr[i])
+        if (labelIdx > -1) {
+          break
+        }
+      }
+      labelIdx += labelArr[i].length
+
+      const semicolon = value.label?.indexOf(';', labelIdx)
+      const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+      const resourceName = value.name
+      let apps
+      if (value.cluster === 'local-cluster') {
+        apps = localOCPApps
+      } else {
+        apps = remoteOCPApps
+      }
+      apps.push({
+        apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
+        kind: value.kind,
+        label: value.label,
+        metadata: {
+          name: appLabel,
+          namespace: value.namespace,
+          creationTimestamp: value.created,
+        },
+        status: {
+          cluster: value.cluster,
+          resourceName,
+        },
+      } as unknown as IResource)
+    })
+  } catch (e) {
+    logger.error(`processing ${kind} exception ${e}`)
+  }
+
   if (mode === MODE.ExcludeSystemApps) {
-    applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
-    applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, true)
+    try {
+      applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
+    } catch (e) {
+      logger.error(`getLocalOCPApps exception ${e}`)
+    }
+    try {
+      applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, undefined, true)
+    } catch (e) {
+      logger.error(`getRemoteOCPApps exception ${e}`)
+    }
   } else if (mode === MODE.OnlySystemApps) {
     // if we just got remote clusters this time, don't touch localSysApps
     if (localOCPApps.length) {
-      applicationCache['localSysApps'] = generateTransforms(localOCPApps)
+      try {
+        applicationCache['localSysApps'] = generateTransforms(localOCPApps)
+      } catch (e) {
+        logger.error(`getLocalSystemApps exception ${e}`)
+      }
     }
-    // fill in remote system apps
-    fillRemoteSystemCache(applicationCache, remoteOCPApps, clusterNameChunk)
+    try {
+      // fill in remote system apps
+      fillRemoteSystemCache(applicationCache, remoteOCPApps, clusterNameChunk)
+    } catch (e) {
+      logger.error(`getRemoteSystemApps exception ${e}`)
+    }
   }
 }
 
@@ -227,7 +253,7 @@ function fillRemoteSystemCache(
   clusterNameChunk.forEach((clustername) => {
     applicationCache['remoteSysApps'].resourceMap[clustername] = []
   })
-  const resources = generateTransforms(remoteSysApps, true).resources
+  const resources = generateTransforms(remoteSysApps, undefined, true).resources
   resources.forEach((transform) => {
     const clustername = transform.transform[AppColumns.clusters].join()
     const transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
@@ -241,23 +267,22 @@ function getValues(labels: { annotation: any; value: any }[]) {
   let argoInstanceLabelValue = ''
   let isManagedByHelm
 
-  labels &&
-    labels.forEach(({ annotation, value }) => {
-      value = value as string
-      if (annotation === 'app') {
+  labels?.forEach(({ annotation, value }) => {
+    value = value as string
+    if (annotation === 'app') {
+      itemLabel = value as string
+    } else if (annotation === 'app.kubernetes.io/part-of') {
+      if (!itemLabel) {
         itemLabel = value as string
-      } else if (annotation === 'app.kubernetes.io/part-of') {
-        if (!itemLabel) {
-          itemLabel = value as string
-        }
       }
-      if (annotation === 'app.kubernetes.io/instance') {
-        argoInstanceLabelValue = value as string
-      }
-      if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
-        isManagedByHelm = true
-      }
-    })
+    }
+    if (annotation === 'app.kubernetes.io/instance') {
+      argoInstanceLabelValue = value as string
+    }
+    if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+      isManagedByHelm = true
+    }
+  })
   return {
     itemLabel,
     isManagedByHelm,
@@ -265,12 +290,22 @@ function getValues(labels: { annotation: any; value: any }[]) {
   }
 }
 
+export const systemAppNamespacePrefixes: string[] = []
+export async function discoverSystemAppNamespacePrefixes() {
+  if (!systemAppNamespacePrefixes.length) {
+    systemAppNamespacePrefixes.push('openshift')
+    systemAppNamespacePrefixes.push('hive')
+    systemAppNamespacePrefixes.push('open-cluster-management')
+    const mch = await getMultiClusterHub()
+    if (mch?.metadata?.namespace && mch.metadata.namespace !== 'open-cluster-management') {
+      systemAppNamespacePrefixes.push(mch.metadata.namespace)
+    }
+    const mce = await getMultiClusterEngine()
+    systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
+  }
+  return systemAppNamespacePrefixes
+}
+
 export function isSystemApp(namespace?: string) {
-  return (
-    namespace &&
-    (namespace.startsWith('openshift') ||
-      namespace.startsWith('open-cluster-management') ||
-      namespace.startsWith('hive') ||
-      namespace.startsWith('multicluster-engine'))
-  )
+  return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }

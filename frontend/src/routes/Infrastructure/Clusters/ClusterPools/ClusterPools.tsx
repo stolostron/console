@@ -53,7 +53,7 @@ import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
-import { getMappedClusterPoolClusterSetClusters } from '../ClusterSets/components/useClusters'
+import { getMappedClusterPoolClusters } from '../ClusterSets/components/useClusters'
 
 export default function ClusterPoolsPage() {
   const alertContext = useContext(AcmAlertContext)
@@ -188,6 +188,7 @@ export function ClusterPoolsTable(props: {
     clusterCuratorsState,
     hostedClustersState,
     nodePoolsState,
+    discoveredClusterState,
   } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const clusterClaims = useRecoilValue(clusterClaimsState)
@@ -201,6 +202,7 @@ export function ClusterPoolsTable(props: {
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const nodePools = useRecoilValue(nodePoolsState)
+  const discoveredClusters = useRecoilValue(discoveredClusterState)
 
   const { clusterPools } = props
   const { t } = useTranslation()
@@ -214,28 +216,26 @@ export function ClusterPoolsTable(props: {
   >()
   const clusterPoolClusters: Record<string, Cluster[]> = {}
 
-  props.clusterPools &&
-    props.clusterPools.forEach((clusterPool) => {
-      if (clusterPool.metadata.name) {
-        const clusters = getMappedClusterPoolClusterSetClusters(
-          managedClusters,
-          clusterDeployments,
-          managedClusterInfos,
-          certificateSigningRequests,
-          managedClusterAddons,
-          clusterManagementAddons,
-          clusterClaims,
-          clusterCurators,
-          agentClusterInstalls,
-          hostedClusters,
-          nodePools,
-          undefined,
-          clusterPool,
-          undefined
-        )
-        clusterPoolClusters[clusterPool.metadata.name] = clusters
-      }
-    })
+  props.clusterPools?.forEach((clusterPool) => {
+    if (clusterPool.metadata.name) {
+      const clusters = getMappedClusterPoolClusters({
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddOns: managedClusterAddons,
+        clusterManagementAddOns: clusterManagementAddons,
+        clusterClaims,
+        clusterCurators,
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        discoveredClusters,
+        clusterPool,
+      })
+      clusterPoolClusters[clusterPool.metadata.name] = clusters
+    }
+  })
 
   const modalColumns = useMemo(
     () => [

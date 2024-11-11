@@ -23,6 +23,7 @@ import {
   validateHttpsProxy,
   validateImageContentSources,
   validateJSON,
+  validateKubeconfig,
   validateKubernetesDnsName,
   validateNoProxyList,
   validatePrivateSshKey,
@@ -150,13 +151,15 @@ export function CredentialsForm(
     setAuthMethod(value)
   }
 
-  const [auth_method, setAuthMethod] = useState<OCMAuthMethod>(
+  const [authMethod, setAuthMethod] = useState<OCMAuthMethod>(
     (providerConnection?.stringData?.auth_method as OCMAuthMethod) ?? OCMAuthMethod.API_TOKEN
   )
 
   const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
-  const [client_id, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
-  const [client_secret, setServiceAccClientSecret] = useState(() => providerConnection?.stringData?.client_secret ?? '')
+  const [serviceAccClientId, setServiceAccClientId] = useState(() => providerConnection?.stringData?.client_id ?? '')
+  const [serviceAccClientSecret, setServiceAccClientSecret] = useState(
+    () => providerConnection?.stringData?.client_secret ?? ''
+  )
 
   // Details
   const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
@@ -179,6 +182,19 @@ export function CredentialsForm(
   const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
     () => providerConnection?.stringData?.additionalTrustBundle ?? ''
   )
+
+  // External Infrastructure
+  const [isExternalInfra, setIsExternalInfra] = useState(
+    () => !!(providerConnection?.stringData?.kubeconfig ?? providerConnection?.stringData?.externalInfraNamespace)
+  )
+  const [kubeconfig, setKubeconfig] = useState(() => providerConnection?.stringData?.kubeconfig ?? '')
+  const [externalInfraNamespace, setExternalInfraNamespace] = useState(
+    () => providerConnection?.stringData?.externalInfraNamespace ?? ''
+  )
+
+  const hasExternalInfraData = () => {
+    return !!(kubeconfig || externalInfraNamespace)
+  }
 
   // Amazon Web Services State
   const [aws_access_key_id, setAwsAccessKeyID] = useState(() => providerConnection?.stringData?.aws_access_key_id ?? '')
@@ -296,7 +312,7 @@ export function CredentialsForm(
           setOpenstackCloudsYaml(YAML.stringify(yamlData))
         }
       }
-    } catch (_e) {}
+    } catch {}
   }, [cloudsYaml, osCABundle])
 
   // Disconnected
@@ -443,13 +459,12 @@ export function CredentialsForm(
         stringData.token = ansibleToken
         break
       case Provider.redhatcloud:
-        stringData.auth_method = auth_method
-        if (auth_method === OCMAuthMethod.API_TOKEN) {
+        stringData.auth_method = authMethod
+        if (authMethod === OCMAuthMethod.API_TOKEN) {
           stringData.ocmAPIToken = ocmAPIToken
-        }
-        if (auth_method === OCMAuthMethod.SERVICE_ACCOUNT) {
-          stringData.client_id = client_id
-          stringData.client_secret = client_secret
+        } else if (authMethod === OCMAuthMethod.SERVICE_ACCOUNT) {
+          stringData.client_id = serviceAccClientId
+          stringData.client_secret = serviceAccClientSecret
         }
         break
       case Provider.hostinventory:
@@ -462,6 +477,10 @@ export function CredentialsForm(
       case Provider.kubevirt:
         stringData.pullSecret = pullSecret
         stringData['ssh-publickey'] = sshPublickey
+        if (isExternalInfra) {
+          stringData.kubeconfig = kubeconfig
+          stringData.externalInfraNamespace = externalInfraNamespace
+        }
         break
     }
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
@@ -532,6 +551,8 @@ export function CredentialsForm(
       { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
       { path: 'Secret[0].stringData.client_id', setState: setServiceAccClientId },
       { path: 'Secret[0].stringData.client_secret', setState: setServiceAccClientSecret },
+      { path: 'Secret[0].stringData.kubeconfig', setState: setKubeconfig },
+      { path: 'Secret[0].stringData.externalInfraNamespace', setState: setExternalInfraNamespace },
     ]
     return syncs
   }
@@ -1267,6 +1288,61 @@ export function CredentialsForm(
           },
         ],
       },
+      ...(!isViewing || hasExternalInfraData()
+        ? [
+            {
+              type: 'Section' as const,
+              title: t('External infrastructure'),
+              wizardTitle: t('Configure external infrastructure for OpenShift Virtualization'),
+              description: t(
+                'Optionally use an OpenShift Virtualization installation on an external infrastructure cluster.'
+              ),
+              inputs: [
+                {
+                  id: 'isExternalInfra',
+                  type: 'Checkbox',
+                  title: t('External infrastructure'),
+                  label: t('Enable external infrastructure'),
+                  labelHelp: t(
+                    'Enable external infrastructure to place virtual machines on an external infrastructure cluster. The Hosted Control Plane components will still be created on the hub cluster.'
+                  ),
+                  isHidden: credentialsType !== Provider.kubevirt,
+                  value: isExternalInfra,
+                  onChange: () => setIsExternalInfra((enabled) => !enabled),
+                },
+                {
+                  id: 'kubeconfig',
+                  type: 'TextArea',
+                  label: t('Kubeconfig'),
+                  labelHelp: t(
+                    'Provide a kubeconfig that grants access to an external infrastructure cluster running OpenShift Virtualization.'
+                  ),
+                  placeholder: t('Copy and paste your kubeconfig content'),
+                  value: kubeconfig,
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  onChange: setKubeconfig,
+                  isRequired: true,
+                  isSecret: true,
+                  validation: (value) => validateKubeconfig(value, t),
+                },
+                {
+                  id: 'externalInfraNamespace',
+                  type: 'Text',
+                  label: t('Namespace'),
+                  labelHelp: t(
+                    'Enter the namespace where virtual machines will be created on the external infrastructure cluster. This namespace must already exist and the kubeconfig must allow access to manage the required resources in this namespace.'
+                  ),
+                  placeholder: t('Enter the namespace'),
+                  isHidden: credentialsType !== Provider.kubevirt || !isExternalInfra,
+                  value: externalInfraNamespace,
+                  onChange: setExternalInfraNamespace,
+                  isRequired: true,
+                  validation: (value) => validateKubernetesDnsName(value, t),
+                },
+              ] as Input[],
+            },
+          ]
+        : []),
       {
         type: 'Section',
         title: t('OpenShift Cluster Manager'),
@@ -1278,13 +1354,13 @@ export function CredentialsForm(
         ),
         inputs: [
           {
-            id: 'ocmAPIToken',
+            id: 'ocmAuthMethod',
             label: t('Authentication method'),
             isHidden: credentialsType !== Provider.redhatcloud,
             labelHelp: t('The authentication method to use to connect to OpenShift Cluster Manager.'),
             type: 'Select',
             placeholder: t('Select an authentication method'),
-            value: auth_method,
+            value: authMethod,
             onChange: handleAuthMethodChange,
             options: [
               { id: OCMAuthMethod.API_TOKEN, value: OCMAuthMethod.API_TOKEN, text: t('API token') },
@@ -1292,7 +1368,7 @@ export function CredentialsForm(
             ],
             isRequired: true,
           },
-          (auth_method === OCMAuthMethod.API_TOKEN || isViewing) && {
+          (authMethod === OCMAuthMethod.API_TOKEN || isViewing) && {
             id: 'ocmAPIToken',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
@@ -1302,21 +1378,21 @@ export function CredentialsForm(
             isRequired: true,
             isSecret: true,
           },
-          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+          (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_id',
             isHidden: credentialsType !== Provider.redhatcloud,
             type: 'Text',
             label: t('Client ID'),
-            value: client_id,
+            value: serviceAccClientId,
             onChange: setServiceAccClientId,
             isRequired: true,
           },
-          (auth_method === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
+          (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_secret',
             type: 'Text',
             isHidden: credentialsType !== Provider.redhatcloud,
             label: t('Client secret'),
-            value: client_secret,
+            value: serviceAccClientSecret,
             onChange: setServiceAccClientSecret,
             isRequired: true,
             isSecret: true,
@@ -1416,7 +1492,6 @@ export function CredentialsForm(
       if (isEditing) {
         const secret = credentialData as Secret
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
-
         const data: Secret['data'] = {}
         Object.keys(secret.stringData ?? {}).forEach((key) => {
           if (secret.stringData?.[key]) {
@@ -1498,6 +1573,7 @@ export function CredentialsForm(
         '*.stringData.osServicePrincipal.json',
         '*.stringData.osServiceAccount.json',
         '*.stringData.clouds.yaml',
+        '*.stringData.kubeconfig',
       ]}
       immutables={
         isHostedControlPlane

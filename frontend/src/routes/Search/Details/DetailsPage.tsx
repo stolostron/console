@@ -12,8 +12,8 @@ import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
+import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 import { handleVMActions } from '../SearchResults/utils'
-import { DeleteResourceModal } from './DeleteResourceModal'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -22,6 +22,7 @@ export type SearchDetailsContext = {
   apiversion: string
   kind: string
   resource: any
+  isHubClusterResource: boolean
   resourceLoading: boolean
   resourceError: string
   containers: string[]
@@ -31,11 +32,12 @@ export type SearchDetailsContext = {
 export function getResourceParams() {
   const params = new URLSearchParams(decodeURIComponent(window.location.search))
   return {
-    cluster: params.get('cluster') || '',
-    kind: params.get('kind') || '',
-    apiversion: params.get('apiversion') || '',
-    namespace: params.get('namespace') || '',
-    name: params.get('name') || '',
+    cluster: params.get('cluster') ?? '',
+    kind: params.get('kind') ?? '',
+    apiversion: params.get('apiversion') ?? '',
+    namespace: params.get('namespace') ?? '',
+    name: params.get('name') ?? '',
+    isHubClusterResource: params.get('_hubClusterResource') === 'true', // _hubClusterResource should only be set if true
   }
 }
 
@@ -52,12 +54,12 @@ export default function DetailsPage() {
   const [resourceError, setResourceError] = useState('')
   const [resourceActionsOpen, setResourceActionsOpen] = useState(false)
   const [isDeleteResourceModalOpen, setIsDeleteResourceModalOpen] = useState(false)
-  const { cluster, kind, apiversion, namespace, name } = getResourceParams()
+  const { cluster, kind, apiversion, namespace, name, isHubClusterResource } = getResourceParams()
 
   useEffect(() => {
     if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
       /* istanbul ignore else */
-      if (cluster === 'local-cluster') {
+      if (isHubClusterResource) {
         getResource<IResource>({
           apiVersion: apiversion,
           kind,
@@ -93,13 +95,14 @@ export default function DetailsPage() {
     apiversion,
     name,
     namespace,
+    isHubClusterResource,
     resourceVersion,
     resource?.metadata.resourceVersion,
     resource?.metadata.name,
   ])
 
   useEffect(() => {
-    setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
+    setContainers(resource?.spec?.containers?.map((container: any) => container.name) ?? [])
   }, [resource])
 
   const location: {
@@ -132,12 +135,13 @@ export default function DetailsPage() {
       apiversion,
       kind,
       resource,
+      isHubClusterResource,
       resourceLoading: !resource && resourceError === '',
       resourceError,
       containers: containers || [],
       setResourceVersion,
     }),
-    [apiversion, cluster, containers, kind, name, namespace, resource, resourceError]
+    [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
 
   const getResourceActions = useMemo(() => {
@@ -164,11 +168,31 @@ export default function DetailsPage() {
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
       actions.unshift(
         ...[
-          { action: 'Start', path: '/virtualmachines/start' },
-          { action: 'Stop', path: '/virtualmachines/stop' },
-          { action: 'Restart', path: '/virtualmachines/restart' },
-          { action: 'Pause', path: '/virtualmachineinstances/pause' },
-          { action: 'Unpause', path: '/virtualmachineinstances/unpause' },
+          {
+            action: 'Start',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
+            managedPath: '/virtualmachines/start',
+          },
+          {
+            action: 'Stop',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
+            managedPath: '/virtualmachines/stop',
+          },
+          {
+            action: 'Restart',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
+            managedPath: '/virtualmachines/restart',
+          },
+          {
+            action: 'Pause',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
+            managedPath: '/virtualmachineinstances/pause',
+          },
+          {
+            action: 'Unpause',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
+            managedPath: '/virtualmachineinstances/unpause',
+          },
         ].map((action) => (
           <DropdownItem
             key={`${action.action}-vm-resource`}
@@ -176,7 +200,7 @@ export default function DetailsPage() {
             onClick={() =>
               handleVMActions(
                 action.action.toLowerCase(),
-                action.path,
+                isHubClusterResource ? action.hubPath : action.managedPath,
                 { cluster, name, namespace },
                 () => setResourceVersion(''), // trigger resource refetchto update details page data.
                 toast,
@@ -191,7 +215,7 @@ export default function DetailsPage() {
       )
     }
     return actions
-  }, [cluster, kind, name, namespace, vmActionsEnabled, navigate, toast, t])
+  }, [cluster, kind, name, namespace, isHubClusterResource, vmActionsEnabled, navigate, toast, t])
 
   return (
     <AcmPage
@@ -242,12 +266,23 @@ export default function DetailsPage() {
         />
       }
     >
-      <DeleteResourceModal
-        open={isDeleteResourceModalOpen}
-        close={() => setIsDeleteResourceModalOpen(false)}
-        resource={resource}
-        cluster={cluster}
-      />
+      {resource && (
+        <DeleteResourceModal
+          open={isDeleteResourceModalOpen}
+          close={() => setIsDeleteResourceModalOpen(false)}
+          resource={{
+            apiversion: resource.apiVersion ?? '',
+            cluster,
+            kind,
+            namespace,
+            name,
+            _uid: resource.metadata?.uid ?? '',
+            _hubClusterResource: isHubClusterResource,
+          }}
+          currentQuery={''}
+          relatedResource={false}
+        />
+      )}
       <Outlet context={searchDetailsContext} />
     </AcmPage>
   )

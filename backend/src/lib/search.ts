@@ -5,6 +5,7 @@ import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
 import { IResource } from '../resources/resource'
+import { logger } from './logger'
 
 export type ISearchResult = {
   data: {
@@ -76,6 +77,7 @@ export async function getPagedSearchResources(
     query: string
   },
   usePagedQuery: boolean,
+  kind: string,
   pass: number
 ) {
   const options = await getServiceAccountOptions()
@@ -93,16 +95,16 @@ export async function getPagedSearchResources(
     }
     let results: ISearchResult
     try {
-      results = await getSearchResults(options, JSON.stringify(_query))
+      results = await getSearchResults(options, JSON.stringify(_query), kind, pass)
     } catch (e) {
+      logger.error(`getPagedSearchResources ${kind} ${e}`)
       continue
     }
     const items = (results.data?.searchResult?.[0]?.items || []) as IResource[]
     resources = resources.concat(items)
     if (process.env.NODE_ENV !== 'test') {
       let timeout = 10000
-      if (pass === 2 || items.length < 1000) timeout = 2000
-      if (pass === 1 || items.length < 100) timeout = 1000
+      if (items.length < 1000) timeout = 2000
       await new Promise((r) => setTimeout(r, timeout))
     }
     if (!usePagedQuery) break
@@ -111,16 +113,20 @@ export async function getPagedSearchResources(
   return resources
 }
 
-export function getSearchResults(options: string | RequestOptions | URL, variables: string) {
+export function getSearchResults(
+  options: string | RequestOptions | URL,
+  variables: string,
+  kind: string,
+  pass: number
+) {
+  // if acm/mce are starting up, increase the timeout in case search hasn't started yet
+  const requestTimeout = (pass <= 2 ? 10 : 2) * 60 * 1000
   return new Promise<ISearchResult>((resolve, reject) => {
     let body = ''
-    const id = setTimeout(
-      () => {
-        console.error('request timeout')
-        reject(Error('request timeout'))
-      },
-      2 * 60 * 1000
-    )
+    const id = setTimeout(() => {
+      logger.error(`getSearchResults ${kind} request timeout`)
+      reject(Error('request timeout'))
+    }, requestTimeout)
     const req = request(options, (res) => {
       res.on('data', (data) => {
         body += data
@@ -128,27 +134,87 @@ export function getSearchResults(options: string | RequestOptions | URL, variabl
       res.on('end', () => {
         try {
           const result = JSON.parse(body) as ISearchResult
-          if (result.message) {
-            console.error(result.message)
+          const message = typeof result === 'string' ? result : result.message
+          if (message) {
+            logger.error(`getSearchResults ${kind} return error ${message}`)
             reject(Error(result.message))
           }
           resolve(result)
         } catch (e) {
           // search might be overwhelmed
           // pause before next request
+          logger.error(`getSearchResults ${kind} parse error ${e} ${body}`)
           setTimeout(() => {
-            console.error(body)
             reject(Error(body))
-          }, 2 * 1000)
+          }, requestTimeout)
         }
         clearTimeout(id)
       })
     })
     req.on('error', (e) => {
-      console.error(e)
+      logger.error(`getSearchResults ${kind} request error ${e.message}`)
       reject(e)
     })
     req.write(variables)
+    req.end()
+  })
+}
+
+const ping = {
+  operationName: 'searchResult',
+  variables: {
+    input: [
+      {
+        filters: [
+          {
+            property: 'kind',
+            values: ['Pod'],
+          },
+          {
+            property: 'name',
+            values: ['search-api*'],
+          },
+        ],
+        limit: 1,
+      },
+    ],
+  },
+  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export async function pingSearchAPI() {
+  const options = await getServiceAccountOptions()
+  return new Promise<boolean>((resolve, reject) => {
+    let body = ''
+    const id = setTimeout(
+      () => {
+        logger.error(`ping searchAPI timeout`)
+        reject(Error('request timeout'))
+      },
+      4 * 60 * 1000
+    )
+    const req = request(options, (res) => {
+      res.on('data', (data) => {
+        body += data
+      })
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(body) as { data: unknown }
+          if (result.data) {
+            resolve(true)
+          } else {
+            reject(new Error('no data'))
+          }
+        } catch (e) {
+          reject(new Error(new String(e).valueOf()))
+        }
+        clearTimeout(id)
+      })
+    })
+    req.on('error', (e) => {
+      reject(e)
+    })
+    req.write(JSON.stringify(ping))
     req.end()
   })
 }

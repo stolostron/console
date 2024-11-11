@@ -226,7 +226,7 @@ class ControlPanelFinish extends React.Component {
         break
       case 'custom':
         if (typeof summary === 'function') {
-          summaries = summary(control)
+          summaries = summary(control, i18n)
         }
         break
     }

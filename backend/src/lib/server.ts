@@ -136,7 +136,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
               error: 'address already in use',
               port: Number(process.env.PORT),
             })
-            reject(undefined)
+            reject(new Error('address already in use'))
           } else {
             logger.error({ msg: `server error`, error: err.message })
           }

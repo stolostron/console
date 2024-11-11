@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { grouping } from './grouping'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { useSearchResultItemsQuery, SearchInput } from '../../Search/search-sdk/search-sdk'
+import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { parseDiscoveredPolicies, resolveSource, getSourceText, parseStringMap } from '../common/util'
 export interface ISourceType {
@@ -21,10 +21,10 @@ export interface DiscoveredPolicyItem {
   compliant?: string
   responseAction: string
   severity?: string
-  _isExternal: boolean
-  annotation: string
+  _isExternal?: boolean
+  annotation?: string
   created: string
-  label: string
+  label?: string
   kind_plural: string
   // This is undefined on Gatekeeper constraints
   namespace?: string
@@ -37,6 +37,12 @@ export interface DiscoveredPolicyItem {
   totalViolations?: number
   // Not from search-collector. Attached in grouping function
   source?: ISourceType
+  // ValidatingAdmissionPolicyBinding
+  policyName?: string
+  _ownedByGatekeeper?: boolean
+  validationActions?: string
+  // Kyverno resources: ClusterPolicy, Policy
+  validationFailureAction?: string
 }
 
 export interface DiscoverdPolicyTableItem {
@@ -61,6 +67,9 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
 
   let searchQuery: SearchInput[]
 
+  // `relatedKinds: ['$DO-NOT-RETURN']` is a workaround to not return related items since they aren't needed in those
+  // parts of the query and no kind will ever match $DO-NOT-RETURN. Setting null or an empty list returns all
+  // related items.
   if (policyName && policyKind && apiGroup) {
     searchQuery = [
       {
@@ -78,6 +87,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: [policyKind],
           },
         ],
+        relatedKinds: apiGroup === 'kyverno.io' ? ['ClusterPolicyReport', 'PolicyReport'] : ['$DO-NOT-RETURN'],
         limit: 100000,
       },
     ]
@@ -94,6 +104,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['CertificatePolicy', 'ConfigurationPolicy', 'OperatorPolicy'],
           },
         ],
+        relatedKinds: ['$DO-NOT-RETURN'],
         limit: 100000,
       },
       // Query for all Gatekeeper Constraints
@@ -104,6 +115,35 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['constraints.gatekeeper.sh'],
           },
         ],
+        relatedKinds: ['$DO-NOT-RETURN'],
+        limit: 100000,
+      },
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: ['admissionregistration.k8s.io'],
+          },
+          {
+            property: 'kind',
+            values: ['ValidatingAdmissionPolicyBinding'],
+          },
+        ],
+        relatedKinds: ['$DO-NOT-RETURN'],
+        limit: 100000,
+      },
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: ['kyverno.io'],
+          },
+          {
+            property: 'kind',
+            values: ['ClusterPolicy', 'Policy'],
+          },
+        ],
+        relatedKinds: ['ClusterPolicyReport', 'PolicyReport'],
         limit: 100000,
       },
     ]
@@ -113,24 +153,28 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     data: searchData,
     loading: searchLoading,
     error: searchErr,
-  } = useSearchResultItemsQuery({
+  } = useSearchResultItemsAndRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    variables: {
-      input: searchQuery,
-    },
+    variables: { input: searchQuery },
+    pollInterval: 15000, // Poll every 15 seconds
   })
 
   useEffect(() => {
-    setIsFetching(true)
-
     if (searchErr && !searchLoading) {
       setIsFetching(false)
     }
 
     let searchDataItems: any[] = []
+    let kyvernoPolicyReports: any[] = []
 
     searchData?.searchResult?.forEach((result) => {
       searchDataItems = searchDataItems.concat(result?.items || [])
+      if (result?.items?.[0]?.apigroup === 'kyverno.io') {
+        result.related?.forEach((related) => {
+          if (['PolicyReport', 'ClusterPolicyReport'].includes(related?.kind ?? ''))
+            kyvernoPolicyReports = kyvernoPolicyReports.concat(related?.items || [])
+        })
+      }
     })
 
     if (searchDataItems.length == 0 && !searchErr && !searchLoading) {
@@ -154,6 +198,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
 
       worker.postMessage({
         data: searchDataItems,
+        kyvernoPolicyReports,
         subscriptions,
         helmReleases,
         channels,

@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
-import { AcmDonutChart, AcmEmptyState, AcmTable, ITableFilter, colorThemes } from '../../../../ui-components'
+import {
+  AcmDonutChart,
+  AcmEmptyState,
+  AcmTable,
+  IAcmTableColumn,
+  ITableFilter,
+  colorThemes,
+} from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
@@ -11,7 +18,7 @@ import {
   getSeverityFilter,
   getSourceFilterOptions,
   DiscoveredViolationsCard,
-  getConstraintCompliance,
+  getTotalViolationsCompliance,
   policyViolationSummary,
 } from './common'
 import { useMemo } from 'react'
@@ -20,7 +27,8 @@ import { useLocation } from 'react-router-dom-v5-compat'
 export default function DiscoveredByCluster({
   policies = [],
   policyKind,
-}: Readonly<{ policies: DiscoveredPolicyItem[] | undefined | null; policyKind: string }>) {
+  apiGroup,
+}: Readonly<{ policies: DiscoveredPolicyItem[] | undefined | null; policyKind: string; apiGroup: string }>) {
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
@@ -29,36 +37,43 @@ export default function DiscoveredByCluster({
   const locationPath = useLocation().pathname
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''
-  const cols = useMemo(
-    () =>
-      byClusterCols(
-        t,
-        helmReleases,
-        subscriptions,
-        channels,
-        kindHead == 'operator'
-          ? [
-              {
-                header: t('Deployment available'),
-                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
-                sort: 'deploymentAvailable',
-                search: 'deploymentAvailable',
-                id: 'deploymentAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
-              },
-              {
-                header: t('Upgrade available'),
-                cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
-                sort: 'upgradeAvailable',
-                search: 'upgradeAvailable',
-                id: 'upgradeAvailable',
-                exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
-              },
-            ]
-          : []
-      ),
-    [channels, helmReleases, kindHead, subscriptions, t]
-  )
+  const cols = useMemo(() => {
+    let extraColumns: IAcmTableColumn<DiscoveredPolicyItem>[] = []
+
+    if (kindHead === 'operator') {
+      extraColumns = [
+        {
+          header: t('Deployment available'),
+          cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
+          sort: 'deploymentAvailable',
+          search: 'deploymentAvailable',
+          id: 'deploymentAvailable',
+          exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
+        },
+        {
+          header: t('Upgrade available'),
+          cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
+          sort: 'upgradeAvailable',
+          search: 'upgradeAvailable',
+          id: 'upgradeAvailable',
+          exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
+        },
+      ]
+    } else if (apiGroup === 'kyverno.io' && policyKind === 'Policy') {
+      extraColumns = [
+        {
+          header: t('Namespace'),
+          cell: (item: DiscoveredPolicyItem) => item.namespace ?? '-',
+          sort: 'namespace',
+          search: 'namespace',
+          id: 'namespace',
+          exportContent: (item: DiscoveredPolicyItem) => item.namespace ?? '-',
+        },
+      ]
+    }
+
+    return byClusterCols(t, helmReleases, subscriptions, channels, policyKind, extraColumns)
+  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t])
 
   const operatorPolicyStats: any = useMemo(() => {
     if (policyKind !== 'OperatorPolicy') {
@@ -103,49 +118,53 @@ export default function DiscoveredByCluster({
 
   const filters = useMemo<ITableFilter<DiscoveredPolicyItem>[]>(() => {
     let filters = [
-      {
-        id: 'violations',
-        label: t('Cluster violations'),
-        options: [
-          {
-            label: t('No violations'),
-            value: 'no-violations',
-          },
-          {
-            label: t('Violations'),
-            value: 'violations',
-          },
-          {
-            label: t('No status'),
-            value: 'no-status',
-          },
-        ],
-        tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
-          let compliant: string
+      ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
+        ? [
+            {
+              id: 'violations',
+              label: t('Cluster violations'),
+              options: [
+                {
+                  label: t('No violations'),
+                  value: 'no-violations',
+                },
+                {
+                  label: t('Violations'),
+                  value: 'violations',
+                },
+                {
+                  label: t('No status'),
+                  value: 'no-status',
+                },
+              ],
+              tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
+                let compliant: string
 
-          if (item.apigroup === 'constraints.gatekeeper.sh') {
-            compliant = getConstraintCompliance(item?.totalViolations)
-          } else {
-            compliant = item?.compliant?.toLowerCase() ?? ''
-          }
+                if (item.apigroup === 'constraints.gatekeeper.sh') {
+                  compliant = getTotalViolationsCompliance(item?.totalViolations)
+                } else {
+                  compliant = item?.compliant?.toLowerCase() ?? ''
+                }
 
-          for (const value of selectedValues) {
-            if (value === 'no-violations' && compliant === 'compliant') {
-              return true
-            }
+                for (const value of selectedValues) {
+                  if (value === 'no-violations' && compliant === 'compliant') {
+                    return true
+                  }
 
-            if (value === 'violations' && compliant === 'noncompliant') {
-              return true
-            }
+                  if (value === 'violations' && compliant === 'noncompliant') {
+                    return true
+                  }
 
-            if (value === 'no-status' && (!compliant || compliant === 'pending')) {
-              return true
-            }
-          }
+                  if (value === 'no-status' && (!compliant || compliant === 'pending')) {
+                    return true
+                  }
+                }
 
-          return false
-        },
-      },
+                return false
+              },
+            },
+          ]
+        : []),
       getResponseActionFilter(t),
       getSeverityFilter(t),
       {
@@ -202,7 +221,7 @@ export default function DiscoveredByCluster({
 
   return (
     <>
-      {policies && policies.length > 0 && (
+      {policies && policies.length > 0 && policyKind !== 'ValidatingAdmissionPolicyBinding' && (
         <PageSection style={{ paddingBottom: '0' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flexShrink: '0' }}>
             <DiscoveredViolationsCard

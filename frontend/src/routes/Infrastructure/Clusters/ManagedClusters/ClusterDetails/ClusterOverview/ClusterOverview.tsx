@@ -52,6 +52,7 @@ import TemplateSummaryModal from '../../../../../../components/TemplateSummaryMo
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
+import { getControlPlaneString } from '../../ManagedClusters'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
@@ -72,37 +73,13 @@ function getAIClusterProperties(
 }
 
 export function ClusterOverviewPageContent() {
-  const {
-    canGetSecret,
-    cluster,
-    clusterCurator,
-    clusterDeployment,
-    agentClusterInstall,
-    hostedCluster,
-    selectedHostedCluster,
-  } = useClusterDetailsContext()
+  const { canGetSecret, cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
+    useClusterDetailsContext()
   const { t } = useTranslation()
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
-
-  const renderControlPlaneType = () => {
-    if (cluster?.name === 'local-cluster') {
-      return t('Hub')
-    }
-    if (cluster?.isRegionalHubCluster) {
-      if (cluster?.isHostedCluster || cluster?.isHypershift) {
-        return t('Hub, Hosted')
-      }
-      return t('Hub')
-    }
-    if (cluster?.isHostedCluster || cluster?.isHypershift) {
-      return t('Hosted')
-    } else {
-      return t('Standalone')
-    }
-  }
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
     /*
@@ -134,7 +111,7 @@ export function ClusterOverviewPageContent() {
     },
     clusterControlPlaneType: {
       key: t('table.clusterControlPlaneType'),
-      value: renderControlPlaneType(),
+      value: getControlPlaneString(cluster, t),
     },
     clusterClaim: {
       key: t('table.clusterClaim'),
@@ -446,8 +423,8 @@ export function ClusterOverviewPageContent() {
         )}
         <ClusterStatusMessageAlert cluster={cluster} padBottom />
         <HiveNotification />
-        {cluster?.isHypershift && !cluster?.isHostedCluster && selectedHostedCluster ? (
-          <HypershiftImportCommand selectedHostedClusterResource={selectedHostedCluster} />
+        {cluster?.isHypershift && !cluster?.isHostedCluster && hostedCluster ? (
+          <HypershiftImportCommand selectedHostedClusterResource={hostedCluster} />
         ) : (
           <ImportCommandContainer />
         )}

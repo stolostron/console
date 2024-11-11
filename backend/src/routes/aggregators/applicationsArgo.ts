@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { logger } from '../../lib/logger'
 import { getPagedSearchResources } from '../../lib/search'
-import { IResource } from '../../resources/resource'
+import { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms } from './applications'
+import { ApplicationCacheType, generateTransforms, getArgoDestinationCluster } from './applications'
 
 // query limit per letter
 const ARGO_APP_QUERY_LIMIT = 20000
@@ -63,14 +64,22 @@ interface IArgoAppRemoteResource {
   syncStatus: string
 }
 
-export async function getArgoApps(applicationCache: ApplicationCacheType, pass: number) {
+export async function getArgoApps(applicationCache: ApplicationCacheType, clusters: Cluster[], pass: number) {
   const argoAppSet = new Set<string>()
-  applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet))
-  applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), true)
+  try {
+    applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet, clusters))
+  } catch (e) {
+    logger.error(`getLocalArgoApps exception ${e}`)
+  }
+  try {
+    applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), clusters, true)
+  } catch (e) {
+    logger.error(`getRemoteArgoApps exception ${e}`)
+  }
   return argoAppSet
 }
 
-function getLocalArgoApps(argoAppSet: Set<string>) {
+function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
   const argoApps = getKubeResources('Application', 'argoproj.io/v1alpha1')
   return argoApps.filter((app) => {
     const argoApp = app as IArgoAppLocalResource
@@ -79,8 +88,9 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 
     // cache Argo app signature for filtering OCP apps later
     argoAppSet.add(
-      `${argoApp.metadata.name}-${definedNamespace || argoApp.spec.destination.namespace}-local-cluster)}`
-      // }-${getArgoDestinationCluster(argoApp.spec.destination, managedClusters, 'local-cluster')}`
+      `${argoApp.metadata.name}-${
+        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+      }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, 'local-cluster')}`
     )
     const isChildOfAppset =
       argoApp.metadata.ownerReferences && argoApp.metadata?.ownerReferences[0].kind === 'ApplicationSet'
@@ -93,7 +103,12 @@ function getLocalArgoApps(argoAppSet: Set<string>) {
 
 let usePagedQuery = true
 async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
-  const argoApps = (await getPagedSearchResources(query, usePagedQuery, pass)) as unknown as IArgoAppRemoteResource[]
+  const argoApps = (await getPagedSearchResources(
+    query,
+    usePagedQuery,
+    'Remote ArgoCD',
+    pass
+  )) as unknown as IArgoAppRemoteResource[]
   usePagedQuery = argoApps.length > 1000
 
   const apps: IResource[] = []

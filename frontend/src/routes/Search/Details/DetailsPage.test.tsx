@@ -18,7 +18,8 @@ jest.mock('react-router-dom-v5-compat', () => {
     ...originalModule,
     useLocation: () => ({
       pathname: '/multicloud/search/resources',
-      search: '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod',
+      search:
+        '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod&_hubClusterResource=true',
       state: {
         from: '/multicloud/search',
         fromSearch: '?filters={%22textsearch%22:%22kind%3APod%22}',
@@ -30,7 +31,8 @@ jest.mock('react-router-dom-v5-compat', () => {
 Object.defineProperty(window, 'location', {
   value: {
     pathname: '/multicloud/search/resources',
-    search: '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod',
+    search:
+      '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod&_hubClusterResource=true',
     state: {
       from: '/multicloud/search',
       fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',

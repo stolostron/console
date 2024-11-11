@@ -36,20 +36,22 @@ export function DownloadConfigurationDropdown({
   }
 
   const dropdownItems = []
-  cluster?.hive.secrets?.installConfig &&
+  if (cluster?.hive.secrets?.installConfig) {
     dropdownItems.push({
       id: 'install-config.yaml',
       text: 'install-config',
       isAriaDisabled: !canGetSecret,
       tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
-  cluster?.kubeconfig &&
+  }
+  if (cluster?.kubeconfig) {
     dropdownItems.push({
       id: 'kubeconfig',
       text: 'kubeconfig',
       isAriaDisabled: !canGetSecret,
       tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
+  }
   return (
     <AcmDropdown
       isPlain={true}

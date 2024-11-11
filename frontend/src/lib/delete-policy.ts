@@ -16,8 +16,8 @@ export function deletePolicy(
   placements: Placement[],
   placementRules: PlacementRule[],
   placementBindings: PlacementBinding[],
-  deletePlacements?: Boolean,
-  deletePlacementBindings?: Boolean
+  deletePlacements?: boolean,
+  deletePlacementBindings?: boolean
 ) {
   let resources: IResource[] = [policy]
 

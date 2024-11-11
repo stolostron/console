@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { IResource, postRequest } from '../resources'
+import { fetchRetry, IResource, postRequest } from '../resources'
 import { useQuery } from './useQuery'
 import { useCallback, useContext, useEffect } from 'react'
 import { PluginContext } from './PluginContext'
@@ -28,6 +28,7 @@ export interface IRequestListView {
 export interface IResultListView {
   page: number
   loading: boolean
+  refresh: () => void
   items: IResource[]
   emptyResult: boolean
   processedItemCount: number
@@ -41,7 +42,9 @@ export interface IRequestStatuses {
 export interface IResultStatuses {
   itemCount: number
   filterCounts: FilterCounts | undefined
+  systemAppNSPrefixes: string[]
   loading: boolean
+  refresh: () => void
 }
 
 export enum SupportedAggregate {
@@ -55,6 +58,7 @@ export enum SupportedAggregate {
 const defaultListResponse: IResultListView = {
   page: 1,
   loading: true,
+  refresh: () => {},
   items: [],
   emptyResult: false,
   processedItemCount: 0,
@@ -64,7 +68,9 @@ const defaultListResponse: IResultListView = {
 const defaultStatusResponse: IResultStatuses = {
   itemCount: 0,
   filterCounts: { type: {} },
+  systemAppNSPrefixes: [],
   loading: true,
+  refresh: () => {},
 }
 
 type RequestStatusesType = IRequestStatuses | undefined
@@ -109,7 +115,7 @@ export function useAggregate(
       : undefined
   }, [aggregate, backendUrl, requestedViewStr])
 
-  const { data, loading, startPolling, stopPolling } = useQuery(queryFunc, [defaultResponse], {
+  const { data, loading, startPolling, stopPolling, refresh } = useQuery(queryFunc, [defaultResponse], {
     pollInterval: 15,
   })
 
@@ -129,6 +135,7 @@ export function useAggregate(
       response = {
         page: response.page,
         loading: loading && !usingStoredResponse,
+        refresh,
         items: response.items,
         processedItemCount: response.processedItemCount,
         emptyResult: response.emptyResult,
@@ -140,7 +147,9 @@ export function useAggregate(
       response = {
         itemCount: response.itemCount,
         filterCounts: response.filterCounts,
+        systemAppNSPrefixes: response.systemAppNSPrefixes,
         loading: loading && !usingStoredResponse,
+        refresh,
       }
       // save response for next time
       if (!loading) setWithExpiry(STATUSESKEY, response)
@@ -168,4 +177,26 @@ function setWithExpiry(key: string, value: any) {
     expiry: now.getTime() + EXPIRATION,
   }
   localStorage.setItem(key, JSON.stringify(item))
+}
+
+export async function fetchAggregate(
+  aggregate: SupportedAggregate,
+  backendUrl: string,
+  requestedView: RequestListType
+) {
+  const abortController = new AbortController()
+  return fetchRetry({
+    method: 'POST',
+    url: `${backendUrl}${apiUrl}/${aggregate}`,
+    data: requestedView,
+    signal: abortController.signal,
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
+  })
+    .then((res) => res.data as IResultListView)
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error(error)
+      return undefined
+    })
 }

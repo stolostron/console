@@ -105,9 +105,11 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
                   isDisabled={step.link.isDisabled}
                   onClick={() => {
                     /* istanbul ignore next */
-                    step.link?.linkUrl && window.open(step.link?.linkUrl)
+                    if (step.link?.linkUrl) {
+                      window.open(step.link.linkUrl)
+                    }
                     /* istanbul ignore next */
-                    step.link?.linkCallback && step.link?.linkCallback()
+                    step.link?.linkCallback?.()
                   }}
                 >
                   {step.link.linkName}

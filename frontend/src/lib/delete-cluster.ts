@@ -110,7 +110,7 @@ export function deleteCluster({
       })
     }
 
-    if (cluster.provider === Provider.hostinventory) {
+    if (cluster.provider === Provider.hostinventory || cluster.provider === Provider.nutanix) {
       const infraEnv = infraEnvs.find((ie) => {
         const clusterRef = ie.spec?.clusterRef
         return clusterRef?.name === cluster.name && clusterRef?.namespace === cluster.namespace

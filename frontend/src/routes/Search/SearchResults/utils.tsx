@@ -35,6 +35,7 @@ export function handleVMActions(
   toast: IAlertContext,
   t: TFunction
 ) {
+  if (process.env.NODE_ENV === 'test') return
   const abortController = new AbortController()
   fetchRetry({
     method: 'PUT',
@@ -46,6 +47,7 @@ export function handleVMActions(
     },
     signal: abortController.signal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    headers: { Accept: '*/*' },
     disableRedirectUnauthorizedLogin: true,
   })
     .then(() => {
@@ -55,8 +57,8 @@ export function handleVMActions(
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
 
-      let errMessage = err?.message ?? t('An unexpected error occurred.')
-      if (errMessage.includes(':')) errMessage = errMessage.split(':')[1]
+      let errMessage: string = err?.message ?? t('An unexpected error occurred.')
+      if (errMessage.includes(':')) errMessage = errMessage.split(':').slice(1).join(':')
       if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
       toast.addAlert({
         title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
@@ -128,7 +130,7 @@ export function getRowActions(
     id: 'view-application',
     title: t('View Application'),
     click: (item: any) => {
-      const { apigroup, applicationSet, cluster, name, namespace, kind } = item
+      const { apigroup, applicationSet, cluster, name, namespace, kind, _hubClusterResource } = item
       if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
         const path = generatePath(NavigationPath.applicationOverview, {
           namespace,
@@ -136,10 +138,10 @@ export function getRowActions(
         })
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
-          cluster: cluster === 'local-cluster' ? undefined : cluster,
+          cluster: !_hubClusterResource ? cluster : undefined,
           applicationset: applicationSet ?? undefined,
         })
-        if (item.managedHub === 'global-hub' && item.cluster !== 'local-cluster') {
+        if (item.managedHub === 'global-hub' && !item?._hubClusterResource) {
           const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
           return window.open(`${hubUrl}${path}?${params}`, '_blank')
         }
@@ -177,7 +179,7 @@ export function getRowActions(
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
       const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })
-      if (item.managedHub && item.cluster !== 'local-cluster') {
+      if (item.managedHub && !item?._hubClusterResource) {
         const hubUrl = allClusters.find((cluster) => cluster.name === item.cluster)?.consoleURL
         return window.open(`${hubUrl}${path}?apiVersion=${apiversion}`, '_blank')
       }
@@ -246,20 +248,22 @@ export function getRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      item.managedHub && item.managedHub !== 'global-hub'
-        ? setDeleteExternalResource({
-            open: true,
-            close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-            resource: item,
-            hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-          })
-        : setDeleteResource({
-            open: true,
-            close: () => setDeleteResource(ClosedDeleteModalProps),
-            resource: item,
-            currentQuery,
-            relatedResource,
-          })
+      if (item?.managedHub !== 'global-hub') {
+        setDeleteExternalResource({
+          open: true,
+          close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
+          resource: item,
+          hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
+        })
+      } else {
+        setDeleteResource({
+          open: true,
+          close: () => setDeleteResource(ClosedDeleteModalProps),
+          resource: item,
+          currentQuery,
+          relatedResource,
+        })
+      }
     },
   }
 
@@ -267,9 +271,12 @@ export function getRowActions(
     id: 'startVM',
     title: t('Start {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/start`
+        : `/virtualmachines/start`
       handleVMActions(
         'start',
-        '/virtualmachines/start',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -281,9 +288,12 @@ export function getRowActions(
     id: 'stopVM',
     title: t('Stop {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/stop`
+        : `/virtualmachines/stop`
       handleVMActions(
         'stop',
-        '/virtualmachines/stop',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -295,9 +305,12 @@ export function getRowActions(
     id: 'restartVM',
     title: t('Restart {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/restart`
+        : `/virtualmachines/restart`
       handleVMActions(
         'restart',
-        '/virtualmachines/restart',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -309,9 +322,12 @@ export function getRowActions(
     id: 'pauseVM',
     title: t('Pause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/pause`
+        : `/virtualmachineinstances/pause`
       handleVMActions(
         'pause',
-        '/virtualmachineinstances/pause',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,
@@ -323,9 +339,12 @@ export function getRowActions(
     id: 'unpauseVM',
     title: t('Unpause {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
+      const path = item?._hubClusterResource
+        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/unpause`
+        : `/virtualmachineinstances/unpause`
       handleVMActions(
         'unpause',
-        '/virtualmachineinstances/unpause',
+        path,
         item,
         () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
         toast,

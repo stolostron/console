@@ -11,7 +11,7 @@ INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0]
 oc get secrets -n $INSTALLATION_NAMESPACE_MCE --field-selector type=kubernetes.io/service-account-token -o json | \
     jq '.items[0].data."ca.crt"' -r | python -m base64 -d > ocp-console/ca.crt
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.15}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.16}
 CONSOLE_PORT=${CONSOLE_PORT:=9000}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 

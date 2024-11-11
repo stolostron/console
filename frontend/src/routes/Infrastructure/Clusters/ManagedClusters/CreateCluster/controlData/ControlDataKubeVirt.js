@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { get } from 'lodash'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
@@ -12,10 +11,12 @@ import {
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
+  onChangeConnection,
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
+import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -44,24 +45,6 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-export const setKubeVirtSecrets = (control) => {
-  const { active, availableMap = {} } = control
-  const replacements = get(availableMap[active], 'replacements')
-  const activePullSecret = replacements?.pullSecret ?? ''
-  const activeSSHKey = replacements?.['ssh-publickey'] ?? ''
-  const isEncoded = replacements?.encoded && replacements?.encoded === true
-
-  if (active && !isEncoded && activePullSecret !== '') {
-    control.availableMap[active] = {
-      replacements: {
-        pullSecret: Buffer.from(activePullSecret, 'ascii').toString('base64'),
-        'ssh-publickey': Buffer.from(activeSSHKey, 'ascii').toString('base64'),
-        encoded: true,
-      },
-    }
-  }
-}
-
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
@@ -70,8 +53,7 @@ export const getControlDataKubeVirt = (
   localCluster
 ) => {
   const controlData = [
-    ////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////  AI form  /////////////////////////////////////
+    //////////////////////////////////  AI form  //////////////////////////////////
     {
       id: 'kubevirtDetailStep',
       type: 'step',
@@ -95,7 +77,7 @@ export const getControlDataKubeVirt = (
       hidden: false, // toggled in CreateCluster.tsx
       component: operatorAlert(localCluster, t),
     },
-    /////////////////////// ACM Credentials  /////////////////////////////////////
+    /////////////////////// ACM Credentials /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
       tooltip: t('tooltip.creation.ocp.cloud.connection'),
@@ -109,8 +91,13 @@ export const getControlDataKubeVirt = (
       },
       available: [],
       footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
-      onSelect: setKubeVirtSecrets,
+      onSelect: onChangeConnection,
       hasReplacements: true,
+    },
+    {
+      id: 'showSecrets',
+      type: 'hidden',
+      active: true,
     },
     {
       name: t('creation.ocp.name'),
@@ -164,6 +151,13 @@ export const getControlDataKubeVirt = (
       reverse: reverseStorageClass,
     },
     {
+      id: 'availabilityOptions',
+      type: 'custom',
+      component: <AvailabilityOptionsForm />,
+      active: { controller: 'HighlyAvailable', infra: 'HighlyAvailable' },
+      summary: summary,
+    },
+    {
       id: 'additionalLabels',
       name: t('creation.ocp.addition.labels'),
       type: 'labels',
@@ -172,6 +166,7 @@ export const getControlDataKubeVirt = (
         'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.'
       ),
     },
+    ///////////////////////////// Node Pools Step /////////////////////////////
     {
       id: 'nodepoolsStep',
       type: 'step',

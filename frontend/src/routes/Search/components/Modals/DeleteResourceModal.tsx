@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
@@ -156,6 +156,7 @@ function updateSearchResults(resource: any, relatedResource: boolean, currentQue
 
 export function deleteResourceFn(
   resource: any,
+  isHubClusterResource: boolean,
   apiGroup: string,
   relatedResource: boolean,
   currentQuery: string,
@@ -163,7 +164,7 @@ export function deleteResourceFn(
   setDeleteResourceError: Dispatch<SetStateAction<undefined>>,
   onCloseModal: () => void
 ) {
-  if (resource.cluster === 'local-cluster') {
+  if (isHubClusterResource) {
     const { kind, name, namespace } = resource
     deleteResource({
       apiVersion: apiGroup,
@@ -174,7 +175,9 @@ export function deleteResourceFn(
       },
     })
       .promise.then(() => {
-        updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+        if (currentQuery !== '') {
+          updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+        }
         onCloseModal()
       })
       .catch((err) => {
@@ -185,7 +188,9 @@ export function deleteResourceFn(
     fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
       .then(async (actionResponse) => {
         if (actionResponse.actionDone === 'ActionDone') {
-          updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+          if (currentQuery !== '') {
+            updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
+          }
           onCloseModal()
         } else {
           setDeleteResourceError(actionResponse.message)
@@ -212,88 +217,82 @@ export const DeleteResourceModal = (props: any) => {
     apiGroup = resource.apigroup ? `${resource.apigroup}/${resource.apiversion}` : resource.apiversion
   }
   useEffect(() => {
-    if (!resource) {
-      return
-    }
-    const { cluster, kind, name, namespace } = resource
-    const canDeleteResource = canUser(
-      'delete',
-      {
-        apiVersion: apiGroup,
-        kind: kind,
-        metadata: {
-          name: name,
-          namespace: namespace,
+    if (resource) {
+      const { cluster, kind, name, namespace, _hubClusterResource } = resource
+      const canDeleteResource = canUser(
+        'delete',
+        {
+          apiVersion: apiGroup,
+          kind: kind,
+          metadata: {
+            name: name,
+            namespace: namespace,
+          },
         },
-      },
-      cluster === 'local-cluster' ? namespace : cluster,
-      name
-    )
+        _hubClusterResource ? namespace : cluster,
+        name
+      )
 
-    canDeleteResource.promise
-      .then((result) => {
-        setLoadingAccessRequest(false)
-        setCanDelete(result.status?.allowed!)
-      })
-      .catch((err) => {
-        console.error(err)
-        setLoadingAccessRequest(false)
-        setAccessError(err)
-      })
-    return () => canDeleteResource.abort()
+      canDeleteResource.promise
+        .then((result) => {
+          setLoadingAccessRequest(false)
+          setCanDelete(result.status?.allowed!)
+          setAccessError(null)
+        })
+        .catch((err) => {
+          console.error(err.message)
+          setLoadingAccessRequest(false)
+          setAccessError(err)
+        })
+      return () => canDeleteResource.abort()
+    }
   }, [apiGroup, resource])
 
   return (
-    <Fragment>
-      <AcmModal
-        id={'remove-resource-modal'}
-        variant={ModalVariant.medium}
-        isOpen={open}
-        title={t('Delete {{resourceKind}}?', { resourceKind: resource?.kind })}
-        titleIconVariant={'warning'}
-        onClose={close}
-        actions={[
-          <AcmButton
-            isDisabled={loadingAccessRequest || !canDelete}
-            key="confirm"
-            variant={ButtonVariant.danger}
-            onClick={() =>
-              deleteResourceFn(
-                resource,
-                apiGroup,
-                relatedResource,
-                currentQuery,
-                searchResultLimit,
-                setDeleteResourceError,
-                close
-              )
-            }
-          >
-            {t('Delete')}
-          </AcmButton>,
-          <AcmButton key="cancel" variant={ButtonVariant.secondary} onClick={close}>
-            {t('Cancel')}
-          </AcmButton>,
-        ]}
-      >
-        {accessError ? (
-          <AcmAlert data-testid={'user-access-error'} noClose={true} variant={'danger'} title={accessError} />
-        ) : null}
-        {!accessError && !canDelete && !loadingAccessRequest ? (
-          <AcmAlert noClose={true} variant={'danger'} title={t('You are not authorized to delete this resource.')} />
-        ) : null}
-        {deleteResourceError ? (
-          <AcmAlert
-            data-testid={'delete-resource-error'}
-            noClose={true}
-            variant={'danger'}
-            title={deleteResourceError}
-          />
-        ) : null}
-        <div style={{ paddingTop: '1rem' }}>
-          {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
-        </div>
-      </AcmModal>
-    </Fragment>
+    <AcmModal
+      id={'remove-resource-modal'}
+      variant={ModalVariant.medium}
+      isOpen={open}
+      title={t('Delete {{resourceKind}}?', { resourceKind: resource?.kind })}
+      titleIconVariant={'warning'}
+      onClose={close}
+      actions={[
+        <AcmButton
+          isDisabled={loadingAccessRequest || !canDelete}
+          key="confirm"
+          variant={ButtonVariant.danger}
+          onClick={() =>
+            deleteResourceFn(
+              resource,
+              resource._hubClusterResource,
+              apiGroup,
+              relatedResource,
+              currentQuery,
+              searchResultLimit,
+              setDeleteResourceError,
+              close
+            )
+          }
+        >
+          {t('Delete')}
+        </AcmButton>,
+        <AcmButton key="cancel" variant={ButtonVariant.secondary} onClick={close}>
+          {t('Cancel')}
+        </AcmButton>,
+      ]}
+    >
+      {accessError && (
+        <AcmAlert data-testid={'user-access-error'} noClose={true} variant={'danger'} title={accessError} />
+      )}
+      {!accessError && !canDelete && !loadingAccessRequest && (
+        <AcmAlert noClose={true} variant={'danger'} title={t('You are not authorized to delete this resource.')} />
+      )}
+      {deleteResourceError && (
+        <AcmAlert data-testid={'delete-resource-error'} noClose={true} variant={'danger'} title={deleteResourceError} />
+      )}
+      <div style={{ paddingTop: '1rem' }}>
+        {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
+      </div>
+    </AcmModal>
   )
 }

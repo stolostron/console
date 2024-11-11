@@ -36,7 +36,14 @@ import {
   SubscriptionKind,
 } from '../../resources'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
-import { clickByTestId, waitForText, clickByLabel, clickByText } from '../../lib/test-util'
+import {
+  clickByTestId,
+  waitForText,
+  clickByLabel,
+  clickByText,
+  getCSVExportSpies,
+  getCSVDownloadLink,
+} from '../../lib/test-util'
 import {
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
@@ -370,97 +377,86 @@ describe('Export from application tables', () => {
     nockIgnoreApiPaths()
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
   })
 
   test('export button should produce a file for download for subscriptions', async () => {
     render(<TestAdvancedConfigurationPage defaultToggleOption="subscriptions" />)
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     // download for subscriptions
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Channel,Applications,Clusters,Time window,Created\n' +
+          '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"-"\n' +
+          '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"-"\n' +
+          '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","-"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^applicationadvancedconfiguration-subscriptions-[\d]+\.csv$/
+    )
   })
 
   test('export button should produce a file for download for channels', async () => {
     render(<TestAdvancedConfigurationPage defaultToggleOption="channels" />)
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     //download for channels
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Type,Subscriptions,Clusters,Created\n' +
+          '"ggithubcom-app-samples-ns/ggithubcom-app-samples","default","Git",-,"None","-"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^applicationadvancedconfiguration-channels-[\d]+\.csv$/
+    )
   })
 
   test('export button should produce a file for download for placements', async () => {
     render(<TestAdvancedConfigurationPage defaultToggleOption="placements" />)
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
-
-    // downloads for placements
+    //download for placements
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Clusters,Created\n' +
+          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","4 months ago"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^applicationadvancedconfiguration-placements-[\d]+\.csv$/
+    )
   })
 
   test('export button should produce a file for download for placement rules', async () => {
     render(<TestAdvancedConfigurationPage defaultToggleOption="placementrules" />)
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
-
-    // downloads for placements
+    //download for placementrules
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      ['Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","-"'],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^applicationadvancedconfiguration-placementrules-[\d]+\.csv$/
+    )
   })
 })

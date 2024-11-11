@@ -5,13 +5,13 @@ import { render, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { Settings, settingsState } from '../../../../src/atoms'
-import { nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { SavedSearch } from '../../../resources'
-import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
+import { Settings, settingsState } from '../../../../atoms'
+import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { SavedSearch } from '../../../../resources'
+import { SearchResultCountDocument } from '../../../Search/search-sdk/search-sdk'
 import SavedSearchesCard from './SavedSearchesCard'
 
-jest.mock('../../../resources/userpreference', () => ({
+jest.mock('../../../../resources/userpreference', () => ({
   listResources: jest.fn(() => ({
     promise: Promise.resolve([
       {

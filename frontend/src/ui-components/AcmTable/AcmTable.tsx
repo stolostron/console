@@ -105,6 +105,8 @@ export interface IAcmTableColumn<T> {
   /** exported value as a string, supported export: CSV*/
   exportContent?: CellFn<T>
 
+  disableExport?: boolean
+
   transforms?: ITransform[]
 
   cellTransforms?: ITransform[]
@@ -221,33 +223,41 @@ interface ITableItem<T> {
 }
 
 type FilterOptionValueT = string
+type FilterSelection = FilterOptionValueT[]
 type TableFilterOption<FilterOptionValueT> = { label: ReactNode; value: FilterOptionValueT }
-export type TableFilterFn<T> = (selectedValues: string[], item: T) => boolean
-/**
- * Interface defining required params for table filtering property "filterItems"
- * @interface
- * @param {string} label - label is the string displayed in UI
- * @param {string} id - ID is unique identifier
- * @param {TableFilterOption<FilterOptionValueT>[]} options - Options is an array to define the exact filter options
- * @param {TableFilterFn<T>} tableFilterFn - A required function that returns a boolean if the item is a match to the current filters
- */
-export interface ITableFilter<T> {
-  label: string
+
+type AdvancedFilterSelection = {
+  operator: SearchOperator
+  value: string
+}
+
+type CurrentFilters<S> = {
+  [filter: string]: S
+}
+
+type TableFilterBase<T, S> = {
+  /** unique identifier for the filter */
   id: string
+  /** string displayed in the UI */
+  label: string
+  /** A required function that returns a boolean if the item is a match to the current filters */
+  tableFilterFn: (selection: S, item: T) => boolean
+}
+export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
+  /** Options is an array to define the exact filter options */
   options: TableFilterOption<FilterOptionValueT>[]
-  tableFilterFn: TableFilterFn<T>
   showEmptyOptions?: boolean
 }
-export interface ITableAdvancedFilter<T> extends Omit<ITableFilter<T>, 'options'> {
+
+export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilterSelection> {
   availableOperators: SearchOperator[]
 }
 
-export type FilterSelections = {
-  [filter: string]: string[]
-}
-
-function getValidFilterSelections<T>(filters: ITableFilter<T>[], selections: FilterSelections | ParsedQuery<string>) {
-  const validSelections: FilterSelections = {}
+function getValidFilterSelections<T>(
+  filters: ITableFilter<T>[],
+  selections: CurrentFilters<FilterSelection> | ParsedQuery<string>
+) {
+  const validSelections: CurrentFilters<FilterSelection> = {}
   let removedOptions = false
   Object.keys(selections).forEach((key) => {
     const filter = filters.find((filter) => filter.id === key)
@@ -304,7 +314,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
   }, [filters, queryParams])
 
   const updateFilters = useCallback(
-    (newFilters: FilterSelections, saveFilters: boolean = true) => {
+    (newFilters: CurrentFilters<FilterSelection>, saveFilters: boolean = true) => {
       const updatedParams = { ...filteredQueryParams, ...newFilters }
       const updatedSearch = stringify(updatedParams, { arrayFormat: 'comma' })
       const newSearch = updatedSearch ? `?${updatedSearch}` : ''
@@ -392,16 +402,16 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
 function setLocalStorage(key: string | undefined, value: any) {
   try {
     window.localStorage.setItem(key as string, JSON.stringify(value))
-  } catch (e) {
+  } catch {
     // catch possible errors
   }
 }
 
-function getLocalStorage(key: string | undefined, initialValue: {}) {
+function getLocalStorage(key: string | undefined, initialValue: object) {
   try {
     const value = window.localStorage.getItem(key as string)
     return value ? JSON.parse(value) : initialValue
-  } catch (e) {
+  } catch {
     // if error, return initial value
     return initialValue
   }
@@ -473,6 +483,22 @@ export function AcmTablePaginationContextProvider(props: { children: ReactNode; 
   return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
 }
 
+const findFilterMatch = <T, S>(filter: string, filterArray: TableFilterBase<T, S>[]) =>
+  filterArray.find((filterItem) => filterItem.id === filter)
+
+const applyFilters = <T, S>(
+  items: ITableItem<T>[],
+  filterSelections: CurrentFilters<S>,
+  filterArray: TableFilterBase<T, S>[]
+): ITableItem<T>[] => {
+  const filterCategories = Object.keys(filterSelections)
+  return items.filter(({ item }) =>
+    filterCategories.every(
+      (filter: string) => findFilterMatch(filter, filterArray)?.tableFilterFn(filterSelections[filter], item) ?? true
+    )
+  )
+}
+
 export type AcmTableProps<T> = {
   items?: T[]
   addSubRows?: (item: T) => IRow[] | undefined
@@ -495,6 +521,7 @@ export type AcmTableProps<T> = {
   setRequestView?: (requestedView: IRequestListView) => void
   resultView?: IResultListView
   resultCounts?: IResultStatuses
+  fetchExport?: (requestedExport: IRequestListView) => Promise<IResultListView | undefined>
   initialPerPage?: number
   initialSearch?: string
   search?: string
@@ -540,6 +567,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     setRequestView,
     resultView,
     resultCounts,
+    fetchExport,
   } = props
 
   const defaultSort = {
@@ -584,6 +612,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const sort = props.sort || stateSort
   const setSort = props.setSort || stateSetSort
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
+  const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
+    { operator: undefined, value: '', columnId: '' },
+  ])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
@@ -640,7 +671,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     // sort column by column management order
     colOrderIds.forEach((id) => {
       const find = columns.find((col) => col.id === id)
-      find && sortedColumns.push(find!)
+      if (find) {
+        sortedColumns.push(find)
+      }
     })
 
     const sortedSelected = sortedColumns.filter((column) => {
@@ -649,7 +682,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // Btn column is always the last
     const btn = columns.find((col) => col.isActionCol)
-    btn && sortedSelected.push(btn)
+    if (btn) {
+      sortedSelected.push(btn)
+    }
 
     return sortedSelected
   }, [columns, selectedColIds, colOrderIds, showColumManagement])
@@ -780,55 +815,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
 
-  const { tableItems, totalCount } = useMemo<{
+  const { tableItems, totalCount, allTableItems } = useMemo<{
     tableItems: ITableItem<T>[]
     totalCount: number
+    allTableItems: ITableItem<T>[]
   }>(() => {
     /* istanbul ignore if */
-    if (!items) return { tableItems: [], totalCount: 0 }
-    let filteredItems: T[] = items
+    if (!items) return { tableItems: [], totalCount: 0, allTableItems: [] }
 
-    // if using a result view from backend, the items have already been filtered
-    if (!isPreProcessed) {
-      if (filters.length && Object.keys(filterSelections).length) {
-        const filterCategories = Object.keys(filterSelections)
-        filteredItems = items.filter((item: T) => {
-          let isFilterMatch = true
-          // Item must match 1 filter of each category
-          filterCategories.forEach((filter: string) => {
-            const filterItem: ITableFilter<T> | undefined = filters.find((filterItem) => filterItem.id === filter)
-            /* istanbul ignore next */
-            const isMatch = filterItem?.tableFilterFn(filterSelections[filter], item) ?? true
-            if (!isMatch) {
-              isFilterMatch = false
-            }
-          })
-          return isFilterMatch
-        })
-      }
-    }
-
-    const findFilterMatch = (filter: string) => advancedFilters.find((filterItem) => filterItem.id === filter)
-    // advanced filtering, won't apply if preprocessed
-    if (!isPreProcessed) {
-      const advancedFilterSelections: FilterSelections = {}
-      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
-        if (columnId && value && operator) {
-          advancedFilterSelections[columnId] = [value]
-        }
-      })
-      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
-        const filterCategories = Object.keys(advancedFilterSelections)
-        filteredItems = filteredItems.filter((item: T) =>
-          filterCategories.every(
-            (filter: string) =>
-              /* istanbul ignore next */
-              findFilterMatch(filter)?.tableFilterFn(advancedFilterSelections[filter], item) ?? true
-          )
-        )
-      }
-    }
-    const tableItems = filteredItems.map((item) => {
+    const unfilteredTableItems: ITableItem<T>[] = items.map((item) => {
       const key = keyFn(item)
       const subRows = addSubRows?.(item)
       // Establish key for subrow based on parent row
@@ -847,7 +842,32 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
       return tableItem
     })
-    return { tableItems, totalCount: (isPreProcessed && resultCounts?.itemCount) || tableItems.length }
+    let filteredTableItems: ITableItem<T>[] = unfilteredTableItems
+
+    // if using a result view from backend, the items have already been filtered
+    if (!isPreProcessed) {
+      if (filters.length && Object.keys(filterSelections).length) {
+        filteredTableItems = applyFilters(unfilteredTableItems, filterSelections, filters)
+      }
+
+      // advanced filtering
+      const advancedFilterSelections: CurrentFilters<AdvancedFilterSelection> = {}
+      activeAdvancedFilters.forEach(({ columnId, value, operator }) => {
+        if (columnId && value && operator) {
+          advancedFilterSelections[columnId] = { operator, value }
+        }
+      })
+
+      if (advancedFilters.length && Object.keys(advancedFilterSelections).length) {
+        filteredTableItems = applyFilters(unfilteredTableItems, advancedFilterSelections, advancedFilters)
+      }
+    }
+
+    return {
+      tableItems: filteredTableItems,
+      totalCount: (isPreProcessed && resultCounts?.itemCount) || filteredTableItems.length,
+      allTableItems: unfilteredTableItems,
+    }
   }, [
     items,
     isPreProcessed,
@@ -876,7 +896,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         threshold: threshold,
         keys: columns
           .map((column, i) => (column.search ? `column-${i}` : undefined))
-          .filter((value) => value !== undefined) as string[],
+          .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
       const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
@@ -929,7 +949,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [page, actualPage, setPage])
 
   const exportTable = useCallback(
-    (toastContext: IAlertContext) => {
+    async (toastContext: IAlertContext) => {
       toastContext.addAlert({
         title: t('Generating data. Download may take a moment to start.'),
         type: 'info',
@@ -940,34 +960,58 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const headerString: string[] = []
       const csvExportCellArray: string[] = []
 
-      selectedSortedCols.forEach(({ header }) => {
-        header && headerString.push(header)
+      columns.forEach(({ header, disableExport }) => {
+        if (header && !disableExport) {
+          headerString.push(header)
+        }
       })
-      sorted[0]?.subRows &&
-        sorted[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
-          header && headerString.push(header)
-        })
+      allTableItems[0].subRows?.[0]?.exportSubRow?.forEach(({ header }) => {
+        if (header) {
+          headerString.push(header)
+        }
+      })
       csvExportCellArray.push(headerString.join(','))
 
-      sorted.forEach(({ item, subRows }) => {
+      // if table is pagenated from backend,
+      // we need to fetch all backend items to export
+      let exportItems = allTableItems
+      if (fetchExport) {
+        const fetchedItems = await fetchExport({
+          page: 1,
+          perPage: -1,
+          sortBy: undefined,
+        })
+        if (fetchedItems) {
+          exportItems = fetchedItems.items.map((item) => {
+            return {
+              item,
+            } as ITableItem<T>
+          })
+        }
+      }
+
+      exportItems.forEach(({ item, subRows }) => {
         let contentString: string[] = []
-        selectedSortedCols.forEach(({ header, exportContent }) => {
-          if (header) {
+        columns.forEach(({ header, exportContent, disableExport }) => {
+          if (header && !disableExport) {
             // if callback and its output exists, add to array, else add "-"
             const exportvalue = exportContent?.(item, '')
-            exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+            contentString.push(exportvalue ? returnCSVSafeString(exportvalue) : '-')
           }
         })
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
               const exportvalue = exportContent?.(item)
-              exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+              contentString.push(exportvalue ? returnCSVSafeString(exportvalue) : '-')
             }
           })
         })
+
         contentString = [contentString.join(',')]
-        contentString[0] && csvExportCellArray.push(contentString[0])
+        if (contentString[0]) {
+          csvExportCellArray.push(contentString[0])
+        }
       })
 
       const exportString = csvExportCellArray.join('\n')
@@ -981,7 +1025,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         autoClose: true,
       })
     },
-    [selectedSortedCols, sorted, exportFilePrefix, t]
+    [t, allTableItems, columns, exportFilePrefix, fetchExport]
   )
 
   const paged = useMemo<ITableItem<T>[]>(() => {
@@ -1079,7 +1123,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
     clearFilters()
-  }, [clearSearch, clearFilters])
+    setActiveAdvancedFilters([])
+    setPendingConstraints([{ operator: undefined, value: '', columnId: '' }])
+  }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
     (input: any) => {
@@ -1308,6 +1354,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       canAddConstraints
                       useAdvancedSearchPopper={advancedFilters.length > 0}
                       setActiveConstraints={setActiveAdvancedFilters}
+                      pendingConstraints={pendingConstraints}
+                      setPendingConstraints={setPendingConstraints}
                       searchableColumns={advancedFilters.map((filter) => ({
                         columnId: filter.id,
                         columnDisplayName: filter.label,

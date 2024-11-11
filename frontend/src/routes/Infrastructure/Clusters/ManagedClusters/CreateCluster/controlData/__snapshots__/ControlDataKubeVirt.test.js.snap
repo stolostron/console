@@ -1,18 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Cluster creation control data for KubeVirt Correctly sets available storage classes 1`] = `
-Object {
-  "available": Array [
+{
+  "available": [
     "storageclass2",
   ],
-  "availableMap": Object {
-    "gp3-csi": Object {
-      "replacements": Object {
+  "availableMap": {
+    "gp3-csi": {
+      "replacements": {
         "storageClassName": "gp3-csi",
       },
     },
-    "storageclass2": Object {
-      "replacements": Object {
+    "storageclass2": {
+      "replacements": {
         "storageClassName": "storageclass2",
       },
     },
@@ -26,29 +26,29 @@ Object {
 `;
 
 exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
-Array [
-  Object {
+[
+  {
     "id": "kubevirtDetailStep",
     "title": "Cluster details",
     "type": "step",
   },
-  Object {
+  {
     "active": "OpenShift Virtualization",
     "id": "infrastructure",
     "name": "Infrastructure",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "active": "Hosted",
     "id": "controlplane",
     "name": "Control plane type",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "component": <Alert
       isInline={true}
       style={
-        Object {
+        {
           "marginBottom": "1rem",
         }
       }
@@ -57,7 +57,7 @@ Array [
     >
       <div
         style={
-          Object {
+          {
             "display": "flex",
             "flexDirection": "column",
           }
@@ -65,7 +65,7 @@ Array [
       >
         <span
           style={
-            Object {
+            {
               "margin": "0.5rem 0",
             }
           }
@@ -95,8 +95,8 @@ Array [
     "id": "kubevirt-operator-alert",
     "type": "custom",
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
@@ -108,36 +108,41 @@ Array [
     "providerId": "kubevirt",
     "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "notification": "Select a connection",
       "required": true,
     },
   },
-  Object {
+  {
+    "active": true,
+    "id": "showSecrets",
+    "type": "hidden",
+  },
+  {
     "id": "clusterName",
     "name": "Cluster name",
     "placeholder": "Enter cluster name",
     "tooltip": "The unique name of your cluster. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
     "type": "text",
-    "validation": Object {
+    "validation": {
       "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
       "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
       "required": true,
     },
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "id": "clusterSet",
     "name": "Cluster set",
     "placeholder": "Select a cluster set",
     "tooltip": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together. Clusters from the pool will be added to this set. After the cluster pool is created, the cluster set cannot be changed.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "required": false,
     },
   },
-  Object {
-    "fetchAvailable": Object {
+  {
+    "fetchAvailable": {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
       "query": [Function],
@@ -152,13 +157,13 @@ Array [
     "simplified": [Function],
     "tooltip": "URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.",
     "type": "combobox",
-    "validation": Object {
+    "validation": {
       "notification": "Select a release image",
       "required": true,
     },
   },
-  Object {
-    "fetchAvailable": Object {
+  {
+    "fetchAvailable": {
       "emptyDesc": "No etcd storage classes. Enter an etcd storage classes name.",
       "loadingDesc": "Loading etcd storage classes...",
       "query": [Function],
@@ -170,56 +175,66 @@ Array [
     "reverse": [Function],
     "tooltip": "Persistent volume storage class for etcd data volumes",
     "type": "combobox",
-    "validation": Object {
+    "validation": {
       "notification": "Select a storage class",
       "required": false,
     },
   },
-  Object {
-    "active": Array [],
+  {
+    "active": {
+      "controller": "HighlyAvailable",
+      "infra": "HighlyAvailable",
+    },
+    "component": <AvailabilityOptionsForm />,
+    "id": "availabilityOptions",
+    "summary": [Function],
+    "type": "custom",
+  },
+  {
+    "active": [],
     "id": "additionalLabels",
     "name": "Additional labels",
     "tooltip": "Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.",
     "type": "labels",
   },
-  Object {
+  {
     "id": "nodepoolsStep",
     "title": "Node pools",
     "type": "step",
   },
-  Object {
-    "controlData": Array [
-      Object {
+  {
+    "controlData": [
+      {
         "collapsable": true,
         "id": "nodepoolsGroup",
         "subtitle": [Function],
         "type": "section",
       },
-      Object {
+      {
         "id": "nodePoolName",
         "name": "Node pool name",
         "placeholder": "Enter node pool name",
         "tooltip": "The unique name of your node pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
         "type": "text",
-        "validation": Object {
+        "validation": {
           "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
           "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
           "required": true,
         },
       },
-      Object {
+      {
         "id": "nodePoolReplica",
         "initial": "2",
         "name": "Node pool replica",
         "tooltip": "The number of Worker Nodes in the cluster",
         "type": "number",
-        "validation": Object {
+        "validation": {
           "notification": "Value must be integer.",
           "required": true,
           "tester": /\\^\\\\d\\+\\$/,
         },
       },
-      Object {
+      {
         "id": "nodePoolCoreCount",
         "initial": "2",
         "min": 1,
@@ -227,7 +242,7 @@ Array [
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "nodePoolMemory",
         "initial": "8",
         "min": 1,
@@ -235,36 +250,36 @@ Array [
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "nodePoolAutoRepair",
         "isTrue": false,
         "name": "Auto repair",
         "tooltip": "Enables machine auto-repair with machine health checks",
         "type": "boolean",
       },
-      Object {
+      {
         "collapsable": true,
         "collapsed": true,
         "id": "rootVolumeSection",
         "title": "Root volume option",
         "type": "section",
       },
-      Object {
+      {
         "id": "rootVolumeSize",
         "initial": "32",
         "name": "Size (GiB)",
         "tooltip": "The size of the underlying root volume used for the worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "rootVolumeStorageClass",
         "name": "Root Volume Storage Class",
         "placeholder": "Enter Storage Class",
         "tooltip": "Storage class used for the worker node VM’s root volume",
         "type": "text",
       },
-      Object {
-        "available": Array [
+      {
+        "available": [
           "ReadWriteOnce",
           "ReadWriteMany",
           "ReadOnly",
@@ -276,8 +291,8 @@ Array [
         "tooltip": "Access mode used for the worker node VM’s root volume",
         "type": "combobox",
       },
-      Object {
-        "available": Array [
+      {
+        "available": [
           "Block",
           "Filesystem",
         ],
@@ -289,18 +304,18 @@ Array [
       },
     ],
     "id": "nodepools",
-    "prompts": Object {
+    "prompts": {
       "addPrompt": "Add node pool",
       "deletePrompt": "Delete node pool",
     },
     "type": "group",
   },
-  Object {
+  {
     "active": true,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
   },
-  Object {
+  {
     "component": <Warning />,
     "id": "warning",
     "type": "custom",
@@ -309,29 +324,29 @@ Array [
 `;
 
 exports[`Cluster creation control data for KubeVirt generates correctly for MCE 1`] = `
-Array [
-  Object {
+[
+  {
     "id": "kubevirtDetailStep",
     "title": "Cluster details",
     "type": "step",
   },
-  Object {
+  {
     "active": "OpenShift Virtualization",
     "id": "infrastructure",
     "name": "Infrastructure",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "active": "Hosted",
     "id": "controlplane",
     "name": "Control plane type",
     "type": "reviewinfo",
   },
-  Object {
+  {
     "component": <Alert
       isInline={true}
       style={
-        Object {
+        {
           "marginBottom": "1rem",
         }
       }
@@ -340,7 +355,7 @@ Array [
     >
       <div
         style={
-          Object {
+          {
             "display": "flex",
             "flexDirection": "column",
           }
@@ -348,7 +363,7 @@ Array [
       >
         <span
           style={
-            Object {
+            {
               "margin": "0.5rem 0",
             }
           }
@@ -378,8 +393,8 @@ Array [
     "id": "kubevirt-operator-alert",
     "type": "custom",
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
     />,
@@ -391,36 +406,41 @@ Array [
     "providerId": "kubevirt",
     "tooltip": "The settings that are required for the selected provider. You can select an existing credential, or add new credentials. These credentials contain values such as pull secret or cloud credentials. The selected credential cannot be changed after creation.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "notification": "Select a connection",
       "required": true,
     },
   },
-  Object {
+  {
+    "active": true,
+    "id": "showSecrets",
+    "type": "hidden",
+  },
+  {
     "id": "clusterName",
     "name": "Cluster name",
     "placeholder": "Enter cluster name",
     "tooltip": "The unique name of your cluster. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
     "type": "text",
-    "validation": Object {
+    "validation": {
       "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
       "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
       "required": true,
     },
   },
-  Object {
-    "available": Array [],
+  {
+    "available": [],
     "id": "clusterSet",
     "name": "Cluster set",
     "placeholder": "Select a cluster set",
     "tooltip": "A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together. Clusters from the pool will be added to this set. After the cluster pool is created, the cluster set cannot be changed.",
     "type": "singleselect",
-    "validation": Object {
+    "validation": {
       "required": false,
     },
   },
-  Object {
-    "fetchAvailable": Object {
+  {
+    "fetchAvailable": {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
       "query": [Function],
@@ -435,13 +455,13 @@ Array [
     "simplified": [Function],
     "tooltip": "URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.",
     "type": "combobox",
-    "validation": Object {
+    "validation": {
       "notification": "Select a release image",
       "required": true,
     },
   },
-  Object {
-    "fetchAvailable": Object {
+  {
+    "fetchAvailable": {
       "emptyDesc": "No etcd storage classes. Enter an etcd storage classes name.",
       "loadingDesc": "Loading etcd storage classes...",
       "query": [Function],
@@ -453,56 +473,66 @@ Array [
     "reverse": [Function],
     "tooltip": "Persistent volume storage class for etcd data volumes",
     "type": "combobox",
-    "validation": Object {
+    "validation": {
       "notification": "Select a storage class",
       "required": false,
     },
   },
-  Object {
-    "active": Array [],
+  {
+    "active": {
+      "controller": "HighlyAvailable",
+      "infra": "HighlyAvailable",
+    },
+    "component": <AvailabilityOptionsForm />,
+    "id": "availabilityOptions",
+    "summary": [Function],
+    "type": "custom",
+  },
+  {
+    "active": [],
     "id": "additionalLabels",
     "name": "Additional labels",
     "tooltip": "Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.",
     "type": "labels",
   },
-  Object {
+  {
     "id": "nodepoolsStep",
     "title": "Node pools",
     "type": "step",
   },
-  Object {
-    "controlData": Array [
-      Object {
+  {
+    "controlData": [
+      {
         "collapsable": true,
         "id": "nodepoolsGroup",
         "subtitle": [Function],
         "type": "section",
       },
-      Object {
+      {
         "id": "nodePoolName",
         "name": "Node pool name",
         "placeholder": "Enter node pool name",
         "tooltip": "The unique name of your node pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
         "type": "text",
-        "validation": Object {
+        "validation": {
           "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
           "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
           "required": true,
         },
       },
-      Object {
+      {
         "id": "nodePoolReplica",
         "initial": "2",
         "name": "Node pool replica",
         "tooltip": "The number of Worker Nodes in the cluster",
         "type": "number",
-        "validation": Object {
+        "validation": {
           "notification": "Value must be integer.",
           "required": true,
           "tester": /\\^\\\\d\\+\\$/,
         },
       },
-      Object {
+      {
         "id": "nodePoolCoreCount",
         "initial": "2",
         "min": 1,
@@ -510,7 +540,7 @@ Array [
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "nodePoolMemory",
         "initial": "8",
         "min": 1,
@@ -518,36 +548,36 @@ Array [
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "nodePoolAutoRepair",
         "isTrue": false,
         "name": "Auto repair",
         "tooltip": "Enables machine auto-repair with machine health checks",
         "type": "boolean",
       },
-      Object {
+      {
         "collapsable": true,
         "collapsed": true,
         "id": "rootVolumeSection",
         "title": "Root volume option",
         "type": "section",
       },
-      Object {
+      {
         "id": "rootVolumeSize",
         "initial": "32",
         "name": "Size (GiB)",
         "tooltip": "The size of the underlying root volume used for the worker node VM",
         "type": "number",
       },
-      Object {
+      {
         "id": "rootVolumeStorageClass",
         "name": "Root Volume Storage Class",
         "placeholder": "Enter Storage Class",
         "tooltip": "Storage class used for the worker node VM’s root volume",
         "type": "text",
       },
-      Object {
-        "available": Array [
+      {
+        "available": [
           "ReadWriteOnce",
           "ReadWriteMany",
           "ReadOnly",
@@ -559,8 +589,8 @@ Array [
         "tooltip": "Access mode used for the worker node VM’s root volume",
         "type": "combobox",
       },
-      Object {
-        "available": Array [
+      {
+        "available": [
           "Block",
           "Filesystem",
         ],
@@ -572,18 +602,18 @@ Array [
       },
     ],
     "id": "nodepools",
-    "prompts": Object {
+    "prompts": {
       "addPrompt": "Add node pool",
       "deletePrompt": "Delete node pool",
     },
     "type": "group",
   },
-  Object {
+  {
     "active": false,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
   },
-  Object {
+  {
     "component": <Warning />,
     "id": "warning",
     "type": "custom",

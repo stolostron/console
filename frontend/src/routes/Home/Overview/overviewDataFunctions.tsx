@@ -154,9 +154,12 @@ export function getAppTypeSummary(requestedCounts: IResultStatuses, t: TFunction
     }
   }
   const typeTotals: Record<string, number> = {}
-  Object.keys(filterCounts.type).forEach((type) => {
-    typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
-  })
+  // type can be undefined just after ACM is installed.
+  if (filterCounts.type) {
+    Object.keys(filterCounts.type).forEach((type) => {
+      typeTotals[getAppTypeLabel(type)] = filterCounts.type[type]
+    })
+  }
   // sort alphabetically
   const orderedAppTypes = Object.keys(typeTotals).sort((a, b) => compareStrings(a, b))
 
@@ -277,7 +280,9 @@ export function getPolicyReport(policyReports: PolicyReport[], filteredClusters:
   )
   policyReportsForFilteredClusters.forEach((policyReport: PolicyReport) => {
     const insightsFilteredResults = policyReport.results.filter((result) => result.source === 'insights')
-    insightsFilteredResults.length > 0 && clustersWithIssuesCount++
+    if (insightsFilteredResults.length > 0) {
+      clustersWithIssuesCount++
+    }
     insightsFilteredResults.forEach((result: PolicyReportResults) => {
       switch (result.properties.total_risk) {
         case '4':
@@ -495,26 +500,20 @@ export function parseAlertsMetric(
       if (metric.cluster && !clustersAffectedAlerts.includes(metric.cluster)) {
         clustersAffectedAlerts.push(metric.cluster)
       }
-      switch (metric.severity?.toLowerCase()) {
-        case 'critical':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.critical.alerts.push(metric.alertname)
-          }
-          break
-        case 'warning':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.warning.alerts.push(metric.alertname)
-          }
-          break
-        case 'info':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.info.alerts.push(metric.alertname)
-          }
-          break
-        default:
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.other.alerts.push(metric.alertname)
-          }
+      if (metric.alertname && metric.alertstate === 'firing') {
+        switch (metric.severity?.toLowerCase()) {
+          case 'critical':
+            alertSeverity.critical.alerts.push(metric.alertname)
+            break
+          case 'warning':
+            alertSeverity.warning.alerts.push(metric.alertname)
+            break
+          case 'info':
+            alertSeverity.info.alerts.push(metric.alertname)
+            break
+          default:
+            alertSeverity.other.alerts.push(metric.alertname)
+        }
       }
     })
   }

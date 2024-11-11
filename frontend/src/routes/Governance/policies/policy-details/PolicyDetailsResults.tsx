@@ -3,7 +3,7 @@ import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
-import { useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -14,6 +14,7 @@ import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails }
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
+import { TFunction } from 'react-i18next'
 
 export interface ResultsTableData {
   templateName: string
@@ -57,6 +58,30 @@ function templateExists(msg: string): boolean {
   )
 }
 
+function getTemplateName(item: ResultsTableData, canCreatePolicy: boolean, t: TFunction): ReactNode {
+  if (!templateExists(item?.message ?? '')) {
+    return item.templateName
+  }
+
+  const templateDetailURL = getTemplateDetailURL(item)
+
+  return canCreatePolicy ? (
+    templateDetailURL ? (
+      <span>
+        <Link to={templateDetailURL}>{item.templateName}</Link>
+      </span>
+    ) : (
+      item.templateName
+    )
+  ) : (
+    <Tooltip content={t('rbac.unauthorized')}>
+      <span className="link-disabled" id="template-name-link-disabled">
+        {item.templateName}
+      </span>
+    </Tooltip>
+  )
+}
+
 export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
@@ -77,37 +102,36 @@ export default function PolicyDetailsResults() {
       (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
     )
     const status: ResultsTableData[] = []
-    policyResponses.length > 0 &&
-      policyResponses.forEach((policyResponse: Policy) => {
-        const cluster =
-          (policyResponse?.metadata?.labels &&
-            policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
-          '-'
-        const clusterNamespace =
-          (policyResponse?.metadata?.labels &&
-            policyResponse?.metadata?.labels['policy.open-cluster-management.io/cluster-namespace']) ??
-          '-'
-        const details = policyResponse?.status?.details ?? []
-        details.forEach((detail: PolicyStatusDetails) => {
-          const templates = policyResponse?.spec['policy-templates'] ?? []
-          const template = templates.find(
-            (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
-          )
-          status.push({
-            templateName: detail.templateMeta.name ?? '-',
-            cluster,
-            clusterNamespace,
-            apiVersion: template?.objectDefinition.apiVersion ?? '-',
-            kind: template?.objectDefinition.kind ?? '-',
-            status: detail.compliant ?? 'no-status',
-            message: (detail?.history && detail.history[0]?.message) ?? '-',
-            timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
-            policyName,
-            policyNamespace,
-            remediationAction: getPolicyTempRemediation(policyResponse, template),
-          })
+    policyResponses?.forEach((policyResponse: Policy) => {
+      const cluster =
+        (policyResponse?.metadata?.labels &&
+          policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
+        '-'
+      const clusterNamespace =
+        (policyResponse?.metadata?.labels &&
+          policyResponse?.metadata?.labels['policy.open-cluster-management.io/cluster-namespace']) ??
+        '-'
+      const details = policyResponse?.status?.details ?? []
+      details.forEach((detail: PolicyStatusDetails) => {
+        const templates = policyResponse?.spec['policy-templates'] ?? []
+        const template = templates.find(
+          (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
+        )
+        status.push({
+          templateName: detail.templateMeta.name ?? '-',
+          cluster,
+          clusterNamespace,
+          apiVersion: template?.objectDefinition.apiVersion ?? '-',
+          kind: template?.objectDefinition.kind ?? '-',
+          status: detail.compliant ?? 'no-status',
+          message: (detail?.history && detail.history[0]?.message) ?? '-',
+          timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
+          policyName,
+          policyNamespace,
+          remediationAction: getPolicyTempRemediation(policyResponse, template),
         })
       })
+    })
     return status
   }, [policy, policies])
 
@@ -192,28 +216,7 @@ export default function PolicyDetailsResults() {
       {
         header: t('Template'),
         sort: 'templateName',
-        cell: (item: ResultsTableData) => {
-          if (!templateExists(item?.message ?? '')) {
-            return item.templateName
-          }
-
-          const templateDetailURL = getTemplateDetailURL(item)
-          return canCreatePolicy ? (
-            templateDetailURL ? (
-              <span>
-                <Link to={templateDetailURL}>{item.templateName}</Link>
-              </span>
-            ) : (
-              item.templateName
-            )
-          ) : (
-            <Tooltip content={t('rbac.unauthorized')}>
-              <span className="link-disabled" id="template-name-link-disabled">
-                {item.templateName}
-              </span>
-            </Tooltip>
-          )
-        },
+        cell: (item: ResultsTableData) => getTemplateName(item, canCreatePolicy, t),
         search: (item: ResultsTableData) => item.templateName,
         exportContent: (item: ResultsTableData) => item.templateName,
       },
@@ -269,7 +272,7 @@ export default function PolicyDetailsResults() {
         cell: (item: ResultsTableData) =>
           item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
         exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
+          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
       },
       {
         header: t('History'),
@@ -289,6 +292,7 @@ export default function PolicyDetailsResults() {
           }
           return '-'
         },
+        disableExport: true,
       },
     ],
     [canCreatePolicy, t]

@@ -67,7 +67,7 @@ export const importHostedControlPlaneCluster = (
 
   try {
     createResource(clusterNameSpace as IResource)
-  } catch (err) {}
+  } catch {}
 
   return {
     promise: createManagedCluster({ clusterName, clusterLabels, clusterAnnotations }).promise.then((mc) =>

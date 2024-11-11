@@ -28,7 +28,7 @@ PROJECT_TITLE="[ACM $VERSION] Console UI - Branch $BRANCH/Commit $COMMIT"
 
 echo "Creating project with title \"$PROJECT_TITLE\""
 
-PROJECT_INFO=$(memsource project create --name "$PROJECT_TITLE" --template-id 203224 -f json)
+PROJECT_INFO=$(memsource project create --name "$PROJECT_TITLE" --template-id 317450 -f json)
 PROJECT_ID=$(echo "$PROJECT_INFO" | jq -r '.uid')
 
 echo "Prepare JSON files for upload"

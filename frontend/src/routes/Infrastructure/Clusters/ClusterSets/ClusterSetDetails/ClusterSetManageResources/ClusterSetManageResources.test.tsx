@@ -14,7 +14,7 @@ import {
   ManagedClusterSetApiVersion,
   ManagedClusterSetKind,
   managedClusterSetLabel,
-  mapClusters,
+  testMapClusters,
 } from '../../../../../../resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
@@ -244,7 +244,9 @@ function nockPatchClusterDeployment(clusterName: string, op: 'replace' | 'add' |
 const Component = () => {
   const context: Partial<ClusterSetDetailsContext> = {
     clusterSet: mockManagedClusterSet,
-    clusters: mapClusters([], [], [], [mockManagedClusterRemove, mockManagedClusterUnchanged], {}),
+    clusters: testMapClusters({
+      managedClusters: [mockManagedClusterRemove, mockManagedClusterUnchanged],
+    }),
     clusterPools: [],
     clusterDeployments: [mockClusterDeploymentClaimed],
     clusterRoleBindings: [],
