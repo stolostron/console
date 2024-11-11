@@ -300,7 +300,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     // use maps to improve performance of associating agents to environment
     // first, what keys does environement use to know its agent
     const keySet = infraEnvs.reduce((keys, env) => {
-      Object.keys(get(env, 'status.agentLabelSelector.matchLabels')).forEach((key) => {
+      Object.keys(get(env, 'status.agentLabelSelector.matchLabels', {})).forEach((key) => {
         keys.add(key)
       })
       return keys
