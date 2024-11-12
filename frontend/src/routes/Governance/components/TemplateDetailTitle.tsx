@@ -46,7 +46,7 @@ export function TemplateDetailTitle({
   }, [policyKind])
 
   const badgeCompliant = useMemo(() => {
-    if (['ClusterPolicy', 'Policy'].includes(policyKind || '') && auditViolations !== undefined) {
+    if (auditViolations !== undefined) {
       return auditViolations > 0 ? (
         <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
           {t('Audit violations')}{' '}
@@ -92,7 +92,7 @@ export function TemplateDetailTitle({
       default:
         return ''
     }
-  }, [auditViolations, compliant, policyKind, t])
+  }, [auditViolations, compliant, t])
 
   return (
     <>

@@ -55,6 +55,10 @@ export function PolicyTemplateDetails() {
   }, [kyvernoRelated, apiGroup, isFromSearch, handleAuditViolation])
 
   useEffect(() => {
+    if (apiGroup === 'constraints.gatekeeper.sh' && template?.status?.totalViolations !== undefined) {
+      handleAuditViolation(template.status.totalViolations)
+    }
+
     if (template?.status?.relatedObjects?.length) {
       const relObjs = template.status.relatedObjects.map((obj: any) => {
         obj.cluster = clusterName
@@ -96,7 +100,7 @@ export function PolicyTemplateDetails() {
     if (!templateLoading && !isFromSearch) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading, isFromSearch])
+  }, [apiGroup, clusterName, template, templateLoading, isFromSearch, handleAuditViolation])
 
   const descriptionItems = useMemo(() => {
     let cols: ListItems[] = [

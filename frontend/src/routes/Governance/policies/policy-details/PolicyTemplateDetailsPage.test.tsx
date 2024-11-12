@@ -774,6 +774,10 @@ describe('Policy Template Details Page', () => {
     await waitForText('my-system.sh/app')
     await waitForText('Pod')
 
+    await waitForText('Audit violations')
+
+    expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
+
     const viewYamlLinks = screen.getAllByText('View YAML')
     expect(viewYamlLinks[0].getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default`
