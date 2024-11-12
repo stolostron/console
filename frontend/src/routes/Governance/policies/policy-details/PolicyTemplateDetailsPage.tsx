@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
-import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -13,6 +13,7 @@ export type TemplateDetailsContext = {
   clusterName: string
   template: any
   templateLoading: boolean
+  handleAuditViolation: (n: number) => void
 }
 
 export function PolicyTemplateDetailsPage() {
@@ -20,6 +21,7 @@ export function PolicyTemplateDetailsPage() {
   const [template, setTemplate] = useState<any>()
   const [templateLoading, setTemplateLoading] = useState<boolean>(true)
   const [templateError, setTemplateError] = useState<string>()
+  const [auditViolations, setAuditViolations] = useState<number | undefined>()
   const { managedClusterAddonsState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
@@ -133,13 +135,23 @@ export function PolicyTemplateDetailsPage() {
     }
   }, [t, clusterName, kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
 
+  const handleAuditViolation = useCallback(
+    (policyViolation: number): void => {
+      if (apiGroup == 'kyverno.io') {
+        setAuditViolations(policyViolation)
+      }
+    },
+    [apiGroup]
+  )
+
   const templateDetailsContext = useMemo<TemplateDetailsContext>(
     () => ({
       template,
       clusterName,
       templateLoading,
+      handleAuditViolation,
     }),
-    [template, clusterName, templateLoading]
+    [template, clusterName, templateLoading, handleAuditViolation]
   )
 
   return (
@@ -151,6 +163,7 @@ export function PolicyTemplateDetailsPage() {
               policyKind={kind}
               templateName={templateName}
               compliant={template?.status?.compliant}
+              auditViolations={auditViolations}
             />
           }
           breadcrumb={

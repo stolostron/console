@@ -9,7 +9,8 @@ export function TemplateDetailTitle({
   policyKind,
   templateName,
   compliant,
-}: Readonly<{ policyKind?: string; templateName: string; compliant: string }>) {
+  auditViolations,
+}: Readonly<{ policyKind?: string; templateName: string; compliant: string; auditViolations?: number }>) {
   const { t } = useTranslation()
 
   const short = useMemo(() => {
@@ -45,6 +46,30 @@ export function TemplateDetailTitle({
   }, [policyKind])
 
   const badgeCompliant = useMemo(() => {
+    if (['ClusterPolicy', 'Policy'].includes(policyKind || '') && auditViolations !== undefined) {
+      return auditViolations > 0 ? (
+        <Label color="red" icon={<ExclamationCircleIcon />} style={{ verticalAlign: 'middle' }}>
+          {t('Audit violations')}{' '}
+          <span
+            style={{
+              backgroundColor: 'var(--pf-c-label__icon--Color)',
+              borderRadius: 10,
+              marginLeft: 8,
+              fontSize: '0.75rem',
+              padding: '0 6px',
+              paddingTop: 2,
+              color: 'var(--pf-global--BackgroundColor--100)',
+            }}
+          >
+            {auditViolations}{' '}
+          </span>
+        </Label>
+      ) : (
+        <Label color="green" icon={<CheckCircleIcon />} style={{ verticalAlign: 'middle' }}>
+          {t('No audit violations')}
+        </Label>
+      )
+    }
     switch (compliant) {
       case 'NonCompliant':
         return (
@@ -67,7 +92,7 @@ export function TemplateDetailTitle({
       default:
         return ''
     }
-  }, [compliant, t])
+  }, [auditViolations, compliant, policyKind, t])
 
   return (
     <>
