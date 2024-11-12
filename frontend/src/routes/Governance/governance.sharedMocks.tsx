@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { getMultipleMocks } from '../../lib/test-util'
 import {
   Policy,
   PolicyApiVersion,
@@ -57,6 +58,23 @@ export const mockLocalCluster: ManagedCluster = {
     name: 'local-cluster',
   },
 }
+
+export const mockClusters = getMultipleMocks(
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      labels: {
+        cloud: 'Amazon',
+        name: () => 'name',
+        openshiftVersion: '4.9.7',
+        vendor: 'OpenShift',
+      },
+      name: () => 'name',
+    },
+  },
+  100
+) as ManagedCluster[]
 
 export const mockClusterSet: ManagedClusterSet = {
   apiVersion: ManagedClusterSetApiVersion,
@@ -459,6 +477,28 @@ const policyWithoutStatus: Policy = {
 }
 
 // ******
+// POLICY WITH LOTS OF CLUSTERS
+// ******
+
+const NONCOMPLIANT = [3, 10, 18, 23, 34, 46, 47, 48, 55, 60, 80, 93]
+const makePolicyWithLotsOfClusters = (n: number) => {
+  const mockPolicy = JSON.parse(JSON.stringify(rootPolicy)) as Policy
+  Array.from(Array(n).keys()).forEach((inx) => {
+    let compliant = NONCOMPLIANT.indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
+    if (inx == 20 || inx === 71) compliant = 'Pending'
+    if (inx == 22 || inx === 98) compliant = 'Unknown'
+    mockPolicy?.status?.status?.push({
+      clustername: `cluster${inx + 1}`,
+      clusternamespace: `cluster${inx + 1}`,
+      compliant,
+    })
+  })
+  return [mockPolicy]
+}
+
+const policyWithLotsOfClusters = makePolicyWithLotsOfClusters(100)
+
+// ******
 // POLICYSET
 // ******
 const policySet0: PolicySet = {
@@ -816,3 +856,6 @@ export const mockPlacementDecision: PlacementDecision[] = [placementDecision]
 
 export const mockSecret: Secret = secret
 export const mockManagedClusters: ManagedCluster[] = [mockLocalCluster]
+
+export const mockMultiPolicy: Policy[] = [...policyWithLotsOfClusters]
+export const mockMultiManagedClusters: ManagedCluster[] = [mockLocalCluster, ...mockClusters]

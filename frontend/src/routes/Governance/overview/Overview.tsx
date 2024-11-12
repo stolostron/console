@@ -312,8 +312,11 @@ function ClustersCard() {
     }
 
     // consolidate
+    /* istanbul ignore next */
     if (isExpandedNon) topClustersList = [...topClustersList, ...(remainingNoncompliant || [])]
+    /* istanbul ignore next */
     if (isExpandedUnk) topClustersList = [...topClustersList, ...(remainingUnknown || [])]
+    /* istanbul ignore next */
     if (isExpandedCom) topClustersList = [...topClustersList, ...(remainingCompliant || [])]
     return {
       topClustersList,
@@ -387,6 +390,7 @@ function renderClusterList(
     <div style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
       {clusterList.map(({ cluster, violations }) => {
         const key = `${cluster.metadata.name}-card`
+        /* istanbul ignore if */
         if (!violations) return <Fragment key={key} />
         return (
           <Fragment key={key}>

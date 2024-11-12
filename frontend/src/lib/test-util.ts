@@ -392,3 +392,24 @@ export const getCSVDownloadLink = (createElementSpy: jest.SpyInstance<HTMLElemen
     ({ type, value }, index) =>
       createElementSpy.mock.calls[index][0] === 'a' && type === 'return' && value.getAttribute('download')
   )
+
+export const templateMaker = function (obj: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function (context: { [x: string]: any }) {
+    const replacer = function (_key: string, val: () => string | number) {
+      if (typeof val === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return context[val()]
+      }
+      return val
+    }
+    return JSON.parse(JSON.stringify(obj, replacer)) as unknown
+  }
+}
+
+export const getMultipleMocks = (obj: unknown, repeat: number) => {
+  const template = templateMaker(obj)
+  return Array.from(Array(repeat).keys()).map((inx) => {
+    return template({ name: `cluster${inx + 1}` })
+  })
+}
