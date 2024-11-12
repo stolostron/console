@@ -34,7 +34,11 @@ import { JSX } from 'react/jsx-runtime'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
-const MAX_CLUSTERS_SHOWN = 10
+const INITIAL_CLUSTERS_SHOWN = 10
+
+const getScore = (item: { cluster?: ManagedCluster; violations: any }) => {
+  return item.violations.noncompliant * 100 + item.violations.unknown * 10 + item.violations.pending
+}
 
 export default function GovernanceOverview() {
   usePageVisitMetricHandler(Pages.governance)
@@ -263,50 +267,61 @@ function ClustersCard() {
     setIsExpandedCom(isExpanded)
   }
 
-  const clusterMap = keyBy(clusters, 'metadata.name')
   const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
-  const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap).map((clusterKey) => {
+
+  const { topClustersList, remainingNoncompliant, remainingUnknown, remainingCompliant } = useMemo(() => {
+    const clusterMap = keyBy(clusters, 'metadata.name')
+    const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap).map((clusterKey) => {
+      return {
+        cluster: clusterMap[clusterKey],
+        violations: clusterViolationSummaryMap[clusterKey],
+      }
+    })
+
+    // sort noncompliant clusters to the top of the list
+    clusterViolationSummaryList.sort((a, b) => {
+      return getScore(b) - getScore(a)
+    })
+
+    // if there's more then INITIAL_CLUSTERS_SHOWN clusters, split lists into groups
+    let remainingNoncompliant
+    let remainingUnknown
+    let remainingCompliant
+    let topClustersList = clusterViolationSummaryList
+    // don't end first group on boundary to avoid a small group
+    if (clusterViolationSummaryList.length > INITIAL_CLUSTERS_SHOWN + 5) {
+      topClustersList = clusterViolationSummaryList.slice(0, INITIAL_CLUSTERS_SHOWN)
+      let remainingList = clusterViolationSummaryList.slice(INITIAL_CLUSTERS_SHOWN)
+      if (remainingList.length) {
+        let inx = remainingList.findIndex((item) => {
+          return item.violations.noncompliant === 0
+        })
+        if (inx > 0) {
+          remainingNoncompliant = remainingList.slice(0, inx)
+          remainingList = remainingList.slice(inx)
+        }
+        inx = remainingList.findIndex((item) => {
+          return item.violations.pending === 0 && item.violations.unknown === 0
+        })
+        if (inx > 0) {
+          remainingUnknown = remainingList.slice(0, inx)
+          remainingList = remainingList.slice(inx)
+        }
+        remainingCompliant = remainingList
+      }
+    }
+
+    // consolidate
+    if (isExpandedNon) topClustersList = [...topClustersList, ...(remainingNoncompliant || [])]
+    if (isExpandedUnk) topClustersList = [...topClustersList, ...(remainingUnknown || [])]
+    if (isExpandedCom) topClustersList = [...topClustersList, ...(remainingCompliant || [])]
     return {
-      cluster: clusterMap[clusterKey],
-      violations: clusterViolationSummaryMap[clusterKey],
+      topClustersList,
+      remainingNoncompliant,
+      remainingUnknown,
+      remainingCompliant,
     }
-  })
-
-  // sort noncompliant clusters to the top of the list
-  const getScore = (item: { cluster?: ManagedCluster; violations: any }) => {
-    return item.violations.noncompliant * 100 + item.violations.unknown * 10 + item.violations.pending
-  }
-  clusterViolationSummaryList.sort((a, b) => {
-    return getScore(b) - getScore(a)
-  })
-
-  // if there's more then MAX_CLUSTERS_SHOWN clusters, split lists into groups
-  let remainingNoncompliant
-  let remainingUnknown
-  let remainingCompliant
-  let clustersList = clusterViolationSummaryList
-  // don't end first group on boundary to avoid a small group
-  if (clusterViolationSummaryList.length > MAX_CLUSTERS_SHOWN + 5) {
-    clustersList = clusterViolationSummaryList.slice(0, MAX_CLUSTERS_SHOWN)
-    let remainingList = clusterViolationSummaryList.slice(MAX_CLUSTERS_SHOWN)
-    if (remainingList.length) {
-      let inx = remainingList.findIndex((item) => {
-        return item.violations.noncompliant === 0
-      })
-      if (inx > 0) {
-        remainingNoncompliant = remainingList.slice(0, inx)
-        remainingList = remainingList.slice(inx)
-      }
-      inx = remainingList.findIndex((item) => {
-        return item.violations.pending === 0 && item.violations.unknown === 0
-      })
-      if (inx > 0) {
-        remainingUnknown = remainingList.slice(0, inx)
-        remainingList = remainingList.slice(inx)
-      }
-      remainingCompliant = remainingList
-    }
-  }
+  }, [clusterViolationSummaryMap, clusters, isExpandedCom, isExpandedNon, isExpandedUnk])
 
   const renderExtraClusterList = (
     xtraList: { cluster: any; violations: any }[] | undefined,
@@ -315,20 +330,13 @@ function ClustersCard() {
     isXtraExpanded: boolean | undefined
   ) => {
     return (
-      xtraList && (
+      xtraList &&
+      !isXtraExpanded && (
         <ExpandableSection
           toggleContent={
             <div>
-              {!isXtraExpanded ? (
-                <>
-                  <span
-                    style={{ whiteSpace: 'pre' }}
-                  >{`${t(`Show {{count}} more`, { count: xtraList.length })}  `}</span>
-                  {icon}
-                </>
-              ) : (
-                <>{`${t('Show less')}`}</>
-              )}
+              <span style={{ whiteSpace: 'pre' }}>{`${t(`Show {{count}} more`, { count: xtraList.length })}  `}</span>
+              {icon}
             </div>
           }
           onToggle={xtraToggle}
@@ -345,7 +353,7 @@ function ClustersCard() {
       <Card isRounded>
         <CardTitle>{t('Clusters')}</CardTitle>
         <CardBody>
-          {renderClusterList(clustersList, onClick, t)}
+          {renderClusterList(topClustersList, onClick, t)}
           {renderExtraClusterList(
             remainingNoncompliant,
             <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
