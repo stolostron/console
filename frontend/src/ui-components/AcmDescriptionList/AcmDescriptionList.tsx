@@ -8,6 +8,7 @@ import {
   DescriptionListTerm,
   Grid,
   GridItem,
+  gridItemSpanValueShape,
 } from '@patternfly/react-core'
 
 import { AcmExpandableCard } from '../AcmExpandable'
@@ -33,11 +34,12 @@ export function AcmDescriptionList(
     leftItems: ListItems[]
     rightItems?: ListItems[]
     defaultOpen?: boolean
+    xl2?: gridItemSpanValueShape
   }>
 ) {
   return (
     <AcmExpandableCard id={props.id} title={props.title} defaultOpen={props.defaultOpen}>
-      <Grid sm={12} md={props.rightItems ? 6 : 12}>
+      <Grid sm={12} md={props.rightItems ? 6 : 12} xl2={props.xl2}>
         <GridItem className={leftCol}>
           <List items={props.leftItems} />
         </GridItem>

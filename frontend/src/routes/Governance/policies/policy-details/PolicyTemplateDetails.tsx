@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Divider, Flex, Grid, GridItem, LabelGroup, PageSection, Skeleton, Title } from '@patternfly/react-core'
+import { Badge, Divider, Flex, LabelGroup, PageSection, Skeleton, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -462,17 +462,14 @@ export function PolicyTemplateDetails() {
         </PageSection>
       )}
       <PageSection style={{ paddingBottom: '0' }}>
-        <Grid hasGutter>
-          <GridItem span={12}>
-            <AcmDescriptionList
-              id={'template-details-section'}
-              title={kind + ' ' + t('details')}
-              leftItems={descriptionItems.filter((_, i) => i < descriptionItems.length / 2)}
-              rightItems={descriptionItems.filter((_, i) => i >= descriptionItems.length / 2)}
-              defaultOpen
-            />
-          </GridItem>
-        </Grid>
+        <AcmDescriptionList
+          id={'template-details-section'}
+          title={kind + ' ' + t('details')}
+          leftItems={descriptionItems.filter((_, i) => i < descriptionItems.length / 2)}
+          rightItems={descriptionItems.filter((_, i) => i >= descriptionItems.length / 2)}
+          defaultOpen
+          xl2={4}
+        />
       </PageSection>
       <PageSection>
         <Title headingLevel="h2">{t('Related resources')}</Title>
