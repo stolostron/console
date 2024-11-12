@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -420,38 +420,6 @@ describe('Policy Template Details Page', () => {
                       name: 'openshift-etcd-operator',
                       status: 'Active',
                     },
-                  ],
-                },
-                {
-                  kind: 'ClusterPolicyReport',
-                  items: [
-                    {
-                      _hubClusterResource: 'true',
-                      _relatedUids: ['local-cluster/6cdec79f-980f-4947-95ab-3ce9789b270f'],
-                      _uid: 'local-cluster/436cd10e-a08b-4afd-a42e-e2d608eb7dca',
-                      apigroup: 'wgpolicyk8s.io',
-                      apiversion: 'v1alpha2',
-                      category: '',
-                      cluster: 'local-cluster',
-                      created: '2024-10-31T16:23:15Z',
-                      critical: '0',
-                      important: '0',
-                      kind: 'ClusterPolicyReport',
-                      kind_plural: 'clusterpolicyreports',
-                      label: 'app.kubernetes.io/managed-by=kyverno',
-                      low: '0',
-                      moderate: '0',
-                      name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
-                      numRuleViolations: '1',
-                      _policyViolationCounts: 'require-owner-labels=1',
-                      rules: 'require-owner-labels',
-                      scope: 'e2e-rbac-test-1',
-                    },
-                  ],
-                },
-                {
-                  kind: 'Namespace',
-                  items: [
                     {
                       _hubClusterResource: 'true',
                       _relatedUids: ['local-cluster/97c60893-ea66-47ac-8e2f-0c191246ad32'],
@@ -471,8 +439,30 @@ describe('Policy Template Details Page', () => {
                   items: [
                     {
                       _hubClusterResource: 'true',
-                      _relatedUids: ['local-cluster/b56b0432-75f8-4440-ac53-86a993c3c2f6'],
-                      _uid: 'local-cluster/97c60893-ea66-47ac-8e2f-0c191246ad32',
+                      _relatedUids: ['test-cluster/6cdec79f-980f-4947-95ab-3ce9789b270f'],
+                      _uid: 'test-cluster/436cd10e-a08b-4afd-a42e-e2d608eb7dca',
+                      apigroup: 'wgpolicyk8s.io',
+                      apiversion: 'v1alpha2',
+                      category: '',
+                      cluster: 'local-cluster',
+                      created: '2024-10-31T16:23:15Z',
+                      critical: '0',
+                      important: '0',
+                      kind: 'ClusterPolicyReport',
+                      kind_plural: 'clusterpolicyreports',
+                      label: 'app.kubernetes.io/managed-by=kyverno',
+                      low: '0',
+                      moderate: '0',
+                      name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
+                      numRuleViolations: '1',
+                      _policyViolationCounts: 'require-owner-labels=1',
+                      rules: 'require-owner-labels',
+                      scope: 'e2e-rbac-test-1',
+                    },
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['test-cluster/b56b0432-75f8-4440-ac53-86a993c3c2f6'],
+                      _uid: 'test-cluster/97c60893-ea66-47ac-8e2f-0c191246ad32',
                       apigroup: 'wgpolicyk8s.io',
                       apiversion: 'v1alpha2',
                       category: '',
@@ -486,8 +476,8 @@ describe('Policy Template Details Page', () => {
                       low: '0',
                       moderate: '0',
                       name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
-                      numRuleViolations: '0',
-                      _policyViolationCounts: 'require-owner-labels=0',
+                      numRuleViolations: '1',
+                      _policyViolationCounts: 'require-owner-labels=1',
                       rules: 'require-owner-labels',
                       scope: 'e2e-rbac-test-1',
                     },
@@ -539,6 +529,7 @@ describe('Policy Template Details Page', () => {
     // wait for related resources table to load correctly
     await waitForText('Related resources')
     await waitForText('test')
+    expect(screen.getByRole('link', { name: 'test' })).toBeInTheDocument()
     await waitForText('v1')
     await waitForText('No violations', true)
     await waitForText('Resource found as expected')
@@ -634,9 +625,10 @@ describe('Policy Template Details Page', () => {
     // Ensure the hosting cluster name isn't shown as the cluster name
     await waitForText(clusterName)
     await waitForText('ConfigurationPolicy')
-    await waitForText('View YAML')
-    const viewYamlLink = screen.getByText('View YAML')
-    expect(viewYamlLink.getAttribute('href')).toEqual(
+    await waitForText('test')
+
+    const name = screen.getByRole('link', { name: 'test' })
+    expect(name.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
     )
   })
@@ -768,17 +760,23 @@ describe('Policy Template Details Page', () => {
     await waitForText('ns-must-have-gk', true)
     await waitForText('K8sRequiredLabels')
 
-    await waitForText('View YAML', true)
+    await waitForText('Audit violations')
+
+    expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
 
     await waitForText('Audit violations')
 
     expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
 
-    const viewYamlLinks = screen.getAllByText('View YAML')
-    expect(viewYamlLinks[0].getAttribute('href')).toEqual(
+    const firstRowName = screen.getByRole('link', { name: 'default' })
+    expect(firstRowName.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default`
     )
-    expect(viewYamlLinks[1].getAttribute('href')).toEqual(
+
+    const SecondRowName = screen.getByRole('link', {
+      name: 'default-broker',
+    })
+    expect(SecondRowName.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
 
@@ -839,13 +837,12 @@ describe('Policy Template Details Page', () => {
         'was found'
     )
 
-    await waitForText('View YAML', true)
-
     const row = screen.getByRole('row', {
       name: /Deployment Available/i,
     })
-    const viewYamlLink = within(row).getByRole('link', { name: /view yaml/i })
-    expect(viewYamlLink.getAttribute('href')).toEqual(
+
+    const firstRowName = within(row).getByRole('link', { name: 'quay-operator.v3.8.15' })
+    expect(firstRowName.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Deployment&apiversion=apps/v1&name=quay-operator.v3.8.15&namespace=operator-policy-testns`
     )
   })
@@ -1042,7 +1039,6 @@ describe('Policy Template Details Page', () => {
     // Both namespace and name
     await waitForText('-', true)
     await waitForText('v1')
-    await waitForNotText('View YAML')
   })
 
   test('Should render correctly with relatedObject name is - when it is namespace scope', async () => {
@@ -1088,7 +1084,6 @@ describe('Policy Template Details Page', () => {
     await waitForText('Related resources')
     await waitForText('-')
     await waitForText('networking.k8s.io/v1')
-    await waitForNotText('View YAML')
   })
 
   test('Should show an error when displaying unsupported IamPolicy', async () => {
@@ -1304,7 +1299,7 @@ describe('Policy Template Details Page', () => {
                 any: [
                   {
                     resources: {
-                      kinds: ['Ingress'],
+                      kinds: ['Namespace'],
                     },
                   },
                 ],
@@ -1326,6 +1321,114 @@ describe('Policy Template Details Page', () => {
     }
 
     const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
+
+    const getClusterPolicyReportResourceRequest1 = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: '9a2fe25b8fc3171745ff8d0ead2ecc6998a60d8a',
+        namespace: 'local-cluster',
+        labels: {
+          viewName: '9a2fe25b8fc3171745ff8d0ead2ecc6998a60d8a',
+        },
+      },
+      spec: {
+        scope: {
+          name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
+          resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
+        },
+      },
+    }
+    const getClusterPolicyResourceResponse1 = JSON.parse(JSON.stringify(getClusterPolicyReportResourceRequest1))
+    getClusterPolicyResourceResponse1.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'ClusterPolicyReport',
+        metadata: {
+          name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
+        },
+        results: [
+          {
+            message:
+              'validation error: The label `owner` is required. rule require-labels failed at path /metadata/labels/owner/',
+            policy: 'require-owner-labels',
+            result: 'fail',
+            rule: 'require-labels',
+            scored: true,
+            severity: 'medium',
+            source: 'kyverno',
+            timestamp: {
+              nanos: 0,
+              seconds: 1731688479,
+            },
+          },
+        ],
+      },
+    }
+
+    const getReportResourceNock1 = nockGet(getClusterPolicyReportResourceRequest1, getClusterPolicyResourceResponse1)
+
+    const getClusterPolicyReportResourceRequest2 = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: 'b500ccd03fe8c300b294c3a9ecdb1eed50842142',
+        namespace: 'local-cluster',
+        labels: {
+          viewName: 'b500ccd03fe8c300b294c3a9ecdb1eed50842142',
+        },
+      },
+      spec: {
+        scope: {
+          name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
+          resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
+        },
+      },
+    }
+    const getClusterPolicyResourceResponse2 = JSON.parse(JSON.stringify(getClusterPolicyReportResourceRequest2))
+    getClusterPolicyResourceResponse2.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'ClusterPolicyReport',
+        metadata: {
+          name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
+        },
+        results: [
+          {
+            message:
+              'validation error: The label `owner` is required. rule require-labels failed at path /metadata/labels',
+            policy: 'require-owner-labels',
+            result: 'fail',
+            rule: 'require-labels',
+            scored: true,
+            severity: 'medium',
+            source: 'kyverno',
+            timestamp: {
+              nanos: 0,
+              seconds: 1731688479,
+            },
+          },
+        ],
+      },
+    }
+
+    const getReportResourceNock2 = nockGet(getClusterPolicyReportResourceRequest2, getClusterPolicyResourceResponse2)
 
     render(
       <RecoilRoot
@@ -1356,7 +1459,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([getReportResourceNock1, getReportResourceNock2, getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1365,39 +1468,52 @@ describe('Policy Template Details Page', () => {
 
     await waitForText('Audit violations')
 
-    expect(within(screen.getByText('Audit violations')).getByText('1')).toBeInTheDocument()
+    expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
 
     await waitForText('ClusterPolicy details')
 
-    // ClusterPolicyReport and PoliyReport should be filtered
+    // ClusterPolicyReport and PolicyReport should be filtered
     await waitForNotText('ClusterPolicyReport')
 
-    waitForText('API version')
+    // Related table also has this
+    waitForText('API version', true)
     waitForText('kyverno.io/v1')
-
-    waitForText('Namespace', true)
-
     // VAPB link
     expect(screen.getByRole('link', { name: 'require-owner-labels-binding' })).toBeInTheDocument()
 
     // Verify the "Related resources" table rows
-    const violationRow = screen.getByRole('row', {
-      name: 'openshift-etcd-operator - Namespace v1 Violations View report View YAML',
-    })
-    expect(violationRow).toBeInTheDocument()
-    expect(within(violationRow).getByRole('link', { name: 'View YAML' })).toBeInTheDocument()
 
-    await waitForText('View report', true)
-    const violationPolicyReportLink = within(violationRow).getByRole('link', { name: 'View report' })
+    await waitFor(
+      () => {
+        // Wait until policyReport messages are up
+        const myappRow = screen.getByRole('row', {
+          name: /my-app - namespace v1 violations view report require-labels: validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels/i,
+        })
+        expect(myappRow).toBeInTheDocument()
+
+        const openshiftRow = screen.getByRole('row', {
+          name: /validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels\/owner\//i,
+        })
+        expect(openshiftRow).toBeInTheDocument()
+      },
+      { timeout: 5000, interval: 1000 }
+    )
+
+    // Verify openshift-etcd-operator row
+    const openshiftRow = screen.getByRole('row', {
+      name: /openshift-etcd-operator - namespace v1 violations view report require-labels: validation error: the label `owner` is required. rule require-labels failed at path \/metadata\/labels\/owner\//i,
+    })
+    const violationPolicyReportLink = within(openshiftRow).getByRole('link', { name: 'View report' })
     expect(violationPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
     )
+    screen.getByRole('link', {
+      name: /openshift-etcd-operator/i,
+    })
 
     const passingRow = screen.getByRole('row', {
-      name: 'my-app - Namespace v1 No violations View report View YAML',
+      name: /my-app - namespace v1 violations view report require-labels: validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels/i,
     })
-    expect(passingRow).toBeInTheDocument()
-    await waitForText('View report', true)
     const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View report' })
     expect(passingPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
