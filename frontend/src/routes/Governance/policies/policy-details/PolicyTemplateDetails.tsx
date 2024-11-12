@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Divider, Flex, LabelGroup, PageSection, Skeleton, Title } from '@patternfly/react-core'
+import { Divider, Flex, PageSection, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -20,15 +20,17 @@ import {
 } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
-import { generatePath, Link, useParams } from 'react-router-dom-v5-compat'
-import { collectKinds, getEngineWithSvg } from '../../common/util'
-import { Grid as MuiGrid } from '@mui/material'
+import { useParams } from 'react-router-dom-v5-compat'
+import { getEngineWithSvg } from '../../common/util'
 import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
+import {
+  addRowsForGatekeeperConstraint,
+  addRowsForHasVapb,
+  addRowsForKyverno,
+  addRowsForOperatorPolicy,
+  addRowsForVapb,
+} from './PolicyTemplateDetailsColumns'
 
-interface IKinds {
-  apiGroups: string[]
-  kinds: string[]
-}
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
   const urlParams = useParams()
@@ -138,112 +140,18 @@ export function PolicyTemplateDetails() {
       ]
     }
 
-    if (hasVapb) {
-      // Loading to fetch VAPB
-      if (!vapb.vapbItems) {
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
-        })
-      } else if (vapb.vapbItems && vapb.vapbItems.length > 0 && !vapb.loading) {
-        const vapbName = apiGroup === 'constraints.gatekeeper.sh' ? `gatekeeper-${name}` : name + '-binding'
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: (
-            <Link
-              to={generatePath(NavigationPath.discoveredPolicyDetails, {
-                clusterName,
-                apiVersion: 'v1',
-                apiGroup: 'admissionregistration.k8s.io',
-                kind: 'ValidatingAdmissionPolicyBinding',
-                templateName: vapbName,
-                templateNamespace: null,
-              })}
-              target="_blank"
-            >
-              {vapbName} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-            </Link>
-          ),
-        })
-      } else if (vapb.vapbItems && vapb.vapbItems.length == 0 && !vapb.loading) {
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: '-',
-        })
-      }
-    }
+    cols = addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
 
-    // Gatekeeper Constraint
-    if (template?.spec?.match?.kinds && apiGroup === 'constraints.gatekeeper.sh') {
-      return [
-        ...cols.slice(0, 2),
-        {
-          key: t('Matches'),
-          value: matchesBadges(template?.spec?.match?.kinds as IKinds[]),
-        },
-        ...cols.slice(2),
-      ]
-    }
+    cols = addRowsForGatekeeperConstraint(cols, template, apiGroup, t)
 
-    if (kind === 'OperatorPolicy') {
-      let value = '-'
+    cols = addRowsForOperatorPolicy(cols, template, kind, t)
 
-      for (const condition of template?.status?.conditions ?? []) {
-        if (condition?.type === 'Compliant') {
-          value = condition?.message ?? '-'
-          break
-        }
-      }
+    cols = addRowsForVapb(cols, template, clusterName, kind)
 
-      cols.push({ key: t('Message'), value: value })
-    }
-
-    if (kind === 'ValidatingAdmissionPolicyBinding') {
-      // Add a row forValidatingAdmissionPolicy
-      if (!template) {
-        cols.push({
-          key: 'Validating Admission Policy',
-          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
-        })
-      } else {
-        const policyName = template?.spec?.policyName
-        if (policyName) {
-          cols.push({
-            key: 'Validating Admission Policy',
-            value: (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ValidatingAdmissionPolicy&apiversion=v1&name=${policyName}`}
-              >
-                {policyName}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
-            ),
-          })
-        } else {
-          cols.push({
-            key: 'Validating Admission Policy',
-            value: '-',
-          })
-        }
-      }
-    }
-
-    // kyverno
-    if (template?.spec?.rules && apiGroup === 'kyverno.io') {
-      return [
-        ...cols.slice(0, 2),
-        {
-          key: t('Rules'),
-          value: kyvernoMatchesBadges(template?.spec?.rules),
-        },
-        ...cols.slice(2),
-      ]
-    }
+    cols = addRowsForKyverno(cols, template, apiGroup, t)
 
     return cols
-  }, [t, name, kind, apiGroup, clusterName, apiVersion, namespace, hasVapb, template, vapb.vapbItems, vapb.loading])
+  }, [t, name, kind, apiGroup, clusterName, apiVersion, namespace, hasVapb, template, vapb.loading, vapb.vapbItems])
 
   const violationColumn = useMemo(() => {
     return {
@@ -458,6 +366,7 @@ export function PolicyTemplateDetails() {
     ],
     [t, violationColumn]
   )
+
   return (
     <div>
       {(vapb.err || kyvernoRelated.err) && (
@@ -498,75 +407,5 @@ export function PolicyTemplateDetails() {
         </AcmTablePaginationContextProvider>
       </PageSection>
     </div>
-  )
-}
-
-const matchesBadges = (kinds: IKinds[]): ReactNode => {
-  return (
-    <MuiGrid container style={{ maxWidth: '500px', gap: 8 }}>
-      {kinds.map((kinds) => {
-        return kinds.kinds.map((k) => {
-          if (!kinds.apiGroups || kinds.apiGroups.length == 0) {
-            return (
-              <div key={k}>
-                <Badge isRead key={k}>
-                  {k}
-                </Badge>
-              </div>
-            )
-          }
-
-          return kinds.apiGroups.map((apigroup) => {
-            return (
-              <div key={`${apigroup}/${k}`}>
-                <Badge isRead key={`${apigroup}/${k}`}>
-                  {apigroup ? `${apigroup}/${k}` : k}
-                </Badge>
-              </div>
-            )
-          })
-        })
-      })}
-    </MuiGrid>
-  )
-}
-
-const kyvernoMatchesBadges = (rules: any[]): ReactNode => {
-  return (
-    <MuiGrid container style={{ gap: 16 }} direction="column">
-      {rules.map((r) => {
-        const kinds: string[] = collectKinds(r)
-        return (
-          <MuiGrid item xs="auto" key={r.name} container direction="column" style={{ gap: 8 }}>
-            <MuiGrid item>{r.name}</MuiGrid>
-            <MuiGrid item style={{ paddingLeft: 16, width: 'fit-content' }} direction="column" container>
-              <LabelGroup
-                categoryName="Controls"
-                key={r.name + '-controls'}
-                style={{ alignItems: 'center' }}
-                numLabels={10}
-              >
-                {r.validate && <Badge isRead>Validate</Badge>}
-                {r.mutate && <Badge isRead>Mutate</Badge>}
-                {r.generate && <Badge isRead>Generate</Badge>}
-                {r.verifyImages && <Badge isRead>verifyImages</Badge>}
-              </LabelGroup>
-              <LabelGroup
-                categoryName="Matches"
-                key={r.name + '-matches'}
-                style={{ alignItems: 'center' }}
-                numLabels={10}
-              >
-                {kinds.map((kind: string) => (
-                  <Badge isRead key={`${r.name}/${kind}`}>
-                    {kind}
-                  </Badge>
-                ))}
-              </LabelGroup>
-            </MuiGrid>
-          </MuiGrid>
-        )
-      })}
-    </MuiGrid>
   )
 }
