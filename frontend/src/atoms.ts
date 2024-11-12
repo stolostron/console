@@ -53,6 +53,7 @@ import {
   PolicyAutomation,
   PolicyReport,
   PolicySet,
+  SearchOperator,
   Secret,
   SubmarinerConfig,
   Subscription,
@@ -115,6 +116,7 @@ export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
+export const searchOperatorState = AtomArray<SearchOperator>()
 export const secretsState = AtomArray<Secret>()
 export const storageClassState = AtomArray<StorageClassK8sResource>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
@@ -174,6 +176,22 @@ export function usePolicies() {
     () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
     [policies]
   )
+}
+
+// Search is available if api, collector, indexer & postgres are in ready state
+export function useIsSearchAvailable() {
+  const searchOperator = useRecoilValue(searchOperatorState)
+  return useMemo(() => {
+    const isReady = (type: string) =>
+      searchOperator[0]?.status?.conditions.some((c) => c.type.toLowerCase() === type && c.status === 'True')
+    const searchServices = [
+      'ready--search-api',
+      'ready--search-collector',
+      'ready--search-indexer',
+      'ready--search-postgres',
+    ]
+    return searchOperator.length > 0 && searchServices.every(isReady)
+  }, [searchOperator])
 }
 
 export function useSavedSearchLimit() {
