@@ -2,7 +2,6 @@
 
 import { AcmIconVariant } from '../AcmIcons/AcmIcons'
 
-export * from './AcmProviderCard/AcmProviderCard'
 export * from './AcmInlineProvider/AcmInlineProvider'
 
 // These connect change as they are used in existing resources ass identifiers
