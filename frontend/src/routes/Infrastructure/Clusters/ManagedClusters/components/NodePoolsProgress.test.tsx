@@ -27,18 +27,14 @@ const mockClusterImageSet0: ClusterImageSetK8sResource = {
 }
 
 const resultPending = {
-  icon: (
-    <Icon size="sm">
-      <InProgressIcon color="currentColor" />
-    </Icon>
-  ),
+  icon: <InProgressIcon />,
   text: 'Not ready',
   type: 'pending',
 }
 
 const resultOK = {
   icon: (
-    <Icon size="sm" status="success">
+    <Icon status="success">
       <CheckCircleIcon />
     </Icon>
   ),
