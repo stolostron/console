@@ -55,8 +55,8 @@ import {
   listResources,
   patchResource,
 } from '../../../resources'
-import keyBy from 'lodash/keyBy'
 import get from 'lodash/get'
+import groupBy from 'lodash/groupBy'
 import { Dictionary } from 'lodash'
 
 // Will change perspective, still in the OCP Console app
@@ -300,7 +300,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     // use maps to improve performance of associating agents to environment
     // first, what keys does environement use to know its agent
     const keySet = infraEnvs.reduce((keys, env) => {
-      Object.keys(get(env, 'status.agentLabelSelector.matchLabels')).forEach((key) => {
+      Object.keys(get(env, 'status.agentLabelSelector.matchLabels', {})).forEach((key) => {
         keys.add(key)
       })
       return keys
@@ -310,20 +310,16 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     const agentMaps: Dictionary<any> = {}
     const keys = Array.from(keySet)
     keys.forEach((key: string) => {
-      agentMaps[key] = keyBy(agents, (agent) => {
-        return get(agent, ['metadata', 'labels', key])
-      })
+      agentMaps[key] = groupBy(agents, (agent) => get(agent, ['metadata', 'labels', key]))
     })
+
     infraEnvs.forEach((infraEnv) => {
       // use the maps we created above to find the agents that belong to this environment
       const infraAgents = Object.entries(agentMaps).reduce((infraAgents, entry) => {
         const [key, map] = entry
         const infraKey = get(infraEnv, ['status', 'agentLabelSelector', 'matchLabels', key])
-        const agent = map[infraKey]
-        if (agent) {
-          infraAgents.push(agent)
-        }
-        return infraAgents
+
+        return map[infraKey] || infraAgents
       }, [] as AgentK8sResource[])
 
       const errorAgents = infraAgents.filter((a) => getAgentStatusKey(a) === 'error')

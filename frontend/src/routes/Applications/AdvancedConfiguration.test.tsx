@@ -434,7 +434,7 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Clusters,Created\n' +
-          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","4 months ago"',
+          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","5 months ago"',
       ],
       { type: 'text/csv' }
     )

@@ -139,8 +139,7 @@ export default function DiscoveredByCluster({
               ],
               tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
                 let compliant: string
-
-                if (item.apigroup === 'constraints.gatekeeper.sh') {
+                if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
                   compliant = getTotalViolationsCompliance(item?.totalViolations)
                 } else {
                   compliant = item?.compliant?.toLowerCase() ?? ''
