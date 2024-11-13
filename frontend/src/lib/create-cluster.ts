@@ -3,13 +3,13 @@
 import {
   ClusterDeploymentApiVersion,
   ClusterDeploymentKind,
-  createProject,
   createResource,
   IResource,
   ManagedClusterApiVersion,
   ManagedClusterKind,
   clusterPoolNamespaceLabels,
   AgentClusterInstallKind,
+  createProject,
 } from '../resources'
 import { deleteResources } from './delete-resources'
 
@@ -24,10 +24,12 @@ export async function createCluster(resources: any[]) {
   const clusterResources: any = []
   resources = resources.filter((resource: any) => {
     const { kind, metadata = {}, spec = {} } = resource
+
     switch (kind) {
       case 'Namespace':
-        namespace = metadata.name
-        return false
+        namespace = metadata.name;
+        return false;
+      
 
       case 'ClusterPool':
         clusterResources.push(resource)
@@ -41,23 +43,39 @@ export async function createCluster(resources: any[]) {
         return false
 
       case 'ManagedCluster':
-        ;({ name: namespace } = metadata)
-        break
-
+        if (!namespace) {
+          if (metadata.namespace) {
+            namespace = metadata.namespace;
+          } else {
+            ;({ name: namespace } = metadata);
+          }
+        }
+        break;
+      
       case 'HostedCluster':
-        ;({ name: namespace } = metadata)
-        break
+        if (!namespace) {
+          if (metadata.namespace) {
+            namespace = metadata.namespace;
+          } else {
+            ;({ name: namespace } = metadata);
+          }
+        }
+        break;
+      
+
 
       default:
-        if (spec && spec.clusterNamespace) {
-          namespace = spec.clusterNamespace
+        if (spec && spec.namespace) {
+          namespace = spec.namespace
         }
         break
     }
+   
     return true
   })
-
-  // create project and ignore if it already exists
+  
+  
+ // create project and ignore if it already exists
   try {
     await createProject(namespace, labels).promise
   } catch (err) {
@@ -66,6 +84,9 @@ export async function createCluster(resources: any[]) {
         status: 'ERROR',
         messages: [{ message: (err as Error).message }],
       }
+    }
+    else {
+      console.log(`Namespace ${namespace} already exists, ignoring error 409`)
     }
   }
 
