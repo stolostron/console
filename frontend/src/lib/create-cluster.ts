@@ -27,9 +27,8 @@ export async function createCluster(resources: any[]) {
 
     switch (kind) {
       case 'Namespace':
-        namespace = metadata.name;
-        return false;
-      
+        namespace = metadata.name
+        return false
 
       case 'ClusterPool':
         clusterResources.push(resource)
@@ -45,24 +44,22 @@ export async function createCluster(resources: any[]) {
       case 'ManagedCluster':
         if (!namespace) {
           if (metadata.namespace) {
-            namespace = metadata.namespace;
+            namespace = metadata.namespace
           } else {
-            ;({ name: namespace } = metadata);
+            ;({ name: namespace } = metadata)
           }
         }
-        break;
-      
+        break
+
       case 'HostedCluster':
         if (!namespace) {
           if (metadata.namespace) {
-            namespace = metadata.namespace;
+            namespace = metadata.namespace
           } else {
-            ;({ name: namespace } = metadata);
+            ;({ name: namespace } = metadata)
           }
         }
-        break;
-      
-
+        break
 
       default:
         if (spec && spec.namespace) {
@@ -70,12 +67,11 @@ export async function createCluster(resources: any[]) {
         }
         break
     }
-   
+
     return true
   })
-  
-  
- // create project and ignore if it already exists
+
+  // create project and ignore if it already exists
   try {
     await createProject(namespace, labels).promise
   } catch (err) {
@@ -84,8 +80,7 @@ export async function createCluster(resources: any[]) {
         status: 'ERROR',
         messages: [{ message: (err as Error).message }],
       }
-    }
-    else {
+    } else {
       console.log(`Namespace ${namespace} already exists, ignoring error 409`)
     }
   }

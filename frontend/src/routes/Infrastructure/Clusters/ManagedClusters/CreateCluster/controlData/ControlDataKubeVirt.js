@@ -17,7 +17,10 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
-import { loadExistingNamespaces, updateNSControls } from '../../../../../Applications/CreateApplication/Subscription/controlData/ControlData'
+import {
+  loadExistingNamespaces,
+  updateNSControls,
+} from '../../../../../Applications/CreateApplication/Subscription/controlData/ControlData'
 
 const operatorAlert = (localCluster, t) => {
   return (

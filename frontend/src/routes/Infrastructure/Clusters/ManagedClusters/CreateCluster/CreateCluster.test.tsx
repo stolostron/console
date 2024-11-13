@@ -1227,14 +1227,14 @@ describe.only('CreateCluster KubeVirt with RH OpenShift Virtualization credentia
     },
   }
   const mockListAllProjects = {
-    apiVersion: "project.openshift.io/v1",
-    kind: "projects"
-  } 
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
 
   const mockListAllProjectsResponse = {
-    apiVersion: "project.openshift.io/v1",
-    kind: "projects"
-  } 
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
 
   // ProjectRequest and Project types
   const mockClusterProjectKubevirt: Project = {
@@ -1491,10 +1491,10 @@ describe.only('CreateCluster KubeVirt with RH OpenShift Virtualization credentia
     await clickByPlaceholderText('Select or enter a release image')
     await clickByText('OpenShift 4.15.36')
     // Wait for the "clusters" text to appear after the spinner
-  const clustersTexts = await waitFor(() => screen.getAllByText(/clusters/i))
-  
-  // Assert that the "clusters" text is indeed in the document
-  expect(clustersTexts.length).toBeGreaterThan(0);
+    const clustersTexts = await waitFor(() => screen.getAllByText(/clusters/i))
+
+    // Assert that the "clusters" text is indeed in the document
+    expect(clustersTexts.length).toBeGreaterThan(0)
     // step 2 -- node pools
     await clickByText('Next')
     const nodePoolNameInput = screen.getByTestId('nodePoolName')
@@ -1524,5 +1524,3 @@ describe.only('CreateCluster KubeVirt with RH OpenShift Virtualization credentia
     await waitForNocks(createNocks)
   })
 })
-
-
