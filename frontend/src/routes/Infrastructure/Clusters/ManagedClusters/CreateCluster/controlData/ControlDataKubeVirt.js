@@ -17,6 +17,7 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
+import { loadExistingNamespaces, updateNSControls } from '../../../../../Applications/CreateApplication/Subscription/controlData/ControlData'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -110,6 +111,26 @@ export const getControlDataKubeVirt = (
         notification: t('import.form.invalid.dns.label'),
         required: true,
       },
+    },
+    {
+      name: t('Hosted cluster namespace'),
+      tooltip: t('tooltip.creation.ocp.namespace'),
+      id: 'namespace',
+      type: 'combobox',
+      fetchAvailable: loadExistingNamespaces(t),
+      editing: { disabled: true },
+      onSelect: updateNSControls,
+      active: 'clusters',
+      validation: {
+        constraint: VALID_DNS_LABEL,
+        notification: t('import.form.invalid.dns.label'),
+        required: true,
+      },
+    },
+    {
+      id: 'userDefinedNamespace',
+      type: 'hidden',
+      active: '',
     },
     {
       name: t('creation.ocp.clusterSet'),
