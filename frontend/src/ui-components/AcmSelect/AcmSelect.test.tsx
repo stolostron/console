@@ -57,7 +57,7 @@ describe('AcmSelect', () => {
       )
     }
     const { container } = render(<TypeaheadSelect />)
-    expect(container.querySelector<HTMLInputElement>('.pf-v5-c-select__toggle-typeahead')).toHaveAttribute(
+    expect(container.querySelector<HTMLInputElement>('.pf-v5-c-select__toggle-typeahead input')).toHaveAttribute(
       'placeholder',
       'Select one'
     )
