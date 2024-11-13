@@ -6,10 +6,85 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { searchOperatorState } from '../../../atoms'
 import { nockPostRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
+import { SearchOperator } from '../../../resources'
 import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
+
+const mockHealthySearchOperator: SearchOperator = {
+  apiVersion: 'search.open-cluster-management.io/v1alpha1',
+  kind: 'Search',
+  metadata: {
+    name: 'search-v2-operator',
+    namespace: 'open-cluster-management',
+  },
+  status: {
+    conditions: [
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-postgres',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-collector',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-indexer',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-api',
+      },
+    ],
+  },
+}
+const mockUNHealthySearchOperator: SearchOperator = {
+  apiVersion: 'search.open-cluster-management.io/v1alpha1',
+  kind: 'Search',
+  metadata: {
+    name: 'search-v2-operator',
+    namespace: 'open-cluster-management',
+  },
+  status: {
+    conditions: [
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-postgres',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-collector',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'True',
+        type: 'Ready--search-indexer',
+      },
+      {
+        message: 'None',
+        reason: 'None',
+        status: 'False',
+        type: 'Ready--search-api',
+      },
+    ],
+  },
+}
 
 describe('VirtualMachinesPage Page', () => {
   it('should render page with correct vm data', async () => {
@@ -86,7 +161,11 @@ describe('VirtualMachinesPage Page', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(searchOperatorState, [mockHealthySearchOperator])
+        }}
+      >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <VirtualMachinesPage />
@@ -108,6 +187,54 @@ describe('VirtualMachinesPage Page', () => {
     await waitFor(() => expect(screen.queryByText('testVM2')).toBeTruthy()) // name
     await waitFor(() => expect(screen.queryByText('Stopped')).toBeTruthy()) // status
     await waitFor(() => expect(screen.queryByText('managed-cluster-2')).toBeTruthy()) // cluster
+  })
+
+  it('should render page with search unavailable empty state', async () => {
+    const metricNock = nockPostRequest('/metrics?virtual-machines', {})
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachine', 'VirtualMachineInstance'],
+                  },
+                ],
+                limit: -1,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {},
+          errors: [new GraphQLError('Error getting search data')],
+        },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(searchOperatorState, [mockUNHealthySearchOperator])
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <VirtualMachinesPage />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNocks([metricNock])
+    // This wait pauses till apollo query is returning data
+    await wait()
+    // Test that the component has rendered errors correctly
+    await waitFor(() => expect(screen.queryByText('Unable to display VirtualMachines')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Enable search to view all managed VirtualMachines.')).toBeTruthy())
   })
 
   it('should render page with errors', async () => {
@@ -138,7 +265,11 @@ describe('VirtualMachinesPage Page', () => {
       },
     ]
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(searchOperatorState, [mockHealthySearchOperator])
+        }}
+      >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <VirtualMachinesPage />
