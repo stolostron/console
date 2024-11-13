@@ -219,6 +219,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       const map = keyBy(createResources, 'kind')
       const cluster = map?.ClusterDeployment || map?.HostedCluster
       const clusterName = cluster?.metadata?.name
+      const clusterNamespace = cluster?.metadata?.namespace ?? 'clusters'
 
       // return error if cluster name is already used
       const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -245,7 +246,12 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
         // add source labels to secrets, add backup labels
         createResources.forEach((resource) => {
+          // Handle NodePool resources
+        if (resource.kind === 'NodePool') {          
+          set(resource, 'metadata.namespace', clusterNamespace);
+        }
           if (resource.kind === 'Secret') {
+            set(resource, 'metadata.namespace', clusterNamespace)
             set(resource, 'metadata.labels["cluster.open-cluster-management.io/backup"]', 'cluster')
             const resourceName = resource?.metadata?.name
 
@@ -287,13 +293,13 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         if (status === 'DONE') {
           const finishMessage = completedMsg ? [completedMsg] : []
           setCreationStatus({ status, messages: finishMessage })
-          const namespace = cluster?.metadata?.namespace
-          if (!noRedirect && clusterName && namespace) {
+          const namespace = cluster?.metadata?.namespace ?? null
+          if (!noRedirect && clusterName && clusterNamespace) {
             setTimeout(() => {
               navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: clusterName,
-                  namespace,
+                  namespace: namespace,
                 })
               )
             }, 2000)
@@ -360,7 +366,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 const clusterName =
                   get(map, 'ClusterDeployment.metadata.name') || get(map, 'HostedCluster.metadata.name')
                 const clusterNamespace =
-                  get(map, 'ClusterDeployment.metadata.namespace') || get(map, 'HostedCluster.metadata.name')
+                  get(map, 'ClusterDeployment.metadata.namespace') || get(map, 'HostedCluster.metadata.namespace')
                 const isAssistedFlow = map.InfraEnv
                 createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved')).then(
                   (status) => {
