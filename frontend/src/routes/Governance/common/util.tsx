@@ -32,7 +32,6 @@ import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 import Kubernetes from '../../../logos/kubernetes.svg'
 import KyvernoSvg from '../../../logos/kyverno.svg'
-import { uniq } from 'lodash'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -778,22 +777,4 @@ export const parseDiscoveredPolicies = (data: any): any => {
 
     return v
   })
-}
-
-// Used for collecting all kinds in Kyverno Policy
-export const collectKinds = (obj: object): string[] => {
-  let collected: string[] = []
-  const fnd = (obj: object) => {
-    for (const [k, v] of Object.entries(obj)) {
-      if (k === 'kinds') {
-        collected = collected.concat(v)
-      }
-      if (typeof v === 'object') {
-        fnd(v)
-      }
-    }
-  }
-
-  fnd(obj)
-  return uniq(collected)
 }

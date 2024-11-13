@@ -1816,7 +1816,6 @@
   "Manual run: Set this automation to run once. After the automation runs, it is set to disabled.": "Manual run: Set this automation to run once. After the automation runs, it is set to disabled.",
   "Matched Clusters": "Matched Clusters",
   "Matched on": "Matched on",
-  "Matches": "Matches",
   "Maximum replicas must be greater than or equal to minimum replicas.": "Maximum replicas must be greater than or equal to minimum replicas.",
   "mce.dependency.of.acm": "You are currently using <bold>multicluster engine for Kubernetes</bold>, which is a dependency of <bold>Red Hat Advanced Cluster Management for Kubernetes</bold>.",
   "mce.kac.unsupported.description": "If you create or import clusters before <bold>Red Hat Advanced Cluster Management</bold> is ready, the cluster add-ons required for its additional features will not be installed. After installation completes, clusters created or imported beforehand will require manual intervention and will not automatically gain the additional features.",

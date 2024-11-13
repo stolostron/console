@@ -23,13 +23,7 @@ import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
 import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
-import {
-  addRowsForGatekeeperConstraint,
-  addRowsForHasVapb,
-  addRowsForKyverno,
-  addRowsForOperatorPolicy,
-  addRowsForVapb,
-} from './PolicyTemplateDetailsColumns'
+import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
 
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
@@ -140,15 +134,11 @@ export function PolicyTemplateDetails() {
       ]
     }
 
-    cols = addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
+    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
 
-    cols = addRowsForGatekeeperConstraint(cols, template, apiGroup, t)
+    addRowsForOperatorPolicy(cols, template, kind, t)
 
-    cols = addRowsForOperatorPolicy(cols, template, kind, t)
-
-    cols = addRowsForVapb(cols, template, clusterName, kind)
-
-    cols = addRowsForKyverno(cols, template, apiGroup, t)
+    addRowsForVapb(cols, template, clusterName, kind)
 
     return cols
   }, [t, name, kind, apiGroup, clusterName, apiVersion, namespace, hasVapb, template, vapb.loading, vapb.vapbItems])
