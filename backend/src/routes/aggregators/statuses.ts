@@ -46,7 +46,7 @@ export function requestAggregatedStatuses(
     items = (await getAuthorizedResources(token, items, 0, items.length)) as unknown as ITransformedResource[]
 
     // count types
-    const filterCounts: FilterCounts = {}
+    const filterCounts: FilterCounts = { type: {}, cluster: {} }
     items.forEach((item) => {
       if (item.transform) {
         incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type])
