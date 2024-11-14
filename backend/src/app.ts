@@ -34,6 +34,8 @@ const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
 const eventsEnabled = process.env.DISABLE_EVENTS !== 'true'
 
+process.env.MOCK_CLUSTERS = '100'
+
 // Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
 // If the route exceeds 500 chars the route will not be found from this fn: router.find()
 export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })

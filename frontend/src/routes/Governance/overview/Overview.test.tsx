@@ -2,11 +2,20 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { policiesState } from '../../../atoms'
+import { managedClustersState, policiesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
 import { waitForNock } from '../../../lib/test-util'
-import { mockEmptyPolicy, mockPendingPolicy, mockPolicy, mockPolicyNoStatus } from '../governance.sharedMocks'
+import {
+  mockEmptyPolicy,
+  mockManagedClusters,
+  mockMultiManagedClusters,
+  mockMultiPolicy,
+  mockPendingPolicy,
+  mockPolicy,
+  mockPolicyNoStatus,
+} from '../governance.sharedMocks'
 import GovernanceOverview from './Overview'
+import userEvent from '@testing-library/user-event'
 
 describe('Overview Page', () => {
   beforeEach(async () => nockIgnoreApiPaths())
@@ -51,6 +60,7 @@ describe('Overview Page', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
@@ -69,6 +79,7 @@ describe('Overview Page', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPendingPolicy)
+          snapshot.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
@@ -79,5 +90,41 @@ describe('Overview Page', () => {
 
     await waitForNock(metricNock)
     expect(screen.getByText(/[1-9]+ pending/i)).toBeTruthy()
+  })
+
+  test('Should render Overview page with lots of clusters', async () => {
+    const metricNock = nockPostRequest('/metrics?governance', {})
+    const { queryByText } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockMultiPolicy)
+          snapshot.set(managedClustersState, mockMultiManagedClusters)
+        }}
+      >
+        <MemoryRouter>
+          <GovernanceOverview />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForNock(metricNock)
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /show 2 more/i,
+      })
+    )
+    expect(queryByText(/show 2 more/i)).not.toBeInTheDocument()
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /show 4 more/i,
+      })
+    )
+    expect(queryByText(/show 4 more/i)).not.toBeInTheDocument()
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /show 85 more/i,
+      })
+    )
+    expect(queryByText(/show 85 more/i)).not.toBeInTheDocument()
   })
 })
