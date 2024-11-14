@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import get from 'lodash/get'
 import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -100,6 +101,8 @@ import {
   PolicyReportKind,
   PolicySetApiVersion,
   PolicySetKind,
+  SearchOperatorApiVersion,
+  SearchOperatorKind,
   SecretApiVersion,
   SecretKind,
   StorageClassApiVersion,
@@ -163,6 +166,7 @@ import {
   policyAutomationState,
   policyreportState,
   policySetsState,
+  searchOperatorState,
   secretsState,
   ServerSideEventData,
   settingsState,
@@ -176,7 +180,6 @@ import {
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { useRecoilValue } from '../shared-recoil'
-import get from 'lodash/get'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loaded, setLoaded } = useContext(PluginDataContext)
@@ -226,6 +229,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setPlacementRulesState = useSetRecoilState(placementRulesState)
   const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
   const setPolicyReports = useSetRecoilState(policyreportState)
+  const setSearchOperator = useSetRecoilState(searchOperatorState)
   const setSecrets = useSetRecoilState(secretsState)
   const setSettings = useSetRecoilState(settingsState)
   const setSubmarinerConfigs = useSetRecoilState(submarinerConfigsState)
@@ -318,6 +322,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
+    addSetter(SearchOperatorApiVersion, SearchOperatorKind, setSearchOperator)
     addSetter(SecretApiVersion, SecretKind, setSecrets)
     addSetter(StorageClassApiVersion, StorageClassKind, setStorageClassState)
     addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
@@ -370,6 +375,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setPolicyAutomationState,
     setPolicyReports,
     setPolicySetsState,
+    setSearchOperator,
     setSecrets,
     setStorageClassState,
     setSubmarinerConfigs,
