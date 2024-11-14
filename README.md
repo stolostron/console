@@ -83,8 +83,16 @@ A number of the core NPM package dependencies are published from other repositor
 
     This will start the frontend and the backend in parallel. (It may take up to 30 seconds for the UI to appear)
 
-    **NOTE:** If a port conflict appears with port `4000`, you can override it by exporting `BACKEND_PORT` with a 
-    new value like `4001` and re-running the setup and start commands
+**NOTE:** If any port conflict appears or you want to run different versions of the console simultaneously, all ports are customizable via environment variables. 
+The default values are defined in [port-defaults.sh](port-defaults.sh). Several of these ports are used during setup.
+
+| Port Variable | Description | Used by |
+|-|-|-|
+| FRONTEND_PORT | Port for standalone version of this console (access console at https://localhost:<FRONTEND_PORT>) | `npm run setup`, `npm start` |
+| BACKEND_PORT | Port for the backend APIs used by both standalone and plugin versions of the console | `npm run setup`, `npm start`, `npm run plugins` |
+| CONSOLE_PORT | Port for OpenShift console (access console at http://localhost:<CONSOLE_PORT>) | `npm run setup`, `npm run plugins` |
+| MCE_PORT | Port on which the `mce` dynamic plugin is served to OpenShift console | `npm run plugins` |
+| ACM_PORT | Port on which the `acm` dynamic plugin is served to OpenShift console | `npm run plugins` |
 
 ## Running as an OpenShift console plugin-in
 

@@ -148,7 +148,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       ],
     },
     devServer: {
-      port: 3000,
+      port: process.env.FRONTEND_PORT,
       proxy: [
         '/multicloud/ansibletower',
         '/multicloud/api',
