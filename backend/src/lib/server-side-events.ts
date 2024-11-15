@@ -277,16 +277,11 @@ export class ServerSideEvents {
     }
 
     let sentCount = 0
-    const allEvents: ServerSideEvent[] = []
     for (const eventID in this.events) {
       if (Number(eventID) <= lastEventID) continue
-      allEvents.push(this.events[eventID])
-    }
-
-    allEvents.forEach((event) => {
-      this.sendEvent(clientID, event)
+      this.sendEvent(clientID, this.events[eventID])
       sentCount++
-    })
+    }
 
     logger.info({ msg: 'event stream start', events: sentCount })
 
