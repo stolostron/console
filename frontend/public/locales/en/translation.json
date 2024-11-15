@@ -2429,6 +2429,8 @@
   "Share search": "Share search",
   "Shared with:": "Shared with:",
   "Show": "Show",
+  "Show {{count}} more": "Show {{count}} more",
+  "Show {{count}} more_plural": "Show {{count}} more",
   "Show all ({{count}})": "Show all ({{count}})",
   "Show all ({{count}})_plural": "Show all ({{count}})",
   "Show less": "Show less",
