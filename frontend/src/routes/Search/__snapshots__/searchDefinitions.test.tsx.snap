@@ -2565,6 +2565,11 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "sort": "cluster",
   },
   {
+    "cell": "testNamespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  {
     "cell": "-",
     "header": "Node",
     "sort": "node",
