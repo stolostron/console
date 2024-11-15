@@ -24,7 +24,8 @@ import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'react-i18next'
-import { ClusterManagementAddOn, DiscoveredCluster, HypershiftCloudPlatformType, ManagedClusterAddOn } from '..'
+import { ClusterManagementAddOn, DiscoveredCluster, ManagedClusterAddOn } from '../'
+import { HypershiftCloudPlatformType } from './constants'
 import {
   checkCuratorLatestOperation,
   checkCuratorLatestFailedOperation,

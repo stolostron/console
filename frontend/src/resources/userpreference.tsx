@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { fetchRetry, getBackendUrl } from './utils/resource-request'
+import { fetchRetry, getBackendUrl } from '../resources/utils'
 
 export const UserPreferenceApiVersion = 'console.open-cluster-management.io/v1'
 export type UserPreferenceApiVersionType = 'console.open-cluster-management.io/v1'

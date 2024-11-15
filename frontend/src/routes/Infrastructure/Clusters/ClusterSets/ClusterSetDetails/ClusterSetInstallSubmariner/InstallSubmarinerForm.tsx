@@ -17,8 +17,6 @@ import {
   BrokerApiVersion,
   BrokerKind,
   CableDriver,
-  Cluster,
-  createResource,
   defaultBrokerName,
   getBroker,
   InstallPlanApproval,
@@ -28,7 +26,6 @@ import {
   ManagedClusterAddOnApiVersion,
   ManagedClusterAddOnKind,
   ManagedClusterSetDefinition,
-  resultsSettled,
   Secret,
   SecretApiVersion,
   SecretKind,
@@ -39,6 +36,7 @@ import {
   SubmarinerConfigKind,
   SubscriptionConfig,
 } from '../../../../../../resources'
+import { Cluster, createResource, resultsSettled } from '../../../../../../resources/utils'
 import {
   AcmAlert,
   AcmButton,

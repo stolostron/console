@@ -19,8 +19,8 @@ import {
   ManagedClusterInfo,
   ManagedClusterSet,
   managedClusterSetLabel,
-  mapClusters,
 } from '../../../../../resources'
+import { mapClusters } from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import keyBy from 'lodash/keyBy'
 

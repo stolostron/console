@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterStatus, deleteResource, getReadyReplicas, MachinePool } from '../../../../../../resources'
+import { getReadyReplicas, MachinePool } from '../../../../../../resources'
+import { ClusterStatus, deleteResource } from '../../../../../../resources/utils'
 import {
   AcmEmptyState,
   AcmPageContent,

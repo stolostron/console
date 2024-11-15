@@ -7,7 +7,8 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { patchResource, Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
+import { Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
+import { patchResource } from '../../../resources/utils'
 import { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
 
 export function PolicyActionDropdown(props: {

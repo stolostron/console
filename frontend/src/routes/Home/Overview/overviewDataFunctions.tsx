@@ -5,7 +5,8 @@ import { TFunction } from 'react-i18next'
 
 import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
-import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Addon, AddonStatus, Cluster } from '../../../resources/utils'
 import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import {
   CriticalRiskIcon,

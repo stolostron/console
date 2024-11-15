@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  deleteResource,
-  ManagedClusterSet,
-  ManagedClusterSetDefinition,
-  ResourceErrorCode,
-  isGlobalClusterSet,
-} from '../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../resources'
+import { deleteResource, ResourceErrorCode } from '../../../../../resources/utils'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'

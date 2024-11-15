@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ResourceError, ResourceErrorCode } from '../resources'
+import { ResourceError, ResourceErrorCode } from '../resources/utils'
 import { AcmAlertInfo } from '../ui-components'
 import {
   Card,

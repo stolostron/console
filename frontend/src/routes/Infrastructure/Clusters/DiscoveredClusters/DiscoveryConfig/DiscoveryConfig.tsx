@@ -23,16 +23,14 @@ import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   createDiscoveryConfig,
-  deleteResource,
   DiscoveryConfig,
   DiscoveryConfigApiVersion,
   DiscoveryConfigDefinition,
   DiscoveryConfigKind,
   replaceDiscoveryConfig,
-  ResourceError,
-  ResourceErrorCode,
   Secret,
 } from '../../../../../resources'
+import { deleteResource, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import {
   AcmAlertContext,

@@ -50,8 +50,6 @@ import {
   DiscoveredClusterKind,
   DiscoveryConfigApiVersion,
   DiscoveryConfigKind,
-  getBackendUrl,
-  getRequest,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
   HelmReleaseApiVersion,
@@ -116,6 +114,7 @@ import {
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
 } from '../resources'
+import { getBackendUrl, getRequest } from '../resources/utils'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
   agentClusterInstallsState,

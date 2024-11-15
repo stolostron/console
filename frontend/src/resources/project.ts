@@ -3,7 +3,7 @@ import { Namespace, NamespaceApiVersion, NamespaceKind } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { createResource, replaceResource } from './utils/resource-request'
-import { listResources } from '.'
+import { listResources } from '../resources/utils'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
 export type ProjectApiVersionType = 'project.openshift.io/v1'

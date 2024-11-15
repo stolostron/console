@@ -54,7 +54,7 @@ import {
   getResource,
   listResources,
   patchResource,
-} from '../../../resources'
+} from '../../../resources/utils'
 import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { Dictionary } from 'lodash'

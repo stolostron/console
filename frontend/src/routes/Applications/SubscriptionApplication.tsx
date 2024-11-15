@@ -29,12 +29,11 @@ import {
   ProviderConnection,
   ProviderConnectionApiVersion,
   ProviderConnectionKind,
-  reconcileResources,
   Secret,
   SubscriptionKind,
   unpackProviderConnection,
-  updateAppResources,
 } from '../../resources'
+import { reconcileResources, updateAppResources } from '../../resources/utils'
 import './style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'

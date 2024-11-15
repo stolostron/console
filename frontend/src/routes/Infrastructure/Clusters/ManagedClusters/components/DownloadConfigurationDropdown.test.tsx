@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus, createDownloadFile } from '../../../../../resources'
+import { Cluster, ClusterStatus, createDownloadFile } from '../../../../../resources/utils'
 import { render, screen, waitFor } from '@testing-library/react'
 import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { DownloadConfigurationDropdown } from './DownloadConfigurationDropdown'

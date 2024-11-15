@@ -1,18 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
-import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
-import { useContext, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, PathParam } from 'react-router-dom-v5-compat'
-import { LoadingPage } from '../../../components/LoadingPage'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
-import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
-import { AcmToastContext } from '../../../ui-components'
+import { IResource, PolicySetKind } from '../../../resources'
+import { PathParam, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
-import schema from './schema.json'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+
+import { AcmToastContext } from '../../../ui-components'
+import { LoadingPage } from '../../../components/LoadingPage'
 import { LostChangesContext } from '../../../components/LostChanges'
+import { NavigationPath } from '../../../NavigationPath'
+import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { reconcileResources } from '../../../resources/utils'
+import schema from './schema.json'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context

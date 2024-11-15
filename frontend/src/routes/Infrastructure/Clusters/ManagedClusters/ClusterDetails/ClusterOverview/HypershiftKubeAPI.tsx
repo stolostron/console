@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import jsYaml from 'js-yaml'
-import { getResource } from '../../../../../../resources'
+import { getResource } from '../../../../../../resources/utils'
 import { AcmInlineCopy } from '../../../../../../ui-components'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { useClusterDetailsContext } from '../ClusterDetails'

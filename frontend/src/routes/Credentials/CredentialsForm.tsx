@@ -33,15 +33,14 @@ import {
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
-  createResource,
   getSecret,
   IResource,
-  patchResource,
   ProviderConnection,
   ProviderConnectionStringData,
   Secret,
   unpackProviderConnection,
 } from '../../resources'
+import { createResource, patchResource } from '../../resources/utils'
 import {
   AcmEmptyState,
   AcmIcon,

@@ -30,16 +30,18 @@ import {
   ClusterCuratorAnsibleJob,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
-  createResource,
   getClusterCurator,
   IResource,
-  listAnsibleTowerInventories,
-  listAnsibleTowerJobs,
   ProviderConnection,
-  replaceResource,
-  ResourceErrorCode,
   Secret,
 } from '../../../resources'
+import {
+  createResource,
+  listAnsibleTowerInventories,
+  listAnsibleTowerJobs,
+  replaceResource,
+  ResourceErrorCode,
+} from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,

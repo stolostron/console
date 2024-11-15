@@ -7,17 +7,15 @@ import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { getUpgradeRiskPredictions } from '../../../../../lib/get-upgrade-risk-predictions'
+import { ClusterCurator, ClusterCuratorDefinition, curatorActionHasJobs } from '../../../../../resources'
 import {
   Cluster,
-  ClusterCurator,
-  ClusterCuratorDefinition,
   createResource,
-  curatorActionHasJobs,
   IRequestResult,
   patchResource,
   ResourceError,
   ResourceErrorCode,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'

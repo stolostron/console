@@ -3,7 +3,7 @@ import { Button, Chip, ChipGroup, PageSection, Select, SelectOption, SelectVaria
 import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Cluster } from '../../../resources'
+import { Cluster } from '../../../resources/utils'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 export default function OverviewClusterLabelSelector(props: {

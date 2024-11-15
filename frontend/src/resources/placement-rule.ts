@@ -2,7 +2,8 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
-import { listResources, Placement, PlacementKind } from '.'
+import { Placement, PlacementKind } from '.'
+import { listResources } from '../resources/utils'
 import { PlacementApiVersion } from '../wizards/common/resources/IPlacement'
 
 export const PlacementRuleApiVersion = 'apps.open-cluster-management.io/v1'

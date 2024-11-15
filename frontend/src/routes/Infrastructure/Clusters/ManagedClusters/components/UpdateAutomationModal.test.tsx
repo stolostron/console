@@ -1,17 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
   ClusterCuratorKind,
-  ClusterStatus,
   ProviderConnection,
   ProviderConnectionApiVersion,
   ProviderConnectionKind,
   Secret,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UpdateAutomationModal } from './UpdateAutomationModal'

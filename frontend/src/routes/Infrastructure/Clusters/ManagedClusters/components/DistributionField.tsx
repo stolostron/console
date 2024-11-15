@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
-  ClusterStatus,
-  CuratorCondition,
   getLatestAnsibleJob,
   NodePool,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
 import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'

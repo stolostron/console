@@ -6,10 +6,8 @@ import {
   ManagedCluster,
   ManagedClusterDefinition,
   managedClusterSetLabel,
-  patchResource,
-  ResourceError,
-  ResourceErrorCode,
 } from '../resources'
+import { patchResource, ResourceError, ResourceErrorCode } from '../resources/utils'
 
 export function patchClusterSetLabel(
   clusterName: string,

@@ -19,12 +19,12 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import {
   ClusterCurator,
   createClusterCurator,
-  createResource as createResourceTool,
   IResource,
   ProviderConnection,
   Secret,
   SubscriptionOperator,
 } from '../../../../../resources'
+import { createResource as createResourceTool } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import {

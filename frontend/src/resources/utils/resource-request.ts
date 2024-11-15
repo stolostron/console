@@ -3,7 +3,7 @@
 import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from './utils'
-import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '../'
 import { tokenExpired } from '../../logout'
 import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
 import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'

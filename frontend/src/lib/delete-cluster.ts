@@ -2,12 +2,10 @@
 
 import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
-  Cluster,
   ClusterClaimApiVersion,
   ClusterClaimKind,
   ClusterDeploymentApiVersion,
   ClusterDeploymentKind,
-  deleteResource,
   HostedClusterApiVersion,
   HostedClusterKind,
   InfraEnvApiVersion,
@@ -17,12 +15,10 @@ import {
   ManagedClusterKind,
   NodePoolApiVersion,
   NodePoolKind,
-  patchResource,
-  ResourceError,
-  ResourceErrorCode,
   SecretApiVersion,
   SecretKind,
 } from '../resources'
+import { Cluster, deleteResource, patchResource, ResourceError, ResourceErrorCode } from '../resources/utils'
 import { clusterDestroyable } from '../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
 import { deleteResources } from './delete-resources'
 import { Provider } from '../ui-components'

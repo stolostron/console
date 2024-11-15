@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources'
 import {
   Cluster,
-  ClusterCurator,
-  ClusterCuratorDefinition,
   createResource,
   IRequestResult,
   patchResource,
   ResourceError,
   ResourceErrorCode,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'

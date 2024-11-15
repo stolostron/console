@@ -1,19 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
   createClusterCurator,
-  createResource,
   IResource,
+  SecretDefinition,
+  ClusterCuratorKind,
+} from '../../../../../resources'
+import {
+  Cluster,
+  createResource,
   IRequestResult,
   patchResource,
   ResourceError,
   ResourceErrorCode,
-  SecretDefinition,
-  ClusterCuratorKind,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import {
   AcmAlert,

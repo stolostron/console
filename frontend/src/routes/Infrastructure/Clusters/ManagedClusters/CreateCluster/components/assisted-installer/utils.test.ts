@@ -27,7 +27,7 @@ import {
 } from '../../../../../../../resources'
 import * as React from 'react'
 
-import * as resourceUtils from '../../../../../../../resources'
+import * as resourceUtils from '../../../../../../../resources/utils'
 
 describe('assisted-installer utils', () => {
   it('getDefault', () => {
@@ -123,7 +123,7 @@ describe('getDeleteHostAction utils', () => {
   })
 })
 
-jest.mock('../../../../../../../resources', () => {
+jest.mock('../../../../../../../resources/utils', () => {
   return {
     patchResource: jest.fn(() => {
       return {

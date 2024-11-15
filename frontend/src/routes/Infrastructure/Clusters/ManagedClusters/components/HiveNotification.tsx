@@ -2,16 +2,13 @@
 
 import { css } from '@emotion/css'
 import {
-  Cluster,
   ClusterDeploymentKind,
   ClusterPoolKind,
   ClusterProvision,
-  ClusterStatus,
   ConfigMap,
   getHivePod,
-  getLatest,
-  getProvisionNotification,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus, getLatest, getProvisionNotification } from '../../../../../resources/utils'
 import { AcmAlert, AcmButton, Provider } from '../../../../../ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
