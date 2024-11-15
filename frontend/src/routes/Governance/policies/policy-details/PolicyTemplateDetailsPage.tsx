@@ -137,7 +137,7 @@ export function PolicyTemplateDetailsPage() {
 
   const handleAuditViolation = useCallback(
     (policyViolation: number): void => {
-      if (apiGroup == 'kyverno.io') {
+      if (['kyverno.io', 'constraints.gatekeeper.sh'].includes(apiGroup)) {
         setAuditViolations(policyViolation)
       }
     },

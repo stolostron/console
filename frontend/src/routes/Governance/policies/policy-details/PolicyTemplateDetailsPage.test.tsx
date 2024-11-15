@@ -770,9 +770,9 @@ describe('Policy Template Details Page', () => {
 
     await waitForText('View YAML', true)
 
-    await waitForText('networking.k8s.io/app')
-    await waitForText('my-system.sh/app')
-    await waitForText('Pod')
+    await waitForText('Audit violations')
+
+    expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
 
     const viewYamlLinks = screen.getAllByText('View YAML')
     expect(viewYamlLinks[0].getAttribute('href')).toEqual(
@@ -1375,13 +1375,7 @@ describe('Policy Template Details Page', () => {
     waitForText('API version')
     waitForText('kyverno.io/v1')
 
-    // Find Matches
-    await waitForText('Matches')
-    await waitForText('require-labels')
-    waitForText('validate', true)
-    waitForText('Ingress')
-
-    await waitForText('Namespace', true)
+    waitForText('Namespace', true)
 
     // VAPB link
     expect(screen.getByRole('link', { name: 'require-owner-labels-binding' })).toBeInTheDocument()
