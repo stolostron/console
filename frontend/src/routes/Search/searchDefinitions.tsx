@@ -387,6 +387,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         { ...AddColumn('name', t('Name')), search: (item: any) => item.name },
         AddColumn('status', t('Status')),
         { ...AddColumn('cluster', t('Cluster')), search: (item: any) => item.cluster },
+        AddColumn('namespace', t('Namespace')),
         AddColumn('node', t('Node')),
         AddColumn('ipaddress', t('IP address')),
         {
