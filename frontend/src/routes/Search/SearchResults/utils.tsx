@@ -248,7 +248,7 @@ export function getRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      if (item?.managedHub !== 'global-hub') {
+      if (item.managedHub && item.managedHub !== 'global-hub') {
         setDeleteExternalResource({
           open: true,
           close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
