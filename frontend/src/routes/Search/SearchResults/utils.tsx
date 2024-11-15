@@ -360,6 +360,7 @@ export function getRowActions(
   ) {
     return []
   } else if (resourceKind.toLowerCase() === 'application') {
+    return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   } else if (resourceKind.toLowerCase() === 'virtualmachine') {
     return vmActionsEnabled
       ? [
