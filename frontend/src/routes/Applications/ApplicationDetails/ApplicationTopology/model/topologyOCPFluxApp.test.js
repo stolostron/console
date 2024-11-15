@@ -282,6 +282,6 @@ describe('generateTopology', () => {
     rawSearchData: {},
   }
   it('should generateTopology', () => {
-    expect(generateTopology(application, resources, {})).toEqual(result)
+    expect(generateTopology(application, resources, {}, 'local-cluster')).toEqual(result)
   })
 })

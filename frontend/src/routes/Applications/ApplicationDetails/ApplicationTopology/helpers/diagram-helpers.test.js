@@ -14,7 +14,6 @@ import {
   checkAndObjects,
   checkNotOrObjects,
   computeResourceName,
-  createDeployableYamlLink,
   createEditLink,
   createResourceSearchLink,
   getNameWithoutChartRelease,
@@ -322,112 +321,6 @@ describe('getNameWithoutChartRelease node for subscription, with label', () => {
 
   it('getNameWithoutChartRelease helm release  no no label', () => {
     expect(getNameWithoutChartRelease(node, 'git-helm-sub', { value: true })).toEqual('git-helm-sub')
-  })
-})
-
-describe('createDeployableYamlLink for application no selflink', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    name: 'test-1',
-    namespace: 'test-1-ns',
-    id: 'id',
-    specs: {
-      row: 20,
-      isDesign: true,
-      raw: {
-        kind: 'Application',
-      },
-    },
-  }
-  it('createDeployableYamlLink for application editLink', () => {
-    expect(createDeployableYamlLink(node, details, t)).toEqual([
-      {
-        type: 'link',
-        value: {
-          data: {
-            action: 'show_resource_yaml',
-            cluster: 'local-cluster',
-            editLink:
-              '/multicloud/search/resources/yaml?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
-          },
-          label: 'View resource YAML',
-        },
-      },
-    ])
-  })
-})
-
-describe('createDeployableYamlLink for application with editLink', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    id: 'id',
-    name: 'test',
-    namespace: 'test-ns',
-    apiversion: 'app.k8s.io/v1beta1',
-    kind: 'Application',
-    specs: {
-      isDesign: true,
-      raw: {
-        metadata: {
-          selfLink: 'appLink',
-        },
-      },
-    },
-  }
-  const result = [
-    {
-      type: 'link',
-      value: {
-        data: {
-          action: 'show_resource_yaml',
-          cluster: 'local-cluster',
-          editLink:
-            '/multicloud/search/resources/yaml?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
-        },
-        label: 'View resource YAML',
-      },
-    },
-  ]
-  it('createDeployableYamlLink for application with selflink', () => {
-    expect(createDeployableYamlLink(node, details, t)).toEqual(result)
-  })
-})
-
-describe('createDeployableYamlLink for child application', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    id: 'id',
-    name: 'test',
-    namespace: 'test-ns',
-    apiversion: 'app.k8s.io/v1beta1',
-    kind: 'Application',
-    specs: {
-      raw: {
-        metadata: {
-          selfLink: 'appLink',
-        },
-      },
-    },
-  }
-  const result = []
-  it('does not add a link', () => {
-    expect(createDeployableYamlLink(node, details)).toEqual(result)
-  })
-})
-
-describe('createDeployableYamlLink for other', () => {
-  const details = []
-  const node = {
-    id: 'id',
-    specs: {
-      row_foo: 20,
-    },
-  }
-  it('createDeployableYamlLink for other', () => {
-    expect(createDeployableYamlLink(node, details)).toEqual([])
   })
 })
 

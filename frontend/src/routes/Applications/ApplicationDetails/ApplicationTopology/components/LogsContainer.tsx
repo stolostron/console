@@ -4,10 +4,11 @@ import { PageSection, SelectOption } from '@patternfly/react-core'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
+import { useAllClusters } from '../../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 export interface ILogsContainerProps {
   node: any[]
@@ -20,6 +21,11 @@ export function LogsContainer(props: ILogsContainerProps) {
   const t = props.t
   const podModel = _.get(props.node, 'specs.podModel')
   const pods = podModel && Object.keys(podModel).length > 0 ? podModel[Object.keys(podModel)[0]] : []
+  const managedClusters = useAllClusters(true)
+  const localCluster = useMemo(
+    () => managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true'),
+    [managedClusters]
+  )
 
   if (pods.length === 0) {
     resourceError = t('No pods found')
@@ -67,7 +73,7 @@ export function LogsContainer(props: ILogsContainerProps) {
   const [cluster, setCluster] = useState<string>(initialCluster)
 
   useEffect(() => {
-    if (cluster !== 'local-cluster' && container !== '') {
+    if (cluster !== localCluster?.name && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -85,7 +91,7 @@ export function LogsContainer(props: ILogsContainerProps) {
         .catch((err) => {
           setLogsError(err.message)
         })
-    } else if (cluster === 'local-cluster' && container !== '') {
+    } else if (cluster === localCluster?.name && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -104,7 +110,7 @@ export function LogsContainer(props: ILogsContainerProps) {
           setLogsError(err.message)
         })
     }
-  }, [cluster, container, currentNamespace, selectedPod])
+  }, [cluster, container, currentNamespace, selectedPod, localCluster?.name])
 
   if (resourceError !== '') {
     return (

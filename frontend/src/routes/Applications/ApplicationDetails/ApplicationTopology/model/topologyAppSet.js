@@ -13,7 +13,7 @@ import {
 } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
 
-export function getAppSetTopology(application) {
+export function getAppSetTopology(application, hubClusterName) {
   const links = []
   const nodes = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
@@ -32,8 +32,8 @@ export function getAppSetTopology(application) {
       isDesign: true,
       raw: application.app,
       allClusters: {
-        isLocal: clusterNames.includes('local-cluster'),
-        remoteCount: clusterNames.includes('local-cluster') ? clusterNames.length - 1 : clusterNames.length,
+        isLocal: clusterNames.includes(hubClusterName),
+        remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
       },
       clusterNames,
       appSetApps,
@@ -59,7 +59,7 @@ export function getAppSetTopology(application) {
     } = placement
     const clusterDecisions = get(placement, 'status.decisions', [])
 
-    if (clusterDecisions.find((cluster) => cluster.clusterName === 'local-cluster') && application.isAppSetPullModel) {
+    if (clusterDecisions.find((cluster) => cluster.clusterName === hubClusterName) && application.isAppSetPullModel) {
       isArgoCDPullModelTargetLocalCluster = true
     }
     nodes.push({
@@ -125,7 +125,8 @@ export function getAppSetTopology(application) {
     const type = kind.toLowerCase()
 
     const memberId = `member--member--deployable--member--clusters--${getClusterName(
-      clusterId
+      clusterId,
+      hubClusterName
     )}--${type}--${deployableNamespace}--${deployableName}`
 
     const raw = {
@@ -183,22 +184,22 @@ export function getAppSetTopology(application) {
   return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-export const openArgoCDEditor = (cluster, namespace, name, toggleLoading, t) => {
-  if (cluster === 'local-cluster') {
+export const openArgoCDEditor = (cluster, namespace, name, toggleLoading, t, hubClusterName) => {
+  if (cluster === hubClusterName) {
     toggleLoading()
-    getArgoRoute(name, namespace, cluster)
+    getArgoRoute(name, namespace, cluster, undefined, hubClusterName)
     toggleLoading()
   } else {
     toggleLoading()
-    getArgoRouteFromSearch(name, namespace, cluster, t)
+    getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName)
     toggleLoading()
   }
 }
 
-const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewdata) => {
+const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewdata, hubClusterName) => {
   let routes, argoRoute
   // this only works for OCP clusters, needs more work to support other vendors
-  if (cluster === 'local-cluster') {
+  if (cluster === hubClusterName) {
     try {
       routes = await listNamespacedResources({
         apiVersion: 'route.openshift.io/v1',
@@ -243,7 +244,7 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
   }
 }
 
-export const openRouteURL = (routeObject, toggleLoading) => {
+export const openRouteURL = (routeObject, toggleLoading, hubClusterName) => {
   const name = get(routeObject, 'name', '')
   const namespace = get(routeObject, 'namespace', '')
   const cluster = get(routeObject, 'cluster', '')
@@ -253,7 +254,7 @@ export const openRouteURL = (routeObject, toggleLoading) => {
   const apiVersion = `${apigroup}/${apiversion}`
 
   toggleLoading()
-  if (cluster === 'local-cluster') {
+  if (cluster === hubClusterName) {
     const route = getResource({ apiVersion, kind, metadata: { namespace, name } }).promise
     route
       .then((result) => {
@@ -281,7 +282,7 @@ export const openRouteURL = (routeObject, toggleLoading) => {
   }
 }
 
-const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
+const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t, hubClusterName) => {
   const query = convertStringToQuery(
     `kind:route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
   )
@@ -323,13 +324,19 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
             console.log(errMsg)
             return
           } else {
-            getArgoRoute(appName, appNamespace, cluster, {
+            getArgoRoute(
+              appName,
+              appNamespace,
               cluster,
-              name: route.name,
-              namespace: route.namespace,
-              kind: 'Route',
-              apiVersion: 'route.openshift.io/v1',
-            })
+              {
+                cluster,
+                name: route.name,
+                namespace: route.namespace,
+                kind: 'Route',
+                apiVersion: 'route.openshift.io/v1',
+              },
+              hubClusterName
+            )
           }
         }
       }

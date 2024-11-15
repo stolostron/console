@@ -109,7 +109,7 @@ const setAvailableRules = (control, result) => {
           ? i18n('creation.app.local.clusters.only', [rule.kind, ruleName])
           : unavailable
         if (clusterSelector?.matchExpressions?.length > 0) {
-          if (clusterSelector.matchExpressions[0]?.key !== 'local-cluster') {
+          if (clusterSelector.matchExpressions[0]?.key !== control.hubClusterName) {
             selector = i18n('creation.app.clusters.expressions', [rule.kind, ruleName, getLabels(clusterSelector)])
           }
         } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
@@ -117,7 +117,7 @@ const setAvailableRules = (control, result) => {
             ? i18n('creation.app.clusters.all.online', [rule.kind, ruleName])
             : i18n('creation.app.clusters.only.online', [rule.kind, ruleName])
         } else if (clusterSelector.matchLabels) {
-          if (!clusterSelector.matchLabels['local-cluster']) {
+          if (!clusterSelector.matchLabels[control.hubClusterName]) {
             selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getMatchLabels(clusterSelector)])
           }
         }

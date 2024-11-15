@@ -157,6 +157,11 @@ export default function ApplicationDetailsPage() {
   const isFluxApp = applicationData?.application?.isFluxApp
   const clusters = useAllClusters(true)
 
+  const hubCluster = useMemo(
+    () => clusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true'),
+    [clusters]
+  )
+
   let modalWarnings: string
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
@@ -271,7 +276,8 @@ export default function ApplicationDetailsPage() {
                 recoilStates.subscriptions,
                 recoilStates.placementRules,
                 recoilStates.placements,
-                recoilStates.channels
+                recoilStates.channels,
+                hubCluster?.name || ''
               )
             : [[], []]
         const appSetRelatedResources =
@@ -392,10 +398,10 @@ export default function ApplicationDetailsPage() {
             setApplicationNotFound(true)
           } else {
             setApplicationNotFound(false)
-            const topology = await getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
+            const topology: any = await getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
               cluster,
             })
-            const appData = getApplicationData(topology?.nodes)
+            const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
             // when first opened, refresh topology with wait statuses
             if (!lastRefreshRef?.current?.resourceStatuses) {

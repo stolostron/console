@@ -1,13 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
-
 import { createChildNode, addClusters, processMultiples } from './utils'
 
-const localClusterName = 'local-cluster'
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
-export const getSubscriptionTopology = (application, managedClusters, relatedResources) => {
+export const getSubscriptionTopology = (application, managedClusters, relatedResources, hubClusterName) => {
   const links = []
   const nodes = []
   let name
@@ -30,8 +28,8 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       allSubscriptions: application.allSubscriptions ? application.allSubscriptions : [],
       allChannels: application.allChannels ? application.allChannels : [],
       allClusters: {
-        isLocal: allAppClusters.indexOf(localClusterName) !== -1,
-        remoteCount: allAppClusters.indexOf('local-cluster') !== -1 ? allAppClusters.length - 1 : allAppClusters.length,
+        isLocal: allAppClusters.indexOf(hubClusterName) !== -1,
+        remoteCount: allAppClusters.indexOf(hubClusterName) !== -1 ? allAppClusters.length - 1 : allAppClusters.length,
       },
       channels: application.channels,
     },
@@ -60,16 +58,16 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
       if (
         get(subscription, 'spec.placement.local', '') === true &&
         subscription.decisions &&
-        includes(managedClusterNames, localClusterName) === false
+        includes(managedClusterNames, hubClusterName) === false
       ) {
         const localCluster = {
           metadata: {
-            name: localClusterName,
-            namespace: localClusterName,
+            name: hubClusterName,
+            namespace: hubClusterName,
           },
         }
         managedClusterNames = concat(managedClusterNames, localCluster)
-        ruleDecisionMap[localClusterName] = localClusterName
+        ruleDecisionMap[hubClusterName] = hubClusterName
       }
       const ruleClusterNames = Object.keys(ruleDecisionMap)
 

@@ -265,7 +265,15 @@ describe('getShortDateTime', () => {
 describe('getAppChildResources', () => {
   it('should get the child resources', () => {
     expect(
-      getAppChildResources(mockApplication0, mockApplications, mockSubscriptions, mockPlacementRules, [], mockChannels)
+      getAppChildResources(
+        mockApplication0,
+        mockApplications,
+        mockSubscriptions,
+        mockPlacementRules,
+        [],
+        mockChannels,
+        'local-cluster'
+      )
     ).toEqual([
       [
         {
@@ -496,6 +504,9 @@ describe('getArgoPullModelClusterList', () => {
   ]
 
   it('should return pull mode cluster list', () => {
-    expect(getArgoPullModelClusterList(resource, placementDecisions)).toEqual(['feng-managed1', 'feng-managed2'])
+    expect(getArgoPullModelClusterList(resource, placementDecisions, 'local-cluster')).toEqual([
+      'feng-managed1',
+      'feng-managed2',
+    ])
   })
 })

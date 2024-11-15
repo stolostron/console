@@ -61,7 +61,7 @@ const blockedPulse = 'blocked'
 /////////////////////////// COMPUTE EACH DIAGRAM NODE STATUS ////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
-export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
+export const computeNodeStatus = (node, isSearchingStatusComplete, t, hubClusterName) => {
   let pulse = greenPulse
   let shapeType = node.type
   let apiVersion
@@ -86,7 +86,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
         pulse = getPulseStatusForArgoApp(node)
       } else {
         if (isDeployable || !isDesign) {
-          pulse = getPulseStatusForGenericNode(node, t)
+          pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
         } else if (!_.get(node, 'specs.channels')) {
           pulse = redPulse
         }
@@ -94,21 +94,21 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
       break
     case 'applicationset':
       if (isDeployable || !isDesign) {
-        pulse = getPulseStatusForGenericNode(node, t)
+        pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
       } else {
         pulse = getPulseStatusForArgoApp(node, true)
       }
       break
     case 'placements':
       if (isDeployable) {
-        pulse = getPulseStatusForGenericNode(node, t)
+        pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
       } else if (!_.get(node, 'specs.raw.status.decisions')) {
         pulse = redPulse
       }
       break
     case 'placement':
       if (isDeployable) {
-        pulse = getPulseStatusForGenericNode(node, t)
+        pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
       } else if (_.get(node, 'specs.raw.status.numberOfSelectedClusters') === 0) {
         pulse = redPulse
       }
@@ -117,17 +117,17 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
       if (isBlocked) {
         pulse = blockedPulse
       } else if (isDeployable || !isDesign) {
-        pulse = getPulseStatusForGenericNode(node, t)
+        pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
       } else {
-        pulse = getPulseStatusForSubscription(node)
+        pulse = getPulseStatusForSubscription(node, hubClusterName)
         shapeType = getShapeTypeForSubscription(node)
       }
       break
     case 'cluster':
-      pulse = getPulseStatusForCluster(node)
+      pulse = getPulseStatusForCluster(node, hubClusterName)
       break
     default:
-      pulse = getPulseStatusForGenericNode(node, t)
+      pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
   }
 
   _.set(node, specPulse, pulse)
@@ -138,7 +138,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
 /////////////////////////////////////////////////////////////////
 ///////////////// SUBSCRIPTION //////////////////////////////////
 /////////////////////////////////////////////////////////////////
-export const getPulseStatusForSubscription = (node) => {
+export const getPulseStatusForSubscription = (node, hubClusterName) => {
   let pulse = greenPulse
 
   const resourceMap = _.get(node, `specs.${node.type}Model`)
@@ -147,7 +147,7 @@ export const getPulseStatusForSubscription = (node) => {
     return pulse
   }
   let isPlaced = false
-  const onlineClusters = getOnlineClusters(node)
+  const onlineClusters = getOnlineClusters(node, hubClusterName)
   _.flatten(Object.values(resourceMap)).forEach((subscriptionItem) => {
     const clsName = _.get(subscriptionItem, 'cluster', '')
     if (subscriptionItem.status) {
@@ -270,7 +270,7 @@ export const getPulseStatusForArgoApp = (node, isAppSet) => {
 ///////////////// CLUSTER //////// //////////////////////////////
 /////////////////////////////////////////////////////////////////
 
-export const getPulseStatusForCluster = (node) => {
+export const getPulseStatusForCluster = (node, hubClusterName) => {
   /////////////////////////////////////////
   ///////// SEE IF CLUSTER IS OFFLINE
   ////////////////////////////////////////
@@ -286,8 +286,8 @@ export const getPulseStatusForCluster = (node) => {
       if (_.findIndex(clusters, (obj) => _.get(obj, 'name') === appCls) === -1) {
         clusters.push({
           name: appCls,
-          _clusterNamespace: appCls === 'local-cluster' ? appCls : '_',
-          status: appCls === 'local-cluster' ? 'ok' : '',
+          _clusterNamespace: appCls === hubClusterName ? appCls : '_',
+          status: appCls === hubClusterName ? 'ok' : '',
         })
       }
     })
@@ -300,7 +300,7 @@ export const getPulseStatusForCluster = (node) => {
   clusters.forEach((cluster) => {
     let clusterName = cluster.name || cluster.metadata.name
     if (clusterName === 'in-cluster') {
-      clusterName = 'local-cluster'
+      clusterName = hubClusterName
     }
     if (!clustersNames || clustersNames.includes(clusterName)) {
       const status = (cluster.status || calculateArgoClusterStatus(cluster) || '').toLowerCase()
@@ -344,7 +344,7 @@ export const calculateArgoClusterStatus = (clusterData) => {
   return status
 }
 
-export const getOnlineClusters = (node) => {
+export const getOnlineClusters = (node, hubClusterName) => {
   const clusterNames = _.get(node, 'specs.clustersNames', [])
   const prClusters = _.get(node, 'clusters.specs.clusters', [])
   const searchClusters = _.get(node, 'specs.searchClusters', [])
@@ -352,7 +352,7 @@ export const getOnlineClusters = (node) => {
   const onlineClusters = []
   clusterNames.forEach((clsName) => {
     const cluster = clsName.trim()
-    if (cluster === 'local-cluster') {
+    if (cluster === hubClusterName) {
       onlineClusters.push(cluster)
     } else {
       const matchingCluster = _.find(
@@ -369,13 +369,13 @@ export const getOnlineClusters = (node) => {
     }
   })
   //always add local cluster
-  return _.uniqBy(_.union(onlineClusters, ['local-cluster']))
+  return _.uniqBy(_.union(onlineClusters, [hubClusterName]))
 }
 
 /////////////////////////////////////////////////////////////////
 ///////////////// GENERIC ///////////////////////////////////////
 /////////////////////////////////////////////////////////////////
-const getPulseStatusForGenericNode = (node, t) => {
+const getPulseStatusForGenericNode = (node, t, hubClusterName) => {
   const { deployedStr, resNotDeployedStates } = getStateNames(t)
 
   //ansible job status
@@ -389,8 +389,8 @@ const getPulseStatusForGenericNode = (node, t) => {
   const namespace = _.get(node, 'namespace', '')
   const resourceMap = _.get(node, `specs.${node.type}Model`)
   const resourceCount = _.get(node, 'specs.resourceCount')
-  const clusterNames = R.split(',', getClusterName(node.id, node, true))
-  const onlineClusters = getOnlineClusters(node)
+  const clusterNames = R.split(',', getClusterName(node.id, node, true, hubClusterName))
+  const onlineClusters = getOnlineClusters(node, hubClusterName)
 
   // if no resourceMap from search query, show '?'
   if (!resourceMap || onlineClusters.length === 0) {
@@ -537,7 +537,7 @@ export const getPulseForData = (available, desired, podsUnavailable) => {
 ///////////////////////////////////////////////////////////
 //////////////////// APPLICATION /////////////////////////
 ///////////////////////////////////////////////////////////
-export const setApplicationDeployStatus = (node, details, t) => {
+export const setApplicationDeployStatus = (node, details, t, hubClusterName) => {
   const isDesign = _.get(node, specIsDesign, false)
   if ((node.type !== 'application' || !isDesign) && (node.type !== 'applicationset' || !isDesign)) {
     return details
@@ -545,9 +545,9 @@ export const setApplicationDeployStatus = (node, details, t) => {
 
   const apiVersion = _.get(node, apiVersionPath)
   if (node.type === 'applicationset') {
-    setAppSetDeployStatus(node, details, t)
+    setAppSetDeployStatus(node, details, t, hubClusterName)
   } else if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
-    setArgoApplicationDeployStatus(node, details, t)
+    setArgoApplicationDeployStatus(node, details, t, hubClusterName)
   } else {
     addPropertyToList(
       details,
@@ -576,7 +576,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
         ),
         status: failureStatus,
       })
-      const subscrSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
+      const subscrSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${hubClusterName}"}`
       details.push({
         type: 'link',
         value: {
@@ -639,7 +639,7 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
   })
 }
 
-export const setAppSetDeployStatus = (node, details, t) => {
+export const setAppSetDeployStatus = (node, details, t, hubClusterName) => {
   const isPlacementFound = _.get(node, 'isPlacementFound')
   if (!isPlacementFound) {
     details.push({
@@ -659,7 +659,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
       details.push({
         labelValue: t('Error'),
         value: t(
-          'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.'
+          'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.'
         ),
         status: failureStatus,
       })
@@ -679,7 +679,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
       details.push({
         labelValue: t('Warning'),
         value: t(
-          'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.'
+          'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.'
         ),
         status: warningStatus,
       })
@@ -727,7 +727,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
           action: 'open_argo_editor',
           name: appName,
           namespace: appNamespace,
-          cluster: 'local-cluster',
+          cluster: hubClusterName,
         },
       },
     })
@@ -767,7 +767,7 @@ export const translateArgoHealthStatus = (healthStatus) => {
 //////////////////// SUBSCRIPTION /////////////////////////
 ///////////////////////////////////////////////////////////
 
-export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => {
+export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hubClusterName) => {
   const { resourceStatuses = new Set() } = activeFilters
   const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
   const isDesign = _.get(node, specIsDesign, false)
@@ -865,7 +865,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
         }
         const isLinkedLocalPlacementSubs =
           isLocalPlacementSubs ||
-          (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === 'local-cluster')
+          (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === hubClusterName)
         if (isLinkedLocalPlacementSubs || !subscription._hubClusterResource || isLocalFailedSubscription) {
           const subscriptionPulse = R.includes('Fail', R.pathOr('', ['status'])(subscription))
             ? failureStatus
@@ -974,7 +974,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
       status: failureStatus,
     })
     if (isSearchAvailable()) {
-      const ruleSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${'local-cluster'}"}`
+      const ruleSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${hubClusterName}"}`
       details.push({
         type: 'link',
         value: {
@@ -1049,7 +1049,7 @@ export const setPlacementDeployStatus = (node, details, t) => {
 ///////////////////////////////////////////////////////////
 //////////////////// CLUSTER /////////////////////////
 ///////////////////////////////////////////////////////////
-export const setClusterStatus = (node, details, t) => {
+export const setClusterStatus = (node, details, t, hubClusterName) => {
   const { id } = node
   const specs = _.get(node, 'specs', {})
   const { cluster, targetNamespaces = {}, clusters = [], appClusters = [], clustersNames = [] } = specs
@@ -1062,8 +1062,8 @@ export const setClusterStatus = (node, details, t) => {
       //target cluster not deployed on
       clusterArr.push({
         name: appCls,
-        _clusterNamespace: appCls === 'local-cluster' ? appCls : '_',
-        status: appCls === 'local-cluster' ? 'ok' : '',
+        _clusterNamespace: appCls === hubClusterName ? appCls : '_',
+        status: appCls === hubClusterName ? 'ok' : '',
       })
     }
   })
@@ -1130,7 +1130,7 @@ const setClusterWindowStatus = (windowStatusArray, subscription, details, t) => 
 ///////////////////////////////////////////////////////////
 
 //show resource deployed status for resources producing pods
-export const setPodDeployStatus = (node, details, activeFilters, t) => {
+export const setPodDeployStatus = (node, details, activeFilters, t, hubClusterName) => {
   const { notDeployedStr } = getStateNames(t)
   const { resourceStatuses = new Set() } = activeFilters
   const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
@@ -1143,7 +1143,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t) => {
   const podObjects = _.flatten(Object.values(podModel))
   const podDataPerCluster = {} //pod details list for each cluster name
 
-  const clusterNames = R.split(',', getClusterName(node.id, node, true))
+  const clusterNames = R.split(',', getClusterName(node.id, node, true, hubClusterName))
   clusterNames.forEach((clusterName) => {
     podDataPerCluster[clusterName] = []
   })
@@ -1273,7 +1273,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t) => {
 ///////////////////////////////////////////////////////////
 //show resource deployed status on the remote clusters
 //for resources not producing pods
-export const setResourceDeployStatus = (node, details, activeFilters, t) => {
+export const setResourceDeployStatus = (node, details, activeFilters, t, hubClusterName) => {
   const { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates } =
     getStateNames(t)
   const isDeployable = isDeployableResource(node)
@@ -1308,12 +1308,12 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
 
   const isHookNode = _.get(node, 'specs.raw.hookType')
   const clusterNames = isHookNode
-    ? ['local-cluster']
+    ? [hubClusterName]
     : cluster
       ? [cluster]
-      : R.split(',', getClusterName(nodeId, node, true))
+      : R.split(',', getClusterName(nodeId, node, true, hubClusterName))
   const resourceMap = _.get(node, `specs.${node.type}Model`, {})
-  const onlineClusters = getOnlineClusters(node)
+  const onlineClusters = getOnlineClusters(node, hubClusterName)
 
   if (nodeType === 'ansiblejob' && isHookNode) {
     // process here only ansible hooks
@@ -1323,7 +1323,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
       const res = {
         name: name,
         namespace: namespace,
-        cluster: 'local-cluster',
+        cluster: hubClusterName,
         kind: 'ansiblejob',
         apigroup: 'tower.ansible.com',
         apiversion: 'v1alpha1',

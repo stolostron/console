@@ -920,5 +920,5 @@ it('getAppSetTopology success scenario', () => {
       },
     ],
   }
-  expect(getAppSetTopology(application)).toEqual(result)
+  expect(getAppSetTopology(application, 'local-cluster')).toEqual(result)
 })

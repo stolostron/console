@@ -375,7 +375,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
     { type: 'spacer' },
   ]
   it('setSubscriptionDeployStatus with no hub error', () => {
-    expect(setSubscriptionDeployStatus(node, [], {}, t)).toEqual(response)
+    expect(setSubscriptionDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(response)
   })
 })
 
@@ -562,7 +562,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
     { type: 'spacer' },
   ]
   it('setSubscriptionDeployStatus yellow', () => {
-    expect(setSubscriptionDeployStatus(node, [], {}, t)).toEqual(response)
+    expect(setSubscriptionDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(response)
   })
 })
 
@@ -847,7 +847,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
     { type: 'spacer' },
   ]
   it('setResourceDeployStatus ansiblejob valid', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -916,7 +916,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
     },
   ]
   it('setResourceDeployStatus ansiblejob no resource found by search', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -976,7 +976,7 @@ describe('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
     },
   ]
   it('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1094,17 +1094,17 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
   ]
 
   it('setResourceDeployStatus ansiblejob no status', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
   it('setResourceDeployStatus ansiblejob no status 1', () => {
-    expect(setResourceDeployStatus(ansibleError, [], {}, t)).toEqual(result1)
+    expect(setResourceDeployStatus(ansibleError, [], {}, t, 'local-cluster')).toEqual(result1)
   })
   it('setResourceDeployStatus ansiblejob with error status', () => {
-    expect(setResourceDeployStatus(ansibleError2, [], {}, t)).toEqual(result2)
+    expect(setResourceDeployStatus(ansibleError2, [], {}, t, 'local-cluster')).toEqual(result2)
   })
 
   it('getResourceDeployStatus ansiblejob with subscription deployed on all active clusters', () => {
-    expect(setResourceDeployStatus(ansibleErrorAllClusters, [], {}, t)).toEqual(result2)
+    expect(setResourceDeployStatus(ansibleErrorAllClusters, [], {}, t, 'local-cluster')).toEqual(result2)
   })
 })
 
@@ -1558,7 +1558,7 @@ describe('setApplicationDeployStatus 1', () => {
     },
   }
   it('setApplicationDeployStatus deployed 1', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual([])
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual([])
   })
 })
 
@@ -1590,7 +1590,7 @@ describe('setApplicationDeployStatus 2', () => {
     { type: 'spacer' },
   ]
   it('setApplicationDeployStatus deployed application as a deployable', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1640,7 +1640,7 @@ describe('setApplicationDeployStatus application', () => {
     },
   ]
   it('setApplicationDeployStatus deployed application', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1682,7 +1682,7 @@ describe('setApplicationDeployStatus no selector', () => {
     },
   ]
   it('setApplicationDeployStatus deployed no selector 2', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -3271,7 +3271,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
       labelValue: 'Warning',
       status: 'warning',
       value:
-        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+        'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.',
     },
     {
       type: 'spacer',
@@ -3333,7 +3333,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
     },
   ]
   it('should set AppSet deploy status', () => {
-    setAppSetDeployStatus(node, details, t)
+    setAppSetDeployStatus(node, details, t, 'local-cluster')
     expect(details).toEqual(result)
   })
 })
@@ -3517,11 +3517,11 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
       labelValue: 'Error',
       status: 'failure',
       value:
-        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+        'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.',
     },
   ]
   it('should set AppSet deploy status', () => {
-    setAppSetDeployStatus(node, details, t)
+    setAppSetDeployStatus(node, details, t, 'local-cluster')
     expect(details).toEqual(result)
   })
 })

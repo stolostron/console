@@ -138,6 +138,7 @@ export const getAppSetApplication = (model, app, recoilStates, clusters) => {
   const appSetApps = []
   const appSetClusters = []
   const appSetNS = get(app, 'metadata.namespace')
+  const hubCluster = clusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true')
 
   argoApplications.forEach((argoApp) => {
     const argoAppOwnerRef = get(argoApp, 'metadata.ownerReferences')
@@ -154,7 +155,7 @@ export const getAppSetApplication = (model, app, recoilStates, clusters) => {
         let cluster
         if (serverName) {
           if (serverName === 'in-cluster') {
-            serverName = 'local-cluster'
+            serverName = hubCluster?.name
           }
           // find cluster by name
           cluster = findCluster(clusters, serverName, false)

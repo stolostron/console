@@ -156,6 +156,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
 
+  const hubCluster = useMemo(
+    () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),
+    [props.clusters]
+  )
   const sourceGitChannels = useMemo(
     () =>
       props.channels
@@ -340,14 +344,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
               numberOfClusters: 1,
               predicates: [
                 {
-                  // ArgoCD pull model doesn't support local-cluster
+                  // ArgoCD pull model doesn't support the hub cluster
                   requiredClusterSelector: {
                     labelSelector: {
                       matchExpressions: [
                         {
                           key: 'name',
                           operator: 'NotIn',
-                          values: ['local-cluster'],
+                          values: [hubCluster?.metadata?.name],
                         },
                       ],
                     },
@@ -689,6 +693,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
             isPullModel={isPullModel}
+            hubClusterName={hubCluster?.metadata?.name || ''}
           />
         </Step>
       </WizardPage>
@@ -843,6 +848,7 @@ function ArgoWizardPlacementSection(props: {
   clusters: IResource[]
   createClusterSetCallback?: () => void
   isPullModel?: boolean
+  hubClusterName: string
 }) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
@@ -887,14 +893,14 @@ function ArgoWizardPlacementSection(props: {
                           spec: {
                             predicates: [
                               {
-                                // ArgoCD pull model doesn't support local-cluster
+                                // ArgoCD pull model doesn't support the hub cluster
                                 requiredClusterSelector: {
                                   labelSelector: {
                                     matchExpressions: [
                                       {
                                         key: 'name',
                                         operator: 'NotIn',
-                                        values: ['local-cluster'],
+                                        values: [props.hubClusterName],
                                       },
                                     ],
                                   },

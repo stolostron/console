@@ -71,7 +71,8 @@ export interface TopologyProps {
   ) => void
   canUpdateStatuses?: boolean
   disableRenderConstraint?: boolean
-  processActionLink?: (resource: any, toggleLoading: boolean) => void
+  processActionLink?: (resource: any, toggleLoading: boolean, hubClusterName: string) => void
+  hubClusterName: string
 }
 
 interface TopologyViewComponentsProps {
@@ -89,12 +90,14 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     setDrawerContent,
     options,
     elements,
+    hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
   const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
+
   useEffect(startPolling, [startPolling])
   useEffect(() => {
     const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
@@ -134,6 +137,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
             argoAppDetailsContainerControl={argoAppDetailsContainerControl}
             activeFilters={{}}
             t={t}
+            hubClusterName={hubClusterName}
           />,
           false
         )
@@ -166,7 +170,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
             style={{ padding: '0' }}
             onClick={() =>
               window.open(
-                `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`,
+                `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!${hubClusterName}"}`,
                 '_blank'
               )
             }

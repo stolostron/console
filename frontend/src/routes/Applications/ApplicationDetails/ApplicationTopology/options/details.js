@@ -36,13 +36,12 @@ import { PlacementKind } from '../../../../../resources'
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
 
-export const getNodeDetails = (node, activeFilters, t) => {
+export const getNodeDetails = (node, activeFilters, t, hubClusterName) => {
   const details = []
   if (node) {
     const { type, labels = [] } = node
 
     // for argo apps with application sets
-    //showArgoApplicationSetLink(node, details, t)
 
     details.push({
       type: 'spacer',
@@ -59,7 +58,7 @@ export const getNodeDetails = (node, activeFilters, t) => {
 
     switch (type) {
       case 'cluster':
-        setClusterStatus(node, details, t)
+        setClusterStatus(node, details, t, hubClusterName)
         break
 
       case 'package':
@@ -76,7 +75,7 @@ export const getNodeDetails = (node, activeFilters, t) => {
         break
 
       default:
-        addK8Details(node, details, activeFilters, t)
+        addK8Details(node, details, activeFilters, t, hubClusterName)
         break
     }
 
@@ -95,7 +94,7 @@ export const getNodeDetails = (node, activeFilters, t) => {
   return details
 }
 
-function addK8Details(node, details, activeFilters, t) {
+function addK8Details(node, details, activeFilters, t, hubClusterName) {
   const { clusterName, type, layout = {}, specs } = node
   const { isDesign } = specs
   let labels
@@ -327,10 +326,10 @@ function addK8Details(node, details, activeFilters, t) {
   //add Ingress service info
   addIngressNodeInfo(node, details, t)
 
-  setApplicationDeployStatus(node, details, t)
+  setApplicationDeployStatus(node, details, t, hubClusterName)
 
   //subscriptions status
-  setSubscriptionDeployStatus(node, details, activeFilters, t)
+  setSubscriptionDeployStatus(node, details, activeFilters, t, hubClusterName)
 
   //placement rule details
   setPlacementRuleDeployStatus(node, details, t)
@@ -339,10 +338,10 @@ function addK8Details(node, details, activeFilters, t) {
   setPlacementDeployStatus(node, details, t)
 
   //show error if the resource doesn't produce pods and was not deployed on remote clusters
-  setResourceDeployStatus(node, details, activeFilters, t)
+  setResourceDeployStatus(node, details, activeFilters, t, hubClusterName)
 
   // kube model details
-  setPodDeployStatus(node, details, activeFilters, t)
+  setPodDeployStatus(node, details, activeFilters, t, hubClusterName)
 
   return details
 }

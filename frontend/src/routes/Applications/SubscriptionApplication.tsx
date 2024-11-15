@@ -12,7 +12,7 @@ import Handlebars from 'handlebars'
 import _ from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
@@ -197,8 +197,16 @@ export function CreateSubscriptionApplication(
   )
 
   const clusters = useAllClusters()
-  const localCluster = clusters.find(
-    (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
+  const localCluster = useMemo(
+    () =>
+      clusters.find(
+        (cluster) =>
+          cluster.labels &&
+          cluster.labels['local-cluster'] === 'true' &&
+          cluster.isManaged &&
+          cluster.status === 'ready'
+      ),
+    [clusters]
   )
   const isLocalCluster = localCluster ? true : false
 
@@ -466,6 +474,8 @@ export function CreateSubscriptionApplication(
         loadExistingChannels('objectbucket')
         break
     }
+
+    control.hubClusterName = localCluster ? localCluster.name : ''
   }
 
   useEffect(() => {
