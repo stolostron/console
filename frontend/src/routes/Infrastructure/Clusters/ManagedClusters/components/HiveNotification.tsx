@@ -2,16 +2,13 @@
 
 import { css } from '@emotion/css'
 import {
-  Cluster,
   ClusterDeploymentKind,
   ClusterPoolKind,
   ClusterProvision,
-  ClusterStatus,
   ConfigMap,
   getHivePod,
-  getLatest,
-  getProvisionNotification,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus, getLatest, getProvisionNotification } from '../../../../../resources/utils'
 import { AcmAlert, AcmButton, Provider } from '../../../../../ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -107,7 +104,9 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
     const response = getHivePod(cluster.namespace, cluster.name, cluster.status)
     response.then((job) => {
       const podName = job?.metadata.name || ''
-      podName && window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
+      if (podName) {
+        window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
+      }
     })
   }
 }

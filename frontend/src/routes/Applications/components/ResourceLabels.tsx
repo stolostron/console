@@ -23,7 +23,7 @@ export function ResourceLabels(props: {
   const t = props.translation
   const repoMap = groupByRepoType(props.appRepos || [])
 
-  function getRepoTypeLabel(attrib: String, t: (arg: String) => String) {
+  function getRepoTypeLabel(attrib: string, t: (arg: string) => string) {
     switch (attrib) {
       case 'gitPath':
         return `${t('Path')}:`

@@ -1,19 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCurator,
   ClusterCuratorDefinition,
   createClusterCurator,
-  createResource,
   IResource,
+  SecretDefinition,
+  ClusterCuratorKind,
+} from '../../../../../resources'
+import {
+  Cluster,
+  createResource,
   IRequestResult,
   patchResource,
   ResourceError,
   ResourceErrorCode,
-  SecretDefinition,
-  ClusterCuratorKind,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import {
   AcmAlert,
@@ -156,56 +158,55 @@ export function UpdateAutomationModal(props: {
     })
 
     const results: IRequestResult[] = []
-    updatableClusters &&
-      updatableClusters.forEach((cluster) => {
-        resources.forEach((resource) => {
-          const resourceCopy = {
-            ...resource.resource,
-            metadata: {
-              ...(resource.resource.metadata || {}),
-              ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
-              namespace: cluster.name, // For curator and secrets, override namespace per cluster
-            },
-          }
+    updatableClusters?.forEach((cluster) => {
+      resources.forEach((resource) => {
+        const resourceCopy = {
+          ...resource.resource,
+          metadata: {
+            ...(resource.resource.metadata || {}),
+            ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
+            namespace: cluster.name, // For curator and secrets, override namespace per cluster
+          },
+        }
 
-          const result = patchResource(resourceCopy, resource.data)
-          let createResult: IRequestResult | undefined = undefined
+        const result = patchResource(resourceCopy, resource.data)
+        let createResult: IRequestResult | undefined = undefined
 
-          results.push({
-            promise: new Promise((resolve, reject) => {
-              result.promise
-                .then((data) => {
-                  return resolve(data)
-                })
-                .catch((err: ResourceError) => {
-                  if (err.code === ResourceErrorCode.NotFound) {
-                    const combinedResource = {
-                      ...resourceCopy,
-                      ...resource.data,
-                      // for Secrets, need to preserve metadata from both resources for name/namespace and labels
-                      metadata: { ...(resource.data.metadata || {}), ...resourceCopy.metadata },
-                    }
-                    createResult =
-                      resourceCopy.kind === ClusterCuratorKind
-                        ? createClusterCurator(combinedResource as ClusterCurator)
-                        : createResource(combinedResource)
-                    createResult.promise.then((data) => resolve(data)).catch((err) => reject(err))
-                  } else {
-                    reject(err)
+        results.push({
+          promise: new Promise((resolve, reject) => {
+            result.promise
+              .then((data) => {
+                return resolve(data)
+              })
+              .catch((err: ResourceError) => {
+                if (err.code === ResourceErrorCode.NotFound) {
+                  const combinedResource = {
+                    ...resourceCopy,
+                    ...resource.data,
+                    // for Secrets, need to preserve metadata from both resources for name/namespace and labels
+                    metadata: { ...(resource.data.metadata || {}), ...resourceCopy.metadata },
                   }
-                  setIsUpdating(false)
-                })
-            }),
-            abort: () => {
-              result.abort()
-              if (createResult) {
-                createResult.abort()
-              }
-              setIsUpdating(false)
-            },
-          })
+                  createResult =
+                    resourceCopy.kind === ClusterCuratorKind
+                      ? createClusterCurator(combinedResource as ClusterCurator)
+                      : createResource(combinedResource)
+                  createResult.promise.then((data) => resolve(data)).catch((err) => reject(err))
+                } else {
+                  reject(err)
+                }
+                setIsUpdating(false)
+              })
+          }),
+          abort: () => {
+            result.abort()
+            if (createResult) {
+              createResult.abort()
+            }
+            setIsUpdating(false)
+          },
         })
       })
+    })
     await Promise.allSettled(results.map((result) => result.promise))
     setSelectedCuratorTemplate(undefined)
     setIsUpdating(false)

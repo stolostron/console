@@ -4,7 +4,7 @@ import { AcmAlert, AcmForm, AcmFormProvider, AcmModal, AcmSelect, AcmSubmit } fr
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
-import { IRequestResult } from '../resources'
+import { IRequestResult } from '../resources/utils'
 
 export interface IDropdownActionModalProps<T = undefined> {
   open: true

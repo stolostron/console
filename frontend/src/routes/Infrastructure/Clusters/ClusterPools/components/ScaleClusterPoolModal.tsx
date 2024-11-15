@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterPool, patchResource } from '../../../../../resources'
+import { ClusterPool } from '../../../../../resources'
+import { patchResource } from '../../../../../resources/utils'
 import {
   AcmAlert,
   AcmAlertContext,
@@ -79,7 +80,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                 onChange={(event) => setSize(Number((event.target as HTMLInputElement).value))}
                 onMinus={() => setSize(size - 1)}
                 onPlus={() => setSize(size + 1)}
-                validation={(size: Number) => {
+                validation={(size: number) => {
                   if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
                   return undefined
                 }}
@@ -93,7 +94,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                 onChange={(event) => setRunningCount(Number((event.target as HTMLInputElement).value))}
                 onMinus={() => setRunningCount(runningCount - 1)}
                 onPlus={() => setRunningCount(runningCount + 1)}
-                validation={(runningCount: Number) => {
+                validation={(runningCount: number) => {
                   if (runningCount < 0) return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
                   return undefined
                 }}

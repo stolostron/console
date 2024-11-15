@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClusterClaim,
-  ClusterClaimApiVersion,
-  ClusterClaimKind,
-  ClusterPool,
-  createResource,
-  getResource,
-} from '../../../../../resources'
+import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind, ClusterPool } from '../../../../../resources'
+import { createResource, getResource } from '../../../../../resources/utils'
 import {
   AcmAlert,
   AcmAlertContext,

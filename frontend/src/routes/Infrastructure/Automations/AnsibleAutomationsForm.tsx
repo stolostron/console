@@ -30,16 +30,18 @@ import {
   ClusterCuratorAnsibleJob,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
-  createResource,
   getClusterCurator,
   IResource,
-  listAnsibleTowerInventories,
-  listAnsibleTowerJobs,
   ProviderConnection,
-  replaceResource,
-  ResourceErrorCode,
   Secret,
 } from '../../../resources'
+import {
+  createResource,
+  listAnsibleTowerInventories,
+  listAnsibleTowerJobs,
+  replaceResource,
+  ResourceErrorCode,
+} from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,
@@ -375,19 +377,36 @@ export function AnsibleAutomationsForm(props: {
         }
       })
       if (!errors.length) {
-        switch (type) {
-          case 'install':
-            preHook ? setInstallPreJobs(value) : setInstallPostJobs(value)
-            break
-          case 'upgrade':
-            preHook ? setUpgradePreJobs(value) : setUpgradePostJobs(value)
-            break
-          case 'scale':
-            preHook ? setScalePreJobs(value) : setScalePostJobs(value)
-            break
-          case 'destroy':
-            preHook ? setDestroyPreJobs(value) : setDestroyPostJobs(value)
-            break
+        if (preHook) {
+          switch (type) {
+            case 'install':
+              setInstallPreJobs(value)
+              break
+            case 'upgrade':
+              setUpgradePreJobs(value)
+              break
+            case 'scale':
+              setScalePreJobs(value)
+              break
+            case 'destroy':
+              setDestroyPreJobs(value)
+              break
+          }
+        } else {
+          switch (type) {
+            case 'install':
+              setInstallPostJobs(value)
+              break
+            case 'upgrade':
+              setUpgradePostJobs(value)
+              break
+            case 'scale':
+              setScalePostJobs(value)
+              break
+            case 'destroy':
+              setDestroyPostJobs(value)
+              break
+          }
         }
         return undefined
       }

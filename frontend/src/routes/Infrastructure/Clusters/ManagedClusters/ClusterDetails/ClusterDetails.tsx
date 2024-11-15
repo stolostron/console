@@ -23,20 +23,22 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath'
 import {
-  Addon,
-  Cluster,
   ClusterCurator,
   ClusterDeployment,
+  ManagedCluster,
+  ManagedClusterAddOn,
+  SecretDefinition,
+} from '../../../../../resources'
+import {
+  Addon,
+  Cluster,
   ClusterStatus,
   getCluster,
   getResource,
-  ManagedCluster,
-  ManagedClusterAddOn,
   mapAddons,
   ResourceError,
   ResourceErrorCode,
-  SecretDefinition,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import {
   AcmActionGroup,

@@ -72,7 +72,7 @@ export function LostChangesMonitor() {
   return null
 }
 
-export function LostChangesProvider(props: Readonly<PropsWithChildren<{}>>) {
+export function LostChangesProvider(props: Readonly<PropsWithChildren>) {
   const [isOpen, setIsOpen] = useState(false)
   const [location, setLocation] = useState<Location<unknown>>()
   const [callback, setCallback] = useState<() => void>()

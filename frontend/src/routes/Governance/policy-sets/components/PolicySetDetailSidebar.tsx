@@ -26,7 +26,8 @@ import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { exportObjectString, Policy, PolicySet } from '../../../../resources'
+import { Policy, PolicySet } from '../../../../resources'
+import { exportObjectString } from '../../../../resources/utils'
 import {
   getClustersSummaryForPolicySet,
   getPlacementDecisionsForResource,

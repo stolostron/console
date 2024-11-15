@@ -5,7 +5,8 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
-import { HypershiftCloudPlatformType, NodePool, NodePoolDefinition } from '../../../../../resources'
+import { NodePool, NodePoolDefinition } from '../../../../../resources'
+import { HypershiftCloudPlatformType } from '../../../../../resources/utils'
 import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -270,7 +271,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         id: 'manageNodepool',
         title: t('Manage node pool'),
         click: () => {
-          !!hostedCluster &&
+          if (hostedCluster) {
             setManageNodepoolModalProps({
               open: true,
               close: () => {
@@ -279,6 +280,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
               hostedCluster,
               nodepool,
             })
+          }
         },
         tooltip: cluster?.hypershift?.isUpgrading
           ? t('Node pools cannot be managed during hosted cluster upgrade.')

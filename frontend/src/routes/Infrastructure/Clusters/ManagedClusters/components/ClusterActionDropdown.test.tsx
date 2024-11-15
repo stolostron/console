@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCuratorDefinition,
   ClusterDeploymentDefinition,
   ClusterImageSet,
-  ClusterStatus,
   KlusterletAddonConfig,
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
@@ -15,6 +13,7 @@ import {
   ManagedClusterKind,
   SecretDefinition,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getBackendUrl, getRequest } from '../resources'
+import { getBackendUrl, getRequest } from '../resources/utils'
 
 const versionUrl = '/apiPaths'
 

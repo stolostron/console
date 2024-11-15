@@ -794,11 +794,12 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
       labelValue: t('Time Window type'),
       value: timeWindow,
     })
-    timeWindowDays &&
+    if (timeWindowDays) {
       details.push({
         labelValue: t('Time Window days'),
         value: R.toString(timeWindowDays),
       })
+    }
 
     if (timeWindowHours) {
       timeWindowHours.forEach((timeH) => {
@@ -891,12 +892,12 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
             value: subscriptionStatus,
             status: subscriptionPulse,
           })
-          !isLocalPlacementSubs &&
-            isLinkedLocalPlacementSubs &&
+          if (!isLocalPlacementSubs && isLinkedLocalPlacementSubs) {
             details.push({
               labelValue: t('Subscription deployed on local cluster'),
               value: 'true',
             })
+          }
 
           setClusterWindowStatus(windowStatusArray, subscription, details, t)
 

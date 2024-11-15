@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback } from 'react'
-import { patchResource } from '../../../../../../resources/utils/resource-request'
+import { patchResource } from '../../../../../../resources/utils'
 import {
   useClusterDeployment,
   onSaveAgent,

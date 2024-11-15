@@ -14,13 +14,13 @@ import {
   Policy,
   PolicySet,
   PolicyAutomation,
-  reconcileResources,
   Subscription,
   IResource,
   Secret,
   REMEDIATION_ACTION,
   PolicyTemplate,
 } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
 import { IAlertContext } from '../../../ui-components'
@@ -32,7 +32,6 @@ import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 import Kubernetes from '../../../logos/kubernetes.svg'
 import KyvernoSvg from '../../../logos/kyverno.svg'
-import { uniq } from 'lodash'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -701,7 +700,7 @@ export function getPolicySource(
   if (isExternal) {
     const policySource = isPolicy(policy)
       ? resolveSource(policy.metadata.annotations ?? {}, helmReleases, channels, subscriptions)
-      : resolveSource(parseStringMap(policy.annotation), helmReleases, channels, subscriptions)
+      : resolveSource(parseStringMap(policy.annotation ?? ''), helmReleases, channels, subscriptions)
     source = policySource ? getSource(policySource, isExternal, t) : t('Managed externally')
   }
   return source
@@ -778,22 +777,4 @@ export const parseDiscoveredPolicies = (data: any): any => {
 
     return v
   })
-}
-
-// Used for collecting all kinds in Kyverno Policy
-export const collectKinds = (obj: object): string[] => {
-  let collected: string[] = []
-  const fnd = (obj: object) => {
-    for (const [k, v] of Object.entries(obj)) {
-      if (k === 'kinds') {
-        collected = collected.concat(v)
-      }
-      if (typeof v === 'object') {
-        fnd(v)
-      }
-    }
-  }
-
-  fnd(obj)
-  return uniq(collected)
 }

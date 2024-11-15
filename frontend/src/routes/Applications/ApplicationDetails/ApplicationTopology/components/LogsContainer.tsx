@@ -5,7 +5,7 @@ import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../.
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { fetchRetry, getBackendUrl } from '../../../../../resources'
+import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
 import { useAllClusters } from '../../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'

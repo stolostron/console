@@ -102,7 +102,7 @@ export const highlightChanges = (editor, oldYAML, newYAML, highlightEncoded) => 
               if (isEncoded) {
                 try {
                   Buffer.from(obj.$v, 'base64').toString('ascii')
-                } catch (e) {
+                } catch {
                   isEncoded = false
                 }
               }

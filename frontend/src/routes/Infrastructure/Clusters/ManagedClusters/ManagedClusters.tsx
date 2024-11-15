@@ -27,24 +27,26 @@ import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { getClusterNavPath, navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
-  addonPathKey,
-  AddonStatus,
-  addonTextKey,
-  Cluster,
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterImageSet,
+  getRoles,
+  ManagedClusterDefinition,
+  NodeInfo,
+} from '../../../../resources'
+import {
+  addonPathKey,
+  AddonStatus,
+  addonTextKey,
+  Cluster,
   ClusterStatus,
   exportObjectString,
   getAddonStatusLabel,
   getClusterStatusLabel,
-  getRoles,
-  ManagedClusterDefinition,
-  NodeInfo,
-  patchResource,
   ResourceErrorCode,
-} from '../../../../resources'
+  patchResource,
+} from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlertContext,
@@ -765,7 +767,7 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
+export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
   const clusterHasControlPlane = () => {
     const nodeList = cluster.nodes?.nodeList
     const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))

@@ -1,11 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  createResource,
-  ManagedClusterSet,
-  ManagedClusterSetApiVersion,
-  ManagedClusterSetKind,
-} from '../../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetApiVersion, ManagedClusterSetKind } from '../../../../../resources'
+import { createResource } from '../../../../../resources/utils'
 import {
   AcmAlertContext,
   AcmAlertGroup,

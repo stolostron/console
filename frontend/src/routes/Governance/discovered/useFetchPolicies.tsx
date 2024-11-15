@@ -22,9 +22,9 @@ export interface DiscoveredPolicyItem {
   responseAction: string
   severity?: string
   _isExternal?: boolean
-  annotation: string
+  annotation?: string
   created: string
-  label: string
+  label?: string
   kind_plural: string
   // This is undefined on Gatekeeper constraints
   namespace?: string
@@ -67,6 +67,9 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
 
   let searchQuery: SearchInput[]
 
+  // `relatedKinds: ['$DO-NOT-RETURN']` is a workaround to not return related items since they aren't needed in those
+  // parts of the query and no kind will ever match $DO-NOT-RETURN. Setting null or an empty list returns all
+  // related items.
   if (policyName && policyKind && apiGroup) {
     searchQuery = [
       {
@@ -84,6 +87,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: [policyKind],
           },
         ],
+        relatedKinds: apiGroup === 'kyverno.io' ? ['ClusterPolicyReport', 'PolicyReport'] : ['$DO-NOT-RETURN'],
         limit: 100000,
       },
     ]
@@ -100,6 +104,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['CertificatePolicy', 'ConfigurationPolicy', 'OperatorPolicy'],
           },
         ],
+        relatedKinds: ['$DO-NOT-RETURN'],
         limit: 100000,
       },
       // Query for all Gatekeeper Constraints
@@ -110,6 +115,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['constraints.gatekeeper.sh'],
           },
         ],
+        relatedKinds: ['$DO-NOT-RETURN'],
         limit: 100000,
       },
       {
@@ -123,6 +129,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['ValidatingAdmissionPolicyBinding'],
           },
         ],
+        relatedKinds: ['$DO-NOT-RETURN'],
         limit: 100000,
       },
       {
@@ -136,6 +143,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
             values: ['ClusterPolicy', 'Policy'],
           },
         ],
+        relatedKinds: ['ClusterPolicyReport', 'PolicyReport'],
         limit: 100000,
       },
     ]

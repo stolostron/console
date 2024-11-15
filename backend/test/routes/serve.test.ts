@@ -33,7 +33,7 @@ describe(`serve Route`, function () {
       await new Promise<void>((resolve, reject) => {
         pipeline(index, br, indexCompressed, (err) => {
           if (err) {
-            reject()
+            reject(err)
           } else {
             resolve()
           }
@@ -65,7 +65,7 @@ describe(`serve Route`, function () {
       await new Promise<void>((resolve, reject) => {
         pipeline(index, gz, indexCompressed, (err) => {
           if (err) {
-            reject()
+            reject(err)
           } else {
             resolve()
           }

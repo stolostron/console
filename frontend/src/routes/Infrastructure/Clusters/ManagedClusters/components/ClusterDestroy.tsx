@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { LogsDownloadButton, AgentClusterInstallK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { Cluster, ClusterStatus } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { AcmButton, AcmPageProcess, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

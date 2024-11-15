@@ -32,7 +32,7 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
     let targetName = ''
     try {
       targetName = event.target.name
-    } catch (event) {
+    } catch {
       targetName = ''
     }
 

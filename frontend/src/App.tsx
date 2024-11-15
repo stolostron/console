@@ -32,7 +32,7 @@ import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
 import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
-import { ResourceError, ResourceErrorCode } from './resources'
+import { ResourceError, ResourceErrorCode } from './resources/utils'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 
@@ -78,7 +78,7 @@ function UserDropdownToggle() {
     const resp = getUsername()
     resp.promise
       .then((payload) => {
-        payload && payload.body && payload.body.username ? setName(payload.body.username) : setName('undefined')
+        setName(payload.body.username ?? 'undefined')
       })
       .catch((error) => {
         if (!(error instanceof ResourceError) || error.code !== ResourceErrorCode.RequestAborted) {

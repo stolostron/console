@@ -5,7 +5,8 @@ import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'
-import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { getBackendUrl, fetchGet, getResource } from '../../../../../../resources/utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
@@ -226,7 +227,7 @@ const AIClusterDetails: React.FC = () => {
   )
 }
 
-export default (props: {}) => (
+export default (props: object) => (
   // @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates
   <AlertsContextProvider>
     <AIClusterDetails {...props} />

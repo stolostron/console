@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import jsYaml from 'js-yaml'
-import { getResource } from '../../../../../../resources'
+import { getResource } from '../../../../../../resources/utils'
 import { AcmInlineCopy } from '../../../../../../ui-components'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { useClusterDetailsContext } from '../ClusterDetails'
@@ -27,11 +27,13 @@ export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
         }).promise
         const kubeconfigString = atob((kubeconfig as any).data?.kubeconfig)
         setHypershiftKubeAPI((jsYaml.load(kubeconfigString) as any).clusters?.[0]?.cluster?.server)
-      } catch (err) {
+      } catch {
         setError(true)
       }
     }
-    hypershiftKubeconfig && fetchKubeconfig()
+    if (hypershiftKubeconfig) {
+      fetchKubeconfig()
+    }
   }, [hypershiftKubeconfig, hostedCluster?.metadata?.namespace])
 
   return [hypershiftKubeAPI, error]

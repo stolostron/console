@@ -6,7 +6,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { AcmAlert, AcmLoadingPage } from '../../../../../ui-components'
-import { getResource } from '../../../../../resources'
+import { getResource } from '../../../../../resources/utils'
 
 const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
 

@@ -13,19 +13,21 @@ import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
-  Cluster,
   ClusterCuratorDefinition,
   ClusterDeployment,
   ClusterDeploymentDefinition,
-  ClusterStatus,
   HostedClusterDefinition,
-  IRequestResult,
   ManagedClusterDefinition,
   NodePool,
-  patchResource,
-  ResourceErrorCode,
   SecretDefinition,
 } from '../../../../../resources'
+import {
+  Cluster,
+  ClusterStatus,
+  IRequestResult,
+  patchResource,
+  ResourceErrorCode,
+} from '../../../../../resources/utils'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'

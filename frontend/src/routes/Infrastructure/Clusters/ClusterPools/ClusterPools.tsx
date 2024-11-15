@@ -37,16 +37,8 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
-import {
-  Cluster,
-  ClusterClaim,
-  ClusterClaimDefinition,
-  ClusterPool,
-  ClusterStatus,
-  deleteResource,
-  ResourceErrorCode,
-  isClusterPoolDeleting,
-} from '../../../../resources'
+import { ClusterClaim, ClusterClaimDefinition, ClusterPool, isClusterPoolDeleting } from '../../../../resources'
+import { Cluster, ClusterStatus, deleteResource, ResourceErrorCode } from '../../../../resources/utils'
 import { ClusterStatuses, getClusterStatusCount } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
@@ -216,27 +208,26 @@ export function ClusterPoolsTable(props: {
   >()
   const clusterPoolClusters: Record<string, Cluster[]> = {}
 
-  props.clusterPools &&
-    props.clusterPools.forEach((clusterPool) => {
-      if (clusterPool.metadata.name) {
-        const clusters = getMappedClusterPoolClusters({
-          managedClusters,
-          clusterDeployments,
-          managedClusterInfos,
-          certificateSigningRequests,
-          managedClusterAddOns: managedClusterAddons,
-          clusterManagementAddOns: clusterManagementAddons,
-          clusterClaims,
-          clusterCurators,
-          agentClusterInstalls,
-          hostedClusters,
-          nodePools,
-          discoveredClusters,
-          clusterPool,
-        })
-        clusterPoolClusters[clusterPool.metadata.name] = clusters
-      }
-    })
+  props.clusterPools?.forEach((clusterPool) => {
+    if (clusterPool.metadata.name) {
+      const clusters = getMappedClusterPoolClusters({
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddOns: managedClusterAddons,
+        clusterManagementAddOns: clusterManagementAddons,
+        clusterClaims,
+        clusterCurators,
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        discoveredClusters,
+        clusterPool,
+      })
+      clusterPoolClusters[clusterPool.metadata.name] = clusters
+    }
+  })
 
   const modalColumns = useMemo(
     () => [

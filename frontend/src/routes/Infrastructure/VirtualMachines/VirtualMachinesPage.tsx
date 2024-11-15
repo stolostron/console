@@ -12,9 +12,11 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { OCP_DOC } from '../../../lib/doc-util'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
@@ -23,6 +25,7 @@ import {
   AcmPageContent,
   AcmPageHeader,
   AcmTable,
+  AcmToastContext,
   compareStrings,
   ITableFilter,
 } from '../../../ui-components'
@@ -40,11 +43,18 @@ import { convertStringToQuery } from '../../Search/search-helper'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
-import { ISearchResult, useGetRowActions } from '../../Search/SearchResults/utils'
-import { OCP_DOC } from '../../../lib/doc-util'
+import { ISearchResult } from '../../Search/SearchResults/utils'
+import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
+import { getVirtualMachineRowActions } from './utils'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { settingsState, useIsSearchAvailable } = useSharedAtoms()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const isSearchAvailable = useIsSearchAvailable()
+  const toast = useContext(AcmToastContext)
+  const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
     ClosedDeleteExternalResourceModalProps
@@ -55,12 +65,20 @@ function VirtualMachineTable() {
   const clusterVersion = clusterVersions?.[0]
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
 
-  const rowActions = useGetRowActions(
-    'virtualmachine',
-    'kind:VirtualMachine,VirtualMachineInstance',
-    false,
-    setDeleteResource,
-    setDeleteExternalResource
+  const rowActionResolver = useCallback(
+    (item: any) => {
+      return getVirtualMachineRowActions(
+        item,
+        allClusters,
+        setDeleteResource,
+        setDeleteExternalResource,
+        vmActionsEnabled,
+        toast,
+        navigate,
+        t
+      )
+    },
+    [allClusters, navigate, t, toast, vmActionsEnabled]
   )
 
   const { data, loading, error } = useSearchResultItemsQuery({
@@ -90,7 +108,7 @@ function VirtualMachineTable() {
       }
       return acc
     }, {})
-    return Object.values(reducedVMAndVMI)
+    return Object.values(reducedVMAndVMI ?? {})
   }, [data?.searchResult, error, loading])
 
   const filters = useMemo<ITableFilter<any>[]>(() => {
@@ -116,7 +134,21 @@ function VirtualMachineTable() {
     ]
   }, [searchResultItems, t])
 
-  if (error) {
+  if (!isSearchAvailable) {
+    return (
+      <EmptyState>
+        <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+        <Title size="lg" headingLevel="h4">
+          {t('Unable to display VirtualMachines')}
+        </Title>
+        <EmptyStateBody>
+          <Stack>
+            <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+          </Stack>
+        </EmptyStateBody>
+      </EmptyState>
+    )
+  } else if (error) {
     return (
       <EmptyState>
         <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
@@ -152,7 +184,7 @@ function VirtualMachineTable() {
         items={searchResultItems}
         columns={searchDefinitions['virtualmachinespage'].columns}
         filters={filters}
-        rowActions={rowActions}
+        rowActionResolver={rowActionResolver}
         keyFn={(item: any) => item._uid.toString()}
         emptyState={
           <AcmEmptyState

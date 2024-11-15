@@ -28,10 +28,10 @@ export const AcmFeedbackModal = () => {
       <AcmButton
         style={{
           position: 'fixed',
-          transformOrigin: '50% -70%',
-          transform: 'rotate(270deg)',
+          left: '100%',
+          transformOrigin: '0% 0%',
+          transform: 'rotate(-90deg) translateY(-100%)',
           bottom: '2em',
-          right: 0,
           zIndex: 20000,
           color: 'var(--pf-global--palette--white)',
         }}

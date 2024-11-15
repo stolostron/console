@@ -12,7 +12,8 @@ test('renders with default Search link', () => {
   const { baseElement } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, false), snapshot.set(settingsState, mockSettings)
+        snapshot.set(isGlobalHubState, false)
+        snapshot.set(settingsState, mockSettings)
       }}
     >
       <MemoryRouter>
@@ -30,7 +31,8 @@ test('renders with Global Search link', () => {
   const { baseElement } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, true), snapshot.set(settingsState, mockSettings)
+        snapshot.set(isGlobalHubState, true)
+        snapshot.set(settingsState, mockSettings)
       }}
     >
       <MemoryRouter>

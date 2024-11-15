@@ -401,16 +401,16 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
 function setLocalStorage(key: string | undefined, value: any) {
   try {
     window.localStorage.setItem(key as string, JSON.stringify(value))
-  } catch (e) {
+  } catch {
     // catch possible errors
   }
 }
 
-function getLocalStorage(key: string | undefined, initialValue: {}) {
+function getLocalStorage(key: string | undefined, initialValue: object) {
   try {
     const value = window.localStorage.getItem(key as string)
     return value ? JSON.parse(value) : initialValue
-  } catch (e) {
+  } catch {
     // if error, return initial value
     return initialValue
   }
@@ -599,6 +599,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const sort = props.sort || stateSort
   const setSort = props.setSort || stateSetSort
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
+  const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
+    { operator: undefined, value: '', columnId: '' },
+  ])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
@@ -655,7 +658,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     // sort column by column management order
     colOrderIds.forEach((id) => {
       const find = columns.find((col) => col.id === id)
-      find && sortedColumns.push(find!)
+      if (find) {
+        sortedColumns.push(find)
+      }
     })
 
     const sortedSelected = sortedColumns.filter((column) => {
@@ -664,7 +669,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     // Btn column is always the last
     const btn = columns.find((col) => col.isActionCol)
-    btn && sortedSelected.push(btn)
+    if (btn) {
+      sortedSelected.push(btn)
+    }
 
     return sortedSelected
   }, [columns, selectedColIds, colOrderIds, showColumManagement])
@@ -876,7 +883,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         threshold: threshold,
         keys: columns
           .map((column, i) => (column.search ? `column-${i}` : undefined))
-          .filter((value) => value !== undefined) as string[],
+          .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
       const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
@@ -941,12 +948,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const csvExportCellArray: string[] = []
 
       columns.forEach(({ header, disableExport }) => {
-        header && !disableExport && headerString.push(header)
+        if (header && !disableExport) {
+          headerString.push(header)
+        }
       })
-      allTableItems[0]?.subRows &&
-        allTableItems[0].subRows[0]?.exportSubRow?.forEach(({ header }) => {
-          header && headerString.push(header)
-        })
+      allTableItems[0].subRows?.[0]?.exportSubRow?.forEach(({ header }) => {
+        if (header) {
+          headerString.push(header)
+        }
+      })
       csvExportCellArray.push(headerString.join(','))
 
       // if table is pagenated from backend,
@@ -973,20 +983,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           if (header && !disableExport) {
             // if callback and its output exists, add to array, else add "-"
             const exportvalue = exportContent?.(item, '')
-            exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+            contentString.push(exportvalue ? returnCSVSafeString(exportvalue) : '-')
           }
         })
         subRows?.forEach(({ exportSubRow }) => {
           exportSubRow?.forEach(({ header, exportContent }) => {
             if (header) {
               const exportvalue = exportContent?.(item)
-              exportvalue ? contentString.push(returnCSVSafeString(exportvalue)) : contentString.push('-')
+              contentString.push(exportvalue ? returnCSVSafeString(exportvalue) : '-')
             }
           })
         })
 
         contentString = [contentString.join(',')]
-        contentString[0] && csvExportCellArray.push(contentString[0])
+        if (contentString[0]) {
+          csvExportCellArray.push(contentString[0])
+        }
       })
 
       const exportString = csvExportCellArray.join('\n')
@@ -1098,7 +1110,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
     clearFilters()
-  }, [clearSearch, clearFilters])
+    setActiveAdvancedFilters([])
+    setPendingConstraints([{ operator: undefined, value: '', columnId: '' }])
+  }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
     (input: any) => {
@@ -1326,6 +1340,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       canAddConstraints
                       useAdvancedSearchPopper={advancedFilters.length > 0}
                       setActiveConstraints={setActiveAdvancedFilters}
+                      pendingConstraints={pendingConstraints}
+                      setPendingConstraints={setPendingConstraints}
                       searchableColumns={advancedFilters.map((filter) => ({
                         columnId: filter.id,
                         columnDisplayName: filter.label,

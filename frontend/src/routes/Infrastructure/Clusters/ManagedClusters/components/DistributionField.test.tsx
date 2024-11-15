@@ -4,21 +4,18 @@ import {
   AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
-  Cluster,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
   ClusterImageSet,
   ClusterImageSetApiVersion,
   ClusterImageSetKind,
-  ClusterStatus,
-  CuratorCondition,
-  DistributionInfo,
   HostedClusterApiVersion,
   HostedClusterKind,
   NodePool,
   ResourceAttributes,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus, CuratorCondition, DistributionInfo } from '../../../../../resources/utils'
 import { render, waitFor, screen } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'

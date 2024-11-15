@@ -147,7 +147,7 @@ const ClusterSelector = (props: {
     let templateObject: any[]
     try {
       templateObject = YAML.parseAllDocuments(templateYAML).map((doc) => doc.toJSON())
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
     clusterSets.forEach((clusterSet) => {

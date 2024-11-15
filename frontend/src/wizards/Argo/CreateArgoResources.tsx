@@ -16,8 +16,8 @@ import {
   Placement,
   PlacementApiVersionBeta,
   PlacementKind,
-  reconcileResources,
 } from '../../resources'
+import { reconcileResources } from '../../resources/utils'
 import { AcmToastContext } from '../../ui-components'
 import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
@@ -96,17 +96,16 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     }
 
     const managedClusterSetBindings: ManagedClusterSetBinding[] = []
-    clusterSet &&
-      clusterSet.forEach((clusterSet) => {
-        managedClusterSetBindings.push({
-          apiVersion: ManagedClusterSetBindingApiVersion,
-          kind: ManagedClusterSetBindingKind,
-          metadata: { name: clusterSet, namespace: namespace },
-          spec: {
-            clusterSet: clusterSet,
-          },
-        })
+    clusterSet?.forEach((clusterSet) => {
+      managedClusterSetBindings.push({
+        apiVersion: ManagedClusterSetBindingApiVersion,
+        kind: ManagedClusterSetBindingKind,
+        metadata: { name: clusterSet, namespace: namespace },
+        spec: {
+          clusterSet: clusterSet,
+        },
       })
+    })
 
     const placement: Placement = {
       apiVersion: PlacementApiVersionBeta,
@@ -122,9 +121,9 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
 
   function stateToSyncs() {
     const syncs = [
-      { path: 'GitOpsCluster[0].metadata.name' ?? '', setState: setName },
-      { path: 'GitOpsCluster[0].metadata.namespace' ?? '', setState: setNamespace },
-      { path: 'Placement[0].spec.clusterSets' ?? '', setState: setClusterSet },
+      { path: 'GitOpsCluster[0].metadata.name', setState: setName },
+      { path: 'GitOpsCluster[0].metadata.namespace', setState: setNamespace },
+      { path: 'Placement[0].spec.clusterSets', setState: setClusterSet },
     ]
     return syncs
   }

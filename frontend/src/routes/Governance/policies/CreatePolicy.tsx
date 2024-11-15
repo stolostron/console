@@ -8,7 +8,8 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, Policy, PolicyKind, reconcileResources } from '../../../resources'
+import { IResource, Policy, PolicyKind } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 
@@ -75,13 +76,14 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
           policy.metadata.name === createdPolicy.metadata?.name
       )
 
-      found &&
+      if (found) {
         navigate(
           generatePath(NavigationPath.policyDetails, {
             namespace: createdPolicy.metadata?.namespace ?? '',
             name: createdPolicy.metadata?.name ?? '',
           })
         )
+      }
     }
   }, [policies, createdPolicy, navigate])
 

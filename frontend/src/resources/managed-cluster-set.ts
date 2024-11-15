@@ -23,7 +23,7 @@ export interface ManagedClusterSet extends IResource {
   apiVersion: ManagedClusterSetApiVersionType
   kind: ManagedClusterSetKindType
   metadata: Metadata
-  spec?: {}
+  spec?: object
   status?: {
     conditions: V1CustomResourceDefinitionCondition[]
   }

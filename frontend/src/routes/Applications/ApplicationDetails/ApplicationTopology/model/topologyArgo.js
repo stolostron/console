@@ -34,7 +34,7 @@ export function getArgoTopology(application, argoData, managedClusters, hubClust
       const clusterName = getArgoDestinationCluster(destination, managedClusters)
       clusterNames.push(clusterName)
       clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
-    } catch (err) {
+    } catch {
       //logger.error(err)
     }
   }

@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import i18next from 'i18next'
-import { ClusterStatus } from '../../../resources'
+import { ClusterStatus } from '../../../resources/utils'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, getRowActions } from './utils'
 

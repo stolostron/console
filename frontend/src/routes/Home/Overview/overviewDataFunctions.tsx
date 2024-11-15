@@ -5,7 +5,8 @@ import { TFunction } from 'react-i18next'
 
 import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
-import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Addon, AddonStatus, Cluster } from '../../../resources/utils'
 import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import {
   CriticalRiskIcon,
@@ -280,7 +281,9 @@ export function getPolicyReport(policyReports: PolicyReport[], filteredClusters:
   )
   policyReportsForFilteredClusters.forEach((policyReport: PolicyReport) => {
     const insightsFilteredResults = policyReport.results.filter((result) => result.source === 'insights')
-    insightsFilteredResults.length > 0 && clustersWithIssuesCount++
+    if (insightsFilteredResults.length > 0) {
+      clustersWithIssuesCount++
+    }
     insightsFilteredResults.forEach((result: PolicyReportResults) => {
       switch (result.properties.total_risk) {
         case '4':
@@ -498,26 +501,20 @@ export function parseAlertsMetric(
       if (metric.cluster && !clustersAffectedAlerts.includes(metric.cluster)) {
         clustersAffectedAlerts.push(metric.cluster)
       }
-      switch (metric.severity?.toLowerCase()) {
-        case 'critical':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.critical.alerts.push(metric.alertname)
-          }
-          break
-        case 'warning':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.warning.alerts.push(metric.alertname)
-          }
-          break
-        case 'info':
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.info.alerts.push(metric.alertname)
-          }
-          break
-        default:
-          if (metric.alertstate === 'firing') {
-            metric.alertname && alertSeverity.other.alerts.push(metric.alertname)
-          }
+      if (metric.alertname && metric.alertstate === 'firing') {
+        switch (metric.severity?.toLowerCase()) {
+          case 'critical':
+            alertSeverity.critical.alerts.push(metric.alertname)
+            break
+          case 'warning':
+            alertSeverity.warning.alerts.push(metric.alertname)
+            break
+          case 'info':
+            alertSeverity.info.alerts.push(metric.alertname)
+            break
+          default:
+            alertSeverity.other.alerts.push(metric.alertname)
+        }
       }
     })
   }

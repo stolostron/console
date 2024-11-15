@@ -13,7 +13,8 @@ import {
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy, ResourceError, ResourceErrorCode } from '../../../../resources'
+import { Policy } from '../../../../resources'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmActionGroup,

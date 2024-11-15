@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Addon, AddonStatus, getAddonStatusLabel } from '../../../../../../resources'
+import { Addon, AddonStatus, getAddonStatusLabel } from '../../../../../../resources/utils'
 import { AcmEmptyState, AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'

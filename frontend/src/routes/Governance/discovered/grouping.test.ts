@@ -403,7 +403,6 @@ describe('OnMessage test', () => {
     const mock = [
       {
         _hubClusterResource: 'true',
-        _ownedByGatekeeper: 'false',
         _uid: 'local-cluster/0',
         apigroup: 'admissionregistration.k8s.io',
         apiversion: 'v1',
@@ -417,7 +416,7 @@ describe('OnMessage test', () => {
       },
       {
         _hubClusterResource: 'true',
-        _ownedByGatekeeper: 'true',
+        _ownedBy: 'Gatekeeper',
         _uid: 'local-cluster/1',
         apigroup: 'admissionregistration.k8s.io',
         apiversion: 'v1',
@@ -431,7 +430,6 @@ describe('OnMessage test', () => {
       },
       {
         _hubClusterResource: 'true',
-        _ownedByGatekeeper: 'false',
         _uid: 'local-cluster/0',
         apigroup: 'admissionregistration.k8s.io',
         apiversion: 'v1',
@@ -582,7 +580,7 @@ describe('OnMessage test', () => {
         name: 'b121ec75-0839-4dac-965f-a73d26390058',
         namespace: 'open-cluster-management-agent-addon',
         numRuleViolations: '1',
-        policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=3',
+        _policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=3',
         rules: 'open-cluster-management-agent-addon/require-team-label',
         scope: 'hypershift-install-job-xkhl9',
       },
@@ -605,7 +603,7 @@ describe('OnMessage test', () => {
         name: 'd54dc7d8-7f9d-48da-bc3e-1db14cb83bea',
         namespace: 'open-cluster-management-agent-addon',
         numRuleViolations: '1',
-        policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=1',
+        _policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=1',
         rules: 'open-cluster-management-agent-addon/require-team-label',
         scope: 'hypershift-install-job-xkhl9-cdlwq',
       },
@@ -628,7 +626,7 @@ describe('OnMessage test', () => {
         name: '49ebe36b-2115-40fc-a757-c2e38faa4188',
         namespace: 'open-cluster-management',
         numRuleViolations: '1',
-        policyViolationCounts: 'require-owner-labels=1',
+        _policyViolationCounts: 'require-owner-labels=1',
         rules: 'require-owner-labels',
         scope: 'mch-image-manifest-2.12.0',
       },
@@ -651,7 +649,7 @@ describe('OnMessage test', () => {
         name: '04bf66b5-2203-4539-b4c0-4de56fc32e45',
         namespace: 'openshift-etcd',
         numRuleViolations: '1',
-        policyViolationCounts: 'require-owner-labels=1',
+        _policyViolationCounts: 'require-owner-labels=1',
         rules: 'require-owner-labels',
         scope: 'revision-status-8',
       },
@@ -710,6 +708,106 @@ describe('OnMessage test', () => {
           },
         ],
         source: { type: 'Local', parentNs: '', parentName: '' },
+      },
+    ])
+  })
+
+  test('Should create multiple _policyViolationCounts for kyverno policies', () => {
+    const mock = [
+      {
+        _hubClusterResource: 'true',
+        _isExternal: 'false',
+        _uid: 'local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+        admission: 'true',
+        apigroup: 'kyverno.io',
+        apiversion: 'v1',
+        background: 'true',
+        cluster: 'local-cluster',
+        created: '2024-11-07T14:57:49Z',
+        kind: 'Policy',
+        kind_plural: 'policies',
+        name: 'require-team-label',
+        namespace: 'open-cluster-management-agent-addon',
+        severity: 'critical',
+        validationFailureAction: 'Audit',
+      },
+    ]
+
+    const relatedMock: any[] = [
+      {
+        _hubClusterResource: 'true',
+        _policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=1; require-owner-labels=1',
+        _relatedUids: ['local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619'],
+        _uid: 'local-cluster/36f465ae-51e1-4d4a-890c-5aed38fa4d34',
+        apigroup: 'wgpolicyk8s.io',
+        apiversion: 'v1beta1',
+        category: '',
+        cluster: 'local-cluster',
+        created: '2024-11-07T15:10:00Z',
+        critical: '0',
+        important: '0',
+        kind: 'PolicyReport',
+        kind_plural: 'policyreports',
+        label: 'app.kubernetes.io/managed-by=kyverno',
+        low: '0',
+        moderate: '0',
+        name: '801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+        namespace: 'open-cluster-management-agent-addon',
+        numRuleViolations: '2',
+        rules: 'open-cluster-management-agent-addon/require-team-label; require-owner-labels',
+        scope: 'require-team-label',
+      },
+    ]
+    const result = createMessage(
+      mock,
+      relatedMock,
+      helmRelease,
+      channels,
+      subscriptions,
+      resolveSource.toString(),
+      getSourceText.toString(),
+      parseStringMap.toString(),
+      parseDiscoveredPolicies.toString()
+    )
+    expect(result).toEqual([
+      {
+        apigroup: 'kyverno.io',
+        id: 'require-team-labelPolicykyverno.io',
+        kind: 'Policy',
+        name: 'require-team-label',
+        policies: [
+          {
+            _hubClusterResource: true,
+            _isExternal: false,
+            _uid: 'local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+            admission: 'true',
+            apigroup: 'kyverno.io',
+            apiversion: 'v1',
+            background: 'true',
+            cluster: 'local-cluster',
+            created: '2024-11-07T14:57:49Z',
+            kind: 'Policy',
+            kind_plural: 'policies',
+            name: 'require-team-label',
+            namespace: 'open-cluster-management-agent-addon',
+            responseAction: 'Audit',
+            severity: 'critical',
+            source: {
+              parentName: '',
+              parentNs: '',
+              type: 'Local',
+            },
+            totalViolations: 1,
+            validationFailureAction: 'Audit',
+          },
+        ],
+        responseAction: 'Audit',
+        severity: 'critical',
+        source: {
+          parentName: '',
+          parentNs: '',
+          type: 'Local',
+        },
       },
     ])
   })

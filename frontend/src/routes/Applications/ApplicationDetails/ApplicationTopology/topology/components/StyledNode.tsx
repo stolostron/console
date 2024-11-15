@@ -79,7 +79,9 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       <g
         data-test-id={passedData.id}
         ref={(r) => {
-          r && hoverRef(r)
+          if (r) {
+            hoverRef(r)
+          }
         }}
       >
         <DefaultNode

@@ -8,10 +8,12 @@ const meta: Meta = {
   component: AcmSearchInput,
 }
 export default meta
-
-const pendingConstraints: SearchConstraint[] = [{ columnId: 'name' }, { columnId: 'namespace' }]
 export function AcmSearchInputStory() {
   const [, setActiveConstraints] = useState<SearchConstraint[]>([])
+  const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
+    { columnId: 'name' },
+    { columnId: 'namespace' },
+  ])
   const columns: SearchableColumn[] = [
     { columnId: 'name', availableOperators: [SearchOperator.Equals] },
     { columnId: 'namespace', availableOperators: [SearchOperator.Equals] },
@@ -33,6 +35,7 @@ export function AcmSearchInputStory() {
       useAdvancedSearchPopper
       placeholder="Search"
       canAddConstraints
+      setPendingConstraints={setPendingConstraints}
       setActiveConstraints={setActiveConstraints}
       pendingConstraints={pendingConstraints}
       searchableColumns={columns}

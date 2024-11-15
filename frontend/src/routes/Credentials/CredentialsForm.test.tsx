@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import {
   Namespace,
   NamespaceApiVersion,
@@ -16,6 +17,7 @@ import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-u
 import {
   clearByTestId,
   clickByPlaceholderText,
+  clickByTestId,
   clickByText,
   selectByText,
   typeByTestId,
@@ -513,5 +515,85 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
+  })
+
+  it('should create kubevirt (Red Hat Virtualization) credentials without external infra', async () => {
+    render(<Component credentialsType={Provider.kubevirt} />)
+    const providerConnection = createProviderConnection('kubevirt', {
+      pullSecret: '{"pull":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+    })
+
+    // Render the form and fill in the fields
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // (no external infra)
+    await clickByText('Next')
+
+    // Fill in the pull secret and SSH public key
+    await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+    await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+    await clickByText('Next')
+
+    // Add Credentials
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
+  })
+
+  it('should create kubevirt (Red Hat Virtualization) credentials with external infra', async () => {
+    render(<Component credentialsType={Provider.kubevirt} />)
+
+    // mock data below for kubevirt (Red Hat Virtualization) credentials with external infrastructure
+    const mockKubeconfig = `
+clusters:
+- name: 'mock-cluster'
+  cluster:
+    server: 'https://mock-server:6443'
+    certificate-authority-data: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=='
+contexts:
+- name: 'mock-context'
+  context:
+    cluster: 'mock-cluster'
+    user: 'mock-user'
+    namespace: 'mock-namespace'
+users:
+- name: 'mock-user'
+  user:
+    client-certificate-data: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg=='
+    client-key-data: 'LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQo='
+current-context: 'mock-context'
+`
+    const providerConnection = createProviderConnection('kubevirt', {
+      pullSecret: '{"pull":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+      kubeconfig: mockKubeconfig,
+      externalInfraNamespace: 'external-namespace',
+    })
+
+    // Render the form and fill in the fields
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+
+    // Click on the external infrastructure checkbox
+    await clickByTestId('isExternalInfra')
+
+    // Fill in Kubeconfig and Namespace
+    await typeByTestId('kubeconfig', providerConnection.stringData?.kubeconfig! ?? '')
+    await typeByTestId('externalInfraNamespace', providerConnection.stringData?.externalInfraNamespace ?? '')
+    await clickByText('Next')
+
+    // Fill in the pull secret and SSH public key
+    await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+    await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+    await clickByText('Next')
+
+    // Add Credentials
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
   })
 })

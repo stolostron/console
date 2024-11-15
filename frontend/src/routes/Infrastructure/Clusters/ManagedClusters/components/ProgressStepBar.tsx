@@ -1,11 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  ClusterCurator,
-  ClusterStatus,
-  getMostRecentAnsibleJobPod,
-  getLatestAnsibleJob,
-  AnsibleJob,
-} from '../../../../../resources'
+import { ClusterCurator, getMostRecentAnsibleJobPod, getLatestAnsibleJob, AnsibleJob } from '../../../../../resources'
+import { ClusterStatus } from '../../../../../resources/utils'
+import { getFailedCuratorJobName } from '../../../../../resources/utils/status-conditions'
 import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -14,7 +10,6 @@ import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
-import { getFailedCuratorJobName } from '../../../../../resources/utils/status-conditions'
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
@@ -136,7 +131,9 @@ export function ProgressStepBar() {
             isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
             linkCallback: !latestJobs.prehook?.status?.ansibleJobResult?.url
               ? () => {
-                  curator && launchJobLogs(curator)
+                  if (curator) {
+                    launchJobLogs(curator)
+                  }
                 }
               : undefined,
           },
@@ -182,7 +179,9 @@ export function ProgressStepBar() {
               isDisabled: isPosthookLinkDisabled(latestJobs, curator),
               linkCallback: !latestJobs.posthook?.status?.ansibleJobResult?.url
                 ? () => {
-                    curator && launchJobLogs(curator)
+                    if (curator) {
+                      launchJobLogs(curator)
+                    }
                   }
                 : undefined,
             },

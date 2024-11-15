@@ -1,45 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Correctly returns convertStringToQuery 1`] = `
-Object {
-  "filters": Array [
-    Object {
+{
+  "filters": [
+    {
       "property": "namespace",
-      "values": Array [
+      "values": [
         "open-cluster-management",
       ],
     },
-    Object {
+    {
       "property": "kind",
-      "values": Array [
+      "values": [
         "pod",
       ],
     },
   ],
-  "keywords": Array [],
+  "keywords": [],
   "limit": 1000,
 }
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "filter",
     "name": "Filters",
   },
-  Object {
+  {
     "id": "id-kind",
     "kind": "filter",
     "name": "kind",
   },
-  Object {
+  {
     "id": "id-cluster",
     "kind": "filter",
     "name": "cluster",
   },
-  Object {
+  {
     "id": "id-deployment",
     "kind": "filter",
     "name": "deployment",
@@ -48,19 +48,19 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions of name values 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "value",
     "name": "name values",
   },
-  Object {
+  {
     "id": "id-name2",
     "kind": "value",
     "name": "name2",
   },
-  Object {
+  {
     "id": "id-name3",
     "kind": "value",
     "name": "name3",
@@ -69,24 +69,24 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions of namespace values 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "value",
     "name": "namespace values",
   },
-  Object {
+  {
     "id": "id-namespace1",
     "kind": "value",
     "name": "namespace1",
   },
-  Object {
+  {
     "id": "id-namespace2",
     "kind": "value",
     "name": "namespace2",
   },
-  Object {
+  {
     "id": "id-namespace3",
     "kind": "value",
     "name": "namespace3",
@@ -95,44 +95,44 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions of operators 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-operator-label",
     "kind": "label",
     "name": "Operators",
   },
-  Object {
+  {
     "id": "id-<=",
     "kind": "value",
     "name": "<=",
   },
-  Object {
+  {
     "id": "id->=",
     "kind": "value",
     "name": ">=",
   },
-  Object {
+  {
     "id": "id-!=",
     "kind": "value",
     "name": "!=",
   },
-  Object {
+  {
     "id": "id-!",
     "kind": "value",
     "name": "!",
   },
-  Object {
+  {
     "id": "id-=",
     "kind": "value",
     "name": "=",
   },
-  Object {
+  {
     "id": "id-<",
     "kind": "value",
     "name": "<",
   },
-  Object {
+  {
     "id": "id->",
     "kind": "value",
     "name": ">",
@@ -141,34 +141,34 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions with date 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-filter-label",
     "kind": "label",
     "name": "created within the last:",
   },
-  Object {
+  {
     "id": "id-date-hour",
     "kind": "value",
     "name": "hour",
   },
-  Object {
+  {
     "id": "id-date-day",
     "kind": "value",
     "name": "day",
   },
-  Object {
+  {
     "id": "id-date-week",
     "kind": "value",
     "name": "week",
   },
-  Object {
+  {
     "id": "id-date-month",
     "kind": "value",
     "name": "month",
   },
-  Object {
+  {
     "id": "id-date-year",
     "kind": "value",
     "name": "year",
@@ -177,14 +177,14 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions with loading item 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "value",
     "name": "name values",
   },
-  Object {
+  {
     "disabled": true,
     "id": "id-loading",
     "kind": "label",
@@ -194,14 +194,14 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions with operator already chosen (single number option) 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "value",
     "name": "cpu values",
   },
-  Object {
+  {
     "disabled": true,
     "id": "id-values-range",
     "kind": "value",
@@ -211,14 +211,14 @@ Array [
 `;
 
 exports[`Correctly returns formatSearchbarSuggestions with operator already chosen 1`] = `
-Array [
-  Object {
+[
+  {
     "disabled": true,
     "id": "id-suggestions-label",
     "kind": "value",
     "name": "cpu values",
   },
-  Object {
+  {
     "disabled": true,
     "id": "id-values-range",
     "kind": "value",

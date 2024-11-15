@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fetchRetry, getBackendUrl } from '../resources'
+import { fetchRetry, getBackendUrl } from '../resources/utils'
 
 export function getUpgradeRiskPredictions(managedClusterIds: string[]) {
   const backendURLPath = getBackendUrl() + '/upgrade-risks-prediction'

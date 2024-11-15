@@ -15,13 +15,8 @@ import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/r
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import {
-  CableDriver,
-  Cluster,
-  patchResource,
-  SubmarinerConfig,
-  submarinerConfigDefault,
-} from '../../../../../resources'
+import { CableDriver, SubmarinerConfig, submarinerConfigDefault } from '../../../../../resources'
+import { Cluster, patchResource } from '../../../../../resources/utils'
 
 export type EditSubmarinerConfigModalProps = {
   submarinerConfig?: SubmarinerConfig

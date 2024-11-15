@@ -28,14 +28,8 @@ import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../c
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import {
-  deleteResource,
-  ManagedClusterSet,
-  ManagedClusterSetDefinition,
-  ResourceErrorCode,
-  isGlobalClusterSet,
-  Cluster,
-} from '../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../resources'
+import { Cluster, deleteResource, ResourceErrorCode } from '../../../../resources/utils'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses, getClusterStatusCount } from './components/ClusterStatuses'
 import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'
@@ -157,27 +151,26 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
 
   const managedClusterSetClusters: Record<string, Cluster[]> = {}
 
-  props.managedClusterSets &&
-    props.managedClusterSets.forEach((managedClusterSet) => {
-      if (managedClusterSet.metadata.name) {
-        const clusters = getMappedClusterSetClusters({
-          managedClusters,
-          clusterDeployments,
-          managedClusterInfos,
-          certificateSigningRequests,
-          managedClusterAddOns,
-          clusterManagementAddOns,
-          clusterClaims,
-          clusterCurators,
-          agentClusterInstalls,
-          hostedClusters,
-          nodePools,
-          discoveredClusters,
-          managedClusterSet,
-        })
-        managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
-      }
-    })
+  props.managedClusterSets?.forEach((managedClusterSet) => {
+    if (managedClusterSet.metadata.name) {
+      const clusters = getMappedClusterSetClusters({
+        managedClusters,
+        clusterDeployments,
+        managedClusterInfos,
+        certificateSigningRequests,
+        managedClusterAddOns,
+        clusterManagementAddOns,
+        clusterClaims,
+        clusterCurators,
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        discoveredClusters,
+        managedClusterSet,
+      })
+      managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
+    }
+  })
 
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {

@@ -514,10 +514,11 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     })
   }
 
-  !typeObject &&
+  if (!typeObject) {
     details.push({
       type: 'spacer',
     })
+  }
 
   return details
 }

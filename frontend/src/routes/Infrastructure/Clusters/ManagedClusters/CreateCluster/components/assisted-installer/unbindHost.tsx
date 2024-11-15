@@ -4,7 +4,8 @@ import { useCallback } from 'react'
 import { Alert, AlertVariant } from '@patternfly/react-core'
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
-import { IResource, patchResource } from '../../../../../../../resources'
+import { IResource } from '../../../../../../../resources'
+import { patchResource } from '../../../../../../../resources/utils'
 import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { agentNameSortFunc, getAgentName, setProvisionRequirements } from './utils'
 

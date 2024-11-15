@@ -7,6 +7,7 @@ import { searchClient } from '../../../Search/search-sdk/search-client'
 import {
   useSearchResultRelatedItemsLazyQuery,
   useSearchResultItemsLazyQuery,
+  SearchFilter,
 } from '../../../Search/search-sdk/search-sdk'
 
 export function useFetchVapb() {
@@ -19,7 +20,7 @@ export function useFetchVapb() {
   })
   useEffect(() => {
     if (
-      apiGroup === 'constraints.gatekeeper.sh' &&
+      ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup) &&
       clusterName &&
       name &&
       template &&
@@ -29,6 +30,8 @@ export function useFetchVapb() {
       !data &&
       !error
     ) {
+      const vapbName = apiGroup === 'constraints.gatekeeper.sh' ? `gatekeeper-${name}` : name + '-binding'
+
       getVapb({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
@@ -45,7 +48,7 @@ export function useFetchVapb() {
                 },
                 {
                   property: 'name',
-                  values: [`gatekeeper-${name}`],
+                  values: [vapbName],
                 },
                 {
                   property: 'cluster',
@@ -67,12 +70,15 @@ export function useFetchKyvernoRelated() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
   const kind = urlParams.kind ?? '-'
+  const namespace = urlParams.templateNamespace
   const apiGroup = urlParams.apiGroup ?? ''
   const { clusterName, template, templateLoading } = useTemplateDetailsContext()
   const [getKyverno, { loading, error, data }] = useSearchResultRelatedItemsLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
   const [filtered, setFiltered] = useState<any[]>()
+  const [violationNum, setViolationNum] = useState<number | undefined>()
+
   useEffect(() => {
     if (
       apiGroup === 'kyverno.io' &&
@@ -85,6 +91,16 @@ export function useFetchKyvernoRelated() {
       !error &&
       !data
     ) {
+      let extraFilters: SearchFilter[] = []
+      if (namespace) {
+        extraFilters = [
+          {
+            property: 'namespace',
+            values: [namespace],
+          },
+        ]
+      }
+
       getKyverno({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
@@ -107,6 +123,7 @@ export function useFetchKyvernoRelated() {
                   property: 'cluster',
                   values: [clusterName],
                 },
+                ...extraFilters,
               ],
               limit: 1000000,
             },
@@ -114,17 +131,20 @@ export function useFetchKyvernoRelated() {
         },
       })
     }
-  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getKyverno])
+  }, [apiGroup, clusterName, name, namespace, template, templateLoading, data, loading, error, kind, getKyverno])
 
   useEffect(() => {
     if (data) {
+      setViolationNum(0)
+
       // Attach a PolicyReport to a related resource.
       const reportMap = data.searchResult?.[0]?.related
         ?.filter((r) => ['PolicyReport', 'ClusterPolicyReport'].includes(r?.kind ?? ''))
         .map((r) => r?.items)
         .flat()
-        .reduce((accumulator, currentValue) => ({ ...accumulator, [currentValue.name]: currentValue }), {})
+        ?.reduce((accumulator, currentValue) => ({ ...accumulator, [currentValue.name]: currentValue }), {})
 
+      let violationAccumulator = 0
       setFiltered(
         data?.searchResult?.[0]?.related
           ?.map((related) => related?.items)
@@ -133,18 +153,42 @@ export function useFetchKyvernoRelated() {
           .map((item: any) => {
             // Items are always clusterName + '/' + uid
             const uid = item._uid.split('/').slice(-1)[0]
-            return { ...item, policyReport: reportMap[uid] }
-          })
+            const policyReport = reportMap[uid]
+            let compliant = ''
+            const policyKey = namespace ? `${namespace}/${name}` : name
+
+            for (const violationMapValue of ((policyReport?._policyViolationCounts ?? '') as string).split('; ')) {
+              if (!violationMapValue.startsWith(policyKey + '=')) {
+                continue
+              }
+
+              const violationNumber = Number(violationMapValue.split('=', 2)[1])
+              if (violationNumber > 0) {
+                violationAccumulator = violationAccumulator + violationNumber
+                compliant = 'noncompliant'
+              } else {
+                compliant = 'compliant'
+              }
+
+              break
+            }
+
+            return { ...item, compliant, policyReport }
+          }) // Filter out unrelated resources which don't have policyReport
+          .filter((item: any) => item.policyReport)
       )
+
+      setViolationNum(violationAccumulator)
     }
-  }, [data])
+  }, [data, name, namespace])
 
   return useMemo(
     () => ({
       loading,
       err: error?.message,
       relatedItems: filtered,
+      violationNum,
     }),
-    [loading, error, filtered]
+    [loading, error, filtered, violationNum]
   )
 }

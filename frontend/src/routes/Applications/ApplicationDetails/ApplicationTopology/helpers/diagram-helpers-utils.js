@@ -237,7 +237,7 @@ export const updateAppClustersMatchingSearch = (node, searchClusters) => {
         const targetNSForMatchedName = targetNamespaces[matchedClusterName]
         targetNamespaces[matchedClusterName] = _.sortBy(_.union(targetNSForAppCls, targetNSForMatchedName))
       }
-    } catch (err) {
+    } catch {
       //ignore error
     }
   })
@@ -249,7 +249,7 @@ export const getValidHttpUrl = (value) => {
   let urlValue = true
   try {
     urlValue = new URL(value)
-  } catch (err) {
+  } catch {
     return null
   }
   return urlValue

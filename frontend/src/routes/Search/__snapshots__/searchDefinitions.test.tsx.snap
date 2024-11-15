@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Correctly returns Cluster resource definitions in global search: SearchDefinitions-Cluster-globalhub 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateGlobalSearchDetailsLink
       item={
-        Object {
+        {
           "cluster": "test-cluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Cluster",
@@ -19,56 +19,56 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "global-hub",
     "header": "Managed hub",
     "sort": "managedHub",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Available",
     "sort": "ManagedClusterConditionAvailable",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Hub accepted",
     "sort": "HubAcceptedManagedCluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Joined",
     "sort": "ManagedClusterJoined",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Nodes",
     "sort": "nodes",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Kubernetes version",
     "sort": "kubernetesVersion",
   },
-  Object {
+  {
     "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Memory",
     "sort": "memory",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Console URL",
     "sort": "consoleURL",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -214,13 +214,23 @@ exports[`Correctly returns CreateDetailsLink - PolicyReport 1`] = `
 exports[`Correctly returns CreateExternalLink from clusterip 1`] = `"http://clusterip"`;
 
 exports[`Correctly returns CreateExternalLink from consoleURL 1`] = `
-<a
+<AcmButton
+  component="a"
   href="http://consoleurl"
-  rel="noopener noreferrer"
+  icon={
+    <ExternalLinkAltIcon
+      color="currentColor"
+      noVerticalAlign={false}
+      size="sm"
+    />
+  }
+  iconPosition="right"
+  isInline={true}
   target="_blank"
+  variant="link"
 >
   Launch
-</a>
+</AcmButton>
 `;
 
 exports[`Correctly returns CreateExternalVMLink 1`] = `
@@ -235,7 +245,24 @@ exports[`Correctly returns CreateExternalVMLink 1`] = `
       href="https://testCluster.com/k8s/ns/testVM/kubevirt.io~v1~VirtualMachine/testVM"
       target="_blank"
     >
-      Launch
+      Details
+      <span
+        class="pf-c-button__icon pf-m-end"
+      >
+        <svg
+          aria-hidden="true"
+          fill="currentColor"
+          height="1em"
+          role="img"
+          style="vertical-align: -0.125em;"
+          viewBox="0 0 512 512"
+          width="1em"
+        >
+          <path
+            d="M432,320H400a16,16,0,0,0-16,16V448H64V128H208a16,16,0,0,0,16-16V80a16,16,0,0,0-16-16H48A48,48,0,0,0,0,112V464a48,48,0,0,0,48,48H400a48,48,0,0,0,48-48V336A16,16,0,0,0,432,320ZM488,0h-128c-21.37,0-32.05,25.91-17,41l35.73,35.73L135,320.37a24,24,0,0,0,0,34L157.67,377a24,24,0,0,0,34,0L435.28,133.32,471,169c15,15,41,4.5,41-17V24A24,24,0,0,0,488,0Z"
+          />
+        </svg>
+      </span>
     </a>
   </div>
 </body>
@@ -477,11 +504,11 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub default res
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-application 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -495,20 +522,20 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <CreateApplicationTopologyLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -522,11 +549,11 @@ Array [
     />,
     "header": "Topology",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -539,11 +566,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -557,38 +584,38 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Type",
     "sort": "type",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Pathname",
     "sort": "pathname",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -601,11 +628,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-cluster 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -619,51 +646,51 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Available",
     "sort": "ManagedClusterConditionAvailable",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Hub accepted",
     "sort": "HubAcceptedManagedCluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Joined",
     "sort": "ManagedClusterJoined",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Nodes",
     "sort": "nodes",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Kubernetes version",
     "sort": "kubernetesVersion",
   },
-  Object {
+  {
     "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Memory",
     "sort": "memory",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Console URL",
     "sort": "consoleURL",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -676,11 +703,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-clusteroperator 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -694,48 +721,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Version",
     "sort": "version",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Available",
     "sort": "available",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Progressing",
     "sort": "progressing",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Degraded",
     "sort": "degraded",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -748,11 +775,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-clusterserviceversion 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -766,43 +793,43 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Version",
     "sort": "version",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Phase",
     "sort": "phase",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Display",
     "sort": "display",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -815,11 +842,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -833,48 +860,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "schedule",
     "sort": "schedule",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Suspend",
     "sort": "suspend",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Active",
     "sort": "active",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Last schedule",
     "sort": "lastSchedule",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -887,11 +914,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -905,53 +932,53 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Current",
     "sort": "current",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Updated",
     "sort": "updated",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Available",
     "sort": "available",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -964,11 +991,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-deployable 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -982,31 +1009,31 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Chart URL",
     "sort": "chartUrl",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Dependencies",
     "sort": "dependencies",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1019,11 +1046,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-deployment 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1037,48 +1064,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Current",
     "sort": "current",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Available",
     "sort": "available",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1091,11 +1118,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-genericresource 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1109,28 +1136,28 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1143,11 +1170,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelease 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1161,48 +1188,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Source type",
     "sort": "sourceType",
   },
-  Object {
+  {
     "cell": "-",
     "header": "URL",
     "sort": "url",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Chart path",
     "sort": "chartPath",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Branch",
     "sort": "branch",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1215,11 +1242,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1233,43 +1260,43 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Completions",
     "sort": "completions",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Parallelism",
     "sort": "parallelism",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Successful",
     "sort": "successful",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1282,11 +1309,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-namespace 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1300,28 +1327,28 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1334,11 +1361,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1352,48 +1379,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Role",
     "sort": "role",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Architecture",
     "sort": "architecture",
   },
-  Object {
+  {
     "cell": "-",
     "header": "OS image",
     "sort": "osImage",
   },
-  Object {
+  {
     "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1406,11 +1433,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-persistentvolume 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1424,58 +1451,58 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Type",
     "sort": "type",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Capacity",
     "sort": "capacity",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Access mode",
     "sort": "accessMode",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Claim",
     "sort": "claimRef",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Reclaim policy",
     "sort": "reclaimPolicy",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Path",
     "sort": "path",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1488,11 +1515,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-persistentvolumeclaim 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1506,48 +1533,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Persistent volume",
     "sort": "volumeName",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Requests",
     "sort": "request",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Access mode",
     "sort": "accessMode",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1560,11 +1587,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementbinding 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1578,31 +1605,31 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Subjects",
     "sort": "subjects",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Placement policy",
     "sort": "placementpolicy",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1615,11 +1642,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementpolicy 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1633,31 +1660,31 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Replicas",
     "sort": "replicas",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Decisions",
     "sort": "decisions",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1670,11 +1697,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-placementrule 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1688,33 +1715,33 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Replicas",
     "sort": "replicas",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1727,11 +1754,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1745,48 +1772,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Restarts",
     "sort": "restarts",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Host IP",
     "sort": "hostIP",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Pod IP",
     "sort": "podIP",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1799,11 +1826,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1817,43 +1844,43 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Disabled",
     "sort": "disabled",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Violations",
     "sort": "compliant",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Remediation action",
     "sort": "remediationAction",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -1866,11 +1893,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-policyreport 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1884,38 +1911,38 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "scope",
     "header": "Scope",
     "sort": "scope",
     "tooltip": "Scope refers to the cluster associated to the PolicyReport.",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Critical",
     "sort": "critical",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Important",
     "sort": "important",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Moderate",
     "sort": "moderate",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Low",
     "sort": "low",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Rules",
     "tooltip": "Use the rules filter to search for PolicyReports that contain a specific rule.",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Categories",
   },
@@ -1923,11 +1950,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-release 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1941,34 +1968,34 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Chart name",
     "sort": "chartName",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Chart version",
     "sort": "chartVersion",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Updated",
     "sort": "updated",
@@ -1977,11 +2004,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-replicaset 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -1995,38 +2022,38 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Current",
     "sort": "current",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2039,11 +2066,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2057,33 +2084,33 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Type",
     "sort": "type",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2096,11 +2123,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-service 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2114,43 +2141,43 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Type",
     "sort": "type",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Cluster IP",
     "sort": "clusterIP",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Port",
     "sort": "port",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2163,11 +2190,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-statefulset 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2181,38 +2208,38 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Desired",
     "sort": "desired",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Current",
     "sort": "current",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2225,11 +2252,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.apps.open-cluster-management.io 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2243,48 +2270,48 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Package",
     "sort": "package",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Local placement",
     "sort": "localPlacement",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Time window",
     "sort": "timeWindow",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2297,11 +2324,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-subscription.operators.coreos.com 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2315,43 +2342,43 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Package",
     "sort": "package",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Source",
     "sort": "source",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Channel",
     "sort": "Channel",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2364,11 +2391,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachine 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2382,32 +2409,32 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Ready",
     "sort": "ready",
   },
-  Object {
+  {
     "cell": <CreateExternalVMLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2421,16 +2448,16 @@ Array [
     />,
     "header": "VM details",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2443,11 +2470,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachineinstance 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2461,38 +2488,38 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": "testNamespace",
     "header": "Namespace",
     "sort": "namespace",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Node",
     "sort": "node",
   },
-  Object {
+  {
     "cell": "-",
     "header": "IP address",
     "sort": "ipaddress",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": <AcmLabels
-      collapse={Array []}
+      collapse={[]}
       labels={
-        Array [
+        [
           "testLabel=label",
           "testLabel1=label1",
         ]
@@ -2505,11 +2532,11 @@ Array [
 `;
 
 exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachinespage 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateDetailsLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2524,12 +2551,12 @@ Array [
     "search": [Function],
     "sort": "name",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
     </React.Fragment>,
@@ -2537,20 +2564,25 @@ Array [
     "search": [Function],
     "sort": "cluster",
   },
-  Object {
+  {
+    "cell": "testNamespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  {
     "cell": "-",
     "header": "Node",
     "sort": "node",
   },
-  Object {
+  {
     "cell": "-",
     "header": "IP address",
     "sort": "ipaddress",
   },
-  Object {
+  {
     "cell": <CreateExternalVMLink
       item={
-        Object {
+        {
           "cluster": "testCluster",
           "created": "2021-01-01T00:00:00Z",
           "kind": "Pod",
@@ -2564,7 +2596,7 @@ Array [
     />,
     "header": "VM details",
   },
-  Object {
+  {
     "cell": "in a month",
     "header": "Created",
     "sort": "created",
@@ -2574,9 +2606,9 @@ Array [
 
 exports[`Correctly returns category components 1`] = `
 <AcmLabels
-  collapse={Array []}
+  collapse={[]}
   labels={
-    Array [
+    [
       "testcategory=category1",
       "testcategory=category2",
     ]
@@ -2614,9 +2646,9 @@ exports[`Correctly returns formatSearchbarSuggestions without T in timestamp 1`]
 
 exports[`Correctly returns label components 1`] = `
 <AcmLabels
-  collapse={Array []}
+  collapse={[]}
   labels={
-    Array [
+    [
       "testlabel=label1",
       "testlabel=label2",
     ]
@@ -2627,14 +2659,14 @@ exports[`Correctly returns label components 1`] = `
 exports[`Correctly returns policyreport policies 1`] = `
 <AcmLabels
   collapse={
-    Array [
+    [
       "MASTER_DEFINED_AS_MACHINESETS",
       "NODES_MINIMUM_REQUIREMENTS_NOT_MET",
       "UNSUPPORT_SDN_PLUGIN",
     ]
   }
   labels={
-    Array [
+    [
       "AUTH_OPERATOR_PROXY_ERROR",
       "CONTAINER_ROOT_PARTITION_SIZE",
       "MASTER_DEFINED_AS_MACHINESETS",
@@ -2646,11 +2678,11 @@ exports[`Correctly returns policyreport policies 1`] = `
 `;
 
 exports[`Correctly returns resource with managedHub column: SearchDefinitions-global-node 1`] = `
-Array [
-  Object {
+[
+  {
     "cell": <CreateGlobalSearchDetailsLink
       item={
-        Object {
+        {
           "apiversion": "v1",
           "cluster": "testCluster",
           "kind": "Node",
@@ -2662,7 +2694,7 @@ Array [
     "header": "Name",
     "sort": "name",
   },
-  Object {
+  {
     "cell": <React.Fragment>
       testCluster
       <TextContent>
@@ -2676,37 +2708,37 @@ Array [
     "header": "Cluster",
     "sort": "cluster",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Status",
     "sort": "status",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Role",
     "sort": "role",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Architecture",
     "sort": "architecture",
   },
-  Object {
+  {
     "cell": "-",
     "header": "OS image",
     "sort": "osImage",
   },
-  Object {
+  {
     "cell": "-",
     "header": "CPU",
     "sort": "cpu",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Created",
     "sort": "created",
   },
-  Object {
+  {
     "cell": "-",
     "header": "Labels",
     "sort": "label",

@@ -8,7 +8,8 @@ import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
-import { Cluster, ClusterStatus, Policy, PolicyReport } from '../../../../../resources'
+import { Policy, PolicyReport } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import {
   mockSearchQueryArgoAppsStatusSummary,
   mockSearchQueryArgoAppsCount,

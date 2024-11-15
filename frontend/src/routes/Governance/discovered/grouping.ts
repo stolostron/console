@@ -150,17 +150,22 @@ export function grouping(): {
 
     if (kyvernoPolicyReports.length > 0) {
       kyvernoPolicyReports.forEach((cr) => {
-        const kindNameViolation = cr.policyViolationCounts?.split('=') ?? []
-        kyvernoViolationMap[kindNameViolation[0]] =
-          (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
+        for (const violationMapValue of ((cr?._policyViolationCounts ?? '') as string).split('; ')) {
+          const kindNameViolation = violationMapValue.split('=') ?? []
+          kyvernoViolationMap[kindNameViolation[0]] =
+            (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
+        }
       })
     }
 
     const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
       ?.filter(
-        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
+        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper and Kyverno.
         (policy: any): any =>
-          !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
+          !(
+            policy.kind === 'ValidatingAdmissionPolicyBinding' &&
+            ['Gatekeeper', 'Kyverno'].includes(policy?._ownedBy ?? '')
+          )
       )
       .map((policy: any): any => {
         const sourceAdded = {

@@ -63,16 +63,14 @@ describe('CreateControlPlane', () => {
     expect(isCardEnabled(card)).toBe(false)
     expect(card).toHaveTextContent('No infrastructure environments found')
     expect(card).toHaveTextContent(
-      'To use hosted control plane, create an infrastructure environment and add hosts in the Host inventory'
+      'To use hosted control plane, create an infrastructure environment in the Host inventory'
     )
   })
 
   test('Hosted control plane card should be disabled when there are no hosts', async () => {
     const { getByTestId } = render(<Component infraEnvsMock={[mockInfraEnv1]} />)
     const card = getByTestId('hosted')
-    expect(isCardEnabled(card)).toBe(false)
-    expect(card).toHaveTextContent('No available hosts found')
-    expect(card).toHaveTextContent('To use hosted control plane, go to Host inventory and add hosts')
+    expect(isCardEnabled(card)).toBe(true)
   })
 
   test('Hosted control plane card should be enabled when hypershift is enabled and there are available hosts', async () => {

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Divider, Flex, Grid, GridItem, LabelGroup, PageSection, Skeleton, Title } from '@patternfly/react-core'
+import { Divider, Flex, PageSection, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -20,36 +20,41 @@ import {
 } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
-import { generatePath, Link, useParams } from 'react-router-dom-v5-compat'
-import { collectKinds, getEngineWithSvg } from '../../common/util'
-import { Grid as MuiGrid } from '@mui/material'
+import { useParams } from 'react-router-dom-v5-compat'
+import { getEngineWithSvg } from '../../common/util'
 import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
+import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
 
-interface IKinds {
-  apiGroups: string[]
-  kinds: string[]
-}
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
+  const namespace = urlParams.templateNamespace
   const kind = urlParams.kind ?? ''
   const apiGroup = urlParams.apiGroup ?? ''
   const apiVersion = urlParams.apiVersion ?? ''
-  const { clusterName, template, templateLoading } = useTemplateDetailsContext()
+  const { clusterName, template, templateLoading, handleAuditViolation } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
-  // This is for gatekeeper constraint
+  // This is for gatekeeper constraint and kyverno
   const vapb = useFetchVapb()
   const kyvernoRelated = useFetchKyvernoRelated()
   const isFromSearch = ['kyverno.io'].includes(apiGroup)
+  const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
 
   useEffect(() => {
     if (isFromSearch && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
       setRelatedObjects(kyvernoRelated.relatedItems)
+      if (kyvernoRelated.violationNum != undefined) {
+        handleAuditViolation(kyvernoRelated.violationNum)
+      }
     }
-  }, [kyvernoRelated, apiGroup, isFromSearch])
+  }, [kyvernoRelated, apiGroup, isFromSearch, handleAuditViolation])
 
   useEffect(() => {
+    if (apiGroup === 'constraints.gatekeeper.sh' && template?.status?.totalViolations !== undefined) {
+      handleAuditViolation(template.status.totalViolations)
+    }
+
     if (template?.status?.relatedObjects?.length) {
       const relObjs = template.status.relatedObjects.map((obj: any) => {
         obj.cluster = clusterName
@@ -91,10 +96,10 @@ export function PolicyTemplateDetails() {
     if (!templateLoading && !isFromSearch) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading, isFromSearch])
+  }, [apiGroup, clusterName, template, templateLoading, isFromSearch, handleAuditViolation])
 
   const descriptionItems = useMemo(() => {
-    const cols: ListItems[] = [
+    let cols: ListItems[] = [
       {
         key: t('Name'),
         value: name,
@@ -112,116 +117,94 @@ export function PolicyTemplateDetails() {
         value: kind ?? '-',
       },
       {
-        key: t('API groups'),
+        key: t('API version'),
         value: apiVersion ? apiGroup + '/' + apiVersion : apiGroup,
       },
     ]
 
-    if (apiGroup === 'constraints.gatekeeper.sh') {
-      // Loading to fetch VAPB
-      if (!vapb.vapbItems) {
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
-        })
-      } else if (vapb.vapbItems && vapb.vapbItems.length > 0 && !vapb.loading) {
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: (
-            <Link
-              to={generatePath(NavigationPath.discoveredPolicyDetails, {
-                clusterName,
-                apiVersion: 'v1',
-                apiGroup: 'admissionregistration.k8s.io',
-                kind: 'ValidatingAdmissionPolicyBinding',
-                templateName: `gatekeeper-${name}`,
-                templateNamespace: null,
-              })}
-              target="_blank"
-            >
-              gatekeeper-{name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-            </Link>
-          ),
-        })
-      } else if (vapb.vapbItems && vapb.vapbItems.length == 0 && !vapb.loading) {
-        cols.push({
-          key: 'Validating Admission Policy Binding',
-          value: '-',
-        })
-      }
-    }
-
-    // Gatekeeper Constraint
-    if (template?.spec?.match?.kinds && apiGroup === 'constraints.gatekeeper.sh') {
-      return [
-        ...cols.slice(0, 2),
+    // Namespaced policy
+    if (namespace) {
+      cols = [
+        ...cols.slice(0, 1),
         {
-          key: t('Matches'),
-          value: matchesBadges(template?.spec?.match?.kinds as IKinds[]),
+          key: t('Namespace'),
+          value: namespace,
         },
-        ...cols.slice(2),
+        ...cols.slice(1),
       ]
     }
 
-    if (kind === 'OperatorPolicy') {
-      let value = '-'
+    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
 
-      for (const condition of template?.status?.conditions ?? []) {
-        if (condition?.type === 'Compliant') {
-          value = condition?.message ?? '-'
-          break
-        }
-      }
+    addRowsForOperatorPolicy(cols, template, kind, t)
 
-      cols.push({ key: t('Message'), value: value })
-    }
-
-    if (kind === 'ValidatingAdmissionPolicyBinding') {
-      // Add a row forValidatingAdmissionPolicy
-      if (!template) {
-        cols.push({
-          key: 'Validating Admission Policy',
-          value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
-        })
-      } else {
-        const policyName = template?.spec?.policyName
-        if (policyName) {
-          cols.push({
-            key: 'Validating Admission Policy',
-            value: (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ValidatingAdmissionPolicy&apiversion=v1&name=${policyName}`}
-              >
-                {policyName}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
-            ),
-          })
-        } else {
-          cols.push({
-            key: 'Validating Admission Policy',
-            value: '-',
-          })
-        }
-      }
-    }
-
-    // kyverno
-    if (template?.spec?.rules && apiGroup === 'kyverno.io') {
-      return [
-        ...cols.slice(0, 2),
-        {
-          key: t('Matches'),
-          value: kyvernoMatchesBadges(template?.spec?.rules),
-        },
-        ...cols.slice(2),
-      ]
-    }
+    addRowsForVapb(cols, template, clusterName, kind)
 
     return cols
-  }, [t, name, kind, apiGroup, template, clusterName, vapb, apiVersion])
+  }, [t, name, kind, apiGroup, clusterName, apiVersion, namespace, hasVapb, template, vapb.loading, vapb.vapbItems])
+
+  const violationColumn = useMemo(() => {
+    return {
+      header: t('Violations'),
+      sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
+      cell: (item: any) => {
+        let compliant = item.compliant ?? '-'
+        compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
+
+        switch (compliant) {
+          case 'compliant':
+            return (
+              <div>
+                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+              </div>
+            )
+          case 'noncompliant':
+            return (
+              <div>
+                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                <DiffModal
+                  diff={item.properties?.diff}
+                  kind={item.object?.kind}
+                  namespace={item.object?.metadata?.namespace}
+                  name={item.object?.metadata?.name}
+                />
+              </div>
+            )
+          case 'inapplicable':
+            return (
+              <div>
+                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+              </div>
+            )
+          // @ts-expect-error: Falls through to 'No status'
+          case 'unknowncompliancy':
+            if (kind === 'OperatorPolicy') {
+              switch (item.object?.kind) {
+                case 'Deployment':
+                  return (
+                    <div>
+                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                    </div>
+                  )
+                case 'CustomResourceDefinition':
+                  return (
+                    <div>
+                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                    </div>
+                  )
+              }
+            }
+          // falls through to 'No status'
+          default:
+            return (
+              <div>
+                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+              </div>
+            )
+        }
+      },
+    }
+  }, [t, kind])
 
   const relatedResourceColumns = useMemo(
     () => [
@@ -244,90 +227,12 @@ export function PolicyTemplateDetails() {
         search: 'object.kind',
       },
       {
-        header: t('API groups'),
+        header: t('API version'),
         cell: 'object.apiVersion',
         sort: 'object.apiVersion',
         search: 'object.apiVersion',
       },
-      ...(kind === 'ValidatingAdmissionPolicyBinding'
-        ? []
-        : [
-            {
-              header: t('Violations'),
-              sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
-              cell: (item: any) => {
-                let compliant = item.compliant ?? '-'
-                compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
-
-                switch (compliant) {
-                  case 'compliant':
-                    compliant = (
-                      <div>
-                        <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
-                      </div>
-                    )
-                    break
-                  case 'noncompliant':
-                    compliant = (
-                      <div>
-                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
-                        <DiffModal
-                          diff={item.properties?.diff}
-                          kind={item.object?.kind}
-                          namespace={item.object?.metadata?.namespace}
-                          name={item.object?.metadata?.name}
-                        />
-                      </div>
-                    )
-                    break
-                  case 'unknowncompliancy':
-                    if (kind === 'OperatorPolicy') {
-                      switch (item.object?.kind) {
-                        case 'Deployment':
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
-                              {t('Inapplicable')}
-                            </div>
-                          )
-                          break
-                        case 'CustomResourceDefinition':
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
-                              {t('Inapplicable')}
-                            </div>
-                          )
-                          break
-                        default:
-                          compliant = (
-                            <div>
-                              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                            </div>
-                          )
-                          break
-                      }
-                    } else {
-                      compliant = (
-                        <div>
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                        </div>
-                      )
-                    }
-                    break
-                  default:
-                    compliant = (
-                      <div>
-                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
-                      </div>
-                    )
-                    break
-                }
-
-                return compliant
-              },
-            },
-          ]),
+      ...(kind === 'ValidatingAdmissionPolicyBinding' ? [] : [violationColumn]),
       {
         header: t('Reason'),
         cell: 'reason',
@@ -364,7 +269,7 @@ export function PolicyTemplateDetails() {
         },
       },
     ],
-    [t, kind]
+    [t, violationColumn, kind]
   )
 
   const relatedResourceFromSearchAPIColumns = useMemo(
@@ -388,27 +293,29 @@ export function PolicyTemplateDetails() {
         search: 'kind',
       },
       {
-        header: t('API groups'),
-        cell: (item: any) => item.apigroup ?? '-',
+        header: t('API version'),
+        cell: (item: any) => (item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion),
         sort: 'apigroup',
         search: 'apigroup',
       },
+      violationColumn,
       {
         header: '',
         cell: (item: any) => {
           let policyReportLink: ReactNode = <></>
           if (item.policyReport) {
-            const { cluster, kind, name, namespace, apiversion } = item.policyReport
+            const { cluster, kind, name, namespace, apigroup, apiversion } = item.policyReport
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+            const apigroupArg = apigroup ? `${apigroup}%2F` : ''
             policyReportLink = (
               <>
                 <span>
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&&name=${name}${namespaceArg}`}
+                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
                   >
-                    {t('View policy report')}{' '}
+                    {t('View report')}
                     <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
                   </a>
                 </span>{' '}
@@ -437,7 +344,7 @@ export function PolicyTemplateDetails() {
                 <a
                   target="_blank"
                   rel="noopener noreferrer"
-                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&&name=${name}${namespaceArg}`}
+                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&name=${name}${namespaceArg}`}
                 >
                   {t('View YAML')} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
                 </a>
@@ -447,8 +354,9 @@ export function PolicyTemplateDetails() {
         },
       },
     ],
-    [t]
+    [t, violationColumn]
   )
+
   return (
     <div>
       {(vapb.err || kyvernoRelated.err) && (
@@ -457,16 +365,14 @@ export function PolicyTemplateDetails() {
         </PageSection>
       )}
       <PageSection style={{ paddingBottom: '0' }}>
-        <Grid hasGutter>
-          <GridItem span={12}>
-            <AcmDescriptionList
-              id={'template-details-section'}
-              title={kind + ' ' + t('details')}
-              leftItems={descriptionItems}
-              defaultOpen
-            />
-          </GridItem>
-        </Grid>
+        <AcmDescriptionList
+          id={'template-details-section'}
+          title={kind + ' ' + t('details')}
+          leftItems={descriptionItems.filter((_, i) => i < descriptionItems.length / 2)}
+          rightItems={descriptionItems.filter((_, i) => i >= descriptionItems.length / 2)}
+          defaultOpen
+          xl2={4}
+        />
       </PageSection>
       <PageSection>
         <Title headingLevel="h2">{t('Related resources')}</Title>
@@ -491,55 +397,5 @@ export function PolicyTemplateDetails() {
         </AcmTablePaginationContextProvider>
       </PageSection>
     </div>
-  )
-}
-
-const matchesBadges = (kinds: IKinds[]): ReactNode => {
-  return (
-    <MuiGrid container style={{ maxWidth: '500px', gap: 8 }}>
-      {kinds.map((kinds) => {
-        return kinds.kinds.map((k) => {
-          if (!kinds.apiGroups || kinds.apiGroups.length == 0) {
-            return (
-              <div key={k}>
-                <Badge isRead key={k}>
-                  {k}
-                </Badge>
-              </div>
-            )
-          }
-
-          return kinds.apiGroups.map((apigroup) => {
-            return (
-              <div key={`${apigroup}/${k}`}>
-                <Badge isRead key={`${apigroup}/${k}`}>
-                  {apigroup ? `${apigroup}/${k}` : k}
-                </Badge>
-              </div>
-            )
-          })
-        })
-      })}
-    </MuiGrid>
-  )
-}
-
-const kyvernoMatchesBadges = (rules: any[]): ReactNode => {
-  return (
-    <MuiGrid container style={{ maxWidth: '500px', gap: 8 }}>
-      {rules.map((r) => {
-        const kinds: string[] = collectKinds(r)
-
-        return (
-          <LabelGroup categoryName={r.name} key={r.name}>
-            {kinds.map((kind: string) => (
-              <Badge isRead key={`${r.name}/${kind}`}>
-                {kind}
-              </Badge>
-            ))}
-          </LabelGroup>
-        )
-      })}
-    </MuiGrid>
   )
 }

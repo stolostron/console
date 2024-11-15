@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
-import { getBackendUrl, IRequestResult, OCPAppResource, postRequest } from '../resources'
+import { OCPAppResource } from '../resources'
+import { getBackendUrl, IRequestResult, postRequest } from '../resources/utils'
 import { flatten, uniqBy } from 'lodash'
 
 export const apiSearchUrl = '/proxy/search'
