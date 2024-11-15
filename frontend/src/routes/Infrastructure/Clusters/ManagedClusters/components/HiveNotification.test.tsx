@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterProvision,
   ClusterProvisionApiVersion,
   ClusterProvisionKind,
-  ClusterStatus,
   PodApiVersion,
   PodKind,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'

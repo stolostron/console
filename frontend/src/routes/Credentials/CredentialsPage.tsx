@@ -24,13 +24,13 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
-  deleteResource,
   DiscoveryConfig,
   ProviderConnection,
   Secret,
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
+import { deleteResource } from '../../resources/utils'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()

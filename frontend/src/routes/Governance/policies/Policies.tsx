@@ -26,7 +26,6 @@ import { deletePolicy } from '../../../lib/delete-policy'
 import { checkPermission, rbacCreate, rbacPatch, rbacUpdate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
-  patchResource,
   Policy,
   PolicyApiVersion,
   PolicyAutomation,
@@ -34,8 +33,8 @@ import {
   PolicyDefinition,
   PolicyKind,
   PolicySet,
-  replaceResource,
 } from '../../../resources'
+import { patchResource, replaceResource } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmAlert,

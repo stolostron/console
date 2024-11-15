@@ -8,14 +8,12 @@ import {
   unpackSecret,
   createManagedCluster,
   createKlusterletAddonConfig,
-  ResourceError,
-  ResourceErrorCode,
   IResource,
-  createResource,
   Namespace,
   NamespaceKind,
   NamespaceApiVersion,
 } from '../../../../../resources'
+import { ResourceError, ResourceErrorCode, createResource } from '../../../../../resources/utils'
 import { AcmAlert, AcmButton, AcmToastContext, IAlertContext } from '../../../../../ui-components'
 import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/HypershiftKubeAPI'
 import { CopyCommandButton, useImportCommand } from './ImportCommand'

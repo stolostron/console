@@ -13,12 +13,12 @@ import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationSetKind,
-  createResources,
   getGitChannelBranches,
   getGitChannelPaths,
   GitOpsCluster,
   IResource,
 } from '../../../resources'
+import { createResources } from '../../../resources/utils'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'

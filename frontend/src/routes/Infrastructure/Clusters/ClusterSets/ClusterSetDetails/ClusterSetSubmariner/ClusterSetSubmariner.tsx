@@ -39,9 +39,9 @@ import {
   isGlobalClusterSet,
   ManagedClusterAddOn,
   ManagedClusterSetDefinition,
-  ResourceErrorCode,
   submarinerBrokerNamespaceAnnotation,
 } from '../../../../../../resources'
+import { ResourceErrorCode } from '../../../../../../resources/utils'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 import { PluginContext } from '../../../../../../lib/PluginContext'

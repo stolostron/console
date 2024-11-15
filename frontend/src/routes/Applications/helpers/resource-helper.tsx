@@ -16,7 +16,6 @@ import {
   ArgoApplicationDefinition,
   ArgoApplicationKind,
   Channel,
-  Cluster,
   CronJobKind,
   DaemonSetKind,
   DeploymentConfigKind,
@@ -34,6 +33,7 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
+import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']

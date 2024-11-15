@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import _ from 'lodash'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { fetchGet, getBackendUrl } from '../resources'
+import { fetchGet, getBackendUrl } from '../resources/utils'
 
 export enum PrometheusEndpoint {
   LABEL = 'prometheus/label',

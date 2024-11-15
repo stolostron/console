@@ -10,7 +10,6 @@ import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
-  Cluster,
   ClusterDeployment,
   ClusterPool,
   ClusterRoleBinding,
@@ -19,9 +18,8 @@ import {
   ManagedClusterSet,
   ManagedClusterSetBinding,
   managedClusterSetLabel,
-  ResourceError,
-  ResourceErrorCode,
 } from '../../../../../resources'
+import { Cluster, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
 import { useQuery } from '../../../../../lib/useQuery'

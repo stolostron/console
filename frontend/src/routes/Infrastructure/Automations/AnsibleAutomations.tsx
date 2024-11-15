@@ -22,13 +22,8 @@ import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { getBackCancelLocationLinkProps, NavigationPath } from '../../../NavigationPath'
-import {
-  ClusterCurator,
-  ClusterCuratorDefinition,
-  deleteResource,
-  getTemplateJobsNum,
-  LinkAnsibleCredential,
-} from '../../../resources'
+import { ClusterCurator, ClusterCuratorDefinition, getTemplateJobsNum, LinkAnsibleCredential } from '../../../resources'
+import { deleteResource } from '../../../resources/utils'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 
 export default function AnsibleAutomationsPage() {

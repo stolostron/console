@@ -27,24 +27,26 @@ import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { getClusterNavPath, navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
-  addonPathKey,
-  AddonStatus,
-  addonTextKey,
-  Cluster,
   ClusterCurator,
   ClusterDeployment,
   ClusterDeploymentDefinition,
   ClusterImageSet,
+  getRoles,
+  ManagedClusterDefinition,
+  NodeInfo,
+} from '../../../../resources'
+import {
+  addonPathKey,
+  AddonStatus,
+  addonTextKey,
+  Cluster,
   ClusterStatus,
   exportObjectString,
   getAddonStatusLabel,
   getClusterStatusLabel,
-  getRoles,
-  ManagedClusterDefinition,
-  NodeInfo,
-  patchResource,
   ResourceErrorCode,
-} from '../../../../resources'
+  patchResource,
+} from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
   AcmAlertContext,

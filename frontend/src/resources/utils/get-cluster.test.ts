@@ -12,7 +12,7 @@ import {
   getHCUpgradePercent,
   getIsHostedCluster,
 } from './get-cluster'
-import { HostedClusterApiVersion, HostedClusterKind } from '..'
+import { HostedClusterApiVersion, HostedClusterKind } from '../'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { cloneDeep } from 'lodash'
 export const clusterName = 'test-cluster'

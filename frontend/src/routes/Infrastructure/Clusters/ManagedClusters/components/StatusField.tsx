@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  AnsibleJob,
-  Cluster,
-  ClusterStatus,
-  getClusterStatusLabel,
-  getClusterStatusType,
-  getLatestAnsibleJob,
-} from '../../../../../resources'
+import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources'
+import { Cluster, ClusterStatus, getClusterStatusLabel, getClusterStatusType } from '../../../../../resources/utils'
 import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

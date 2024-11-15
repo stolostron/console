@@ -2,10 +2,8 @@
 
 import { deleteCluster, detachCluster } from './delete-cluster'
 import {
-  Cluster,
   ClusterDeploymentApiVersion,
   ClusterDeploymentKind,
-  ClusterStatus,
   HostedClusterApiVersion,
   HostedClusterKind,
   InfraEnvApiVersion,
@@ -17,6 +15,7 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../resources'
+import { Cluster, ClusterStatus } from '../resources/utils'
 import { nockDelete, nockIgnoreApiPaths, nockPatch } from './nock-util'
 import { waitForNocks } from './test-util'
 import { Provider } from '../ui-components'

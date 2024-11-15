@@ -16,8 +16,8 @@ import {
   Placement,
   PlacementApiVersionBeta,
   PlacementKind,
-  reconcileResources,
 } from '../../resources'
+import { reconcileResources } from '../../resources/utils'
 import { AcmToastContext } from '../../ui-components'
 import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'

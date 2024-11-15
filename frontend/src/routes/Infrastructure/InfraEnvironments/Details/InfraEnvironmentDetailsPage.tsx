@@ -28,7 +28,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ResourceError, ResourceErrorCode } from '../../../../resources'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import {
   getOnCreateBMH,
   getOnSaveISOParams,

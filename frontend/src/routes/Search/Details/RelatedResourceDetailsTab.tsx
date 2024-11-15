@@ -11,7 +11,7 @@ import {
 import _ from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { getGroupFromApiVersion } from '../../../resources'
+import { getGroupFromApiVersion } from '../../../resources/utils'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'

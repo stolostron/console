@@ -14,13 +14,13 @@ import {
   Policy,
   PolicySet,
   PolicyAutomation,
-  reconcileResources,
   Subscription,
   IResource,
   Secret,
   REMEDIATION_ACTION,
   PolicyTemplate,
 } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
 import { IAlertContext } from '../../../ui-components'

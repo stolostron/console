@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import {
-  Addon,
   ApplicationSet,
   ClusterManagementAddOn,
   ManagedCluster,
@@ -13,6 +12,7 @@ import {
   Policy,
   PolicyReport,
 } from '../../../resources'
+import { Addon } from '../../../resources/utils'
 
 export const managedClusterInfos: ManagedClusterInfo[] = [
   {

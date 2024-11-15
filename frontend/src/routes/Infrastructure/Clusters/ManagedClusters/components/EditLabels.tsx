@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource, patchResource } from '../../../../../resources'
+import { IResource } from '../../../../../resources'
+import { patchResource } from '../../../../../resources/utils'
 import {
   AcmAlertContext,
   AcmAlertGroup,

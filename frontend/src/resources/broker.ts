@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getResource } from '.'
+import { getResource } from '../resources/utils'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 

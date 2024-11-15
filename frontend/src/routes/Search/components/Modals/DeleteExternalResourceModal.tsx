@@ -3,7 +3,7 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Cluster } from '../../../../resources'
+import { Cluster } from '../../../../resources/utils'
 import { AcmButton, AcmModal } from '../../../../ui-components'
 import { GetUrlSearchParam } from '../../searchDefinitions'
 

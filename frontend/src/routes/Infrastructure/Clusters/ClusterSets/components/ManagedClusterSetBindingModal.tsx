@@ -1,16 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  createResource,
-  deleteResource,
   ManagedClusterSet,
   ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingDefinition,
   ManagedClusterSetBindingKind,
-  resultsSettled,
   SelfSubjectAccessReview,
 } from '../../../../../resources'
+import { createResource, deleteResource, resultsSettled } from '../../../../../resources/utils'
 import {
   AcmAlertContext,
   AcmAlertGroup,
