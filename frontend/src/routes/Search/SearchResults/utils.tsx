@@ -248,7 +248,7 @@ export function getRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      if (item?.managedHub !== 'global-hub') {
+      if (item.managedHub && item.managedHub !== 'global-hub') {
         setDeleteExternalResource({
           open: true,
           close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
@@ -360,7 +360,6 @@ export function getRowActions(
   ) {
     return []
   } else if (resourceKind.toLowerCase() === 'application') {
-    return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   } else if (resourceKind.toLowerCase() === 'virtualmachine') {
     return vmActionsEnabled
       ? [
