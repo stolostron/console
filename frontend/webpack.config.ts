@@ -171,7 +171,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/version',
       ].map((backendPath) => ({
         path: backendPath,
-        target: `https://localhost:${process.env.BACKEND_PORT ?? 4000}`,
+        target: `https://localhost:${process.env.BACKEND_PORT}`,
         secure: false,
       })),
       open: openBrowser,
