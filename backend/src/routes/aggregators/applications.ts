@@ -5,7 +5,9 @@ import { getArgoApps } from './applicationsArgo'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
+import { getGiganticApps } from '../../../test/mock-gigantic'
 import { pingSearchAPI } from '../../lib/search'
+import { MOCK_CLUSTERS } from '../../app'
 
 export enum AppColumns {
   'name' = 0,
@@ -107,6 +109,10 @@ export function getApplications() {
       items.push(...allResources.flat())
     }
   })
+  // mock a large environment
+  if (MOCK_CLUSTERS) {
+    items.push(...generateTransforms(getGiganticApps()).resources)
+  }
   return items
 }
 
