@@ -7,7 +7,7 @@ import { getEncodeStream } from './compression'
 import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
-import { getGiganticEvents } from '../../test/mock-gigantic'
+import { getGiganticEvents } from './gigantic'
 import { MOCK_CLUSTERS } from '../app'
 
 // TODO - RESET EVENT

@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { MOCK_CLUSTERS } from '../src/app'
-import { ITransformedResource } from '../src/lib/pagination'
-import { ServerSideEvent } from '../src/lib/server-side-events'
+import { MOCK_CLUSTERS } from '../app'
+import { ITransformedResource } from './pagination'
+import { ServerSideEvent } from './server-side-events'
 
 export function getGiganticEvents(): ServerSideEvent[] {
   return [

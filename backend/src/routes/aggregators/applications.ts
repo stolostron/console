@@ -5,7 +5,7 @@ import { getArgoApps } from './applicationsArgo'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { getGiganticApps } from '../../../test/mock-gigantic'
+import { getGiganticApps } from '../../lib/gigantic'
 import { pingSearchAPI } from '../../lib/search'
 import { MOCK_CLUSTERS } from '../../app'
 
