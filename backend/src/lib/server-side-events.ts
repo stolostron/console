@@ -277,7 +277,7 @@ export class ServerSideEvents {
     }
 
     let sentCount = 0
-    let allEvents: ServerSideEvent[] = []
+    const allEvents: ServerSideEvent[] = []
     for (const eventID in this.events) {
       if (Number(eventID) <= lastEventID) continue
       allEvents.push(this.events[eventID])
