@@ -40,7 +40,14 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
-import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import {
+  ClusterCount,
+  getAge,
+  getClusterCountString,
+  getEditLink,
+  getMoment,
+  getSearchLink,
+} from './helpers/resource-helper'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -495,7 +502,9 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             exportContent: (resource) => {
-              return getAge(resource, '', 'metadata.creationTimestamp')
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
             },
             sort: 'metadata.creationTimestamp',
           },
@@ -606,7 +615,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
         [t]
@@ -654,7 +667,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
         [t]
@@ -714,7 +731,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
         [t]
