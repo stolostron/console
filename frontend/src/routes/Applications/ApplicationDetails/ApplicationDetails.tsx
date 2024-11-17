@@ -277,7 +277,7 @@ export default function ApplicationDetailsPage() {
                 recoilStates.placementRules,
                 recoilStates.placements,
                 recoilStates.channels,
-                hubCluster?.name || ''
+                hubCluster?.name ?? ''
               )
             : [[], []]
         const appSetRelatedResources =

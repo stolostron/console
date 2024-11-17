@@ -22,6 +22,7 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -1325,6 +1326,35 @@ describe('processResourceActionLink dummy link', () => {
   const result = ''
   it('processResourceActionLink dummy link', () => {
     expect(processResourceActionLink(genericLink)).toEqual(result)
+  })
+})
+
+describe('processResourceActionLink open argo editor', () => {
+  const genericLink = {
+    action: 'open_argo_editor',
+    name: 'argo_test',
+    namespace: 'argo_test',
+    cluster: 'local-cluster',
+  }
+  const result = ''
+  it('processResourceActionLink open argo editor', () => {
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
+  })
+})
+
+describe('processResourceActionLink open route url', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+  const genericLink = {
+    action: 'open_route_url',
+    name: 'route_test',
+    namespace: 'route_test',
+    cluster: 'local-cluster',
+  }
+  const result = ''
+  it('processResourceActionLink open route url', () => {
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
 

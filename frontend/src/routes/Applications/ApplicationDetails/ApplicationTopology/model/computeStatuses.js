@@ -547,7 +547,7 @@ export const setApplicationDeployStatus = (node, details, t, hubClusterName) => 
   if (node.type === 'applicationset') {
     setAppSetDeployStatus(node, details, t, hubClusterName)
   } else if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
-    setArgoApplicationDeployStatus(node, details, t, hubClusterName)
+    setArgoApplicationDeployStatus(node, details, t)
   } else {
     addPropertyToList(
       details,

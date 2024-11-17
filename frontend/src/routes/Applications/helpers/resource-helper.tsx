@@ -69,7 +69,7 @@ export type ClusterCount = {
   localPlacement: boolean
 }
 
-const getArgoClusterList = (
+export const getArgoClusterList = (
   resources: ArgoApplication[],
   localCluster: Cluster | undefined,
   managedClusters: Cluster[]
@@ -85,7 +85,7 @@ const getArgoClusterList = (
         isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
       !isRemoteArgoApp
     ) {
-      clusterSet.add(localCluster?.name || '')
+      clusterSet.add(localCluster?.name ?? '')
     } else {
       if (isRemoteArgoApp) {
         clusterSet.add(
@@ -201,7 +201,7 @@ export const getClusterList = (
   if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
     return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
   } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as ApplicationSet)) {
-    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions, localCluster?.name || '')
+    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions, localCluster?.name ?? '')
   } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
     return getArgoClusterList(
       argoApplications.filter(

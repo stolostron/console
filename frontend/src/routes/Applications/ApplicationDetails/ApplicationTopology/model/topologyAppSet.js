@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, set, uniqBy } from 'lodash'
-import { fireManagedClusterView, getResource, listNamespacedResources } from '../../../../../resources'
+import { getResource, listNamespacedResources } from '../../../../../resources/utils'
+import { fireManagedClusterView } from '../../../../../resources'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'

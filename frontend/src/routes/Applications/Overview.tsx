@@ -394,7 +394,7 @@ export default function ApplicationsOverview() {
         localCluster,
         managedClusters
       )
-      const clusterCount = getClusterCount(clusterList, localCluster?.name || '')
+      const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
       // Resource column
@@ -543,7 +543,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList, localCluster?.name || '')
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
@@ -562,7 +562,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList, localCluster?.name || '')
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
       },
@@ -918,7 +918,7 @@ export default function ApplicationsOverview() {
                     placementRules,
                     placements,
                     channels,
-                    localCluster?.name || ''
+                    localCluster?.name ?? ''
                   )
                 : [[], []]
             const appSetRelatedResources =

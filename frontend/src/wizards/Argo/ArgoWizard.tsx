@@ -693,7 +693,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
             isPullModel={isPullModel}
-            hubClusterName={hubCluster?.metadata?.name || ''}
+            hubClusterName={hubCluster?.metadata?.name ?? ''}
           />
         </Step>
       </WizardPage>

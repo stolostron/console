@@ -20,7 +20,9 @@ import {
   appNoChannelGreen,
   appNoChannelRed,
   appSetDeployable,
+  appSubDeployable,
   appSetDesignFalse,
+  clusterNode,
   deploymentNodeNoPodModel,
   deploymentNodeNoPODS,
   deploymentNodeNoPODSNoRes,
@@ -37,6 +39,8 @@ import {
   persVolumePendingStateGreenRes,
   persVolumePendingStatePendingRes,
   persVolumePendingStateYellow,
+  placementsDeployable,
+  placementDeployable,
   podCrash,
   ruleNodeGreen2,
   ruleNodeRed,
@@ -702,6 +706,22 @@ describe('computeNodeStatus', () => {
 
   it('return computeNodeStatus appSet not design', () => {
     expect(computeNodeStatus(appSetDesignFalse, true, t)).toEqual('green')
+  })
+
+  it('return computeNodeStatus appSub is deployable', () => {
+    expect(computeNodeStatus(appSubDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus placements is deployable', () => {
+    expect(computeNodeStatus(placementsDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus placement is deployable', () => {
+    expect(computeNodeStatus(placementDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus cluster node', () => {
+    expect(computeNodeStatus(clusterNode, true, t, 'local-cluster')).toEqual('green')
   })
 })
 
@@ -2481,6 +2501,34 @@ describe('getPulseStatusForGenericNode resources has different length', () => {
     },
   }
   it('should process configmap node', () => {
+    expect(computeNodeStatus(cmNode, true, t)).toEqual('yellow')
+  })
+})
+
+describe('computeNodeStatus deployable resource', () => {
+  const cmNode = {
+    type: 'configmap',
+    name: 'cm1',
+    namespace: 'ns',
+    specs: {
+      clusters: [{ status: 'ok', name: 'local-cluster' }],
+      configmapModel: {
+        'cm1-local-cluster': {
+          name: 'cm1',
+        },
+      },
+      resources: [
+        {
+          name: 'cm1',
+        },
+        {
+          name: 'cm2',
+        },
+      ],
+      resourceCount: 2,
+    },
+  }
+  it('should process application node', () => {
     expect(computeNodeStatus(cmNode, true, t)).toEqual('yellow')
   })
 })
