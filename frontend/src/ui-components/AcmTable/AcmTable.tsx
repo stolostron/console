@@ -88,6 +88,8 @@ type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[]
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
+// assume user will use filter when over MAXIMUM_OPTIONS
+const MAXIMUM_OPTIONS = 200
 
 /* istanbul ignore next */
 export interface IAcmTableColumn<T> {
@@ -1574,7 +1576,7 @@ function TableColumnFilters<T>(
       },
     ]
     for (const filter of filters) {
-      const options: { option: TableFilterOption<string>; count: number }[] = []
+      let options: { option: TableFilterOption<string>; count: number }[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
         const count = filterCounts?.[filter.id]
@@ -1597,6 +1599,8 @@ function TableColumnFilters<T>(
       /* istanbul ignore else */
       if (options.length) {
         if (options.length > SPLIT_FILTER_THRESHOLD) {
+          // assume user will use filter when over MAXIMUM_OPTIONS
+          options = options.slice(0, MAXIMUM_OPTIONS)
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],
