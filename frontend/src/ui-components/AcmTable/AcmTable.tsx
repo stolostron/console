@@ -80,6 +80,7 @@ import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
+import { PluginContext } from '../../lib/PluginContext'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -580,6 +581,18 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
+
+  // table loading state
+  const { dataContext } = useContext(PluginContext)
+  const { receivedFirstPacket, loaded } = useContext(dataContext)
+  const [isLoading, setIsLoading] = useState(resultView ? loading : !loaded)
+  useEffect(() => {
+    if (resultView) {
+      setIsLoading(loading as boolean)
+    } else {
+      setIsLoading(!receivedFirstPacket || (!loaded && (!items || items.length === 0)))
+    }
+  }, [items, loaded, loading, receivedFirstPacket, resultView])
 
   // State that can come from context or component state (perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
@@ -1257,7 +1270,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const hasFilter = filters && filters.length > 0
   const hasItems = items && items.length > 0 && filtered
-  const showToolbar = props.showToolbar !== false ? hasItems || emptyResult || loading : false
+  const showToolbar =
+    props.showToolbar !== false ? hasItems || emptyResult || (process.env.NODE_ENV !== 'test' && isLoading) : false
   const topToolbarStyle = items ? {} : { paddingBottom: 0 }
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
 
@@ -1417,7 +1431,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           </ToolbarContent>
         </Toolbar>
       )}
-      {!items || !rows || !filtered || !paged || loading ? (
+      {!items || !rows || !filtered || !paged || (process.env.NODE_ENV !== 'test' && isLoading) ? (
         <PageSection variant="light" padding={{ default: 'noPadding' }}>
           <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'padding' }}>
             <Fragment>

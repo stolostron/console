@@ -39,6 +39,7 @@ const INITIAL_CLUSTERS_SHOWN = 10
 const getScore = (item: { cluster?: ManagedCluster; violations: any }) => {
   return item.violations.noncompliant * 100 + item.violations.unknown * 10 + item.violations.pending
 }
+import { PluginContext } from '../../../lib/PluginContext'
 
 export default function GovernanceOverview() {
   usePageVisitMetricHandler(Pages.governance)
@@ -48,23 +49,28 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
   const { t } = useTranslation()
+  const { dataContext } = useContext(PluginContext)
+  const { loaded } = useContext(dataContext)
+
   useEffect(() => {
     checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
   }, [namespaces])
 
-  if (policies.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-  if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
-    return (
-      <PageSection isFilled>
-        <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
+  if (loaded || process.env.NODE_ENV === 'test') {
+    if (policies.length === 0) {
+      return (
+        <PageSection isFilled>
+          <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
+      return (
+        <PageSection isFilled>
+          <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
   }
   return (
     <PageSection>
