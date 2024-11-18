@@ -9,7 +9,7 @@ import {
   HostedClusterK8sResource,
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   HostedClusterApiVersion,
@@ -106,17 +106,22 @@ export function HypershiftUpgradeModal(props: {
       .reverse()
   }, [props.availableUpdates, latestSupportedVersion])
 
-  const controlPlaneNameTdRef = useCallback((node: HTMLTableCellElement | null) => {
-    if (node) {
-      setNodepoolsNameTdWidth(node.offsetWidth)
-    }
-  }, [])
+  const controlPlaneNameTdRef = useRef<HTMLTableCellElement>(null)
+  const controlPlaneVersionTdRef = useRef<HTMLTableCellElement>(null)
 
-  const controlPlaneVersionTdRef = useCallback((node: HTMLTableCellElement | null) => {
-    if (node) {
-      setNodepoolsVersionTdWidth(node.offsetWidth)
-    }
-  }, [])
+  if (
+    controlPlaneNameTdRef.current?.offsetWidth && // ensure defined and > 0
+    controlPlaneNameTdRef.current.offsetWidth !== nodepoolsNameTdWidth
+  ) {
+    setNodepoolsNameTdWidth(controlPlaneNameTdRef.current?.offsetWidth)
+  }
+
+  if (
+    controlPlaneVersionTdRef.current?.offsetWidth && // ensure defined and > 0
+    controlPlaneVersionTdRef.current.offsetWidth !== nodepoolsVersionTdWidth
+  ) {
+    setNodepoolsVersionTdWidth(controlPlaneVersionTdRef.current?.offsetWidth)
+  }
 
   const controlPlaneCheckboxSpanRef = useCallback((node: HTMLSpanElement | null) => {
     if (node) {
