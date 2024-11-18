@@ -1,10 +1,8 @@
-{{#if userDefinedNamespace}}
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
   name: '{{namespace}}'
 ---
-{{/if}}
 apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
