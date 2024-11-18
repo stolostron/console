@@ -1012,6 +1012,46 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
   })
 
+  test('renders a table with multiple filters to handle lots of options', async () => {
+    const { container, getByText, getByTestId, getByLabelText } = render(
+      <Table
+        filters={[
+          {
+            label: 'Gender',
+            id: 'gender',
+            options: [
+              { label: 'Male', value: 'male' },
+              { label: 'Female', value: 'female' },
+              { label: 'Non-binary', value: 'non-binary' },
+            ],
+            tableFilterFn: (selectedValues: string[], item: IExampleData) => {
+              return selectedValues.includes(item['gender'].toLowerCase())
+            },
+          },
+          {
+            label: 'Cluster',
+            id: 'cluster',
+            options: Array.from(Array(300).keys()).map((inx) => {
+              return { label: `cluster${inx + 1}`, value: `cluster${inx + 1}` }
+            }),
+            tableFilterFn: (selectedValues: string[], item: IExampleData) => {
+              return selectedValues.includes((item['cluster'] || '').toLowerCase())
+            },
+          },
+        ]}
+      />
+    )
+
+    // Test deleting chip group
+    expect(getByText('Cluster')).toBeInTheDocument()
+    userEvent.click(getByText('Cluster'))
+    userEvent.click(getByTestId('cluster-cluster21'))
+    userEvent.click(getByTestId('cluster-cluster31'))
+    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(2)
+    userEvent.click(getByLabelText('Close chip group'))
+    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+  })
+
   test('renders with customTableAction', () => {
     const { container, getByTestId } = render(
       <Table useCustomTableAction={true} useTableActions={false} useRowActions={false} />
@@ -1067,45 +1107,5 @@ describe('AcmTable', () => {
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
-  })
-
-  test('renders a table with multiple filters to handle lots of options', async () => {
-    const { container, getByText, getByTestId, getByLabelText } = render(
-      <Table
-        filters={[
-          {
-            label: 'Gender',
-            id: 'gender',
-            options: [
-              { label: 'Male', value: 'male' },
-              { label: 'Female', value: 'female' },
-              { label: 'Non-binary', value: 'non-binary' },
-            ],
-            tableFilterFn: (selectedValues: string[], item: IExampleData) => {
-              return selectedValues.includes(item['gender'].toLowerCase())
-            },
-          },
-          {
-            label: 'Cluster',
-            id: 'cluster',
-            options: Array.from(Array(300).keys()).map((inx) => {
-              return { label: `cluster${inx + 1}`, value: `cluster${inx + 1}` }
-            }),
-            tableFilterFn: (selectedValues: string[], item: IExampleData) => {
-              return selectedValues.includes((item['cluster'] || '').toLowerCase())
-            },
-          },
-        ]}
-      />
-    )
-
-    // Test deleting chip group
-    expect(getByText('Cluster')).toBeInTheDocument()
-    userEvent.click(getByText('Cluster'))
-    userEvent.click(getByTestId('cluster-cluster21'))
-    userEvent.click(getByTestId('cluster-cluster31'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(2)
-    userEvent.click(getByLabelText('Close chip group'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
   })
 })
