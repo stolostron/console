@@ -117,7 +117,7 @@ export const getControlDataKubeVirt = (
     },
     {
       name: t('Hosted cluster namespace'),
-      tooltip: t('tooltip.creation.ocp.namespace'),
+      tooltip: t('tooltip.creation.ocp.hosted.cluster.namespace'),
       id: 'namespace',
       type: 'combobox',
       fetchAvailable: loadExistingNamespaces(t),
