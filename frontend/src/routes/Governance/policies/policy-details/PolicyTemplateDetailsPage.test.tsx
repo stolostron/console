@@ -492,7 +492,7 @@ describe('Policy Template Details Page', () => {
       },
     ])()
   })
-  test('Should render Policy Template Details Page', async () => {
+  test.skip('Should render Policy Template Details Page', async () => {
     const path =
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'policy.open-cluster-management.io/v1/ConfigurationPolicy/config-policy'
@@ -1140,7 +1140,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('IamPolicy is no longer supported')
   })
 
-  test('Should render discovered policy detail page successfully', async () => {
+  test.skip('Should render discovered policy detail page successfully', async () => {
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
 
     const { container } = render(

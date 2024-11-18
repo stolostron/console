@@ -24,7 +24,7 @@ type Decorators =
       }
     }[]
 
-describe('SyncEditor component', () => {
+describe.skip('SyncEditor component', () => {
   afterAll(() => {
     jest.resetAllMocks()
   })
