@@ -1330,6 +1330,9 @@ describe('processResourceActionLink dummy link', () => {
 })
 
 describe('processResourceActionLink open argo editor', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
   const genericLink = {
     action: 'open_argo_editor',
     name: 'argo_test',
