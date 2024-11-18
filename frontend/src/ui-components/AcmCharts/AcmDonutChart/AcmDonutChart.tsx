@@ -33,9 +33,7 @@ const getStyles = (props: StyleProps) => ({
     '& .pf-v5-c-chart > svg g path:last-of-type': {
       fill: props.danger ? '#E62325 !important' : undefined,
     },
-  }),
-  cardTitle: css({
-    paddingBottom: 'unset !important',
+    '--pf-v5-c-card__title--not--last-child--PaddingBottom': 0,
   }),
   chartContainer: css({
     maxWidth: '376px',
@@ -45,10 +43,7 @@ const getStyles = (props: StyleProps) => ({
   }),
 })
 
-export const loadingDonutChart = (
-  title: string,
-  classes: Record<'card' | 'cardTitle' | 'chartContainer' | 'skeleton', string>
-) => {
+export const loadingDonutChart = (title: string, classes: Record<'card' | 'chartContainer' | 'skeleton', string>) => {
   return (
     <Card>
       <CardTitle>{title}</CardTitle>
@@ -119,7 +114,7 @@ export function AcmDonutChart(props: {
   if (props.loading) return loadingDonutChart(props.title, classes)
   return (
     <Card className={classes.card} id={`${props.title.toLowerCase().replace(/\s+/g, '-')}-chart`}>
-      <CardTitle className={classes.cardTitle}>
+      <CardTitle>
         {props.title} <Badge isRead>{badgeTotal}</Badge>
       </CardTitle>
       <div className={classes.chartContainer}>
