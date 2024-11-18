@@ -1211,7 +1211,7 @@ describe('CreateCluster on premise', () => {
   )
 })
 
-describe.only('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
+describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
     kind: 'ProjectRequest',

@@ -42,13 +42,7 @@ export async function createCluster(resources: any[]) {
         return false
 
       case 'ManagedCluster':
-        if (!namespace) {
-          if (metadata.namespace) {
-            namespace = metadata.namespace
-          } else {
-            ;({ name: namespace } = metadata)
-          }
-        }
+        ;({ name: namespace } = metadata)
         break
 
       case 'HostedCluster':

@@ -246,12 +246,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
         // add source labels to secrets, add backup labels
         createResources.forEach((resource) => {
-          // Handle NodePool resources
-          if (resource.kind === 'NodePool') {
-            set(resource, 'metadata.namespace', clusterNamespace)
-          }
           if (resource.kind === 'Secret') {
-            set(resource, 'metadata.namespace', clusterNamespace)
             set(resource, 'metadata.labels["cluster.open-cluster-management.io/backup"]', 'cluster')
             const resourceName = resource?.metadata?.name
 

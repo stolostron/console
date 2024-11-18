@@ -1,8 +1,10 @@
+{{#if userDefinedNamespace}}
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
-  name: clusters
+  name: '{{namespace}}'
 ---
+{{/if}}
 apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
@@ -167,10 +169,10 @@ apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
   name: '{{{clusterName}}}'
-  namespace: '{{#if userDefinedNamespace}}{{userDefinedNamespace}}{{else}}{{namespace}}{{/if}}'
+  namespace: '{{{clusterName}}}'
 spec:
   clusterName: '{{{clusterName}}}'
-  clusterNamespace: '{{#if userDefinedNamespace}}{{userDefinedNamespace}}{{else}}{{namespace}}{{/if}}'
+  clusterNamespace: '{{{clusterName}}}'
   clusterLabels:
     cloud: BareMetal
     vendor: OpenShift
