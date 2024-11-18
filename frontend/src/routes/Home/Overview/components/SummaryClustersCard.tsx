@@ -116,8 +116,12 @@ export function SummaryClustersCard(props: {
 
   return (
     <div>
-      <Card id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`} isRounded style={{ height: '200px' }}>
-        <CardTitle style={{ paddingBottom: 0 }}>{title}</CardTitle>
+      <Card
+        id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`}
+        isRounded
+        style={{ height: '200px', ['--pf-v5-c-card__title--not--last-child--PaddingBottom' as any]: 0 }}
+      >
+        <CardTitle>{title}</CardTitle>
         <div style={{ display: 'flex', height: '150px' }}>
           <div style={{ width: '150px', marginRight: '16px' }}>{chart}</div>
           {legend}
