@@ -9,7 +9,6 @@ import {
   ManagedClusterKind,
   clusterPoolNamespaceLabels,
   AgentClusterInstallKind,
-  createProject,
 } from '../resources'
 import { createResource } from '../resources/utils'
 import { deleteResources } from './delete-resources'
