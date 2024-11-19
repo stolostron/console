@@ -6,6 +6,7 @@ import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../..
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import { pingSearchAPI } from '../../lib/search'
+import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 
 export enum AppColumns {
   'name' = 0,
@@ -134,6 +135,16 @@ const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 async function searchAPILoop() {
   let pass = 1
   let searchAPIMissing = false
+
+  // if hub is missing in this pod, so is search --  check every 5 minutes
+  let mch
+  do {
+    mch = await getMultiClusterHub()
+    if (!mch) {
+      await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
+    }
+  } while (!mch)
+
   while (!stopping) {
     // make sure there's an active search api
     // otherwise there's no point
