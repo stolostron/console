@@ -41,7 +41,7 @@ import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
 import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
-import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { useHubCluster } from './helpers/useHubCluster'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -83,11 +83,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const PlacementRuleTableItems: IResource[] = []
   const PlacementTableItems: IResource[] = []
 
-  const managedClusters = useAllClusters(true)
-  const localCluster = useMemo(
-    () => managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true'),
-    [managedClusters]
-  )
+  const hubCluster = useHubCluster()
 
   useEffect(() => {
     const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
@@ -132,7 +128,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               name,
               namespace,
               kind,
-              cluster: localCluster?.name,
+              cluster: hubCluster?.metadata?.name,
               apiversion,
             },
           }
@@ -141,7 +137,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
       }
     },
-    [localCluster?.name]
+    [hubCluster?.metadata?.name]
   )
 
   const getSubscriptionClusterCount = useCallback(
@@ -166,7 +162,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             selectedPlacementDecision,
             clusterCount,
             placementDecisions,
-            localCluster?.name ?? ''
+            hubCluster?.metadata?.name ?? ''
           )
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
@@ -187,7 +183,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
       }
     },
-    [placementDecisions, t, localCluster?.name]
+    [placementDecisions, t, hubCluster?.metadata?.name]
   )
 
   // Cache cell text for sorting and searching
@@ -260,7 +256,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           tableItem,
           clusterCount,
           placementDecisions,
-          localCluster?.name ?? ''
+          hubCluster?.metadata?.name ?? ''
         )
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
@@ -330,7 +326,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             name: item.metadata?.name,
             namespace: item.metadata?.namespace,
             kind: item.kind,
-            cluster: localCluster?.name,
+            cluster: hubCluster?.metadata?.name,
             apiversion: item.apiVersion,
           },
         }

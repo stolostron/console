@@ -12,7 +12,7 @@ import Handlebars from 'handlebars'
 import _ from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
@@ -45,11 +45,11 @@ import helmTemplate from './CreateApplication/Subscription/templates/templateHel
 import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
-import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { CredentialsForm } from '../Credentials/CredentialsForm'
 import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { LoadingPage } from '../../components/LoadingPage'
+import { useHubCluster } from './helpers/useHubCluster'
 
 interface CreationStatus {
   status: string
@@ -195,19 +195,8 @@ export function CreateSubscriptionApplication(
     (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
   )
 
-  const clusters = useAllClusters()
-  const localCluster = useMemo(
-    () =>
-      clusters.find(
-        (cluster) =>
-          cluster.labels &&
-          cluster.labels['local-cluster'] === 'true' &&
-          cluster.isManaged &&
-          cluster.status === 'ready'
-      ),
-    [clusters]
-  )
-  const isLocalCluster = localCluster ? true : false
+  const hubCluster = useHubCluster(true)
+  const isLocalCluster = hubCluster ? true : false
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -474,7 +463,7 @@ export function CreateSubscriptionApplication(
         break
     }
 
-    control.hubClusterName = localCluster ? localCluster.name : ''
+    control.hubClusterName = hubCluster ? hubCluster.metadata?.name : ''
   }
 
   useEffect(() => {
