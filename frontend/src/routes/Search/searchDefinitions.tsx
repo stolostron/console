@@ -384,19 +384,48 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachinespage: {
       columns: [
-        { ...AddColumn('name', t('Name')), search: (item: any) => item.name },
-        AddColumn('status', t('Status')),
-        { ...AddColumn('cluster', t('Cluster')), search: (item: any) => item.cluster },
-        AddColumn('namespace', t('Namespace')),
-        AddColumn('node', t('Node')),
-        AddColumn('ipaddress', t('IP address')),
+        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')), search: (item: any) => item.name },
+        { id: 'status', order: 2, isDefault: false, isFirstVisitChecked: true, ...AddColumn('status', t('Status')) },
         {
+          id: 'cluster',
+          order: 3,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('cluster', t('Cluster')),
+          search: (item: any) => item.cluster,
+        },
+        {
+          id: 'namespace',
+          order: 4,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('namespace', t('Namespace')),
+        },
+        { id: 'node', order: 5, isDefault: false, isFirstVisitChecked: true, ...AddColumn('node', t('Node')) },
+        {
+          id: 'ipaddress',
+          order: 6,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('ipaddress', t('IP address')),
+        },
+        {
+          id: 'details-link',
+          order: 7,
+          isDefault: false,
+          isFirstVisitChecked: true,
           header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
         },
-        AddColumn('created', t('Created')),
+        {
+          id: 'created',
+          order: 8,
+          isDefault: false,
+          isFirstVisitChecked: false,
+          ...AddColumn('created', t('Created')),
+        },
       ],
     },
   }
