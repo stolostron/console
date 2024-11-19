@@ -121,7 +121,6 @@ export const getControlDataKubeVirt = (
       id: 'namespace',
       type: 'combobox',
       fetchAvailable: loadExistingNamespaces(t),
-      editing: { disabled: true },
       onSelect: updateNSControls,
       active: 'clusters',
       validation: {
