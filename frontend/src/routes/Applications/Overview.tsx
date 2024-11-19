@@ -66,6 +66,7 @@ import {
   getClusterCountSearchLink,
   getClusterCountString,
   getClusterList,
+  getMoment,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
@@ -634,7 +635,9 @@ export default function ApplicationsOverview() {
         sort: 'metadata.creationTimestamp',
         search: 'transformed.createdText',
         exportContent: (resource) => {
-          return getAge(resource, '', 'metadata.creationTimestamp')
+          if (resource.metadata?.creationTimestamp) {
+            return getMoment(resource.metadata?.creationTimestamp).toString()
+          }
         },
       },
     ],

@@ -56,7 +56,7 @@ import {
 } from './Application.sharedmocks'
 import AdvancedConfiguration, { getPlacementDecisionClusterCount } from './AdvancedConfiguration'
 import { PlacementApiVersion } from '../../wizards/common/resources/IPlacement'
-import { ClusterCount, getAge } from './helpers/resource-helper'
+import { ClusterCount } from './helpers/resource-helper'
 import { ApplicationToggleOptions } from './components/ToggleSelector'
 
 const mockSubscription1: Subscription = {
@@ -66,6 +66,7 @@ const mockSubscription1: Subscription = {
     name: 'helloworld-simple-subscription-1',
     namespace: 'helloworld-simple-ns',
     uid: 'fd3dfc08-5d41-4449-b450-527bebc2509d',
+    creationTimestamp: '2026-07-30T03:18:48Z',
   },
   spec: {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
@@ -84,6 +85,7 @@ const mockSubscription2: Subscription = {
     name: 'helloworld-simple-subscription-2',
     namespace: 'helloworld-simple-ns',
     uid: 'fd3dfc08-5d41-4449-b450-527bebc2509d',
+    creationTimestamp: '2026-07-30T03:18:48Z',
   },
   spec: {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
@@ -103,6 +105,7 @@ const mockSubscription3: Subscription = {
     name: 'helloworld-simple-subscription-3',
     namespace: 'helloworld-simple-ns',
     uid: 'fd3dfc08-5d41-4449-b450-527bebc2509k',
+    creationTimestamp: '2026-07-30T03:18:48Z',
   },
   spec: {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
@@ -127,6 +130,7 @@ const mockChannel: Channel = {
   metadata: {
     name: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
     namespace: 'default',
+    creationTimestamp: '2024-06-28T03:18:48Z',
   },
   spec: {
     pathname: 'https://www.github.com/randy424',
@@ -169,6 +173,7 @@ const mockPlacementDecision: PlacementDecision = {
     labels: {
       'cluster.open-cluster-management.io/placement': 'helloworld-simple-placement-3',
     },
+    creationTimestamp: '2024-06-28T03:18:48Z',
     ownerReferences: [
       {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
@@ -203,6 +208,7 @@ const mockApplication: Application = {
     annotations: {
       'apps.open-cluster-management.io/subscriptions': 'helloworld-simple-ns/helloworld-simple-subscription-3',
     },
+    creationTimestamp: '2024-06-28T03:18:48Z',
   },
   spec: {
     componentKinds: [
@@ -223,6 +229,7 @@ const placementRule: PlacementRule = {
     labels: {
       app: 'helloworld-application-3',
     },
+    creationTimestamp: '2024-06-28T03:18:48Z',
   },
   spec: {
     clusterSelector: {
@@ -410,9 +417,9 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Channel,Applications,Clusters,Time window,Created\n' +
-          '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"-"\n' +
-          '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"-"\n' +
-          '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","-"',
+          '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"Thu Jul 30 2026 03:18:48 GMT+0000"\n' +
+          '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"Thu Jul 30 2026 03:18:48 GMT+0000"\n' +
+          '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","Thu Jul 30 2026 03:18:48 GMT+0000"',
       ],
       { type: 'text/csv' }
     )
@@ -432,7 +439,7 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Type,Subscriptions,Clusters,Created\n' +
-          '"ggithubcom-app-samples-ns/ggithubcom-app-samples","default","Git",-,"None","-"',
+          '"ggithubcom-app-samples-ns/ggithubcom-app-samples","default","Git",-,"None","Fri Jun 28 2024 03:18:48 GMT+0000"',
       ],
       { type: 'text/csv' }
     )
@@ -452,7 +459,7 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Clusters,Created\n' +
-          `"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","${getAge(mockPlacement, '', 'metadata.creationTimestamp')}"`,
+          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","Fri Jun 28 2024 03:18:48 GMT+0000"',
       ],
       { type: 'text/csv' }
     )
@@ -470,7 +477,9 @@ describe('Export from application tables', () => {
     await clickByText('Export all to CSV')
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
-      ['Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","-"'],
+      [
+        'Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","Fri Jun 28 2024 03:18:48 GMT+0000"',
+      ],
       { type: 'text/csv' }
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
