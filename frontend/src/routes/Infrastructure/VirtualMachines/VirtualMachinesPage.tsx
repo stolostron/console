@@ -181,6 +181,7 @@ function VirtualMachineTable() {
         hubCluster={deleteExternalResource.hubCluster}
       />
       <AcmTable
+        id="virtualMachinesTable"
         items={searchResultItems}
         columns={searchDefinitions['virtualmachinespage'].columns}
         filters={filters}
@@ -203,6 +204,7 @@ function VirtualMachineTable() {
             }
           />
         }
+        showColumManagement
       ></AcmTable>
     </Fragment>
   )
