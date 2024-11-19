@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { noop } from 'lodash'
-import { fetchGet, getBackendUrl } from './resources'
+import { fetchGet, getBackendUrl } from './resources/utils'
 
 export async function tokenExpired() {
   if (process.env.NODE_ENV === 'production') {

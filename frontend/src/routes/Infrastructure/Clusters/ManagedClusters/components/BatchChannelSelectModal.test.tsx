@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
+import { ClusterCuratorDefinition } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'

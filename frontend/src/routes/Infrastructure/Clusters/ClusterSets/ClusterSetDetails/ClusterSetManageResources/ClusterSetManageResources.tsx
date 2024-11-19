@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterDeployment, ResourceErrorCode, isGlobalClusterSet } from '../../../../../../resources'
+import { ClusterDeployment, isGlobalClusterSet } from '../../../../../../resources'
+import { Cluster, ResourceErrorCode } from '../../../../../../resources/utils'
 import {
   AcmAlertGroup,
   AcmButton,

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
+    "start": ". ../port-defaults.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
     "start:hot": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --hot=true --stats-children",
     "launch": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --env LAUNCH --stats-children",
     "storybook": "storybook dev",
@@ -31,8 +31,8 @@
     "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
     "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
     "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
-    "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
-    "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin"
+    "serve:plugin:acm": ". ../port-defaults.sh && PLUGIN=acm PORT=${ACM_PORT} npm run serve:plugin",
+    "serve:plugin:mce": ". ../port-defaults.sh && PLUGIN=mce PORT=${MCE_PORT} npm run serve:plugin"
   },
   "dependencies": {
     "@apollo/client": "3.10.8",
@@ -162,7 +162,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.11.0",
     "css-minimizer-webpack-plugin": "4.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^28.9.0",

@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
-  deleteResource,
   HostedClusterApiVersion,
   HostedClusterKind,
   IResource,
@@ -12,11 +10,10 @@ import {
   ManagedClusterKind,
   NodePoolApiVersion,
   NodePoolKind,
-  ResourceError,
-  ResourceErrorCode,
   SecretApiVersion,
   SecretKind,
 } from '../resources'
+import { Cluster, deleteResource, ResourceError, ResourceErrorCode } from '../resources/utils'
 
 export const deleteHypershiftCluster = (cluster: Cluster) => {
   const resources: IResource[] = [

@@ -33,7 +33,6 @@ import {
   ClusterCuratorKind,
   createClusterCurator,
   createProject,
-  createResource,
   KlusterletAddonConfig,
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
@@ -43,13 +42,12 @@ import {
   managedClusterSetLabel,
   ProviderConnection,
   ProviderConnectionStringData,
-  ResourceError,
-  ResourceErrorCode,
   Secret,
   SecretApiVersion,
   SecretDefinition,
   SecretKind,
 } from '../../../../../resources'
+import { createResource, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import schema from './schema.json'
 import kac from './kac.json'

@@ -3,24 +3,23 @@
 
 #!/usr/bin/env bash
 
+source ./port-defaults.sh
+source ./oauth-client-name.sh
+
 echo > ./backend/.env
 
-echo PORT="${BACKEND_PORT:-4000}" >> ./backend/.env
+echo PORT="${BACKEND_PORT}" >> ./backend/.env
 echo NODE_ENV=development >> ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
 echo CLUSTER_API_URL=$CLUSTER_API_URL >> ./backend/.env
 
-OAUTH2_CLIENT_ID=console-dev
-echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./backend/.env
+echo OAUTH2_CLIENT_ID=$OAUTH_CLIENT_NAME >> ./backend/.env
 
-OAUTH2_CLIENT_SECRET=console-dev-secret
-echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
-
-OAUTH2_REDIRECT_URL=https://localhost:3000/multicloud/login/callback
+OAUTH2_REDIRECT_URL=https://localhost:${FRONTEND_PORT}/multicloud/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
-FRONTEND_URL=https://localhost:3000
+FRONTEND_URL=https://localhost:${FRONTEND_PORT}
 echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
 INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}' || true`
@@ -50,16 +49,38 @@ echo TOKEN=$SA_TOKEN >> ./backend/.env
 echo CA_CERT=$CA_CERT >> ./backend/.env
 echo SERVICE_CA_CERT=$SERVICE_CA_CERT >> ./backend/.env
 
-oc apply -f - << EOF
-apiVersion: oauth.openshift.io/v1
-grantMethod: auto
-kind: OAuthClient
+# Create or update OAuthClient
+REDIRECT_URL=http://localhost:${CONSOLE_PORT}/auth/callback
+REDIRECT_URL_STANDALONE=$OAUTH2_REDIRECT_URL
+
+if ! oc get OAuthClient $OAUTH_CLIENT_NAME &> /dev/null; then
+  oc process -f -  << EOF | oc apply -f -
+apiVersion: template.openshift.io/v1
+kind: Template
 metadata:
-  name: console-dev
-redirectURIs:
-- $OAUTH2_REDIRECT_URL
-secret: console-dev-secret
+  name: console-oauth-client
+parameters:
+  - name: OAUTH_SECRET
+    generate: expression
+    from: "[a-zA-Z0-9]{40}"
+objects:
+  - apiVersion: oauth.openshift.io/v1
+    kind: OAuthClient
+    metadata:
+      name: ${OAUTH_CLIENT_NAME}
+    grantMethod: auto
+    secret: \${OAUTH_SECRET}
+    redirectURIs:
+    - ${REDIRECT_URL}
+    - ${REDIRECT_URL_STANDALONE}
 EOF
+else
+  REDIRECT_URIS=$(oc get OAuthClient $OAUTH_CLIENT_NAME -o json | jq -c "[.redirectURIs[], \"$REDIRECT_URL\", \"$REDIRECT_URL_STANDALONE\"] | unique")
+  oc patch OAuthClient $OAUTH_CLIENT_NAME --type json -p "[{\"op\": \"add\", \"path\": \"/redirectURIs\", \"value\": ${REDIRECT_URIS}}]"
+fi
+
+printf "OAUTH2_CLIENT_SECRET=" >> ./backend/.env
+oc get OAuthClient $OAUTH_CLIENT_NAME -o jsonpath='{.secret}{"\n"}' >> ./backend/.env
 
 # Create route to the search-api service on the target cluster.
 if [[ -n "$INSTALLATION_NAMESPACE" ]]; then

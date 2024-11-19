@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert } from '../../../../../ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Cluster, clusterDangerStatuses, getAlertTitle } from '../../../../../resources'
+import { Cluster, clusterDangerStatuses, getAlertTitle } from '../../../../../resources/utils'
 
 export function ClusterStatusMessageAlert(props: {
   cluster: Cluster

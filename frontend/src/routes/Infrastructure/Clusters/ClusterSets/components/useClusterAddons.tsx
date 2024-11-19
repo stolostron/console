@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { Addon, mapAddons } from '../../../../../resources'
+import { Addon, mapAddons } from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import keyBy from 'lodash/keyBy'
 

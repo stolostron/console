@@ -770,9 +770,9 @@ describe('Policy Template Details Page', () => {
 
     await waitForText('View YAML', true)
 
-    await waitForText('networking.k8s.io/app')
-    await waitForText('my-system.sh/app')
-    await waitForText('Pod')
+    await waitForText('Audit violations')
+
+    expect(within(screen.getByText('Audit violations')).getByText('2')).toBeInTheDocument()
 
     const viewYamlLinks = screen.getAllByText('View YAML')
     expect(viewYamlLinks[0].getAttribute('href')).toEqual(
@@ -1225,6 +1225,37 @@ describe('Policy Template Details Page', () => {
   })
 
   test('Should render Kyverno policy page successfully', async () => {
+    ;(useSearchResultItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      {
+        data: {
+          searchResult: [
+            {
+              items: [
+                {
+                  _hubClusterResource: 'true',
+                  _ownedByGatekeeper: 'true',
+                  _uid: 'local-cluster/acc7a127-8af9-4f66-ae6a-2bdbfe022e1a',
+                  apigroup: 'admissionregistration.k8s.io',
+                  apiversion: 'v1',
+                  cluster: 'local-cluster',
+                  created: '2024-10-28T15:15:59Z',
+                  kind: 'ValidatingAdmissionPolicyBinding',
+                  kind_plural: 'validatingadmissionpolicybindings',
+                  name: 'require-owner-labels-binding',
+                  policyName: 'require-owner-labels',
+                  validationActions: 'audit',
+                },
+              ],
+              __typename: 'SearchResult',
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      },
+    ])()
+
     const getClusterPolicyResourceRequest = {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
@@ -1273,7 +1304,7 @@ describe('Policy Template Details Page', () => {
                 any: [
                   {
                     resources: {
-                      kinds: ['Namespace'],
+                      kinds: ['Ingress'],
                     },
                   },
                 ],
@@ -1332,35 +1363,42 @@ describe('Policy Template Details Page', () => {
 
     expect(screen.getByRole('link', { name: 'require-owner-labels' })).toBeInTheDocument()
 
+    await waitForText('Audit violations')
+
+    expect(within(screen.getByText('Audit violations')).getByText('1')).toBeInTheDocument()
+
     await waitForText('ClusterPolicy details')
 
     // ClusterPolicyReport and PoliyReport should be filtered
     await waitForNotText('ClusterPolicyReport')
 
-    // Find Matches
-    await waitForText('Matches')
-    await waitForText('require-labels')
-    await waitForText('Namespace', true)
+    waitForText('API version')
+    waitForText('kyverno.io/v1')
+
+    waitForText('Namespace', true)
+
+    // VAPB link
+    expect(screen.getByRole('link', { name: 'require-owner-labels-binding' })).toBeInTheDocument()
 
     // Verify the "Related resources" table rows
     const violationRow = screen.getByRole('row', {
-      name: 'openshift-etcd-operator - Namespace v1 Violations View policy report View YAML',
+      name: 'openshift-etcd-operator - Namespace v1 Violations View report View YAML',
     })
     expect(violationRow).toBeInTheDocument()
     expect(within(violationRow).getByRole('link', { name: 'View YAML' })).toBeInTheDocument()
 
-    await waitForText('View policy report', true)
-    const violationPolicyReportLink = within(violationRow).getByRole('link', { name: 'View policy report' })
+    await waitForText('View report', true)
+    const violationPolicyReportLink = within(violationRow).getByRole('link', { name: 'View report' })
     expect(violationPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
     )
 
     const passingRow = screen.getByRole('row', {
-      name: 'my-app - Namespace v1 No violations View policy report View YAML',
+      name: 'my-app - Namespace v1 No violations View report View YAML',
     })
     expect(passingRow).toBeInTheDocument()
-    await waitForText('View policy report', true)
-    const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View policy report' })
+    await waitForText('View report', true)
+    const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View report' })
     expect(passingPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
     )

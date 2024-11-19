@@ -32,7 +32,7 @@ import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
 import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
-import { ResourceError, ResourceErrorCode } from './resources'
+import { ResourceError, ResourceErrorCode } from './resources/utils'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 

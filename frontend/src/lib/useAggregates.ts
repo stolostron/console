@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { fetchRetry, IResource, postRequest } from '../resources'
+import { IResource } from '../resources'
+import { fetchRetry, postRequest } from '../resources/utils'
 import { useQuery } from './useQuery'
 import { useCallback, useContext, useEffect } from 'react'
 import { PluginContext } from './PluginContext'

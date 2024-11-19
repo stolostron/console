@@ -2,7 +2,8 @@
 
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { RecoilValueReadOnly } from 'recoil'
-import { IRequestResult, SubscriptionOperator, getBackendUrl, postRequest } from '../resources'
+import { SubscriptionOperator } from '../resources'
+import { IRequestResult, getBackendUrl, postRequest } from '../resources/utils'
 import { useRecoilValue } from '../shared-recoil'
 import { useQuery } from './useQuery'
 import { useCallback, useEffect, useMemo } from 'react'

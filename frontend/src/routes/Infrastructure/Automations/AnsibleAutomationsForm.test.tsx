@@ -7,7 +7,6 @@ import {
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
-  ResourceErrorCode,
   Secret,
   SecretApiVersion,
   SecretKind,
@@ -15,6 +14,7 @@ import {
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
 } from '../../../resources'
+import { ResourceErrorCode } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'

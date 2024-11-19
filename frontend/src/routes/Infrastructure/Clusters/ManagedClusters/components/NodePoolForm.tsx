@@ -33,17 +33,15 @@ import {
   HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
+import { NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
 import {
   createResource,
   HypershiftCloudPlatformType,
   IRequestResult,
-  NodePool,
-  NodePoolApiVersion,
-  NodePoolKind,
   patchResource,
   ResourceError,
   resultsSettled,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { Fragment, useEffect, useState } from 'react'
 
 export type ListItems = {

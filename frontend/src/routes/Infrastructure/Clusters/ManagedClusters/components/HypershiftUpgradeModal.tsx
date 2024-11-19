@@ -11,18 +11,14 @@ import {
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
-  Cluster,
   HostedClusterApiVersion,
   HostedClusterKind,
-  IRequestResult,
   IResource,
   NodePool,
   NodePoolApiVersion,
   NodePoolKind,
-  patchResource,
-  ResourceError,
-  resultsSettled,
 } from '../../../../../resources'
+import { Cluster, IRequestResult, patchResource, ResourceError, resultsSettled } from '../../../../../resources/utils'
 import {
   AcmAlert,
   AcmExpandableCheckbox,

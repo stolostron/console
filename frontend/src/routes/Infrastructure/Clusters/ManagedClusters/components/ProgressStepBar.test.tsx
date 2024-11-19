@@ -4,15 +4,14 @@ import {
   AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
-  Cluster,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
-  ClusterStatus,
   Pod,
   PodApiVersion,
   PodKind,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'

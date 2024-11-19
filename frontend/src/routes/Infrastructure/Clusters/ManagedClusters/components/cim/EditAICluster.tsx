@@ -18,7 +18,8 @@ import {
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
 
-import { IResource, patchResource } from '../../../../../../resources'
+import { IResource } from '../../../../../../resources'
+import { patchResource } from '../../../../../../resources/utils'
 import {
   fetchSecret,
   getClusterDeploymentLink,

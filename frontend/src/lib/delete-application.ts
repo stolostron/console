@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource, ResourceError, ResourceErrorCode } from '../resources'
+import { IResource } from '../resources'
+import { ResourceError, ResourceErrorCode } from '../resources/utils'
 import { deleteResources } from './delete-resources'
 
 export function deleteApplication(app: IResource, childResources?: any[], deleted?: (resource: IResource) => void) {

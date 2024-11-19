@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client'
-import { getBackendUrl, getCookie } from '../../../resources'
+import { getBackendUrl, getCookie } from '../../../resources/utils'
 
 const httpLink = new HttpLink({
   uri: () => `${getBackendUrl()}/proxy/search`,

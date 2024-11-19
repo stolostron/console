@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { waitForText } from '../../../../../lib/test-util'
-import { Cluster, ClusterStatus } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { StatusField } from './StatusField'
 
 const mockCluster1: Cluster = {

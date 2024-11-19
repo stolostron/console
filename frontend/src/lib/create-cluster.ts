@@ -3,7 +3,7 @@
 import {
   ClusterDeploymentApiVersion,
   ClusterDeploymentKind,
-  createResource,
+  createProject,
   IResource,
   ManagedClusterApiVersion,
   ManagedClusterKind,
@@ -11,6 +11,7 @@ import {
   AgentClusterInstallKind,
   createProject,
 } from '../resources'
+import { createResource } from '../resources/utils'
 import { deleteResources } from './delete-resources'
 
 export async function createCluster(resources: any[]) {

@@ -6,7 +6,8 @@ import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { IResource, reconcileResources, Subscription } from '../../../resources'
+import { IResource, Subscription } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 export interface ISyncResourceModalProps {
   close: () => void
   open: boolean

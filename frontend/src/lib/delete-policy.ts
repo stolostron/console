@@ -1,14 +1,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import {
-  IResource,
-  Placement,
-  PlacementBinding,
-  PlacementRule,
-  Policy,
-  ResourceError,
-  ResourceErrorCode,
-} from '../resources'
+import { IResource, Placement, PlacementBinding, PlacementRule, Policy } from '../resources'
+import { ResourceError, ResourceErrorCode } from '../resources/utils'
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(

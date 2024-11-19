@@ -77,11 +77,9 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
 }
 
 export const getTotalViolationsCompliance = (totalViolations?: number): string => {
-  totalViolations = totalViolations ?? -1
-
   if (totalViolations === 0) {
     return 'compliant'
-  } else if (totalViolations > 0) {
+  } else if (totalViolations && totalViolations > 0) {
     return 'noncompliant'
   }
 
@@ -161,7 +159,6 @@ export const byClusterCols = (
           tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
           cell: (item: DiscoveredPolicyItem) => {
             let compliant: string
-
             if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
               compliant = getTotalViolationsCompliance(item?.totalViolations)
             } else {
@@ -206,7 +203,7 @@ export const byClusterCols = (
           sort: 'compliant',
           id: 'violations',
           exportContent: (item: DiscoveredPolicyItem) => {
-            if (item.apigroup === 'constraints.gatekeeper.sh') {
+            if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
               const compliant = getTotalViolationsCompliance(item?.totalViolations)
 
               if (compliant === 'noncompliant') {

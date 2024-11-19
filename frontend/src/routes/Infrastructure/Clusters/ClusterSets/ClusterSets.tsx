@@ -28,14 +28,8 @@ import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../c
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import {
-  deleteResource,
-  ManagedClusterSet,
-  ManagedClusterSetDefinition,
-  ResourceErrorCode,
-  isGlobalClusterSet,
-  Cluster,
-} from '../../../../resources'
+import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../resources'
+import { Cluster, deleteResource, ResourceErrorCode } from '../../../../resources/utils'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses, getClusterStatusCount } from './components/ClusterStatuses'
 import { GlobalClusterSetPopover } from './components/GlobalClusterSetPopover'

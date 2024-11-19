@@ -14,8 +14,8 @@ import {
   ManagedClusterSetApiVersion,
   ManagedClusterSetKind,
   managedClusterSetLabel,
-  testMapClusters,
 } from '../../../../../../resources'
+import { testMapClusters } from '../../../../../../resources/utils'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'

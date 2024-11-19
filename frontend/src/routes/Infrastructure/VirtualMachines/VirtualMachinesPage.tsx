@@ -50,8 +50,9 @@ import { getVirtualMachineRowActions } from './utils'
 function VirtualMachineTable() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { settingsState } = useSharedAtoms()
+  const { settingsState, useIsSearchAvailable } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const isSearchAvailable = useIsSearchAvailable()
   const toast = useContext(AcmToastContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -133,7 +134,21 @@ function VirtualMachineTable() {
     ]
   }, [searchResultItems, t])
 
-  if (error) {
+  if (!isSearchAvailable) {
+    return (
+      <EmptyState>
+        <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+        <Title size="lg" headingLevel="h4">
+          {t('Unable to display VirtualMachines')}
+        </Title>
+        <EmptyStateBody>
+          <Stack>
+            <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+          </Stack>
+        </EmptyStateBody>
+      </EmptyState>
+    )
+  } else if (error) {
     return (
       <EmptyState>
         <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />

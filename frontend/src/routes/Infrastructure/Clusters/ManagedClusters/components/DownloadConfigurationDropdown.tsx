@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
+import { getSecret, unpackSecret } from '../../../../../resources'
+import { Cluster, createDownloadFile } from '../../../../../resources/utils'
 import { AcmDropdown } from '../../../../../ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
