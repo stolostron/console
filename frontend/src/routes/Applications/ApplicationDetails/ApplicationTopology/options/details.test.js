@@ -68,7 +68,7 @@ describe('getNodeDetails no clusters or violation', () => {
     },
   ]
   it('should process the node, no clusters or violation', () => {
-    expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(clusterNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -168,7 +168,7 @@ describe('getNodeDetails application node', () => {
   ]
 
   it('should process the node, application node', () => {
-    expect(getNodeDetails(applicationNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(applicationNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -286,7 +286,7 @@ describe('getNodeDetails cluster node 1', () => {
   ]
 
   it('should process the node, cluster node 2', () => {
-    expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(clusterNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -452,7 +452,7 @@ describe('getNodeDetails clusters node', () => {
   ]
 
   it('should process the clusters node', () => {
-    expect(getNodeDetails(clusterNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(clusterNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -619,9 +619,9 @@ describe('getNodeDetails subscription', () => {
   ]
 
   it('should process the node and show the details', () => {
-    expect(getNodeDetails(subscription, ['application', 'cluster', 'placements', 'subscription'], t)).toEqual(
-      expectedValue
-    )
+    expect(
+      getNodeDetails(subscription, ['application', 'cluster', 'placements', 'subscription'], t, 'local-cluster')
+    ).toEqual(expectedValue)
   })
 })
 
@@ -713,7 +713,7 @@ describe('getNodeDetails helm node', () => {
   ]
 
   it('should process the node, helm node', () => {
-    expect(getNodeDetails(helmreleaseNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(helmreleaseNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -766,7 +766,7 @@ describe('getNodeDetails helm node', () => {
   ]
 
   it('should process the node, packageNode node', () => {
-    expect(getNodeDetails(packageNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(packageNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -869,7 +869,7 @@ describe('getNodeDetails placement rules node with error', () => {
     },
   ]
   it('should process the node, placement rules node with error', () => {
-    expect(getNodeDetails(rulesNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(rulesNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 
@@ -970,7 +970,7 @@ describe('getNodeDetails placement rules node with success', () => {
   ]
 
   it('should process the node, placement rules node with success', () => {
-    expect(getNodeDetails(rulesNode, {}, t)).toEqual(expectedResult)
+    expect(getNodeDetails(rulesNode, {}, t, 'local-cluster')).toEqual(expectedResult)
   })
 })
 

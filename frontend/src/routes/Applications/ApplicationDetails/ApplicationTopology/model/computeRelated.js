@@ -33,11 +33,15 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     const searchResultArr = []
 
     resourceStatuses.data.searchResult.forEach((result) => {
-      searchResultArr.push(..._.get(mapSingleApplication(_.cloneDeep(result)), 'related', []))
+      searchResultArr.push(..._.get(mapSingleApplication(_.cloneDeep(result), topology.hubClusterName), 'related', []))
     })
     related = [...new Set(searchResultArr)]
   } else {
-    related = _.get(mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0])), 'related', [])
+    related = _.get(
+      mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0]), topology.hubClusterName),
+      'related',
+      []
+    )
   }
 
   // store cluster objects and cluster names as returned by search; these are clusters related to the app
@@ -45,7 +49,8 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
 
   const clustersObjects = getResourcesClustersForApp(
     R.find(R.propSatisfies(eqIgnoreCase('cluster'), 'kind'))(related) || {},
-    topology.nodes
+    topology.nodes,
+    topology.hubClusterName
   )
 
   const clusterNamesList = R.sortBy(R.identity)(R.pluck('name')(clustersObjects))
@@ -76,7 +81,9 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
     // we have all clusters information here
     const appNodeSearchClusters = _.get(appNode, 'specs.searchClusters', [])
     // search returns clusters information, use it here
-    const isLocal = _.find(appNodeSearchClusters, (cls) => _.get(cls, 'name', '') === 'local-cluster') ? true : false
+    const isLocal = _.find(appNodeSearchClusters, (cls) => _.get(cls, 'name', '') === topology.hubClusterName)
+      ? true
+      : false
     _.set(appNode, 'specs.allClusters', {
       isLocal,
       remoteCount: isLocal ? appNodeSearchClusters.length - 1 : appNodeSearchClusters.length,
@@ -141,7 +148,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
 
       if (
         kind.toLowerCase() === 'subscription' &&
-        cluster === 'local-cluster' &&
+        cluster === topology.hubClusterName &&
         _.get(relatedKindList[i], 'localPlacement', '') === 'true' &&
         _.endsWith(resourceName, '-local')
       ) {
@@ -171,7 +178,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             replacedType === relatedKindList[i].kind.toLowerCase() &&
             ((specs.clustersNames || []).includes(relatedKindList[i].cluster) ||
               (specs.searchClusters || []).find((cls) => cls.name === relatedKindList[i].cluster) ||
-              relatedKindList[i].cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
+              relatedKindList[i].cluster === topology.hubClusterName) // fallback to searchclusters if SubscriptionReport is not created
           )
         }
       })
@@ -187,7 +194,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
   return resourceMap
 }
 
-export const mapSingleApplication = (application) => {
+export const mapSingleApplication = (application, hubClusterName) => {
   const items = (application ? _.get(application, 'items', []) : []) || []
 
   const result =
@@ -225,7 +232,7 @@ export const mapSingleApplication = (application) => {
       return
     }
 
-    if (kind === 'subscription' && cluster !== 'local-cluster') {
+    if (kind === 'subscription' && cluster !== hubClusterName) {
       // this is a legit subscription object that needs no alternation
       return
     }
@@ -246,14 +253,14 @@ export const mapSingleApplication = (application) => {
 
 // The controllerrevision resource doesn't contain any desired pod count so
 // we need to get it from the parent; either a daemonset or statefulset
-export const syncControllerRevisionPodStatusMap = (resourceMap) => {
+export const syncControllerRevisionPodStatusMap = (resourceMap, hubClusterName) => {
   Object.keys(resourceMap).forEach((resourceName) => {
     if (resourceName.startsWith('controllerrevision-')) {
       const controllerRevision = resourceMap[resourceName]
       const parentName = _.get(controllerRevision, 'specs.parent.parentName', '')
       const parentType = _.get(controllerRevision, 'specs.parent.parentType', '')
       const parentId = _.get(controllerRevision, 'specs.parent.parentId', '')
-      const clusterName = getClusterName(parentId).toString()
+      const clusterName = getClusterName(parentId, undefined, undefined, hubClusterName).toString()
       const parentResource =
         resourceMap[`${parentType}-${parentName}-${clusterName}`] || resourceMap[`${parentType}-${parentName}-`]
       if (parentResource) {

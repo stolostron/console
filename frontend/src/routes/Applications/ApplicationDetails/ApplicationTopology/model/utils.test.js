@@ -67,7 +67,7 @@ describe('getApplicationData', () => {
       relatedKinds: ['application', 'subscription', 'cluster', 'replicaset'],
       subscription: 'my-subscription',
     }
-    expect(getApplicationData(nodes)).toEqual(result)
+    expect(getApplicationData(nodes, 'local-cluster')).toEqual(result)
   })
 
   it('returns argo app data from given nodes', () => {
@@ -94,7 +94,7 @@ describe('getApplicationData', () => {
       source: {},
       subscription: null,
     }
-    expect(getApplicationData(nodes)).toEqual(result)
+    expect(getApplicationData(nodes, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -125,7 +125,7 @@ describe('getApplicationData', () => {
       relatedKinds: ['application', 'subscription', 'cluster', 'replicaset'],
       subscription: 'my-subscription',
     }
-    expect(getApplicationData(nodes)).toEqual(result)
+    expect(getApplicationData(nodes, 'local-cluster')).toEqual(result)
   })
 
   it('returns subscription app data with project', () => {
@@ -157,7 +157,7 @@ describe('getApplicationData', () => {
       relatedKinds: ['application', 'subscription', 'cluster', 'replicaset', 'namespace'],
       subscription: 'my-subscription',
     }
-    expect(getApplicationData(nodes)).toEqual(result)
+    expect(getApplicationData(nodes, 'local-cluster')).toEqual(result)
   })
 
   it('returns argo app data from given nodes', () => {
@@ -184,7 +184,7 @@ describe('getApplicationData', () => {
       source: {},
       subscription: null,
     }
-    expect(getApplicationData(nodes)).toEqual(result)
+    expect(getApplicationData(nodes, 'local-cluster')).toEqual(result)
   })
 })
 

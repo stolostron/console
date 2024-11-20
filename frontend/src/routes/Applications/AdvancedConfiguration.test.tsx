@@ -5,6 +5,7 @@ import { RecoilRoot } from 'recoil'
 import {
   applicationsState,
   channelsState,
+  managedClustersState,
   namespacesState,
   placementDecisionsState,
   placementRulesState,
@@ -20,6 +21,9 @@ import {
   ChannelApiVersion,
   ChannelKind,
   IResource,
+  ManagedCluster,
+  ManagedClusterApiVersion,
+  ManagedClusterKind,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
@@ -246,6 +250,18 @@ const placementRule: PlacementRule = {
   },
 }
 
+const hubCluster: ManagedCluster = {
+  kind: ManagedClusterKind,
+  apiVersion: ManagedClusterApiVersion,
+  metadata: {
+    name: 'local-cluster',
+    namespace: 'local-cluster',
+    labels: {
+      'local-cluster': 'true',
+    },
+  },
+}
+
 const placementDecisions: PlacementDecision[] = [mockPlacementDecision]
 const placementRules: PlacementRule[] = [placementRule]
 
@@ -259,6 +275,7 @@ const mockSubscriptions = [mockSubscription1, mockSubscription2, mockSubscriptio
 const mockChannels = [mockChannel]
 const mockPlacements = [mockPlacement]
 const mockApplications = [mockApplication]
+const mockClusters = [hubCluster]
 
 function TestAdvancedConfigurationPage(props: { defaultToggleOption?: ApplicationToggleOptions }) {
   const defaultToggle = props.defaultToggleOption
@@ -272,6 +289,7 @@ function TestAdvancedConfigurationPage(props: { defaultToggleOption?: Applicatio
         snapshot.set(placementDecisionsState, placementDecisions)
         snapshot.set(applicationsState, mockApplications)
         snapshot.set(placementRulesState, placementRules)
+        snapshot.set(managedClustersState, mockClusters)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
@@ -364,7 +382,7 @@ describe('getPlacementDecisionClusterCount', () => {
       localPlacement: true,
       remoteCount: 1,
     }
-    const result = getPlacementDecisionClusterCount(resource, clusterCount, placementDecisions)
+    const result = getPlacementDecisionClusterCount(resource, clusterCount, placementDecisions, 'local-cluster')
     expect(result).toEqual(expectedClusterCount)
   })
 
@@ -373,7 +391,7 @@ describe('getPlacementDecisionClusterCount', () => {
       localPlacement: false,
       remoteCount: 0,
     }
-    const result = getPlacementDecisionClusterCount({} as IResource, clusterCount, [])
+    const result = getPlacementDecisionClusterCount({} as IResource, clusterCount, [], 'local-cluster')
     expect(result).toEqual(clusterCount)
   })
 })

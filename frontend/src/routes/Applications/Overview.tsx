@@ -336,7 +336,10 @@ export default function ApplicationsOverview() {
   const { backendUrl } = useContext(dataContext)
 
   const managedClusters = useAllClusters(true)
-  const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
+  const localCluster = useMemo(
+    () => managedClusters.find((cls) => cls.labels && cls.labels[localClusterStr] === 'true'),
+    [managedClusters]
+  )
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
@@ -392,7 +395,7 @@ export default function ApplicationsOverview() {
         localCluster,
         managedClusters
       )
-      const clusterCount = getClusterCount(clusterList)
+      const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
       // Resource column
@@ -541,7 +544,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList)
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
@@ -560,7 +563,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList)
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
       },
@@ -882,7 +885,7 @@ export default function ApplicationsOverview() {
                   kind: resource.kind.toLowerCase(),
                   apigroup,
                   apiversion,
-                  cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
+                  cluster: resource.status?.cluster ? resource.status?.cluster : localCluster?.name,
                 },
               })
           navigate(searchLink)
@@ -911,7 +914,15 @@ export default function ApplicationsOverview() {
           click: () => {
             const appChildResources =
               resource.kind === ApplicationKind
-                ? getAppChildResources(resource, applications, subscriptions, placementRules, placements, channels)
+                ? getAppChildResources(
+                    resource,
+                    applications,
+                    subscriptions,
+                    placementRules,
+                    placements,
+                    channels,
+                    localCluster?.name ?? ''
+                  )
                 : [[], []]
             const appSetRelatedResources =
               resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
@@ -990,6 +1001,7 @@ export default function ApplicationsOverview() {
       applicationSets,
       argoApplications,
       canCreateApplication,
+      localCluster?.name,
     ]
   )
 

@@ -11,18 +11,23 @@ import { getOCPFluxAppTopology } from './topologyOCPFluxApp'
 
 export const getTopology = async (application, managedClusters, relatedResources, argoData) => {
   let topology
+  const hubCluster = managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true')
+
   if (application) {
     if (application.isArgoApp) {
-      topology = getArgoTopology(application, argoData, managedClusters)
+      topology = getArgoTopology(application, argoData, managedClusters, hubCluster?.name)
     } else if (application.isAppSet) {
-      topology = getAppSetTopology(application)
+      topology = getAppSetTopology(application, hubCluster?.name)
     } else if (application.isOCPApp || application.isFluxApp) {
-      topology = await getOCPFluxAppTopology(application)
+      topology = await getOCPFluxAppTopology(application, hubCluster?.name)
     } else {
-      topology = getSubscriptionTopology(application, managedClusters, relatedResources)
+      topology = getSubscriptionTopology(application, managedClusters, relatedResources, hubCluster?.name)
     }
   }
 
+  if (topology) {
+    _.set(topology, 'hubClusterName', hubCluster?.name)
+  }
   return topology
 }
 
@@ -70,7 +75,7 @@ export const getDiagramElements = (appData, topology, resourceStatuses, canUpdat
 
     // determine the status icon to put on each shape
     nodes.forEach((node) => {
-      computeNodeStatus(node, canUpdateStatuses, t)
+      computeNodeStatus(node, canUpdateStatuses, t, topology.hubClusterName)
     })
   }
 
@@ -93,7 +98,7 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
   const channel = _.get(node, 'specs.raw.spec.channel', '')
   const keyName = !isDeployableResource(node) && channel.length > 0 ? `${channel}-${name}` : name
 
-  const clusterName = getClusterName(node.id, node)
+  const clusterName = getClusterName(node.id, node, undefined, topology.hubClusterName)
   if (type === 'subscription') {
     //don't use cluster name when grouping subscriptions
     topoResourceMap[name] = node

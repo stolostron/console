@@ -47,7 +47,10 @@ export function ApplicationTopologyPageContent() {
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { refreshTime, application, appData, topology, statuses } = applicationData
-
+  let hubClusterName = ''
+  if (topology) {
+    hubClusterName = topology.hubClusterName
+  }
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const [options] = useState<any>(getOptions())
   const [elements, setElements] = useState<{
@@ -116,8 +119,8 @@ export function ApplicationTopologyPageContent() {
     handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
   }
 
-  const processActionLink = (resource: any, toggleLoading: boolean) => {
-    processResourceActionLink(resource, toggleLoading, t)
+  const processActionLink = (resource: any, toggleLoading: boolean, hubClusterName: string) => {
+    processResourceActionLink(resource, toggleLoading, t, hubClusterName)
   }
 
   const canUpdateStatuses = !!statuses
@@ -140,6 +143,7 @@ export function ApplicationTopologyPageContent() {
         channelControl={channelControl}
         options={options}
         setDrawerContent={setDrawerContent}
+        hubClusterName={hubClusterName}
       />
     </>
   )

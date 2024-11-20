@@ -140,7 +140,7 @@ export function ApplicationOverviewPageContent() {
       localCluster,
       managedClusters
     )
-    const clusterCount = getClusterCount(clusterList)
+    const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 

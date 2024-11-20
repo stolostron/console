@@ -13,8 +13,6 @@
 'use strict'
 
 import _ from 'lodash'
-import R from 'ramda'
-import { getClusterName } from '../helpers/diagram-helpers-utils'
 import { defaultShapes } from './constants'
 
 const TypeFilters = {
@@ -256,10 +254,6 @@ export const addAvailableRelationshipFilters = (availableFilters, activeFilters,
 
 ////////////////////////   FILTER NODES     ///////////////////////////////////
 
-export const filterNodes = (nodes, activeFilters) => {
-  return filterRelationshipNodes(nodes, activeFilters)
-}
-
 export const processResourceStatus = (resourceStatuses, resourceStatus) => {
   const orangeOrYellow = resourceStatus === 'orange' || resourceStatus === 'yellow'
 
@@ -281,84 +275,4 @@ export const isDesignOrCluster = (isDesign, nodeType) => {
 
 export const nodeParentExists = (nodeParent, includedNodes) => {
   return nodeParent !== undefined && nodeParent.parentType !== 'cluster' && !includedNodes.has(nodeParent.parentId)
-}
-
-export const filterRelationshipNodes = (nodes, activeFilters) => {
-  const {
-    hostIPs = new Set(),
-    namespaces = new Set(),
-    resourceStatuses = new Set(),
-    clusterNames = new Set(),
-    resourceTypes = new Set(),
-  } = activeFilters
-  const parentList = new Set()
-  const includedNodes = new Set()
-  const filteredNodes = nodes.filter((node) => {
-    const { type: nodeType, namespace, id } = node
-
-    if (isDesignOrCluster(node.specs.isDesign, nodeType)) {
-      return true
-    }
-
-    // include type if a direct match
-    const hasType = resourceTypes.size === 0 ? true : resourceTypes.has(nodeType)
-
-    // filter for resource statuses
-    let hasResourceStatus = true
-    if (resourceStatuses.size !== 0) {
-      const resourceStatus = _.get(node, 'specs.pulse')
-      if (resourceStatus) {
-        hasResourceStatus = processResourceStatus(resourceStatuses, resourceStatus)
-      }
-    }
-
-    // if host ips filter is on, only let pods and deployments with pods of that host ip
-    let hasHostIps = true
-    if (hostIPs.size !== 0) {
-      hasHostIps = false
-      const podStatus = _.get(node, 'specs.podModel')
-      if (podStatus) {
-        hasHostIps = Array.from(hostIPs).some((ip) => {
-          return _.flatten(_.flatten(Object.values(podStatus))).find((pod) => pod.hostIP === ip) !== undefined
-        })
-      }
-    }
-
-    // filter namespaces
-    const hasNamespace = namespaces.size === 0 || namespaces.has(namespace || 'cluster-scoped')
-
-    // filter by cluster name
-    let hasClustername = true
-    if (notDesignNode(nodeType) && clusterNames.size !== 0) {
-      hasClustername = false
-      const clusterNamesArray = R.split(',', getClusterName(id, node) || [])
-      clusterNamesArray.forEach((clsN) => {
-        hasClustername = hasClustername || clusterNames.has(clsN)
-      })
-    }
-
-    const result = hasType && hasNamespace && hasHostIps && hasResourceStatus && hasClustername
-
-    const nodeParent = _.get(node, 'specs.parent')
-
-    if (result) {
-      includedNodes.add(id)
-      if (nodeParentExists(nodeParent, includedNodes)) {
-        parentList.add(nodeParent.parentId)
-      }
-    }
-
-    return result
-  })
-
-  if (parentList.size > 0) {
-    const idMap = _.keyBy(nodes, 'id')
-    nodes.forEach((node) => {
-      const { id } = node
-      if (parentList.has(id) && !idMap[id]) {
-        filteredNodes.push(node)
-      }
-    })
-  }
-  return filteredNodes
 }

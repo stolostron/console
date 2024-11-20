@@ -64,11 +64,11 @@ const getResourceNameAndNamespace = (resourceType, selfLinks) => {
   return matches ? matches.slice(1, 3) : [null, null]
 }
 
-const getQuery = (resourceType, name, namespace) => {
+const getQuery = (resourceType, name, namespace, hubClusterName) => {
   const kind = getResourceKind(resourceType).toLowerCase()
   return {
     filters: [
-      { property: 'cluster', values: ['local-cluster'] },
+      { property: 'cluster', values: [hubClusterName] },
       { property: 'kind', values: [kind] },
       { property: 'name', values: [name] },
       { property: 'namespace', values: [namespace] },
@@ -100,7 +100,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
   const { t } = useTranslation()
   useEffect(() => {
     if (control.editMode && resourceName && resourceNamespace) {
-      const query = getQuery(resourceType, resourceName, resourceNamespace)
+      const query = getQuery(resourceType, resourceName, resourceNamespace, control.hubClusterName)
       searchClient
         .query({
           query: SearchResultItemsAndRelatedItemsDocument,
@@ -150,7 +150,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                       (i._hostingSubscription === `${resourceNamespace}/${resourceName}` ||
                         i._hostingSubscription === `${resourceNamespace}/${resourceName}${localSuffix}`) &&
                       // Only include resources on the local cluster
-                      i.cluster === 'local-cluster' &&
+                      i.cluster === control.hubClusterName &&
                       // Do not include the -local subscription
                       (type !== 'Subscription' ||
                         i.namespace !== resourceNamespace ||
@@ -177,6 +177,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
     resourceName,
     resourceNamespace,
     resourceType,
+    control.hubClusterName,
   ])
 
   return deployingSubscription || siblingApplications.length || childResources.length ? (

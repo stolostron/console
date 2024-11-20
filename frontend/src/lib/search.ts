@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
-import { ArgoApplication, OCPAppResource } from '../resources'
+import { OCPAppResource } from '../resources'
 import { getBackendUrl, IRequestResult, postRequest } from '../resources/utils'
 import { flatten, uniqBy } from 'lodash'
 
@@ -62,107 +62,6 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
     },
     query:
       'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
-  })
-}
-
-function getRemoteArgoFilters({
-  cluster,
-  clusters = [],
-  name,
-  namespace,
-}: Pick<DiscoveredAppsParams, 'clusters'> & {
-  cluster?: DiscoveredAppsParams['search']
-  name?: DiscoveredAppsParams['search']
-  namespace?: DiscoveredAppsParams['search']
-}) {
-  const clustersFilter = { property: 'cluster', values: [] as string[] }
-  const filtersArr = [
-    { property: 'kind', values: ['Application'] },
-    { property: 'apigroup', values: ['argoproj.io'] },
-    clustersFilter,
-    ...(name ? [{ property: 'name', values: [`*${name}*`] }] : []),
-    ...(namespace ? [{ property: 'destinationNamespace', values: [`*${namespace}*`] }] : []),
-  ]
-
-  if (clusters.length) {
-    clustersFilter.values = clustersFilter.values.concat(clusters)
-  } else if (cluster) {
-    clustersFilter.values.push(`*${cluster}*`)
-  } else {
-    clustersFilter.values.push('!local-cluster')
-  }
-
-  return filtersArr
-}
-
-export async function queryRemoteArgoApps(params: DiscoveredAppsParams): Promise<ArgoApplication[]>
-export async function queryRemoteArgoApps(params: DiscoveredAppsParams & { countOnly: true }): Promise<number>
-export async function queryRemoteArgoApps(
-  params: DiscoveredAppsParams & { countOnly?: true }
-): Promise<ArgoApplication[] | number> {
-  const { clusters = [], search, searchLimit, countOnly = false } = params
-
-  let variables: SearchQuery['variables']
-  let query: string
-
-  const limitObject = countOnly ? {} : { limit: searchLimit }
-
-  if (search) {
-    variables = {
-      byNameInput: [
-        {
-          filters: getRemoteArgoFilters({ clusters, name: search }),
-          ...limitObject,
-        },
-      ],
-      byNamespaceInput: [
-        {
-          filters: getRemoteArgoFilters({ clusters, namespace: search }),
-          ...limitObject,
-        },
-      ],
-      ...(clusters.length
-        ? {}
-        : {
-            byClusterInput: [
-              {
-                filters: getRemoteArgoFilters({ cluster: search }),
-                ...limitObject,
-              },
-            ],
-          }),
-    }
-    if (clusters.length) {
-      query = countOnly ? searchMatchAndFilterQueryCount : searchMatchAndFilterQuery
-    } else {
-      query = countOnly ? searchMatchWithClusterAndFilterQueryCount : searchMatchWithClusterAndFilterQuery
-    }
-  } else {
-    variables = {
-      input: [
-        {
-          filters: getRemoteArgoFilters({ clusters }),
-          ...limitObject,
-        },
-      ],
-    }
-    query = countOnly ? searchFilterQueryCount : searchFilterQuery
-  }
-
-  const { promise } = postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables,
-    query,
-  })
-  return promise.then((result) => {
-    if (countOnly) {
-      return Math.max(...Object.values(result.data).map((value) => value?.[0]?.count || 0))
-    } else {
-      return uniqBy(
-        flatten(Object.values(result.data).map((value) => value?.[0]?.items || [])),
-        (item) => item._uid
-      ) as ArgoApplication[]
-    }
   })
 }
 

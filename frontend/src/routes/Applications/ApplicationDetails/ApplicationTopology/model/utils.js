@@ -5,9 +5,7 @@
 import _ from 'lodash'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 
-const localClusterName = 'local-cluster'
-
-export const getClusterName = (nodeId) => {
+export const getClusterName = (nodeId, hubClusterName) => {
   if (nodeId === undefined) {
     return ''
   }
@@ -17,7 +15,7 @@ export const getClusterName = (nodeId) => {
     const endPos = nodeId.indexOf('--', startPos)
     return nodeId.slice(startPos, endPos > 0 ? endPos : nodeId.length)
   }
-  return localClusterName
+  return hubClusterName
 }
 
 export const createChildNode = (parentObject, clustersNames, type, links, nodes, replicaCount = 1) => {
@@ -112,7 +110,7 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
   return clusterId
 }
 
-export const getApplicationData = (nodes) => {
+export const getApplicationData = (nodes, hubClusterName) => {
   let subscriptionName = ''
   let nbOfSubscriptions = 0
   let resourceMustHavePods = false
@@ -131,7 +129,7 @@ export const getApplicationData = (nodes) => {
       if (applicationSetRef) {
         result.applicationSet = applicationSetRef.name
       }
-      let cluster = 'local-cluster'
+      let cluster = hubClusterName
       const clusterNames = _.get(appNode, ['specs', 'clusterNames'], [])
       if (clusterNames.length > 0) {
         cluster = clusterNames[0]

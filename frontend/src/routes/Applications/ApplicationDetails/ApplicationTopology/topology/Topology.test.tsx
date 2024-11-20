@@ -23,9 +23,6 @@ const mockUpdatenodeicons = jest.fn()
 const mockGetallfilters = jest.fn()
 const mockGetavailablefilters = jest.fn()
 const mockGetsearchfilter = jest.fn()
-const mockFilternodes = jest.fn()
-const mockGetconnectedlayoutoptions = jest.fn()
-const mockGetunconnectedlayoutoptions = jest.fn()
 const mockSetdrawercontent = jest.fn()
 
 describe('Topology tests', () => {
@@ -125,6 +122,7 @@ describe('Topology tests', () => {
 })
 
 const props1: TopologyProps = {
+  hubClusterName: 'local-cluster',
   disableRenderConstraint: true,
   elements: {
     activeChannel: 'test/test-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
@@ -1252,14 +1250,12 @@ const props1: TopologyProps = {
     getAllFilters: mockGetallfilters,
     getAvailableFilters: mockGetavailablefilters,
     getSearchFilter: mockGetsearchfilter,
-    filterNodes: mockFilternodes,
-    getConnectedLayoutOptions: mockGetconnectedlayoutoptions,
-    getUnconnectedLayoutOptions: mockGetunconnectedlayoutoptions,
   },
   setDrawerContent: mockSetdrawercontent,
 }
 
 const props2: TopologyProps = {
+  hubClusterName: 'local-cluster',
   disableRenderConstraint: true,
   elements: {
     activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
@@ -2620,9 +2616,6 @@ const props2: TopologyProps = {
     getAllFilters: mockGetallfilters,
     getAvailableFilters: mockGetavailablefilters,
     getSearchFilter: mockGetsearchfilter,
-    filterNodes: mockFilternodes,
-    getConnectedLayoutOptions: mockGetconnectedlayoutoptions,
-    getUnconnectedLayoutOptions: mockGetunconnectedlayoutoptions,
   },
   setDrawerContent: mockSetdrawercontent,
 }
