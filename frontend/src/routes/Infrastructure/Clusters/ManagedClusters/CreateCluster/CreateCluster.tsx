@@ -136,7 +136,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const settings = useRecoilValue(settingsState)
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const managedClusters = useRecoilValue(managedClustersState)
-  console.log('managedClusters', managedClusters)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
 
   const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
