@@ -136,6 +136,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const settings = useRecoilValue(settingsState)
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const managedClusters = useRecoilValue(managedClustersState)
+  console.log('managedClusters', managedClusters)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
 
   const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
@@ -221,6 +222,24 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       const clusterName = cluster?.metadata?.name
       const clusterNamespace = cluster?.metadata?.namespace ?? 'clusters'
 
+      // prevent namespace matching the cluster name
+      if (clusterNamespace === clusterName) {
+        setCreationStatus({
+          status: 'ERROR',
+          messages: [{ message: t(`The namespace name cannot be the same as the cluster name.`) }],
+        })
+        return 'ERROR'
+      }
+      // prevent using an existing managed cluster namespace
+      const existingManagedClusterNamespace = managedClusters.find((mc) => mc.metadata.name === clusterNamespace)
+
+      if (existingManagedClusterNamespace) {
+        setCreationStatus({
+          status: 'ERROR',
+          messages: [{ message: t(`The selected namespace is already used by an existing managed cluster.`) }],
+        })
+        return 'ERROR'
+      }
       // return error if cluster name is already used
       const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
       const matchedAgentClusterInstall = agentClusterInstalls.find((mc) => mc.metadata?.name === clusterName)
