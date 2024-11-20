@@ -30,6 +30,7 @@ import {
 import React from 'react'
 import { FieldName } from './types'
 import { getFieldLabels } from './hypershift/utils'
+import { getFirstAgentServiceConfig } from '../../../../../InfraEnvironments/InfraEnvironmentsPage'
 
 type FormControl = {
   active: ClusterDetailsValues & {
@@ -120,7 +121,7 @@ export const getExtensionAfter = ({
 })
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
-  const { clusterDeploymentsState, clusterImageSetsState } = useSharedAtoms()
+  const { clusterDeploymentsState, clusterImageSetsState, agentServiceConfigsState } = useSharedAtoms()
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const formRef = useRef<FormikProps<any>>(null)
@@ -215,6 +216,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [control])
 
   const clusterImages = useClusterImages()
+  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
+  const agentServiceConfig = getFirstAgentServiceConfig(agentServiceConfigs)
+
 
   const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
 
@@ -285,6 +289,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           usedClusterNames={usedClusterNames}
           extensionAfter={extensionAfter}
           isNutanix={control.additionalProps?.isNutanix}
+          osImages={agentServiceConfig?.spec.osImages}
         />
       </ACMFeatureSupportLevelProvider>
     </FeatureGateContextProvider>
