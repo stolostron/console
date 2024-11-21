@@ -17,7 +17,11 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { InfraEnvFormPage, EnvironmentStepFormValues, AgentServiceConfigK8sResource } from '@openshift-assisted/ui-lib/cim'
+import {
+  InfraEnvFormPage,
+  EnvironmentStepFormValues,
+  AgentServiceConfigK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FormikProps } from 'formik'
 

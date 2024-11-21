@@ -219,7 +219,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
   const agentServiceConfig = getFirstAgentServiceConfig(agentServiceConfigs)
 
-
   const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
 
   const extensionAfter = getExtensionAfter({
