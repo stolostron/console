@@ -9,13 +9,8 @@ export function getControlByID(controlData: { id: string }[], id: string): any |
 export const loadExistingNamespaces = (t: TFunction) => {
   return {
     query: () => {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const namespaces = await listProjects().promise
-          resolve(namespaces)
-        } catch (err) {
-          reject(err)
-        }
+      return new Promise((resolve, reject) => {
+        listProjects().promise.then(resolve).catch(reject)
       })
     },
     loadingDesc: t('Loading namespaces...'),
