@@ -17,7 +17,7 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
-import { loadExistingNamespaces } from '../../../../../Applications/CreateApplication/Subscription/controlData/ControlData'
+import { loadExistingNamespaces } from '../../../../../../lib/temptifly-utils'
 
 const operatorAlert = (localCluster, t) => {
   return (

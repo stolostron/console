@@ -343,28 +343,6 @@ export const getGitBranches = async (groupControlData, setLoadingState) => {
   retrieveGitDetails(null, groupControlData, setLoadingState)
 }
 
-export const setAvailableNSSpecs = (control, result) => {
-  const { loading } = result
-  const { data } = result
-  control.isLoading = false
-  const error = data ? null : result.error
-  if (!control.available) {
-    control.available = []
-    control.availableMap = {}
-  }
-  if (control.available.length === 0 && (error || data)) {
-    if (error) {
-      control.isFailed = true
-    } else if (data) {
-      control.isLoaded = true
-      control.available = data.map((d) => d.metadata.name)
-      control.available.sort()
-    }
-  } else {
-    control.isLoading = loading
-  }
-}
-
 export const getExistingPRControlsSection = (initiatingControl, control) => {
   //returns the existing placement rule options for the channel selection
   const result = []

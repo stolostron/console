@@ -139,7 +139,6 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     },
     "id": "namespace",
     "name": "Hosted cluster namespace",
-    "onSelect": [Function],
     "tooltip": "The namespace where hosted cluster resources will be created. Do not enter a namespace that matches the cluster's name or use an existing managed cluster namespace.",
     "type": "combobox",
     "validation": {
@@ -147,11 +146,6 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
       "required": true,
     },
-  },
-  {
-    "active": "",
-    "id": "userDefinedNamespace",
-    "type": "hidden",
   },
   {
     "available": [],
@@ -460,7 +454,6 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
     },
     "id": "namespace",
     "name": "Hosted cluster namespace",
-    "onSelect": [Function],
     "tooltip": "The namespace where hosted cluster resources will be created. Do not enter a namespace that matches the cluster's name or use an existing managed cluster namespace.",
     "type": "combobox",
     "validation": {
@@ -468,11 +461,6 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
       "required": true,
     },
-  },
-  {
-    "active": "",
-    "id": "userDefinedNamespace",
-    "type": "hidden",
   },
   {
     "available": [],
