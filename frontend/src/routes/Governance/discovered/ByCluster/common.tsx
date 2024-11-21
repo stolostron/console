@@ -108,6 +108,7 @@ export const byClusterCols = (
   subscriptions: Subscription[],
   channels: Channel[],
   policyKind: string,
+  diabledSeverityTooltip: boolean,
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
 ): IAcmTableColumn<DiscoveredPolicyItem>[] => [
   {
@@ -149,7 +150,7 @@ export const byClusterCols = (
     cell: severityCell,
     sort: 'severity',
     id: 'severity',
-    tooltip: t('discoveredPolicies.tooltip.severity'),
+    ...(!diabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
     exportContent: (item) => item.severity,
   },
   ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
@@ -344,11 +345,22 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
       { label: 'enforce', value: 'enforce' },
       { label: 'inform', value: 'inform' },
       { label: 'warn', value: 'warn' },
+      { label: 'Kyverno Audit', value: 'Audit' },
+      { label: 'Kyverno Enforce', value: 'Enforce' },
     ],
     tableFilterFn: (selectedValues, item) => {
       for (const selectedValue of selectedValues) {
         if (!item.responseAction) {
           return false
+        }
+
+        if (item.apigroup === 'kyverno.io') {
+          if (selectedValues.includes('Audit') && item.responseAction.includes('Audit')) {
+            return true
+          }
+          if (selectedValues.includes('Enforce') && item.responseAction.includes('Enforce')) {
+            return true
+          }
         }
 
         for (const responseAction of item.responseAction.split('/')) {
