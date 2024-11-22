@@ -1850,7 +1850,7 @@ describe('createEditLink subscriptionstatus', () => {
   const apiversion = 'apps.open-cluster-management.io/v1alpha1'
 
   it('returns subscriptionstatus link', () => {
-    expect(createEditLink(node, kind, cluster, apiversion)).toEqual(
+    expect(createEditLink(node, 'local-cluster', kind, cluster, apiversion)).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps.open-cluster-management.io%2Fv1alpha1&cluster=local-cluster&kind=SubscriptionStatus&name=feng-wordpress-subscription-1&namespace=feng-wordpress'
     )
   })
@@ -1866,7 +1866,7 @@ describe('createEditLink deployment', () => {
     namespace: 'default',
   }
   it('returns deployment link', () => {
-    expect(createEditLink(node)).toEqual(
+    expect(createEditLink(node, 'local-cluster')).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
     )
   })
@@ -1881,7 +1881,7 @@ describe('createEditLink kind undefined', () => {
     namespace: 'default',
   }
   it('returns non-working link', () => {
-    expect(createEditLink(node)).toEqual(
+    expect(createEditLink(node, 'local-cluster')).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&name=mydeploy&namespace=default'
     )
   })
