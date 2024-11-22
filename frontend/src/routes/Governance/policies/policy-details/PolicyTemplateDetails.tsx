@@ -6,8 +6,9 @@ import {
   ExclamationTriangleIcon,
   ExternalLinkAltIcon,
 } from '@patternfly/react-icons'
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { v4 as uuidv4 } from 'uuid'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
   AcmAlert,
@@ -50,22 +51,7 @@ export function PolicyTemplateDetails() {
   const isKyverno = ['kyverno.io'].includes(apiGroup)
   const isVAPB = apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding'
   const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
-  const [relatedObjectsMessages, setRelatedObjectsMessages] = useState<IRelatedObjMessages>({})
-
-  const updateRelatedObjectsMessages = (uid: string, ruleName: string, message: string) => {
-    setRelatedObjectsMessages((pstate) => {
-      if (pstate[uid] !== undefined) {
-        // Use filter to exclude duplicate messages caused by rule message updates.
-        const ruleMessageArr = pstate[uid].filter((ruleMessage) => {
-          return ruleMessage.ruleName != ruleName
-        })
-        ruleMessageArr.push({ ruleName, message })
-        return { ...pstate, [uid]: ruleMessageArr }
-      } else {
-        return { ...pstate, [uid]: [{ ruleName, message }] }
-      }
-    })
-  }
+  const relatedObjectsMessages: IRelatedObjMessages = {}
 
   useEffect(() => {
     if (isKyverno && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
@@ -422,8 +408,7 @@ export function PolicyTemplateDetails() {
               item,
               kyvernoPolicyName: name,
               KyvernoPolicyNamespace: namespace,
-              relatedObjectsMessages,
-              updateRelatedObjectsMessages,
+              messageCache: relatedObjectsMessages,
             }}
           />
         ),
@@ -431,7 +416,9 @@ export function PolicyTemplateDetails() {
         search: 'Messages',
       },
     ],
-    [t, violationColumn, name, relatedObjectsMessages, namespace]
+    // Don't include messageCache since it's just a cache and won't change how things are rendered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, violationColumn, name, namespace]
   )
 
   return (
@@ -489,14 +476,12 @@ const KyvernoMessages = ({
   item,
   kyvernoPolicyName,
   KyvernoPolicyNamespace,
-  relatedObjectsMessages,
-  updateRelatedObjectsMessages,
+  messageCache,
 }: {
   item: any
   kyvernoPolicyName: string
   KyvernoPolicyNamespace?: string
-  relatedObjectsMessages: IRelatedObjMessages
-  updateRelatedObjectsMessages: (policyName: string, ruleName: string, message: string) => void
+  messageCache: IRelatedObjMessages
 }) => {
   // Cluster + '/' + Resource uid
   const uid = item._uid
@@ -512,39 +497,45 @@ const KyvernoMessages = ({
   const [ruleMsg, setRuleMsg] = useState<IRuleMessage[] | undefined>()
   const [errString, setErrString] = useState<string | undefined>()
   const reportVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
-  // To prevent fireManagedClusterView again
-  const renderCount = useRef(0)
 
   useEffect(
     () => {
-      const foundPolicyMessages = relatedObjectsMessages[uid]
-      if (foundPolicyMessages !== undefined && ruleMsg === undefined) {
+      let ignore = false
+
+      const foundPolicyMessages = messageCache[uid]
+      if (foundPolicyMessages !== undefined) {
         setRuleMsg(foundPolicyMessages)
-      } else if (
-        !loading &&
-        ruleMsg === undefined &&
-        item.policyReport &&
-        foundPolicyMessages == undefined &&
-        renderCount.current == 0
-      ) {
-        // To prevent fetch fireManagedClusterView again
-        ++renderCount.current
+        setLoading(false)
+      } else if (!loading) {
         setLoading(true)
-        fireManagedClusterView(reportCluster, reportKind, reportVersion, reportName, reportNs)
+        const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
+
+        fireManagedClusterView(
+          reportCluster,
+          reportKind,
+          reportVersion,
+          reportName,
+          reportNs,
+          viewName,
+          viewName !== undefined
+        )
           .then((viewResponse) => {
+            if (ignore) {
+              return
+            }
+
             if (viewResponse?.message) {
               setErrString(viewResponse.message)
             } else {
               // policy field: namespace/policyName
               const results: { message: string; rule: string; policy: string }[] = viewResponse?.result?.results.filter(
-                ({ policy: policyNsName, rule, message }: { policy: string; rule: string; message: string }) => {
+                ({ policy: policyNsName }: { policy: string }) => {
                   // To avoid scenarios where a ClusterPolicy and a Kyverno Policy share the same name.
                   const nsName = KyvernoPolicyNamespace
                     ? KyvernoPolicyNamespace + '/' + kyvernoPolicyName
                     : kyvernoPolicyName
 
                   if (nsName === policyNsName) {
-                    updateRelatedObjectsMessages(uid, rule, message)
                     return true
                   }
 
@@ -552,17 +543,34 @@ const KyvernoMessages = ({
                 }
               )
 
-              setRuleMsg(results.map((r) => ({ ruleName: r.rule, message: r.message })))
+              const ruleMsgs = results.map((r) => ({ ruleName: r.rule, message: r.message }))
+              messageCache[uid] = ruleMsgs
+
+              setRuleMsg(ruleMsgs)
             }
           })
           .catch((err: Error) => {
+            if (ignore) {
+              return
+            }
+
             console.error('Error getting resource: ', err)
             setErrString(err.message)
           })
+          .finally(() => {
+            if (ignore) {
+              return
+            }
+
+            setLoading(false)
+          })
       }
-      setLoading(false)
+
+      return () => {
+        ignore = true
+      }
     },
-    // Should not include relatedObjectsMessages updateRelatedObjectsMessages, loading for performance
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
