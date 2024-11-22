@@ -22,6 +22,7 @@ import {
   clusterDetailsControlData,
   disabledForFirstInGroup,
   reverseImageSet,
+  ingressVIPsReverse,
 } from './ControlDataHelpers'
 import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -342,6 +343,7 @@ export const getControlDataVMW = (
           active: '',
         },
       ],
+      reverse: ingressVIPsReverse,
       validation: getIPValidator({
         subnet: { controlID: 'machineCIDR', groupID: 'networks' },
         differentFrom: ['apiVIP'],
