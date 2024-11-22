@@ -387,6 +387,7 @@ Array [
     "id": "ingressVIPs",
     "name": "Ingress VIPs",
     "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "multitext",
     "validation": Object {
@@ -1089,6 +1090,7 @@ Array [
     "id": "ingressVIPs",
     "name": "Ingress VIPs",
     "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "multitext",
     "validation": Object {
@@ -1791,6 +1793,7 @@ Array [
     "id": "ingressVIPs",
     "name": "Ingress VIPs",
     "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "multitext",
     "validation": Object {
