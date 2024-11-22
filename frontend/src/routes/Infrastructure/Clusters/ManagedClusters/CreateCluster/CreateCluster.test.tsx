@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -275,6 +275,7 @@ const mockMachinePoolAws: MachinePool = {
 }
 
 /// Kubevirt
+
 const kubeconfig = JSON.stringify({
   clusters: [
     {
@@ -676,28 +677,6 @@ const subscriptionOperator: SubscriptionOperator = {
     ],
   },
   spec: {},
-}
-
-const pullSecret = '{"pullSecret":"secret"}\n'
-
-const expectedKubevirtCredential = {
-  apiVersion: ProviderConnectionApiVersion,
-  kind: ProviderConnectionKind,
-  type: 'Opaque',
-  metadata: {
-    name: 'kubevirt-with-ei',
-    namespace: 'test-ns',
-    labels: {
-      'cluster.open-cluster-management.io/type': 'kubevirt',
-      'cluster.open-cluster-management.io/credentials': '',
-    },
-  },
-  stringData: {
-    pullSecret: '{"pullSecret":"secret"}\n',
-    'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
-    kubeconfig: kubeconfig,
-    externalInfraNamespace: 'kubevirt-namespace',
-  },
 }
 
 const mockPullSecretKubevirt: Secret = {
@@ -1235,18 +1214,27 @@ describe('CreateCluster on premise', () => {
 
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
   const mockProject = {
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
     kind: 'ProjectRequest',
     metadata: {
       name: 'test',
     },
   }
   const mockProjectResponse = {
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
     kind: 'Project',
     metadata: {
       name: 'test',
     },
+  }
+  const mockListAllProjects = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
+
+  const mockListAllProjectsResponse = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
   }
 
   // ProjectRequest and Project types
@@ -1420,6 +1408,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       externalInfraNamespace: 'kubevirt-namespace',
     },
   }
+
   const Component = () => {
     return (
       <RecoilRoot
@@ -1428,7 +1417,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
-              metadata: { name: 'test-ns' },
+              metadata: { name: 'clusters' },
             },
           ])
           snapshot.set(managedClustersState, [])
@@ -1483,6 +1472,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
     window.scrollBy = () => {}
     const initialNocks = [
+      nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -1502,9 +1492,11 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByPlaceholderText('Select or enter a release image')
     await clickByText('OpenShift 4.15.36')
 
+    const inputElement = screen.getByTestId('emanspace')
+    expect(inputElement).toHaveValue('clusters')
+
     // step 2 -- node pools
     await clickByText('Next')
-
     const nodePoolNameInput = screen.getByTestId('nodePoolName')
     fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
 
@@ -1533,16 +1525,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 })
 
-describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure - Wizard Credential creation', () => {
+describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
   const mockProject = {
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
     kind: 'ProjectRequest',
     metadata: {
       name: 'test',
     },
   }
   const mockProjectResponse = {
-    apiVersion: 'project.openshift.io/v1',
+    apiVersion: ProjectApiVersion,
     kind: 'Project',
     metadata: {
       name: 'test',
@@ -1553,14 +1545,14 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   const mockClusterProjectKubevirt: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
-    metadata: { name: 'clusters' },
+    metadata: { name: 'new-hns' },
   }
 
   const mockClusterProjectKubevirtResponse: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
     metadata: {
-      name: 'clusters',
+      name: 'new-hns',
     },
   }
 
@@ -1594,13 +1586,524 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     },
   }
 
+  const managedCluster: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      annotations: {
+        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+        'open-cluster-management/created-via': 'hypershift',
+      },
+      labels: {
+        cloud: 'BareMetal',
+        vendor: 'OpenShift',
+        name: 'test',
+      },
+      name: 'test',
+    },
+    spec: {
+      hubAcceptsClient: true,
+    },
+  }
+  const mockKubevirtSecret = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-with-ei',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+      kubeconfig: kubeconfig,
+      externalInfraNamespace: 'kubevirt-namespace',
+    },
+  }
+
+  const Component = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'clusters' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [mockKubevirtSecret as Secret])
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
+
+  test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
+    const mockListAllProjects = {
+      apiVersion: 'project.openshift.io/v1',
+      kind: 'projects',
+    }
+
+    const mockListAllProjectsResponse = {
+      apiVersion: 'project.openshift.io/v1',
+      kind: 'projects',
+    }
+
+    const mockPullSecretKubevirt1: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'pullsecret-cluster-test',
+        namespace: 'new-hns',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'clusters',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+        },
+      },
+      stringData: {
+        '.dockerconfigjson': '{"pullSecret":"secret"}',
+      },
+      type: 'kubernetes.io/dockerconfigjson',
+    }
+
+    // Secret for 'sshkey-cluster-test'
+    const mockSSHKeySecret2: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'sshkey-cluster-test',
+        namespace: 'new-hns',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'clusters',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+        },
+      },
+      stringData: {
+        'id_rsa.pub': 'ssh-rsa AAAAB1 fake@email.com',
+      },
+    }
+    const mockKubeConfigSecretKubevirt3: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'infra-cluster-test',
+        namespace: 'new-hns',
+        labels: {
+          'cluster.open-cluster-management.io/backup': 'cluster',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'clusters',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+        },
+      },
+      stringData: {
+        kubeconfig:
+          '{"clusters":[{"name":"my-cluster","cluster":{"server":"https://my-cluster.example.com"}}],"contexts":[{"name":"my-context","context":{"cluster":"my-cluster","user":"my-user"}}],"current-context":"my-context","users":[{"name":"my-user","user":{"token":"abc123"}}]}\n',
+      },
+    }
+
+    // HostedCluster
+    const mockHostedClusterKubervirt4: HostedCluster = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'HostedCluster',
+      metadata: {
+        name: 'test',
+        namespace: 'new-hns',
+      },
+      spec: {
+        etcd: {
+          managed: {
+            storage: {
+              persistentVolume: {
+                size: '8Gi',
+              },
+              type: 'PersistentVolume',
+            },
+          },
+          managementType: 'Managed',
+        },
+        release: {
+          image: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi',
+        },
+        pullSecret: {
+          name: 'pullsecret-cluster-test',
+        },
+        sshKey: {
+          name: 'sshkey-cluster-test',
+        },
+        networking: {
+          clusterNetwork: [
+            {
+              cidr: '10.132.0.0/14',
+            },
+          ],
+          serviceNetwork: [
+            {
+              cidr: '172.31.0.0/16',
+            },
+          ],
+          networkType: 'OVNKubernetes',
+        },
+        controllerAvailabilityPolicy: 'HighlyAvailable',
+        infrastructureAvailabilityPolicy: 'HighlyAvailable',
+        platform: {
+          type: 'KubeVirt',
+          kubevirt: {
+            baseDomainPassthrough: true,
+            credentials: {
+              infraKubeConfigSecret: {
+                name: 'infra-cluster-test',
+                key: 'kubeconfig',
+              },
+              infraNamespace: 'kubevirt-namespace',
+            },
+          },
+        },
+        infraID: 'test',
+        services: [
+          {
+            service: 'OAuthServer',
+            servicePublishingStrategy: {
+              type: 'Route',
+            },
+          },
+          {
+            service: 'OIDC',
+            servicePublishingStrategy: {
+              type: 'Route',
+            },
+          },
+          {
+            service: 'Konnectivity',
+            servicePublishingStrategy: {
+              type: 'Route',
+            },
+          },
+          {
+            service: 'Ignition',
+            servicePublishingStrategy: {
+              type: 'Route',
+            },
+          },
+        ],
+      },
+    }
+
+    const mockNodePools5 = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'nodepool',
+        namespace: 'new-hns',
+      },
+      spec: {
+        arch: 'amd64',
+        clusterName: 'test',
+        replicas: 2,
+        management: {
+          autoRepair: false,
+          upgradeType: 'Replace',
+        },
+        platform: {
+          type: 'KubeVirt',
+          kubevirt: {
+            compute: {
+              cores: 2,
+              memory: '8Gi',
+            },
+            rootVolume: {
+              type: 'Persistent',
+              persistent: {
+                size: '32Gi',
+              },
+            },
+          },
+        },
+        release: {
+          image: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi',
+        },
+      },
+    }
+
+    window.scrollBy = () => {}
+    const initialNocks = [
+      nockList(mockListAllProjects, mockListAllProjectsResponse),
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component />)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // wait for tables/combos to fill in
+    await waitForNocks(initialNocks)
+
+    await waitForText('Cluster details', true)
+    await waitForText('Node pools')
+    await waitForText('Review and create')
+
+    // step 1 -- cluster details
+    await typeByTestId('clusterName', clusterName)
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByText('OpenShift 4.15.36')
+
+    const inputField = await waitFor(() => screen.getByTestId('emanspace'))
+    expect(inputField).toHaveValue('clusters')
+    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
+    fireEvent.click(clearButtons[1])
+
+    await clickByTestId('emanspace')
+    await typeByTestId('emanspace', 'new-hns')
+    fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
+    // step 2 -- node pools
+    await clickByText('Next')
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // Review and Save step
+    await clickByText('Next')
+
+    // nocks for cluster creation
+    const createNocks = [
+      nockCreate(mockProject, mockProjectResponse),
+      nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
+      nockCreate(mockNodePools5),
+      nockCreate(managedCluster),
+      nockCreate(mockHostedClusterKubervirt4),
+      nockCreate(mockKlusterletAddonConfigKubevirt),
+      nockCreate(mockKubeConfigSecretKubevirt3),
+      nockCreate(mockPullSecretKubevirt1),
+      nockCreate(mockSSHKeySecret2),
+    ]
+    // click create button
+    await clickByText('Create')
+
+    await waitForText('Creating cluster ...')
+
+    // make sure creating
+    await waitForNocks(createNocks)
+  })
+})
+
+describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure - Wizard Credential creation', () => {
+  const mockProject = {
+    apiVersion: ProjectApiVersion,
+    kind: 'ProjectRequest',
+    metadata: {
+      name: 'test',
+    },
+  }
+  const mockProjectResponse = {
+    apiVersion: ProjectApiVersion,
+    kind: 'Project',
+    metadata: {
+      name: 'test',
+    },
+  }
+
+  const mockClusterProjectKubevirt: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name: 'new-ns' },
+  }
+
+  const mockClusterProjectKubevirtResponse: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+      name: 'new-ns',
+    },
+  }
+  const pullSecret = '{"pullSecret":"secret"}\n'
+  const expectedKubevirtCredential = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-with-ei',
+      namespace: 'new-ns',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+      kubeconfig: kubeconfig,
+      externalInfraNamespace: 'kubevirt-namespace',
+    },
+  }
+  // ManagedClusterKubevirt
+  const mockKlusterletAddonConfigKubevirt = {
+    apiVersion: 'agent.open-cluster-management.io/v1',
+    kind: 'KlusterletAddonConfig',
+    metadata: {
+      name: 'test',
+      namespace: 'test',
+    },
+    spec: {
+      clusterName: 'test',
+      clusterNamespace: 'test',
+      clusterLabels: {
+        cloud: 'BareMetal',
+        vendor: 'OpenShift',
+      },
+      applicationManager: {
+        enabled: true,
+      },
+      policyController: {
+        enabled: true,
+      },
+      searchCollector: {
+        enabled: true,
+      },
+      certPolicyController: {
+        enabled: true,
+      },
+    },
+  }
+
+  const managedCluster: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      annotations: {
+        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+        'open-cluster-management/created-via': 'hypershift',
+      },
+      labels: {
+        cloud: 'BareMetal',
+        vendor: 'OpenShift',
+        name: 'test',
+        myLabelKey: 'myValue',
+      },
+      name: 'test',
+    },
+    spec: {
+      hubAcceptsClient: true,
+    },
+  }
+
+  const mockListAllProjects = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
+
+  const mockListAllProjectsResponse = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
+
+  const mockPullSecretKubevirt1: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: 'pullsecret-cluster-test',
+      namespace: 'new-ns',
+      labels: {
+        'cluster.open-cluster-management.io/backup': 'cluster',
+        'cluster.open-cluster-management.io/copiedFromNamespace': 'new-ns',
+        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      },
+    },
+    stringData: {
+      '.dockerconfigjson': '{"pullSecret":"secret"}',
+    },
+    type: 'kubernetes.io/dockerconfigjson',
+  }
+
+  // Secret for 'sshkey-cluster-test'
+  const mockSSHKeySecret2: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: 'sshkey-cluster-test',
+      namespace: 'new-ns',
+      labels: {
+        'cluster.open-cluster-management.io/backup': 'cluster',
+        'cluster.open-cluster-management.io/copiedFromNamespace': 'new-ns',
+        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      },
+    },
+    stringData: {
+      'id_rsa.pub': 'ssh-rsa AAAAB1 fake@email.com',
+    },
+  }
+  const mockKubeConfigSecretKubevirt3: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: 'infra-cluster-test',
+      namespace: 'new-ns',
+      labels: {
+        'cluster.open-cluster-management.io/backup': 'cluster',
+        'cluster.open-cluster-management.io/copiedFromNamespace': 'new-ns',
+        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      },
+    },
+    stringData: {
+      kubeconfig:
+        '{"clusters":[{"name":"my-cluster","cluster":{"server":"https://my-cluster.example.com"}}],"contexts":[{"name":"my-context","context":{"cluster":"my-cluster","user":"my-user"}}],"current-context":"my-context","users":[{"name":"my-user","user":{"token":"abc123"}}]}\n',
+    },
+  }
+
   // HostedCluster
-  const mockHostedClusterKubervirt: HostedCluster = {
+  const mockHostedClusterKubervirt4: HostedCluster = {
     apiVersion: 'hypershift.openshift.io/v1beta1',
     kind: 'HostedCluster',
     metadata: {
       name: 'test',
-      namespace: 'clusters',
+      namespace: 'new-ns',
     },
     spec: {
       etcd: {
@@ -1681,76 +2184,39 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     },
   }
 
-  const managedCluster: ManagedCluster = {
-    apiVersion: 'cluster.open-cluster-management.io/v1',
-    kind: 'ManagedCluster',
+  const mockNodePools5 = {
+    apiVersion: 'hypershift.openshift.io/v1beta1',
+    kind: 'NodePool',
     metadata: {
-      annotations: {
-        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
-        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
-        'open-cluster-management/created-via': 'hypershift',
-      },
-      labels: {
-        cloud: 'BareMetal',
-        vendor: 'OpenShift',
-        name: 'test',
-        myLabelKey: 'myValue',
-      },
-      name: 'test',
+      name: 'nodepool',
+      namespace: 'new-ns',
     },
     spec: {
-      hubAcceptsClient: true,
-    },
-  }
-
-  const mockPullSecretKubevirt: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: 'pullsecret-cluster-test',
-      namespace: 'clusters',
-      labels: {
-        'cluster.open-cluster-management.io/backup': 'cluster',
-        'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      arch: 'amd64',
+      clusterName: 'test',
+      replicas: 2,
+      management: {
+        autoRepair: false,
+        upgradeType: 'Replace',
       },
-    },
-    stringData: {
-      '.dockerconfigjson': '{"pullSecret":"secret"}',
-    },
-    type: 'kubernetes.io/dockerconfigjson',
-  }
-  const mockSSHKeySecret: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: 'sshkey-cluster-test',
-      namespace: 'clusters',
-      labels: {
-        'cluster.open-cluster-management.io/backup': 'cluster',
-        'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      platform: {
+        type: 'KubeVirt',
+        kubevirt: {
+          compute: {
+            cores: 2,
+            memory: '8Gi',
+          },
+          rootVolume: {
+            type: 'Persistent',
+            persistent: {
+              size: '32Gi',
+            },
+          },
+        },
       },
-    },
-    stringData: {
-      'id_rsa.pub': 'ssh-rsa AAAAB1 fake@email.com',
-    },
-  }
-  const mockKubeConfigSecretKubevirtWizard: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: 'infra-cluster-test',
-      namespace: 'clusters',
-      labels: {
-        'cluster.open-cluster-management.io/backup': 'cluster',
-        'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
-        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-with-ei',
+      release: {
+        image: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi',
       },
-    },
-    stringData: {
-      kubeconfig:
-        '{"clusters":[{"name":"my-cluster","cluster":{"server":"https://my-cluster.example.com"}}],"contexts":[{"name":"my-context","context":{"cluster":"my-cluster","user":"my-user"}}],"current-context":"my-context","users":[{"name":"my-user","user":{"token":"abc123"}}]}\n',
     },
   }
   const Component = () => {
@@ -1761,7 +2227,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
-              metadata: { name: 'test-ns' },
+              metadata: { name: 'new-ns' },
             },
           ])
           snapshot.set(managedClustersState, [])
@@ -1801,9 +2267,10 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               kind: ProviderConnectionKind,
               metadata: {
                 name: 'kubevirt-with-ei',
-                namespace: 'test-ns',
+                namespace: 'new-ns',
                 labels: {
                   'cluster.open-cluster-management.io/type': 'kubevirt',
+                  'cluster.open-cluster-management.io/credentials': '',
                 },
               },
               stringData: {
@@ -1864,6 +2331,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     }
 
     const initialNocks: Scope[] = [
+      nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -1881,13 +2349,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByPlaceholderText('Select or enter a release image')
     await clickByText('OpenShift 4.15.36')
 
-    await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+    const inputField = await waitFor(() => screen.getByTestId('emanspace'))
+    expect(inputField).toHaveValue('clusters')
+    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
+    fireEvent.click(clearButtons[1])
 
+    await clickByTestId('emanspace')
+    await typeByTestId('emanspace', 'new-ns')
+    fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
+
+    await typeByTestId('additionalLabels', 'myLabelKey=myValue')
     await clickByPlaceholderText('Select a credential')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-with-ei')
     await clickByTestId('namespaceName-input-toggle-select-typeahead')
-    await clickByText('test-ns')
+
+    await clickByText('new-ns')
     await clickByText('Next', 1)
     await clickByTestId('isExternalInfra')
     await typeByTestId('kubeconfig', kubeconfig)
@@ -1914,13 +2391,13 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     const createNocks = [
       nockCreate(mockProject, mockProjectResponse),
       nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
-      nockCreate(mockNodePools),
+      nockCreate(mockNodePools5),
       nockCreate(managedCluster),
-      nockCreate(mockHostedClusterKubervirt),
+      nockCreate(mockHostedClusterKubervirt4),
       nockCreate(mockKlusterletAddonConfigKubevirt),
-      nockCreate(mockKubeConfigSecretKubevirtWizard),
-      nockCreate(mockPullSecretKubevirt),
-      nockCreate(mockSSHKeySecret),
+      nockCreate(mockKubeConfigSecretKubevirt3),
+      nockCreate(mockPullSecretKubevirt1),
+      nockCreate(mockSSHKeySecret2),
     ]
 
     await clickByText('Create')
@@ -1931,6 +2408,250 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 })
 
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has no external infrastructure - Wizard Credential creation', () => {
+  const mockProject = {
+    apiVersion: ProjectApiVersion,
+    kind: 'ProjectRequest',
+    metadata: {
+      name: 'test',
+    },
+  }
+  const mockProjectResponse = {
+    apiVersion: ProjectApiVersion,
+    kind: 'Project',
+    metadata: {
+      name: 'test',
+    },
+  }
+
+  const mockClusterProjectKubevirt: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name: 'clusters' },
+  }
+
+  const mockClusterProjectKubevirtResponse: Project = {
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: {
+      name: 'clusters',
+    },
+  }
+  const pullSecret = '{"pullSecret":"secret"}\n'
+
+  // ManagedClusterKubevirt
+  const mockKlusterletAddonConfigKubevirt = {
+    apiVersion: 'agent.open-cluster-management.io/v1',
+    kind: 'KlusterletAddonConfig',
+    metadata: {
+      name: 'test',
+      namespace: 'test',
+    },
+    spec: {
+      clusterName: 'test',
+      clusterNamespace: 'test',
+      clusterLabels: {
+        cloud: 'BareMetal',
+        vendor: 'OpenShift',
+      },
+      applicationManager: {
+        enabled: true,
+      },
+      policyController: {
+        enabled: true,
+      },
+      searchCollector: {
+        enabled: true,
+      },
+      certPolicyController: {
+        enabled: true,
+      },
+    },
+  }
+
+  const managedCluster: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      annotations: {
+        'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+        'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
+        'open-cluster-management/created-via': 'hypershift',
+      },
+      labels: {
+        cloud: 'BareMetal',
+        vendor: 'OpenShift',
+        name: 'test',
+        myLabelKey: 'myValue',
+      },
+      name: 'test',
+    },
+    spec: {
+      hubAcceptsClient: true,
+    },
+  }
+
+  const mockListAllProjects = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
+
+  const mockListAllProjectsResponse = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'projects',
+  }
+
+  const mockPullSecretKubevirt1: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: 'pullsecret-cluster-test',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/backup': 'cluster',
+        'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-no-ei',
+      },
+    },
+    stringData: {
+      '.dockerconfigjson': '{"pullSecret":"secret"}',
+    },
+    type: 'kubernetes.io/dockerconfigjson',
+  }
+
+  // Secret for 'sshkey-cluster-test'
+  const mockSSHKeySecret2: Secret = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: 'sshkey-cluster-test',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/backup': 'cluster',
+        'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
+        'cluster.open-cluster-management.io/copiedFromSecretName': 'kubevirt-no-ei',
+      },
+    },
+    stringData: {
+      'id_rsa.pub': 'ssh-rsa AAAAB1 fake@email.com',
+    },
+  }
+
+  // HostedCluster
+  const mockHostedClusterKubervirt4: HostedCluster = {
+    apiVersion: 'hypershift.openshift.io/v1beta1',
+    kind: 'HostedCluster',
+    metadata: {
+      name: 'test',
+      namespace: 'clusters',
+    },
+    spec: {
+      etcd: {
+        managed: {
+          storage: {
+            persistentVolume: {
+              size: '8Gi',
+            },
+            type: 'PersistentVolume',
+          },
+        },
+        managementType: 'Managed',
+      },
+      release: {
+        image: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi',
+      },
+      pullSecret: {
+        name: 'pullsecret-cluster-test',
+      },
+      sshKey: {
+        name: 'sshkey-cluster-test',
+      },
+      networking: {
+        clusterNetwork: [
+          {
+            cidr: '10.132.0.0/14',
+          },
+        ],
+        serviceNetwork: [
+          {
+            cidr: '172.31.0.0/16',
+          },
+        ],
+        networkType: 'OVNKubernetes',
+      },
+      controllerAvailabilityPolicy: 'HighlyAvailable',
+      infrastructureAvailabilityPolicy: 'HighlyAvailable',
+      platform: {
+        type: 'KubeVirt',
+        kubevirt: {
+          baseDomainPassthrough: true,
+        },
+      },
+      infraID: 'test',
+      services: [
+        {
+          service: 'OAuthServer',
+          servicePublishingStrategy: {
+            type: 'Route',
+          },
+        },
+        {
+          service: 'OIDC',
+          servicePublishingStrategy: {
+            type: 'Route',
+          },
+        },
+        {
+          service: 'Konnectivity',
+          servicePublishingStrategy: {
+            type: 'Route',
+          },
+        },
+        {
+          service: 'Ignition',
+          servicePublishingStrategy: {
+            type: 'Route',
+          },
+        },
+      ],
+    },
+  }
+
+  const mockNodePools5 = {
+    apiVersion: 'hypershift.openshift.io/v1beta1',
+    kind: 'NodePool',
+    metadata: {
+      name: 'nodepool',
+      namespace: 'clusters',
+    },
+    spec: {
+      arch: 'amd64',
+      clusterName: 'test',
+      replicas: 2,
+      management: {
+        autoRepair: false,
+        upgradeType: 'Replace',
+      },
+      platform: {
+        type: 'KubeVirt',
+        kubevirt: {
+          compute: {
+            cores: 2,
+            memory: '8Gi',
+          },
+          rootVolume: {
+            type: 'Persistent',
+            persistent: {
+              size: '32Gi',
+            },
+          },
+        },
+      },
+      release: {
+        image: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi',
+      },
+    },
+  }
+
   const Component = () => {
     return (
       <RecoilRoot
@@ -2053,11 +2774,12 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         },
       },
       stringData: {
-        pullSecret: pullSecret,
+        pullSecret: '{"pullSecret":"secret"}\n',
         'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
       },
     }
     const initialNocks: Scope[] = [
+      nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -2074,7 +2796,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByPlaceholderText('Select or enter a release image')
     await clickByText('OpenShift 4.15.36')
-
+    const inputElement = screen.getByTestId('emanspace')
+    expect(inputElement).toHaveValue('clusters')
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
     await clickByPlaceholderText('Select a credential')
@@ -2098,6 +2821,23 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     const nodePoolNameInput = screen.getByTestId('nodePoolName')
     fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
     await clickByText('Next')
+
+    // nocks for cluster creation
+    const createNocks = [
+      nockCreate(mockProject, mockProjectResponse),
+      nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
+      nockCreate(mockNodePools5),
+      nockCreate(managedCluster),
+      nockCreate(mockHostedClusterKubervirt4),
+      nockCreate(mockKlusterletAddonConfigKubevirt),
+      nockCreate(mockPullSecretKubevirt1),
+      nockCreate(mockSSHKeySecret2),
+    ]
+
     await clickByText('Create')
+    await waitForText('Creating cluster ...')
+
+    // make sure creating
+    await waitForNocks(createNocks)
   })
 })

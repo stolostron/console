@@ -219,6 +219,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       const map = keyBy(createResources, 'kind')
       const cluster = map?.ClusterDeployment || map?.HostedCluster
       const clusterName = cluster?.metadata?.name
+      const clusterNamespace = cluster?.metadata?.namespace ?? 'clusters'
 
       // return error if cluster name is already used
       const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -287,13 +288,13 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         if (status === 'DONE') {
           const finishMessage = completedMsg ? [completedMsg] : []
           setCreationStatus({ status, messages: finishMessage })
-          const namespace = cluster?.metadata?.namespace
-          if (!noRedirect && clusterName && namespace) {
+          const namespace = cluster?.metadata?.namespace ?? null
+          if (!noRedirect && clusterName && clusterNamespace) {
             setTimeout(() => {
               navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: clusterName,
-                  namespace,
+                  namespace: namespace,
                 })
               )
             }, 2000)

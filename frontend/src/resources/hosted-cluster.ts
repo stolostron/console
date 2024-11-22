@@ -55,7 +55,7 @@ export interface HostedCluster extends IResource {
       type: string
       kubevirt: {
         baseDomainPassthrough: boolean
-        credentials: {
+        credentials?: {
           infraKubeConfigSecret: {
             name: string
             key: string

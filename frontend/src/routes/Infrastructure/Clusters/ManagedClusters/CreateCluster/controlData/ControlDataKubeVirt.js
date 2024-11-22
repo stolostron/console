@@ -17,6 +17,7 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
+import { loadExistingNamespaces } from '../../../../../../lib/temptifly-utils'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -105,6 +106,19 @@ export const getControlDataKubeVirt = (
       placeholder: t('creation.ocp.name.placeholder'),
       id: 'clusterName',
       type: 'text',
+      validation: {
+        constraint: VALID_DNS_LABEL,
+        notification: t('import.form.invalid.dns.label'),
+        required: true,
+      },
+    },
+    {
+      name: t('Hosted cluster namespace'),
+      tooltip: t('tooltip.creation.ocp.hosted.cluster.namespace'),
+      id: 'namespace',
+      type: 'combobox',
+      fetchAvailable: loadExistingNamespaces(t),
+      active: 'clusters',
       validation: {
         constraint: VALID_DNS_LABEL,
         notification: t('import.form.invalid.dns.label'),

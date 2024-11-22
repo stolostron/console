@@ -19,55 +19,68 @@ export async function createCluster(resources: any[]) {
   // get namespace and filter out any namespace resource
   // get ClusterDeployment and filter it out to create at the very end
   let response
-  let namespace = ''
+  let managedClusterNamespace = ''
   let labels = undefined
   const clusterResources: any = []
+  const projectResources: any = []
   resources = resources.filter((resource: any) => {
     const { kind, metadata = {}, spec = {} } = resource
+
     switch (kind) {
       case 'Namespace':
-        namespace = metadata.name
+        managedClusterNamespace = metadata.name
+        return false
+
+      case 'Project':
+        projectResources.push(resource)
         return false
 
       case 'ClusterPool':
         clusterResources.push(resource)
-        ;({ namespace } = metadata)
+        ;({ namespace: managedClusterNamespace } = metadata)
         labels = clusterPoolNamespaceLabels
         return false
 
       case 'ClusterDeployment':
         clusterResources.push(resource)
-        ;({ namespace } = metadata)
+        ;({ namespace: managedClusterNamespace } = metadata)
         return false
 
       case 'ManagedCluster':
-        ;({ name: namespace } = metadata)
+        ;({ name: managedClusterNamespace } = metadata)
         break
 
       case 'HostedCluster':
-        ;({ name: namespace } = metadata)
+        ;({ name: managedClusterNamespace } = metadata)
         break
 
       default:
         if (spec && spec.clusterNamespace) {
-          namespace = spec.clusterNamespace
+          managedClusterNamespace = spec.clusterNamespace
         }
         break
     }
+
     return true
   })
 
-  // create project and ignore if it already exists
-  try {
-    await createProject(namespace, labels).promise
-  } catch (err) {
-    if ((err as unknown as { code: number }).code !== 409) {
-      return {
-        status: 'ERROR',
-        messages: [{ message: (err as Error).message }],
+  // Create namespace for ManagedCluster and any other Project resources from the YAML
+  const projectResults = [
+    createProject(managedClusterNamespace, labels),
+    ...projectResources.map((resource: any) => createResource(resource)),
+  ]
+  response = await Promise.allSettled(projectResults.map((result: any) => result.promise))
+  response.forEach((result) => {
+    if (result.status === 'rejected') {
+      // ignore error if namespace already exists (409 conflict)
+      if (result?.reason?.code !== 409) {
+        return {
+          status: 'ERROR',
+          messages: [{ message: result.reason.message }],
+        }
       }
     }
-  }
+  })
 
   // create resources
   errors = []
@@ -75,9 +88,7 @@ export async function createCluster(resources: any[]) {
   response = await Promise.allSettled(results.map((result: any) => result.promise))
   response.forEach((result) => {
     if (result.status === 'rejected') {
-      if (result.reason && !result.reason.message.startsWith('namespaces "clusters" already exists')) {
-        errors.push({ message: result.reason.message })
-      }
+      errors.push({ message: result.reason.message })
     }
   })
 
@@ -101,12 +112,12 @@ export async function createCluster(resources: any[]) {
         {
           apiVersion: ManagedClusterApiVersion,
           kind: ManagedClusterKind,
-          metadata: { name: namespace },
+          metadata: { name: managedClusterNamespace },
         },
         {
           apiVersion: ClusterDeploymentApiVersion,
           kind: ClusterDeploymentKind,
-          metadata: { name: namespace, namespace },
+          metadata: { name: managedClusterNamespace, namespace: managedClusterNamespace },
         },
       ]
     }

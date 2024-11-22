@@ -131,6 +131,23 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     },
   },
   {
+    "active": "clusters",
+    "fetchAvailable": {
+      "loadingDesc": "Loading namespaces...",
+      "query": [Function],
+      "setAvailable": [Function],
+    },
+    "id": "namespace",
+    "name": "Hosted cluster namespace",
+    "tooltip": "The namespace where hosted cluster resources are created. Do not enter a namespace that matches the cluster name and do not use an existing managed cluster namespace.",
+    "type": "combobox",
+    "validation": {
+      "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+      "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
+      "required": true,
+    },
+  },
+  {
     "available": [],
     "id": "clusterSet",
     "name": "Cluster set",
@@ -422,6 +439,23 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
     "placeholder": "Enter cluster name",
     "tooltip": "The unique name of your cluster. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.",
     "type": "text",
+    "validation": {
+      "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+      "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
+      "required": true,
+    },
+  },
+  {
+    "active": "clusters",
+    "fetchAvailable": {
+      "loadingDesc": "Loading namespaces...",
+      "query": [Function],
+      "setAvailable": [Function],
+    },
+    "id": "namespace",
+    "name": "Hosted cluster namespace",
+    "tooltip": "The namespace where hosted cluster resources are created. Do not enter a namespace that matches the cluster name and do not use an existing managed cluster namespace.",
+    "type": "combobox",
     "validation": {
       "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
       "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
