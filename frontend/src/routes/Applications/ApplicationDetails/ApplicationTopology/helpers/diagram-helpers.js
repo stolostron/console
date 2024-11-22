@@ -84,7 +84,7 @@ export const addPropertyToList = (list, data) => {
   return list
 }
 
-export const createEditLink = (node, overrideKind, overrideCluster, overrideApiVersion) => {
+export const createEditLink = (node, hubClusterName, overrideKind, overrideCluster, overrideApiVersion) => {
   let kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
   const apigroup = _.get(node, 'apigroup')
   const apiversion = _.get(node, 'apiversion')

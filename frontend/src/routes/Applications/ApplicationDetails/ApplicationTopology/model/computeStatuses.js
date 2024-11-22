@@ -933,6 +933,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
             })
             const subscriptionStatusLink = createEditLink(
               node,
+              hubClusterName,
               'SubscriptionStatus',
               subsCluster,
               'apps.open-cluster-management.io/v1alpha1'
@@ -1202,7 +1203,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t, hubClusterNa
             data: {
               action: showResourceYaml,
               cluster: pod.cluster,
-              editLink: createEditLink(pod),
+              editLink: createEditLink(pod, hubClusterName),
             },
           },
           indent: true,
@@ -1339,7 +1340,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t, hubClus
           data: {
             action: showResourceYaml,
             cluster: res.cluster,
-            editLink: createEditLink(res),
+            editLink: createEditLink(res, hubClusterName),
           },
         },
         indent: true,
@@ -1438,7 +1439,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t, hubClus
             data: {
               action: showResourceYaml,
               cluster: res.cluster,
-              editLink: createEditLink(res),
+              editLink: createEditLink(res, hubClusterName),
             },
           },
           indent: true,
