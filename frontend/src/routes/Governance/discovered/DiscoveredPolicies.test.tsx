@@ -569,5 +569,13 @@ describe('useFetchPolicies custom hook', () => {
         name: /require-owner-labels Kyverno ClusterPolicy Audit Medium 1 Local/,
       })
     ).toBeInTheDocument()
+
+    // Validate filter
+    await waitForText('Filter')
+
+    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.logTestingPlaygroundURL()
+    screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
+    screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
   })
 })
