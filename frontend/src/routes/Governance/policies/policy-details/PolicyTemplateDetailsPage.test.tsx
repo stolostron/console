@@ -1173,7 +1173,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('Yaml Editor Open')
   })
 
-  test('Should render ValidatingAdmissionPolicyBinding page successfully', async () => {
+  test('Should render ValidatingAdmissionPolicyBinding page successfully without parameter references', async () => {
     const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
 
     render(
@@ -1217,6 +1217,8 @@ describe('Policy Template Details Page', () => {
     // Find ValidatingAdmissionPolicy name
     await waitForText('gatekeeper-k8srequiredlabels', true)
     expect(screen.getByRole('link', { name: 'gatekeeper-k8srequiredlabels' })).toBeInTheDocument()
+
+    await waitForText('Parameter resources')
   })
 
   test('Should render Kyverno policy page successfully', async () => {
@@ -1517,6 +1519,202 @@ describe('Policy Template Details Page', () => {
     const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View report' })
     expect(passingPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
+    )
+  })
+
+  test('Should render ValidatingAdmissionPolicyBinding with paramRefs successfully', async () => {
+    ;(useSearchResultRelatedItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      {
+        data: {
+          searchResult: [
+            {
+              related: [
+                {
+                  kind: 'Cluster',
+                  items: [
+                    {
+                      HubAcceptedManagedCluster: 'True',
+                      ManagedClusterConditionAvailable: 'True',
+                      ManagedClusterConditionClockSynced: 'True',
+                      ManagedClusterImportSucceeded: 'True',
+                      ManagedClusterJoined: 'True',
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/0d76dcdd-c5d6-4b61-a85c-34079188b16c'],
+                      _uid: 'cluster__local-cluster',
+                      addon:
+                        'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=false; observability-controller=false; search-collector=false; work-manager=true',
+                      apigroup: 'internal.open-cluster-management.io',
+                      created: '2024-11-18T18:45:44Z',
+                      cluster: 'local-cluster',
+                      kind: 'Cluster',
+                      kind_plural: 'managedclusterinfos',
+                      name: 'local-cluster',
+                    },
+                  ],
+                },
+                {
+                  kind: 'ValidatingAdmissionPolicy',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/0d76dcdd-c5d6-4b61-a85c-34079188b16c'],
+                      _uid: 'local-cluster/368581e0-c545-4db3-a391-453ec407b7dc',
+                      apigroup: 'admissionregistration.k8s.io',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      created: '2024-11-18T19:04:01Z',
+                      kind: 'ValidatingAdmissionPolicy',
+                      kind_plural: 'validatingadmissionpolicies',
+                      name: 'demo-policy.example.com',
+                    },
+                  ],
+                },
+                {
+                  kind: 'Pod',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/0d76dcdd-c5d6-4b61-a85c-34079188b16c'],
+                      _uid: 'local-cluster/87d5f570-f7ef-406d-bda5-51102a4cef95',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      container: 'nginx',
+                      created: '2024-11-18T19:05:47Z',
+                      hostIP: '10.0.60.97',
+                      image: 'nginx:1.7.9',
+                      kind: 'Pod',
+                      kind_plural: 'pods',
+                      label: 'test=cat',
+                      name: 'nginx-pod-a',
+                      namespace: 'default',
+                      podIP: '',
+                      restarts: '0',
+                      startedAt: '2024-11-18T19:05:47Z',
+                      status: 'ContainerCreating',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          loading: false,
+          error: undefined,
+        },
+      },
+    ])()
+
+    const getClusterPolicyResourceRequest = {
+      apiVersion: 'view.open-cluster-management.io/v1beta1',
+      kind: 'ManagedClusterView',
+      metadata: {
+        name: 'b3c6b989b041fcb8019f04c750c54bfecf631100',
+        namespace: 'test-cluster',
+        labels: {
+          viewName: 'b3c6b989b041fcb8019f04c750c54bfecf631100',
+        },
+      },
+      spec: {
+        scope: {
+          name: 'demo-binding-test.example.com',
+          resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
+        },
+      },
+    }
+
+    const getClusterPolicyResourceResponse = JSON.parse(JSON.stringify(getClusterPolicyResourceRequest))
+    getClusterPolicyResourceResponse.status = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'admissionregistration.k8s.io/v1',
+        kind: 'ValidatingAdmissionPolicyBinding',
+        metadata: {
+          name: 'demo-binding-test.example.com',
+        },
+        spec: {
+          matchResources: {
+            matchPolicy: 'Equivalent',
+            namespaceSelector: {
+              matchLabels: {
+                environment: 'dd',
+              },
+            },
+            objectSelector: {},
+          },
+          paramRef: {
+            parameterNotFoundAction: 'Deny',
+            selector: {
+              matchLabels: {
+                test: 'cat',
+              },
+            },
+          },
+          policyName: 'demo-policy.example.com',
+          validationActions: ['Deny', 'Audit'],
+        },
+      },
+    }
+
+    const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
+
+    // load the page:
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, {})
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'admissionregistration.k8s.io',
+              apiVersion: 'v1',
+              kind: 'ValidatingAdmissionPolicyBinding',
+              templateName: 'demo-binding-test.example.com',
+              templateNamespace: '',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([getResourceNock])
+
+    // wait for page load - looking for breadcrumb items
+    await waitForText('Discovered policies')
+
+    expect(screen.getByRole('link', { name: 'demo-binding-test.example.com' })).toBeInTheDocument()
+
+    await waitForText('ValidatingAdmissionPolicyBinding details')
+
+    // Find ValidatingAdmissionPolicy name
+    await waitForText('demo-policy.example.com', true)
+    expect(screen.getByRole('link', { name: 'demo-policy.example.com' })).toBeInTheDocument()
+
+    await waitForText('Parameter resources')
+
+    // Check for some text from the parameter ref pod
+    await waitForText('nginx-pod-a')
+
+    const name = screen.getByRole('link', { name: 'nginx-pod-a' })
+    expect(name.getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Pod&apiversion=v1&name=nginx-pod-a&namespace=default`
     )
   })
 })
