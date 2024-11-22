@@ -33,7 +33,7 @@ describe('ArgoAppDetailsContainer with no apps', () => {
         argoAppList={mockData.argoAppList}
         t={t}
         argoAppDetailsContainerControl={mockData.argoAppDetailsContainerControl}
-        hubClusterName='local-cluster'
+        hubClusterName="local-cluster"
       />
     ))
 
@@ -84,7 +84,7 @@ describe('ArgoAppDetailsContainer with no apps', () => {
         argoAppList={mockData.argoAppList}
         t={t}
         argoAppDetailsContainerControl={mockData.argoAppDetailsContainerControl}
-        hubClusterName='local-cluster'
+        hubClusterName="local-cluster"
       />
     ))
 
@@ -141,7 +141,7 @@ describe('ArgoAppDetailsContainer test functions', () => {
         ref={(node) => {
           instance = node
         }}
-        hubClusterName='local-cluster'
+        hubClusterName="local-cluster"
       />
     ))
 
