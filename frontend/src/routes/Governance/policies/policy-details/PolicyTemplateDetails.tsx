@@ -22,7 +22,7 @@ import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
-import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
+import { useFetchKyvernoRelated, useFetchVapb, useFetchVapbParamRefs } from './PolicyTemplateDetailHooks'
 import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
 import { fireManagedClusterView } from '../../../../resources'
 
@@ -44,10 +44,11 @@ export function PolicyTemplateDetails() {
   const apiVersion = urlParams.apiVersion ?? ''
   const { clusterName, template, templateLoading, handleAuditViolation } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
-  // This is for gatekeeper constraint and kyverno
-  const vapb = useFetchVapb()
+  const vapb = useFetchVapb() // Used by gatekeeper constraints and kyverno resources
+  const vapbRelated = useFetchVapbParamRefs() // Used when just displaying a VAPB
   const kyvernoRelated = useFetchKyvernoRelated()
   const isKyverno = ['kyverno.io'].includes(apiGroup)
+  const isVAPB = apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding'
   const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
   const [relatedObjectsMessages, setRelatedObjectsMessages] = useState<IRelatedObjMessages>({})
 
@@ -74,6 +75,12 @@ export function PolicyTemplateDetails() {
       }
     }
   }, [kyvernoRelated, apiGroup, isKyverno, handleAuditViolation])
+
+  useEffect(() => {
+    if (isVAPB && vapbRelated.relatedItems !== undefined && vapbRelated.relatedItems) {
+      setRelatedObjects(vapbRelated.relatedItems)
+    }
+  }, [vapbRelated, apiGroup, kind, isVAPB])
 
   useEffect(() => {
     if (apiGroup === 'constraints.gatekeeper.sh' && template?.status?.totalViolations !== undefined) {
@@ -314,14 +321,57 @@ export function PolicyTemplateDetails() {
         sort: 'object.apiVersion',
         search: 'object.apiVersion',
       },
-      ...(kind === 'ValidatingAdmissionPolicyBinding' ? [] : [violationColumn]),
+      violationColumn,
       {
         header: t('Reason'),
         cell: 'reason',
         search: 'reason',
       },
     ],
-    [t, violationColumn, kind]
+    [t, violationColumn]
+  )
+
+  const paramRefVAPBColumns = useMemo(
+    () => [
+      {
+        header: t('Name'),
+        cell: (item: any) => {
+          const { cluster, kind, name, namespace, apiversion, apigroup } = item
+          const apigroupArg = apigroup ? `${apigroup}%2F` : ''
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          return (
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+            >
+              {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+            </a>
+          )
+        },
+        sort: 'name',
+        search: 'name',
+      },
+      {
+        header: t('Namespace'),
+        cell: (item: any) => item.namespace ?? '-',
+        search: (item: any) => item.namespace,
+        sort: (a: any, b: any) => compareStrings(a.namespace, b.namespace),
+      },
+      {
+        header: t('Kind'),
+        cell: 'kind',
+        sort: 'kind',
+        search: 'kind',
+      },
+      {
+        header: t('API version'),
+        cell: (item: any) => (item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion),
+        sort: 'apigroup',
+        search: 'apigroup',
+      },
+    ],
+    [t]
   )
 
   const relatedResourceKyvernoColumns = useMemo(
@@ -402,17 +452,24 @@ export function PolicyTemplateDetails() {
         />
       </PageSection>
       <PageSection>
-        <Title headingLevel="h2">{t('Related resources')}</Title>
+        <Title headingLevel="h2">{isVAPB ? t('Parameter resources') : t('Related resources')}</Title>
         <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
           <AcmTable
             items={relatedObjects}
             emptyState={
-              <AcmEmptyState
-                title={t('No related resources')}
-                message={t('There are no resources related to this policy template.')}
-              />
+              isVAPB ? (
+                <AcmEmptyState
+                  title={t('No parameter resources')}
+                  message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
+                />
+              ) : (
+                <AcmEmptyState
+                  title={t('No related resources')}
+                  message={t('There are no resources related to this policy template.')}
+                />
+              )
             }
-            columns={isKyverno ? relatedResourceKyvernoColumns : relatedResourceColumns}
+            columns={isKyverno ? relatedResourceKyvernoColumns : isVAPB ? paramRefVAPBColumns : relatedResourceColumns}
             keyFn={(item) =>
               isKyverno ? `${item.kind}.${item.name}` : `${item?.object?.kind}.${item?.object?.metadata.name}`
             }

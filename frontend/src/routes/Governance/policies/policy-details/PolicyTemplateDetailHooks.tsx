@@ -66,6 +66,80 @@ export function useFetchVapb() {
   return { vapbItems: data?.searchResult?.[0]?.items, loading, err: error?.message }
 }
 
+export function useFetchVapbParamRefs() {
+  const urlParams = useParams()
+  const name = urlParams.templateName ?? '-'
+  const kind = urlParams.kind ?? '-'
+  const apiGroup = urlParams.apiGroup ?? ''
+  const { clusterName, template, templateLoading } = useTemplateDetailsContext()
+  const [getVapb, { loading, error, data }] = useSearchResultRelatedItemsLazyQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+  })
+  const [filtered, setFiltered] = useState<any[]>()
+
+  useEffect(() => {
+    if (
+      apiGroup === 'admissionregistration.k8s.io' &&
+      kind === 'ValidatingAdmissionPolicyBinding' &&
+      clusterName &&
+      name &&
+      template &&
+      !templateLoading &&
+      // These conditions reduce renders and hitting fireManagedClusterView
+      !loading &&
+      !error &&
+      !data
+    ) {
+      getVapb({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+        variables: {
+          input: [
+            {
+              filters: [
+                {
+                  property: 'apigroup',
+                  values: [apiGroup],
+                },
+                {
+                  property: 'kind',
+                  values: [kind],
+                },
+                {
+                  property: 'name',
+                  values: [name],
+                },
+                {
+                  property: 'cluster',
+                  values: [clusterName],
+                },
+              ],
+              limit: 10000,
+            },
+          ],
+        },
+      })
+    }
+
+    if (apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding' && data) {
+      setFiltered(
+        data?.searchResult?.[0]?.related
+          ?.map((related) => related?.items)
+          .flat()
+          .filter((item) => !['ValidatingAdmissionPolicy', 'Cluster'].includes(item.kind))
+      )
+    }
+  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getVapb])
+
+  return useMemo(
+    () => ({
+      loading,
+      err: error?.message,
+      relatedItems: filtered,
+    }),
+    [loading, error, filtered]
+  )
+}
+
 export function useFetchKyvernoRelated() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
