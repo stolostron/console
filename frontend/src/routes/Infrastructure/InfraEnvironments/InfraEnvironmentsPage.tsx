@@ -78,7 +78,7 @@ export const isDeleteDisabled = (infraEnvs: InfraEnvK8sResource[], agents: Agent
   return isDisabled
 }
 
-export const getFirstAgenterviceConfig = (agentServiceConfigs?: AgentServiceConfigK8sResource[]) =>
+export const getFirstAgentServiceConfig = (agentServiceConfigs?: AgentServiceConfigK8sResource[]) =>
   agentServiceConfigs?.[0]
 
 export const getPlatform = (infrastructures?: InfrastructureK8sResource[]) =>
@@ -192,7 +192,7 @@ const InfraEnvironmentsPage: React.FC = () => {
   }, [])
 
   const platform: string = infrastructures?.[0]?.status?.platform || 'None'
-  const agentServiceConfig = getFirstAgenterviceConfig(agentServiceConfigs)
+  const agentServiceConfig = getFirstAgentServiceConfig(agentServiceConfigs)
   const isStorage = isStorageConfigured({ storageClasses: storageClasses as K8sResourceCommon[] | undefined })
 
   return (

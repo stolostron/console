@@ -15,7 +15,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage, {
-  getFirstAgenterviceConfig,
+  getFirstAgentServiceConfig,
   getInfraEnvsOfMatchingPullSecret,
   getPlatform,
   isDeleteDisabled,
@@ -164,10 +164,10 @@ describe('Infrastructure Environments page utility functions', () => {
 
     expect(isDeleteDisabled([{}], [mockAgent1, mockAgent2])).toBe(true)
   })
-  test('getFirstAgenterviceConfig', () => {
-    expect(getFirstAgenterviceConfig(undefined)).toBe(undefined)
-    expect(getFirstAgenterviceConfig([])).toBe(undefined)
-    expect(getFirstAgenterviceConfig([{} as AgentServiceConfigK8sResource])).not.toBe(undefined)
+  test('getFirstAgentServiceConfig', () => {
+    expect(getFirstAgentServiceConfig(undefined)).toBe(undefined)
+    expect(getFirstAgentServiceConfig([])).toBe(undefined)
+    expect(getFirstAgentServiceConfig([{} as AgentServiceConfigK8sResource])).not.toBe(undefined)
   })
   test('getPlatform', () => {
     expect(getPlatform(undefined)).toBe('None')
