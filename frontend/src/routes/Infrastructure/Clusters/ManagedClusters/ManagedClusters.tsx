@@ -769,32 +769,24 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
 
 export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
   const clusterHasControlPlane = () => {
-    const nodeList = cluster.nodes?.nodeList
-    const roleList = nodeList?.map((node: NodeInfo) => getRoles(node))
-    const hasControlPlane = roleList?.filter((str) => {
-      return str.indexOf('control-plane') > -1
-    })
-    return hasControlPlane ? hasControlPlane.length > 0 : false
+    return cluster.nodes?.nodeList?.some((node: NodeInfo) => getRoles(node).includes('control-plane')) || false
   }
+
+  const isHosted =
+    cluster.isHostedCluster ||
+    cluster.isHypershift ||
+    (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
 
   if (cluster.name === 'local-cluster') {
     return t('Hub')
   }
   if (cluster.isRegionalHubCluster) {
-    if (cluster.isHostedCluster || cluster.isHypershift) {
-      return t('Hub, Hosted')
-    }
-    return t('Hub')
+    return isHosted ? t('Hub, Hosted') : t('Hub')
   }
-  if (
-    cluster.isHostedCluster ||
-    cluster.isHypershift ||
-    (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
-  ) {
+  if (isHosted) {
     return t('Hosted')
-  } else {
-    return t('Standalone')
   }
+  return t('Standalone')
 }
 
 export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
