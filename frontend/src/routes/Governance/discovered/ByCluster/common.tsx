@@ -108,7 +108,7 @@ export const byClusterCols = (
   subscriptions: Subscription[],
   channels: Channel[],
   policyKind: string,
-  diabledSeverityTooltip: boolean,
+  disabledSeverityTooltip: boolean,
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
 ): IAcmTableColumn<DiscoveredPolicyItem>[] => [
   {
@@ -144,17 +144,17 @@ export const byClusterCols = (
     id: 'responseAction',
     exportContent: (item: DiscoveredPolicyItem) => item.responseAction,
   },
-  {
-    header: t('Severity'),
-    // TODO Add severity icon
-    cell: severityCell,
-    sort: 'severity',
-    id: 'severity',
-    ...(!diabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
-    exportContent: (item) => item.severity,
-  },
   ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
     ? [
+        {
+          header: t('Severity'),
+          // TODO Add severity icon
+          cell: severityCell,
+          sort: 'severity',
+          id: 'severity',
+          ...(!disabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
+          exportContent: (item: DiscoveredPolicyItem) => item.severity,
+        },
         {
           header: t('Violations'),
           tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
@@ -345,6 +345,7 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
       { label: 'enforce', value: 'enforce' },
       { label: 'inform', value: 'inform' },
       { label: 'warn', value: 'warn' },
+      { label: 'audit', value: 'audit' },
       { label: 'Kyverno Audit', value: 'Audit' },
       { label: 'Kyverno Enforce', value: 'Enforce' },
     ],
