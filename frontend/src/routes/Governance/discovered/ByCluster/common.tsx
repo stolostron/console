@@ -108,7 +108,7 @@ export const byClusterCols = (
   subscriptions: Subscription[],
   channels: Channel[],
   policyKind: string,
-  diabledSeverityTooltip: boolean,
+  disabledSeverityTooltip: boolean,
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
 ): IAcmTableColumn<DiscoveredPolicyItem>[] => [
   {
@@ -150,7 +150,7 @@ export const byClusterCols = (
     cell: severityCell,
     sort: 'severity',
     id: 'severity',
-    ...(!diabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
+    ...(!disabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
     exportContent: (item) => item.severity,
   },
   ...(policyKind !== 'ValidatingAdmissionPolicyBinding'

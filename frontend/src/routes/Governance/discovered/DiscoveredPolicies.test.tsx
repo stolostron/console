@@ -574,7 +574,6 @@ describe('useFetchPolicies custom hook', () => {
     await waitForText('Filter')
 
     screen.getByRole('button', { name: 'Options menu' }).click()
-    screen.logTestingPlaygroundURL()
     screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
   })
