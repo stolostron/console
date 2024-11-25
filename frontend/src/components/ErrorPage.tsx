@@ -12,9 +12,11 @@ import {
   PageSection,
   Title,
 } from '@patternfly/react-core'
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../lib/acm-i18next'
+import { LoadingPage } from './LoadingPage'
+import { LoadStatusContext } from './LoadStatusProvider'
 
 export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {
   let title = t('Error')
@@ -135,7 +137,8 @@ export function ErrorState(props: { error: Error; actions?: ReactNode }) {
 }
 
 export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
-  return (
+  const { loadCompleted } = useContext(LoadStatusContext)
+  return loadCompleted ? (
     <PageSection>
       <Card>
         <CardBody>
@@ -143,5 +146,7 @@ export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
         </CardBody>
       </Card>
     </PageSection>
+  ) : (
+    <LoadingPage />
   )
 }

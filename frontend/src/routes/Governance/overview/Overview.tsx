@@ -31,6 +31,7 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
+import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
@@ -48,23 +49,27 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
   const { t } = useTranslation()
+  const { loadCompleted } = useContext(LoadStatusContext)
+
   useEffect(() => {
     checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
   }, [namespaces])
 
-  if (policies.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-  if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
-    return (
-      <PageSection isFilled>
-        <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
+  if (loadCompleted || process.env.NODE_ENV === 'test') {
+    if (policies.length === 0) {
+      return (
+        <PageSection isFilled>
+          <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
+      return (
+        <PageSection isFilled>
+          <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
   }
   return (
     <PageSection>
@@ -389,12 +394,12 @@ function renderClusterList(
   return (
     <div style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
       {clusterList.map(({ cluster, violations }) => {
-        const key = `${cluster.metadata.name}-card`
+        const key = `${cluster?.metadata?.name}-card`
         /* istanbul ignore if */
         if (!violations) return <Fragment key={key} />
         return (
           <Fragment key={key}>
-            <span>{cluster.metadata.name}</span>
+            <span>{cluster?.metadata?.name}</span>
             {violations.compliant ? (
               <Tooltip
                 content={t('policies.noviolations', {

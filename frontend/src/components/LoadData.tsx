@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
 import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
-import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -174,14 +173,14 @@ import {
   subscriptionOperatorsState,
   subscriptionReportsState,
   subscriptionsState,
-  THROTTLE_EVENTS_DELAY,
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { useRecoilValue } from '../shared-recoil'
+import { LoadStatusContext } from './LoadStatusProvider'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loaded, setLoaded } = useContext(PluginDataContext)
+  const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(LoadStatusContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
@@ -246,9 +245,17 @@ export function LoadData(props: { children?: ReactNode }) {
 
     const mappers: Record<
       string,
-      Record<string, { setter: SetterOrUpdater<Record<string, any[]>>; keyBy: string[] }>
+      Record<
+        string,
+        {
+          setter: SetterOrUpdater<Record<string, any[]>>
+          mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+          keyBy: string[]
+        }
+      >
     > = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
+    const mcaches: Record<string, Record<string, Record<string, IResource[]>>> = {}
     function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
       if (!setters[groupVersion]) setters[groupVersion] = {}
@@ -264,7 +271,9 @@ export function LoadData(props: { children?: ReactNode }) {
     ) {
       const groupVersion = apiVersion.split('/')[0]
       if (!mappers[groupVersion]) mappers[groupVersion] = {}
-      mappers[groupVersion][kind] = { setter, keyBy }
+      if (!mcaches[groupVersion]) mcaches[groupVersion] = {}
+      mcaches[groupVersion][kind] = {}
+      mappers[groupVersion][kind] = { setter, mcaches, keyBy }
     }
 
     // mappers (key=>[values])
@@ -431,18 +440,18 @@ export function LoadData(props: { children?: ReactNode }) {
             } else {
               const mapper = mappers[groupVersion]?.[kind]
               if (mapper) {
-                const { setter, keyBy } = mapper
-                for (const watchEvent of watchEvents) {
-                  const key = keyBy
-                    .reduce((keys, partKey) => {
-                      keys.push(get(watchEvent.object, partKey))
-                      return keys
-                    }, [] as string[])
-                    .join('/')
-                  setter((map) => {
-                    const newMap = { ...map }
-                    newMap[key] = [...(map[key] || [])]
-                    const arr = newMap[key]
+                const { setter, mcaches, keyBy } = mapper
+                setter(() => {
+                  const map = mcaches[groupVersion]?.[kind]
+                  for (const watchEvent of watchEvents) {
+                    const key = keyBy
+                      .reduce((keys, partKey) => {
+                        keys.push(get(watchEvent.object, partKey))
+                        return keys
+                      }, [] as string[])
+                      .join('/')
+                    map[key] = [...(map[key] || [])]
+                    const arr = map[key]
                     const index = arr.findIndex(
                       (resource) =>
                         resource.metadata?.name === watchEvent.object.metadata.name &&
@@ -458,9 +467,9 @@ export function LoadData(props: { children?: ReactNode }) {
                         if (index !== -1) arr.splice(index, 1)
                         break
                     }
-                    return newMap
-                  })
-                }
+                  }
+                  return { ...map }
+                })
               }
             }
           }
@@ -480,6 +489,16 @@ export function LoadData(props: { children?: ReactNode }) {
               break
             case 'START':
               eventQueue.length = 0
+              break
+            // instead of waiting for entire backend data to load
+            // data is broken up into packets with list resources first
+            // tables show skeleton until firs packet is received
+            // then list grows as subsequent packets packets are received
+            case 'EOP': // END OF A PACKET
+              setLoadStarted(() => {
+                processEventQueue()
+                return true
+              })
               break
             case 'LOADED':
               setEventsLoaded((eventsLoaded) => {
@@ -516,12 +535,14 @@ export function LoadData(props: { children?: ReactNode }) {
     }
     startWatch()
 
-    const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
+    const timeout = setInterval(processEventQueue, 500)
     return () => {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
     }
-  }, [caches, mappers, setters, setSettings])
+    // this effect must only run once--it sets up the call to /events on the backend
+    // this should be [], but linter would complain
+  }, [caches, mappers, setLoadStarted, setSettings, setters])
 
   const {
     data: globalHubRes,
@@ -546,8 +567,8 @@ export function LoadData(props: { children?: ReactNode }) {
   }
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
-  if (!loaded && eventsLoaded && !globalHubLoading) {
-    setLoaded(true)
+  if (!loadCompleted && eventsLoaded && !globalHubLoading) {
+    setLoadCompleted(true)
   }
 
   useEffect(() => {

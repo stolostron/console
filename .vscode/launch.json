@@ -30,6 +30,9 @@
       "name": "Launch Backend",
       "request": "launch",
       "args": ["run", "launch"],
+      "env": {
+        "MOCK_CLUSTERS": "100"
+      },
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "node",
