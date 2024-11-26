@@ -769,21 +769,25 @@ export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, und
   const clusterHasControlPlane = () => {
     return cluster.nodes?.nodeList?.some((node: NodeInfo) => getRoles(node).includes('control-plane')) || false
   }
-
   const isHosted =
     cluster.isHostedCluster ||
     cluster.isHypershift ||
     (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
 
-  if (cluster.name === 'local-cluster') {
+  const isHub = cluster.name === 'local-cluster' || cluster.isRegionalHubCluster
+
+  if (isHub && isHosted) {
+    return t('Hub, Hosted')
+  }
+
+  if (isHub) {
     return t('Hub')
   }
-  if (cluster.isRegionalHubCluster) {
-    return isHosted ? t('Hub, Hosted') : t('Hub')
-  }
+
   if (isHosted) {
     return t('Hosted')
   }
+
   return t('Standalone')
 }
 
