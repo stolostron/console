@@ -16,6 +16,7 @@ import {
   mockRHOCMSecrets,
 } from './DiscoveryComponents/test-utils'
 import DiscoveryConfigPage from './DiscoveryConfig/DiscoveryConfig'
+import { LoadStatusContext } from '../../../../components/LoadStatusProvider'
 
 beforeEach(() => {
   sessionStorage.clear()
@@ -58,7 +59,14 @@ describe('DiscoveredClusters', () => {
         }}
       >
         <MemoryRouter>
-          <DiscoveredClustersPage />
+          <LoadStatusContext.Provider
+            value={{
+              loadStarted: true,
+              loadCompleted: true,
+            }}
+          >
+            <DiscoveredClustersPage />
+          </LoadStatusContext.Provider>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -84,7 +92,19 @@ describe('DiscoveredClusters', () => {
         <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
           <Routes>
             <Route path={NavigationPath.createDiscovery} element={<DiscoveryConfigPage />} />
-            <Route path={NavigationPath.discoveredClusters} element={<DiscoveredClustersPage />} />
+            <Route
+              path={NavigationPath.discoveredClusters}
+              element={
+                <LoadStatusContext.Provider
+                  value={{
+                    loadStarted: true,
+                    loadCompleted: true,
+                  }}
+                >
+                  <DiscoveredClustersPage />
+                </LoadStatusContext.Provider>
+              }
+            />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -111,7 +131,14 @@ describe('DiscoveredClusters', () => {
         }}
       >
         <MemoryRouter>
-          <DiscoveredClustersPage />
+          <LoadStatusContext.Provider
+            value={{
+              loadStarted: true,
+              loadCompleted: true,
+            }}
+          >
+            <DiscoveredClustersPage />
+          </LoadStatusContext.Provider>
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -131,7 +158,14 @@ describe('DiscoveredClusters', () => {
         }}
       >
         <MemoryRouter>
-          <DiscoveredClustersPage />
+          <LoadStatusContext.Provider
+            value={{
+              loadStarted: true,
+              loadCompleted: true,
+            }}
+          >
+            <DiscoveredClustersPage />
+          </LoadStatusContext.Provider>
         </MemoryRouter>
       </RecoilRoot>
     )

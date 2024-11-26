@@ -3,11 +3,19 @@
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { AcmEmptyState } from './AcmEmptyState'
+import { LoadStatusContext } from '../../components/LoadStatusProvider'
 
 describe('AcmEmptyState', () => {
   test('renders with action', () => {
     const { getByText } = render(
-      <AcmEmptyState title="Empty state title" message="Empty state message" action="Empty state action" />
+      <LoadStatusContext.Provider
+        value={{
+          loadStarted: true,
+          loadCompleted: true,
+        }}
+      >
+        <AcmEmptyState title="Empty state title" message="Empty state message" action="Empty state action" />
+      </LoadStatusContext.Provider>
     )
     expect(getByText('Empty state title')).toBeInTheDocument()
     expect(getByText('Empty state action')).toBeInstanceOf(HTMLDivElement)
@@ -21,7 +29,16 @@ describe('AcmEmptyState', () => {
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders with imageOverride', async () => {
-    const { container, getByText } = render(<AcmEmptyState title="Empty state title" message="Empty state message" />)
+    const { container, getByText } = render(
+      <LoadStatusContext.Provider
+        value={{
+          loadStarted: true,
+          loadCompleted: true,
+        }}
+      >
+        <AcmEmptyState title="Empty state title" message="Empty state message" action="Empty state action" />
+      </LoadStatusContext.Provider>
+    )
     expect(getByText('Empty state title')).toBeInTheDocument()
     expect(container.querySelector('button')).toBeNull()
     expect(await axe(container)).toHaveNoViolations()
