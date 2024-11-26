@@ -356,12 +356,12 @@ export class ServerSideEvents {
     let sentCount = 0
     const sending = start
     do {
-      sending.push(...clusters.splice(0, 189))
-      sending.push(...secrets.splice(0, 189))
-      sending.push(...agents.splice(0, 189))
-      sending.push(...infos.splice(0, 189))
-      sending.push(...policies.splice(0, 189))
-      sending.push(...addons.splice(0, 396))
+      sending.push(...clusters.splice(0, 200))
+      sending.push(...secrets.splice(0, 100))
+      sending.push(...agents.splice(0, 200))
+      sending.push(...infos.splice(0, 200))
+      sending.push(...policies.splice(0, 200))
+      sending.push(...addons.splice(0, 400))
       sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
     } while (clusters.length || policies.length || addons.length || infos.length || agents.length)
     do {

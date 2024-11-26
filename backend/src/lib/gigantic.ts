@@ -39,27 +39,34 @@ const templateMaker = function (obj: unknown) {
 
 function getMockClusters(n: number): ServerSideEvent[] {
   const template = templateMaker(clusterTemplate)
-  return Array.from(Array(n).keys()).map((inx) => {
-    return template({ name: `cluster${inx + 1}` })
-  })
+  return [template({ name: 'local-cluster' })].concat(
+    Array.from(Array(n).keys()).map((inx) => {
+      return template({ name: `cluster${inx + 1}` })
+    })
+  )
 }
 
 function getMockClusterInfo(n: number): ServerSideEvent[] {
   const template = templateMaker(managedClusterInfoTemplate)
-  return Array.from(Array(n).keys()).map((inx) => {
-    return template({ name: `cluster${inx + 1}` })
-  })
+  return [template({ name: 'local-cluster' })].concat(
+    Array.from(Array(n).keys()).map((inx) => {
+      return template({ name: `cluster${inx + 1}` })
+    })
+  )
 }
 
 function getMockClusterAddsons(n: number): ServerSideEvent[] {
   let addons
   let template = templateMaker(appmanager)
-  addons = Array.from(Array(n).keys()).map((inx) => {
-    return template({ name: `cluster${inx + 1}` })
-  })
+  addons = [template({ name: 'local-cluster' })].concat(
+    Array.from(Array(n).keys()).map((inx) => {
+      return template({ name: `cluster${inx + 1}` })
+    })
+  )
   template = templateMaker(certpolicy)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -67,6 +74,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(clusterProxy)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -74,6 +82,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(configPolicy)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -81,6 +90,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(govPolicy)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -88,6 +98,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(hypershiftPolicy)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -95,6 +106,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(workManager)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -102,6 +114,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   template = templateMaker(managedSrv)
   addons = [
     ...addons,
+    template({ name: 'local-cluster' }),
     ...Array.from(Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
@@ -109,20 +122,40 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   return addons
 }
 
-const NONCOMPLIANT = [3, 18, 23, 55, 60, 80, 93]
+const NONCOMPLIANT = [
+  [3, 18, 23, 55, 60, 80, 93],
+  [1, 33, 43, 68],
+  [5, 33, 69, 20, 45, 32],
+]
+type PolicyTemplateType = typeof policyTemplate
 function getMockPolicies(n: number): ServerSideEvent[] {
-  const mockPolicy = structuredClone(policyTemplate)
-  Array.from(Array(n).keys()).forEach((inx) => {
-    let compliant = NONCOMPLIANT.indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
-    if (inx == 20 || inx === 71) compliant = 'Pending'
-    if (inx == 22 || inx === 98) compliant = 'Unknown'
-    mockPolicy?.data?.object.status.status.push({
-      clustername: `cluster${inx + 1}`,
-      clusternamespace: `cluster${inx + 1}`,
-      compliant,
+  const template = templateMaker(policyTemplate)
+  return Array.from(Array(3).keys()).map((pinx) => {
+    const mockPolicy = template({ name: `policy${pinx + 1}` }) as PolicyTemplateType
+    Array.from(Array(n).keys()).forEach((inx) => {
+      let compliant = NONCOMPLIANT[pinx].indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
+      switch (pinx) {
+        case 0:
+          if (inx == 20 || inx === 71) compliant = 'Pending'
+          if (inx == 22 || inx === 98) compliant = 'Unknown'
+          break
+        case 1:
+          if (inx == 44) compliant = 'Pending'
+          if (inx == 85 || inx === 86) compliant = 'Unknown'
+          break
+        case 2:
+          if (inx == 23 || inx === 36) compliant = 'Pending'
+          // if (inx == 22 || inx === 98) compliant = 'Unknown'
+          break
+      }
+      mockPolicy?.data?.object.status.status.push({
+        clustername: `cluster${inx + 1}`,
+        clusternamespace: `cluster${inx + 1}`,
+        compliant,
+      })
     })
+    return mockPolicy
   })
-  return [mockPolicy]
 }
 
 const policyTemplate = {
@@ -139,7 +172,7 @@ const policyTemplate = {
         },
         creationTimestamp: '2024-11-04T17:12:36Z',
         generation: 1,
-        name: 'mockPolicy',
+        name: () => 'name',
         namespace: 'open-cluster-management-global-set',
         resourceVersion: '3860061',
         uid: '437f570c-c73c-4e34-ac3a-deaa3c83dc4b',
