@@ -418,6 +418,15 @@ describe('useFetchPolicies custom hook', () => {
     expect(container.querySelector('td[data-label="Severity"]')).toHaveTextContent('-')
     await waitForText('Source')
     await waitForText('Local')
+
+    // Validate filter
+    await waitForText('Filter')
+
+    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('checkbox', { name: 'ValidatingAdmissionPolicyBinding 1' })
+    screen.getByRole('checkbox', {
+      name: 'audit 1',
+    })
   })
 
   test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
@@ -574,7 +583,6 @@ describe('useFetchPolicies custom hook', () => {
     await waitForText('Filter')
 
     screen.getByRole('button', { name: 'Options menu' }).click()
-    screen.logTestingPlaygroundURL()
     screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
   })

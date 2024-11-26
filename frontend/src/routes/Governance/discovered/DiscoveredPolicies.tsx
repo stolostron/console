@@ -177,6 +177,7 @@ export default function DiscoveredPolicies() {
           { label: 'ConfigurationPolicy', value: 'ConfigurationPolicy' },
           { label: 'Gatekeeper constraint', value: 'Gatekeeper' },
           { label: 'OperatorPolicy', value: 'OperatorPolicy' },
+          { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
           { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
           { label: 'Kyverno Policy', value: 'Policy' },
         ],
