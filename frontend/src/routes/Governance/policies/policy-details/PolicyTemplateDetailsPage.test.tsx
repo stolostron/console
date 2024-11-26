@@ -542,6 +542,12 @@ describe('Policy Template Details Page', () => {
     userEvent.click(yamlButton[1])
 
     await waitForText('Yaml Editor Open')
+
+    // Check violation badge
+    const heading = screen.getByRole('heading', {
+      name: 'CP config-policy No violations',
+    })
+    within(heading).getByText('No violations')
   })
 
   test('Should render Policy Template Details Page content correctly in hosted mode', async () => {
@@ -631,6 +637,12 @@ describe('Policy Template Details Page', () => {
     expect(name.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=${clusterName}&kind=Namespace&apiversion=v1&name=test`
     )
+
+    // Check violation badge
+    const heading = screen.getByRole('heading', {
+      name: 'CP config-policy No violations',
+    })
+    within(heading).getByText('No violations')
   })
 
   test('Should render Policy Template Details Page content correctly with Gatekeeper content', async () => {
@@ -794,6 +806,10 @@ describe('Policy Template Details Page', () => {
         templateNamespace: null,
       })
     )
+
+    // Check violation badge
+    const view = screen.getByText('Audit violations')
+    within(view).getByText('2')
   })
 
   test('Should render Policy Template Details Page content correctly with OperatorPolicy content', async () => {
@@ -994,6 +1010,13 @@ describe('Policy Template Details Page', () => {
 
     // Verify that 'No Status' is displayed for certain relatedObjects
     await waitForText('No status', true)
+
+    // Check violation badge
+    const heading = screen.getByRole('heading', {
+      name: 'OP oppol-no-group No violations',
+    })
+
+    within(heading).getByText('No violations')
   })
 
   test('Should render correctly with relatedObject name is - when it is cluster scope', async () => {
@@ -1039,6 +1062,9 @@ describe('Policy Template Details Page', () => {
     // Both namespace and name
     await waitForText('-', true)
     await waitForText('v1')
+
+    // Check violation badge
+    waitForText('No violations')
   })
 
   test('Should render correctly with relatedObject name is - when it is namespace scope', async () => {
@@ -1084,6 +1110,9 @@ describe('Policy Template Details Page', () => {
     await waitForText('Related resources')
     await waitForText('-')
     await waitForText('networking.k8s.io/v1')
+
+    // Check violation badge
+    waitForText('No violations')
   })
 
   test('Should show an error when displaying unsupported IamPolicy', async () => {
@@ -1156,6 +1185,8 @@ describe('Policy Template Details Page', () => {
     await waitForText('Related resources')
     await waitForText('Resource found as expected')
 
+    waitForText('No violations', true)
+
     // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
     await waitForText('test-cluster', true)
 
@@ -1167,10 +1198,12 @@ describe('Policy Template Details Page', () => {
     await waitForText('YAML')
     const yamlButton = container.querySelectorAll('.pf-c-nav__link')
     expect(yamlButton).not.toBeNull()
-
     userEvent.click(yamlButton[1])
 
     await waitForText('Yaml Editor Open')
+
+    // Check violation badge
+    await waitForText('No violations')
   })
 
   test('Should render ValidatingAdmissionPolicyBinding page successfully without parameter references', async () => {
@@ -1520,6 +1553,11 @@ describe('Policy Template Details Page', () => {
     expect(passingPolicyReportLink.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
     )
+
+    // Check violation badge next to title
+    waitForText('Audit violations')
+    const view = screen.getByText('Audit violations')
+    within(view).getByText('2')
   })
 
   test('Should render ValidatingAdmissionPolicyBinding with paramRefs successfully', async () => {
