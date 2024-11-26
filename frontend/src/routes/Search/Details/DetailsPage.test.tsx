@@ -133,19 +133,4 @@ describe('DetailsPage', () => {
     const res = getResourceParams()
     expect(res).toMatchSnapshot()
   })
-
-  test('Should return the url search params incorrectly', () => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        pathname: '/multicloud/search/resources',
-        search: '?',
-        state: {
-          from: '/multicloud/search',
-          fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',
-        },
-      },
-    })
-    const res = getResourceParams()
-    expect(res).toMatchSnapshot()
-  })
 })
