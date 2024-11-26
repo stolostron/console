@@ -177,10 +177,10 @@ import {
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { useRecoilValue } from '../shared-recoil'
-import { LoadStatusContext } from './LoadStatusProvider'
+import { PluginDataContext } from '../lib/PluginDataContext'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(LoadStatusContext)
+  const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createContext, useState, useMemo } from 'react'
+import { createContext, useState, useMemo, Dispatch, SetStateAction } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -16,7 +16,11 @@ export type PluginData = {
   selectors: typeof selectors
   reactQuery: typeof reactQuery
   backendUrl: string
+  loadCompleted: boolean
+  loadStarted: boolean
   startLoading: boolean
+  setLoadCompleted: Dispatch<SetStateAction<boolean>>
+  setLoadStarted: Dispatch<SetStateAction<boolean>>
   load: () => void
 }
 
@@ -26,13 +30,19 @@ export const defaultContext = {
   selectors,
   reactQuery,
   backendUrl: '',
+  loadCompleted: false,
+  loadStarted: false,
   startLoading: false,
+  setLoadCompleted: () => {},
+  setLoadStarted: () => {},
   load: () => {},
 }
 
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
+  const [loadStarted, setLoadStarted] = useState(false)
+  const [loadCompleted, setLoadCompleted] = useState(false)
   const [startLoading, setStartLoading] = useState(false)
   const backendUrl = getBackendUrl()
 
@@ -43,10 +53,14 @@ export const usePluginDataContextValue = () => {
       selectors,
       backendUrl,
       reactQuery,
+      loadCompleted,
+      loadStarted,
       startLoading,
+      setLoadCompleted,
+      setLoadStarted,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, startLoading]
+    [backendUrl, loadStarted, loadCompleted, startLoading]
   )
   return contextValue
 }

@@ -2,16 +2,28 @@
 import { ReactNode, useContext, useEffect } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
-import { LoadStatusContext } from './LoadStatusProvider'
+import { LoadStatusProvider } from './LoadStatusProvider'
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
-  const { load } = useContext(dataContext)
-  const { loadStarted } = useContext(LoadStatusContext)
+  const { load, loadStarted, loadCompleted } = useContext(dataContext)
   useEffect(() => {
     if (!loadStarted) {
       load()
     }
   }, [load, loadStarted])
-  return <LostChangesProvider>{props.children}</LostChangesProvider>
+
+  // LoadStatusProvider passes the dataContext to mce AND acm plugins
+  return (
+    <LostChangesProvider>
+      <LoadStatusProvider
+        value={{
+          loadStarted,
+          loadCompleted,
+        }}
+      >
+        {props.children}
+      </LoadStatusProvider>
+    </LostChangesProvider>
+  )
 }
