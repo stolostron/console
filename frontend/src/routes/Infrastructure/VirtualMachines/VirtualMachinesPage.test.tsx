@@ -12,6 +12,7 @@ import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchOperator } from '../../../resources'
 import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
+import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 
 const mockHealthySearchOperator: SearchOperator = {
   apiVersion: 'search.open-cluster-management.io/v1alpha1',
@@ -224,7 +225,14 @@ describe('VirtualMachinesPage Page', () => {
       >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <VirtualMachinesPage />
+            <LoadStatusContext.Provider
+              value={{
+                loadStarted: true,
+                loadCompleted: true,
+              }}
+            >
+              <VirtualMachinesPage />
+            </LoadStatusContext.Provider>
           </MockedProvider>
         </MemoryRouter>
       </RecoilRoot>
@@ -232,6 +240,7 @@ describe('VirtualMachinesPage Page', () => {
     await waitForNocks([metricNock])
     // This wait pauses till apollo query is returning data
     await wait()
+
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('Unable to display VirtualMachines')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Enable search to view all managed VirtualMachines.')).toBeTruthy())
@@ -272,7 +281,14 @@ describe('VirtualMachinesPage Page', () => {
       >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <VirtualMachinesPage />
+            <LoadStatusContext.Provider
+              value={{
+                loadStarted: true,
+                loadCompleted: true,
+              }}
+            >
+              <VirtualMachinesPage />
+            </LoadStatusContext.Provider>
           </MockedProvider>
         </MemoryRouter>
       </RecoilRoot>
