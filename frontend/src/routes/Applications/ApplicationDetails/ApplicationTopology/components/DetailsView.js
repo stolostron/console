@@ -377,13 +377,14 @@ class DetailsView extends Component {
   }
 
   renderRelatedArgoAppDetails({ relatedargoappsdata }, t) {
-    const { argoAppDetailsContainerControl } = this.props
+    const { argoAppDetailsContainerControl, hubClusterName } = this.props
     return (
       <div className="sectionContent" key={Math.random()}>
         <ArgoAppDetailsContainer
           argoAppList={relatedargoappsdata.argoAppList}
           t={t}
           argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+          hubClusterName={hubClusterName}
         />
       </div>
     )
