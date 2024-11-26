@@ -105,13 +105,16 @@ export const createEditLink = (node, hubClusterName, overrideKind, overrideClust
     kind = 'SubscriptionStatus'
   }
 
-  return getEditLink({
-    name: _.get(node, 'name'),
-    namespace: _.get(node, 'namespace'),
-    kind: kind,
-    apiVersion,
-    cluster: cluster ? cluster : undefined,
-  })
+  return getEditLink(
+    {
+      name: _.get(node, 'name'),
+      namespace: _.get(node, 'namespace'),
+      kind: kind,
+      apiVersion,
+      cluster: cluster ? cluster : undefined,
+    },
+    hubClusterName
+  )
 }
 
 export const inflateKubeValue = (value) => {
