@@ -139,7 +139,12 @@ async function searchAPILoop() {
     // otherwise there's no point
     let exists
     do {
-      exists = await pingSearchAPI()
+      try {
+        exists = await pingSearchAPI()
+      } catch (e) {
+        logger.error(`pingSearchAPI ${e}`)
+        exists = false
+      }
       if (!exists) {
         if (!searchAPIMissing) {
           logger.error('search API missing')
