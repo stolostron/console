@@ -305,10 +305,10 @@ export class ServerSideEvents {
     const end = parts.pop()
     const clusters: ServerSideEvent<unknown>[] = []
     const policies: ServerSideEvent<unknown>[] = []
-    const secrets: ServerSideEvent<unknown>[] = []
     const agents: ServerSideEvent<unknown>[] = []
     const infos: ServerSideEvent<unknown>[] = []
     const addons: ServerSideEvent<unknown>[] = []
+    const other: ServerSideEvent<unknown>[] = []
     const remainder: ServerSideEvent<unknown>[] = []
     parts.forEach((event) => {
       const data = event.data as WatchEvent
@@ -317,9 +317,6 @@ export class ServerSideEvents {
         case 'HostedCluster':
         case 'ClusterDeployment':
           clusters.push(event)
-          break
-        case 'Secret':
-          secrets.push(event)
           break
         case 'Policy':
         case 'PolicySet':
@@ -333,6 +330,10 @@ export class ServerSideEvents {
           break
         case 'ManagedClusterAddOn':
           addons.push(event)
+          break
+        case 'Search':
+        case 'Secret':
+          other.push(event)
           break
         default:
           remainder.push(event)
@@ -357,11 +358,11 @@ export class ServerSideEvents {
     const sending = start
     do {
       sending.push(...clusters.splice(0, 200))
-      sending.push(...secrets.splice(0, 100))
       sending.push(...agents.splice(0, 200))
       sending.push(...infos.splice(0, 200))
       sending.push(...policies.splice(0, 200))
       sending.push(...addons.splice(0, 400))
+      sending.push(...other.splice(0, 100))
       sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
     } while (clusters.length || policies.length || addons.length || infos.length || agents.length)
     do {
