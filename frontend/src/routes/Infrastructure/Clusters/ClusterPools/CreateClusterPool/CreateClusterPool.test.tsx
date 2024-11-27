@@ -38,9 +38,9 @@ import {
   waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { createProviderConnection } from '../../../../Credentials/CredentialsForm.test'
 import { CreateClusterPoolPage } from '../CreateClusterPoolPage'
 import { CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
+import { createProviderConnection } from '../../../../../test-helpers/createProviderConnection'
 
 const clusterName = 'test'
 
