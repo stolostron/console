@@ -139,7 +139,12 @@ async function searchAPILoop() {
     // otherwise there's no point
     let exists
     do {
-      exists = await pingSearchAPI()
+      try {
+        exists = await pingSearchAPI()
+      } catch (e) {
+        logger.error(`pingSearchAPI ${e}`)
+        exists = false
+      }
       if (!exists) {
         if (!searchAPIMissing) {
           logger.error('search API missing')
@@ -244,7 +249,7 @@ export function generateTransforms(
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   items.forEach((app) => {
     const type = getApplicationType(app)
-    const _clusters = getApplicationClusters(app, type, clusters, subscriptions, placementDecisions)
+    const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, clusters)
     app.transform = [
       [app.metadata.name],
       [type],
@@ -335,9 +340,9 @@ function isFluxApplication(label: string) {
 function getApplicationClusters(
   resource: IResource | IOCPApplication | IArgoApplication,
   type: string,
-  clusters: Cluster[] = [],
   subscriptions: IResource[],
-  placementDecisions: IResource[]
+  placementDecisions: IResource[],
+  clusters: Cluster[] = []
 ) {
   switch (type) {
     case 'flux':
@@ -458,7 +463,7 @@ export function getArgoDestinationCluster(
   const serverApi = destination?.server
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ? cluster : 'Local'
+      clusterName = cluster ?? 'Local'
     } else {
       const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
       clusterName = server ? server.name : 'unknown'
