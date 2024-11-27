@@ -3,7 +3,7 @@
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { useState, useEffect } from 'react'
 import { TooltipPosition } from '@patternfly/react-core'
-import { ClipboardCopyButton } from '@patternfly/react-core/dist/js/components/ClipboardCopy/ClipboardCopyButton'
+import { ClipboardCopyButton } from '@patternfly/react-core'
 import { onCopy } from '../utils'
 import { useTranslation } from '../../lib/acm-i18next'
 
