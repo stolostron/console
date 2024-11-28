@@ -47,7 +47,6 @@ export default function AdvancedConfiguration() {
   const {
     applicationsState,
     channelsState,
-    namespacesState,
     placementDecisionsState,
     placementsState,
     placementRulesState,
@@ -60,7 +59,6 @@ export default function AdvancedConfiguration() {
   const [placements] = useRecoilState(placementsState)
   const [placementDecisions] = useRecoilState(placementDecisionsState)
   const [subscriptions] = useRecoilState(subscriptionsState)
-  const [namespaces] = useRecoilState(namespacesState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')
@@ -732,9 +730,7 @@ export default function AdvancedConfiguration() {
         <StackItem>
           <ApplicationDeploymentHighlights />
         </StackItem>
-        <StackItem>
-          {<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} namespaces={namespaces} />}
-        </StackItem>
+        <StackItem>{<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} />}</StackItem>
       </Stack>
     </PageSection>
   )

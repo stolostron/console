@@ -41,7 +41,7 @@ import {
   getPlacementBindingsForResource,
   getPlacementsForResource,
 } from '../common/util'
-import { checkPermission, rbacCreate, rbacUpdate, rbacPatch } from '../../../lib/rbac-util'
+import { rbacCreate, rbacUpdate, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -121,17 +121,10 @@ export default function PoliciesPage() {
   )
   const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
   const [modal, setModal] = useState<ReactNode | undefined>()
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-  const [canPatchPolicy, setCanPatchPolicy] = useState<boolean>(false)
-  const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
-  const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-    checkPermission(rbacPatch(PolicyDefinition), setCanPatchPolicy, namespaces)
-    checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
-    checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
-  }, [namespaces])
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
+  const canPatchPolicy = useIsAnyNamespaceAuthorized(rbacPatch(PolicyDefinition))
+  const canCreatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacCreate(PolicyAutomationDefinition))
+  const canUpdatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacUpdate(PolicyAutomationDefinition))
 
   const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
     () => [

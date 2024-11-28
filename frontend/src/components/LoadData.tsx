@@ -2,7 +2,7 @@
 import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { SetterOrUpdater, useSetRecoilState } from 'recoil'
+import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
 import {
   AgentClusterInstallApiVersion,
@@ -174,7 +174,6 @@ import {
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
-import { useRecoilValue } from '../shared-recoil'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loaded, setLoaded } = useContext(PluginDataContext)

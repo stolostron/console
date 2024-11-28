@@ -14,14 +14,14 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import moment from 'moment'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
-import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 import { createBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
   deleteResource,
@@ -81,13 +81,8 @@ export function CredentialsTable(props: {
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
     open: false,
   })
-  const { namespacesState } = useSharedAtoms()
   const unauthorizedMessage = t('rbac.unauthorized')
-  const [namespaces] = useRecoilState(namespacesState)
-  const [canAddCredential, setCanAddCredential] = useState<boolean>(false)
-  useEffect(() => {
-    checkPermission(rbacCreate(SecretDefinition), setCanAddCredential, namespaces)
-  }, [namespaces])
+  const canAddCredential = useIsAnyNamespaceAuthorized(rbacCreate(SecretDefinition))
 
   sessionStorage.removeItem('DiscoveryCredential')
 
