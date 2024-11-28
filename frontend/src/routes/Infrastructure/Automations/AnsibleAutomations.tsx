@@ -14,13 +14,13 @@ import {
 } from '../../../ui-components'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { getBackCancelLocationLinkProps, NavigationPath } from '../../../NavigationPath'
 import {
   ClusterCurator,
@@ -68,12 +68,7 @@ function AnsibleJobTemplateTable() {
   })
   const { t } = useTranslation()
   const unauthorizedMessage = t('rbac.unauthorized')
-  const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
-  const [canCreateAutomationTemplate, setCanCreateAutomationTemplate] = useState<boolean>(false)
-  useEffect(() => {
-    checkPermission(rbacCreate(ClusterCuratorDefinition), setCanCreateAutomationTemplate, namespaces)
-  }, [namespaces])
+  const canCreateAutomationTemplate = useIsAnyNamespaceAuthorized(rbacCreate(ClusterCuratorDefinition))
   const navigate = useNavigate()
 
   // Set table

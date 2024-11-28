@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom-v5-compat'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { usePaginationTitles } from '../../../lib/paginationStrings'
-import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacUpdate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
@@ -65,9 +65,8 @@ export default function PolicySetsPage() {
   const { t } = useTranslation()
   const presets = transformBrowserUrlToFilterPresets(window.location.search)
   const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
-  const { namespacesState, policySetsState } = useSharedAtoms()
+  const { policySetsState } = useSharedAtoms()
   const policySets = useRecoilValue(policySetsState)
-  const namespaces = useRecoilValue(namespacesState)
   const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
     Name: presetNames,
     Namespace: presetNs,
@@ -77,17 +76,11 @@ export default function PolicySetsPage() {
   const [perPage, setPerPage] = useState<number>(10)
   const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
   const [selectedCardID, setSelectedCardID] = useState<string>('')
-  const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
-  const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
-  const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
+  const canCreatePolicySet = useIsAnyNamespaceAuthorized(rbacCreate(PolicySetDefinition))
+  const canEditPolicySet = useIsAnyNamespaceAuthorized(rbacUpdate(PolicySetDefinition))
+  const canDeletePolicySet = useIsAnyNamespaceAuthorized(rbacDelete(PolicySetDefinition))
 
   const translatedPaginationTitles = usePaginationTitles()
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet, namespaces)
-    checkPermission(rbacUpdate(PolicySetDefinition), setCanEditPolicySet, namespaces)
-    checkPermission(rbacDelete(PolicySetDefinition), setCanDeletePolicySet, namespaces)
-  }, [namespaces])
 
   const updatePerPage = useCallback(
     (newPerPage: number) => {
