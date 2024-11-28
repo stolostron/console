@@ -16,7 +16,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
@@ -25,7 +25,7 @@ import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
-import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
+import { rbacCreate, rbacDelete, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
   ApplicationApiVersion,
@@ -501,7 +501,6 @@ export default function ApplicationsOverview() {
     argoApplicationsState,
     channelsState,
     helmReleaseState,
-    namespacesState,
     placementRulesState,
     placementsState,
     placementDecisionsState,
@@ -516,7 +515,6 @@ export default function ApplicationsOverview() {
   const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
-  const namespaces = useRecoilValue(namespacesState)
   const helmReleases = useRecoilValue(helmReleaseState)
   const { acmExtensions } = useContext(PluginContext)
 
@@ -872,9 +870,9 @@ export default function ApplicationsOverview() {
   )
 
   const history = useHistory()
-  const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
-  const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
-  const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
+  const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
+  const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
+  const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
 
   const rowActionResolver = useCallback(
     (resource: IResource) => {
@@ -1082,16 +1080,6 @@ export default function ApplicationsOverview() {
       t,
     ]
   )
-
-  useEffect(() => {
-    checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet, namespaces)
-  }, [namespaces])
 
   const appCreationButton = useMemo(
     () => (
