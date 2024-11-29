@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { isHrefNavItem, useResolvedExtensions, UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import {
+  isHrefNavItem,
+  Timestamp,
+  useK8sWatchResource,
+  useResolvedExtensions,
+} from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
-import { ReactNode, useMemo, useEffect, useState } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
@@ -15,9 +20,6 @@ const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
-  const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
-    useK8sWatchResource: () => [[] as any, false, undefined],
-  })
   const [hrefs] = useResolvedExtensions(isHrefNavItem)
 
   const [pluginDataContexts, extensionsReady] = useResolvedExtensions(isPluginDataContext)
@@ -38,20 +40,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
   const isACMAvailable = isOverviewAvailable
   const isSubmarinerAvailable = isOverviewAvailable
 
-  useEffect(() => {
-    const loadOCPAPI = async () => {
-      try {
-        const api = await import('@openshift-console/dynamic-plugin-sdk')
-        setOcpApi({
-          useK8sWatchResource: api.useK8sWatchResource,
-        })
-      } catch (err) {
-        console.error('Failed to load OCP API', err)
-      }
-    }
-    loadOCPAPI()
-  }, [])
-
   // ACM Custom extensions
   const acmExtensions = useAcmExtension()
 
@@ -66,7 +54,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         isSubmarinerAvailable,
         dataContext: pluginDataContext.properties.context,
         acmExtensions,
-        ocpApi,
+        ocpApi: { Timestamp, useK8sWatchResource },
       }}
     >
       <AcmFeedbackModal />

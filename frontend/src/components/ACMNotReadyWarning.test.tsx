@@ -7,8 +7,7 @@ import { clickByRole, waitForText } from '../lib/test-util'
 import { SubscriptionOperator, SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from '../resources'
 import { nockIgnoreOperatorCheck } from '../lib/nock-util'
 import { ACMNotReadyWarning } from './ACMNotReadyWarning'
-import { PluginDataContext } from '../lib/PluginDataContext'
-import { PluginContext } from '../lib/PluginContext'
+import { defaultPlugin, PluginContext } from '../lib/PluginContext'
 
 const acm_unhealthy: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
@@ -88,17 +87,8 @@ describe('ACMNotReadyWarning', () => {
     render(
       <PluginContext.Provider
         value={{
+          ...defaultPlugin,
           isACMAvailable: false,
-          isOverviewAvailable: true,
-          isSubmarinerAvailable: true,
-          isApplicationsAvailable: true,
-          isGovernanceAvailable: true,
-          isSearchAvailable: true,
-          dataContext: PluginDataContext,
-          acmExtensions: {},
-          ocpApi: {
-            useK8sWatchResource: () => [[] as any, true, undefined],
-          },
         }}
       >
         <WrappedACMNotReadyWarning acmOperators={[acm]} />
@@ -125,17 +115,8 @@ describe('ACMNotReadyWarning', () => {
     render(
       <PluginContext.Provider
         value={{
+          ...defaultPlugin,
           isACMAvailable: false,
-          isOverviewAvailable: true,
-          isSubmarinerAvailable: true,
-          isApplicationsAvailable: true,
-          isGovernanceAvailable: true,
-          isSearchAvailable: true,
-          dataContext: PluginDataContext,
-          acmExtensions: {},
-          ocpApi: {
-            useK8sWatchResource: () => [[] as any, true, undefined],
-          },
         }}
       >
         <WrappedACMNotReadyWarning acmOperators={[acm]} />
