@@ -22,14 +22,12 @@ import {
   nockIgnoreRBAC,
   nockList,
 } from '../../../../../lib/nock-util'
-import { PluginContext } from '../../../../../lib/PluginContext'
-import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import {
   clickByPlaceholderText,
   clickByRole,
   clickByTestId,
   clickByText,
-  ocpApi,
   pasteByTestId,
   typeByPlaceholderText,
   typeByTestId,
@@ -1053,7 +1051,7 @@ describe('CreateCluster AWS', () => {
 
     // create the form
     const { container } = render(
-      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isACMAvailable: false }}>
         <Component />
       </PluginContext.Provider>
     )

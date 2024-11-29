@@ -12,7 +12,7 @@ import {
   managedClustersState,
 } from '../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { PluginContext } from '../../../../lib/PluginContext'
+import { defaultPlugin, PluginContext } from '../../../../lib/PluginContext'
 import { mockManagedClusterSet, mockGlobalClusterSet } from '../../../../lib/test-metadata'
 import {
   clickBulkAction,
@@ -23,7 +23,6 @@ import {
   waitForText,
   waitForNotText,
   typeByTestId,
-  ocpApi,
   clickByLabel,
 } from '../../../../lib/test-util'
 import {
@@ -31,7 +30,6 @@ import {
   mockManagedClusterInfos,
   mockManagedClusters,
 } from '../ManagedClusters/ManagedClusters.sharedmocks'
-import { PluginDataContext } from '../../../../lib/PluginDataContext'
 import { NavigationPath } from '../../../../NavigationPath'
 import Clusters from '../Clusters'
 
@@ -95,7 +93,7 @@ describe('ClusterSets page without Submariner', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isSubmarinerAvailable: false }}>
         <Component />
       </PluginContext.Provider>
     )
@@ -111,7 +109,7 @@ describe('ClusterSets page with csv export', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isSubmarinerAvailable: false }}>
         <Component />
       </PluginContext.Provider>
     )
