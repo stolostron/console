@@ -1509,7 +1509,19 @@ const Component = (props: { isGlobal?: boolean }) => (
       ]}
     >
       <Routes>
-        <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
+        <Route
+          path={`${NavigationPath.clusters}/*`}
+          element={
+            <LoadStatusContext.Provider
+              value={{
+                loadStarted: true,
+                loadCompleted: true,
+              }}
+            >
+              <Clusters />
+            </LoadStatusContext.Provider>
+          }
+        />
       </Routes>
     </MemoryRouter>
   </RecoilRoot>
