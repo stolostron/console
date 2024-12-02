@@ -10,8 +10,8 @@ import {
 } from '@patternfly/react-core'
 import { ReactNode, useContext } from 'react'
 import { CubesIcon, SearchIcon } from '@patternfly/react-icons'
-import { LoadingPage } from '../AcmLoadingPage/AcmLoadingPage.stories'
 import { LoadStatusContext } from '../../components/LoadStatusProvider'
+import { LoadingPage } from '../../components/LoadingPage'
 
 export function AcmEmptyState(props: {
   title: string
