@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useMemo } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilState, useSharedAtoms } from '../../../shared-recoil'
 import { AcmDrawerContext, compareStrings } from '../../../ui-components'
@@ -21,15 +21,11 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 
 export default function GovernanceOverview() {
   usePageVisitMetricHandler(Pages.governance)
-  const { usePolicies, namespacesState } = useSharedAtoms()
+  const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
-  const [namespaces] = useRecoilState(namespacesState)
   const policyViolationSummary = usePolicyViolationSummary(policies)
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-  }, [namespaces])
 
   if (policies.length === 0) {
     return (
