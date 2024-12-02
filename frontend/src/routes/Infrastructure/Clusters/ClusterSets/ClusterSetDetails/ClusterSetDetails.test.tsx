@@ -77,7 +77,6 @@ import {
 } from '../../ManagedClusters/ManagedClusters.sharedmocks'
 import ClusterSetDetails from './ClusterSetDetails'
 import Clusters from '../../Clusters'
-import { LoadStatusContext } from '../../../../../components/LoadStatusProvider'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -1509,19 +1508,7 @@ const Component = (props: { isGlobal?: boolean }) => (
       ]}
     >
       <Routes>
-        <Route
-          path={`${NavigationPath.clusters}/*`}
-          element={
-            <LoadStatusContext.Provider
-              value={{
-                loadStarted: true,
-                loadCompleted: true,
-              }}
-            >
-              <Clusters />
-            </LoadStatusContext.Provider>
-          }
-        />
+        <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
   </RecoilRoot>
@@ -2044,19 +2031,7 @@ describe('ClusterSetDetails error', () => {
         initialEntries={[generatePath(NavigationPath.clusterSetDetails, { id: mockManagedClusterSet.metadata.name! })]}
       >
         <Routes>
-          <Route
-            path={NavigationPath.clusterSetDetails}
-            element={
-              <LoadStatusContext.Provider
-                value={{
-                  loadStarted: true,
-                  loadCompleted: true,
-                }}
-              >
-                <ClusterSetDetails />
-              </LoadStatusContext.Provider>
-            }
-          />
+          <Route path={NavigationPath.clusterSetDetails} element={<ClusterSetDetails />} />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>

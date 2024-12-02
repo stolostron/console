@@ -8,7 +8,6 @@ import { waitForNotText, waitForText } from '../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { ApolloError } from '@apollo/client'
-import { LoadStatusContext } from '../../../../components/LoadStatusProvider'
 
 describe('DiscoveredByClusterPage', () => {
   test('Should render DiscoveredByCluster for ConfigurationPolicy', async () => {
@@ -516,19 +515,7 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route
-              path={NavigationPath.discoveredByCluster}
-              element={
-                <LoadStatusContext.Provider
-                  value={{
-                    loadStarted: true,
-                    loadCompleted: true,
-                  }}
-                >
-                  <DiscoveredByClusterPage />
-                </LoadStatusContext.Provider>
-              }
-            />
+            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -564,19 +551,7 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route
-              path={NavigationPath.discoveredByCluster}
-              element={
-                <LoadStatusContext.Provider
-                  value={{
-                    loadStarted: true,
-                    loadCompleted: true,
-                  }}
-                >
-                  <DiscoveredByClusterPage />
-                </LoadStatusContext.Provider>
-              }
-            />
+            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -612,19 +587,7 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route
-              path={NavigationPath.discoveredByCluster}
-              element={
-                <LoadStatusContext.Provider
-                  value={{
-                    loadStarted: true,
-                    loadCompleted: true,
-                  }}
-                >
-                  <DiscoveredByClusterPage />
-                </LoadStatusContext.Provider>
-              }
-            />
+            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>

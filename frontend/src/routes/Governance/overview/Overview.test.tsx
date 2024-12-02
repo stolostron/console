@@ -16,7 +16,6 @@ import {
 } from '../governance.sharedMocks'
 import GovernanceOverview from './Overview'
 import userEvent from '@testing-library/user-event'
-import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 
 describe('Overview Page', () => {
   beforeEach(async () => nockIgnoreApiPaths())
@@ -29,14 +28,7 @@ describe('Overview Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <GovernanceOverview />
-          </LoadStatusContext.Provider>
+          <GovernanceOverview />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -54,14 +46,7 @@ describe('Overview Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <GovernanceOverview />
-          </LoadStatusContext.Provider>
+          <GovernanceOverview />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -79,14 +64,7 @@ describe('Overview Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <GovernanceOverview />
-          </LoadStatusContext.Provider>
+          <GovernanceOverview />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -105,14 +83,7 @@ describe('Overview Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <GovernanceOverview />
-          </LoadStatusContext.Provider>
+          <GovernanceOverview />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -131,14 +102,7 @@ describe('Overview Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <GovernanceOverview />
-          </LoadStatusContext.Provider>
+          <GovernanceOverview />
         </MemoryRouter>
       </RecoilRoot>
     )

@@ -96,7 +96,6 @@ import {
 } from '../../../../../resources/multi-cluster-engine'
 import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 import Clusters from '../../Clusters'
-import { LoadStatusContext } from '../../../../../components/LoadStatusProvider'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
   apiVersion: ManagedClusterInfoApiVersion,
@@ -1539,19 +1538,7 @@ describe('ClusterDetails with not found', () => {
           ]}
         >
           <Routes>
-            <Route
-              path={`${NavigationPath.clusters}/*`}
-              element={
-                <LoadStatusContext.Provider
-                  value={{
-                    loadStarted: true,
-                    loadCompleted: true,
-                  }}
-                >
-                  <Clusters />
-                </LoadStatusContext.Provider>
-              }
-            />
+            <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -1590,19 +1577,7 @@ describe('ClusterDetails with not found', () => {
           ]}
         >
           <Routes>
-            <Route
-              path={`${NavigationPath.clusters}/*`}
-              element={
-                <LoadStatusContext.Provider
-                  value={{
-                    loadStarted: true,
-                    loadCompleted: true,
-                  }}
-                >
-                  <Clusters />
-                </LoadStatusContext.Provider>
-              }
-            />
+            <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>

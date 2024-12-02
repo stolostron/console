@@ -8,8 +8,8 @@ export type LoadStatusType = {
 }
 
 export const defaultContext = {
-  loadStarted: false,
-  loadCompleted: false,
+  loadStarted: process.env.NODE_ENV === 'test',
+  loadCompleted: process.env.NODE_ENV === 'test',
 }
 
 export const LoadStatusContext = createContext<LoadStatusType>(defaultContext)

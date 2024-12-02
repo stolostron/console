@@ -34,7 +34,6 @@ import {
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import AnsibleAutomationsPage from './AnsibleAutomations'
-import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 
 const mockedUsedNavigate = jest.fn()
 
@@ -180,19 +179,7 @@ function EmptyStateAutomationPage(props: { providerConnections: ProviderConnecti
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
         <Routes>
-          <Route
-            path={NavigationPath.ansibleAutomations}
-            element={
-              <LoadStatusContext.Provider
-                value={{
-                  loadStarted: true,
-                  loadCompleted: true,
-                }}
-              >
-                <AnsibleAutomationsPage />
-              </LoadStatusContext.Provider>
-            }
-          />
+          <Route path={NavigationPath.ansibleAutomations} element={<AnsibleAutomationsPage />} />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>

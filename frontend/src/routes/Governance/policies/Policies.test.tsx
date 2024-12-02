@@ -23,7 +23,6 @@ import {
   mockPolicyAutomation,
   mockOrderPolicy,
 } from '../governance.sharedMocks'
-import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 
 describe('Policies Page', () => {
   beforeEach(async () => {
@@ -38,14 +37,7 @@ describe('Policies Page', () => {
         }}
       >
         <MemoryRouter>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <PoliciesPage />
-          </LoadStatusContext.Provider>
+          <PoliciesPage />
         </MemoryRouter>
       </RecoilRoot>
     )

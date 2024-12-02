@@ -8,7 +8,6 @@ import { PolicyDetailsPage } from './PolicyDetailsPage'
 import { waitForText } from '../../../../lib/test-util'
 import { policiesState } from '../../../../atoms'
 import { mockPolicy } from '../../governance.sharedMocks'
-import { LoadStatusContext } from '../../../../components/LoadStatusProvider'
 
 describe('PolicyDetailsPage Page', () => {
   beforeEach(async () => {
@@ -22,14 +21,7 @@ describe('PolicyDetailsPage Page', () => {
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.policyTemplateDetails, 'namespace-unkown', 'test-unknown']}>
-          <LoadStatusContext.Provider
-            value={{
-              loadStarted: true,
-              loadCompleted: true,
-            }}
-          >
-            <PolicyDetailsPage />
-          </LoadStatusContext.Provider>
+          <PolicyDetailsPage />
         </MemoryRouter>
       </RecoilRoot>
     )
