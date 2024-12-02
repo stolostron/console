@@ -3,11 +3,11 @@ import { Alert, ButtonVariant, LabelGroup, PageSection, Stack, Text, TextVariant
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import moment from 'moment'
-import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
+import { rbacCreate, rbacUpdate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
   Placement,
@@ -45,7 +45,6 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const {
-    namespacesState,
     placementBindingsState,
     placementDecisionsState,
     placementRulesState,
@@ -59,7 +58,6 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
   const placementRules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyAutomations = useRecoilValue(policyAutomationState)
-  const namespaces = useRecoilValue(namespacesState)
   const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
@@ -73,13 +71,8 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
   )
   const [modal, setModal] = useState<ReactNode | undefined>()
-  const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
-  const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
-    checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
-  }, [namespaces])
+  const canCreatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacCreate(PolicyAutomationDefinition))
+  const canUpdatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacUpdate(PolicyAutomationDefinition))
 
   const { leftItems, rightItems } = useMemo(() => {
     const unauthorizedMessage = !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
