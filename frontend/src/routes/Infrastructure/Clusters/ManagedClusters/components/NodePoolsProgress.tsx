@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import {
   ButtonVariant,
   ExpandableSectionToggle,
@@ -22,8 +22,7 @@ import { AcmButton } from '../../../../../ui-components'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
-import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../../lib/rbac-util'
 import { onToggle } from '../utils/utils'
 
 export type NodePoolStatus = {
@@ -88,14 +87,8 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
     [openAddNodepoolModal]
   )
-  const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
-  const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
+  const canCreateNodepool = useIsAnyNamespaceAuthorized(rbacCreate(NodePoolDefinition))
   const nodepoolList = nodePools.map((nodePool) => nodePool.metadata?.name) as string[]
-
-  useEffect(() => {
-    checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
-  }, [namespaces])
 
   const addNodePoolStatusMessage = useMemo(() => {
     if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {

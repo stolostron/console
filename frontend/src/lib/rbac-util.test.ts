@@ -2,7 +2,7 @@
 
 import { Namespace, NamespaceDefinition } from '../resources'
 import { nockIgnoreApiPaths, nockRBAC } from './nock-util'
-import { getAuthorizedNamespaces, isAnyNamespaceAuthorized } from './rbac-util'
+import { areAllNamespacesUnauthorized, getAuthorizedNamespaces, isAnyNamespaceAuthorized } from './rbac-util'
 import { waitForNocks } from './test-util'
 
 const adminAccess = { name: '*', namespace: '*', resource: '*', verb: '*' }
@@ -49,43 +49,81 @@ describe('isAnyNamespaceAuthorized', () => {
       nockRBAC({ ...createDeployment, namespace: 'test-namespace-2' }, true),
     ]
     expect(
-      await isAnyNamespaceAuthorized(
-        [createDeployment],
-        [
-          {
-            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-            metadata: { name: 'test-namespace-1' },
-          },
-          {
-            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-            metadata: { name: 'test-namespace-2' },
-          },
-        ]
-      )
+      await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), [
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-1' },
+        },
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-2' },
+        },
+      ]).promise
     ).toEqual(true)
     await waitForNocks(nocks)
   })
   it('returns false for an empty namespace list', async () => {
-    expect(await isAnyNamespaceAuthorized([createDeployment], [])).toEqual(false)
+    expect(await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), []).promise).toEqual(false)
   })
   it('returns true without checking namespaces for an admin user', async () => {
     nockIgnoreApiPaths()
     const nocks = [nockRBAC(adminAccess, true)]
     expect(
-      await isAnyNamespaceAuthorized(
-        [createDeployment],
-        [
-          {
-            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-            metadata: { name: 'test-namespace-1' },
-          },
-          {
-            ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-            metadata: { name: 'test-namespace-2' },
-          },
-        ]
-      )
+      await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), [
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-1' },
+        },
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-2' },
+        },
+      ]).promise
     ).toEqual(true)
+    await waitForNocks(nocks)
+  })
+})
+
+describe('areAllNamespacesUnauthorized', () => {
+  it('checks each namespace individually for non-admin users', async () => {
+    nockIgnoreApiPaths()
+    const nocks = [
+      nockRBAC(adminAccess, false),
+      nockRBAC({ ...createDeployment, namespace: 'test-namespace-1' }, false),
+      nockRBAC({ ...createDeployment, namespace: 'test-namespace-2' }, true),
+    ]
+    expect(
+      await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), [
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-1' },
+        },
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-2' },
+        },
+      ]).promise
+    ).toEqual(false)
+    await waitForNocks(nocks)
+  })
+  it('returns true for an empty namespace list', async () => {
+    expect(await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), []).promise).toEqual(true)
+  })
+  it('returns false without checking namespaces for an admin user', async () => {
+    nockIgnoreApiPaths()
+    const nocks = [nockRBAC(adminAccess, true)]
+    expect(
+      await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), [
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-1' },
+        },
+        {
+          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+          metadata: { name: 'test-namespace-2' },
+        },
+      ]).promise
+    ).toEqual(false)
     await waitForNocks(nocks)
   })
 })

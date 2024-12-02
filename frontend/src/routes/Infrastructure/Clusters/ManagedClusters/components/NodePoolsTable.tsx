@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, Stack, StackItem, Text } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
@@ -13,8 +13,7 @@ import { DistributionField } from './DistributionField'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { IManageNodePoolNodesModalProps, ManageNodePoolNodesModal } from './ManageNodePoolNodesModal'
 import { IRemoveNodePoolModalProps, RemoveNodePoolModal } from './RemoveNodePoolModal'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
-import { checkPermission, rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../../../lib/rbac-util'
 
 import { NodePoolTableWidthContext } from './HypershiftClusterInstallProgress'
 
@@ -52,11 +51,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       open: false,
     }
   )
-  const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
-  const [canDeleteNodepool, setCanDeleteNodepool] = useState<boolean>(false)
-  const [canPatchNodepool, setCanPatchNodepool] = useState<boolean>(false)
-  const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
+  const canCreateNodepool = useIsAnyNamespaceAuthorized(rbacCreate(NodePoolDefinition))
+  const canDeleteNodepool = useIsAnyNamespaceAuthorized(rbacDelete(NodePoolDefinition))
+  const canPatchNodepool = useIsAnyNamespaceAuthorized(rbacPatch(NodePoolDefinition))
 
   const renderNodepoolStatus = useCallback(
     (nodepool: NodePool) => {
@@ -306,16 +303,6 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     },
     [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool, cluster?.hypershift?.isUpgrading]
   )
-
-  useEffect(() => {
-    checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacDelete(NodePoolDefinition), setCanDeleteNodepool, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacPatch(NodePoolDefinition), setCanPatchNodepool, namespaces)
-  }, [namespaces])
 
   const addNodepoolButton = useMemo(
     () => (

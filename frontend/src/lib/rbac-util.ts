@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useEffect, useState } from 'react'
 import {
-  createShortCircuitSubjectAccessReviews,
   createSubjectAccessReview,
   createSubjectAccessReviews,
   fallbackPlural,
@@ -11,29 +11,131 @@ import {
   Namespace,
   ResourceAttributes,
 } from '../resources'
+import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
 
-export async function isAnyNamespaceAuthorized(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
+const SELF_ACCESS_CHECK_BATCH_SIZE = 40
+
+export function isAnyNamespaceAuthorized(resourceAttributes: Promise<ResourceAttributes>, namespaces: Namespace[]) {
   const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
   if (namespaceList.length === 0) {
-    return false
+    return { promise: Promise.resolve(false) }
   }
-  const adminAccessRequest = await checkAdminAccess()
-  const isAdmin = adminAccessRequest?.status?.allowed ?? false
 
-  if (isAdmin) {
-    return true
+  let abortFn: () => void | undefined
+  const abort = () => {
+    abortFn?.()
   }
-  const resourceList: Array<ResourceAttributes> = []
 
-  namespaceList.forEach((namespace) => {
-    resourceList.push(...resourceAttributes.map((attribute) => ({ ...attribute, namespace })))
-  })
+  return {
+    promise: resourceAttributes.then((resourceAttributes) =>
+      checkAdminAccess().then((adminAccessRequest) => {
+        if (adminAccessRequest?.status?.allowed) {
+          return true
+        } else {
+          const resourceList: Array<ResourceAttributes> = []
 
-  try {
-    return await createShortCircuitSubjectAccessReviews(resourceList).promise
-  } catch {
-    return false
+          namespaceList.forEach((namespace) => {
+            resourceList.push({ ...resourceAttributes, namespace })
+          })
+
+          // eslint-disable-next-line no-inner-declarations
+          async function processBatch(): Promise<boolean> {
+            const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
+            const results = nextBatch.map((resource) => {
+              return createSubjectAccessReview(resource)
+            })
+            abortFn = () => results.forEach((result) => result.abort())
+            try {
+              // short-circuit as soon as any namespace says the access is allowed
+              return await Promise.any(
+                results.map((result) =>
+                  result.promise.then((result) => {
+                    if (result.status?.allowed) {
+                      abort()
+                      return true
+                    } else {
+                      throw new Error('access not allowed')
+                    }
+                  })
+                )
+              )
+            } catch {
+              if (resourceList.length) {
+                return processBatch()
+              } else {
+                return false
+              }
+            }
+          }
+          return processBatch()
+        }
+      })
+    ),
+    abort,
+  }
+}
+
+export function areAllNamespacesUnauthorized(resourceAttributes: Promise<ResourceAttributes>, namespaces: Namespace[]) {
+  const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
+
+  if (namespaceList.length === 0) {
+    return { promise: Promise.resolve(true) }
+  }
+
+  let abortFn: () => void | undefined
+  const abort = () => {
+    abortFn?.()
+  }
+
+  return {
+    promise: resourceAttributes.then((resourceAttributes) =>
+      checkAdminAccess().then((adminAccessRequest) => {
+        if (adminAccessRequest?.status?.allowed) {
+          return false
+        } else {
+          const resourceList: Array<ResourceAttributes> = []
+
+          namespaceList.forEach((namespace) => {
+            resourceList.push({ ...resourceAttributes, namespace })
+          })
+
+          // eslint-disable-next-line no-inner-declarations
+          async function processBatch(): Promise<boolean> {
+            const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
+            const results = nextBatch.map((resource) => {
+              return createSubjectAccessReview(resource)
+            })
+            abortFn = () => results.forEach((result) => result.abort())
+            try {
+              // short-circuit as soon as any namespace says the access is allowed
+              return await Promise.all(
+                results.map((result) =>
+                  result.promise.then((result) => {
+                    if (result.status && !result.status.allowed) {
+                      return true
+                    } else {
+                      abort()
+                      throw new Error('access is allowed')
+                    }
+                  })
+                )
+              ).then(() => {
+                if (resourceList.length) {
+                  return processBatch()
+                } else {
+                  return true
+                }
+              })
+            } catch {
+              return false
+            }
+          }
+          return processBatch()
+        }
+      })
+    ),
+    abort,
   }
 }
 
@@ -141,12 +243,26 @@ export function canUser(
   return selfSubjectAccessReview
 }
 
-export async function checkPermission(
-  resourceAttributes: Promise<ResourceAttributes>,
-  setStateFn: (state: boolean) => void,
-  namespaces: Namespace[]
-) {
-  setStateFn(namespaces.length ? await isAnyNamespaceAuthorized([await resourceAttributes], namespaces) : false)
+export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<ResourceAttributes>) {
+  const { namespacesState } = useSharedAtoms()
+  const namespaces = useRecoilValue(namespacesState)
+  const [someNamespaceIsAuthorized, setSomeNamespaceIsAuthorized] = useState(false)
+
+  useEffect(() => {
+    const result = (someNamespaceIsAuthorized ? areAllNamespacesUnauthorized : isAnyNamespaceAuthorized)(
+      resourceAttributes,
+      namespaces
+    )
+    result.promise.then((flipAuthorization) => {
+      if (flipAuthorization) setSomeNamespaceIsAuthorized(!someNamespaceIsAuthorized)
+    })
+
+    return () => result.abort?.()
+    // exclude someNamespaceIsAuthorized from dependency list to avoid update loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceAttributes, namespaces])
+
+  return someNamespaceIsAuthorized
 }
 
 export function rbacResourceTestHelper(
