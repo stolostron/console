@@ -59,7 +59,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const {
     applicationsState,
     channelsState,
-    namespacesState,
     placementDecisionsState,
     placementsState,
     placementRulesState,
@@ -72,7 +71,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
-  const namespaces = useRecoilValue(namespacesState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')
@@ -853,7 +851,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               table={table}
               keyFn={keyFn}
               t={t}
-              namespaces={namespaces}
               defaultToggleOption={props.defaultToggleOption}
             />
           }
