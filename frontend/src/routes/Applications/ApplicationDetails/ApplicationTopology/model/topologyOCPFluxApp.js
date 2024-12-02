@@ -46,7 +46,7 @@ export const getQueryStringForLabel = (label, namespace, cluster) => {
 }
 
 // Use search results to generate the topology data model
-export function generateTopology(application, resources, searchResults) {
+export function generateTopology(application, resources, searchResults, hubClusterName) {
   const links = []
   const nodes = []
   const { name, namespace } = application
@@ -71,8 +71,8 @@ export function generateTopology(application, resources, searchResults) {
       resourceCount: 0,
       raw: application.app,
       allClusters: {
-        isLocal: clusterNames.includes('local-cluster'),
-        remoteCount: clusterNames.includes('local-cluster') ? clusterNames.length - 1 : clusterNames.length,
+        isLocal: clusterNames.includes(hubClusterName),
+        remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
       },
       clusterNames,
       pulse: 'green',
@@ -86,13 +86,13 @@ export function generateTopology(application, resources, searchResults) {
     return !includes(excludedKindList, kind)
   })
   processMultiples(others).forEach((resource) => {
-    addOCPFluxResource(clusterId, clusterNames, resource, links, nodes)
+    addOCPFluxResource(clusterId, clusterNames, resource, links, nodes, hubClusterName)
   })
 
   return { nodes: uniqBy(nodes, 'uid'), links, rawSearchData: searchResults }
 }
 
-const addOCPFluxResource = (clusterId, clusterNames, resource, links, nodes) => {
+const addOCPFluxResource = (clusterId, clusterNames, resource, links, nodes, hubClusterName) => {
   const {
     name: deployableName,
     namespace: deployableNamespace,
@@ -105,7 +105,8 @@ const addOCPFluxResource = (clusterId, clusterNames, resource, links, nodes) => 
   const type = kind.toLowerCase()
 
   const memberId = `member--member--deployable--member--clusters--${getClusterName(
-    clusterId
+    clusterId,
+    hubClusterName
   )}--${type}--${deployableNamespace}--${deployableName}`
 
   const raw = {

@@ -67,7 +67,7 @@ export const nodeMustHavePods = (node) => {
   return false
 }
 
-export const getClusterName = (nodeId, node, findAll) => {
+export const getClusterName = (nodeId, node, findAll, hubClusterName) => {
   if (node) {
     //cluster info is not set on the node id, get it from here
     if (findAll) {
@@ -92,7 +92,7 @@ export const getClusterName = (nodeId, node, findAll) => {
     return nodeId.slice(startPos, endPos > 0 ? endPos : nodeId.length)
   }
   //node must be deployed locally on hub, such as ansible jobs
-  return 'local-cluster'
+  return hubClusterName
 }
 
 /*
@@ -323,7 +323,7 @@ export const getTargetNsForNode = (node, resourcesForCluster, clusterName, defau
 }
 
 //returns the list of clusters the app resources must deploy on
-export const getResourcesClustersForApp = (searchClusters, nodes) => {
+export const getResourcesClustersForApp = (searchClusters, nodes, hubClusterName) => {
   let clustersList = searchClusters ? R.pathOr([], ['items'])(searchClusters) : []
   if (nodes && nodes.length > 0) {
     const placementNodes =
@@ -332,14 +332,14 @@ export const getResourcesClustersForApp = (searchClusters, nodes) => {
         (node) => _.get(node, 'type', '') === 'placements' && _.get(node, 'id', '').indexOf('deployable') === -1
       ) || []
     if (placementNodes.length > 0) {
-      const localClusterRuleFn = (decision) => _.get(decision, 'clusterName', '') === 'local-cluster'
+      const localClusterRuleFn = (decision) => _.get(decision, 'clusterName', '') === hubClusterName
       const localPlacement = _.find(
         placementNodes,
         (plc) => _.filter(_.get(plc, 'specs.raw.status.decisions', []), localClusterRuleFn).length > 0
       )
       if (!localPlacement) {
         // this placement doesn't include local host so don't include local cluster, used for showing not deployed status
-        clustersList = _.filter(clustersList, (cls) => _.get(cls, 'name', '') !== 'local-cluster')
+        clustersList = _.filter(clustersList, (cls) => _.get(cls, 'name', '') !== hubClusterName)
       }
     }
   }

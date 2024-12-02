@@ -8,7 +8,7 @@ import {
   createVirtualMachineInstance,
 } from './topologySubscription'
 
-export function getArgoTopology(application, argoData, managedClusters) {
+export function getArgoTopology(application, argoData, managedClusters, hubClusterName) {
   const { topology, cluster } = argoData
   const links = []
   const nodes = []
@@ -56,8 +56,8 @@ export function getArgoTopology(application, argoData, managedClusters) {
       allSubscriptions: [],
       allChannels: [],
       allClusters: {
-        isLocal: clusterNames.includes('local-cluster'),
-        remoteCount: clusterNames.includes('local-cluster') ? clusterNames.length - 1 : clusterNames.length,
+        isLocal: clusterNames.includes(hubClusterName),
+        remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
       },
       clusterNames,
       channels: application.channels,
@@ -94,7 +94,8 @@ export function getArgoTopology(application, argoData, managedClusters) {
     const type = kind.toLowerCase()
 
     const memberId = `member--member--deployable--member--clusters--${getClusterName(
-      clusterId
+      clusterId,
+      hubClusterName
     )}--${type}--${deployableNamespace}--${deployableName}`
 
     const raw = {
@@ -152,13 +153,13 @@ export function getArgoTopology(application, argoData, managedClusters) {
   return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-export function getArgoDestinationCluster(destination, managedClusters, cluster) {
+export function getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName) {
   // cluster is the name of the managed cluster where the Argo app is defined
   let clusterName
   const serverApi = get(destination, 'server')
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ? cluster : 'local-cluster'
+      clusterName = cluster ? cluster : hubClusterName
     } else {
       const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
       clusterName = server ? server.name : 'unknown'
@@ -166,12 +167,12 @@ export function getArgoDestinationCluster(destination, managedClusters, cluster)
   } else {
     // target destination was set using the name property
     clusterName = get(destination, 'name', 'unknown')
-    if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+    if (cluster && (clusterName === 'in-cluster' || clusterName === hubClusterName)) {
       clusterName = cluster
     }
 
     if (clusterName === 'in-cluster') {
-      clusterName = 'local-cluster'
+      clusterName = hubClusterName
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../resources'
+import { v4 as uuidv4 } from 'uuid'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Alert, Button, Divider, Modal, ModalVariant, Skeleton, Title } from '@patternfly/react-core'
@@ -21,25 +22,46 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
     setIsModalOpen((prevIsModalOpen) => !prevIsModalOpen)
   }
   useEffect(() => {
+    let ignore = false
+
     if (isModalOpen) {
       setIsFetching(true)
       setRelatedObjs(undefined)
       setTemplateErr(undefined)
 
-      fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster)
+      const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
+
+      fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster, viewName, viewName !== undefined)
         .then((viewResponse) => {
+          if (ignore) {
+            return
+          }
+
           if (viewResponse?.message) {
             setTemplateErr(viewResponse.message)
           } else {
             setRelatedObjs(viewResponse.result.status?.relatedObjects)
           }
-          setIsFetching(false)
         })
         .catch((err) => {
+          if (ignore) {
+            return
+          }
+
           console.error('Error getting resource: ', err)
           setTemplateErr(err)
+        })
+        .finally(() => {
+          if (ignore) {
+            return
+          }
+
           setIsFetching(false)
         })
+    }
+
+    return () => {
+      ignore = true
     }
   }, [isModalOpen, kind, apiVersion, templateName, cluster, t])
 

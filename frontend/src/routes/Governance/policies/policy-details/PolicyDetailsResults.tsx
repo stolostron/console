@@ -3,11 +3,11 @@ import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
@@ -87,14 +87,9 @@ export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
   const { policy } = usePolicyDetailsContext()
-  const { namespacesState, policiesState } = useSharedAtoms()
+  const { policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
-  const namespaces = useRecoilValue(namespacesState)
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-  }, [namespaces])
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
 
   const policiesDeployedOnCluster: ResultsTableData[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''

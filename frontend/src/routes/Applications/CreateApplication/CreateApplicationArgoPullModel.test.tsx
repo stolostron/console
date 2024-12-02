@@ -8,6 +8,7 @@ import {
   gitOpsClustersState,
   managedClusterSetBindingsState,
   managedClusterSetsState,
+  managedClustersState,
   namespacesState,
   placementsState,
   secretsState,
@@ -34,6 +35,9 @@ import {
   GitOpsCluster,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
+  ManagedCluster,
+  ManagedClusterApiVersion,
+  ManagedClusterKind,
   ManagedClusterSet,
   ManagedClusterSetApiVersion,
   ManagedClusterSetBinding,
@@ -332,6 +336,18 @@ const placementHelm: Placement = {
   },
 }
 
+const hubCluster: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'local-cluster',
+    namespace: 'local-cluster',
+    labels: {
+      'local-cluster': 'true',
+    },
+  },
+}
+
 jest.mock('react-router-dom-v5-compat', () => {
   const originalModule = jest.requireActual('react-router-dom-v5-compat')
   return {
@@ -360,6 +376,7 @@ describe('Create Argo Application Set', () => {
           snapshot.set(managedClusterSetsState, [clusterSet])
           snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
           snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+          snapshot.set(managedClustersState, [hubCluster])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>

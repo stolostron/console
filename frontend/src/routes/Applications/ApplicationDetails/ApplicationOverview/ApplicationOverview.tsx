@@ -69,7 +69,7 @@ export function ApplicationOverviewPageContent() {
   const namespaces = useRecoilValue(namespacesState)
 
   const managedClusters = useAllClusters(true)
-  const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
+  const localCluster = managedClusters.find((cls) => cls.labels && cls.labels[localClusterStr] === 'true')
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
@@ -140,7 +140,7 @@ export function ApplicationOverviewPageContent() {
       localCluster,
       managedClusters
     )
-    const clusterCount = getClusterCount(clusterList)
+    const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 

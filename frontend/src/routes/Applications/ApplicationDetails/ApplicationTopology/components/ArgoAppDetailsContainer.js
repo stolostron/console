@@ -442,7 +442,7 @@ class ArgoAppDetailsContainer extends Component {
           },
         },
       }
-      const editLink = createEditLink(searchResultToNode)
+      const editLink = createEditLink(searchResultToNode, this.props.hubClusterName)
       const appResourceYaml = {
         action: 'show_resource_yaml',
         editLink,

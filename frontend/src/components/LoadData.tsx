@@ -2,7 +2,7 @@
 import get from 'lodash/get'
 import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { SetterOrUpdater, useSetRecoilState } from 'recoil'
+import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
 import {
   AgentClusterInstallApiVersion,
@@ -176,7 +176,6 @@ import {
   WatchEvent,
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
-import { useRecoilValue } from '../shared-recoil'
 import { PluginDataContext } from '../lib/PluginDataContext'
 
 export function LoadData(props: { children?: ReactNode }) {

@@ -16,6 +16,10 @@ interface ISourceFilter {
   value: string
 }
 
+interface IKyvernoPolicyViolation {
+  [key: string]: { [key: string]: boolean }
+}
+
 export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyItem[]): ViolationSummary => {
   let compliant = 0
   let noncompliant = 0
@@ -24,25 +28,13 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
 
   // Kyverno Policy kinds are grouped together even though there could be multiple on the same cluster with the same
   // name. Only one violation should count as a cluster violation.
-  const kyvernoPolicyViolations: { [key: string]: { [key: string]: boolean } } = {}
+  const kyvernoPolicyViolations: IKyvernoPolicyViolation = {}
 
   for (const policy of discoveredPolicyItems) {
-    let compliance: string
-    // Kyverno resources also use the totalViolations field
-    if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(policy.apigroup)) {
-      compliance = getTotalViolationsCompliance(policy?.totalViolations)
-    } else {
-      compliance = policy?.compliant?.toLowerCase() ?? ''
-    }
+    const compliance = getCompliance(policy)
 
     if (policy.apigroup === 'kyverno.io' && policy.kind === 'Policy') {
-      const key = `${policy.cluster}:${policy.name}`
-      if (!kyvernoPolicyViolations[key]) {
-        kyvernoPolicyViolations[key] = {}
-      }
-
-      kyvernoPolicyViolations[key][compliance] = true
-
+      addComplianceToKyvernoPolicyViolations(policy, compliance, kyvernoPolicyViolations)
       continue
     }
 
@@ -74,6 +66,27 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   }
 
   return { noncompliant, compliant, pending, unknown }
+}
+
+const addComplianceToKyvernoPolicyViolations = (
+  policy: DiscoveredPolicyItem,
+  compliance: string,
+  kyvernoPolicyViolations: IKyvernoPolicyViolation
+) => {
+  const key = `${policy.cluster}:${policy.name}`
+  if (!kyvernoPolicyViolations[key]) {
+    kyvernoPolicyViolations[key] = {}
+  }
+
+  kyvernoPolicyViolations[key][compliance] = true
+}
+
+const getCompliance = (policy: DiscoveredPolicyItem) => {
+  // Kyverno resources also use the totalViolations field
+  if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(policy.apigroup)) {
+    return getTotalViolationsCompliance(policy?.totalViolations)
+  }
+  return policy?.compliant?.toLowerCase() ?? ''
 }
 
 export const getTotalViolationsCompliance = (totalViolations?: number): string => {
@@ -108,6 +121,7 @@ export const byClusterCols = (
   subscriptions: Subscription[],
   channels: Channel[],
   policyKind: string,
+  disabledSeverityTooltip: boolean,
   moreCols?: IAcmTableColumn<DiscoveredPolicyItem>[]
 ): IAcmTableColumn<DiscoveredPolicyItem>[] => [
   {
@@ -143,17 +157,16 @@ export const byClusterCols = (
     id: 'responseAction',
     exportContent: (item: DiscoveredPolicyItem) => item.responseAction,
   },
-  {
-    header: t('Severity'),
-    // TODO Add severity icon
-    cell: severityCell,
-    sort: 'severity',
-    id: 'severity',
-    tooltip: t('discoveredPolicies.tooltip.severity'),
-    exportContent: (item) => item.severity,
-  },
   ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
     ? [
+        {
+          header: t('Severity'),
+          cell: severityCell,
+          sort: 'severity',
+          id: 'severity',
+          ...(!disabledSeverityTooltip && { tooltip: t('discoveredPolicies.tooltip.severity') }),
+          exportContent: (item: DiscoveredPolicyItem) => item.severity,
+        },
         {
           header: t('Violations'),
           tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
@@ -344,11 +357,23 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
       { label: 'enforce', value: 'enforce' },
       { label: 'inform', value: 'inform' },
       { label: 'warn', value: 'warn' },
+      { label: 'audit', value: 'audit' },
+      { label: 'Kyverno Audit', value: 'Audit' },
+      { label: 'Kyverno Enforce', value: 'Enforce' },
     ],
     tableFilterFn: (selectedValues, item) => {
       for (const selectedValue of selectedValues) {
         if (!item.responseAction) {
           return false
+        }
+
+        if (item.apigroup === 'kyverno.io') {
+          if (selectedValues.includes('Audit') && item.responseAction.includes('Audit')) {
+            return true
+          }
+          if (selectedValues.includes('Enforce') && item.responseAction.includes('Enforce')) {
+            return true
+          }
         }
 
         for (const responseAction of item.responseAction.split('/')) {

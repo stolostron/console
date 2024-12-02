@@ -203,21 +203,27 @@ describe('getResourcesClustersForApp', () => {
   ]
 
   it('returns search nodes WITHOUT local host, the placement rule is not deploying on local', () => {
-    expect(getResourcesClustersForApp(searchClusters, nodesWithoutPlacementOnLocal)).toEqual(resultWithoutLocalCluster)
+    expect(getResourcesClustersForApp(searchClusters, nodesWithoutPlacementOnLocal, 'local-cluster')).toEqual(
+      resultWithoutLocalCluster
+    )
   })
 
   it('returns search nodes WITH local host, the placement rule IS deploying not deploying on local', () => {
-    expect(getResourcesClustersForApp(searchClusters, nodesWithPlacementOnLocal)).toEqual(searchClusters.items)
+    expect(getResourcesClustersForApp(searchClusters, nodesWithPlacementOnLocal, 'local-cluster')).toEqual(
+      searchClusters.items
+    )
   })
 
   it('returns search nodes WITH local host, the placement rule not found - ie argo', () => {
-    expect(getResourcesClustersForApp(searchClusters, nodesWithNoPlacement)).toEqual(searchClusters.items)
+    expect(getResourcesClustersForApp(searchClusters, nodesWithNoPlacement, 'local-cluster')).toEqual(
+      searchClusters.items
+    )
   })
 
   it('returns search nodes WITH local host, the placement rule found but is a deployable', () => {
-    expect(getResourcesClustersForApp(searchClusters, nodesWithoutPlacementOnLocalAsDeployable)).toEqual(
-      searchClusters.items
-    )
+    expect(
+      getResourcesClustersForApp(searchClusters, nodesWithoutPlacementOnLocalAsDeployable, 'local-cluster')
+    ).toEqual(searchClusters.items)
   })
 })
 
@@ -508,7 +514,7 @@ describe('getOnlineClusters', () => {
     expect(getOnlineClusters(inputNodeAllAvailable)).toEqual(['local-cluster', 'ui-managed'])
   })
   it('returns all clusters, local not set', () => {
-    expect(getOnlineClusters(inputNodeLocalNotSet)).toEqual(['local-cluster', 'ui-managed'])
+    expect(getOnlineClusters(inputNodeLocalNotSet, 'local-cluster')).toEqual(['local-cluster', 'ui-managed'])
   })
 })
 
@@ -520,7 +526,7 @@ describe('getClusterName node returns clustersNames', () => {
         clustersNames: ['local-cluster', 'ui-managed'],
       },
     }
-    expect(getClusterName(clsNode1.id, clsNode1)).toEqual('local-cluster,ui-managed')
+    expect(getClusterName(clsNode1.id, clsNode1, undefined, 'local-cluster')).toEqual('local-cluster,ui-managed')
   })
 })
 
@@ -571,7 +577,7 @@ describe('getClusterName node clusters from nodeId, local cluster', () => {
         clustersNames: ['local-cluster', 'ui-managed'],
       },
     }
-    expect(getClusterName(clsNode1.id)).toEqual('local-cluster')
+    expect(getClusterName(clsNode1.id, undefined, undefined, 'local-cluster')).toEqual('local-cluster')
   })
 })
 
@@ -816,7 +822,7 @@ describe('getOnlineCluster ok and pending', () => {
     },
   }
   it('should process cluster node status', () => {
-    expect(getOnlineClusters(node)).toEqual(['cluster1', 'cluster2', 'local-cluster'])
+    expect(getOnlineClusters(node, 'local-cluster')).toEqual(['cluster1', 'cluster2', 'local-cluster'])
   })
 })
 

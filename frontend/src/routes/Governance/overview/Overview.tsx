@@ -11,11 +11,11 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmDrawerContext, compareStrings } from '../../../ui-components'
@@ -44,17 +44,12 @@ const getScore = (item: { cluster?: ManagedCluster; violations: any }) => {
 
 export default function GovernanceOverview() {
   usePageVisitMetricHandler(Pages.governance)
-  const { usePolicies, namespacesState } = useSharedAtoms()
+  const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
-  const namespaces = useRecoilValue(namespacesState)
   const policyViolationSummary = usePolicyViolationSummary(policies)
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
   const { loadStarted, loadCompleted } = useContext(LoadStatusContext)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-  }, [namespaces])
 
   if (loadCompleted || process.env.NODE_ENV === 'test') {
     if (policies.length === 0) {

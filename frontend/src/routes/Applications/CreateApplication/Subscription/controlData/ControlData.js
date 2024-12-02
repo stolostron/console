@@ -14,30 +14,13 @@ import gitChannelData from './ControlDataGit'
 import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
 import otherChannelData from './ControlDataOther'
-import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
-import { listProjects } from '../../../../../resources'
+import { updateControlsForNS, getSharedSubscriptionWarning } from './utils'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
 import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor'
 import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
 import ObjectStore from '../../logos/ObjectStore.svg'
-
-export const loadExistingNamespaces = (t) => {
-  return {
-    query: () => {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const namespaces = await listProjects().promise
-          resolve(namespaces)
-        } catch (err) {
-          reject(err)
-        }
-      })
-    },
-    loadingDesc: t('Loading namespaces...'),
-    setAvailable: setAvailableNSSpecs.bind(null),
-  }
-}
+import { loadExistingNamespaces } from '../../../../../lib/temptifly-utils'
 
 export const updateNameControls = (nameControl, globalControl) => {
   const channelsControl = globalControl.find(({ id }) => id === 'channels')

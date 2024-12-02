@@ -1424,7 +1424,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {additionalToolbarItems}
             {(!props.autoHidePagination || filtered.length > perPage) && (
               <ToolbarItem variant="pagination">
-                <Pagination {...commonPaginationProps} aria-label={t('Pagination top')} isCompact />
+                <Pagination
+                  {...commonPaginationProps}
+                  aria-label={t('Pagination top')}
+                  isCompact
+                  perPageOptions={props.perPageOptions}
+                />
               </ToolbarItem>
             )}
           </ToolbarContent>
@@ -1517,6 +1522,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               {...commonPaginationProps}
               variant={PaginationVariant.bottom}
               aria-label={t('Pagination bottom')}
+              perPageOptions={props.perPageOptions}
             />
           )}
         </Fragment>

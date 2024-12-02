@@ -1,13 +1,13 @@
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
-  name: clusters
+  name: '{{namespace}}'
 ---
 apiVersion: hypershift.openshift.io/v1beta1
 kind: HostedCluster
 metadata:
   name: '{{{clusterName}}}'
-  namespace: 'clusters'
+  namespace: '{{namespace}}'
   {{#if clusterSet}}
   labels:
     "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
@@ -68,7 +68,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: infra-cluster-{{{clusterName}}}
-  namespace: 'clusters'
+  namespace: '{{namespace}}'
 stringData:
   {{#if showSecrets}}
   kubeconfig: |
@@ -82,7 +82,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: pullsecret-cluster-{{{clusterName}}}
-  namespace: clusters
+  namespace: '{{namespace}}'
 stringData:
   {{#if showSecrets}}
   '.dockerconfigjson': |-
@@ -96,7 +96,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: sshkey-cluster-{{{clusterName}}}
-  namespace: 'clusters'
+  namespace: '{{namespace}}'
 stringData:
   {{#if showSecrets}}
   'id_rsa.pub': {{{ssh-publickey}}}
@@ -109,7 +109,7 @@ apiVersion: hypershift.openshift.io/v1beta1
 kind: NodePool
 metadata:
   name: '{{{this.nodePoolName}}}'
-  namespace: 'clusters'
+  namespace: '{{../namespace}}'
 spec:
   arch: amd64
   clusterName: '{{{@root.clusterName}}}'

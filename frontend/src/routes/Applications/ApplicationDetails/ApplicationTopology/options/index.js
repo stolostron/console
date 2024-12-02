@@ -12,12 +12,10 @@
 
 import { defaultShapes } from './constants'
 import { computeNodeStatus } from '../model/computeStatuses'
-import { getConnectedLayoutOptions, getUnconnectedLayoutOptions } from './layouts'
 import { getNodeDescription } from './descriptions'
 import { getNodeTitle, getSectionTitles } from './titles'
 import { getNodeDetails } from './details.js'
-import { updateNodeIcons, updateNodeStatus } from './status.js'
-import { getAllFilters, getAvailableFilters, getSearchFilter, filterNodes } from './filtering.js'
+import { getAllFilters, getAvailableFilters, getSearchFilter } from './filtering.js'
 
 export const getOptions = () => {
   return {
@@ -31,13 +29,8 @@ export const getOptions = () => {
     getNodeTitle,
     getSectionTitles,
     getNodeDetails,
-    updateNodeStatus,
-    updateNodeIcons,
     getAllFilters,
     getAvailableFilters,
     getSearchFilter,
-    filterNodes,
-    getConnectedLayoutOptions,
-    getUnconnectedLayoutOptions,
   }
 }

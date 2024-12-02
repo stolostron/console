@@ -14,7 +14,6 @@ import {
   checkAndObjects,
   checkNotOrObjects,
   computeResourceName,
-  createDeployableYamlLink,
   createEditLink,
   createResourceSearchLink,
   getNameWithoutChartRelease,
@@ -23,6 +22,7 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -322,112 +322,6 @@ describe('getNameWithoutChartRelease node for subscription, with label', () => {
 
   it('getNameWithoutChartRelease helm release  no no label', () => {
     expect(getNameWithoutChartRelease(node, 'git-helm-sub', { value: true })).toEqual('git-helm-sub')
-  })
-})
-
-describe('createDeployableYamlLink for application no selflink', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    name: 'test-1',
-    namespace: 'test-1-ns',
-    id: 'id',
-    specs: {
-      row: 20,
-      isDesign: true,
-      raw: {
-        kind: 'Application',
-      },
-    },
-  }
-  it('createDeployableYamlLink for application editLink', () => {
-    expect(createDeployableYamlLink(node, details, t)).toEqual([
-      {
-        type: 'link',
-        value: {
-          data: {
-            action: 'show_resource_yaml',
-            cluster: 'local-cluster',
-            editLink:
-              '/multicloud/search/resources/yaml?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
-          },
-          label: 'View resource YAML',
-        },
-      },
-    ])
-  })
-})
-
-describe('createDeployableYamlLink for application with editLink', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    id: 'id',
-    name: 'test',
-    namespace: 'test-ns',
-    apiversion: 'app.k8s.io/v1beta1',
-    kind: 'Application',
-    specs: {
-      isDesign: true,
-      raw: {
-        metadata: {
-          selfLink: 'appLink',
-        },
-      },
-    },
-  }
-  const result = [
-    {
-      type: 'link',
-      value: {
-        data: {
-          action: 'show_resource_yaml',
-          cluster: 'local-cluster',
-          editLink:
-            '/multicloud/search/resources/yaml?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
-        },
-        label: 'View resource YAML',
-      },
-    },
-  ]
-  it('createDeployableYamlLink for application with selflink', () => {
-    expect(createDeployableYamlLink(node, details, t)).toEqual(result)
-  })
-})
-
-describe('createDeployableYamlLink for child application', () => {
-  const details = []
-  const node = {
-    type: 'application',
-    id: 'id',
-    name: 'test',
-    namespace: 'test-ns',
-    apiversion: 'app.k8s.io/v1beta1',
-    kind: 'Application',
-    specs: {
-      raw: {
-        metadata: {
-          selfLink: 'appLink',
-        },
-      },
-    },
-  }
-  const result = []
-  it('does not add a link', () => {
-    expect(createDeployableYamlLink(node, details)).toEqual(result)
-  })
-})
-
-describe('createDeployableYamlLink for other', () => {
-  const details = []
-  const node = {
-    id: 'id',
-    specs: {
-      row_foo: 20,
-    },
-  }
-  it('createDeployableYamlLink for other', () => {
-    expect(createDeployableYamlLink(node, details)).toEqual([])
   })
 })
 
@@ -1435,6 +1329,38 @@ describe('processResourceActionLink dummy link', () => {
   })
 })
 
+describe('processResourceActionLink open argo editor', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+  const genericLink = {
+    action: 'open_argo_editor',
+    name: 'argo_test',
+    namespace: 'argo_test',
+    cluster: 'local-cluster',
+  }
+  const result = ''
+  it('processResourceActionLink open argo editor', () => {
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
+  })
+})
+
+describe('processResourceActionLink open route url', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+  const genericLink = {
+    action: 'open_route_url',
+    name: 'route_test',
+    namespace: 'route_test',
+    cluster: 'local-cluster',
+  }
+  const result = ''
+  it('processResourceActionLink open route url', () => {
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
+  })
+})
+
 describe('removeReleaseGeneratedSuffix remove suffix', () => {
   it('should remove generate suffix for the helmrelease', () => {
     expect(removeReleaseGeneratedSuffix('nginx-ingress-66f46')).toEqual('nginx-ingress')
@@ -1924,7 +1850,7 @@ describe('createEditLink subscriptionstatus', () => {
   const apiversion = 'apps.open-cluster-management.io/v1alpha1'
 
   it('returns subscriptionstatus link', () => {
-    expect(createEditLink(node, kind, cluster, apiversion)).toEqual(
+    expect(createEditLink(node, 'local-cluster', kind, cluster, apiversion)).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps.open-cluster-management.io%2Fv1alpha1&cluster=local-cluster&kind=SubscriptionStatus&name=feng-wordpress-subscription-1&namespace=feng-wordpress'
     )
   })
@@ -1940,7 +1866,7 @@ describe('createEditLink deployment', () => {
     namespace: 'default',
   }
   it('returns deployment link', () => {
-    expect(createEditLink(node)).toEqual(
+    expect(createEditLink(node, 'local-cluster')).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
     )
   })
@@ -1955,7 +1881,7 @@ describe('createEditLink kind undefined', () => {
     namespace: 'default',
   }
   it('returns non-working link', () => {
-    expect(createEditLink(node)).toEqual(
+    expect(createEditLink(node, 'local-cluster')).toEqual(
       '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&name=mydeploy&namespace=default'
     )
   })

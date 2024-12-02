@@ -75,9 +75,9 @@ class DetailsView extends Component {
   }
 
   processActionLink(value) {
-    const { processActionLink } = this.props
+    const { processActionLink, hubClusterName } = this.props
     const { data } = value
-    processActionLink(data, this.toggleLinkLoading)
+    processActionLink(data, this.toggleLinkLoading, undefined, hubClusterName)
   }
 
   handleTabClick(event, tabIndex) {
@@ -203,10 +203,10 @@ class DetailsView extends Component {
   }
 
   renderTabContents(node) {
-    const { options, activeFilters, t } = this.props
+    const { options, activeFilters, t, hubClusterName } = this.props
     const selectedNodeId = node.id
     const { getNodeDetails } = options
-    const details = getNodeDetails(node, activeFilters, t)
+    const details = getNodeDetails(node, activeFilters, t, hubClusterName)
     const name = node.type === 'cluster' ? '' : node.name
     const yamlURL = createResourceURL(node, t)
     const { namespace, type } = node
@@ -226,7 +226,7 @@ class DetailsView extends Component {
             t
           )
         }
-        return <YAMLContainer key={selectedNodeId} node={node} t={t} />
+        return <YAMLContainer key={selectedNodeId} node={node} t={t} hubClusterName={hubClusterName} />
     }
   }
 
@@ -377,13 +377,14 @@ class DetailsView extends Component {
   }
 
   renderRelatedArgoAppDetails({ relatedargoappsdata }, t) {
-    const { argoAppDetailsContainerControl } = this.props
+    const { argoAppDetailsContainerControl, hubClusterName } = this.props
     return (
       <div className="sectionContent" key={Math.random()}>
         <ArgoAppDetailsContainer
           argoAppList={relatedargoappsdata.argoAppList}
           t={t}
           argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+          hubClusterName={hubClusterName}
         />
       </div>
     )

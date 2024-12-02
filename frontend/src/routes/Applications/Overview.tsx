@@ -13,7 +13,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
@@ -21,7 +21,7 @@ import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
-import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
+import { rbacCreate, rbacDelete, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 import { fetchAggregate, IRequestListView, SupportedAggregate, useAggregate } from '../../lib/useAggregates'
 import { NavigationPath } from '../../NavigationPath'
 import {
@@ -315,7 +315,6 @@ export default function ApplicationsOverview() {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    namespacesState,
     placementRulesState,
     placementsState,
     placementDecisionsState,
@@ -330,13 +329,15 @@ export default function ApplicationsOverview() {
   const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
-  const namespaces = useRecoilValue(namespacesState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
 
   const managedClusters = useAllClusters(true)
-  const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
+  const localCluster = useMemo(
+    () => managedClusters.find((cls) => cls.labels && cls.labels[localClusterStr] === 'true'),
+    [managedClusters]
+  )
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
@@ -392,7 +393,7 @@ export default function ApplicationsOverview() {
         localCluster,
         managedClusters
       )
-      const clusterCount = getClusterCount(clusterList)
+      const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
       // Resource column
@@ -541,7 +542,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList)
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
@@ -560,7 +561,7 @@ export default function ApplicationsOverview() {
             localCluster,
             managedClusters
           )
-          const clusterCount = getClusterCount(clusterList)
+          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
       },
@@ -784,9 +785,9 @@ export default function ApplicationsOverview() {
   )
 
   const navigate = useNavigate()
-  const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
-  const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
-  const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
+  const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
+  const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
+  const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
 
   const rowActionResolver = useCallback(
     (resource: IResource) => {
@@ -882,7 +883,7 @@ export default function ApplicationsOverview() {
                   kind: resource.kind.toLowerCase(),
                   apigroup,
                   apiversion,
-                  cluster: resource.status?.cluster ? resource.status?.cluster : 'local-cluster',
+                  cluster: resource.status?.cluster ? resource.status?.cluster : localCluster?.name,
                 },
               })
           navigate(searchLink)
@@ -911,7 +912,15 @@ export default function ApplicationsOverview() {
           click: () => {
             const appChildResources =
               resource.kind === ApplicationKind
-                ? getAppChildResources(resource, applications, subscriptions, placementRules, placements, channels)
+                ? getAppChildResources(
+                    resource,
+                    applications,
+                    subscriptions,
+                    placementRules,
+                    placements,
+                    channels,
+                    localCluster?.name ?? ''
+                  )
                 : [[], []]
             const appSetRelatedResources =
               resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
@@ -990,18 +999,9 @@ export default function ApplicationsOverview() {
       applicationSets,
       argoApplications,
       canCreateApplication,
+      localCluster?.name,
     ]
   )
-
-  useEffect(() => {
-    checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication, namespaces)
-  }, [namespaces])
-  useEffect(() => {
-    checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet, namespaces)
-  }, [namespaces])
 
   const appCreationButton = useMemo(
     () => (

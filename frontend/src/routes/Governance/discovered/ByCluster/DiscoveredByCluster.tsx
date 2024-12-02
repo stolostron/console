@@ -37,6 +37,7 @@ export default function DiscoveredByCluster({
   const locationPath = useLocation().pathname
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''
+  const isVapb = ['admissionregistration.k8s.io'].includes(policies?.[0]?.apigroup ?? '')
   const cols = useMemo(() => {
     let extraColumns: IAcmTableColumn<DiscoveredPolicyItem>[] = []
 
@@ -72,8 +73,8 @@ export default function DiscoveredByCluster({
       ]
     }
 
-    return byClusterCols(t, helmReleases, subscriptions, channels, policyKind, extraColumns)
-  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t])
+    return byClusterCols(t, helmReleases, subscriptions, channels, policyKind, isVapb, extraColumns)
+  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t, isVapb])
 
   const operatorPolicyStats: any = useMemo(() => {
     if (policyKind !== 'OperatorPolicy') {

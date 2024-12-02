@@ -11,7 +11,9 @@ const t = (string: any) => {
 describe('YAML Container test', () => {
   const renderYAMLContainer = async (node: any, t: TFunction) => {
     const containerRef = {} as unknown as HTMLDivElement
-    const retResource = render(<YAMLContainer node={node} t={t} containerRef={containerRef} />)
+    const retResource = render(
+      <YAMLContainer node={node} t={t} containerRef={containerRef} hubClusterName="local-cluster" />
+    )
 
     return retResource
   }

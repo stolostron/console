@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Divider, Flex, PageSection, Title } from '@patternfly/react-core'
+import { Flex, FlexItem, PageSection, Spinner, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -8,6 +8,7 @@ import {
 } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { v4 as uuidv4 } from 'uuid'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
   AcmAlert,
@@ -22,8 +23,17 @@ import { DiffModal } from '../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../common/util'
-import { useFetchKyvernoRelated, useFetchVapb } from './PolicyTemplateDetailHooks'
+import { useFetchKyvernoRelated, useFetchVapb, useFetchVapbParamRefs } from './PolicyTemplateDetailHooks'
 import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
+import { fireManagedClusterView } from '../../../../resources'
+
+interface IRuleMessage {
+  ruleName: string
+  message: string
+}
+interface IRelatedObjMessages {
+  [relatedItemUid: string]: IRuleMessage[]
+}
 
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
@@ -35,20 +45,28 @@ export function PolicyTemplateDetails() {
   const apiVersion = urlParams.apiVersion ?? ''
   const { clusterName, template, templateLoading, handleAuditViolation } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
-  // This is for gatekeeper constraint and kyverno
-  const vapb = useFetchVapb()
+  const vapb = useFetchVapb() // Used by gatekeeper constraints and kyverno resources
+  const vapbRelated = useFetchVapbParamRefs() // Used when just displaying a VAPB
   const kyvernoRelated = useFetchKyvernoRelated()
-  const isFromSearch = ['kyverno.io'].includes(apiGroup)
+  const isKyverno = ['kyverno.io'].includes(apiGroup)
+  const isVAPB = apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding'
   const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
+  const relatedObjectsMessages: IRelatedObjMessages = {}
 
   useEffect(() => {
-    if (isFromSearch && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
+    if (isKyverno && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
       setRelatedObjects(kyvernoRelated.relatedItems)
       if (kyvernoRelated.violationNum != undefined) {
         handleAuditViolation(kyvernoRelated.violationNum)
       }
     }
-  }, [kyvernoRelated, apiGroup, isFromSearch, handleAuditViolation])
+  }, [kyvernoRelated, apiGroup, isKyverno, handleAuditViolation])
+
+  useEffect(() => {
+    if (isVAPB && vapbRelated.relatedItems !== undefined && vapbRelated.relatedItems) {
+      setRelatedObjects(vapbRelated.relatedItems)
+    }
+  }, [vapbRelated, apiGroup, kind, isVAPB])
 
   useEffect(() => {
     if (apiGroup === 'constraints.gatekeeper.sh' && template?.status?.totalViolations !== undefined) {
@@ -93,10 +111,10 @@ export function PolicyTemplateDetails() {
     }
 
     // Data from Search-api handles their loading page
-    if (!templateLoading && !isFromSearch) {
+    if (!templateLoading && !isKyverno) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading, isFromSearch, handleAuditViolation])
+  }, [apiGroup, clusterName, template, templateLoading, isKyverno, handleAuditViolation])
 
   const descriptionItems = useMemo(() => {
     let cols: ListItems[] = [
@@ -148,18 +166,20 @@ export function PolicyTemplateDetails() {
       header: t('Violations'),
       sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
       cell: (item: any) => {
+        let violationCell = <></>
         let compliant = item.compliant ?? '-'
         compliant = compliant && typeof compliant === 'string' ? compliant.trim().toLowerCase() : '-'
 
         switch (compliant) {
           case 'compliant':
-            return (
+            violationCell = (
               <div>
                 <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
               </div>
             )
+            break
           case 'noncompliant':
-            return (
+            violationCell = (
               <div>
                 <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
                 <DiffModal
@@ -170,38 +190,67 @@ export function PolicyTemplateDetails() {
                 />
               </div>
             )
+            break
           case 'inapplicable':
-            return (
+            violationCell = (
               <div>
                 <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
               </div>
             )
-          // @ts-expect-error: Falls through to 'No status'
+            break
           case 'unknowncompliancy':
             if (kind === 'OperatorPolicy') {
               switch (item.object?.kind) {
                 case 'Deployment':
-                  return (
+                  violationCell = (
                     <div>
                       <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
+                  break
                 case 'CustomResourceDefinition':
-                  return (
+                  violationCell = (
                     <div>
                       <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
                     </div>
                   )
+                  break
               }
             }
+            break
           // falls through to 'No status'
           default:
-            return (
+            violationCell = (
               <div>
                 <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
               </div>
             )
         }
+
+        let policyReportLink: ReactNode = <></>
+        if (item.policyReport) {
+          const { cluster, kind, name, namespace, apigroup, apiversion } = item.policyReport
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          const apigroupArg = apigroup ? `${apigroup}%2F` : ''
+          policyReportLink = (
+            <div>
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+              >
+                {t('View report')}
+                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+              </a>
+            </div>
+          )
+        }
+        return (
+          <div>
+            {violationCell}
+            {policyReportLink}
+          </div>
+        )
       },
     }
   }, [t, kind])
@@ -210,7 +259,33 @@ export function PolicyTemplateDetails() {
     () => [
       {
         header: t('Name'),
-        cell: 'object.metadata.name',
+        cell: (item: any) => {
+          const {
+            cluster,
+            reason,
+            object: {
+              apiVersion,
+              kind,
+              metadata: { name, namespace = '' },
+            },
+          } = item
+          if (reason === 'Resource not found but should exist' || reason === 'Resource not found as expected') {
+            return name
+          }
+          if (cluster && kind && apiVersion && name && name != '-') {
+            const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+            return (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
+              >
+                {name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+              </a>
+            )
+          }
+          return name
+        },
         sort: 'object.metadata.name',
         search: 'object.metadata.name',
       },
@@ -232,51 +307,77 @@ export function PolicyTemplateDetails() {
         sort: 'object.apiVersion',
         search: 'object.apiVersion',
       },
-      ...(kind === 'ValidatingAdmissionPolicyBinding' ? [] : [violationColumn]),
+      violationColumn,
       {
         header: t('Reason'),
         cell: 'reason',
         search: 'reason',
       },
-      {
-        header: '',
-        cell: (item: any) => {
-          const {
-            cluster,
-            reason,
-            object: {
-              apiVersion,
-              kind,
-              metadata: { name, namespace = '' },
-            },
-          } = item
-          if (reason === 'Resource not found but should exist' || reason === 'Resource not found as expected') {
-            return ''
-          }
-          if (cluster && kind && apiVersion && name && name != '-') {
-            const namespaceArg = namespace ? `&namespace=${namespace}` : ''
-            return (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
-              >
-                {t('View YAML')} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
-            )
-          }
-          return ''
-        },
-      },
     ],
-    [t, violationColumn, kind]
+    [t, violationColumn]
   )
 
-  const relatedResourceFromSearchAPIColumns = useMemo(
+  const paramRefVAPBColumns = useMemo(
     () => [
       {
         header: t('Name'),
-        cell: 'name',
+        cell: (item: any) => {
+          const { cluster, kind, name, namespace, apiversion, apigroup } = item
+          const apigroupArg = apigroup ? `${apigroup}%2F` : ''
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          return (
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+            >
+              {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+            </a>
+          )
+        },
+        sort: 'name',
+        search: 'name',
+      },
+      {
+        header: t('Namespace'),
+        cell: (item: any) => item.namespace ?? '-',
+        search: (item: any) => item.namespace,
+        sort: (a: any, b: any) => compareStrings(a.namespace, b.namespace),
+      },
+      {
+        header: t('Kind'),
+        cell: 'kind',
+        sort: 'kind',
+        search: 'kind',
+      },
+      {
+        header: t('API version'),
+        cell: (item: any) => (item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion),
+        sort: 'apigroup',
+        search: 'apigroup',
+      },
+    ],
+    [t]
+  )
+
+  const relatedResourceKyvernoColumns = useMemo(
+    () => [
+      {
+        header: t('Name'),
+        cell: (item: any) => {
+          const { cluster, kind, name, namespace, apiversion, apigroup } = item
+          const apigroupArg = apigroup ? `${apigroup}%2F` : ''
+          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          return (
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+            >
+              {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+            </a>
+          )
+        },
         sort: 'name',
         search: 'name',
       },
@@ -300,61 +401,24 @@ export function PolicyTemplateDetails() {
       },
       violationColumn,
       {
-        header: '',
-        cell: (item: any) => {
-          let policyReportLink: ReactNode = <></>
-          if (item.policyReport) {
-            const { cluster, kind, name, namespace, apigroup, apiversion } = item.policyReport
-            const namespaceArg = namespace ? `&namespace=${namespace}` : ''
-            const apigroupArg = apigroup ? `${apigroup}%2F` : ''
-            policyReportLink = (
-              <>
-                <span>
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
-                  >
-                    {t('View report')}
-                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                  </a>
-                </span>{' '}
-                <Divider
-                  orientation={{
-                    default: 'vertical',
-                  }}
-                  inset={{
-                    default: 'insetMd',
-                    md: 'insetNone',
-                    lg: 'insetSm',
-                    xl: 'insetXs',
-                  }}
-                />
-              </>
-            )
-          }
-
-          const { cluster, kind, name, namespace, apiversion } = item
-          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
-          return (
-            <Flex>
-              {policyReportLink}
-
-              <span>
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiversion}&name=${name}${namespaceArg}`}
-                >
-                  {t('View YAML')} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                </a>
-              </span>
-            </Flex>
-          )
-        },
+        header: t('Messages'),
+        cell: (item: any) => (
+          <KyvernoMessages
+            {...{
+              item,
+              kyvernoPolicyName: name,
+              KyvernoPolicyNamespace: namespace,
+              messageCache: relatedObjectsMessages,
+            }}
+          />
+        ),
+        sort: 'Messages',
+        search: 'Messages',
       },
     ],
-    [t, violationColumn]
+    // Don't include messageCache since it's just a cache and won't change how things are rendered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, violationColumn, name, namespace]
   )
 
   return (
@@ -375,27 +439,170 @@ export function PolicyTemplateDetails() {
         />
       </PageSection>
       <PageSection>
-        <Title headingLevel="h2">{t('Related resources')}</Title>
+        <Title headingLevel="h2">{isVAPB ? t('Parameter resources') : t('Related resources')}</Title>
         <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
           <AcmTable
             items={relatedObjects}
             emptyState={
-              <AcmEmptyState
-                title={t('No related resources')}
-                message={t('There are no resources related to this policy template.')}
-              />
+              isVAPB ? (
+                <AcmEmptyState
+                  title={t('No parameter resources')}
+                  message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
+                />
+              ) : (
+                <AcmEmptyState
+                  title={t('No related resources')}
+                  message={t('There are no resources related to this policy template.')}
+                />
+              )
             }
-            columns={isFromSearch ? relatedResourceFromSearchAPIColumns : relatedResourceColumns}
+            columns={isKyverno ? relatedResourceKyvernoColumns : isVAPB ? paramRefVAPBColumns : relatedResourceColumns}
             keyFn={(item) =>
-              isFromSearch ? `${item.kind}.${item.name}` : `${item?.object?.kind}.${item?.object?.metadata.name}`
+              isKyverno ? `${item.kind}.${item.name}` : `${item?.object?.kind}.${item?.object?.metadata.name}`
             }
             initialSort={{
               index: 0,
               direction: 'asc',
             }}
+            perPageOptions={isKyverno ? [] : undefined}
           />
         </AcmTablePaginationContextProvider>
       </PageSection>
     </div>
+  )
+}
+
+const KyvernoMessages = ({
+  item,
+  kyvernoPolicyName,
+  KyvernoPolicyNamespace,
+  messageCache,
+}: {
+  item: any
+  kyvernoPolicyName: string
+  KyvernoPolicyNamespace?: string
+  messageCache: IRelatedObjMessages
+}) => {
+  // Cluster + '/' + Resource uid
+  const uid = item._uid
+  const {
+    cluster: reportCluster,
+    kind: reportKind,
+    name: reportName,
+    namespace: reportNs,
+    apigroup,
+    apiversion,
+  } = item.policyReport
+  const [loading, setLoading] = useState<boolean>(false)
+  const [ruleMsg, setRuleMsg] = useState<IRuleMessage[] | undefined>()
+  const [errString, setErrString] = useState<string | undefined>()
+  const reportVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
+
+  useEffect(
+    () => {
+      let ignore = false
+
+      const foundPolicyMessages = messageCache[uid]
+      if (foundPolicyMessages !== undefined) {
+        setRuleMsg(foundPolicyMessages)
+        setLoading(false)
+      } else if (!loading) {
+        setLoading(true)
+        const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
+
+        fireManagedClusterView(
+          reportCluster,
+          reportKind,
+          reportVersion,
+          reportName,
+          reportNs,
+          viewName,
+          viewName !== undefined
+        )
+          .then((viewResponse) => {
+            if (ignore) {
+              return
+            }
+
+            if (viewResponse?.message) {
+              setErrString(viewResponse.message)
+            } else {
+              // policy field: namespace/policyName
+              const results: { message: string; rule: string; policy: string }[] = viewResponse?.result?.results.filter(
+                ({ policy: policyNsName }: { policy: string }) => {
+                  // To avoid scenarios where a ClusterPolicy and a Kyverno Policy share the same name.
+                  const nsName = KyvernoPolicyNamespace
+                    ? KyvernoPolicyNamespace + '/' + kyvernoPolicyName
+                    : kyvernoPolicyName
+
+                  if (nsName === policyNsName) {
+                    return true
+                  }
+
+                  return false
+                }
+              )
+
+              const ruleMsgs = results.map((r) => ({ ruleName: r.rule, message: r.message }))
+              messageCache[uid] = ruleMsgs
+
+              setRuleMsg(ruleMsgs)
+            }
+          })
+          .catch((err: Error) => {
+            if (ignore) {
+              return
+            }
+
+            console.error('Error getting resource: ', err)
+            setErrString(err.message)
+          })
+          .finally(() => {
+            if (ignore) {
+              return
+            }
+
+            setLoading(false)
+          })
+      }
+
+      return () => {
+        ignore = true
+      }
+    },
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
+  if (errString) {
+    return (
+      <div>
+        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+        {errString}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return <Spinner size="md" />
+  }
+
+  return (
+    <Flex direction={{ default: 'column' }} style={{ gap: 4 }}>
+      {ruleMsg?.map((rm) => {
+        return (
+          <FlexItem key={rm.ruleName} style={{ margin: 0 }}>
+            {rm.message ? (
+              <>
+                <b>{rm.ruleName}:</b> {rm.message}
+              </>
+            ) : (
+              <>-</>
+            )}
+          </FlexItem>
+        )
+      })}
+    </Flex>
   )
 }
