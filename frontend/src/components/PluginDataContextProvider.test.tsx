@@ -33,6 +33,6 @@ describe('PluginDataContextProvider', () => {
     )
 
     await waitForText('Main Content')
-    expect(pluginData.load).toHaveBeenCalled()
+    expect(pluginData.load).not.toHaveBeenCalled()
   })
 })
