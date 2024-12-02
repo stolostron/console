@@ -46,7 +46,7 @@ import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { getVirtualMachineRowActions } from './utils'
-import { LoadStatusContext } from '../../../components/LoadStatusProvider'
+import { PluginDataContext } from '../../../lib/PluginDataContext'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -55,7 +55,7 @@ function VirtualMachineTable() {
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const isSearchAvailable = useIsSearchAvailable()
   const toast = useContext(AcmToastContext)
-  const { loadStarted } = useContext(LoadStatusContext)
+  const { loadStarted } = useContext(PluginDataContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(

@@ -10,8 +10,8 @@ import {
 } from '@patternfly/react-core'
 import { ReactNode, useContext } from 'react'
 import { CubesIcon, SearchIcon } from '@patternfly/react-icons'
-import { LoadStatusContext } from '../../components/LoadStatusProvider'
 import { LoadingPage } from '../../components/LoadingPage'
+import { PluginDataContext } from '../../lib/PluginDataContext'
 
 export function AcmEmptyState(props: {
   title: string
@@ -20,7 +20,7 @@ export function AcmEmptyState(props: {
   showSearchIcon?: boolean
   ignoreLoading?: boolean
 }) {
-  const { loadCompleted } = useContext(LoadStatusContext)
+  const { loadCompleted } = useContext(PluginDataContext)
 
   return loadCompleted || props.ignoreLoading ? (
     <EmptyState variant={EmptyStateVariant.large}>

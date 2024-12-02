@@ -31,8 +31,8 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
-import { LoadStatusContext } from '../../../components/LoadStatusProvider'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { PluginDataContext } from '../../../lib/PluginDataContext'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
@@ -49,7 +49,7 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
-  const { loadStarted, loadCompleted } = useContext(LoadStatusContext)
+  const { loadStarted, loadCompleted } = useContext(PluginDataContext)
 
   if (loadCompleted || process.env.NODE_ENV === 'test') {
     if (policies.length === 0) {

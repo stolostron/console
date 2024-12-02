@@ -80,7 +80,7 @@ import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
-import { LoadStatusContext } from '../../components/LoadStatusProvider'
+import { PluginDataContext } from '../../lib/PluginDataContext'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -583,7 +583,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const toastContext = useContext(AcmToastContext)
 
   // table loading state
-  const { loadCompleted, loadStarted } = useContext(LoadStatusContext)
+  const { loadCompleted, loadStarted } = useContext(PluginDataContext)
   const [isLoading, setIsLoading] = useState(resultView ? loading : !loadCompleted)
   useEffect(() => {
     if (resultView) {
