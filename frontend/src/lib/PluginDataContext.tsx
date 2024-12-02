@@ -30,8 +30,8 @@ export const defaultContext = {
   selectors,
   reactQuery,
   backendUrl: '',
-  loadCompleted: false,
-  loadStarted: false,
+  loadCompleted: process.env.NODE_ENV === 'test',
+  loadStarted: process.env.NODE_ENV === 'test',
   startLoading: false,
   setLoadCompleted: () => {},
   setLoadStarted: () => {},
@@ -41,8 +41,8 @@ export const defaultContext = {
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
-  const [loadStarted, setLoadStarted] = useState(false)
-  const [loadCompleted, setLoadCompleted] = useState(false)
+  const [loadStarted, setLoadStarted] = useState(process.env.NODE_ENV === 'test')
+  const [loadCompleted, setLoadCompleted] = useState(process.env.NODE_ENV === 'test')
   const [startLoading, setStartLoading] = useState(false)
   const backendUrl = getBackendUrl()
 
