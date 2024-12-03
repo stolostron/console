@@ -80,7 +80,6 @@ import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
-import { PluginDataContext } from '../../lib/PluginDataContext'
 import { PluginContext } from '../../lib/PluginContext'
 
 type SortFn<T> = (a: T, b: T) => number
