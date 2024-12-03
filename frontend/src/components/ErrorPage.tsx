@@ -16,7 +16,7 @@ import { ReactNode, useContext } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../lib/acm-i18next'
 import { LoadingPage } from './LoadingPage'
-import { PluginDataContext } from '../lib/PluginDataContext'
+import { PluginContext } from '../lib/PluginContext'
 
 export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {
   let title = t('Error')
@@ -137,7 +137,8 @@ export function ErrorState(props: { error: Error; actions?: ReactNode }) {
 }
 
 export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
-  const { loadCompleted } = useContext(PluginDataContext)
+  const { dataContext } = useContext(PluginContext)
+  const { loadCompleted } = useContext(dataContext)
   return loadCompleted ? (
     <PageSection>
       <Card>

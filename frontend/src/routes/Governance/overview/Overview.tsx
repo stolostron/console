@@ -32,7 +32,8 @@ import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { PluginDataContext } from '../../../lib/PluginDataContext'
+// import { PluginDataContext } from '../../../lib/PluginDataContext'
+import { PluginContext } from '../../../lib/PluginContext'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
@@ -49,8 +50,8 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
-  const { loadStarted, loadCompleted } = useContext(PluginDataContext)
-
+  const { dataContext } = useContext(PluginContext)
+  const { loadStarted, loadCompleted } = useContext(dataContext)
   if (loadCompleted || process.env.NODE_ENV === 'test') {
     if (policies.length === 0) {
       return (
