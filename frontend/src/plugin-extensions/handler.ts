@@ -3,6 +3,7 @@ import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { isApplicationAction, isApplicationListColumn, isOverviewTab } from './extensions'
 import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 import { AcmExtension } from './types'
+import { isSearchDetails } from './extensions/SearchDetails'
 
 // Type guards
 export function useAcmExtension() {
@@ -28,6 +29,11 @@ export function useAcmExtension() {
     acmExtension.overviewTab = overviewTab
   }
 
+  // Resolve search details extensions
+  const [searchDetails, resolvedSearchDetails] = useResolvedExtensions(isSearchDetails)
+  if (resolvedSearchDetails) {
+    acmExtension.searchDetails = searchDetails
+  }
   // list of all acm supported extensions
   return acmExtension
 }
