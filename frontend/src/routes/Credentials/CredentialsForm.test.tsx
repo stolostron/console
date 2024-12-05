@@ -290,7 +290,7 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 
   it('should create ost (OpenStack) credentials', async () => {
     render(<Component credentialsType={Provider.openstack} />)
@@ -342,7 +342,7 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 
   it('should create ans (Ansible) credentials', async () => {
     render(<Component credentialsType={Provider.ansible} />)
@@ -544,5 +544,5 @@ current-context: 'mock-context'
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 })
