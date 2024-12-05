@@ -43,7 +43,7 @@ export async function loadConfigSettings(): Promise<void> {
       }
     }
     for (const key in settings) {
-      if (key.startsWith('LOG_')) {
+      if (key.startsWith('LOG_') || key.startsWith('APP_SEARCH_')) {
         process.env[key] = settings[key]
       } else if (key === 'globalSearchFeatureFlag') {
         // Global search tech-preview requires feature flag toggle (2.11)

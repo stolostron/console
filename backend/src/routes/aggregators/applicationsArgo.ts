@@ -1,37 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { getPagedSearchResources } from '../../lib/search'
 import { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms, getArgoDestinationCluster } from './applications'
-
-// query limit per letter
-const ARGO_APP_QUERY_LIMIT = 20000
-const query = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          {
-            property: 'kind',
-            values: ['Application'],
-          },
-          {
-            property: 'apigroup',
-            values: ['argoproj.io'],
-          },
-          {
-            property: 'cluster',
-            values: ['!local-cluster'],
-          },
-        ],
-        limit: ARGO_APP_QUERY_LIMIT,
-      },
-    ],
-  },
-  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
-}
+import { ApplicationCacheType, IQuery } from './applications'
+import { getClusters, transform } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -64,15 +36,37 @@ interface IArgoAppRemoteResource {
   syncStatus: string
 }
 
-export async function getArgoApps(applicationCache: ApplicationCacheType, clusters: Cluster[], pass: number) {
+export function addArgoQueryInputs(query: IQuery, searchLimit: number) {
+  query.variables.input.push({
+    filters: [
+      {
+        property: 'kind',
+        values: ['Application'],
+      },
+      {
+        property: 'apigroup',
+        values: ['argoproj.io'],
+      },
+      {
+        property: 'cluster',
+        values: ['!local-cluster'],
+      },
+    ],
+    limit: searchLimit,
+  })
+  return searchLimit
+}
+
+export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
   const argoAppSet = new Set<string>()
+  const clusters: Cluster[] = getClusters()
   try {
-    applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet, clusters))
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters))
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
   try {
-    applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), clusters, true)
+    applicationCache['remoteArgoApps'] = transform(getRemoteArgoApps(argoAppSet, remoteArgoApps), clusters, true)
   } catch (e) {
     logger.error(`getRemoteArgoApps exception ${e}`)
   }
@@ -101,16 +95,8 @@ function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
   })
 }
 
-let usePagedQuery = true
-async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
-  const argoApps = (await getPagedSearchResources(
-    query,
-    usePagedQuery,
-    'Remote ArgoCD',
-    pass
-  )) as unknown as IArgoAppRemoteResource[]
-  usePagedQuery = argoApps.length > 1000
-
+function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[]) {
+  const argoApps = remoteArgoApps as unknown as IArgoAppRemoteResource[]
   const apps: IResource[] = []
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {
     argoAppSet.add(`${argoApp.name}-${argoApp.destinationNamespace}-${argoApp.cluster}`)
@@ -151,4 +137,33 @@ async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
   })
 
   return apps
+}
+
+function getArgoDestinationCluster(
+  destination: { name?: string; namespace: string; server?: string },
+  clusters: Cluster[],
+  cluster?: string
+) {
+  // cluster is the name of the managed cluster where the Argo app is defined
+  let clusterName = ''
+  const serverApi = destination?.server
+  if (serverApi) {
+    if (serverApi === 'https://kubernetes.default.svc') {
+      clusterName = cluster ?? 'Local'
+    } else {
+      const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
+      clusterName = server ? server.name : 'unknown'
+    }
+  } else {
+    // target destination was set using the name property
+    clusterName = destination?.name || 'unknown'
+    if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+      clusterName = cluster
+    }
+
+    if (clusterName === 'in-cluster') {
+      clusterName = 'local-cluster'
+    }
+  }
+  return clusterName
 }

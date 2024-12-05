@@ -1,15 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getClusterMap } from '../../lib/clusters'
 import { logger } from '../../lib/logger'
-import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
-import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
-import { getPagedSearchResources } from '../../lib/search'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
-
-// query limit per letter group
-const OCP_APP_QUERY_LIMIT = 20000
+import { AppColumns, ApplicationCacheType, IQuery } from './applications'
+import { transform, getClusterMap } from './utils'
 
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 25
@@ -21,28 +15,6 @@ const labelArr: string[] = [
   'app=',
   'app.kubernetes.io/part-of=',
 ]
-
-const query = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          {
-            property: 'kind',
-            values: ['Deployment'],
-          },
-          {
-            property: 'label',
-            values: [...labelArr.map((label) => `${label}*`)],
-          },
-        ],
-        limit: OCP_APP_QUERY_LIMIT,
-      },
-    ],
-  },
-  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
-}
 
 export interface IOCPAppResource extends IResource {
   apigroup: string
@@ -56,20 +28,20 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
-let usePagedQuery = true
-export async function getOCPApps(
-  applicationCache: ApplicationCacheType,
-  argAppSet: Set<string>,
-  mode: MODE,
-  pass: number
-) {
-  const _query = structuredClone(query)
-  const filters = _query.variables.input[0].filters
-  let kind = 'Openshift/Flux'
-  let clusterNameChunk
-  if (mode === MODE.ExcludeSystemApps) {
-    // NO system apps
-    filters.push(
+let clusterNameChunk: string[]
+
+// Openshift/Flux
+export function addOCPQueryInputs(query: IQuery, searchLimit: number) {
+  query.variables.input.push({
+    filters: [
+      {
+        property: 'kind',
+        values: ['Deployment'],
+      },
+      {
+        property: 'label',
+        values: [...labelArr.map((label) => `${label}*`)],
+      },
       {
         property: 'namespace',
         values: ['!openshift*'],
@@ -77,30 +49,46 @@ export async function getOCPApps(
       {
         property: 'namespace',
         values: ['!open-cluster-management*'],
-      }
-    )
-  } else if (mode === MODE.OnlySystemApps) {
-    // ONLY system apps
-    filters.push({
-      property: 'namespace',
-      values: ['openshift*', 'open-cluster-management*'],
-    })
+      },
+    ],
+    limit: searchLimit,
+  })
+  return searchLimit
+}
 
-    // get chuck of cluster names to search for sys apps
-    clusterNameChunk = getNextClusterNameChunk(applicationCache)
-    filters.push({
-      property: 'cluster',
-      values: clusterNameChunk,
-    })
-    kind = 'System'
-  }
+export function addSystemQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+  clusterNameChunk = getNextClusterNameChunk(applicationCache)
+  query.variables.input.push({
+    filters: [
+      {
+        property: 'kind',
+        values: ['Deployment'],
+      },
+      {
+        property: 'label',
+        values: [...labelArr.map((label) => `${label}*`)],
+      },
+      {
+        property: 'namespace',
+        values: ['openshift*', 'open-cluster-management*'],
+      },
+      {
+        property: 'cluster',
+        values: clusterNameChunk,
+      },
+    ],
+    limit: searchLimit,
+  })
+  return searchLimit
+}
 
-  // if system mode, don't use paged
-  // if not but last ocp apps > 1000, use paged
-  const isSystemMode = mode === MODE.OnlySystemApps
-  const pagedQuery = isSystemMode ? false : usePagedQuery
-  const ocpApps = (await getPagedSearchResources(_query, pagedQuery, kind, pass)) as unknown as IOCPAppResource[]
-  usePagedQuery = !isSystemMode && ocpApps.length > 1000
+export function cacheOCPApplications(
+  applicationCache: ApplicationCacheType,
+  searchedOcpApps: IResource[],
+  argAppSet: Set<string>,
+  isSystemMode?: boolean
+) {
+  const ocpApps = searchedOcpApps as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
@@ -178,36 +166,53 @@ export async function getOCPApps(
       } as unknown as IResource)
     })
   } catch (e) {
-    logger.error(`processing ${kind} exception ${e}`)
+    logger.error(`processing ${isSystemMode ? 'system' : 'ocp/flex'} exception ${e}`)
   }
 
-  if (mode === MODE.ExcludeSystemApps) {
+  if (!isSystemMode) {
     try {
-      applicationCache['localOCPApps'] = generateTransforms(localOCPApps)
+      applicationCache['localOCPApps'] = transform(localOCPApps)
     } catch (e) {
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      applicationCache['remoteOCPApps'] = generateTransforms(remoteOCPApps, undefined, true)
+      applicationCache['remoteOCPApps'] = transform(remoteOCPApps, undefined, true)
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }
-  } else if (mode === MODE.OnlySystemApps) {
+  } else {
     // if we just got remote clusters this time, don't touch localSysApps
     if (localOCPApps.length) {
       try {
-        applicationCache['localSysApps'] = generateTransforms(localOCPApps)
+        applicationCache['localSysApps'] = transform(localOCPApps)
       } catch (e) {
         logger.error(`getLocalSystemApps exception ${e}`)
       }
     }
     try {
       // fill in remote system apps
-      fillRemoteSystemCache(applicationCache, remoteOCPApps, clusterNameChunk)
+      cacheRemoteSystemApps(applicationCache, remoteOCPApps, clusterNameChunk)
     } catch (e) {
       logger.error(`getRemoteSystemApps exception ${e}`)
     }
   }
+}
+
+function cacheRemoteSystemApps(
+  applicationCache: ApplicationCacheType,
+  remoteSysApps: IResource[],
+  clusterNameChunk: string[]
+) {
+  // initialize map
+  clusterNameChunk.forEach((clustername) => {
+    applicationCache['remoteSysApps'].resourceMap[clustername] = []
+  })
+  const resources = transform(remoteSysApps, undefined, true).resources
+  resources.forEach((resource) => {
+    const clustername = resource.transform[AppColumns.clusters].join()
+    const clusterResources = applicationCache['remoteSysApps'].resourceMap[clustername]
+    clusterResources.push(resource)
+  })
 }
 
 function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string[] {
@@ -240,25 +245,7 @@ function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string
       })
     }
   }
-
   return clusterNameChunks.shift()
-}
-
-function fillRemoteSystemCache(
-  applicationCache: ApplicationCacheType,
-  remoteSysApps: IResource[],
-  clusterNameChunk: string[]
-) {
-  // initialize map
-  clusterNameChunk.forEach((clustername) => {
-    applicationCache['remoteSysApps'].resourceMap[clustername] = []
-  })
-  const resources = generateTransforms(remoteSysApps, undefined, true).resources
-  resources.forEach((transform) => {
-    const clustername = transform.transform[AppColumns.clusters].join()
-    const transforms = applicationCache['remoteSysApps'].resourceMap[clustername]
-    transforms.push(transform)
-  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -288,24 +275,4 @@ function getValues(labels: { annotation: any; value: any }[]) {
     isManagedByHelm,
     argoInstanceLabelValue,
   }
-}
-
-export const systemAppNamespacePrefixes: string[] = []
-export async function discoverSystemAppNamespacePrefixes() {
-  if (!systemAppNamespacePrefixes.length) {
-    systemAppNamespacePrefixes.push('openshift')
-    systemAppNamespacePrefixes.push('hive')
-    systemAppNamespacePrefixes.push('open-cluster-management')
-    const mch = await getMultiClusterHub()
-    if (mch?.metadata?.namespace && mch.metadata.namespace !== 'open-cluster-management') {
-      systemAppNamespacePrefixes.push(mch.metadata.namespace)
-    }
-    const mce = await getMultiClusterEngine()
-    systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
-  }
-  return systemAppNamespacePrefixes
-}
-
-export function isSystemApp(namespace?: string) {
-  return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
