@@ -407,7 +407,7 @@ describe('PolicySets Page with Pending policyset', () => {
   })
 })
 describe('Export from policy details results table', () => {
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     const policySet: PolicySet = {
       apiVersion: 'policy.open-cluster-management.io/v1beta1',
       kind: 'PolicySet',

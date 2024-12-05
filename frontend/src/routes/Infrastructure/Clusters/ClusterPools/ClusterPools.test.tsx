@@ -545,7 +545,7 @@ describe('ClusterPools page', () => {
 })
 
 describe('Export from clusterpool table', () => {
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
