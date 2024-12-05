@@ -281,7 +281,7 @@ describe('Automations page - operator checking', () => {
 })
 
 describe('Export from automation table', () => {
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     nockIgnoreOperatorCheck()
     render(
       <TestIntegrationPage

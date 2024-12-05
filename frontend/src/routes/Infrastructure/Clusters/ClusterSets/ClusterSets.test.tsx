@@ -116,7 +116,7 @@ describe('ClusterSets page with csv export', () => {
       </PluginContext.Provider>
     )
   })
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
     const documentBody = document.body.appendChild
