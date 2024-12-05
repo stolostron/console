@@ -282,7 +282,16 @@ publish: Internal
     defaultDatastore: {{{defaultDatastore}}}
     cluster: {{{cluster}}}
     apiVIP: {{{apiVIP}}}    ##apiVIP
-    ingressVIP: {{{ingressVIP}}}  ##ingressVIP
+    {{#if (isSingleIngressVipSupported imageSet)}}
+    ingressVIP: {{ingressVIP}}  ##ingressVIP
+    {{else}}
+    ingressVIPs: 
+    {{#each ingressVIPs.multitextEntries}} 
+    {{#if .}}
+    - {{.}} ##ingressVIPs
+    {{/if}}
+    {{/each}}
+    {{/if}}
     network: '{{{networkName}}}' ##networkName
     {{#if clusterOSImage}}
     clusterOSImage: >-

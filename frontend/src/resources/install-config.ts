@@ -62,6 +62,7 @@ export interface InstallConfig {
       api_vip: string
       dns_vip: string
       ingress_vip: string
+      ingress_vips: string[]
       ovirt_cluster_id: string
       ovirt_network_name: string
       ovirt_storage_domain_id: string
@@ -74,6 +75,7 @@ export interface InstallConfig {
       folder: string
       resourcePool: string
       ingressVIP: string
+      ingressVIPs: string[]
       network: string
       password: string
       username: string
