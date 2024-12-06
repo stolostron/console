@@ -214,7 +214,7 @@ function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
     resource.spec.destination?.name === 'local-cluster' ||
     resource.spec.destination?.server === 'https://kubernetes.default.svc'
   ) {
-    return 'Local'
+    return 'local-cluster'
   } else {
     return getArgoDestinationCluster(resource.spec.destination, clusters, resource.status.cluster)
   }
