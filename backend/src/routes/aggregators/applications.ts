@@ -4,7 +4,7 @@ import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from '.
 import { IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, promiseTimeout, transform } from './utils'
+import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
 import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
 
@@ -92,6 +92,20 @@ const queryTemplate: IQuery = {
     input: [],
   },
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+}
+
+export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
+  let timeoutID: string | number | NodeJS.Timeout
+  const promises = [
+    new Promise<void>((_resolve, reject) => {
+      timeoutID = setTimeout(() => reject(new Error(`timeout of ${delay} exceeded`)), delay)
+    }),
+    promise.then((data) => {
+      clearTimeout(timeoutID)
+      return data
+    }),
+  ]
+  return Promise.race(promises)
 }
 
 // //////////////////////////////////////////////////////////////////////////////////
@@ -213,9 +227,9 @@ async function searchLoop() {
 export async function aggregateRemoteApplications(pass: number) {
   //////////// BUILD QUERY INPUTS //////////////////
   const query = structuredClone(queryTemplate)
-  let searchLimit = Number(process.env.APP_SEARCH_LIMIT)
-  searchLimit = addArgoQueryInputs(query, searchLimit)
-  searchLimit = addOCPQueryInputs(query, searchLimit)
+  let searchLimit = Number(pass === 1 ? 20000 : process.env.APP_SEARCH_LIMIT)
+  searchLimit = addArgoQueryInputs(applicationCache, query, searchLimit)
+  searchLimit = addOCPQueryInputs(applicationCache, query, searchLimit)
   addSystemQueryInputs(applicationCache, query, searchLimit)
 
   //////////// MAKE QUERY //////////////////////////

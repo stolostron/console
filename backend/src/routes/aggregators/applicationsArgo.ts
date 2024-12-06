@@ -3,7 +3,7 @@ import { logger } from '../../lib/logger'
 import { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 import { ApplicationCacheType, IQuery } from './applications'
-import { getClusters, transform } from './utils'
+import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -36,23 +36,38 @@ interface IArgoAppRemoteResource {
   syncStatus: string
 }
 
-export function addArgoQueryInputs(query: IQuery, searchLimit: number) {
+let argoPageChunk: ApplicationPageChunk
+const argoPageChunks: ApplicationPageChunk[] = []
+
+export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+  argoPageChunk = getNextApplicationPageChunk(applicationCache, argoPageChunks, 'remoteArgoApps')
+  let limit = searchLimit
+  const filters = [
+    {
+      property: 'kind',
+      values: ['Application'],
+    },
+    {
+      property: 'apigroup',
+      values: ['argoproj.io'],
+    },
+    {
+      property: 'cluster',
+      values: ['!local-cluster'],
+    },
+  ]
+  if (argoPageChunk?.keys) {
+    filters.push({
+      property: 'name',
+      values: argoPageChunk.keys,
+    })
+  }
+  if (argoPageChunk?.limit) {
+    limit = argoPageChunk.limit
+  }
   query.variables.input.push({
-    filters: [
-      {
-        property: 'kind',
-        values: ['Application'],
-      },
-      {
-        property: 'apigroup',
-        values: ['argoproj.io'],
-      },
-      {
-        property: 'cluster',
-        values: ['!local-cluster'],
-      },
-    ],
-    limit: searchLimit,
+    filters,
+    limit,
   })
   return searchLimit
 }
@@ -66,9 +81,10 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
     logger.error(`getLocalArgoApps exception ${e}`)
   }
   try {
-    applicationCache['remoteArgoApps'] = transform(getRemoteArgoApps(argoAppSet, remoteArgoApps), clusters, true)
+    // cache remote argo apps
+    cacheRemoteApps(applicationCache, getRemoteArgoApps(argoAppSet, remoteArgoApps), argoPageChunk, 'remoteArgoApps')
   } catch (e) {
-    logger.error(`getRemoteArgoApps exception ${e}`)
+    logger.error(`cacheRemoteApps exception ${e}`)
   }
   return argoAppSet
 }

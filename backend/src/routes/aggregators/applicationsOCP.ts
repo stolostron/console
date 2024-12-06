@@ -3,7 +3,7 @@ import { logger } from '../../lib/logger'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
 import { AppColumns, ApplicationCacheType, IQuery } from './applications'
-import { transform, getClusterMap } from './utils'
+import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk } from './utils'
 
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 25
@@ -28,30 +28,45 @@ export interface IOCPAppResource extends IResource {
   _hostingSubscription?: boolean
 }
 
+let ocpPageChunk: ApplicationPageChunk
+const ocpPageChunks: ApplicationPageChunk[] = []
+
 let clusterNameChunk: string[]
 
 // Openshift/Flux
-export function addOCPQueryInputs(query: IQuery, searchLimit: number) {
+export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+  ocpPageChunk = getNextApplicationPageChunk(applicationCache, ocpPageChunks, 'remoteOCPApps')
+  let limit = searchLimit
+  const filters = [
+    {
+      property: 'kind',
+      values: ['Deployment'],
+    },
+    {
+      property: 'label',
+      values: [...labelArr.map((label) => `${label}*`)],
+    },
+    {
+      property: 'namespace',
+      values: ['!openshift*'],
+    },
+    {
+      property: 'namespace',
+      values: ['!open-cluster-management*'],
+    },
+  ]
+  if (ocpPageChunk?.keys) {
+    filters.push({
+      property: 'name',
+      values: ocpPageChunk.keys,
+    })
+  }
+  if (ocpPageChunk?.limit) {
+    limit = ocpPageChunk.limit
+  }
   query.variables.input.push({
-    filters: [
-      {
-        property: 'kind',
-        values: ['Deployment'],
-      },
-      {
-        property: 'label',
-        values: [...labelArr.map((label) => `${label}*`)],
-      },
-      {
-        property: 'namespace',
-        values: ['!openshift*'],
-      },
-      {
-        property: 'namespace',
-        values: ['!open-cluster-management*'],
-      },
-    ],
-    limit: searchLimit,
+    filters,
+    limit,
   })
   return searchLimit
 }
@@ -190,10 +205,10 @@ export function cacheOCPApplications(
       }
     }
     try {
-      // fill in remote system apps
+      // cache remote system apps
       cacheRemoteSystemApps(applicationCache, remoteOCPApps, clusterNameChunk)
     } catch (e) {
-      logger.error(`getRemoteSystemApps exception ${e}`)
+      logger.error(`cacheRemoteSystemApps exception ${e}`)
     }
   }
 }

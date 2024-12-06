@@ -3,6 +3,7 @@ import { getKubeResources } from '../events'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { ITransformedResource } from '../../lib/pagination'
 import {
+  AppColumns,
   ApplicationCache,
   ApplicationCacheType,
   IArgoApplication,
@@ -14,28 +15,9 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 
-export const pagedSearchQueries: string[][] = [
-  ['a*', 'i*', 'n*'],
-  ['e*', 'r*', 'o*'],
-  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
-  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
-  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
-  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
-]
-
-export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
-  let timeoutID: string | number | NodeJS.Timeout
-  const promises = [
-    new Promise<void>((_resolve, reject) => {
-      timeoutID = setTimeout(() => reject(new Error(`timeout of ${delay} exceeded`)), delay)
-    }),
-    promise.then((data) => {
-      clearTimeout(timeoutID)
-      return data
-    }),
-  ]
-  return Promise.race(promises)
-}
+//////////////////////////////////////////////////////////////////
+////////////// TRANSFORM /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 
 export function transform(items: ITransformedResource[], clusters?: Cluster[], isRemote?: boolean): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
@@ -102,6 +84,26 @@ function isFluxApplication(label: string) {
     }
   })
   return isFlux
+}
+
+export const systemAppNamespacePrefixes: string[] = []
+export async function discoverSystemAppNamespacePrefixes() {
+  if (!systemAppNamespacePrefixes.length) {
+    systemAppNamespacePrefixes.push('openshift')
+    systemAppNamespacePrefixes.push('hive')
+    systemAppNamespacePrefixes.push('open-cluster-management')
+    const mch = await getMultiClusterHub()
+    if (mch?.metadata?.namespace && mch.metadata.namespace !== 'open-cluster-management') {
+      systemAppNamespacePrefixes.push(mch.metadata.namespace)
+    }
+    const mce = await getMultiClusterEngine()
+    systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
+  }
+  return systemAppNamespacePrefixes
+}
+
+export function isSystemApp(namespace?: string) {
+  return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
 function getApplicationClusters(
@@ -249,27 +251,9 @@ export function getArgoDestinationCluster(
   return clusterName
 }
 
-export const systemAppNamespacePrefixes: string[] = []
-export async function discoverSystemAppNamespacePrefixes() {
-  if (!systemAppNamespacePrefixes.length) {
-    systemAppNamespacePrefixes.push('openshift')
-    systemAppNamespacePrefixes.push('hive')
-    systemAppNamespacePrefixes.push('open-cluster-management')
-    const mch = await getMultiClusterHub()
-    if (mch?.metadata?.namespace && mch.metadata.namespace !== 'open-cluster-management') {
-      systemAppNamespacePrefixes.push(mch.metadata.namespace)
-    }
-    const mce = await getMultiClusterEngine()
-    systemAppNamespacePrefixes.push(mce?.spec?.targetNamespace || 'multicluster-engine')
-  }
-  return systemAppNamespacePrefixes
-}
-
-export function isSystemApp(namespace?: string) {
-  return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
-}
-
+//////////////////////////////////////////////////////////////////
 // /////////////////// map created from events.ts /////////////////
+//////////////////////////////////////////////////////////////////
 export type ClusterMapType = {
   [key: string]: IResource
 }
@@ -283,7 +267,108 @@ export function getClusterMap(): ClusterMapType {
   }, {} as ClusterMapType)
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+// ///////// DISTRIBUTE APP QUERIES OVER MULTIPLE SEARCHES /////////////////////
+////////////////////////////////////////////////////////////////////////////////
+export type ApplicationPageChunk = {
+  keys?: string[]
+  limit: number
+}
+
+export function getNextApplicationPageChunk(
+  applicationCache: ApplicationCacheType,
+  applicationPageChunks: ApplicationPageChunk[],
+  remoteCacheKey: string
+): ApplicationPageChunk {
+  // if no cluster name chucks left, create a new array of chunks
+  if (applicationPageChunks.length === 0) {
+    // get all apps
+    let applications: ITransformedResource[] = []
+    if (applicationCache[remoteCacheKey].resources) {
+      applications = applicationCache[remoteCacheKey].resources
+    } else if (applicationCache[remoteCacheKey].resourceMap) {
+      applications = Object.values(applicationCache[remoteCacheKey].resourceMap).flat()
+    }
+    if (applications.length) {
+      // create array of frequency of name prefixes
+      const a = 'a'.charCodeAt(0)
+      const z = '0'.charCodeAt(0)
+      const sz = 26 + 10
+      const prefixFrequency = new Array(sz).fill(0) as number[]
+      applications.forEach((app) => {
+        const name = app.transform[AppColumns.name][0]
+        const ltr = name.charCodeAt(0)
+        const index = ltr > z ? ltr - a : 26 + ltr - z
+        prefixFrequency[index]++
+      })
+
+      // create applicationPageChunks
+      const maxPageChunks = Math.min(4, Math.ceil(applications.length / Number(process.env.APP_SEARCH_LIMIT)))
+      const maxAppsPerChunk = Math.ceil(applications.length / maxPageChunks)
+      let currentPageChunk: ApplicationPageChunk = {
+        limit: 0,
+        keys: [],
+      }
+      prefixFrequency.forEach((n, inx) => {
+        currentPageChunk.keys.push(`${String.fromCharCode(inx + (inx < 26 ? a : z - 26))}*`)
+        currentPageChunk.limit += n
+        // start a new page if limit exceeds page maximum
+        // but consolidate letters that have no occurance with this one
+        if (currentPageChunk.limit > maxAppsPerChunk && inx < sz && prefixFrequency[inx + 1]) {
+          currentPageChunk.limit += 200 //room to grow
+          applicationPageChunks.push(currentPageChunk)
+          currentPageChunk = {
+            limit: 0,
+            keys: [],
+          }
+        }
+      })
+      // unless there are multiple pages, ignore paging
+      if (applicationPageChunks.length) {
+        applicationPageChunks.push(currentPageChunk)
+      } else {
+        // but make limit large enough to grow
+        return { limit: applications.length + 200 }
+      }
+    }
+  }
+  return applicationPageChunks.shift()
+}
+// const remoteSysMap = applicationCache[remoteCacheKey].resourceMap
+// if (applicationCache[remoteCacheKey].resources) {
+//   delete applicationCache[remoteCacheKey].resources
+//   applicationCache[remoteCacheKey].resourceMap = {}
+// } else if (Object.keys(remoteSysMap).length) {
+//   // purge resource map of clusters that no longer exist
+//   Object.keys(remoteSysMap).forEach((name) => {
+//     if (!clusterMap[name]) {
+//       delete remoteSysMap[name]
+//     }
+//   })
+// }
+
+export function cacheRemoteApps(
+  applicationCache: ApplicationCacheType,
+  remoteApps: IResource[],
+  applicationPageChunk: ApplicationPageChunk,
+  remoteCacheKey: string
+) {
+  // // initialize map
+  // clusterNameChunk.forEach((clustername) => {
+  //   applicationCache[remoteCacheKey].resourceMap[clustername] = []
+  // })
+  const resources = transform(remoteApps, undefined, true).resources
+  applicationCache[remoteCacheKey].resources = resources
+  // resources.forEach((resource) => {
+  //   const clustername = resource.transform[4].join()
+  //   const clusterResources = applicationCache[remoteCacheKey].resourceMap[clustername]
+  //   clusterResources.push(resource)
+  // })
+}
+
+//////////////////////////////////////////////////////////////////
 // /////////////////// MINI useAllClusters from frontend /////////////////
+//////////////////////////////////////////////////////////////////
 
 // stream lined version of map clusters in frontend
 export function getClusters(): Cluster[] {
@@ -333,7 +418,9 @@ function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterI
   )
 }
 
-///////////////// LOGGING ////////////////
+//////////////////////////////////////////////////////////////////
+///////////////////////////// LOGGING ////////////////////////////
+//////////////////////////////////////////////////////////////////
 
 type AppCountType = {
   [type: string]: number
@@ -378,7 +465,9 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   }
 }
 
+//////////////////////////////////////////////////////////////////
 ///////////////// A LITTLE BIT OF LODASH ////////////////
+//////////////////////////////////////////////////////////////////
 interface ResultType {
   [key: string]: IResource
 }
