@@ -3,7 +3,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { FilterCounts, ITransformedResource } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
 import { AppColumns } from './applications'
-import { systemAppNamespacePrefixes } from './applicationsOCP'
+import { systemAppNamespacePrefixes } from './utils'
 
 export interface IRequestStatuses {
   clusters?: string[]
