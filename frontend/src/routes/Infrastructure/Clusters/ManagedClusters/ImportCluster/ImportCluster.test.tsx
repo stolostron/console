@@ -71,14 +71,12 @@ import {
   waitForNocks,
   waitForNotText,
   waitForText,
-  ocpApi,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
-import { PluginContext } from '../../../../../lib/PluginContext'
+import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
-import { PluginDataContext } from '../../../../../lib/PluginDataContext'
 import { PropsWithChildren, useEffect } from 'react'
 
 const mockProject: ProjectRequest = {
@@ -798,7 +796,7 @@ describe('ImportCluster', () => {
     const importSecretNock = nockGet(mockSecretResponse)
 
     render(
-      <PluginContext.Provider value={{ isACMAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isACMAvailable: false }}>
         <Component />
       </PluginContext.Provider>
     )

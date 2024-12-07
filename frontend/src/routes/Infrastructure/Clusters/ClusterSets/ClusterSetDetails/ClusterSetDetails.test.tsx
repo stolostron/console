@@ -25,8 +25,7 @@ import {
   nockNamespacedList,
   nockPatch,
 } from '../../../../../lib/nock-util'
-import { PluginContext } from '../../../../../lib/PluginContext'
-import { PluginDataContext } from '../../../../../lib/PluginDataContext'
+import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
   clearByTestId,
@@ -39,7 +38,6 @@ import {
   waitForNotText,
   waitForTestId,
   waitForText,
-  ocpApi,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
@@ -2084,7 +2082,7 @@ describe('ClusterSetDetails page without Submariner', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isSubmarinerAvailable: false }}>
         <Component />
       </PluginContext.Provider>
     )
@@ -2108,7 +2106,7 @@ describe('ClusterSetDetails page global clusterset', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <PluginContext.Provider value={{ isSubmarinerAvailable: false, dataContext: PluginDataContext, ocpApi }}>
+      <PluginContext.Provider value={{ ...defaultPlugin, isSubmarinerAvailable: false }}>
         <Component isGlobal />
       </PluginContext.Provider>
     )

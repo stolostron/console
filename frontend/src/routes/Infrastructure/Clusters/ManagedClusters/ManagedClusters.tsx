@@ -86,6 +86,8 @@ import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
+import { PluginContext } from '../../../../lib/PluginContext'
+import { css } from '@emotion/css'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -136,11 +138,26 @@ export default function ManagedClusters() {
     return () => canCreateManagedCluster.abort()
   }, [])
 
+  const {
+    ocpApi: { Timestamp },
+  } = useContext(PluginContext)
+
   return (
     <AcmPageContent id="clusters">
       <PageSection>
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
+          <StackItem>
+            {/* TODO: Create a wrapper component that removes the globe icon. When using the 'simple' prop, the tooltip that shows UTC time in English is also removed. */}
+            <Timestamp
+              timestamp="2024-11-29T21:29:11-05:00"
+              className={css({
+                '.co-icon-and-text__icon': {
+                  display: 'none',
+                },
+              })}
+            />
+          </StackItem>
           <StackItem>
             <ClustersTable
               clusters={clusters}
