@@ -31,6 +31,9 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
+import { LoadingPage } from '../../../components/LoadingPage'
+// import { PluginDataContext } from '../../../lib/PluginDataContext'
+import { PluginContext } from '../../../lib/PluginContext'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
@@ -47,32 +50,39 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
-
-  if (policies.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-  if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
-    return (
-      <PageSection isFilled>
-        <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
+  const { dataContext } = useContext(PluginContext)
+  const { loadStarted, loadCompleted } = useContext(dataContext)
+  if (loadCompleted || process.env.NODE_ENV === 'test') {
+    if (policies.length === 0) {
+      return (
+        <PageSection isFilled>
+          <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
+      return (
+        <PageSection isFilled>
+          <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
   }
   return (
     <PageSection>
       <Stack hasGutter>
-        <AcmMasonry minSize={415} maxColumns={3}>
-          <PolicySetViolationsCard />
-          <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
-          <ClustersCard />
-          <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
-          <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
-          <SecurityGroupCard key="controls" title={t('Controls')} group="controls" policies={policies} />
-        </AcmMasonry>
+        {loadStarted ? (
+          <AcmMasonry minSize={415} maxColumns={3}>
+            <PolicySetViolationsCard />
+            <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+            <ClustersCard />
+            <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
+            <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
+            <SecurityGroupCard key="controls" title={t('Controls')} group="controls" policies={policies} />
+          </AcmMasonry>
+        ) : (
+          <LoadingPage />
+        )}
       </Stack>
     </PageSection>
   )
@@ -267,12 +277,14 @@ function ClustersCard() {
 
   const { topClustersList, remainingNoncompliant, remainingUnknown, remainingCompliant } = useMemo(() => {
     const clusterMap = keyBy(clusters, 'metadata.name')
-    const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap).map((clusterKey) => {
-      return {
-        cluster: clusterMap[clusterKey],
-        violations: clusterViolationSummaryMap[clusterKey],
-      }
-    })
+    const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap)
+      .filter((clusterKey) => !!clusterMap[clusterKey])
+      .map((clusterKey) => {
+        return {
+          cluster: clusterMap[clusterKey],
+          violations: clusterViolationSummaryMap[clusterKey],
+        }
+      })
 
     // sort noncompliant clusters to the top of the list
     clusterViolationSummaryList.sort((a, b) => {
@@ -385,12 +397,12 @@ function renderClusterList(
   return (
     <div style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
       {clusterList.map(({ cluster, violations }) => {
-        const key = `${cluster.metadata.name}-card`
+        const key = `${cluster?.metadata?.name}-card`
         /* istanbul ignore if */
         if (!violations) return <Fragment key={key} />
         return (
           <Fragment key={key}>
-            <span>{cluster.metadata.name}</span>
+            <span>{cluster?.metadata?.name}</span>
             {violations.compliant ? (
               <Tooltip
                 content={t('policies.noviolations', {
