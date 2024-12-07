@@ -156,8 +156,15 @@ export default function DiscoveredPolicies() {
             label: t('Violations'),
             value: 'violations',
           },
+          {
+            label: t('No status'),
+            value: '-',
+          },
         ],
         tableFilterFn: (selectedValues, item) => {
+          // For items with no violations
+          if (selectedValues.includes('-') && clusterCell(item) === '-') return true
+
           const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
           const total = noncompliant + compliant + unknown + pending
 

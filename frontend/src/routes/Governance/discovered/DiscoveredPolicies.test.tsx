@@ -427,6 +427,9 @@ describe('useFetchPolicies custom hook', () => {
     screen.getByRole('checkbox', {
       name: 'audit 1',
     })
+    screen.getByRole('checkbox', {
+      name: 'No status 1',
+    })
   })
 
   test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
