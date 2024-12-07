@@ -4,6 +4,7 @@ import { isApplicationAction, isApplicationListColumn, isOverviewTab } from './e
 import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 import { AcmExtension } from './types'
 import { isSearchDetails } from './extensions/SearchDetails'
+import { isKubevirtPluginContext } from './extensions/KubevirtContext'
 
 // Type guards
 export function useAcmExtension() {
@@ -33,6 +34,12 @@ export function useAcmExtension() {
   const [searchDetails, resolvedSearchDetails] = useResolvedExtensions(isSearchDetails)
   if (resolvedSearchDetails) {
     acmExtension.searchDetails = searchDetails
+  }
+
+  // Resolve kubevirt context extensions
+  const [kubevirtContext, resolvedKubevirtContext] = useResolvedExtensions(isKubevirtPluginContext)
+  if (resolvedKubevirtContext) {
+    acmExtension.kubevirtContext = kubevirtContext
   }
   // list of all acm supported extensions
   return acmExtension

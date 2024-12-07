@@ -29,6 +29,7 @@ import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '.
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
 import { PluginContext } from '../../../lib/PluginContext'
+import KubevirtPluginWrapper from './KubevirtPluginWrapper'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -357,7 +358,7 @@ export default function DetailsOverviewPage() {
   }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservabilityInstalled])
 
   const { acmExtensions } = useContext(PluginContext)
-  let VirtualMachinesOverviewTab
+  let VirtualMachinesOverviewTab: React.ComponentType<any> | undefined
   if (acmExtensions?.searchDetails && acmExtensions.searchDetails.length) {
     VirtualMachinesOverviewTab = acmExtensions.searchDetails[0].properties.component
   }
@@ -384,7 +385,9 @@ export default function DetailsOverviewPage() {
 
   if (resource && !resourceLoading && !resourceError) {
     return resource.kind === 'VirtualMachine' && VirtualMachinesOverviewTab ? (
-      <VirtualMachinesOverviewTab obj={resource} />
+      <KubevirtPluginWrapper>
+        <VirtualMachinesOverviewTab obj={resource} />
+      </KubevirtPluginWrapper>
     ) : (
       <PageSection>
         <PageSection variant={'light'}>
