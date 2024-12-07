@@ -325,6 +325,36 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       case 'connection':
         setConnectionControl(control)
         break
+      case 'namespace':
+        control.validation.contextTester = (
+          active: string | undefined,
+          _controlData: object,
+          templateObjectMap: { [x: string]: { HostedCluster: { $raw: { metadata: { namespace: any; name: any } } }[] } }
+        ) => {
+          if (infrastructureType === Provider.kubevirt && templateObjectMap['<<main>>'].HostedCluster[0]) {
+            if (managedClusters.length) {
+              const name = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata.name
+              const namespace = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata.namespace
+
+              if (name === namespace) {
+                return t('hosted.cluster.namespace.error')
+              }
+              if (namespace) {
+                if (
+                  managedClusters.findIndex((mc) => {
+                    return mc?.metadata?.name === namespace
+                  }) !== -1
+                ) {
+                  return t('namespace.exists.error')
+                }
+              }
+            }
+            if (!control?.validation?.tester.test(active)) {
+              return control?.validation?.notification
+            }
+          }
+        }
+        break
       case 'clusterSet':
         if (control.available) {
           control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
@@ -424,6 +454,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
+
   switch (infrastructureType) {
     case Provider.aws:
       breadcrumbs.push(controlPlaneBreadCrumbAWS)
