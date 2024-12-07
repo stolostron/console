@@ -63,7 +63,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                   placeholder={t('createClusterSet.form.name.placeholder')}
                   value={managedClusterSet.metadata.name}
                   isRequired
-                  onChange={(name) => {
+                  onChange={(_event, name) => {
                     const copy = { ...managedClusterSet }
                     copy.metadata.name = name
                     setManagedClusterSet(copy)

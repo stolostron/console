@@ -204,7 +204,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
                         isDisabled={requiredColIds.includes(policy.id!)}
                         name={policy.id}
                         id={`checkbox-${policy.id}`}
-                        onChange={handleChange}
+                        onChange={(event, checked: boolean) => handleChange(checked, event)}
                         otherControls
                       />
                     </DataListControl>

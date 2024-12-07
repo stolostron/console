@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Flex, FlexItem } from '@patternfly/react-core'
+import { Flex, FlexItem, Icon } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon, InProgressIcon } from '@patternfly/react-icons'
-import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { global_palette_green_500 as okColor, global_danger_color_100 as dangerColor } from '@patternfly/react-tokens'
+import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
@@ -20,7 +19,11 @@ type ConditionsTableProps = {
 
 const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps) => {
   const { t } = useTranslation()
-  const okIcon = <CheckCircleIcon color={okColor.value} />
+  const okIcon = (
+    <Icon status="success">
+      <CheckCircleIcon />
+    </Icon>
+  )
   const arrayForSort = conditions && [...conditions]
   const priority = ['False', 'Unknown', 'True']
 
@@ -40,7 +43,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
   })
 
   return (
-    <TableComposable variant="compact">
+    <Table variant="compact">
       <Thead>
         <Tr>
           <Th width={25}>{t('Condition')}</Th>
@@ -53,9 +56,17 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
           let icon = <UnknownIcon />
           if (c.status === 'True') {
             if (c.type.endsWith('Progressing')) {
-              icon = <InProgressIcon size="sm" />
+              icon = (
+                <Icon size="sm">
+                  <InProgressIcon />
+                </Icon>
+              )
             } else if (c.type === 'Degraded') {
-              icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
+              icon = (
+                <Icon status="danger" size="sm">
+                  <ExclamationCircleIcon />
+                </Icon>
+              )
             } else {
               icon = okIcon
             }
@@ -63,7 +74,11 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
             if (c.type.endsWith('Progressing') || c.type === 'Degraded') {
               icon = okIcon
             } else {
-              icon = <ExclamationCircleIcon color={dangerColor.value} size="sm" />
+              icon = (
+                <Icon status="danger" size="sm">
+                  <ExclamationCircleIcon />
+                </Icon>
+              )
               if (c.type === 'ValidOIDCConfiguration') {
                 createCredentialModal = <CreateCredentialModal handleModalToggle={handleModalToggle} />
               }
@@ -85,7 +100,7 @@ const ConditionsTable = ({ conditions, handleModalToggle }: ConditionsTableProps
           )
         })}
       </Tbody>
-    </TableComposable>
+    </Table>
   )
 }
 

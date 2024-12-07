@@ -39,7 +39,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div
           id="label-input-button"
-          className="pf-c-form-control"
+          className="pf-v5-c-form-control"
           style={{
             padding: 0,
             paddingTop: '1px',
@@ -88,7 +88,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
             id={props.id}
             placeholder={props.placeholder}
             isDisabled={/* istanbul ignore next */ props.isDisabled || ValidationContext.isReadOnly}
-            onChange={(value) => {
+            onChange={(_event, value) => {
               setInputValue(value)
             }}
             onKeyDown={(e) => {

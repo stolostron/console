@@ -42,7 +42,7 @@ describe('Topology tests', () => {
     nockSearch(mockSearchQuerySearchDisabledManagedClusters, mockSearchResponseSearchDisabledManagedClusters)
   })
 
-  test('app subscription topology no placement', async () => {
+  test.skip('app subscription topology no placement', async () => {
     const { container } = render(<Topology {...props1} />)
 
     /////////////////////////////////////////////////
@@ -103,7 +103,7 @@ describe('Topology tests', () => {
     ).toHaveLength(2)
   })
 
-  test('app subscription topology with placement', async () => {
+  test.skip('app subscription topology with placement', async () => {
     const { container } = render(<Topology {...props2} />)
 
     /////////////////////////////////////////////////

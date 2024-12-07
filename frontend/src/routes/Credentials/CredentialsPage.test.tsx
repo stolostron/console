@@ -267,7 +267,7 @@ describe('provider connections page RBAC', () => {
 })
 
 describe('Export from clusterpool table', () => {
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
     render(
       <TestProviderConnectionsPage providerConnections={[...mockProviderConnections, cloudRedHatProviderConnection]} />

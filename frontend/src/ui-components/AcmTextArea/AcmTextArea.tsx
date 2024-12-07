@@ -5,6 +5,7 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
+import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmTextAreaProps = TextAreaProps & {
   id: string
@@ -55,9 +56,6 @@ export function AcmTextArea(props: AcmTextAreaProps) {
       isRequired={props.isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      helperTextInvalid={error}
-      validated={validated}
-      helperText={helperText}
       labelIcon={
         /* istanbul ignore next */
         props.labelHelp ? (
@@ -67,10 +65,10 @@ export function AcmTextArea(props: AcmTextAreaProps) {
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
               // aria-describedby="simple-form-name"
-              className="pf-c-form__group-label-help"
-            >
-              <HelpIcon noVerticalAlign />
-            </Button>
+              className="pf-v5-c-form__group-label-help"
+              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+              icon={<HelpIcon />}
+            />
           </Popover>
         ) : (
           <Fragment />
@@ -84,6 +82,7 @@ export function AcmTextArea(props: AcmTextAreaProps) {
         disabled={ValidationContext.isReadOnly}
         autoResize
       />
+      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )
 }

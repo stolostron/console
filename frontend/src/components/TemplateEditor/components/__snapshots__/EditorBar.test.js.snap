@@ -39,10 +39,10 @@ exports[`EditorBar component renders as expected 1`] = `
           >
             <svg
               aria-hidden="true"
+              class="pf-v5-svg"
               fill="currentColor"
               height="1em"
               role="img"
-              style="vertical-align: -0.125em;"
               viewBox="0 0 512 512"
               width="1em"
             >
@@ -58,10 +58,10 @@ exports[`EditorBar component renders as expected 1`] = `
           >
             <svg
               aria-hidden="true"
+              class="pf-v5-svg"
               fill="currentColor"
               height="1em"
               role="img"
-              style="vertical-align: -0.125em;"
               viewBox="0 0 512 512"
               width="1em"
             >
@@ -79,24 +79,24 @@ exports[`EditorBar component renders as expected 1`] = `
             role="region"
           >
             <div
-              class="pf-c-text-input-group"
+              class="pf-v5-c-text-input-group"
               id="template-editor-search-undefined"
             >
               <div
-                class="pf-c-text-input-group__main pf-m-icon"
+                class="pf-v5-c-text-input-group__main pf-m-icon"
               >
                 <span
-                  class="pf-c-text-input-group__text"
+                  class="pf-v5-c-text-input-group__text"
                 >
                   <span
-                    class="pf-c-text-input-group__icon"
+                    class="pf-v5-c-text-input-group__icon"
                   >
                     <svg
                       aria-hidden="true"
+                      class="pf-v5-svg"
                       fill="currentColor"
                       height="1em"
                       role="img"
-                      style="vertical-align: -0.125em;"
                       viewBox="0 0 512 512"
                       width="1em"
                     >
@@ -107,7 +107,7 @@ exports[`EditorBar component renders as expected 1`] = `
                   </span>
                   <input
                     aria-label="Search input"
-                    class="pf-c-text-input-group__text-input"
+                    class="pf-v5-c-text-input-group__text-input"
                     type="text"
                     value=""
                   />
@@ -121,10 +121,10 @@ exports[`EditorBar component renders as expected 1`] = `
             >
               <svg
                 aria-hidden="true"
+                class="pf-v5-svg"
                 fill="currentColor"
                 height="1em"
                 role="img"
-                style="vertical-align: -0.125em;"
                 viewBox="0 0 256 512"
                 width="1em"
               >
@@ -140,10 +140,10 @@ exports[`EditorBar component renders as expected 1`] = `
             >
               <svg
                 aria-hidden="true"
+                class="pf-v5-svg"
                 fill="currentColor"
                 height="1em"
                 role="img"
-                style="vertical-align: -0.125em;"
                 viewBox="0 0 256 512"
                 width="1em"
               >
@@ -169,10 +169,10 @@ exports[`EditorBar component renders as expected 1`] = `
         >
           <svg
             aria-hidden="true"
+            class="pf-v5-svg"
             fill="currentColor"
             height="1em"
             role="img"
-            style="vertical-align: -0.125em;"
             viewBox="0 0 730 1024"
             width="1em"
           >

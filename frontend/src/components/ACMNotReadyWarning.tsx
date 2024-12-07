@@ -127,7 +127,7 @@ export const ACMNotReadyWarning = (props: PropsWithChildren) => {
             id="suppress"
             label={t('Do not show this message again')}
             isChecked={suppressed}
-            onChange={setSuppressed}
+            onChange={(_event, val) => setSuppressed(val)}
           />
         </StackItem>
       </Stack>

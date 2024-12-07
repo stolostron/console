@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
 import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
-import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
 import { AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
@@ -141,7 +141,7 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
   const { t } = useTranslation()
 
   return curatorJobs && curatorJobs.length > 0 ? (
-    <TableComposable aria-label={stage} variant={'compact'}>
+    <Table aria-label={stage} variant={'compact'}>
       <Thead>
         <Tr>
           <Th>{stage}</Th>
@@ -156,7 +156,7 @@ function ComposableTable(props: { stage: string; curatorJobs?: { name: string; t
           </Tr>
         ))}
       </Tbody>
-    </TableComposable>
+    </Table>
   ) : (
     <></>
   )

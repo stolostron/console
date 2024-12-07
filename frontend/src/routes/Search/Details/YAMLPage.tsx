@@ -16,19 +16,19 @@ import { useSearchDetailsContext } from './DetailsPage'
 
 const headerContainer = css({
   display: 'flex',
-  backgroundColor: 'var(--pf-global--palette--black-850)',
+  backgroundColor: 'var(--pf-v5-global--palette--black-850)',
   fontSize: '14px',
 })
 const spacer = css({
-  borderRight: '1px solid var(--pf-global--palette--black-700)',
+  borderRight: '1px solid var(--pf-v5-global--palette--black-700)',
   paddingLeft: '1rem',
 })
 const textTitle = css({
-  color: 'var(--pf-global--palette--black-300)',
+  color: 'var(--pf-v5-global--palette--black-300)',
   padding: '1rem',
 })
 const textContent = css({
-  color: 'var(--pf-global--palette--white)',
+  color: 'var(--pf-v5-global--palette--white)',
   padding: '1rem 0',
   fontWeight: 700,
 })
@@ -211,7 +211,7 @@ export function EditorActionBar(props: {
     <div
       id={'yaml-editor-action-wrapper'}
       style={{
-        borderTop: 'var(--pf-global--BorderWidth--sm) solid var(--pf-global--BorderColor--100)',
+        borderTop: 'var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100)',
       }}
     >
       {(updateError !== '' || updateSuccess) && (

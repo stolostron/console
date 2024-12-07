@@ -27,7 +27,8 @@ import {
   AcmTable,
   IAcmTableColumn,
 } from '../../../../../ui-components'
-import { Button, ModalVariant, SelectOption, Stack, StackItem } from '@patternfly/react-core'
+import { Button, ModalVariant, Stack, StackItem } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
@@ -46,7 +47,7 @@ const select = css({
   },
 })
 const table = css({
-  '& .pf-c-toolbar': {
+  '& .pf-v5-c-toolbar': {
     display: 'none',
   },
 })

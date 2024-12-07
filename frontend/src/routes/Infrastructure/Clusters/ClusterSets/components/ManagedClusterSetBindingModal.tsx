@@ -17,7 +17,8 @@ import {
   AcmMultiSelect,
   AcmSubmit,
 } from '../../../../../ui-components'
-import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
+import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'

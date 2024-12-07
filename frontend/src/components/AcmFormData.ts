@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
+import { AlertProps } from '@patternfly/react-core'
 import { ReactNode } from 'react'
 
 export interface FormData {
@@ -47,6 +48,7 @@ export enum LinkType {
   internalNoNewTab = 'internalNoNewTab',
 }
 
+export type Prompt = { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
 export interface InputBase<T> {
   id: string
 
@@ -67,12 +69,12 @@ export interface InputBase<T> {
   labelHelp?: string
   labelHelpTitle?: string
 
-  prompt?: { text: string; linkType: LinkType; callback: () => void; isDisabled?: boolean }
+  prompt?: Prompt
 }
 
 export interface AlertInput extends InputBase<string> {
   reactNode?: ReactNode
-  variant: 'default' | 'info' | 'success' | 'warning' | 'danger'
+  variant?: AlertProps['variant']
   type: 'Alert'
 }
 

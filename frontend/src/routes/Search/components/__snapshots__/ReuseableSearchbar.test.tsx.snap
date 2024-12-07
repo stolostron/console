@@ -8,21 +8,21 @@ exports[`renders with Global Search link 1`] = `
     >
       <button
         aria-disabled="false"
-        class="pf-c-button pf-m-link pf-m-inline"
+        class="pf-v5-c-button pf-m-link pf-m-inline"
         data-ouia-component-id="OUIA-Generated-Button-link-2"
-        data-ouia-component-type="PF4/Button"
+        data-ouia-component-type="PF5/Button"
         data-ouia-safe="true"
         type="button"
       >
         <span
-          class="pf-c-button__icon pf-m-start"
+          class="pf-v5-c-button__icon pf-m-start"
         >
           <svg
             aria-hidden="true"
+            class="pf-v5-svg"
             fill="currentColor"
             height="1em"
             role="img"
-            style="vertical-align: -0.125em;"
             viewBox="0 0 512 512"
             width="1em"
           >
@@ -46,21 +46,21 @@ exports[`renders with default Search link 1`] = `
     >
       <button
         aria-disabled="false"
-        class="pf-c-button pf-m-link pf-m-inline"
+        class="pf-v5-c-button pf-m-link pf-m-inline"
         data-ouia-component-id="OUIA-Generated-Button-link-1"
-        data-ouia-component-type="PF4/Button"
+        data-ouia-component-type="PF5/Button"
         data-ouia-safe="true"
         type="button"
       >
         <span
-          class="pf-c-button__icon pf-m-start"
+          class="pf-v5-c-button__icon pf-m-start"
         >
           <svg
             aria-hidden="true"
+            class="pf-v5-svg"
             fill="currentColor"
             height="1em"
             role="img"
-            style="vertical-align: -0.125em;"
             viewBox="0 0 512 512"
             width="1em"
           >

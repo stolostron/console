@@ -112,7 +112,7 @@ export function RbacButton(props: RbacButtonProps) {
       tooltip={isDisabled ? t('rbac.unauthorized') : ''}
       className={css({
         '& svg': {
-          fill: isDisabled ? 'var(--pf-global--disabled-color--200)' : 'var(--pf-global--primary-color--100)',
+          fill: isDisabled ? 'var(--pf-v5-global--disabled-color--200)' : 'var(--pf-v5-global--primary-color--100)',
         },
       })}
     />

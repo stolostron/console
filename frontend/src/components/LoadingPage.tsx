@@ -4,12 +4,14 @@ import {
   EmptyState,
   EmptyStateIcon,
   EmptyStateBody,
-  EmptyStateSecondaryActions,
   Title,
   Spinner,
   PageSection,
   Bullseye,
   Page,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 
@@ -28,15 +30,17 @@ export function LoadingPage(props: {
       <PageSection isFilled>
         <Bullseye>
           <EmptyState>
-            <EmptyStateIcon variant="container" component={Spinner} />
-            <div className={max}>
-              <Title size="lg" headingLevel="h4">
-                {props.title ?? 'Loading'}
-              </Title>
-              <EmptyStateBody>{props.message}</EmptyStateBody>
-            </div>
-            {props.primaryAction}
-            <EmptyStateSecondaryActions>{props.secondaryActions}</EmptyStateSecondaryActions>
+            <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
+            <EmptyStateFooter>
+              <div className={max}>
+                <Title size="lg" headingLevel="h4">
+                  {props.title ?? 'Loading'}
+                </Title>
+                <EmptyStateBody>{props.message}</EmptyStateBody>
+              </div>
+              {props.primaryAction}
+              <EmptyStateActions>{props.secondaryActions}</EmptyStateActions>
+            </EmptyStateFooter>
           </EmptyState>
         </Bullseye>
       </PageSection>

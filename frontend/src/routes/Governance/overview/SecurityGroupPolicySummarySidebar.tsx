@@ -11,6 +11,7 @@ import { Policy } from '../../../resources'
 import { SecurityGroupViolations } from './Overview'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { body, sectionSeparator } from '../common/policySidebarStyles'
+import { Icon } from '@patternfly/react-core'
 
 export function SecurityGroupPolicySummarySidebar(props: {
   violation: SecurityGroupViolations
@@ -75,19 +76,25 @@ export function SecurityGroupPolicySummarySidebar(props: {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                  <Icon status="danger">
+                    <CheckCircleIcon />
+                  </Icon>
                 </div>
               )
             case 'noncompliant':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
                 </div>
               )
           }

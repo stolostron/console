@@ -2,7 +2,7 @@
 
 import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { css } from '@emotion/css'
 
 const DEFAULTS = {
@@ -34,22 +34,22 @@ const buttonTitle = css({
     paddingLeft: '0',
     paddingRight: '0',
     '& span': {
-      fontSize: 'var(--pf-global--FontSize--sm)',
-      color: 'var(--pf-global--primary-color--100)',
+      fontSize: 'var(--pf-v5-global--FontSize--sm)',
+      color: 'var(--pf-v5-global--primary-color--100)',
     },
     '& span:last-of-type': {
       marginRight: '0',
     },
     '&:hover, &:focus': {
       '& span': {
-        color: 'var(--pf-global--primary-color--200)',
+        color: 'var(--pf-v5-global--primary-color--200)',
       },
     },
   },
 })
 const icon = css({
   maxWidth: '25px',
-  color: 'var(--pf-global--primary-color--100)',
+  color: 'var(--pf-v5-global--primary-color--100)',
 })
 
 export const savePollInterval = (refreshIntervalCookie: string, pollInterval: number | string | null) => {

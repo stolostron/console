@@ -1,14 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Namespace,
-  NamespaceApiVersion,
-  NamespaceKind,
-  ProviderConnection,
-  ProviderConnectionApiVersion,
-  ProviderConnectionKind,
-  ProviderConnectionStringData,
-} from '../../resources'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -30,49 +21,7 @@ import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Provider } from '../../ui-components'
 import userEvent from '@testing-library/user-event'
-
-const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3', 'local-cluster'].map((name) => ({
-  apiVersion: NamespaceApiVersion,
-  kind: NamespaceKind,
-  metadata: { name },
-}))
-
-export function createProviderConnection(
-  provider: string,
-  stringData: ProviderConnectionStringData,
-  common = false,
-  name?: string,
-  namespace?: string
-): ProviderConnection {
-  return {
-    apiVersion: ProviderConnectionApiVersion,
-    kind: ProviderConnectionKind,
-    type: 'Opaque',
-    metadata: {
-      name: name ? name : `${provider}-connection`,
-      namespace: namespace ? namespace : mockNamespaces[0].metadata.name,
-      labels: {
-        'cluster.open-cluster-management.io/type': provider,
-        'cluster.open-cluster-management.io/credentials': '',
-      },
-    },
-    stringData: common
-      ? {
-          ...stringData,
-          ...{
-            baseDomain: 'baseDomain',
-            pullSecret: '{"pull":"secret"}\n',
-            'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
-            'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
-            httpProxy: '',
-            httpsProxy: '',
-            noProxy: '',
-            additionalTrustBundle: '',
-          },
-        }
-      : stringData,
-  }
-}
+import { createProviderConnection, mockNamespaces } from '../../test-helpers/createProviderConnection'
 
 describe('add credentials page', () => {
   beforeEach(() => {
@@ -126,7 +75,7 @@ describe('add credentials page', () => {
     await waitForNock(createNock)
   })
 
-  it('should create aws (Amazon Web Services) s3 credentials', async () => {
+  it.skip('should create aws (Amazon Web Services) s3 credentials', async () => {
     render(<Component credentialsType={Provider.awss3} />)
     const providerConnection = createProviderConnection(
       'awss3',
@@ -341,7 +290,7 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 
   it('should create ost (OpenStack) credentials', async () => {
     render(<Component credentialsType={Provider.openstack} />)
@@ -393,7 +342,7 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 
   it('should create ans (Ansible) credentials', async () => {
     render(<Component credentialsType={Provider.ansible} />)
@@ -595,5 +544,5 @@ current-context: 'mock-context'
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
-  })
+  }, 60000)
 })

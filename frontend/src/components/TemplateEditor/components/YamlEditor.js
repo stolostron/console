@@ -170,13 +170,13 @@ class YamlEditor extends React.Component {
     )
   }
 
-  componentDidUpdate() {
-    // stop flickering
-    if (this.editor && this.editor.getModel()) {
-      const model = this.editor.getModel()
-      model.forceTokenization(model.getLineCount())
-    }
-  }
+  // componentDidUpdate() {
+  //   // stop flickering
+  //   if (this.editor && this.editor.getModel()) {
+  //     const model = this.editor.getModel()
+  //     model.forceTokenization(model.getLineCount())
+  //   }
+  // }
 
   render() {
     const { yaml, readOnly, hide = false, showCondensed } = this.props

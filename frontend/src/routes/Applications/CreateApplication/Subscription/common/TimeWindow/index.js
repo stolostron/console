@@ -11,12 +11,10 @@ import {
   Button,
   Checkbox,
   Radio,
-  Select,
-  SelectOption,
-  SelectVariant,
   TimePicker,
   ButtonVariant,
 } from '@patternfly/react-core'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
@@ -260,7 +258,7 @@ export class TimeWindow extends Component {
                         onClick={() => this.addTimeToList(control, modeSelected)}
                         icon={<PlusCircleIcon />}
                         isDisabled={!modeSelected}
-                        isSmall
+                        size="sm"
                       >
                         {i18n('Add another time range')}
                       </Button>
@@ -356,7 +354,7 @@ export class TimeWindow extends Component {
                     onClick={() => this.removeTimeFromList(control, item, modeSelected)}
                     icon={<TimesCircleIcon />}
                     aria-label={i18n('Remove time range')}
-                    isSmall
+                    size="sm"
                   />
                 ) : (
                   ''
@@ -481,7 +479,7 @@ export class TimeWindow extends Component {
     handleChange(control)
   }
 
-  handleChange(checked, event) {
+  handleChange(event, checked) {
     const { control, handleChange } = this.props
     const { timezoneCache } = this.state
 

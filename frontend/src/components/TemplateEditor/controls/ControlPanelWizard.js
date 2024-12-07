@@ -3,7 +3,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, Wizard, WizardFooter, WizardContextConsumer, Title, Stack, StackItem } from '@patternfly/react-core'
+import { Button, Icon, Title, Stack, StackItem } from '@patternfly/react-core'
+import { Wizard, WizardFooter, WizardContextConsumer } from '@patternfly/react-core/deprecated'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
@@ -101,7 +102,9 @@ class ControlPanelWizard extends React.Component {
             <div>{title}</div>
             {hasErrors && (
               <span style={{ paddingLeft: '8px' }}>
-                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                <Icon status="danger">
+                  <ExclamationCircleIcon />
+                </Icon>
               </span>
             )}
           </div>

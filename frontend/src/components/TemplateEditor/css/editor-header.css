@@ -21,7 +21,7 @@
   white-space: nowrap;
   font-weight: normal;
 }
-.creation-view-yaml-header-secrets .pf-c-check__input {
+.creation-view-yaml-header-secrets .pf-v5-c-check__input {
   margin-right: 6px;
 }
 .creation-view-yaml-header-tabs {
@@ -75,9 +75,9 @@
   font-weight: bold;
   opacity: 1;
 }
-.creation-view-yaml-header .pf-c-clipboard-copy {
+.creation-view-yaml-header .pf-v5-c-clipboard-copy {
   background: transparent;
 }
-.creation-view-yaml-header .pf-c-clipboard-copy .pf-c-button.pf-m-plain:hover {
+.creation-view-yaml-header .pf-v5-c-clipboard-copy .pf-v5-c-button.pf-m-plain:hover {
   color: white;
 }

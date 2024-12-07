@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Flex, FlexItem, PageSection, Spinner, Title } from '@patternfly/react-core'
+import { Flex, FlexItem, Icon, PageSection, Spinner, Title } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -174,14 +174,20 @@ export function PolicyTemplateDetails() {
           case 'compliant':
             violationCell = (
               <div>
-                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                <Icon status="success">
+                  <CheckCircleIcon />
+                </Icon>{' '}
+                {t('No violations')}
               </div>
             )
             break
           case 'noncompliant':
             violationCell = (
               <div>
-                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}{' '}
+                <Icon status="danger">
+                  <ExclamationCircleIcon />
+                </Icon>{' '}
+                {t('Violations')}{' '}
                 <DiffModal
                   diff={item.properties?.diff}
                   kind={item.object?.kind}
@@ -194,7 +200,7 @@ export function PolicyTemplateDetails() {
           case 'inapplicable':
             violationCell = (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
               </div>
             )
             break
@@ -202,16 +208,13 @@ export function PolicyTemplateDetails() {
             if (kind === 'OperatorPolicy') {
               switch (item.object?.kind) {
                 case 'Deployment':
-                  violationCell = (
-                    <div>
-                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
-                    </div>
-                  )
-                  break
                 case 'CustomResourceDefinition':
                   violationCell = (
                     <div>
-                      <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Inapplicable')}
+                      <Icon status="warning">
+                        <ExclamationTriangleIcon />
+                      </Icon>{' '}
+                      {t('Inapplicable')}
                     </div>
                   )
                   break
@@ -222,7 +225,10 @@ export function PolicyTemplateDetails() {
           default:
             violationCell = (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                <Icon status="warning">
+                  <ExclamationTriangleIcon />
+                </Icon>{' '}
+                {t('No status')}
               </div>
             )
         }

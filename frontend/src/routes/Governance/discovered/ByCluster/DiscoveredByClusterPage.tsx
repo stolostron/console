@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid'
 import { getEngineWithSvg } from '../../common/util'
 import { Box } from '@mui/material'
 import { useFetchPolicies } from '../useFetchPolicies'
-import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
+import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
 import DiscoveredByCluster from './DiscoveredByCluster'
 
 export default function DiscoveredByClusterPage() {
@@ -24,10 +24,7 @@ export default function DiscoveredByClusterPage() {
       return (
         <PageSection>
           <EmptyState>
-            <EmptyStateIcon variant="container" component={Spinner} />
-            <Title size="lg" headingLevel="h4">
-              Loading
-            </Title>
+            <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
           </EmptyState>
         </PageSection>
       )
@@ -47,7 +44,7 @@ export default function DiscoveredByClusterPage() {
     }
 
     return <DiscoveredByCluster policies={data?.[0]?.policies || []} policyKind={policyKind} apiGroup={apiGroup} />
-  }, [policyKind, apiGroup, isFetching, data, err])
+  }, [isFetching, data, err, policyKind, apiGroup, t])
 
   return (
     <AcmPage

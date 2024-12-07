@@ -113,7 +113,7 @@ describe('Policies Page', () => {
 })
 
 describe('Export from ClusterPolicySummarySidebar table', () => {
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {

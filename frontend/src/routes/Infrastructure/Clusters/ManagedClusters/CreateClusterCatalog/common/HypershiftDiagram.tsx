@@ -15,10 +15,10 @@ export function HypershiftDiagram() {
     fontSize: '18px',
     display: 'block',
     paddingBottom: '20px',
-    color: 'var(--pf-global--Color--200)',
+    color: 'var(--pf-v5-global--Color--200)',
   }
   const controlPlaneStyle = {
-    backgroundColor: 'var(--pf-global--BackgroundColor--200)',
+    backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
     padding: '18px',
   }
   const controlPlaneTitleStyle = {
@@ -30,12 +30,12 @@ export function HypershiftDiagram() {
     fontSize: '14px',
     display: 'block',
     paddingBottom: '20px',
-    color: 'var(--pf-global--Color--200)',
+    color: 'var(--pf-v5-global--Color--200)',
   }
   const standardOCPComponentStyle = {
     textAlign: 'center' as const,
     padding: '12px 24px 12px 24px',
-    backgroundColor: 'var(--pf-global--BackgroundColor--200)',
+    backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
   }
   return (
     <Split hasGutter style={{ width: '69%' }}>
@@ -47,7 +47,12 @@ export function HypershiftDiagram() {
             {t('Hosting service cluster')}
           </span>
           <span
-            style={{ fontSize: '16px', display: 'block', paddingBottom: '20px', color: 'var(--pf-global--Color--200)' }}
+            style={{
+              fontSize: '16px',
+              display: 'block',
+              paddingBottom: '20px',
+              color: 'var(--pf-v5-global--Color--200)',
+            }}
           >
             ({t('hosts the control planes')})
           </span>
@@ -93,7 +98,10 @@ export function HypershiftDiagram() {
         </div>
         <div style={{ padding: '18px 40px 18px 40px' }}>
           <Split hasGutter>
-            <SplitItem isFilled style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)', padding: '18px' }}>
+            <SplitItem
+              isFilled
+              style={{ backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)', padding: '18px' }}
+            >
               <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('Cluster 1')}</span>
               <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder', paddingBottom: '20px' }}>
                 {t('worker nodes')}
@@ -103,7 +111,10 @@ export function HypershiftDiagram() {
                 <span style={{ fontWeight: 'bolder' }}>{t('nodes xN')}</span>
               </div>
             </SplitItem>
-            <SplitItem isFilled style={{ backgroundColor: 'var(--pf-global--BackgroundColor--200)', padding: '18px' }}>
+            <SplitItem
+              isFilled
+              style={{ backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)', padding: '18px' }}
+            >
               <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder' }}>{t('Cluster 2')}</span>
               <span style={{ fontSize: '14px', display: 'block', fontWeight: 'bolder', paddingBottom: '20px' }}>
                 {t('worker nodes')}

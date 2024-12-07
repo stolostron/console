@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, ButtonVariant, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
+import { Alert, ButtonVariant, Icon, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import moment from 'moment'
@@ -105,7 +105,7 @@ export default function PolicyDetailsOverview() {
             <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
           ) : (
             <div>
-              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+              <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
             </div>
           ),
       },
@@ -311,19 +311,31 @@ export default function PolicyDetailsOverview() {
           const statusList = []
           for (const status of Object.keys(clusterList)) {
             let statusMsg = t(' No status: ')
-            let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+            let icon = <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
             switch (status) {
               case 'noncompliant':
                 statusMsg = t(' Violations: ')
-                icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                icon = (
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
+                )
                 break
               case 'compliant':
                 statusMsg = t(' No violations: ')
-                icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                icon = (
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>
+                )
                 break
               case 'pending':
                 statusMsg = ' Pending: '
-                icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                icon = (
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
+                )
                 break
             }
             statusList.push(
@@ -375,7 +387,7 @@ export default function PolicyDetailsOverview() {
           if (statusList.length === 0) {
             return (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
               </div>
             )
           }

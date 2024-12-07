@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useState } from 'react'
-import { ExpandableSectionToggle, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
-import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
+import { ExpandableSectionToggle, Icon, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
 import { CheckCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -31,7 +30,13 @@ const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClust
     hostedCluster?.status?.conditions?.find((c: any) => c.type === 'Available')?.status === 'True'
 
   return (
-    <ProgressStep icon={hostedClusterAvailable ? <CheckCircleIcon color={okColor.value} /> : <Spinner size="md" />}>
+    <ProgressStep
+      icon={
+        <Icon status="success" isInProgress={!hostedClusterAvailable} progressIcon={<Spinner size="md" />}>
+          <CheckCircleIcon />
+        </Icon>
+      }
+    >
       <Stack hasGutter>
         <StackItem>
           <ExpandableSectionToggle

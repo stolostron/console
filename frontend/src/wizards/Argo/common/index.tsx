@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Select } from '@patternfly-labs/react-form-wizard'
+import { WizSelect } from '@patternfly-labs/react-form-wizard'
 import { TFunction } from 'react-i18next'
 import { Channel, getGitBranchList } from '../ArgoWizard'
 import { Dispatch, SetStateAction } from 'react'
@@ -27,7 +27,7 @@ export interface GitURLPathProps {
 export function GitURLPath(props: GitURLPathProps) {
   const { t, channels, getGitRevisions, gitChannels, path, setCreatedChannels, setGitRevisionsAsyncCallback } = props
   return (
-    <Select
+    <WizSelect
       path={path}
       label={t('URL')}
       labelHelp={t('The URL path for the Git repository.')}
@@ -92,7 +92,7 @@ export function HelmURLPath(props: {
 }) {
   const { getGitRevisions, helmChannels, path, setCreatedChannels, setGitRevisionsAsyncCallback, t } = props
   return (
-    <Select
+    <WizSelect
       path={path}
       label={t('URL')}
       labelHelp={t('The URL path for the Helm repository.')}

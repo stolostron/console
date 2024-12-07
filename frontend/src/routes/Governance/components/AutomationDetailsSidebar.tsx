@@ -6,6 +6,7 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Icon,
   Stack,
   Text,
 } from '@patternfly/react-core'
@@ -120,26 +121,30 @@ export function AutomationDetailsSidebar(props: {
             case 'successful':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {'Successful'}
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>{' '}
+                  {t('Successful')}
                 </div>
               )
             case 'error':
             case 'failed':
               return (
                 <div>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {'Failed'}
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>{' '}
+                  {t('Failed')}
                 </div>
               )
             case '-':
-              return (
-                <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
-                </div>
-              )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('No status')}
                 </div>
               )
           }
@@ -169,7 +174,7 @@ export function AutomationDetailsSidebar(props: {
         ),
       },
     ],
-    []
+    [t]
   )
 
   return (
@@ -194,7 +199,7 @@ export function AutomationDetailsSidebar(props: {
                 <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
               ) : (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
                 </div>
               )}
             </DescriptionListDescription>

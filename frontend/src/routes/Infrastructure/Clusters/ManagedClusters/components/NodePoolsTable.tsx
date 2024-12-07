@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Stack, StackItem, Text } from '@patternfly/react-core'
+import { ButtonVariant, Icon, Stack, StackItem, Text } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
@@ -7,7 +7,6 @@ import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
 import { NodePool, NodePoolDefinition } from '../../../../../resources'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils'
-import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { get } from 'lodash'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
@@ -63,7 +62,10 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       if (status === 'Ready') {
         return (
           <span>
-            <CheckCircleIcon color={okColor.value} /> {t('Ready')}
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>{' '}
+            {t('Ready')}
           </span>
         )
       }
