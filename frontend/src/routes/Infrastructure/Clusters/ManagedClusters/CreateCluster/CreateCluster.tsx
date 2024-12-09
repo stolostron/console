@@ -320,39 +320,29 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
+
+  function validateKubeVirtNamespace(control: any, active: any, templateObjectMap: any, managedClusters: any) {
+    if (templateObjectMap['<<main>>'].HostedCluster[0]) {
+      const { name, namespace } = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata
+      if (name === namespace) return t('hosted.cluster.namespace.error')
+      if (namespace && managedClusters.some((mc: any) => mc?.metadata?.name === namespace)) {
+        return t('namespace.exists.error')
+      }
+      if (!control?.validation?.tester.test(active)) {
+        return control?.validation?.notification
+      }
+    }
+  }
+
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
         setConnectionControl(control)
         break
       case 'namespace':
-        control.validation.contextTester = (
-          active: string | undefined,
-          _controlData: object,
-          templateObjectMap: { [x: string]: { HostedCluster: { $raw: { metadata: { namespace: any; name: any } } }[] } }
-        ) => {
-          if (infrastructureType === Provider.kubevirt && templateObjectMap['<<main>>'].HostedCluster[0]) {
-            if (managedClusters.length) {
-              const name = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata.name
-              const namespace = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata.namespace
-
-              if (name === namespace) {
-                return t('hosted.cluster.namespace.error')
-              }
-              if (namespace) {
-                if (
-                  managedClusters.findIndex((mc) => {
-                    return mc?.metadata?.name === namespace
-                  }) !== -1
-                ) {
-                  return t('namespace.exists.error')
-                }
-              }
-            }
-            if (!control?.validation?.tester.test(active)) {
-              return control?.validation?.notification
-            }
-          }
+        if (infrastructureType === Provider.kubevirt) {
+          control.validation.contextTester = (active: any, _controlData: any, templateObjectMap: any) =>
+            validateKubeVirtNamespace(control, active, templateObjectMap, managedClusters)
         }
         break
       case 'clusterSet':
