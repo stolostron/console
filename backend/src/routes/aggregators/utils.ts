@@ -303,8 +303,6 @@ export function getNextApplicationPageChunk(
       })
 
       // create applicationPageChunks
-      const pageChunks = Math.ceil(applications.length / Number(process.env.APP_SEARCH_LIMIT))
-      const appsPerChunk = Math.ceil(applications.length / pageChunks)
       let currentPageChunk: ApplicationPageChunk = {
         limit: 0,
         keys: [],
@@ -314,7 +312,7 @@ export function getNextApplicationPageChunk(
         currentPageChunk.limit += n
         // start a new page if limit exceeds page maximum
         // but consolidate letters that have no occurance with this one
-        if (currentPageChunk.limit > appsPerChunk && inx < sz && prefixFrequency[inx + 1]) {
+        if (currentPageChunk.limit + (inx < sz ? prefixFrequency[inx + 1] : 0) > Number(process.env.APP_SEARCH_LIMIT)) {
           applicationPageChunks.push(currentPageChunk)
           currentPageChunk = {
             limit: 0,
@@ -322,6 +320,10 @@ export function getNextApplicationPageChunk(
           }
         }
       })
+
+      if (currentPageChunk.limit === 0 && applicationPageChunks.length && applicationPageChunks.length === 1) {
+        applicationPageChunks.length = 0
+      }
       // unless there are multiple pages, ignore paging
       if (applicationPageChunks.length) {
         applicationPageChunks.push(currentPageChunk)
