@@ -14,7 +14,7 @@ export const loadExistingNamespaces = (t: TFunction) => {
       })
     },
     loadingDesc: t('Loading namespaces...'),
-    setAvailable: setAvailableNSSpecs,
+    setAvailable: setAvailableNSSpecs.bind(null),
   }
 }
 
