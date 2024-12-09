@@ -6,9 +6,9 @@
     {
       "label": "Delay",
       "type": "shell",
-      "command": "sleep 60",
+      "command": "sleep 50",
       "windows": {
-        "command": "ping 127.0.0.1 -n 60 > nul"
+        "command": "ping 127.0.0.1 -n 50 > nul"
       },
       "group": "none",
       "presentation": {
