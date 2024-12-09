@@ -2,8 +2,8 @@
 import { logger } from '../../lib/logger'
 import { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { AppColumns, ApplicationCacheType, IQuery } from './applications'
-import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk } from './utils'
+import { AppColumns, ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk, cacheRemoteApps } from './utils'
 
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 25
@@ -34,9 +34,8 @@ const ocpPageChunks: ApplicationPageChunk[] = []
 let clusterNameChunk: string[]
 
 // Openshift/Flux
-export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
   ocpPageChunk = getNextApplicationPageChunk(applicationCache, ocpPageChunks, 'remoteOCPApps')
-  let limit = searchLimit
   const filters = [
     {
       property: 'kind',
@@ -61,17 +60,13 @@ export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query:
       values: ocpPageChunk.keys,
     })
   }
-  if (ocpPageChunk?.limit) {
-    limit = ocpPageChunk.limit
-  }
   query.variables.input.push({
     filters,
-    limit,
+    limit: SEARCH_QUERY_LIMIT,
   })
-  return searchLimit
 }
 
-export function addSystemQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+export function addSystemQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
   clusterNameChunk = getNextClusterNameChunk(applicationCache)
   query.variables.input.push({
     filters: [
@@ -92,9 +87,8 @@ export function addSystemQueryInputs(applicationCache: ApplicationCacheType, que
         values: clusterNameChunk,
       },
     ],
-    limit: searchLimit,
+    limit: SEARCH_QUERY_LIMIT,
   })
-  return searchLimit
 }
 
 export function cacheOCPApplications(
@@ -191,7 +185,7 @@ export function cacheOCPApplications(
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      applicationCache['remoteOCPApps'] = transform(remoteOCPApps, undefined, true)
+      cacheRemoteApps(applicationCache, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }

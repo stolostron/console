@@ -298,13 +298,13 @@ export function getNextApplicationPageChunk(
       applications.forEach((app) => {
         const name = app.transform[AppColumns.name][0]
         const ltr = name.charCodeAt(0)
-        const index = ltr > z ? ltr - a : 26 + ltr - z
+        const index = ltr < a ? ltr - z + 26 : ltr - a
         prefixFrequency[index]++
       })
 
       // create applicationPageChunks
-      const maxPageChunks = Math.min(4, Math.ceil(applications.length / Number(process.env.APP_SEARCH_LIMIT)))
-      const maxAppsPerChunk = Math.ceil(applications.length / maxPageChunks)
+      const pageChunks = Math.ceil(applications.length / Number(process.env.APP_SEARCH_LIMIT))
+      const appsPerChunk = Math.ceil(applications.length / pageChunks)
       let currentPageChunk: ApplicationPageChunk = {
         limit: 0,
         keys: [],
@@ -314,8 +314,7 @@ export function getNextApplicationPageChunk(
         currentPageChunk.limit += n
         // start a new page if limit exceeds page maximum
         // but consolidate letters that have no occurance with this one
-        if (currentPageChunk.limit > maxAppsPerChunk && inx < sz && prefixFrequency[inx + 1]) {
-          currentPageChunk.limit += 200 //room to grow
+        if (currentPageChunk.limit > appsPerChunk && inx < sz && prefixFrequency[inx + 1]) {
           applicationPageChunks.push(currentPageChunk)
           currentPageChunk = {
             limit: 0,
@@ -326,26 +325,45 @@ export function getNextApplicationPageChunk(
       // unless there are multiple pages, ignore paging
       if (applicationPageChunks.length) {
         applicationPageChunks.push(currentPageChunk)
-      } else {
-        // but make limit large enough to grow
-        return { limit: applications.length + 200 }
       }
+    }
+
+    // REDISTRIBUTE apps
+    if (applicationPageChunks.length) {
+      delete applicationCache[remoteCacheKey].resources
+
+      // if there were no keys before, or the keys changed, redistribute apps
+      if (
+        !applicationCache[remoteCacheKey].resourceMap ||
+        !applicationPageChunks.every(({ keys }) => !!applicationCache[remoteCacheKey].resourceMap[keys.join()])
+      ) {
+        applicationCache[remoteCacheKey].resourceMap = {}
+        applicationPageChunks.forEach(({ keys }) => {
+          applicationCache[remoteCacheKey].resourceMap[keys.join()] = []
+        })
+
+        // create a key to values map
+        const reverse: Record<string, IResource[]> = {}
+        Object.entries(applicationCache[remoteCacheKey].resourceMap).forEach(([key, value]) => {
+          key.split(',').forEach((k) => {
+            reverse[k[0]] = value
+          })
+        })
+        // for each app name, stuff it into the array that belongs to that key
+        applications.forEach((app) => {
+          const name = app.transform[AppColumns.name][0]
+          const ltr = name[0]
+          reverse[ltr].push(app)
+        })
+      }
+    } else {
+      // if no keys but there were keys before, delete old resourceMap
+      delete applicationCache[remoteCacheKey].resourceMap
+      return
     }
   }
   return applicationPageChunks.shift()
 }
-// const remoteSysMap = applicationCache[remoteCacheKey].resourceMap
-// if (applicationCache[remoteCacheKey].resources) {
-//   delete applicationCache[remoteCacheKey].resources
-//   applicationCache[remoteCacheKey].resourceMap = {}
-// } else if (Object.keys(remoteSysMap).length) {
-//   // purge resource map of clusters that no longer exist
-//   Object.keys(remoteSysMap).forEach((name) => {
-//     if (!clusterMap[name]) {
-//       delete remoteSysMap[name]
-//     }
-//   })
-// }
 
 export function cacheRemoteApps(
   applicationCache: ApplicationCacheType,
@@ -353,17 +371,12 @@ export function cacheRemoteApps(
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  // // initialize map
-  // clusterNameChunk.forEach((clustername) => {
-  //   applicationCache[remoteCacheKey].resourceMap[clustername] = []
-  // })
   const resources = transform(remoteApps, undefined, true).resources
-  applicationCache[remoteCacheKey].resources = resources
-  // resources.forEach((resource) => {
-  //   const clustername = resource.transform[4].join()
-  //   const clusterResources = applicationCache[remoteCacheKey].resourceMap[clustername]
-  //   clusterResources.push(resource)
-  // })
+  if (!applicationPageChunk) {
+    applicationCache[remoteCacheKey].resources = resources
+  } else {
+    applicationCache[remoteCacheKey].resourceMap[applicationPageChunk.keys.join()] = resources
+  }
 }
 
 //////////////////////////////////////////////////////////////////
@@ -442,10 +455,10 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   let change = false
   appCountKeys.forEach((key) => {
     let count
-    if (key !== 'remoteSysApps') {
-      count = applicationCache[key].resources.length
+    if (applicationCache[key].resourceMap) {
+      count = Object.values(applicationCache[key].resourceMap).flat().length
     } else {
-      count = Object.values(applicationCache['remoteSysApps'].resourceMap).flat().length
+      count = applicationCache[key].resources.length
     }
     if (count !== appCount[key]) {
       change = true

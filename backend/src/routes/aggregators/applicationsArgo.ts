@@ -2,7 +2,7 @@
 import { logger } from '../../lib/logger'
 import { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, IQuery } from './applications'
+import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
@@ -39,9 +39,8 @@ interface IArgoAppRemoteResource {
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
 
-export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery, searchLimit: number) {
+export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
   argoPageChunk = getNextApplicationPageChunk(applicationCache, argoPageChunks, 'remoteArgoApps')
-  let limit = searchLimit
   const filters = [
     {
       property: 'kind',
@@ -62,14 +61,10 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
       values: argoPageChunk.keys,
     })
   }
-  if (argoPageChunk?.limit) {
-    limit = argoPageChunk.limit
-  }
   query.variables.input.push({
     filters,
-    limit,
+    limit: SEARCH_QUERY_LIMIT,
   })
-  return searchLimit
 }
 
 export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {

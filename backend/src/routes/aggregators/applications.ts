@@ -81,6 +81,10 @@ appKeys.forEach((key) => {
 
 export const SEARCH_TIMEOUT = 5 * 60 * 1000
 
+// will divide queries into application prefixes (a*, b*) not to execeed this value: process.env.APP_SEARCH_LIMIT
+// however if a single letter prefix (ex: a*) returns more then this amount, we need to have a higher max
+export const SEARCH_QUERY_LIMIT = 20000
+
 export interface IQuery {
   operationName: string
   variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
@@ -219,18 +223,20 @@ async function searchLoop() {
 
     // process every APP_SEARCH_INTERVAL seconds
     if (process.env.NODE_ENV !== 'test') {
-      await new Promise((r) => setTimeout(r, pass < 5 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL)))
+      await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL)))
     }
   }
 }
 
 export async function aggregateRemoteApplications(pass: number) {
   //////////// BUILD QUERY INPUTS //////////////////
+  const querySystemApps = pass < 60 || pass % 5 === 0
   const query = structuredClone(queryTemplate)
-  let searchLimit = Number(pass === 1 ? 20000 : process.env.APP_SEARCH_LIMIT)
-  searchLimit = addArgoQueryInputs(applicationCache, query, searchLimit)
-  searchLimit = addOCPQueryInputs(applicationCache, query, searchLimit)
-  addSystemQueryInputs(applicationCache, query, searchLimit)
+  addArgoQueryInputs(applicationCache, query)
+  addOCPQueryInputs(applicationCache, query)
+  if (querySystemApps) {
+    addSystemQueryInputs(applicationCache, query)
+  }
 
   //////////// MAKE QUERY //////////////////////////
   let results: ISearchResult
@@ -246,10 +252,12 @@ export async function aggregateRemoteApplications(pass: number) {
     (results.data?.searchResult?.[0]?.items || []) as IResource[]
   )
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
-  cacheOCPApplications(
-    applicationCache,
-    (results.data?.searchResult?.[2]?.items || []) as IResource[],
-    argoAppSet,
-    true
-  )
+  if (querySystemApps) {
+    cacheOCPApplications(
+      applicationCache,
+      (results.data?.searchResult?.[2]?.items || []) as IResource[],
+      argoAppSet,
+      true
+    )
+  }
 }
