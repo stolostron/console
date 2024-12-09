@@ -320,10 +320,30 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
+
+  function validateKubeVirtNamespace(control: any, active: any, templateObjectMap: any, managedClusters: any) {
+    if (templateObjectMap['<<main>>'].HostedCluster[0]) {
+      const { name, namespace } = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata
+      if (name === namespace) return t('hosted.cluster.namespace.error')
+      if (namespace && managedClusters.some((mc: any) => mc?.metadata?.name === namespace)) {
+        return t('namespace.exists.error')
+      }
+      if (!control?.validation?.tester.test(active)) {
+        return control?.validation?.notification
+      }
+    }
+  }
+
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
         setConnectionControl(control)
+        break
+      case 'namespace':
+        if (infrastructureType === Provider.kubevirt) {
+          control.validation.contextTester = (active: any, _controlData: any, templateObjectMap: any) =>
+            validateKubeVirtNamespace(control, active, templateObjectMap, managedClusters)
+        }
         break
       case 'clusterSet':
         if (control.available) {
@@ -424,6 +444,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
+
   switch (infrastructureType) {
     case Provider.aws:
       breadcrumbs.push(controlPlaneBreadCrumbAWS)
