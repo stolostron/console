@@ -3,7 +3,6 @@
 import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
-import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 
 export const waitTimeout = 5 * 1000
 
@@ -375,11 +374,6 @@ export function isCardEnabled(card: HTMLElement) {
   return card.style.cursor === 'pointer'
 }
 
-export const ocpApi: {
-  useK8sWatchResource: UseK8sWatchResource
-} = {
-  useK8sWatchResource: () => [[] as any, true, undefined],
-}
 export const getCSVExportSpies = () => {
   const blobConstructorSpy = jest.fn()
   jest.spyOn(global, 'Blob').mockImplementationOnce(blobConstructorSpy)
