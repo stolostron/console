@@ -17,7 +17,7 @@ import { useClusterDistributionColumn, useClusterProviderColumn } from '../Manag
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
 const table = css({
-  '& .pf-c-toolbar': {
+  '& .pf-v5-c-toolbar': {
     display: 'none',
   },
 })

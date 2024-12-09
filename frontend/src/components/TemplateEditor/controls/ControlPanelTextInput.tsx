@@ -52,7 +52,7 @@ const ControlPanelTextInput = (props: {
             placeholder={placeholder}
             validated={validated}
             value={value || ''}
-            onChange={onChange}
+            onChange={(_event, value) => onChange(value)}
             data-testid={`text-${controlId}`}
           />
         </ControlPanelFormGroup>

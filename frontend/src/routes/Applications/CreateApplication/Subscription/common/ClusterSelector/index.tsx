@@ -11,11 +11,10 @@ import {
   Popover,
   Button,
   ButtonVariant,
-  SelectOption,
-  SelectVariant,
   Flex,
   FlexItem,
 } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
@@ -326,7 +325,7 @@ const ClusterSelector = (props: {
                     onClick={() => removeLabelFromList(control, item, isReadOnly)}
                     aria-label={i18n('Remove label')}
                     icon={<TimesCircleIcon />}
-                    isSmall
+                    size="sm"
                   />
                 ) : (
                   ''
@@ -375,10 +374,10 @@ const ClusterSelector = (props: {
                     id={`${controlId}-label-help-button`}
                     aria-label="More info"
                     onClick={(e) => e.preventDefault()}
-                    className="pf-c-form__group-label-help"
-                  >
-                    <HelpIcon noVerticalAlign />
-                  </Button>
+                    className="pf-v5-c-form__group-label-help"
+                    style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+                    icon={<HelpIcon />}
+                  />
                 </Popover>
               }
               fieldId={'clusterSelector-container'}
@@ -416,7 +415,7 @@ const ClusterSelector = (props: {
                           variant={ButtonVariant.link}
                           onClick={() => addLabelToList(control, !isReadOnly)}
                           icon={<PlusCircleIcon />}
-                          isSmall
+                          size="sm"
                         >
                           {i18n('creation.app.settings.selectorClusters.prop.add')}
                         </Button>

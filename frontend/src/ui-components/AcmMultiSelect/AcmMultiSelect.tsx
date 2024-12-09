@@ -1,19 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Button,
-  FormGroup,
-  Popover,
-  Select,
-  SelectOption,
-  SelectProps,
-  SelectVariant,
-  Skeleton,
-} from '@patternfly/react-core'
+import { Button, FormGroup, Popover, Skeleton } from '@patternfly/react-core'
+import { Select, SelectOption, SelectProps, SelectVariant } from '@patternfly/react-core/deprecated'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Children, Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
+import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmMultiSelectProps = Pick<
   SelectProps,
@@ -123,9 +116,6 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       isRequired={isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      helperTextInvalid={error}
-      validated={validated}
-      helperText={helperText}
       labelIcon={
         /* istanbul ignore next */
         props.labelHelp ? (
@@ -135,10 +125,10 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
               id={`${props.id}-label-help-button`}
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
-              className="pf-c-form__group-label-help"
-            >
-              <HelpIcon noVerticalAlign />
-            </Button>
+              className="pf-v5-c-form__group-label-help"
+              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+              icon={<HelpIcon />}
+            />
           </Popover>
         ) : (
           <Fragment />
@@ -187,6 +177,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       ) : (
         <Fragment />
       )}
+      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )
 }

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, PageSection, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, PageSection } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { Meta } from '@storybook/react'
 import { useState } from 'react'
 import { AcmAlertGroup } from '../AcmAlert/AcmAlert'
@@ -54,7 +55,7 @@ export function FormStory() {
         labelHelpTitle="Email Help"
         labelHelp="The email must be in valid email format."
         value={email}
-        onChange={setEmail}
+        onChange={(_event, value) => setEmail(value)}
         validation={(value) => {
           if (typeof value === 'string') {
             const regExp = /^[\w-]+(\.[\w-]+)*@([a-z0-9-]+(\.[a-z0-9-]+)*?\.[a-z]{2,6}|(\d{1,3}\.){3}\d{1,3})(:\d{4})?$/
@@ -71,7 +72,7 @@ export function FormStory() {
         labelHelp="The password must be at least 8 characters long."
         type="password"
         value={password}
-        onChange={setPassword}
+        onChange={(_event, value) => setPassword(value)}
         validation={(value) => {
           if (typeof value === 'string') {
             if (value.length < 8) return 'Password must be at least 8 characters.'
@@ -103,7 +104,7 @@ export function FormStory() {
         placeholder="Enter your multi-line input"
         labelHelp="This is the help for the text area"
         value={description}
-        onChange={setDescription}
+        onChange={(_event, value) => setDescription(value)}
         isRequired
       />
       <AcmFormSection title="Select" spacing></AcmFormSection>

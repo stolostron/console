@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ButtonProps, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ButtonProps, Icon, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import moment from 'moment'
@@ -274,13 +274,19 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
               case 'Compliant':
                 return (
                   <div>
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                    <Icon status="success">
+                      <CheckCircleIcon />
+                    </Icon>{' '}
+                    {t('No violations')}
                   </div>
                 )
               case 'NonCompliant':
                 return (
                   <div>
-                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                    <Icon status="danger">
+                      <ExclamationCircleIcon />
+                    </Icon>{' '}
+                    {t('Violations')}
                   </div>
                 )
               default:

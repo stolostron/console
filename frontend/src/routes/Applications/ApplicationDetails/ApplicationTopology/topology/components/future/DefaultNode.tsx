@@ -6,7 +6,7 @@ import { Tooltip, TooltipPosition } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
 import ExclamationTriangleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-triangle-icon'
-import styles from '@patternfly/react-styles/css/components/Topology/topology-components'
+import styles from '@patternfly/react-topology/dist/esm/css/topology-components'
 import { BadgeLocation, LabelPosition, NodeStatus, TopologyQuadrant } from './types'
 import {
   WithCreateConnectorProps,

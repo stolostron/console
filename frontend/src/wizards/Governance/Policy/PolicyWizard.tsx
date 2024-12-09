@@ -21,7 +21,6 @@ import {
   useEditMode,
   Radio,
   Section,
-  Select,
   Step,
   StringsMapInput,
   Sync,
@@ -34,6 +33,7 @@ import {
   WizItemSelector,
   WizKeyValue,
   WizRadioGroup,
+  WizSelect,
   WizSingleSelect,
   WizStringsInput,
   WizTextArea,
@@ -507,7 +507,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             />
           </WizRadioGroup>
 
-          <Select
+          <WizSelect
             path="objectDefinition.spec.severity"
             label={t('Severity')}
             placeholder={t('Select severity')}
@@ -639,7 +639,7 @@ function OperatorPolicy() {
           name="operator-namespaces"
           label={t('All namespaces on the cluster (default)')}
           checked={allNamespacesMode}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             setAllNamespacesMode(checked)
 
             if (checked) {
@@ -652,7 +652,7 @@ function OperatorPolicy() {
           name="operator-namespaces"
           label={t('A specific namespace on the cluster')}
           checked={!allNamespacesMode}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             setAllNamespacesMode(!checked)
           }}
         />
@@ -921,7 +921,7 @@ function PolicyPolicySets() {
               : t('This policy is placed by the policy sets: ')}
             <b>{policySets.join(', ')}</b>
           </p>
-          <p className="pf-c-form__helper-text">
+          <p className="pf-v5-c-form__helper-text">
             {t(
               'Only add placement to this policy if you want it to be placed in addition to the policy set placement.'
             )}

@@ -63,7 +63,7 @@ class ControlPanelTextArea extends React.Component {
     )
   }
 
-  handleChange(id, value) {
+  handleChange(id, _event, value) {
     const { control, handleChange } = this.props
     value = value.split(/\r\n|\n/)
     control.active = value

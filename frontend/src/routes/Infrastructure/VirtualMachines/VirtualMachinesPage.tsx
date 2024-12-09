@@ -9,6 +9,7 @@ import {
   Stack,
   StackItem,
   TextVariants,
+  EmptyStateHeader,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -151,10 +152,11 @@ function VirtualMachineTable() {
   } else if (error) {
     return (
       <EmptyState>
-        <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
-        <Title size="lg" headingLevel="h4">
-          {t('Error querying for VirtualMachines')}
-        </Title>
+        <EmptyStateHeader
+          titleText={<>{t('Error querying for VirtualMachines')}</>}
+          icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />}
+          headingLevel="h4"
+        />
         <EmptyStateBody>
           <Stack>
             <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>

@@ -6,16 +6,14 @@ import {
   CardBody,
   CardTitle,
   Divider,
-  Dropdown,
-  DropdownItem,
   Gallery,
   GalleryItem,
-  KebabToggle,
   PageSection,
   Popover,
   Skeleton,
   TextVariants,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
@@ -354,7 +352,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 {t('Worker core count')}
                 <Dropdown
                   onSelect={() => setIsOpen(!isOpen)}
-                  toggle={<KebabToggle id="toggle-kebab" onToggle={(value: boolean) => setIsOpen(value)} />}
+                  toggle={<KebabToggle id="toggle-kebab" onToggle={(_event, isOpen: boolean) => setIsOpen(isOpen)} />}
                   isOpen={isOpen}
                   isPlain
                   dropdownItems={[

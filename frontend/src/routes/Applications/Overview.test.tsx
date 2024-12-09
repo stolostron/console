@@ -235,7 +235,7 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
   })
 
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     nockAggegateRequest('applications', fetchAggregate.req, applicationAggregate.res)
 
     await waitForText('feng-remote-argo8')

@@ -77,7 +77,7 @@ class ControlPanelLabels extends React.Component {
     handleChange(control)
   }
 
-  handleChange(value = '') {
+  handleChange(_event, value = '') {
     const { control, i18n } = this.props
     const { active = [] } = control
     if (value.endsWith(',')) {

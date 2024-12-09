@@ -29,10 +29,10 @@ const getStyles = (props: LoginCredentialStyle) => ({
     paddingLeft: '0 !important',
     '& svg': {
       width: '24px',
-      fill: props.disabled ? 'var(--pf-c-button--disabled--Color)' : '#06C',
+      fill: props.disabled ? 'var(--pf-v5-c-button--disabled--Color)' : '#06C',
     },
     '& span': {
-      color: props.disabled ? 'var(--pf-c-button--disabled--Color)' : undefined,
+      color: props.disabled ? 'var(--pf-v5-c-button--disabled--Color)' : undefined,
     },
     '& .credentials-toggle': {
       display: 'flex',
@@ -43,7 +43,7 @@ const getStyles = (props: LoginCredentialStyle) => ({
     },
     '&:hover': {
       '& .credentials-toggle svg': {
-        fill: props.disabled ? 'var(--pf-c-button--disabled--Color)' : 'var(--pf-c-button--m-link--hover--Color)',
+        fill: props.disabled ? 'var(--pf-v5-c-button--disabled--Color)' : 'var(--pf-v5-c-button--m-link--hover--Color)',
       },
     },
   }),

@@ -9,7 +9,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Tooltip } from '@patternfly/react-core'
+import { Icon, Tooltip } from '@patternfly/react-core'
 
 interface ISourceFilter {
   label: string
@@ -182,7 +182,10 @@ export const byClusterCols = (
               case 'compliant':
                 return (
                   <div>
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                    <Icon status="success">
+                      <CheckCircleIcon />
+                    </Icon>{' '}
+                    {t('No violations')}
                   </div>
                 )
               case 'noncompliant':
@@ -190,11 +193,17 @@ export const byClusterCols = (
                   <div>
                     {item?.totalViolations ? (
                       <>
-                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {item.totalViolations}
+                        <Icon status="danger">
+                          <ExclamationCircleIcon />
+                        </Icon>{' '}
+                        {item.totalViolations}
                       </>
                     ) : (
                       <>
-                        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                        <Icon status="danger">
+                          <ExclamationCircleIcon />
+                        </Icon>{' '}
+                        {t('Violations')}
                       </>
                     )}
                   </div>
@@ -202,13 +211,19 @@ export const byClusterCols = (
               case 'pending':
                 return (
                   <div>
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+                    <Icon status="warning">
+                      <ExclamationTriangleIcon />
+                    </Icon>{' '}
+                    {t('Pending')}
                   </div>
                 )
               default:
                 return (
                   <div>
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                    <Icon status="warning">
+                      <ExclamationTriangleIcon />
+                    </Icon>{' '}
+                    {t('No status')}
                   </div>
                 )
             }

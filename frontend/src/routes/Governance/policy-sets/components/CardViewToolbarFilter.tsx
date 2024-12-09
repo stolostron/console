@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Badge, Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core'
+import { Badge } from '@patternfly/react-core'
+import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
