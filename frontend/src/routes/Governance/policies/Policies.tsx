@@ -1178,13 +1178,13 @@ function policyHasDeletePruneBehavior(policy: Policy) {
   return policy.spec['policy-templates']?.some((tmpl) => {
     if (
       tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
-      !tmpl.objectDefinition.spec.pruneObjectBehavior?.startsWith('Delete')
+      !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
     ) {
       return false
     }
     return (
       policy.spec.remediationAction?.endsWith('nforce') ||
-      tmpl.objectDefinition.spec.remediationAction?.endsWith('nforce')
+      tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
     )
   })
 }
