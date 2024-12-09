@@ -7,7 +7,6 @@ import { EditPolicy } from './policies/EditPolicy'
 import { EditPolicyAutomation } from './policies/EditPolicyAutomation'
 import { PolicyDetailsHistoryPage } from './policies/policy-details/PolicyDetailsHistoryPage'
 import { PolicyDetailsPage } from './policies/policy-details/PolicyDetailsPage'
-import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetailsPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
 import { NavigationPath, createRoutePathFunction } from '../../NavigationPath'
@@ -18,8 +17,9 @@ import PolicySetsPage from './policy-sets/PolicySets'
 import PoliciesPage from './policies/Policies'
 import DiscoveredPolicies from './discovered/DiscoveredPolicies'
 import DiscoveredByClusterPage from './discovered/ByCluster/DiscoveredByClusterPage'
-import { PolicyTemplateDetails } from './policies/policy-details/PolicyTemplateDetails'
 import PolicyTemplateYaml from './policies/policy-details/PolicyTemplateYaml'
+import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetail/PolicyTemplateDetailsPage'
+import { PolicyTemplateDetails } from './policies/policy-details/PolicyTemplateDetail/PolicyTemplateDetails'
 
 const governanceChildPath = createRoutePathFunction(NavigationPath.governance)
 
