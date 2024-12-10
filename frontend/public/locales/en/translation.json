@@ -3184,6 +3184,7 @@
   "validation.missing.value": "{{0}} is required",
   "Value": "Value",
   "Value must be a valid IPv4 CIDR.": "Value must be a valid IPv4 CIDR.",
+  "Value must be integer greater than": "Value must be integer greater than {{0}}.",
   "values": "values",
   "Values": "Values",
   "vCenter password": "vCenter password",
