@@ -354,12 +354,12 @@ export function getNextApplicationPageChunk(
         // for each app name, stuff it into the array that belongs to that key
         applications.forEach((app) => {
           const name = app.transform[AppColumns.name][0]
-          const ltr = name[0]
-          reverse[ltr].push(app)
+          reverse[name[0]].push(app)
         })
       }
     } else {
       // if no keys but there were keys before, delete old resourceMap
+      applicationCache[remoteCacheKey].resources = applications
       delete applicationCache[remoteCacheKey].resourceMap
       return
     }
