@@ -37,8 +37,9 @@ export function ResourceSearchLink(props: {
   kind: string
   name: string
   namespace?: string
+  className?: string
 }) {
-  const { cluster, kind, name, namespace, apiversion } = props
+  const { cluster, kind, name, namespace, apiversion, className } = props
   let searchParams = `?filters={"textsearch":"cluster%3A${cluster}%20kind%3A${kind}%20name%3A${name}`
   if (namespace) {
     searchParams = `${searchParams}%20namespace%3A${namespace}`
@@ -50,6 +51,7 @@ export function ResourceSearchLink(props: {
   }
   return (
     <Link
+      className={className}
       to={{
         pathname: NavigationPath.search,
         search: searchParams,
@@ -385,7 +387,7 @@ export default function DetailsOverviewPage() {
 
   if (resource && !resourceLoading && !resourceError) {
     return resource.kind === 'VirtualMachine' && VirtualMachinesOverviewTab ? (
-      <KubevirtPluginWrapper>
+      <KubevirtPluginWrapper clusterName={cluster}>
         <VirtualMachinesOverviewTab obj={resource} />
       </KubevirtPluginWrapper>
     ) : (
