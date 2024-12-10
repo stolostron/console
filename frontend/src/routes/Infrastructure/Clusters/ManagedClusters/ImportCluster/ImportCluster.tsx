@@ -3,13 +3,12 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-  SelectOption,
-  SelectVariant,
   Split,
   SplitItem,
   Switch,
   Text,
 } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,

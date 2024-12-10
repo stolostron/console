@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import {
-  CatalogCardItemType,
-  getPatternflyColor,
-  ICatalogCard,
-  PageHeader,
-  PatternFlyColor,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo, useState } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -17,6 +11,7 @@ import { GetControlPlane } from './common/GetControlPlane'
 import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
+import { Icon } from '@patternfly/react-core'
 
 export function CreateControlPlane() {
   const { t } = useTranslation()
@@ -48,7 +43,11 @@ export function CreateControlPlane() {
           {
             type: CatalogCardItemType.List,
             title: '',
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
+            icon: (
+              <Icon status="success">
+                <CheckIcon />
+              </Icon>
+            ),
             items: [
               {
                 text: t('Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'),
@@ -86,7 +85,11 @@ export function CreateControlPlane() {
           {
             type: CatalogCardItemType.List,
             title: '',
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
+            icon: (
+              <Icon status="success">
+                <CheckIcon />
+              </Icon>
+            ),
             items: [
               {
                 text: t('Increased resiliency with closely interconnected control plane and worker nodes.'),

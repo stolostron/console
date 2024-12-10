@@ -12,10 +12,10 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  SelectOption,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -1099,7 +1099,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placement-bindings"
             isChecked={deletePlacementBindings}
-            onChange={setDeletePlacementBindings}
+            onChange={(_event, val) => setDeletePlacementBindings(val)}
             label={t('policy.modal.delete.associatedResources.placementBinding')}
           />
         </StackItem>
@@ -1118,7 +1118,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placements"
             isChecked={deletePlacements}
-            onChange={setDeletePlacements}
+            onChange={(_event, val) => setDeletePlacements(val)}
             label={t('policy.modal.delete.associatedResources.placement')}
           />
         </StackItem>

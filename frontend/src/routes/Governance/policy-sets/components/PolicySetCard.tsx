@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Card,
-  CardActions,
   CardBody,
   CardHeader,
   CardTitle,
@@ -13,15 +12,19 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-  Dropdown,
-  DropdownItem,
-  DropdownSeparator,
-  KebabToggle,
+  Icon,
   Modal,
   ModalVariant,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+  KebabToggle,
+  KebabToggleProps,
+} from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
@@ -75,10 +78,7 @@ export default function PolicySetCard(props: {
     }, 400)
   }
 
-  function onToggle(
-    isOpen: boolean,
-    event: MouseEvent | KeyboardEvent | React.KeyboardEvent<any> | React.MouseEvent<HTMLButtonElement>
-  ) {
+  const onToggle: KebabToggleProps['onToggle'] = (event, isOpen) => {
     event.stopPropagation()
     setIsKebabOpen(isOpen)
   }
@@ -108,62 +108,70 @@ export default function PolicySetCard(props: {
           onClick(cardID)
         }}
       >
-        <CardHeader isToggleRightAligned={true}>
-          <CardActions>
-            <Dropdown
-              onSelect={onSelectOverflow}
-              toggle={<KebabToggle onToggle={onToggle} />}
-              isOpen={isKebabOpen}
-              isPlain
-              dropdownItems={[
-                <DropdownItem
-                  key="view details"
-                  onClick={() => {
-                    const newSelectedCard = cardID === selectedCardID ? '' : cardID
-                    setSelectedCardID(newSelectedCard)
-                    onClick(cardID)
-                  }}
-                >
-                  {t('View details')}
-                </DropdownItem>,
-                <DropdownItem
-                  isAriaDisabled={!canEditPolicySet}
-                  tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
-                  key="edit"
-                  onClick={() => {
-                    navigate(
-                      generatePath(NavigationPath.editPolicySet, {
-                        namespace: policySet.metadata.namespace,
-                        name: policySet.metadata.name,
-                      })
-                    )
-                  }}
-                >
-                  {t('Edit')}
-                </DropdownItem>,
-                <DropdownSeparator key="separator" />,
-                <DropdownItem
-                  isAriaDisabled={!canDeletePolicySet}
-                  tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
-                  key="delete"
-                  onClick={() => {
-                    setIsKebabOpen(false)
-                    setModal(
-                      <DeletePolicySetModal
-                        item={policySet}
-                        onClose={() => setModal(undefined)}
-                        setDrawerContext={setDrawerContext}
-                        setSelectedCardID={setSelectedCardID}
-                      />
-                    )
-                  }}
-                >
-                  {t('Delete')}
-                </DropdownItem>,
-              ]}
-              position={'right'}
-            />
-          </CardActions>
+        <CardHeader
+          actions={{
+            actions: (
+              <>
+                <Dropdown
+                  onSelect={onSelectOverflow}
+                  toggle={<KebabToggle onToggle={onToggle} />}
+                  isOpen={isKebabOpen}
+                  isPlain
+                  dropdownItems={[
+                    <DropdownItem
+                      key="view details"
+                      onClick={() => {
+                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                        setSelectedCardID(newSelectedCard)
+                        onClick(cardID)
+                      }}
+                    >
+                      {t('View details')}
+                    </DropdownItem>,
+                    <DropdownItem
+                      isAriaDisabled={!canEditPolicySet}
+                      tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
+                      key="edit"
+                      onClick={() => {
+                        navigate(
+                          generatePath(NavigationPath.editPolicySet, {
+                            namespace: policySet.metadata.namespace,
+                            name: policySet.metadata.name,
+                          })
+                        )
+                      }}
+                    >
+                      {t('Edit')}
+                    </DropdownItem>,
+                    <DropdownSeparator key="separator" />,
+                    <DropdownItem
+                      isAriaDisabled={!canDeletePolicySet}
+                      tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
+                      key="delete"
+                      onClick={() => {
+                        setIsKebabOpen(false)
+                        setModal(
+                          <DeletePolicySetModal
+                            item={policySet}
+                            onClose={() => setModal(undefined)}
+                            setDrawerContext={setDrawerContext}
+                            setSelectedCardID={setSelectedCardID}
+                          />
+                        )
+                      }}
+                    >
+                      {t('Delete')}
+                    </DropdownItem>,
+                  ]}
+                  position={'right'}
+                />
+              </>
+            ),
+            hasNoOffset: false,
+            className: undefined,
+          }}
+          isToggleRightAligned={true}
+        >
           <CardTitle>
             <Stack>
               {policySet.metadata.name}
@@ -186,19 +194,28 @@ export default function PolicySetCard(props: {
                     <DescriptionListDescription>
                       {policySet.status?.compliant === 'Compliant' && (
                         <div>
-                          <CheckCircleIcon color="var(--pf-global--success-color--100)" /> &nbsp;
+                          <Icon status="success">
+                            <CheckCircleIcon />
+                          </Icon>{' '}
+                          &nbsp;
                           {t('No violations')}
                         </div>
                       )}
                       {policySet.status?.compliant === 'NonCompliant' && (
                         <div>
-                          <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> &nbsp;
+                          <Icon status="danger">
+                            <ExclamationCircleIcon />
+                          </Icon>{' '}
+                          &nbsp;
                           {t('Violations')}
                         </div>
                       )}
                       {policySet.status?.compliant === 'Pending' && (
                         <div>
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> &nbsp;
+                          <Icon status="warning">
+                            <ExclamationTriangleIcon />
+                          </Icon>{' '}
+                          &nbsp;
                           {t('Pending')}
                         </div>
                       )}
@@ -295,7 +312,7 @@ function DeletePolicySetModal(props: {
           <Checkbox
             id="delete-placement-bindings"
             isChecked={deletePlacementBindings}
-            onChange={setDeletePlacementBindings}
+            onChange={(_event, val) => setDeletePlacementBindings(val)}
             label={t('policy.modal.delete.associatedResources.placementBinding')}
           />
         </StackItem>
@@ -303,7 +320,7 @@ function DeletePolicySetModal(props: {
           <Checkbox
             id="delete-placements"
             isChecked={deletePlacements}
-            onChange={setDeletePlacements}
+            onChange={(_event, val) => setDeletePlacements(val)}
             label={t('policy.modal.delete.associatedResources.placement')}
           />
         </StackItem>

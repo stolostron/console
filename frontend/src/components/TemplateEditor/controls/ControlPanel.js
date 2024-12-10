@@ -20,6 +20,7 @@ import ControlPanelSingleSelect from './ControlPanelSingleSelect'
 import ControlPanelSkeleton from './ControlPanelSkeleton'
 import ControlPanelTextArea from './ControlPanelTextArea'
 import ControlPanelTextInput from './ControlPanelTextInput'
+import ControlPanelMultiTextInput from './ControlPanelMultiTextInput'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import ControlPanelValues from './ControlPanelValues'
 import ControlPanelWizard from './ControlPanelWizard'
@@ -88,7 +89,7 @@ class ControlPanel extends React.Component {
     const { controlData, showEditor } = this.props
     const controlClasses = classNames({
       'creation-view-controls': true,
-      'pf-c-form': true,
+      'pf-v5-c-form': true,
       showEditor,
     })
     return (
@@ -446,6 +447,18 @@ class ControlPanel extends React.Component {
             i18n={i18n}
           />
         )
+      case 'multitext':
+        return (
+          <ControlPanelMultiTextInput
+            key={controlId}
+            controlId={controlId}
+            control={control}
+            controlData={controlData}
+            handleChange={this.handleControlChange.bind(this, control)}
+            i18n={i18n}
+            addButtonText={control.addButtonText}
+          />
+        )
       case 'textarea':
         return (
           <ControlPanelTextArea
@@ -743,7 +756,7 @@ class ControlPanel extends React.Component {
         title={deletePrompt}
         aria-label={deletePrompt}
         onClick={handleGroupChange}
-        isSmall
+        size="sm"
       >
         <TrashIcon />
       </Button>
@@ -760,7 +773,7 @@ class ControlPanel extends React.Component {
     }
 
     return (
-      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />} isSmall>
+      <Button id={`add-${control.id}`} variant="link" onClick={handleGroupChange} icon={<PlusCircleIcon />} size="sm">
         {addPrompt}
       </Button>
     )

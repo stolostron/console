@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, SelectOption } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'

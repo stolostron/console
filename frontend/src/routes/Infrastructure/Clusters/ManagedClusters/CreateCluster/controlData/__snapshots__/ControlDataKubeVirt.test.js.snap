@@ -75,13 +75,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         <AcmButton
           component="a"
           href=""
-          icon={
-            <ExternalLinkAltIcon
-              color="currentColor"
-              noVerticalAlign={false}
-              size="sm"
-            />
-          }
+          icon={<ExternalLinkAltIcon />}
           iconPosition="right"
           isInline={true}
           target="_blank"
@@ -390,13 +384,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         <AcmButton
           component="a"
           href="https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com/operatorhub/all-namespaces?keyword=Openshift+Virtualization"
-          icon={
-            <ExternalLinkAltIcon
-              color="currentColor"
-              noVerticalAlign={false}
-              size="sm"
-            />
-          }
+          icon={<ExternalLinkAltIcon />}
           iconPosition="right"
           isInline={true}
           target="_blank"

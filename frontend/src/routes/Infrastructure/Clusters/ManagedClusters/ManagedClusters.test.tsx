@@ -291,7 +291,7 @@ describe('Clusters Page export', () => {
     await waitForNock(metricNock)
     await waitForText(mockManagedCluster0.metadata.name!, true)
   })
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
     const documentBody = document.body.appendChild

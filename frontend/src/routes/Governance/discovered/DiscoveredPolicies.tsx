@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
+import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
 import {
   AcmEmptyState,
   compareStrings,
@@ -156,8 +156,15 @@ export default function DiscoveredPolicies() {
             label: t('Violations'),
             value: 'violations',
           },
+          {
+            label: t('No status'),
+            value: '-',
+          },
         ],
         tableFilterFn: (selectedValues, item) => {
+          // For items with no violations
+          if (selectedValues.includes('-') && clusterCell(item) === '-') return true
+
           const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
           const total = noncompliant + compliant + unknown + pending
 
@@ -216,10 +223,7 @@ export default function DiscoveredPolicies() {
     return (
       <PageSection>
         <EmptyState>
-          <EmptyStateIcon variant="container" component={Spinner} />
-          <Title size="lg" headingLevel="h4">
-            Loading
-          </Title>
+          <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
         </EmptyState>
       </PageSection>
     )

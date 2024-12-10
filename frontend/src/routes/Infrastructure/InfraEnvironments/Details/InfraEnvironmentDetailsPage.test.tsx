@@ -10,7 +10,7 @@ import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText
 import { NavigationPath } from '../../../../NavigationPath'
 import { IResource } from '../../../../resources/resource'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
-import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
+import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../../../../test-helpers/infraEnvName'
 import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 import InfraEnvironments from '../InfraEnvironments'

@@ -4,10 +4,8 @@ import {
   CatalogCardItemType,
   CatalogColor,
   DataViewStringContext,
-  getPatternflyColor,
   ICatalogCard,
   ItemView,
-  PatternFlyColor,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -18,6 +16,7 @@ import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
+import { Icon } from '@patternfly/react-core'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -46,7 +45,11 @@ export function CreateAWSControlPlane() {
           {
             type: CatalogCardItemType.List,
             title: t(''),
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
+            icon: (
+              <Icon status="success">
+                <CheckIcon />
+              </Icon>
+            ),
             items: [
               {
                 text: t('Reduces costs by efficiently reusing an OpenShift cluster to host multiple control planes.'),
@@ -85,7 +88,11 @@ export function CreateAWSControlPlane() {
           {
             type: CatalogCardItemType.List,
             title: t(''),
-            icon: <CheckIcon color={getPatternflyColor(PatternFlyColor.Green)} />,
+            icon: (
+              <Icon status="success">
+                <CheckIcon />
+              </Icon>
+            ),
             items: [
               {
                 text: t('Increases resiliency with closely interconnected control plane and worker nodes.'),

@@ -14,7 +14,7 @@ export function AcmHelperTextPrompt(props: AcmHelperTextPromptProps) {
   return (
     <Split>
       <SplitItem isFilled>
-        <span className="pf-c-form__helper-text">{helperText}</span>
+        <span className="pf-v5-c-form__helper-text">{helperText}</span>
       </SplitItem>
       <SplitItem>
         <Button

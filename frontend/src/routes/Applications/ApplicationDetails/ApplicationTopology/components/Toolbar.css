@@ -7,19 +7,19 @@
   font-weight: 400;
   font-size: 14px;
 }
-.channel-controls-container .channelsCombo .pf-c-dropdown,
+.channel-controls-container .channelsCombo .pf-v5-c-dropdown,
 .channel-controls-container .channelsCombo #comboChannel {
   width: 100%;
 }
-.channel-controls-container .channelsCombo .pf-c-dropdown__toggle-text {
+.channel-controls-container .channelsCombo .pf-v5-c-dropdown__toggle-text {
   white-space: normal;
   text-align: left;
   font-size: 14px;
 }
-.channel-controls-container .channelsCombo .pf-c-dropdown__menu-item {
+.channel-controls-container .channelsCombo .pf-v5-c-dropdown__menu-item {
   font-size: 14px;
 }
-.channel-controls-container .pf-c-options-menu {
+.channel-controls-container .pf-v5-c-options-menu {
   display: none;
 }
 .channel-controls-container .label {

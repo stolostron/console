@@ -1,15 +1,15 @@
-.temptifly .creation-view-controls-custom .pf-c-input-group {
+.temptifly .creation-view-controls-custom .pf-v5-c-input-group {
   max-width: unset;
 }
 
-.temptifly.showEditor .infra-env-form > .pf-l-grid__item {
-  --pf-l-grid__item--GridColumnEnd: span 12;
+.temptifly.showEditor .infra-env-form > .pf-v5-l-grid__item {
+  --pf-v5-l-grid__item--GridColumnEnd: span 12;
 }
 
-.temptifly .infra-env-form .pf-c-form__group-label {
-  padding: 0 0 var(--pf-c-form__group-label--PaddingBottom) 0 !important;
+.temptifly .infra-env-form .pf-v5-c-form__group-label {
+  padding: 0 0 var(--pf-v5-c-form__group-label--PaddingBottom) 0 !important;
 }
 
 .infra-env-form__section {
-  padding: 0 0 var(--pf-c-page__main-section--PaddingBottom) 0 !important;
+  padding: 0 0 var(--pf-v5-c-page__main-section--PaddingBottom) 0 !important;
 }

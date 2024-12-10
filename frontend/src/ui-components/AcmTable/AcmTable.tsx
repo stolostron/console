@@ -4,22 +4,12 @@ import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
-  Dropdown,
-  DropdownGroup,
-  DropdownItem,
-  DropdownSeparator,
-  DropdownToggle,
-  DropdownToggleCheckbox,
+  MenuToggle,
   PageSection,
   Pagination,
   PaginationProps,
   PaginationVariant,
   PerPageOptions,
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
   Skeleton,
   Toolbar,
   ToolbarChip,
@@ -30,9 +20,23 @@ import {
   Tooltip,
   TooltipProps,
 } from '@patternfly/react-core'
-import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
+import {
+  Dropdown,
+  DropdownGroup,
+  DropdownItem,
+  DropdownSeparator,
+  DropdownToggle,
+  DropdownToggleCheckbox,
+  Select,
+  SelectGroup,
+  SelectOption,
+  SelectOptionObject,
+  SelectVariant,
+} from '@patternfly/react-core/deprecated'
+import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
+  CustomActionsToggleProps,
   expandable,
   IAction,
   IExtraData,
@@ -45,12 +49,10 @@ import {
   RowWrapperProps,
   sortable,
   SortByDirection,
-  Table,
-  TableBody,
   TableGridBreakpoint,
-  TableHeader,
   TableVariant,
 } from '@patternfly/react-table'
+import { Table, TableBody, TableHeader } from '@patternfly/react-table/deprecated'
 import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
@@ -441,7 +443,7 @@ const tableClass = css({
   '& tbody.pf-m-expanded > tr': {
     borderBottom: 0,
     '&:last-of-type': {
-      borderBottom: 'var(--pf-c-table--border-width--base) solid var(--pf-c-table--BorderColor)',
+      borderBottom: 'var(--pf-v5-c-table--border-width--base) solid var(--pf-v5-c-table--BorderColor)',
     },
   },
 })
@@ -1252,6 +1254,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // Parse static actions
   const actions = useMemo(() => parseRowAction(rowActions), [parseRowAction, rowActions])
 
+  const actionsToggle = useCallback(
+    ({ onToggle, isOpen, isDisabled, toggleRef }: CustomActionsToggleProps) => (
+      <MenuToggle
+        aria-label={t('Actions')}
+        ref={toggleRef}
+        onClick={onToggle}
+        isExpanded={isOpen}
+        isDisabled={isDisabled}
+        variant="plain"
+      >
+        <EllipsisVIcon />
+      </MenuToggle>
+    ),
+    [t]
+  )
+
   // Wrap provided action resolver
   const actionResolver = useMemo(
     () =>
@@ -1291,7 +1309,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       {props.extraToolbarControls && (
         <Toolbar style={topToolbarStyle} inset={{ default: 'insetMd', xl: 'insetLg' }}>
           <ToolbarContent>
-            <ToolbarGroup alignment={{ default: 'alignRight' }}>
+            <ToolbarGroup align={{ default: 'alignRight' }}>
               <ToolbarItem>{props.extraToolbarControls}</ToolbarItem>
             </ToolbarGroup>
           </ToolbarContent>
@@ -1400,7 +1418,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     toggle={
                       <DropdownToggle
                         toggleIndicator={null}
-                        onToggle={(value, event) => {
+                        onToggle={(event, value) => {
                           event.stopPropagation()
                           setIsExportMenuOpen(value)
                         }}
@@ -1480,6 +1498,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 rowWrapper={OuiaIdRowWrapper}
                 actionResolver={actionResolver}
                 actions={actions}
+                actionsToggle={actionsToggle}
                 aria-label={t('Simple Table')}
                 sortBy={adjustedSort}
                 onSort={(_event, index, direction) => updateSort({ index, direction })}
@@ -1794,7 +1813,7 @@ function TableActionsDropdown<T>(props: {
           id="toggle-id"
           onToggle={() => setOpen(!open)}
           toggleIndicator={CaretDownIcon}
-          isPrimary={Object.keys(selections).length > 0}
+          toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
         >
           {t('Actions')}
         </DropdownToggle>
@@ -1891,7 +1910,7 @@ export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
             {toggleText}
           </DropdownToggleCheckbox>,
         ]}
-        onToggle={(isOpen) => setIsOpen(isOpen)}
+        onToggle={(_event, isOpen) => setIsOpen(isOpen)}
       />
     )
   }, [t, selectedCount, onToggleCheckbox, toggleText])

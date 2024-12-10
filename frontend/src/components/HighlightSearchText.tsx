@@ -5,7 +5,7 @@ export function HighlightSearchText(props: Readonly<{ text?: string; searchText?
   return (
     <>
       {getSlicedText(text, searchText).map((idSplit) => (
-        <span key={idSplit.text} className={idSplit.isBold ? 'pf-u-font-weight-bold' : ''}>
+        <span key={idSplit.text} className={idSplit.isBold ? 'pf-v5-u-font-weight-bold' : ''}>
           {idSplit.text}
         </span>
       ))}

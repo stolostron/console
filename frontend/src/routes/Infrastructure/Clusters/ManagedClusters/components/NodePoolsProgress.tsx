@@ -5,12 +5,12 @@ import {
   ExpandableSectionToggle,
   Flex,
   FlexItem,
+  Icon,
   ProgressStep,
   Spinner,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
 import { NodePoolK8sResource, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -35,7 +35,11 @@ export const getNodePoolStatus = (nodePool: NodePoolK8sResource, t: TFunction): 
   return nodePool.status?.conditions?.find(({ type }: { type: string }) => type === 'Ready')?.status === 'True'
     ? {
         type: 'ok',
-        icon: <CheckCircleIcon color={okColor.value} />,
+        icon: (
+          <Icon status="success">
+            <CheckCircleIcon />
+          </Icon>
+        ),
         text: t('Ready'),
       }
     : {
@@ -58,7 +62,11 @@ export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunctio
 
   const nodePoolsStatus: { type: string; icon: ReactNode } = {
     type: 'ok',
-    icon: <CheckCircleIcon color={okColor.value} />,
+    icon: (
+      <Icon status="success">
+        <CheckCircleIcon />
+      </Icon>
+    ),
   }
 
   for (const property in nodePoolMap) {

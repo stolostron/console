@@ -10,8 +10,8 @@ export enum TruncatePosition {
 }
 
 const truncateStyles = {
-  start: 'pf-c-truncate__end',
-  end: 'pf-c-truncate__start',
+  start: 'pf-v5-c-truncate__end',
+  end: 'pf-v5-c-truncate__start',
 }
 
 const minWidthCharacters = 12
@@ -54,7 +54,7 @@ export const Truncate: React.FunctionComponent<TruncateProps> = ({
   ...props
 }: TruncateProps) => (
   <Tooltip position={tooltipPosition} content={content}>
-    <span className={`${className} pf-c-truncate`} {...props}>
+    <span className={`${className} pf-v5-c-truncate`} {...props}>
       {(position === TruncatePosition.end || position === TruncatePosition.start) && (
         <span className={truncateStyles[position]}>
           {content}

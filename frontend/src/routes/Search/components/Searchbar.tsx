@@ -2,9 +2,6 @@
 import {
   Button,
   Divider,
-  Dropdown,
-  DropdownItem,
-  DropdownToggle,
   Menu,
   MenuContent,
   MenuItem,
@@ -15,6 +12,7 @@ import {
   TextInputGroupUtilities,
   Tooltip,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
@@ -191,7 +189,7 @@ export function Searchbar(props: SearchbarProps) {
     const mark = (
       <mark
         style={{
-          color: 'var(--pf-global--link--Color)',
+          color: 'var(--pf-v5-global--link--Color)',
           textDecoration: 'underline',
           background: 'none',
           fontWeight: 600,
@@ -513,7 +511,7 @@ export function Searchbar(props: SearchbarProps) {
         </Button>
         <Divider orientation={{ default: 'vertical' }} />
         <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
-          <HelpIcon color={'var(--pf-global--active-color--100)'} />
+          <HelpIcon color={'var(--pf-v5-global--active-color--100)'} />
         </Button>
         <Divider orientation={{ default: 'vertical' }} />
         <AcmButton
@@ -542,7 +540,7 @@ export function Searchbar(props: SearchbarProps) {
             toggle={
               <DropdownToggle
                 toggleIndicator={null}
-                onToggle={(value, event) => {
+                onToggle={(event, value) => {
                   event.stopPropagation()
                   setIsExportMenuOpen(value)
                 }}

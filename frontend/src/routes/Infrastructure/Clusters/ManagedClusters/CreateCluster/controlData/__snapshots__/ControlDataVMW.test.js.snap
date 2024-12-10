@@ -358,11 +358,38 @@ exports[`Cluster creation control data for VMW generates correctly 1`] = `
   },
   {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  {
+    "active": {
+      "multitextEntries": [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": [
+      {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": {
       "contextTester": [Function],
       "required": true,
@@ -609,11 +636,7 @@ exports[`Cluster creation control data for VMW generates correctly 1`] = `
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",
@@ -1034,11 +1057,38 @@ exports[`Cluster creation control data for VMW generates correctly for MCE 1`] =
   },
   {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  {
+    "active": {
+      "multitextEntries": [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": [
+      {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": {
       "contextTester": [Function],
       "required": true,
@@ -1285,11 +1335,7 @@ exports[`Cluster creation control data for VMW generates correctly for MCE 1`] =
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",
@@ -1710,11 +1756,38 @@ exports[`Cluster creation control data for VMW generates correctly with SNO enab
   },
   {
     "active": "",
+    "hidden": [Function],
     "id": "ingressVIP",
     "name": "Ingress VIP",
     "placeholder": "Enter ingress VIP",
     "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
     "type": "text",
+    "validation": {
+      "contextTester": [Function],
+      "required": true,
+    },
+  },
+  {
+    "active": {
+      "multitextEntries": [
+        "",
+      ],
+    },
+    "addButtonText": "Add Ingress VIP",
+    "controlData": [
+      {
+        "active": "",
+        "id": "ingressVIPs",
+        "type": "multitextMember",
+      },
+    ],
+    "hidden": [Function],
+    "id": "ingressVIPs",
+    "name": "Ingress VIPs",
+    "placeholder": "Enter ingress VIP",
+    "reverse": [Function],
+    "tooltip": "The Virtual IP to use for ingress traffic. The DNS must be preconfigured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.",
+    "type": "multitext",
     "validation": {
       "contextTester": [Function],
       "required": true,
@@ -1961,11 +2034,7 @@ exports[`Cluster creation control data for VMW generates correctly with SNO enab
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",

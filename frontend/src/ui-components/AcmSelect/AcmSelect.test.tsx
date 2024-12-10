@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption, SelectVariant } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
@@ -26,7 +26,7 @@ describe('AcmSelect', () => {
   test('can apply and clear selections', () => {
     const { container, getByRole, getByText, getAllByRole, queryByTestId, queryByText } = render(<Select />)
     expect(queryByText('Select one')).toBeVisible()
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
     expect(getByText('Red')).toBeVisible()
     getAllByRole('option')[0].click()
     expect(getByText('Red')).toBeVisible()
@@ -57,7 +57,7 @@ describe('AcmSelect', () => {
       )
     }
     const { container } = render(<TypeaheadSelect />)
-    expect(container.querySelector<HTMLInputElement>('.pf-c-select__toggle-typeahead')).toHaveAttribute(
+    expect(container.querySelector<HTMLInputElement>('.pf-v5-c-select__toggle-typeahead input')).toHaveAttribute(
       'placeholder',
       'Select one'
     )
@@ -88,7 +88,7 @@ describe('AcmSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
     getAllByRole('option')[0].click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
@@ -110,7 +110,7 @@ describe('AcmSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-c-select__toggle')?.click()
+    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
     getAllByRole('option')[0].click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
