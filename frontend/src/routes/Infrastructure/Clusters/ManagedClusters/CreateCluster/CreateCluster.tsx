@@ -63,6 +63,7 @@ import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
+import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/validation-types'
 // Register the custom 'and' helper
 Handlebars.registerHelper('and', function (a, b) {
   return a && b
@@ -95,6 +96,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     agentClusterInstallsState,
     infraEnvironmentsState,
     managedClustersState,
+    namespacesState,
     secretsState,
     settingsState,
     subscriptionOperatorsState,
@@ -136,6 +138,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const settings = useRecoilValue(settingsState)
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const managedClusters = useRecoilValue(managedClustersState)
+  const namespaces = useRecoilValue(namespacesState)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
 
   const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
@@ -321,15 +324,17 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const { canJoinClusterSets } = useCanJoinClusterSets()
   const mustJoinClusterSet = useMustJoinClusterSet()
 
-  function validateKubeVirtNamespace(control: any, active: any, templateObjectMap: any, managedClusters: any) {
+  const KubeVirtNamespaceRegExp = new RegExp(VALID_DNS_LABEL)
+
+  function validateKubeVirtNamespace(active: any, _controlData: any, templateObjectMap: any) {
     if (templateObjectMap['<<main>>'].HostedCluster[0]) {
       const { name, namespace } = templateObjectMap['<<main>>'].HostedCluster[0].$raw.metadata
       if (name === namespace) return t('hosted.cluster.namespace.error')
       if (namespace && managedClusters.some((mc: any) => mc?.metadata?.name === namespace)) {
         return t('namespace.exists.error')
       }
-      if (!control?.validation?.tester.test(active)) {
-        return control?.validation?.notification
+      if (!KubeVirtNamespaceRegExp.test(active)) {
+        return t('import.form.invalid.dns.label')
       }
     }
   }
@@ -341,8 +346,13 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         break
       case 'namespace':
         if (infrastructureType === Provider.kubevirt) {
-          control.validation.contextTester = (active: any, _controlData: any, templateObjectMap: any) =>
-            validateKubeVirtNamespace(control, active, templateObjectMap, managedClusters)
+          control.validation = { contextTester: validateKubeVirtNamespace }
+          //  only include namespaces that do not correspond to an existing managed cluster
+          const hostedClusterNamespaces = namespaces.filter(
+            (ns) => !managedClusters.find((mc) => mc.metadata.name === ns.metadata.name)
+          )
+          control.active = 'clusters'
+          control.available = ['clusters', ...hostedClusterNamespaces.map((hcn) => hcn.metadata.name)]
         }
         break
       case 'clusterSet':

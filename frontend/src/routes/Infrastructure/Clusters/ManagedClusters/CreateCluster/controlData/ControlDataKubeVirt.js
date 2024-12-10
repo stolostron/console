@@ -118,12 +118,6 @@ export const getControlDataKubeVirt = (
       id: 'namespace',
       type: 'combobox',
       fetchAvailable: loadHostedClusterNamespaces(t),
-      active: 'clusters',
-      validation: {
-        constraint: VALID_DNS_LABEL,
-        notification: t('import.form.invalid.dns.label'),
-        required: true,
-      },
     },
     {
       name: t('creation.ocp.clusterSet'),
