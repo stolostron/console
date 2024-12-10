@@ -27,13 +27,12 @@ import {
 import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 import { useClusterViolationSummaryMap } from './ClusterViolationSummary'
 import { PolicySetViolationsCard } from './PolicySetViolationSummary'
-import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
+import { PolicyViolationsCard, usePolicyViolationSummary, ViolationSummary } from './PolicyViolationSummary'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
 import { LoadingPage } from '../../../components/LoadingPage'
-// import { PluginDataContext } from '../../../lib/PluginDataContext'
 import { PluginContext } from '../../../lib/PluginContext'
 
 // # of clusters initially shown
@@ -397,8 +396,8 @@ function ClustersCard() {
 }
 
 function renderClusterList(
-  clusterList: { cluster: any; violations: any }[],
-  onClick: { (cluster: ManagedCluster, compliance: string): void; (arg0: any, arg1: string): void },
+  clusterList: { cluster: ManagedCluster; violations: ViolationSummary }[],
+  onClick: { (cluster: ManagedCluster, compliance: string): void },
   t: TFunction
 ) {
   return (

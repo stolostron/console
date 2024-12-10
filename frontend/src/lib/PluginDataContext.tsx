@@ -10,6 +10,9 @@ import * as selectors from '../selectors'
 import * as reactQuery from '@tanstack/react-query'
 import { getBackendUrl } from '../resources/utils'
 
+// startLoading -- LoadPluginData is telling LoadData to make a call backend /events api to start sending resources
+// loadStarted -- means at least one packet has been sent from backend; /events sends resouces in packets to the browser can start populating list
+// loadCompleted -- means all packets have been sent; is a page doesn't get any data from packets it can show LoadingPage until this is sent
 export type PluginData = {
   recoil: typeof recoil
   atoms: typeof atoms

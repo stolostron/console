@@ -540,8 +540,9 @@ export function LoadData(props: { children?: ReactNode }) {
       if (evtSource) evtSource.close()
     }
     // this effect must only run once--it sets up the call to /events on the backend
-    // this should be [], but linter would complain
-  }, [caches, mappers, setLoadStarted, setSettings, setters])
+    // which should only ever be called once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
     data: globalHubRes,

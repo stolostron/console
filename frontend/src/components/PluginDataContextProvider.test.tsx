@@ -18,6 +18,21 @@ const TestPluginDataContextProvider = (props: ProviderProps<PluginData>) => {
 }
 
 describe('PluginDataContextProvider', () => {
+  it('does not render LoadData until requested', async () => {
+    const pluginData: PluginData = {
+      ...defaultContext,
+      loadStarted: false,
+      load: jest.fn(),
+    }
+    render(
+      <MemoryRouter>
+        <TestPluginDataContextProvider value={pluginData} />
+      </MemoryRouter>
+    )
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await waitForText('Loading')
+    expect(pluginData.load).toHaveBeenCalled()
+  })
   it('renders LoadData when requested', async () => {
     const mockGlobalHubReq: any = { isGlobalHub: true }
     nockRequest('/globalhub', mockGlobalHubReq)

@@ -10,3 +10,14 @@ exports[`DetailsPage Should return the url search params correctly 1`] = `
   "namespace": "testNamespace",
 }
 `;
+
+exports[`DetailsPage Should return the url search params incorrectly 1`] = `
+{
+  "apiversion": "v1",
+  "cluster": "local-cluster",
+  "isHubClusterResource": true,
+  "kind": "Pod",
+  "name": "testLocalPod",
+  "namespace": "testNamespace",
+}
+`;
