@@ -482,7 +482,7 @@ export function getPolicyRemediation(policy: Policy | undefined, propagatedPolic
   const remediationSet = new Set()
 
   templates?.forEach((template: PolicyTemplate) => {
-    const templateRemediation = template.objectDefinition.spec.remediationAction
+    const templateRemediation = template.objectDefinition.spec?.remediationAction
     remediationSet.add(templateRemediation)
     if (remediationSet.size === 3) {
       return
@@ -559,7 +559,7 @@ export function getPolicyRemediation(policy: Policy | undefined, propagatedPolic
 
 export function getPolicyTempRemediation(propagatedPolicy: Policy, template: PolicyTemplate | undefined): string {
   const propagatedRA = propagatedPolicy.spec.remediationAction
-  const objectRemediation = template?.objectDefinition.spec.remediationAction
+  const objectRemediation = template?.objectDefinition?.spec?.remediationAction
   return propagatedRA || objectRemediation || ''
 }
 
