@@ -19,12 +19,12 @@ import { NavigationPath, useBackCancelNavigation } from '../../../../../Navigati
 import {
   ClusterCurator,
   createClusterCurator,
-  createResource as createResourceTool,
   IResource,
   ProviderConnection,
   Secret,
   SubscriptionOperator,
 } from '../../../../../resources'
+import { createResource as createResourceTool } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import {
@@ -81,7 +81,7 @@ const Portals = Object.freeze({
 })
 
 const wizardBody = css({
-  '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
+  '& .pf-v5-c-wizard__outer-wrap .pf-v5-c-wizard__main .pf-v5-c-wizard__main-body': {
     height: '100%',
   },
 })
@@ -219,6 +219,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       const map = keyBy(createResources, 'kind')
       const cluster = map?.ClusterDeployment || map?.HostedCluster
       const clusterName = cluster?.metadata?.name
+      const clusterNamespace = cluster?.metadata?.namespace ?? 'clusters'
 
       // return error if cluster name is already used
       const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -287,13 +288,13 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         if (status === 'DONE') {
           const finishMessage = completedMsg ? [completedMsg] : []
           setCreationStatus({ status, messages: finishMessage })
-          const namespace = cluster?.metadata?.namespace
-          if (!noRedirect && clusterName && namespace) {
+          const namespace = cluster?.metadata?.namespace ?? null
+          if (!noRedirect && clusterName && clusterNamespace) {
             setTimeout(() => {
               navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: clusterName,
-                  namespace,
+                  namespace: namespace,
                 })
               )
             }, 2000)

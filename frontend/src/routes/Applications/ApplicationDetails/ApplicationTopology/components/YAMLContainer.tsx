@@ -6,7 +6,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { AcmAlert, AcmLoadingPage } from '../../../../../ui-components'
-import { getResource } from '../../../../../resources'
+import { getResource } from '../../../../../resources/utils'
 
 const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
 
@@ -14,6 +14,7 @@ export interface IYAMLContainerProps {
   node: any
   containerRef: HTMLDivElement
   t: TFunction
+  hubClusterName: string
 }
 
 export function YAMLContainer(props: IYAMLContainerProps) {
@@ -32,6 +33,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
   const [resource, setResource] = useState<any>(undefined)
   const [resourceError, setResourceError] = useState({ message: '', stack: '' })
   const t = props.t
+  const hubClusterName = props.hubClusterName
 
   if (type === 'project') {
     apiVersion = 'project.openshift.io/v1'
@@ -46,8 +48,8 @@ export function YAMLContainer(props: IYAMLContainerProps) {
   }
 
   if (!cluster) {
-    // default to local-cluster if we still don't have a cluster for resources like AnsibleJobs
-    cluster = 'local-cluster'
+    // default to hub cluster name if we still don't have a cluster for resources like AnsibleJobs
+    cluster = hubClusterName
   }
 
   if (!apiVersion) {
@@ -62,7 +64,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
 
   useEffect(() => {
     let isComponentMounted = true
-    if ((cluster === 'local-cluster' || isDesign) && !remoteArgoCluster) {
+    if ((cluster === hubClusterName || isDesign) && !remoteArgoCluster) {
       const resourceResult = getResource({
         apiVersion,
         kind,
@@ -102,7 +104,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
         isComponentMounted = false
       }
     }
-  }, [cluster, kind, apiVersion, name, namespace, isDesign, remoteArgoCluster])
+  }, [cluster, kind, apiVersion, name, namespace, isDesign, remoteArgoCluster, hubClusterName])
 
   if (!resource && resourceError.message === '') {
     return <AcmLoadingPage />

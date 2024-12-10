@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, SelectOption } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { ReactNode, useEffect, useState } from 'react'
-import { fetchRetry, getBackendUrl } from '../../../../../resources'
+import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
+import { useHubCluster } from '../../../helpers/useHubCluster'
 
 export interface ILogsContainerProps {
   node: any[]
@@ -20,6 +22,7 @@ export function LogsContainer(props: ILogsContainerProps) {
   const t = props.t
   const podModel = _.get(props.node, 'specs.podModel')
   const pods = podModel && Object.keys(podModel).length > 0 ? podModel[Object.keys(podModel)[0]] : []
+  const hubCluster = useHubCluster()
 
   if (pods.length === 0) {
     resourceError = t('No pods found')
@@ -67,7 +70,7 @@ export function LogsContainer(props: ILogsContainerProps) {
   const [cluster, setCluster] = useState<string>(initialCluster)
 
   useEffect(() => {
-    if (cluster !== 'local-cluster' && container !== '') {
+    if (cluster !== hubCluster?.metadata?.name && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -85,7 +88,7 @@ export function LogsContainer(props: ILogsContainerProps) {
         .catch((err) => {
           setLogsError(err.message)
         })
-    } else if (cluster === 'local-cluster' && container !== '') {
+    } else if (cluster === hubCluster?.metadata?.name && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -104,7 +107,7 @@ export function LogsContainer(props: ILogsContainerProps) {
           setLogsError(err.message)
         })
     }
-  }, [cluster, container, currentNamespace, selectedPod])
+  }, [cluster, container, currentNamespace, selectedPod, hubCluster?.metadata?.name])
 
   if (resourceError !== '') {
     return (

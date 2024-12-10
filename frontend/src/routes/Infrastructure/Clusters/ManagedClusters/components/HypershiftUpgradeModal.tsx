@@ -1,28 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
-import { TableComposable, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
+import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import {
   AgentK8sResource,
   AgentMachineK8sResource,
   HostedClusterK8sResource,
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
-  Cluster,
   HostedClusterApiVersion,
   HostedClusterKind,
-  IRequestResult,
   IResource,
   NodePool,
   NodePoolApiVersion,
   NodePoolKind,
-  patchResource,
-  ResourceError,
-  resultsSettled,
 } from '../../../../../resources'
+import { Cluster, IRequestResult, patchResource, ResourceError, resultsSettled } from '../../../../../resources/utils'
 import {
   AcmAlert,
   AcmExpandableCheckbox,
@@ -109,17 +106,22 @@ export function HypershiftUpgradeModal(props: {
       .reverse()
   }, [props.availableUpdates, latestSupportedVersion])
 
-  const controlPlaneNameTdRef = useCallback((node: HTMLTableCellElement | null) => {
-    if (node) {
-      setNodepoolsNameTdWidth(node.offsetWidth)
-    }
-  }, [])
+  const controlPlaneNameTdRef = useRef<HTMLTableCellElement>(null)
+  const controlPlaneVersionTdRef = useRef<HTMLTableCellElement>(null)
 
-  const controlPlaneVersionTdRef = useCallback((node: HTMLTableCellElement | null) => {
-    if (node) {
-      setNodepoolsVersionTdWidth(node.offsetWidth)
-    }
-  }, [])
+  if (
+    controlPlaneNameTdRef.current?.offsetWidth && // ensure defined and > 0
+    controlPlaneNameTdRef.current.offsetWidth !== nodepoolsNameTdWidth
+  ) {
+    setNodepoolsNameTdWidth(controlPlaneNameTdRef.current?.offsetWidth)
+  }
+
+  if (
+    controlPlaneVersionTdRef.current?.offsetWidth && // ensure defined and > 0
+    controlPlaneVersionTdRef.current.offsetWidth !== nodepoolsVersionTdWidth
+  ) {
+    setNodepoolsVersionTdWidth(controlPlaneVersionTdRef.current?.offsetWidth)
+  }
 
   const controlPlaneCheckboxSpanRef = useCallback((node: HTMLSpanElement | null) => {
     if (node) {
@@ -505,7 +507,7 @@ export function HypershiftUpgradeModal(props: {
             {t(
               'Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.'
             )}
-            <TableComposable aria-label={t('Hypershift upgrade table')} variant="compact">
+            <Table aria-label={t('Hypershift upgrade table')} variant="compact">
               <Thead>
                 <Tr>
                   <Th>{columnNamesTranslated.name}</Th>
@@ -625,7 +627,7 @@ export function HypershiftUpgradeModal(props: {
                           expandable={true}
                           id="nodepoolgroup"
                         >
-                          <TableComposable
+                          <Table
                             aria-label={t('Hypershift upgrade node pools table')}
                             borders={false}
                             variant="compact"
@@ -690,7 +692,7 @@ export function HypershiftUpgradeModal(props: {
                                 )
                               })}
                             </Tbody>
-                          </TableComposable>
+                          </Table>
                         </AcmExpandableCheckbox>
                       </Td>
                       {!nodepoolsExpanded && (
@@ -707,7 +709,7 @@ export function HypershiftUpgradeModal(props: {
                   </Fragment>
                 )}
               </Tbody>
-            </TableComposable>
+            </Table>
             <ActionGroup>
               <AcmSubmit
                 key="submit-hypershift-upgrade-action"

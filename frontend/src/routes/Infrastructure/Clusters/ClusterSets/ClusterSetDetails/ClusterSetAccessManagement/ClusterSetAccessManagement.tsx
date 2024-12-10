@@ -4,17 +4,15 @@ import {
   ClusterRoleBinding,
   ClusterRoleBindingKind,
   ClusterRoleKind,
-  createResource,
-  deleteResource,
   Group,
   isGlobalClusterSet,
   listClusterRoleBindings,
   listGroups,
   listUsers,
   RbacApiVersion,
-  ResourceErrorCode,
   User,
 } from '../../../../../../resources'
+import { createResource, deleteResource, ResourceErrorCode } from '../../../../../../resources/utils'
 import {
   AcmAlertContext,
   AcmAlertGroup,
@@ -36,12 +34,12 @@ import {
   ModalVariant,
   PageSection,
   Popover,
-  SelectOption,
   Split,
   SplitItem,
   ToggleGroup,
   ToggleGroupItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -332,9 +330,9 @@ function AddUsersModal(props: {
               <div>{t('access.add.message')}</div>
               &nbsp;
               <div>
-                <div className="pf-c-form__group-label">
-                  <span className="pf-c-form__label pf-c-form__label-text">{t('access.add.userGroup')}</span>
-                  <span className="pf-c-form__label-required">*</span>
+                <div className="pf-v5-c-form__group-label">
+                  <span className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('access.add.userGroup')}</span>
+                  <span className="pf-v5-c-form__label-required">*</span>
                 </div>
                 <Split hasGutter>
                   <SplitItem>
@@ -473,7 +471,7 @@ function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
         >
           {props.useIcon ? (
             <OutlinedQuestionCircleIcon
-              style={{ width: '14px', fill: 'var(--pf-global--link--Color)', paddingTop: '2px' }}
+              style={{ width: '14px', fill: 'var(--pf-v5-global--link--Color)', paddingTop: '2px' }}
             />
           ) : (
             t('access.usersInGroup.view')

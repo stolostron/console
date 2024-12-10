@@ -9,15 +9,17 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  Select,
-  SelectOption,
-  SelectVariant,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { InfraEnvFormPage, EnvironmentStepFormValues } from '@openshift-assisted/ui-lib/cim'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import {
+  InfraEnvFormPage,
+  EnvironmentStepFormValues,
+  AgentServiceConfigK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FormikProps } from 'formik'
 
@@ -76,8 +78,11 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const { providerConnectionsValue } = useSharedSelectors()
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
   const { projects } = useProjects()
-  const { infraEnvironmentsState } = useSharedAtoms()
+  const { infraEnvironmentsState, agentServiceConfigsState } = useSharedAtoms()
   const infraEnvironments = useRecoilValue(infraEnvironmentsState)
+  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
+  const osImages = (agentServiceConfigs?.[0] as AgentServiceConfigK8sResource)?.spec.osImages || []
+
   const formRef = useRef<FormikProps<any>>(null)
 
   const providerConnections = allProviderConnections.filter((p) => {
@@ -139,13 +144,14 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
               pullSecret={currentConnection?.stringData?.['pullSecret']}
               sshPublicKey={currentConnection?.stringData?.['ssh-publickey']}
               docVersion={DOC_VERSION}
+              osImages={osImages}
             >
               <FormGroup fieldId="credentials" label={t('Infrastructure provider credentials')}>
                 <Select
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
-                  onToggle={setCredentialsOpen}
+                  onToggle={(_event, val) => setCredentialsOpen(val)}
                   onSelect={(_, v) => {
                     setCredentialsUID(v as string)
                     setCredentialsOpen(false)

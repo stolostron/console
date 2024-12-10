@@ -20,8 +20,8 @@ import {
   IResource,
   Placement,
   PlacementKind,
-  reconcileResources,
 } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'

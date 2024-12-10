@@ -40,7 +40,15 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
-import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import {
+  ClusterCount,
+  getAge,
+  getClusterCountString,
+  getEditLink,
+  getMoment,
+  getSearchLink,
+} from './helpers/resource-helper'
+import { useHubCluster } from './helpers/useHubCluster'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -51,7 +59,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const {
     applicationsState,
     channelsState,
-    namespacesState,
     placementDecisionsState,
     placementsState,
     placementRulesState,
@@ -64,7 +71,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
-  const namespaces = useRecoilValue(namespacesState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')
@@ -81,6 +87,8 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const SubscriptiontableItems: IResource[] = []
   const PlacementRuleTableItems: IResource[] = []
   const PlacementTableItems: IResource[] = []
+
+  const hubCluster = useHubCluster()
 
   useEffect(() => {
     const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
@@ -114,6 +122,29 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
     return () => canDeletePlacementRulePromise.abort()
   }, [])
 
+  const editLink = useCallback(
+    function editLink(params: { resource: any; kind: string; apiversion: string }) {
+      const { resource, kind, apiversion } = params
+      if (resource.metadata) {
+        const { name, namespace } = resource.metadata
+        if (name) {
+          const searchParams: any = {
+            properties: {
+              name,
+              namespace,
+              kind,
+              cluster: hubCluster?.metadata?.name,
+              apiversion,
+            },
+          }
+          const searchLink = getEditLink(searchParams)
+          return <Link to={searchLink}>{name}</Link>
+        }
+      }
+    },
+    [hubCluster?.metadata?.name]
+  )
+
   const getSubscriptionClusterCount = useCallback(
     function getSubscriptionClusterCount(resource: IResource, clusterCount: ClusterCount, showSearchLink?: boolean) {
       const namespace = _.get(resource, 'metadata.namespace')
@@ -132,7 +163,12 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         )
 
         if (selectedPlacementDecision) {
-          clusterCount = getPlacementDecisionClusterCount(selectedPlacementDecision, clusterCount, placementDecisions)
+          clusterCount = getPlacementDecisionClusterCount(
+            selectedPlacementDecision,
+            clusterCount,
+            placementDecisions,
+            hubCluster?.metadata?.name ?? ''
+          )
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
             const searchLink = getSearchLink({
@@ -152,7 +188,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
       }
     },
-    [placementDecisions, t]
+    [placementDecisions, t, hubCluster?.metadata?.name]
   )
 
   // Cache cell text for sorting and searching
@@ -221,7 +257,12 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       }
       case 'PlacementRule':
       case 'Placement': {
-        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions)
+        clusterCount = getPlacementDecisionClusterCount(
+          tableItem,
+          clusterCount,
+          placementDecisions,
+          hubCluster?.metadata?.name ?? ''
+        )
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
@@ -290,7 +331,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             name: item.metadata?.name,
             namespace: item.metadata?.namespace,
             kind: item.kind,
-            cluster: 'local-cluster',
+            cluster: hubCluster?.metadata?.name,
             apiversion: item.apiVersion,
           },
         }
@@ -495,12 +536,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             exportContent: (resource) => {
-              return getAge(resource, '', 'metadata.creationTimestamp')
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
             },
             sort: 'metadata.creationTimestamp',
           },
         ],
-        [getSubscriptionClusterCount, t]
+        [getSubscriptionClusterCount, t, editLink]
       ),
       items: SubscriptiontableItems,
       rowActionResolver: getRowActionResolver,
@@ -606,10 +649,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
-        [t]
+        [t, editLink]
       ),
       items: ChanneltableItems,
       rowActionResolver: getRowActionResolver,
@@ -654,10 +701,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
-        [t]
+        [t, editLink]
       ),
       items: PlacementTableItems,
       rowActionResolver: getRowActionResolver,
@@ -714,10 +765,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => getAge(resource, '', 'metadata.creationTimestamp'),
+            exportContent: (resource) => {
+              if (resource.metadata?.creationTimestamp) {
+                return getMoment(resource.metadata?.creationTimestamp).toString()
+              }
+            },
           },
         ],
-        [t]
+        [t, editLink]
       ),
       items: PlacementRuleTableItems,
       rowActionResolver: getRowActionResolver,
@@ -783,26 +838,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
     )
   }
 
-  function editLink(params: { resource: any; kind: string; apiversion: string }) {
-    const { resource, kind, apiversion } = params
-    if (resource.metadata) {
-      const { name, namespace } = resource.metadata
-      if (name) {
-        const searchParams: any = {
-          properties: {
-            name,
-            namespace,
-            kind,
-            cluster: 'local-cluster',
-            apiversion,
-          },
-        }
-        const searchLink = getEditLink(searchParams)
-        return <Link to={searchLink}>{name}</Link>
-      }
-    }
-  }
-
   return (
     <PageSection>
       <Stack hasGutter>
@@ -816,7 +851,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               table={table}
               keyFn={keyFn}
               t={t}
-              namespaces={namespaces}
               defaultToggleOption={props.defaultToggleOption}
             />
           }
@@ -829,7 +863,8 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
 export function getPlacementDecisionClusterCount(
   resource: IResource,
   clusterCount: ClusterCount,
-  placementDecisions: PlacementDecision[]
+  placementDecisions: PlacementDecision[],
+  hubClusterName: string
 ) {
   let clusterDecisions = _.get(resource, 'status.decisions')
   if (resource.kind === PlacementKind) {
@@ -845,7 +880,7 @@ export function getPlacementDecisionClusterCount(
   if (clusterDecisions) {
     clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
       const { clusterName } = clusterDecision
-      if (clusterName === 'local-cluster') {
+      if (clusterName === hubClusterName) {
         clusterCount.localPlacement = true
       } else {
         clusterCount.remoteCount++

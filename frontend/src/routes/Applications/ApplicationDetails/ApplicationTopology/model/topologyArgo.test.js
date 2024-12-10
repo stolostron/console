@@ -1583,5 +1583,5 @@ it('getArgoTopology success scenario', () => {
       },
     ],
   }
-  expect(getArgoTopology(application, argoData, managedClusters)).toEqual(result)
+  expect(getArgoTopology(application, argoData, managedClusters, 'local-cluster')).toEqual(result)
 })

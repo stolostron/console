@@ -11,17 +11,13 @@ import {
   AcmTextInput,
   Provider,
 } from '../../../../../ui-components'
-import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Checkbox, ModalVariant } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import {
-  CableDriver,
-  Cluster,
-  patchResource,
-  SubmarinerConfig,
-  submarinerConfigDefault,
-} from '../../../../../resources'
+import { CableDriver, SubmarinerConfig, submarinerConfigDefault } from '../../../../../resources'
+import { Cluster, patchResource } from '../../../../../resources/utils'
 
 export type EditSubmarinerConfigModalProps = {
   submarinerConfig?: SubmarinerConfig
@@ -86,14 +82,14 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
               placeholder={t('submariner.install.form.port.placeholder')}
               labelHelp={t('submariner.install.form.nattport.labelHelp')}
               value={nattPort}
-              onChange={(port) => setNattPort(port)}
+              onChange={(_event, port) => setNattPort(port)}
             />
 
             <Checkbox
               id="natt-enable"
               label={t('submariner.install.form.nattenable')}
               isChecked={nattEnable}
-              onChange={setNattEnable}
+              onChange={(_event, val) => setNattEnable(val)}
             />
             <AcmSelect
               id="cable-driver"
@@ -116,7 +112,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
               placeholder={t('submariner.install.form.gateways.placeholder')}
               labelHelp={t('submariner.install.form.gateways.labelHelp')}
               value={gateways}
-              onChange={(gateways) => setGateways(gateways)}
+              onChange={(_event, gateways) => setGateways(gateways)}
             />
             {props.cluster?.provider === Provider.aws && (
               <AcmTextInput
@@ -125,7 +121,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                 placeholder={t('submariner.install.form.instancetype.placeholder')}
                 labelHelp={t('submariner.install.form.instancetype.labelHelp.aws')}
                 value={awsInstanceType}
-                onChange={(instanceType) => setAwsInstanceType(instanceType)}
+                onChange={(_event, instanceType) => setAwsInstanceType(instanceType)}
               />
             )}
 

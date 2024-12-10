@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterPool, getClusterStatusType, ManagedClusterSet } from '../../../../../resources'
+import { ClusterPool, ManagedClusterSet } from '../../../../../resources'
+import { Cluster, getClusterStatusType } from '../../../../../resources/utils'
 import { AcmInlineStatusGroup, StatusType } from '../../../../../ui-components'
 import { useClusters } from './useClusters'
 

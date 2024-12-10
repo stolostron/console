@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ButtonProps, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ButtonProps, Icon, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import moment from 'moment'
@@ -274,13 +274,19 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
               case 'Compliant':
                 return (
                   <div>
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                    <Icon status="success">
+                      <CheckCircleIcon />
+                    </Icon>{' '}
+                    {t('No violations')}
                   </div>
                 )
               case 'NonCompliant':
                 return (
                   <div>
-                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" /> {t('Violations')}
+                    <Icon status="danger">
+                      <ExclamationCircleIcon />
+                    </Icon>{' '}
+                    {t('Violations')}
                   </div>
                 )
               default:
@@ -384,18 +390,48 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachinespage: {
       columns: [
-        { ...AddColumn('name', t('Name')), search: (item: any) => item.name },
-        AddColumn('status', t('Status')),
-        { ...AddColumn('cluster', t('Cluster')), search: (item: any) => item.cluster },
-        AddColumn('node', t('Node')),
-        AddColumn('ipaddress', t('IP address')),
+        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')), search: (item: any) => item.name },
+        { id: 'status', order: 2, isDefault: false, isFirstVisitChecked: true, ...AddColumn('status', t('Status')) },
         {
+          id: 'cluster',
+          order: 3,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('cluster', t('Cluster')),
+          search: (item: any) => item.cluster,
+        },
+        {
+          id: 'namespace',
+          order: 4,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('namespace', t('Namespace')),
+        },
+        { id: 'node', order: 5, isDefault: false, isFirstVisitChecked: true, ...AddColumn('node', t('Node')) },
+        {
+          id: 'ipaddress',
+          order: 6,
+          isDefault: false,
+          isFirstVisitChecked: true,
+          ...AddColumn('ipaddress', t('IP address')),
+        },
+        {
+          id: 'details-link',
+          order: 7,
+          isDefault: false,
+          isFirstVisitChecked: true,
           header: t('VM details'),
           cell: (item: any) => {
             return <CreateExternalVMLink item={item} t={t} />
           },
         },
-        AddColumn('created', t('Created')),
+        {
+          id: 'created',
+          order: 8,
+          isDefault: false,
+          isFirstVisitChecked: false,
+          ...AddColumn('created', t('Created')),
+        },
       ],
     },
   }

@@ -16,7 +16,6 @@ import {
   ArgoApplicationDefinition,
   ArgoApplicationKind,
   Channel,
-  Cluster,
   CronJobKind,
   DaemonSetKind,
   DeploymentConfigKind,
@@ -34,10 +33,10 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
+import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
-const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
   'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
 export const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
@@ -70,7 +69,7 @@ export type ClusterCount = {
   localPlacement: boolean
 }
 
-const getArgoClusterList = (
+export const getArgoClusterList = (
   resources: ArgoApplication[],
   localCluster: Cluster | undefined,
   managedClusters: Cluster[]
@@ -82,16 +81,25 @@ const getArgoClusterList = (
 
     if (
       (resource.spec.destination?.name === 'in-cluster' ||
-        resource.spec.destination?.name === localClusterStr ||
+        resource.spec.destination?.name === localCluster?.name ||
         isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
       !isRemoteArgoApp
     ) {
-      clusterSet.add(localClusterStr)
+      clusterSet.add(localCluster?.name ?? '')
     } else {
       if (isRemoteArgoApp) {
-        clusterSet.add(getArgoDestinationCluster(resource.spec.destination, managedClusters, resource.status.cluster))
+        clusterSet.add(
+          getArgoDestinationCluster(
+            resource.spec.destination,
+            managedClusters,
+            resource.status.cluster,
+            localCluster?.name
+          )
+        )
       } else {
-        clusterSet.add(getArgoDestinationCluster(resource.spec.destination, managedClusters))
+        clusterSet.add(
+          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
+        )
       }
     }
   })
@@ -106,7 +114,11 @@ export const isArgoPullModel = (resource: ApplicationSet) => {
   return false
 }
 
-export const getArgoPullModelClusterList = (resource: ApplicationSet, placementDecisions: PlacementDecision[]) => {
+export const getArgoPullModelClusterList = (
+  resource: ApplicationSet,
+  placementDecisions: PlacementDecision[],
+  hubClusterName: string
+) => {
   const clusterSet = new Set<string>()
   const placementName = _.get(
     resource,
@@ -122,7 +134,7 @@ export const getArgoPullModelClusterList = (resource: ApplicationSet, placementD
   const clusterDecisions = _.get(placementDecision, 'status.decisions', [])
 
   clusterDecisions.forEach((cd: any) => {
-    if (cd.clusterName !== 'local-cluster') {
+    if (cd.clusterName !== hubClusterName) {
       clusterSet.add(cd.clusterName)
     }
   })
@@ -189,7 +201,7 @@ export const getClusterList = (
   if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
     return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
   } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as ApplicationSet)) {
-    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions)
+    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions, localCluster?.name ?? '')
   } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
     return getArgoClusterList(
       argoApplications.filter(
@@ -205,8 +217,8 @@ export const getClusterList = (
   return [] as string[]
 }
 
-export const getClusterCount = (clusterList: string[]): ClusterCount => {
-  const localPlacement = clusterList.includes(localClusterStr)
+export const getClusterCount = (clusterList: string[], hubClusterName: string): ClusterCount => {
+  const localPlacement = clusterList.includes(hubClusterName)
   return { localPlacement, remoteCount: clusterList.length - (localPlacement ? 1 : 0) }
 }
 
@@ -453,7 +465,8 @@ export const getAppChildResources = (
   subscriptions: Subscription[],
   placementRules: PlacementRule[],
   placements: Placement[],
-  channels: Channel[]
+  channels: Channel[],
+  hubClusterName: string
 ) => {
   const subAnnotationArray = getSubscriptionsFromAnnotation(app)
   const removableSubs: any[] = []
@@ -497,7 +510,7 @@ export const getAppChildResources = (
         if (
           subHostingSubAnnotation &&
           subHostingSubAnnotation.indexOf(sa) > -1 &&
-          !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr))
+          !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(hubClusterName))
         ) {
           subChildResources.push(`${item.metadata.name} [${item.kind}]`)
         }
@@ -581,7 +594,7 @@ export const getAppChildResources = (
       const item = sub
       const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
 
-      if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr)) {
+      if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(hubClusterName)) {
         continue
       }
 

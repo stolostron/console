@@ -8,7 +8,7 @@ import * as recoil from 'recoil'
 import * as selectors from '../selectors'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as reactQuery from '@tanstack/react-query'
-import { getBackendUrl } from '../resources'
+import { getBackendUrl } from '../resources/utils'
 
 export type PluginData = {
   recoil: typeof recoil

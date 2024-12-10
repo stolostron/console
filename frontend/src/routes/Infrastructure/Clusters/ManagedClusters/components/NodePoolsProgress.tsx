@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import {
   ButtonVariant,
   ExpandableSectionToggle,
   Flex,
   FlexItem,
+  Icon,
   ProgressStep,
   Spinner,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { global_palette_green_500 as okColor } from '@patternfly/react-tokens'
 import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
 import { NodePoolK8sResource, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -22,8 +22,7 @@ import { AcmButton } from '../../../../../ui-components'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils/constants'
-import { checkPermission, rbacCreate } from '../../../../../lib/rbac-util'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../../lib/rbac-util'
 import { onToggle } from '../utils/utils'
 
 export type NodePoolStatus = {
@@ -36,7 +35,11 @@ export const getNodePoolStatus = (nodePool: NodePoolK8sResource, t: TFunction): 
   return nodePool.status?.conditions?.find(({ type }: { type: string }) => type === 'Ready')?.status === 'True'
     ? {
         type: 'ok',
-        icon: <CheckCircleIcon color={okColor.value} />,
+        icon: (
+          <Icon status="success">
+            <CheckCircleIcon />
+          </Icon>
+        ),
         text: t('Ready'),
       }
     : {
@@ -59,7 +62,11 @@ export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunctio
 
   const nodePoolsStatus: { type: string; icon: ReactNode } = {
     type: 'ok',
-    icon: <CheckCircleIcon color={okColor.value} />,
+    icon: (
+      <Icon status="success">
+        <CheckCircleIcon />
+      </Icon>
+    ),
   }
 
   for (const property in nodePoolMap) {
@@ -90,14 +97,8 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
     () => toggleOpenAddNodepoolModal(!openAddNodepoolModal),
     [openAddNodepoolModal]
   )
-  const [canCreateNodepool, setCanCreateNodepool] = useState<boolean>(false)
-  const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
+  const canCreateNodepool = useIsAnyNamespaceAuthorized(rbacCreate(NodePoolDefinition))
   const nodepoolList = nodePools.map((nodePool) => nodePool.metadata?.name) as string[]
-
-  useEffect(() => {
-    checkPermission(rbacCreate(NodePoolDefinition), setCanCreateNodepool, namespaces)
-  }, [namespaces])
 
   const addNodePoolStatusMessage = useMemo(() => {
     if (hostedCluster?.spec?.platform?.type !== HypershiftCloudPlatformType.AWS) {

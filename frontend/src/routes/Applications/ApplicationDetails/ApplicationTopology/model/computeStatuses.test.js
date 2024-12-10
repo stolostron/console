@@ -20,7 +20,9 @@ import {
   appNoChannelGreen,
   appNoChannelRed,
   appSetDeployable,
+  appSubDeployable,
   appSetDesignFalse,
+  clusterNode,
   deploymentNodeNoPodModel,
   deploymentNodeNoPODS,
   deploymentNodeNoPODSNoRes,
@@ -37,6 +39,8 @@ import {
   persVolumePendingStateGreenRes,
   persVolumePendingStatePendingRes,
   persVolumePendingStateYellow,
+  placementsDeployable,
+  placementDeployable,
   podCrash,
   ruleNodeGreen2,
   ruleNodeRed,
@@ -375,7 +379,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
     { type: 'spacer' },
   ]
   it('setSubscriptionDeployStatus with no hub error', () => {
-    expect(setSubscriptionDeployStatus(node, [], {}, t)).toEqual(response)
+    expect(setSubscriptionDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(response)
   })
 })
 
@@ -562,7 +566,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
     { type: 'spacer' },
   ]
   it('setSubscriptionDeployStatus yellow', () => {
-    expect(setSubscriptionDeployStatus(node, [], {}, t)).toEqual(response)
+    expect(setSubscriptionDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(response)
   })
 })
 
@@ -702,6 +706,22 @@ describe('computeNodeStatus', () => {
 
   it('return computeNodeStatus appSet not design', () => {
     expect(computeNodeStatus(appSetDesignFalse, true, t)).toEqual('green')
+  })
+
+  it('return computeNodeStatus appSub is deployable', () => {
+    expect(computeNodeStatus(appSubDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus placements is deployable', () => {
+    expect(computeNodeStatus(placementsDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus placement is deployable', () => {
+    expect(computeNodeStatus(placementDeployable, true, t, 'local-cluster')).toEqual('green')
+  })
+
+  it('return computeNodeStatus cluster node', () => {
+    expect(computeNodeStatus(clusterNode, true, t, 'local-cluster')).toEqual('green')
   })
 })
 
@@ -847,7 +867,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
     { type: 'spacer' },
   ]
   it('setResourceDeployStatus ansiblejob valid', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -916,7 +936,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
     },
   ]
   it('setResourceDeployStatus ansiblejob no resource found by search', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -976,7 +996,7 @@ describe('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
     },
   ]
   it('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1094,17 +1114,17 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
   ]
 
   it('setResourceDeployStatus ansiblejob no status', () => {
-    expect(setResourceDeployStatus(node, [], {}, t)).toEqual(result)
+    expect(setResourceDeployStatus(node, [], {}, t, 'local-cluster')).toEqual(result)
   })
   it('setResourceDeployStatus ansiblejob no status 1', () => {
-    expect(setResourceDeployStatus(ansibleError, [], {}, t)).toEqual(result1)
+    expect(setResourceDeployStatus(ansibleError, [], {}, t, 'local-cluster')).toEqual(result1)
   })
   it('setResourceDeployStatus ansiblejob with error status', () => {
-    expect(setResourceDeployStatus(ansibleError2, [], {}, t)).toEqual(result2)
+    expect(setResourceDeployStatus(ansibleError2, [], {}, t, 'local-cluster')).toEqual(result2)
   })
 
   it('getResourceDeployStatus ansiblejob with subscription deployed on all active clusters', () => {
-    expect(setResourceDeployStatus(ansibleErrorAllClusters, [], {}, t)).toEqual(result2)
+    expect(setResourceDeployStatus(ansibleErrorAllClusters, [], {}, t, 'local-cluster')).toEqual(result2)
   })
 })
 
@@ -1558,7 +1578,7 @@ describe('setApplicationDeployStatus 1', () => {
     },
   }
   it('setApplicationDeployStatus deployed 1', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual([])
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual([])
   })
 })
 
@@ -1590,7 +1610,7 @@ describe('setApplicationDeployStatus 2', () => {
     { type: 'spacer' },
   ]
   it('setApplicationDeployStatus deployed application as a deployable', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1640,7 +1660,7 @@ describe('setApplicationDeployStatus application', () => {
     },
   ]
   it('setApplicationDeployStatus deployed application', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1682,7 +1702,7 @@ describe('setApplicationDeployStatus no selector', () => {
     },
   ]
   it('setApplicationDeployStatus deployed no selector 2', () => {
-    expect(setApplicationDeployStatus(node, [], t)).toEqual(result)
+    expect(setApplicationDeployStatus(node, [], t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -2485,6 +2505,34 @@ describe('getPulseStatusForGenericNode resources has different length', () => {
   })
 })
 
+describe('computeNodeStatus deployable resource', () => {
+  const cmNode = {
+    type: 'configmap',
+    name: 'cm1',
+    namespace: 'ns',
+    specs: {
+      clusters: [{ status: 'ok', name: 'local-cluster' }],
+      configmapModel: {
+        'cm1-local-cluster': {
+          name: 'cm1',
+        },
+      },
+      resources: [
+        {
+          name: 'cm1',
+        },
+        {
+          name: 'cm2',
+        },
+      ],
+      resourceCount: 2,
+    },
+  }
+  it('should process application node', () => {
+    expect(computeNodeStatus(cmNode, true, t)).toEqual('yellow')
+  })
+})
+
 describe('getPulseStatusForArgoApp resources green', () => {
   const node = {
     name: 'feng-pm',
@@ -3271,7 +3319,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
       labelValue: 'Warning',
       status: 'warning',
       value:
-        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+        'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.',
     },
     {
       type: 'spacer',
@@ -3333,7 +3381,7 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains some
     },
   ]
   it('should set AppSet deploy status', () => {
-    setAppSetDeployStatus(node, details, t)
+    setAppSetDeployStatus(node, details, t, 'local-cluster')
     expect(details).toEqual(result)
   })
 })
@@ -3517,11 +3565,11 @@ describe('setAppSetDeployStatus resources local-cluster pull model contains no a
       labelValue: 'Error',
       status: 'failure',
       value:
-        'The ArgoCD pull model does not support local-cluster as a destination cluster. Filter out local-cluster from the placement resource.',
+        'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.',
     },
   ]
   it('should set AppSet deploy status', () => {
-    setAppSetDeployStatus(node, details, t)
+    setAppSetDeployStatus(node, details, t, 'local-cluster')
     expect(details).toEqual(result)
   })
 })

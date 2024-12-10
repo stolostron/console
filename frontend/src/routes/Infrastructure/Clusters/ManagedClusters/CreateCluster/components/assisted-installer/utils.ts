@@ -22,20 +22,22 @@ import {
 
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
-  patchResource,
-  createResource,
-  getResource,
   ClusterImageSet,
   listClusterImageSets,
-  listResources,
   ManagedClusterApiVersion,
   ManagedClusterKind,
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
-  createResources,
   IResource,
   ClusterCurator,
 } from '../../../../../../../resources'
+import {
+  patchResource,
+  createResource,
+  getResource,
+  listResources,
+  createResources,
+} from '../../../../../../../resources/utils'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'

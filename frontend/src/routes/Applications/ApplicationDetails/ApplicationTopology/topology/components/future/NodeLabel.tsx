@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { css } from '@patternfly/react-styles'
-import styles from '@patternfly/react-styles/css/components/Topology/topology-components'
+import styles from '@patternfly/react-topology/dist/esm/css/topology-components'
 import { truncateMiddle } from './truncate-middle'
 import NodeShadows, { NODE_SHADOW_FILTER_ID_DANGER, NODE_SHADOW_FILTER_ID_HOVER } from './NodeShadows'
 import { BadgeLocation, LabelPosition, NodeStatus } from './types'

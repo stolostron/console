@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState } from 'react'
-import { Card, CardBody, Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core'
+import { Card, CardBody } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmActionGroup } from './AcmActionGroup'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
@@ -85,7 +86,7 @@ const CreateDropdown = () => {
         <DropdownToggle
           onToggle={() => setOpen(!isOpen)}
           toggleIndicator={CaretDownIcon}
-          isPrimary
+          toggleVariant="primary"
           id="cluster-actions"
         >
           Add cluster

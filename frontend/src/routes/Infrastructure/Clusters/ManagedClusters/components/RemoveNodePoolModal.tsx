@@ -3,7 +3,8 @@
 import { ActionGroup, Button, ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { deleteResource, IRequestResult, NodePool, ResourceError, resultsSettled } from '../../../../../resources'
+import { NodePool } from '../../../../../resources'
+import { deleteResource, IRequestResult, ResourceError, resultsSettled } from '../../../../../resources/utils'
 import { AcmAlert, AcmForm, AcmModal, AcmSubmit, AcmTable, AcmTextInput } from '../../../../../ui-components'
 
 export interface IRemoveNodePoolModalProps {
@@ -73,7 +74,7 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
               label={t(`type.to.confirm`, { confirm: props.nodepool.metadata.name })}
               id="confirm"
               value={confirm}
-              onChange={setConfirm}
+              onChange={(_event, value) => setConfirm(value)}
               autoComplete="off"
             />
             <ActionGroup>

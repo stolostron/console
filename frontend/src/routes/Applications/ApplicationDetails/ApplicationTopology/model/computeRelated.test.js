@@ -3055,6 +3055,7 @@ describe('addDiagramDetails', () => {
           type: '',
         },
       ],
+      hubClusterName: 'local-cluster',
     },
   }
   it('addDiagramDetails with project', async () => {

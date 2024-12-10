@@ -1,16 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  createResource,
-  deleteResource,
   ManagedClusterSet,
   ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingDefinition,
   ManagedClusterSetBindingKind,
-  resultsSettled,
   SelfSubjectAccessReview,
 } from '../../../../../resources'
+import { createResource, deleteResource, resultsSettled } from '../../../../../resources/utils'
 import {
   AcmAlertContext,
   AcmAlertGroup,
@@ -19,7 +17,8 @@ import {
   AcmMultiSelect,
   AcmSubmit,
 } from '../../../../../ui-components'
-import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
+import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'

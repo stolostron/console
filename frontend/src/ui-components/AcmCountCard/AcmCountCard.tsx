@@ -3,23 +3,19 @@
 import { css } from '@emotion/css'
 import {
   Card,
-  CardActions,
-  CardActionsProps,
   CardBody,
   CardFooter,
   CardHeader,
-  CardHeaderMain,
   CardProps,
   CardTitle,
-  Dropdown,
-  DropdownItem,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
-  KebabToggle,
   Skeleton,
-  Title,
+  EmptyStateHeader,
+  Icon,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -73,24 +69,14 @@ type SkeletonCard = CardProps & {
 }
 
 const styles = {
-  cardHeader: css({
-    '& > div:first-child': {
-      padding: '0',
-      marginBottom: '8px',
-      overflowWrap: 'anywhere',
-      lineHeight: '19px',
-      display: '-webkit-box',
-      '-webkit-line-clamp': '3',
-      '-webkit-box-orient': 'vertical',
-      overflow: 'hidden',
-    },
-    '& > svg': {
+  icon: css({
+    '& svg': {
       width: '32px',
       height: '32px',
     },
   }),
   headerDescription: css({
-    fontSize: 'var(--pf-global--FontSize--sm)',
+    fontSize: 'var(--pf-v5-global--FontSize--sm)',
     lineHeight: '1.4',
     overflowWrap: 'anywhere',
     display: '-webkit-box',
@@ -106,7 +92,7 @@ const styles = {
     },
   }),
   countTitle: css({
-    fontSize: 'var(--pf-global--FontSize--sm)',
+    fontSize: 'var(--pf-v5-global--FontSize--sm)',
     fontWeight: 700,
   }),
   footer: css({
@@ -125,7 +111,7 @@ const getStyles = (props: AcmCountCardProps) => ({
   ...styles,
 })
 
-export function CardDropdown(props: CardDropdownProps & CardActionsProps) {
+export function CardDropdown(props: CardDropdownProps) {
   const [isOpen, setOpen] = useState<boolean>(false)
 
   return (
@@ -180,47 +166,63 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
       id={id}
       className={classes.card}
       onClick={props.onCardClick}
-      isSelectable={!!props.onCardClick}
+      isClickable={!!props.onCardClick}
       isFlat={!props.onCardClick}
       onKeyPress={props.onKeyPress}
     >
       {cardHeader && (
-        <CardHeader>
-          {cardHeader.actions && cardHeader.actions.length > 0 && (
-            <CardActions className={classes.actions}>
-              <CardDropdown dropdownItems={cardHeader.actions} />
-            </CardActions>
+        <CardHeader
+          {...(cardHeader.actions &&
+            cardHeader.actions.length > 0 && {
+              actions: {
+                className: classes.actions,
+                actions: (
+                  <>
+                    <CardDropdown dropdownItems={cardHeader.actions} />
+                  </>
+                ),
+              },
+            })}
+        >
+          {cardHeader.hasIcon && (
+            <Icon size="lg" className={classes.icon}>
+              <AcmIcon icon={AcmIconVariant.template} />
+            </Icon>
           )}
-          <CardHeaderMain className={classes.cardHeader}>
-            {cardHeader.hasIcon && <AcmIcon icon={AcmIconVariant.template} />}
-            <CardTitle>{cardHeader.title}</CardTitle>
-            <p className={classes.headerDescription}>{cardHeader.description}</p>
-          </CardHeaderMain>
+          <CardTitle>{cardHeader.title}</CardTitle>
+          <p className={classes.headerDescription}>{cardHeader.description}</p>
         </CardHeader>
       )}
       {!props.error ? (
         <CardBody className={classes.body}>
           {props.count !== 0 ? (
-            <div style={{ color: 'var(--pf-global--link--Color)', fontSize: 'var(--pf-global--FontSize--3xl)' }}>
+            <div style={{ color: 'var(--pf-v5-global--link--Color)', fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>
               {count}
             </div>
           ) : (
-            <div style={{ fontSize: 'var(--pf-global--FontSize--3xl)' }}>{count}</div>
+            <div style={{ fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>{count}</div>
           )}
           <div className={classes.countTitle}>{countTitle}</div>
         </CardBody>
       ) : (
         <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-          <EmptyStateIcon
-            style={{ fontSize: '36px', marginBottom: '1rem' }}
-            icon={ExclamationCircleIcon}
-            color={'var(--pf-global--danger-color--100)'}
+          <EmptyStateHeader
+            titleText={
+              <>
+                {t('Error occurred while getting the result count.', {
+                  searchName: cardHeader?.title,
+                })}
+              </>
+            }
+            icon={
+              <EmptyStateIcon
+                style={{ fontSize: '36px', marginBottom: '1rem' }}
+                icon={ExclamationCircleIcon}
+                color={'var(--pf-v5-global--danger-color--100)'}
+              />
+            }
+            headingLevel="h4"
           />
-          <Title size="md" headingLevel="h4">
-            {t('Error occurred while getting the result count.', {
-              searchName: cardHeader?.title,
-            })}
-          </Title>
           <EmptyStateBody>{props.errorMessage}</EmptyStateBody>
         </EmptyState>
       )}

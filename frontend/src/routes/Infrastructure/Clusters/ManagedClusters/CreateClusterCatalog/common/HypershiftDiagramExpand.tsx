@@ -19,12 +19,12 @@ export const HypershiftDiagramExpand = (props: HypershiftDiagramExpandProps) => 
 
   return (
     <ExpandableSection
-      style={{ paddingTop: '24px', backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+      style={{ paddingTop: '24px', backgroundColor: 'var(--pf-v5-global--BackgroundColor--light-300)' }}
       isExpanded={isDiagramExpanded}
-      onToggle={onDiagramToggle}
+      onToggle={(_event, isExpanded) => onDiagramToggle(isExpanded)}
       toggleContent={
         <>
-          <span style={{ color: 'var(--pf-global--Color--100)', display: 'block', textAlign: 'left' }}>
+          <span style={{ color: 'var(--pf-v5-global--Color--100)', display: 'block', textAlign: 'left' }}>
             {t('Compare control plane types')}
           </span>
           <AcmButton

@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClusterClaim,
-  ClusterClaimApiVersion,
-  ClusterClaimKind,
-  ClusterPool,
-  createResource,
-  getResource,
-} from '../../../../../resources'
+import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind, ClusterPool } from '../../../../../resources'
+import { createResource, getResource } from '../../../../../resources/utils'
 import {
   AcmAlert,
   AcmAlertContext,
@@ -139,7 +133,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                   placeholder={t('clusterClaim.name.placeholder')}
                   value={clusterClaim?.metadata?.name}
                   isRequired
-                  onChange={(name) => {
+                  onChange={(_event, name) => {
                     updateClusterClaim((clusterClaim) => {
                       clusterClaim.metadata.name = name
                     })

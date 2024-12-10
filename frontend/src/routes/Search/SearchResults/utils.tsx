@@ -6,7 +6,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, fetchRetry, getBackendUrl } from '../../../resources'
+import { Cluster, fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -248,7 +248,7 @@ export function getRowActions(
     id: 'delete',
     title: t('Delete {{resourceKind}}', { resourceKind }),
     click: (item: any) => {
-      if (item?.managedHub !== 'global-hub') {
+      if (item.managedHub && item.managedHub !== 'global-hub') {
         setDeleteExternalResource({
           open: true,
           close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),

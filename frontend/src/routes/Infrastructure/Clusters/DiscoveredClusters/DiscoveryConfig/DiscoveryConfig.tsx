@@ -8,10 +8,10 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  SelectOption,
   Text,
   TextVariants,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
@@ -23,16 +23,14 @@ import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   createDiscoveryConfig,
-  deleteResource,
   DiscoveryConfig,
   DiscoveryConfigApiVersion,
   DiscoveryConfigDefinition,
   DiscoveryConfigKind,
   replaceDiscoveryConfig,
-  ResourceError,
-  ResourceErrorCode,
   Secret,
 } from '../../../../../resources'
+import { deleteResource, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import {
   AcmAlertContext,
@@ -540,7 +538,7 @@ export function DiscoveryConfigPageContent(props: {
         <Link to={NavigationPath.discoveredClusters} id="cancelDiscoveryConfig">
           <AcmButton variant={ButtonVariant.link}>{t('discoveryConfig.cancel')}</AcmButton>
         </Link>
-        {editing ? <Divider isVertical /> : null}
+        {editing ? <Divider orientation={{ default: 'vertical' }} /> : null}
         {editing ? (
           <AcmButton
             style={{ marginLeft: '16px' }}

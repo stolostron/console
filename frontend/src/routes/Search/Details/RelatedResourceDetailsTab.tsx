@@ -11,7 +11,7 @@ import {
 import _ from 'lodash'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { getGroupFromApiVersion } from '../../../resources'
+import { getGroupFromApiVersion } from '../../../resources/utils'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'
@@ -196,8 +196,8 @@ export default function RelatedResourceDetailsTab() {
                           <span
                             style={{
                               marginLeft: '10px',
-                              fontSize: 'var(--pf-global--FontSize--sm)',
-                              color: 'var(--pf-global--Color--200)',
+                              fontSize: 'var(--pf-v5-global--FontSize--sm)',
+                              color: 'var(--pf-v5-global--Color--200)',
                             }}
                           >
                             {apiGroup}
@@ -206,8 +206,8 @@ export default function RelatedResourceDetailsTab() {
                         <div
                           style={{
                             marginLeft: '10px',
-                            fontSize: 'var(--pf-global--FontSize--sm)',
-                            color: 'var(--pf-global--Color--200)',
+                            fontSize: 'var(--pf-v5-global--FontSize--sm)',
+                            color: 'var(--pf-v5-global--Color--200)',
                           }}
                         >
                           {`(${items.length})`}

@@ -1,15 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Bullseye,
-  Card,
-  CardBody,
-  Dropdown,
-  DropdownItem,
-  DropdownToggle,
-  PageSection,
-  Switch,
-} from '@patternfly/react-core'
+import { Bullseye, Card, CardBody, PageSection, Switch } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import '@patternfly/react-core/dist/styles/base.css'
 import { Meta } from '@storybook/react'
 import { Fragment, useState } from 'react'

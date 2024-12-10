@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  createKlusterletAddonConfig,
-  createManagedCluster,
-  managedClusterSetLabel,
-  ResourceError,
-  ResourceErrorCode,
-} from '../resources'
+import { createKlusterletAddonConfig, createManagedCluster, managedClusterSetLabel } from '../resources'
+import { ResourceError, ResourceErrorCode } from '../resources/utils'
 
 export const createImportResources = (clusterName: string, clusterSet?: string) => {
   const clusterLabels: Record<string, string> = {

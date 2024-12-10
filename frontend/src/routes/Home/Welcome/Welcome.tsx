@@ -155,7 +155,6 @@ export default function WelcomePage() {
               <Card
                 isRounded
                 isLarge
-                isHoverable
                 isFullHeight
                 key={card.title}
                 style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
@@ -200,7 +199,6 @@ export default function WelcomePage() {
               <a key={card.title} href={card.link} target="_blank" style={{ color: 'inherit', textDecoration: 'none' }}>
                 <Card
                   isRounded
-                  isHoverable
                   isFullHeight
                   key={card.title}
                   style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}

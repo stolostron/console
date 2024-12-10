@@ -1,16 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Cluster,
   ClusterCuratorDefinition,
   IResource,
-  IRequestResult,
-  ResourceError,
   SecretDefinition,
   ClusterCuratorKind,
-  deleteResource,
   isAutomationTemplate,
 } from '../../../../../resources'
+import { Cluster, IRequestResult, ResourceError, deleteResource } from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
 import { Button, ButtonVariant, ModalVariant, Stack, StackItem } from '@patternfly/react-core'
@@ -20,7 +17,7 @@ import { useClusterDistributionColumn, useClusterProviderColumn } from '../Manag
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 
 const table = css({
-  '& .pf-c-toolbar': {
+  '& .pf-v5-c-toolbar': {
     display: 'none',
   },
 })

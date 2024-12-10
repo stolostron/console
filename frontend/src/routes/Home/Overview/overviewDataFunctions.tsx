@@ -5,12 +5,14 @@ import { TFunction } from 'react-i18next'
 
 import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
-import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Policy, PolicyReport, PolicyReportResults } from '../../../resources'
+import { Addon, AddonStatus, Cluster } from '../../../resources/utils'
 import { compareStrings, Provider, ProviderShortTextMap } from '../../../ui-components'
 import {
   CriticalRiskIcon,
   ImportantRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
+import { Icon } from '@patternfly/react-core'
 
 export function getFilteredClusters(allClusters: Cluster[], selectedClusterLabels: Record<string, string[]>) {
   const selectedLabelValues: number = Object.keys(selectedClusterLabels).reduce(
@@ -113,13 +115,21 @@ export function getNodeSummary(filteredClusters: Cluster[], t: TFunction<string,
       {
         title: t('Ready'),
         count: nodeSums['ready'],
-        icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+        icon: (
+          <Icon status="success">
+            <CheckCircleIcon />
+          </Icon>
+        ),
         link: nodeSums['ready'] > 0 ? `${NavigationPath.managedClusters}?nodes=healthy` : undefined,
       },
       {
         title: t('Unhealthy'),
         count: nodeSums['unhealthy'],
-        icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+        icon: (
+          <Icon status="danger">
+            <ExclamationCircleIcon />
+          </Icon>
+        ),
         link: nodeSums['unhealthy'] > 0 ? `${NavigationPath.managedClusters}?nodes=danger` : undefined,
       },
       {
@@ -251,13 +261,21 @@ export function getPolicySummary(
         title: t('With no violations'),
         count: compliant,
         link: `${NavigationPath.policies}?enabled=True&violations=no-violations`,
-        icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+        icon: (
+          <Icon status="success">
+            <CheckCircleIcon />
+          </Icon>
+        ),
       },
       {
         title: t('With violations'),
         count: noncompliant,
         link: `${NavigationPath.policies}?enabled=True&violations=violations`,
-        icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+        icon: (
+          <Icon status="danger">
+            <ExclamationCircleIcon />
+          </Icon>
+        ),
       },
       {
         title: t('No status'),

@@ -3,10 +3,10 @@
 import {
   ClusterCuratorDefinition,
   ClusterDeployment,
-  ClusterStatus,
   ManagedClusterDefinition,
   isAutomationTemplate,
 } from '../../../../../../resources'
+import { ClusterStatus } from '../../../../../../resources/utils'
 import {
   AcmButton,
   AcmDescriptionList,

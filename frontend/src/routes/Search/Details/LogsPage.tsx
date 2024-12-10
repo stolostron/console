@@ -2,16 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import {
-  Button,
-  Checkbox,
-  PageSection,
-  Select,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
-  Tooltip,
-} from '@patternfly/react-core'
+import { Button, Checkbox, PageSection, Tooltip } from '@patternfly/react-core'
+import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
@@ -19,7 +11,7 @@ import { Navigate, useLocation } from 'react-router-dom-v5-compat'
 import screenfull from 'screenfull'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { fetchRetry, getBackendUrl } from '../../../resources'
+import { fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
@@ -38,7 +30,7 @@ const toolbarContainerFullscreen = css({
   flexWrap: 'wrap',
   justifyContent: 'space-between',
   marginBottom: '5px',
-  backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+  backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
   padding: '0 10px',
 })
 const toolbarGroup = css({
@@ -59,7 +51,7 @@ const logWindowHeader = css({
   display: 'flex',
   alignItems: 'center',
   color: '#f5f5f5',
-  backgroundColor: 'var(--pf-global--BackgroundColor--dark-300)',
+  backgroundColor: 'var(--pf-v5-global--BackgroundColor--dark-300)',
   fontSize: '14px',
 })
 const logWindowHeaderItem = css({
@@ -204,7 +196,7 @@ export function LogsToolbar(props: {
           id="wrapLogLines"
           isChecked={wrapLines}
           data-checked-state={wrapLines}
-          onChange={(checked: boolean) => {
+          onChange={(_event, checked: boolean) => {
             toggleWrapLines(checked)
           }}
         />

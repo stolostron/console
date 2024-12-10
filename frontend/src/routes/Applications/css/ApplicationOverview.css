@@ -1,5 +1,5 @@
 /* Subscription cards */
-div.pf-c-card__body.sub-card-container {
+div.pf-v5-c-card__body.sub-card-container {
   padding: 2px;
   display: flex;
 }

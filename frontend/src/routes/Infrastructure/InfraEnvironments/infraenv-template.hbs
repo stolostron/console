@@ -48,6 +48,9 @@ spec:
   {{#if ai.cpuArchitecture}}
   cpuArchitecture: {{{ai.cpuArchitecture}}}
   {{/if}}
+  {{#if ai.osImageVersion}}
+  osImageVersion: '{{{ ai.osImageVersion }}}'
+  {{/if}}
 status:
   agentLabelSelector:
     matchLabels:

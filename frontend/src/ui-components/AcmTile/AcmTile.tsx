@@ -27,7 +27,7 @@ const relatedResourceContainer = css({
 })
 const relatedResourceCount = css({
   fontSize: '28px',
-  color: 'var(--pf-global--palette--blue-400)',
+  color: 'var(--pf-v5-global--palette--blue-400)',
   marginRight: '.5rem',
 })
 const relatedResourceKind = css({

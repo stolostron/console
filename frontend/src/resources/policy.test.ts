@@ -1,21 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Policy, PolicyTemplate, PolicySeverity, getPolicySeverity } from './policy'
+import { generateSeverity } from '../test-helpers/generateSeverity'
+import { Policy, PolicySeverity, getPolicySeverity } from './policy'
 
 const testPolicy = <Policy>{
   spec: {
     disabled: false,
     remediationAction: 'inform',
   },
-}
-
-export function generateSeverity(severity: string): PolicyTemplate {
-  return <PolicyTemplate>{
-    objectDefinition: {
-      spec: {
-        severity,
-      },
-    },
-  }
 }
 
 describe('getPolicySeverity', () => {

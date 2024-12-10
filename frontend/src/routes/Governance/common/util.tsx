@@ -14,13 +14,13 @@ import {
   Policy,
   PolicySet,
   PolicyAutomation,
-  reconcileResources,
   Subscription,
   IResource,
   Secret,
   REMEDIATION_ACTION,
   PolicyTemplate,
 } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
 import { IAlertContext } from '../../../ui-components'
@@ -32,7 +32,6 @@ import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 import Kubernetes from '../../../logos/kubernetes.svg'
 import KyvernoSvg from '../../../logos/kyverno.svg'
-import { uniq } from 'lodash'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -485,7 +484,7 @@ export function getPolicyRemediation(policy: Policy | undefined, propagatedPolic
   const remediationSet = new Set()
 
   templates?.forEach((template: PolicyTemplate) => {
-    const templateRemediation = template.objectDefinition.spec.remediationAction
+    const templateRemediation = template.objectDefinition.spec?.remediationAction
     remediationSet.add(templateRemediation)
     if (remediationSet.size === 3) {
       return
@@ -562,7 +561,7 @@ export function getPolicyRemediation(policy: Policy | undefined, propagatedPolic
 
 export function getPolicyTempRemediation(propagatedPolicy: Policy, template: PolicyTemplate | undefined): string {
   const propagatedRA = propagatedPolicy.spec.remediationAction
-  const objectRemediation = template?.objectDefinition.spec.remediationAction
+  const objectRemediation = template?.objectDefinition?.spec?.remediationAction
   return propagatedRA || objectRemediation || ''
 }
 
@@ -759,7 +758,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
       >
         {logo}
       </div>
-      <>{engine}</>{' '}
+      {engine}{' '}
     </div>
   )
 }
@@ -778,22 +777,4 @@ export const parseDiscoveredPolicies = (data: any): any => {
 
     return v
   })
-}
-
-// Used for collecting all kinds in Kyverno Policy
-export const collectKinds = (obj: object): string[] => {
-  let collected: string[] = []
-  const fnd = (obj: object) => {
-    for (const [k, v] of Object.entries(obj)) {
-      if (k === 'kinds') {
-        collected = collected.concat(v)
-      }
-      if (typeof v === 'object') {
-        fnd(v)
-      }
-    }
-  }
-
-  fnd(obj)
-  return uniq(collected)
 }

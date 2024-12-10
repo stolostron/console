@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../resources'
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../resources/utils'
 import {
   AcmAlert,
   AcmForm,
@@ -25,6 +25,7 @@ import {
   Stack,
   StackItem,
   Checkbox,
+  AlertProps,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -42,7 +43,7 @@ export type BulkActionModalProps<T = undefined> = {
   disableSubmitButton?: boolean
   hasExternalResources?: boolean
   hideTableAfterSubmit?: boolean
-  icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+  icon?: AlertProps['variant']
   isDanger?: boolean
   isValidError?: (error: Error) => boolean
   onCancel?: () => void
@@ -159,7 +160,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     id="delete-pull-secret"
                     label={t('Delete pull-secret resource', { count: columns?.length })}
                     isChecked={deletePullSecret}
-                    onChange={setDeletePullSecret}
+                    onChange={(_event, val) => setDeletePullSecret(val)}
                     isDisabled={progress > 0}
                   />
                 </StackItem>
@@ -170,7 +171,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     label={t(`type.to.confirm`, { confirm: confirmText })}
                     id="confirm"
                     value={confirm}
-                    onChange={setConfirm}
+                    onChange={(_event, val) => setConfirm(val)}
                     autoComplete="off"
                   />
                 </StackItem>

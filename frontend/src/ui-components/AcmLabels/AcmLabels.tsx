@@ -7,7 +7,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 
 const acmLabel = css({
   display: 'inline-grid',
-  '--pf-c-label__text--MaxWidth': 'unset',
+  '--pf-v5-c-label__text--MaxWidth': 'unset',
 })
 
 export function AcmLabels(props: {
@@ -66,12 +66,12 @@ export function AcmLabels(props: {
   return (
     <LabelGroup numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
       {labels.map((label) => (
-        <Label key={label} className={acmLabel} isTruncated>
+        <Label key={label} className={acmLabel}>
           {label}
         </Label>
       ))}
       {hidden.map((label) => (
-        <Label key={label} className={acmLabel} isTruncated>
+        <Label key={label} className={acmLabel}>
           {label}
         </Label>
       ))}

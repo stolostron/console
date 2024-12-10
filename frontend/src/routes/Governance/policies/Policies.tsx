@@ -12,10 +12,10 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  SelectOption,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -23,10 +23,9 @@ import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { checkPermission, rbacCreate, rbacPatch, rbacUpdate } from '../../../lib/rbac-util'
+import { rbacCreate, rbacUpdate, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
-  patchResource,
   Policy,
   PolicyApiVersion,
   PolicyAutomation,
@@ -34,8 +33,8 @@ import {
   PolicyDefinition,
   PolicyKind,
   PolicySet,
-  replaceResource,
 } from '../../../resources'
+import { patchResource, replaceResource } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmAlert,
@@ -118,17 +117,10 @@ export default function PoliciesPage() {
   )
   const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
   const [modal, setModal] = useState<ReactNode | undefined>()
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-  const [canPatchPolicy, setCanPatchPolicy] = useState<boolean>(false)
-  const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
-  const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-    checkPermission(rbacPatch(PolicyDefinition), setCanPatchPolicy, namespaces)
-    checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
-    checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
-  }, [namespaces])
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
+  const canPatchPolicy = useIsAnyNamespaceAuthorized(rbacPatch(PolicyDefinition))
+  const canCreatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacCreate(PolicyAutomationDefinition))
+  const canUpdatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacUpdate(PolicyAutomationDefinition))
 
   const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
     () => [
@@ -1115,7 +1107,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placement-bindings"
             isChecked={deletePlacementBindings}
-            onChange={setDeletePlacementBindings}
+            onChange={(_event, val) => setDeletePlacementBindings(val)}
             label={t('policy.modal.delete.associatedResources.placementBinding')}
           />
         </StackItem>
@@ -1134,7 +1126,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placements"
             isChecked={deletePlacements}
-            onChange={setDeletePlacements}
+            onChange={(_event, val) => setDeletePlacements(val)}
             label={t('policy.modal.delete.associatedResources.placement')}
           />
         </StackItem>
@@ -1186,13 +1178,13 @@ function policyHasDeletePruneBehavior(policy: Policy) {
   return policy.spec['policy-templates']?.some((tmpl) => {
     if (
       tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
-      !tmpl.objectDefinition.spec.pruneObjectBehavior?.startsWith('Delete')
+      !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
     ) {
       return false
     }
     return (
       policy.spec.remediationAction?.endsWith('nforce') ||
-      tmpl.objectDefinition.spec.remediationAction?.endsWith('nforce')
+      tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
     )
   })
 }

@@ -22,10 +22,10 @@ import {
   Panel,
   PanelMain,
   PanelMainBody,
-  SelectOption,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import {
   ClusterImageSetK8sResource,
   getOCPVersions,
@@ -33,17 +33,15 @@ import {
   HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
+import { NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
 import {
   createResource,
   HypershiftCloudPlatformType,
   IRequestResult,
-  NodePool,
-  NodePoolApiVersion,
-  NodePoolKind,
   patchResource,
   ResourceError,
   resultsSettled,
-} from '../../../../../resources'
+} from '../../../../../resources/utils'
 import { Fragment, useEffect, useState } from 'react'
 
 export type ListItems = {
@@ -92,7 +90,7 @@ export function NodePoolForm(props: {
           id="nodepool-name"
           label={t('Node pool name')}
           labelHelp={t('The name for the node pool.')}
-          onChange={setName}
+          onChange={(_event, value) => setName(value)}
           value={name}
           isRequired
         />
@@ -159,7 +157,7 @@ export function NodePoolForm(props: {
           id="nodepool-instanceprofile"
           label={t('Instance profile')}
           labelHelp={t('The instance profile for the node pool.')}
-          onChange={setAwsInstanceProfile}
+          onChange={(_event, value) => setAwsInstanceProfile(value)}
           isRequired
           value={awsInstanceProfile}
         />
@@ -173,7 +171,7 @@ export function NodePoolForm(props: {
           id="nodepool-instancetype"
           label={t('Instance type')}
           labelHelp={t('The instance type for the node pool.')}
-          onChange={setAwsInstanceType}
+          onChange={(_event, value) => setAwsInstanceType(value)}
           isRequired
           value={awsInstanceType}
         />
@@ -205,7 +203,7 @@ export function NodePoolForm(props: {
           id="nodepool-rootvolumetype"
           label={t('Root volume type')}
           labelHelp={t('The root volume type for the node pool.')}
-          onChange={setAwsRootVolumeType}
+          onChange={(_event, value) => setAwsRootVolumeType(value)}
           isRequired
           value={awsRootVolumeType}
         />
@@ -235,7 +233,7 @@ export function NodePoolForm(props: {
           id="nodepool-subnetid"
           label={t('Subnet ID')}
           labelHelp={t('The subnet ID for the node pool.')}
-          onChange={setAwsSubnetID}
+          onChange={(_event, value) => setAwsSubnetID(value)}
           isRequired
           value={awsSubnetID}
           isDisabled={props.refNodepool ? true : false}

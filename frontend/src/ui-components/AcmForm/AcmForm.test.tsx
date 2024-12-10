@@ -33,7 +33,13 @@ describe('AcmForm', () => {
       return (
         <AcmForm>
           <AcmAlertProvider>
-            <AcmTextInput id="input" label="Input" isRequired value={value} onChange={setValue} />
+            <AcmTextInput
+              id="input"
+              label="Input"
+              isRequired
+              value={value}
+              onChange={(_event, value) => setValue(value)}
+            />
             <AcmAlertGroup />
             <AcmSubmit
               variant={ButtonVariant.danger}

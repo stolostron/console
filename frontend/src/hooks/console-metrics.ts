@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useEffect } from 'react'
-import { getBackendUrl, postRequest } from '../resources'
+import { getBackendUrl, postRequest } from '../resources/utils'
 
 export enum Pages {
   overviewFleet = 'overview-fleet',

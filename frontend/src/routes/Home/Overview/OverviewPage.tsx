@@ -6,16 +6,14 @@ import {
   CardBody,
   CardTitle,
   Divider,
-  Dropdown,
-  DropdownItem,
   Gallery,
   GalleryItem,
-  KebabToggle,
   PageSection,
   Popover,
   Skeleton,
   TextVariants,
 } from '@patternfly/react-core'
+import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
@@ -26,7 +24,8 @@ import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predict
 import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, getUserPreference, UserPreference } from '../../../resources'
+import { getUserPreference, UserPreference } from '../../../resources'
+import { Cluster } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
 import { useAddRemediationPolicies } from '../../Governance/common/useCustom'
@@ -353,7 +352,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 {t('Worker core count')}
                 <Dropdown
                   onSelect={() => setIsOpen(!isOpen)}
-                  toggle={<KebabToggle id="toggle-kebab" onToggle={(value: boolean) => setIsOpen(value)} />}
+                  toggle={<KebabToggle id="toggle-kebab" onToggle={(_event, isOpen: boolean) => setIsOpen(isOpen)} />}
                   isOpen={isOpen}
                   isPlain
                   dropdownItems={[

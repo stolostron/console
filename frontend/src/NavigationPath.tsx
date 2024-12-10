@@ -16,7 +16,7 @@ import {
   useNavigate,
 } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from './components/LostChanges'
-import { Cluster } from './resources'
+import { Cluster } from './resources/utils'
 
 export const UNKNOWN_NAMESPACE = '~managed-cluster'
 

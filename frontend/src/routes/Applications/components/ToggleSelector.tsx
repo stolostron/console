@@ -2,15 +2,14 @@
 
 import _ from 'lodash'
 import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '../../../ui-components'
-import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import queryString from 'query-string'
-import { ApplicationDefinition, IResource, Namespace } from '../../../resources'
+import { ApplicationDefinition, IResource } from '../../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 import { NavigationPath } from '../../../NavigationPath'
-import { Fragment, useEffect, useState } from 'react'
-import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { Trans } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 
@@ -19,7 +18,6 @@ export interface IToggleSelectorProps<T = any> {
   modalProps: IDeleteResourceModalProps | { open: false }
   table: any
   t: TFunction
-  namespaces: Namespace[]
   defaultToggleOption?: ApplicationToggleOptions
 }
 export type ApplicationToggleOptions = 'subscriptions' | 'channels' | 'placements' | 'placementrules'
@@ -33,13 +31,9 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     { id: 'placements', title: t('Placements'), emptyMessage: t("You don't have any placements") },
     { id: 'placementrules', title: t('Placement rules'), emptyMessage: t("You don't have any placement rules") },
   ] as const
-  const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
+  const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
   const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
   const selectedResources = _.get(props.table, `${selectedId}`)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, props.namespaces)
-  }, [props.namespaces])
 
   return (
     <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
@@ -73,21 +67,23 @@ export function ToggleSelector(props: IToggleSelectorProps) {
             }
             title={options.find((option) => option.id === selectedId)?.emptyMessage || ''}
             action={
-              <Fragment>
+              <Stack>
                 {selectedId === 'subscriptions' && (
-                  <AcmButton
-                    isDisabled={!canCreateApplication}
-                    tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
-                    component={Link}
-                    to={NavigationPath.createApplicationSubscription}
-                  >
-                    {t('Create application')}
-                  </AcmButton>
+                  <StackItem>
+                    <AcmButton
+                      isDisabled={!canCreateApplication}
+                      tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
+                      component={Link}
+                      to={NavigationPath.createApplicationSubscription}
+                    >
+                      {t('Create application')}
+                    </AcmButton>
+                  </StackItem>
                 )}
-                <div>
+                <StackItem>
                   <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
-                </div>
-              </Fragment>
+                </StackItem>
+              </Stack>
             }
           />
         }
@@ -121,7 +117,13 @@ function QuerySwitcher(props: IQuerySwitcherInterface) {
   return (
     <ToggleGroup>
       {options.map(({ id, contents }) => (
-        <ToggleGroupItem key={id} buttonId={id} isSelected={isSelected(id)} onChange={handleChange} text={contents} />
+        <ToggleGroupItem
+          key={id}
+          buttonId={id}
+          isSelected={isSelected(id)}
+          onChange={(event, _: any) => handleChange(_, event)}
+          text={contents}
+        />
       ))}
     </ToggleGroup>
   )

@@ -42,11 +42,6 @@ import {
   Page,
   PageSection,
   Popover,
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectProps,
   Split,
   SplitItem,
   Stack,
@@ -58,16 +53,23 @@ import {
   TextInput,
   Tile,
   Title,
+  InputGroupItem,
+} from '@patternfly/react-core'
+import {
+  Select,
+  SelectGroup,
+  SelectOption,
+  SelectOptionObject,
+  SelectProps,
   Wizard,
   WizardContextConsumer,
   WizardFooter,
   WizardStep,
-} from '@patternfly/react-core'
+} from '@patternfly/react-core/deprecated'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import {
   EditIcon,
   ExclamationCircleIcon,
-  ExternalLinkAltIcon,
   EyeIcon,
   EyeSlashIcon,
   HelpIcon,
@@ -81,19 +83,19 @@ import { Fragment, ReactNode, useCallback, useContext, useRef, useState } from '
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
-import { AcmButton, AcmPageHeader } from '../ui-components'
+import { AcmPageHeader } from '../ui-components'
 import {
   FormData,
   FormDataOrderedInput,
   Input,
   InputBase,
-  LinkType,
   Section,
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
+import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -291,7 +293,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
               )}
             </Fragment>
           }
-          groupProps={{ sticky: 'top' }}
+          groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
         >
           {drawerContent()}
         </Page>
@@ -474,7 +476,7 @@ export function AcmDataFormWizard(props: {
           <SplitItem isFilled>{section.title}</SplitItem>
           {hasError && section.type === 'Section' && (
             <span style={{ paddingLeft: '8px' }}>
-              <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+              <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
             </span>
           )}
         </Split>
@@ -695,14 +697,14 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
               {wizardSummary && (
                 <span
                   style={{
-                    backgroundColor: 'var(--pf-c-wizard__nav-link--before--BackgroundColor)',
-                    borderRadius: 'var(--pf-c-wizard__nav-link--before--BorderRadius)',
-                    width: 'var(--pf-c-wizard__nav-link--before--Width)',
-                    height: 'var(--pf-c-wizard__nav-link--before--Height)',
+                    backgroundColor: 'var(--pf-v5-c-wizard__nav-link--before--BackgroundColor)',
+                    borderRadius: 'var(--pf-v5-c-wizard__nav-link--before--BorderRadius)',
+                    width: 'var(--pf-v5-c-wizard__nav-link--before--Width)',
+                    height: 'var(--pf-v5-c-wizard__nav-link--before--Height)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 'var(--pf-c-wizard__nav-link--before--FontSize)',
+                    fontSize: 'var(--pf-v5-c-wizard__nav-link--before--FontSize)',
                   }}
                 >
                   {i.toString()}
@@ -911,58 +913,18 @@ export function AcmDataFormInputs(props: {
                 fieldId={input.id}
                 label={input?.title ?? input.label}
                 isRequired={input.isRequired}
-                helperTextInvalid={
-                  <Split>
-                    <SplitItem isFilled>
-                      <span className="pf-c-form__helper-text pf-m-error">{error}</span>
-                    </SplitItem>
-                    {input.prompt && (
-                      <SplitItem>
-                        <AcmButton
-                          variant="link"
-                          style={{ paddingRight: '0px' }}
-                          onClick={input.prompt.callback}
-                          isDisabled={input.prompt.isDisabled}
-                        >
-                          {input.prompt.text}
-                          {input.prompt.linkType === LinkType.external ||
-                          input.prompt.linkType === LinkType.internalNewTab ? (
-                            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                          ) : null}
-                        </AcmButton>
-                      </SplitItem>
-                    )}
-                  </Split>
-                }
-                validated={validated}
-                helperText={
-                  <Split>
-                    <SplitItem isFilled>
-                      <span className="pf-c-form__helper-text">{input.helperText}</span>
-                    </SplitItem>
-                    {input.prompt && (
-                      <SplitItem>
-                        <AcmButton
-                          variant="link"
-                          style={{ paddingRight: '0px' }}
-                          onClick={input.prompt.callback}
-                          isDisabled={input.prompt.isDisabled}
-                        >
-                          {input.prompt.text}
-                          {input.prompt.linkType === LinkType.external ||
-                          input.prompt.linkType === LinkType.internalNewTab ? (
-                            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                          ) : null}
-                        </AcmButton>
-                      </SplitItem>
-                    )}
-                  </Split>
-                }
                 labelIcon={
                   <LabelHelp id={input.id} labelHelp={input.labelHelp} labelHelpTitle={input.labelHelpTitle} />
                 }
               >
                 <AcmDataFormInput input={input} validated={validated} isReadOnly={isReadOnly} />
+                <AcmHelperText
+                  controlId={input.id}
+                  helperText={input.helperText}
+                  validated={validated}
+                  error={error}
+                  prompt={input.prompt}
+                />
               </FormGroup>
             )}
           </Fragment>
@@ -979,16 +941,19 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
   switch (input.type) {
     case 'Text': {
       const value = input.value
-      const { isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
+      const { onChange, isHidden, isSecret, labelHelp, validation, ...textInputProps } = input
       return (
         <InputGroup>
-          <TextInput
-            {...textInputProps}
-            validated={validated}
-            spellCheck="false"
-            isReadOnly={isReadOnly}
-            type={!isSecret || showSecrets ? 'text' : 'password'}
-          />
+          <InputGroupItem isFill>
+            <TextInput
+              {...textInputProps}
+              onChange={(_event, value) => onChange(value)}
+              validated={validated}
+              spellCheck="false"
+              type={!isSecret || showSecrets ? 'text' : 'password'}
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
+            />
+          </InputGroupItem>
           {value === '' ? (
             <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
           ) : (
@@ -1004,32 +969,41 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       const { onChange, ...inputProps } = input
       return (
         <InputGroup>
-          <TextInput
-            {...inputProps}
-            validated={validated}
-            isReadOnly={isReadOnly}
-            type={'number'}
-            onChange={(value) => {
-              onChange(Number(value))
-            }}
-          />
+          <InputGroupItem isFill>
+            <TextInput
+              {...inputProps}
+              validated={validated}
+              type={'number'}
+              onChange={(_event, value) => onChange(Number(value))}
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
+            />
+          </InputGroupItem>
         </InputGroup>
       )
     }
     case 'TextArea': {
       const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
+      const { onChange, ...inputProps } = input
       return (
         <InputGroup>
           {hideSecretInput ? (
-            <TextInput {...input} value={'**************'} validated={validated} isReadOnly={true} type={'password'} />
+            <TextInput
+              {...inputProps}
+              onChange={(_event, value) => onChange(value)}
+              value={'**************'}
+              validated={validated}
+              type={'password'}
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
+            />
           ) : (
             <TextArea
-              {...input}
+              {...inputProps}
+              onChange={(_event, value) => onChange(value)}
               validated={validated}
-              isReadOnly={isReadOnly}
               spellCheck="false"
               resizeOrientation="vertical"
               autoResize={true}
+              readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           )}
 
@@ -1045,8 +1019,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       )
     }
     case 'Checkbox': {
-      const { value, ...inputProps } = input
-      return <Checkbox {...inputProps} isChecked={value} />
+      const { onChange, value, ...inputProps } = input
+      return <Checkbox {...inputProps} onChange={(_event, value) => onChange(value)} isChecked={value} />
     }
 
     case 'Select':
@@ -1420,10 +1394,10 @@ function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: str
         id={`${props.id}-label-help-button`}
         aria-label="More info"
         onClick={(e) => e.preventDefault()}
-        className="pf-c-form__group-label-help"
-      >
-        <HelpIcon noVerticalAlign />
-      </Button>
+        className="pf-v5-c-form__group-label-help"
+        style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+        icon={<HelpIcon />}
+      />
     </Popover>
   ) : (
     <Fragment />
@@ -1498,20 +1472,7 @@ function OrderedItemsInput(props: {
   const { input, isReadOnly } = props
   return (
     <Fragment>
-      <DataList
-        aria-label="draggable data list example"
-        isCompact
-        onDragFinish={(itemOrder) => {
-          if (itemOrder.length) {
-            const newItems = itemOrder
-              .map((key) => input.value.find((item, index) => key === input.keyFn(item, index)))
-              .filter((newItem) => newItem != undefined)
-            input.onChange(newItems)
-          }
-        }}
-        itemOrder={input.value.map((item, index) => input.keyFn(item, index))}
-        style={{ borderTop: '0' }}
-      >
+      <DataList aria-label="draggable data list example" isCompact style={{ borderTop: '0' }}>
         {input.value.map((item, index) => {
           const key = input.keyFn(item, index)
           return (
@@ -1565,7 +1526,7 @@ function OrderedItemsInput(props: {
       <Button
         style={{ paddingTop: input.value.length > 0 ? '12px' : '0' }}
         variant="link"
-        isSmall
+        size="sm"
         onClick={() => input.onCreate?.()}
         icon={<PlusCircleIcon />}
       >

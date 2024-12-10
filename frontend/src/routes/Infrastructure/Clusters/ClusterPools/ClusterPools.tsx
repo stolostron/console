@@ -37,16 +37,8 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
-import {
-  Cluster,
-  ClusterClaim,
-  ClusterClaimDefinition,
-  ClusterPool,
-  ClusterStatus,
-  deleteResource,
-  ResourceErrorCode,
-  isClusterPoolDeleting,
-} from '../../../../resources'
+import { ClusterClaim, ClusterClaimDefinition, ClusterPool, isClusterPoolDeleting } from '../../../../resources'
+import { Cluster, ClusterStatus, deleteResource, ResourceErrorCode } from '../../../../resources/utils'
 import { ClusterStatuses, getClusterStatusCount } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
@@ -599,7 +591,7 @@ export function ClusterPoolsTable(props: {
 }
 
 const table = css({
-  '& .pf-c-table tr > *:first-child': {
+  '& .pf-v5-c-table tr > *:first-child': {
     paddingLeft: '0 !important',
   },
 })

@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterImageSet, ClusterPool, patchResource } from '../../../../../resources'
+import { ClusterImageSet, ClusterPool } from '../../../../../resources'
+import { patchResource } from '../../../../../resources/utils'
 import { AcmSelect } from '../../../../../ui-components'
-import { SelectOption } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'

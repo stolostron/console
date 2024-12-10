@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import i18next from 'i18next'
-import { Cluster, ClusterStatus } from '../../../resources'
+import { Cluster, ClusterStatus } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { mockRequestedCounts } from '../../Applications/Application.sharedmocks'
 import {

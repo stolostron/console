@@ -5,16 +5,8 @@
 
 import { Component } from 'react'
 import PropTypes from 'prop-types'
-import {
-  Select,
-  SelectOption,
-  SelectVariant,
-  Pagination,
-  Accordion,
-  AccordionItem,
-  AccordionContent,
-  AccordionToggle,
-} from '@patternfly/react-core'
+import { Pagination, Accordion, AccordionItem, AccordionContent, AccordionToggle } from '@patternfly/react-core'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
 
 class ArgoAppDetailsContainer extends Component {
@@ -442,7 +434,7 @@ class ArgoAppDetailsContainer extends Component {
           },
         },
       }
-      const editLink = createEditLink(searchResultToNode)
+      const editLink = createEditLink(searchResultToNode, this.props.hubClusterName)
       const appResourceYaml = {
         action: 'show_resource_yaml',
         editLink,

@@ -1,21 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { useMediaQuery } from '@mui/material'
+import { Nav, NavExpandable, NavItem, NavList, Page, PageSidebar, Title, PageSidebarBody } from '@patternfly/react-core'
 import {
   ApplicationLauncher,
   ApplicationLauncherItem,
-  Nav,
-  NavExpandable,
-  NavItem,
-  NavList,
-  Page,
   PageHeader,
   PageHeaderTools,
   PageHeaderToolsGroup,
   PageHeaderToolsItem,
-  PageSidebar,
-  Title,
-} from '@patternfly/react-core'
+} from '@patternfly/react-core/deprecated'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
@@ -32,7 +26,7 @@ import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
 import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
-import { ResourceError, ResourceErrorCode } from './resources'
+import { ResourceError, ResourceErrorCode } from './resources/utils'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 
@@ -91,9 +85,9 @@ function UserDropdownToggle() {
   }, [])
 
   return (
-    <span className="pf-c-dropdown__toggle">
+    <span className="pf-v5-c-dropdown__toggle">
       <span data-test="username">{name}</span>
-      <CaretDownIcon className="pf-c-dropdown__toggle-icon" />
+      <CaretDownIcon className="pf-v5-c-dropdown__toggle-icon" />
     </span>
   )
 }
@@ -348,8 +342,8 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
   const { routes } = props
   const location = useLocation()
   return (
-    <PageSidebar
-      nav={
+    <PageSidebar>
+      <PageSidebarBody>
         <Nav>
           <NavList>
             {routes.map((route) =>
@@ -374,7 +368,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
             )}
           </NavList>
         </Nav>
-      }
-    />
+      </PageSidebarBody>
+    </PageSidebar>
   )
 }

@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
-import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { v4 as uuidv4 } from 'uuid'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources'
 import { PageSection } from '@patternfly/react-core'
@@ -13,6 +14,7 @@ export type TemplateDetailsContext = {
   clusterName: string
   template: any
   templateLoading: boolean
+  handleAuditViolation: (n: number) => void
 }
 
 export function PolicyTemplateDetailsPage() {
@@ -20,6 +22,7 @@ export function PolicyTemplateDetailsPage() {
   const [template, setTemplate] = useState<any>()
   const [templateLoading, setTemplateLoading] = useState<boolean>(true)
   const [templateError, setTemplateError] = useState<string>()
+  const [auditViolations, setAuditViolations] = useState<number | undefined>()
   const { managedClusterAddonsState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
 
@@ -88,37 +91,53 @@ export function PolicyTemplateDetailsPage() {
       // open-cluster-management-agent-addon is the default namespace but it shouldn't be used for hosted mode.
       templateNamespace = addon.spec.installNamespace ?? 'open-cluster-management-agent-addon'
     }
+  }
 
-    if (apiGroup.endsWith('gatekeeper.sh')) {
-      // Gatekeeper ConstraintTemplates and constraints are cluster-scoped.
-      templateNamespace = ''
-    } else if (!hasParentPolicy) {
-      // For discovered Policies
-      templateNamespace = urlParams.templateNamespace || clusterName
-    }
-
-    break
+  if (
+    apiGroup.endsWith('gatekeeper.sh') ||
+    kind.startsWith('ValidatingAdmissionPolicy') ||
+    (kind === 'ClusterPolicy' && apiGroup === 'kyverno.io')
+  ) {
+    // Remove the namespace for cluster scoped
+    templateNamespace = ''
+  } else if (!hasParentPolicy) {
+    // For discovered Policies
+    templateNamespace = urlParams.templateNamespace || templateNamespace
   }
 
   useEffect(() => {
     if (kind === 'IamPolicy' && apiGroup === 'policy.open-cluster-management.io') {
       setTemplateError(t('IamPolicy is no longer supported'))
+    }
+  }, [t, kind, apiGroup])
 
+  useEffect(() => {
+    if (kind === 'IamPolicy' && apiGroup === 'policy.open-cluster-management.io') {
       return
     }
 
-    let namespace = templateNamespace
-    // Apply both to ValidatingAdmissionPolicy and ValidatingAdmissionPolicyBinding
-    if (kind.startsWith('ValidatingAdmissionPolicy') || (kind === 'ClusterPolicy' && apiGroup === 'kyverno.io')) {
-      namespace = ''
-    }
+    let ignore = false
 
     // This condition is added to enhance performance and reduce ManagedClusterView errors.
-    if (templateClusterName && kind && templateName && apiVersion) {
+    if (kind && templateName && apiVersion) {
       setTemplateLoading(true)
       const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-      fireManagedClusterView(templateClusterName, kind, version, templateName, namespace)
+      const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
+
+      fireManagedClusterView(
+        templateClusterName,
+        kind,
+        version,
+        templateName,
+        templateNamespace,
+        viewName,
+        viewName !== undefined
+      )
         .then((viewResponse) => {
+          if (ignore) {
+            return
+          }
+
           if (viewResponse?.message) {
             setTemplateError(viewResponse.message)
           } else {
@@ -126,20 +145,44 @@ export function PolicyTemplateDetailsPage() {
           }
         })
         .catch((err) => {
+          if (ignore) {
+            return
+          }
+
           console.error('Error getting resource: ', err)
           setTemplateError(err)
         })
-      setTemplateLoading(false)
+        .finally(() => {
+          if (ignore) {
+            return
+          }
+
+          setTemplateLoading(false)
+        })
     }
-  }, [t, clusterName, kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
+
+    return () => {
+      ignore = true
+    }
+  }, [kind, apiGroup, apiVersion, templateName, templateClusterName, templateNamespace])
+
+  const handleAuditViolation = useCallback(
+    (policyViolation: number): void => {
+      if (['kyverno.io', 'constraints.gatekeeper.sh'].includes(apiGroup)) {
+        setAuditViolations(policyViolation)
+      }
+    },
+    [apiGroup]
+  )
 
   const templateDetailsContext = useMemo<TemplateDetailsContext>(
     () => ({
       template,
       clusterName,
       templateLoading,
+      handleAuditViolation,
     }),
-    [template, clusterName, templateLoading]
+    [template, clusterName, templateLoading, handleAuditViolation]
   )
 
   return (
@@ -151,6 +194,7 @@ export function PolicyTemplateDetailsPage() {
               policyKind={kind}
               templateName={templateName}
               compliant={template?.status?.compliant}
+              auditViolations={auditViolations}
             />
           }
           breadcrumb={

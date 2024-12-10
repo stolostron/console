@@ -46,10 +46,10 @@ class ControlPanelNumber extends React.Component {
       <React.Fragment>
         <div className="creation-view-controls-number" ref={this.setControlRef.bind(this, control)}>
           <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
-            <div className="pf-c-number-input">
-              <div className="pf-c-input-group">
+            <div className="pf-v5-c-number-input">
+              <div className="pf-v5-c-input-group">
                 <button
-                  className="pf-c-button pf-m-control"
+                  className="pf-v5-c-button pf-m-control"
                   style={{ lineHeight: '16px' }}
                   type="button"
                   aria-label={i18n('Minus')}
@@ -59,14 +59,14 @@ class ControlPanelNumber extends React.Component {
                     onChange(-1)
                   }}
                 >
-                  <span className="pf-c-number-input__icon">
+                  <span className="pf-v5-c-number-input__icon">
                     <svg height="16" width="16" role="img" viewBox="0 0 24 24">
                       <path d="M0 10h24v4h-24z" />
                     </svg>
                   </span>
                 </button>
                 <input
-                  className="pf-c-form-control"
+                  className="pf-v5-c-form-control"
                   type="number"
                   value={control.active || ''}
                   pattern="[0-9]*"
@@ -82,7 +82,7 @@ class ControlPanelNumber extends React.Component {
                   data-testid={`number-${controlId}`}
                 />
                 <button
-                  className="pf-c-button pf-m-control"
+                  className="pf-v5-c-button pf-m-control"
                   style={{ lineHeight: '16px' }}
                   type="button"
                   aria-label={i18n('Plus')}

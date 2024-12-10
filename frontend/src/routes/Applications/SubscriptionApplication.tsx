@@ -29,12 +29,11 @@ import {
   ProviderConnection,
   ProviderConnectionApiVersion,
   ProviderConnectionKind,
-  reconcileResources,
   Secret,
   SubscriptionKind,
   unpackProviderConnection,
-  updateAppResources,
 } from '../../resources'
+import { reconcileResources, updateAppResources } from '../../resources/utils'
 import './style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
@@ -46,11 +45,11 @@ import helmTemplate from './CreateApplication/Subscription/templates/templateHel
 import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
 import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
-import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { CredentialsForm } from '../Credentials/CredentialsForm'
 import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { LoadingPage } from '../../components/LoadingPage'
+import { useHubCluster } from './helpers/useHubCluster'
 
 interface CreationStatus {
   status: string
@@ -196,11 +195,8 @@ export function CreateSubscriptionApplication(
     (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
   )
 
-  const clusters = useAllClusters()
-  const localCluster = clusters.find(
-    (cluster) => cluster.name === 'local-cluster' && cluster.isManaged && cluster.status === 'ready'
-  )
-  const isLocalCluster = localCluster ? true : false
+  const hubCluster = useHubCluster(true)
+  const isLocalCluster = hubCluster ? true : false
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -466,6 +462,8 @@ export function CreateSubscriptionApplication(
         loadExistingChannels('objectbucket')
         break
     }
+
+    control.hubClusterName = hubCluster ? hubCluster.metadata?.name : ''
   }
 
   useEffect(() => {

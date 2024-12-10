@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Slide } from '@mui/material'
-import { Alert, AlertActionCloseButton, AlertGroup, Flex } from '@patternfly/react-core'
+import { Alert, AlertActionCloseButton, AlertGroup, AlertProps, Flex } from '@patternfly/react-core'
 import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 import { AcmAlertInfo, IAlertContext } from './AcmAlert'
 
@@ -97,7 +97,7 @@ export function AcmToast(props: {
   title?: ReactNode
   subtitle?: ReactNode
   message?: ReactNode
-  variant?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+  variant?: AlertProps['variant']
   style?: CSSProperties
   className?: string
   autoClose?: boolean

@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Title, Tooltip } from '@patternfly/react-core'
+import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import moment from 'moment'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
-import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
+import { Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
+import { getGroupFromApiVersion } from '../../../../resources/utils'
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
@@ -86,14 +87,9 @@ export default function PolicyDetailsResults() {
   const { t } = useTranslation()
   const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
   const { policy } = usePolicyDetailsContext()
-  const { namespacesState, policiesState } = useSharedAtoms()
+  const { policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
-  const namespaces = useRecoilValue(namespacesState)
-  const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-  }, [namespaces])
+  const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
 
   const policiesDeployedOnCluster: ResultsTableData[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''
@@ -172,13 +168,18 @@ export default function PolicyDetailsResults() {
             case 'compliant':
               return (
                 <div>
-                  <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('No violations')}
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>{' '}
+                  {t('No violations')}
                 </div>
               )
             case 'noncompliant':
               return (
                 <div style={{ width: 'max-content' }}>
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                   <div style={{ display: 'inline' }}> {t('Violations')}</div>
                   {message.includes('found but not as specified') && <ViewDiffApiCall {...{ item }} />}
                 </div>
@@ -186,13 +187,19 @@ export default function PolicyDetailsResults() {
             case 'pending':
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('Pending')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('Pending')}
                 </div>
               )
             default:
               return (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>{' '}
+                  {t('No status')}
                 </div>
               )
           }

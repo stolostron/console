@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import {
-  hasInformOnlyPolicies,
-  getPolicyRemediation,
-  resolveExternalStatus,
-  parseStringMap,
-  collectKinds,
-} from './util'
+import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus, parseStringMap } from './util'
 import { PolicyTableItem } from '../policies/Policies'
 import { Policy, PolicyTemplate, REMEDIATION_ACTION } from '../../../resources'
 import { cloneDeep } from 'lodash'
@@ -905,54 +899,5 @@ describe('Test parseStringValue', () => {
         'cluster-namespace': 'managed3',
       })
     )
-  })
-})
-
-describe('Test collectKinds', () => {
-  const mock = {
-    rules: [
-      {
-        name: 'require-team-label',
-        match: {
-          any: [
-            {
-              resources: {
-                kinds: ['Pod', 'Certificate'],
-              },
-            },
-          ],
-        },
-      },
-      {
-        name: 'require-team-label',
-        match: {
-          all: [
-            {
-              resources: {
-                kinds: ['ConfigurationPolicy'],
-              },
-            },
-            {
-              resources: {
-                kinds: ['ConfigMap'],
-              },
-            },
-          ],
-        },
-      },
-      {
-        name: 'require-team-label',
-        match: {
-          resources: {
-            resources: {
-              kinds: ['ConfigurationPolicy'],
-            },
-          },
-        },
-      },
-    ],
-  }
-  test('findKey should correctly find kinds values in Kyverno', () => {
-    expect(collectKinds(mock)).toMatchObject(['Pod', 'Certificate', 'ConfigurationPolicy', 'ConfigMap'])
   })
 })

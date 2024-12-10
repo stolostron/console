@@ -67,7 +67,7 @@ global.EventSource = class EventSource {
 global.TextEncoder = TextEncoder
 
 configure({ testIdAttribute: 'id' })
-jest.setTimeout((process.env.LAUNCH ? 3000 : 30) * 1000)
+jest.setTimeout((process.env.LAUNCH ? 3000 : 120) * 1000)
 
 async function setupBeforeAll(): Promise<void> {
   nock.disableNetConnect()

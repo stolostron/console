@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { TFunction } from 'react-i18next'
 import { NavigateFunction } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster } from '../../../resources'
+import { Cluster } from '../../../resources/utils'
 import { IAcmRowAction, IAlertContext } from '../../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,

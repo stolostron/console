@@ -5,7 +5,7 @@ import { Flex, FlexItem, Divider } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 
 const group = css({
-  '& > div > a, & .pf-c-dropdown__toggle.pf-m-plain': {
+  '& > div > a, & .pf-v5-c-dropdown__toggle.pf-m-plain': {
     paddingLeft: 0,
     paddingRight: 0,
   },
@@ -22,7 +22,7 @@ export function AcmActionGroup(props: { children: React.ReactNode[] }) {
           } else {
             return (
               <Fragment key={i}>
-                <Divider isVertical />
+                <Divider orientation={{ default: 'vertical' }} />
                 <FlexItem>{child}</FlexItem>
               </Fragment>
             )

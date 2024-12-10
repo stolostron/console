@@ -12,14 +12,15 @@ import {
   Text,
   TextContent,
   TextVariants,
-  Title,
+  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { CogIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { IResource, listResources, SavedSearch } from '../../../../resources'
+import { IResource, SavedSearch } from '../../../../resources'
+import { listResources } from '../../../../resources/utils'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { convertStringToQuery } from '../../../Search/search-helper'
 import { searchClient } from '../../../Search/search-sdk/search-client'
@@ -115,12 +116,15 @@ export default function SavedSearchesCard(
             <EmptyStateIcon
               style={{ fontSize: '36px', marginBottom: '1rem' }}
               icon={ExclamationCircleIcon}
-              color={'var(--pf-global--danger-color--100)'}
+              color={'var(--pf-v5-global--danger-color--100)'}
             />
           )}
-          <Title size="md" headingLevel="h4">
-            {isSearchDisabled ? searchDisabledTitle : t('Error occurred while getting the result count.')}
-          </Title>
+          <EmptyStateHeader
+            titleText={
+              <>{isSearchDisabled ? searchDisabledTitle : t('Error occurred while getting the result count.')}</>
+            }
+            headingLevel="h4"
+          />
           <EmptyStateBody>{isSearchDisabled ? searchDisabledMessage : error.message}</EmptyStateBody>
         </EmptyState>
       </Card>
@@ -130,9 +134,7 @@ export default function SavedSearchesCard(
       <Card isRounded>
         <CardBody>
           <EmptyState>
-            <Title size="lg" headingLevel="h4">
-              {t('Personalize this view')}
-            </Title>
+            <EmptyStateHeader titleText={<>{t('Personalize this view')}</>} headingLevel="h4" />
             <EmptyStateBody>
               <span style={{ display: 'flex', flexDirection: 'column' }}>
                 {t('Use search to query your resources. When you save a search query, this view will show your data.')}

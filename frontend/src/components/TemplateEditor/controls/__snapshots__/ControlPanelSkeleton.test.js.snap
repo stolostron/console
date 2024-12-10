@@ -12,11 +12,11 @@ exports[`ControlPanelSkeleton component renders as expected 1`] = `
       creation.app.name
     </label>
     <div
-      class="pf-c-skeleton"
+      class="pf-v5-c-skeleton"
       id="controlId"
     >
       <span
-        class="pf-u-screen-reader"
+        class="pf-v5-screen-reader"
       />
     </div>
   </div>

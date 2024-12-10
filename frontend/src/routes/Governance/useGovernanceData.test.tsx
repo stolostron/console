@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { waitFor } from '@testing-library/react'
 import { Policy } from '../../resources/policy'
-import { generateSeverity } from '../../resources/policy.test'
+import { generateSeverity } from '../../test-helpers/generateSeverity'
 import { useGovernanceData, IPolicyRisks, IPolicyGroup, IGovernanceData } from './useGovernanceData'
 
 function generatePolicy(annotation: string, groupNames: string, severity: string, clusters: string[]): Policy {

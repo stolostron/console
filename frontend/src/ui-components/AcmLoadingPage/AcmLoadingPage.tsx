@@ -5,9 +5,11 @@ import {
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
-  EmptyStateSecondaryActions,
   Spinner,
   Title,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
 
@@ -24,15 +26,17 @@ export function AcmLoadingPage(props: {
   const { t } = useTranslation()
   return (
     <EmptyState>
-      <EmptyStateIcon variant="container" component={Spinner} />
-      <div className={max}>
-        <Title size="lg" headingLevel="h4">
-          {props.title ?? t('Loading')}
-        </Title>
-        <EmptyStateBody>{props.message}</EmptyStateBody>
-      </div>
-      {props.primaryAction}
-      <EmptyStateSecondaryActions>{props.secondaryActions}</EmptyStateSecondaryActions>
+      <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
+      <EmptyStateFooter>
+        <div className={max}>
+          <Title size="lg" headingLevel="h4">
+            {props.title ?? t('Loading')}
+          </Title>
+          <EmptyStateBody>{props.message}</EmptyStateBody>
+        </div>
+        {props.primaryAction}
+        <EmptyStateActions>{props.secondaryActions}</EmptyStateActions>
+      </EmptyStateFooter>
     </EmptyState>
   )
 }

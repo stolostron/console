@@ -150,17 +150,24 @@ export function grouping(): {
 
     if (kyvernoPolicyReports.length > 0) {
       kyvernoPolicyReports.forEach((cr) => {
-        const kindNameViolation = cr._policyViolationCounts?.split('=') ?? []
-        kyvernoViolationMap[kindNameViolation[0]] =
-          (kyvernoViolationMap[kindNameViolation[0]] ?? 0) + Number(kindNameViolation[1])
+        // NOSONAR
+        for (const violationMapValue of ((cr?._policyViolationCounts ?? '') as string).split('; ')) {
+          const nsPolicyNameViolation = violationMapValue.split('=') ?? []
+          const clusterNsPolicyName = cr.cluster + '/' + nsPolicyNameViolation[0]
+          kyvernoViolationMap[clusterNsPolicyName] =
+            (kyvernoViolationMap[clusterNsPolicyName] ?? 0) + Number(nsPolicyNameViolation[1])
+        }
       })
     }
 
     const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
       ?.filter(
-        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper.
+        // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper and Kyverno.
         (policy: any): any =>
-          !(policy.kind === 'ValidatingAdmissionPolicyBinding' && policy['_ownedByGatekeeper'] === 'true')
+          !(
+            policy.kind === 'ValidatingAdmissionPolicyBinding' &&
+            ['Gatekeeper', 'Kyverno'].includes(policy?._ownedBy ?? '')
+          )
       )
       .map((policy: any): any => {
         const sourceAdded = {
@@ -177,7 +184,8 @@ export function grouping(): {
         }
         // Add violation to kyverno
         if (policy.apigroup === 'kyverno.io') {
-          const key = policy.namespace ? policy.namespace + '/' + policy.name : policy.name
+          const nsName = policy.namespace ? policy.namespace + '/' + policy.name : policy.name
+          const key = policy.cluster + '/' + nsName
           return {
             ...sourceAdded,
             responseAction: policy.validationFailureAction,
@@ -200,6 +208,7 @@ export function grouping(): {
 
     const keys = Object.keys(groupByNameKindGroup)
 
+    // NOSONAR
     return keys.map((nameKindGroup) => {
       const group = groupByNameKindGroup[nameKindGroup] || []
 

@@ -84,7 +84,7 @@ export const addPropertyToList = (list, data) => {
   return list
 }
 
-export const createEditLink = (node, overrideKind, overrideCluster, overrideApiVersion) => {
+export const createEditLink = (node, hubClusterName, overrideKind, overrideCluster, overrideApiVersion) => {
   let kind = overrideKind || _.get(node, 'specs.raw.kind') || _.get(node, 'kind')
   const apigroup = _.get(node, 'apigroup')
   const apiversion = _.get(node, 'apiversion')
@@ -105,40 +105,16 @@ export const createEditLink = (node, overrideKind, overrideCluster, overrideApiV
     kind = 'SubscriptionStatus'
   }
 
-  return getEditLink({
-    name: _.get(node, 'name'),
-    namespace: _.get(node, 'namespace'),
-    kind: kind,
-    apiVersion,
-    cluster: cluster ? cluster : undefined,
-  })
-}
-
-export const createDeployableYamlLink = (node, details, t) => {
-  //returns yaml for the deployable
-  if (
-    details &&
-    node &&
-    R.includes(_.get(node, 'type', ''), ['application', 'placements', 'subscription']) &&
-    node.specs.isDesign // only for top-level resources
-  ) {
-    const editLink = createEditLink(node)
-    if (editLink && isSearchAvailable()) {
-      details.push({
-        type: 'link',
-        value: {
-          label: t('View resource YAML'),
-          data: {
-            action: showResourceYaml,
-            cluster: 'local-cluster',
-            editLink: editLink,
-          },
-        },
-      })
-    }
-  }
-
-  return details
+  return getEditLink(
+    {
+      name: _.get(node, 'name'),
+      namespace: _.get(node, 'namespace'),
+      kind: kind,
+      apiVersion,
+      cluster: cluster ? cluster : undefined,
+    },
+    hubClusterName
+  )
 }
 
 export const inflateKubeValue = (value) => {
@@ -654,7 +630,7 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details, t) =
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const processResourceActionLink = (resource, toggleLoading, t) => {
+export const processResourceActionLink = (resource, toggleLoading, t, hubClusterName) => {
   let targetLink = ''
   const linkPath = R.pathOr('', ['action'])(resource)
   const { name, namespace, editLink, kind, cluster } = resource //routeObject
@@ -681,12 +657,12 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
       targetLink = `/multicloud/search?filters={"textsearch":"${kindData}${nsData} ${nameData}"}`
       break
     case 'open_argo_editor': {
-      openArgoCDEditor(cluster, namespace, name, toggleLoading, t) // the editor opens here
+      openArgoCDEditor(cluster, namespace, name, toggleLoading, t, hubClusterName) // the editor opens here
       break
     }
     case 'open_route_url': {
       const routeObject = R.pathOr('', ['routeObject'])(resource)
-      openRouteURL(routeObject, toggleLoading) // the route url opens here
+      openRouteURL(routeObject, toggleLoading, hubClusterName) // the route url opens here
       break
     }
     default:

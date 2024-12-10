@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EmptyState, EmptyStateIcon, PageSection, Spinner, Title } from '@patternfly/react-core'
+import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
 import {
   AcmEmptyState,
   compareStrings,
@@ -156,12 +156,20 @@ export default function DiscoveredPolicies() {
             label: t('Violations'),
             value: 'violations',
           },
+          {
+            label: t('No status'),
+            value: '-',
+          },
         ],
         tableFilterFn: (selectedValues, item) => {
-          const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
+          // For items with no violations
+          if (selectedValues.includes('-') && clusterCell(item) === '-') return true
 
+          const { noncompliant, compliant, unknown, pending } = policyViolationSummary(item.policies)
           const total = noncompliant + compliant + unknown + pending
 
+          // This applies to cases where a violation is not specified, such as with "vapb"
+          if (noncompliant == 0 && compliant == 0 && unknown == 0 && pending == 0) return false
           if (selectedValues.includes('no-violations') && total == compliant) {
             return true
           } else if (selectedValues.includes('violations') && noncompliant > 0) return true
@@ -176,10 +184,22 @@ export default function DiscoveredPolicies() {
           { label: 'ConfigurationPolicy', value: 'ConfigurationPolicy' },
           { label: 'Gatekeeper constraint', value: 'Gatekeeper' },
           { label: 'OperatorPolicy', value: 'OperatorPolicy' },
+          { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
+          { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
+          { label: 'Kyverno Policy', value: 'Policy' },
         ],
         tableFilterFn: (selectedValues, item) => {
           if (item.apigroup === 'constraints.gatekeeper.sh') {
             return selectedValues.includes('Gatekeeper')
+          }
+
+          if (item.apigroup === 'kyverno.io') {
+            if (selectedValues.includes('ClusterPolicy') && item.kind === 'ClusterPolicy') {
+              return true
+            }
+            if (selectedValues.includes('Policy') && item.kind === 'Policy') {
+              return true
+            }
           }
 
           return selectedValues.includes(item.kind)
@@ -203,10 +223,7 @@ export default function DiscoveredPolicies() {
     return (
       <PageSection>
         <EmptyState>
-          <EmptyStateIcon variant="container" component={Spinner} />
-          <Title size="lg" headingLevel="h4">
-            Loading
-          </Title>
+          <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
         </EmptyState>
       </PageSection>
     )

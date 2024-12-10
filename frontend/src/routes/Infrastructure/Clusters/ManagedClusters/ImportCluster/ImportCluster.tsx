@@ -3,13 +3,12 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-  SelectOption,
-  SelectVariant,
   Split,
   SplitItem,
   Switch,
   Text,
 } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,
@@ -33,7 +32,6 @@ import {
   ClusterCuratorKind,
   createClusterCurator,
   createProject,
-  createResource,
   KlusterletAddonConfig,
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
@@ -43,13 +41,12 @@ import {
   managedClusterSetLabel,
   ProviderConnection,
   ProviderConnectionStringData,
-  ResourceError,
-  ResourceErrorCode,
   Secret,
   SecretApiVersion,
   SecretDefinition,
   SecretKind,
 } from '../../../../../resources'
+import { createResource, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import schema from './schema.json'
 import kac from './kac.json'

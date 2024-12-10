@@ -9,9 +9,8 @@ import {
   Modal,
   ModalVariant,
   Radio,
-  SelectOption,
-  SelectVariant,
 } from '@patternfly/react-core'
+import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
@@ -30,16 +29,18 @@ import {
   ClusterCuratorAnsibleJob,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
-  createResource,
   getClusterCurator,
   IResource,
-  listAnsibleTowerInventories,
-  listAnsibleTowerJobs,
   ProviderConnection,
-  replaceResource,
-  ResourceErrorCode,
   Secret,
 } from '../../../resources'
+import {
+  createResource,
+  listAnsibleTowerInventories,
+  listAnsibleTowerJobs,
+  replaceResource,
+  ResourceErrorCode,
+} from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import {
   AcmAnsibleTagsInput,

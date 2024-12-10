@@ -9,7 +9,8 @@ import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, PolicyKind, reconcileResources } from '../../../resources'
+import { IResource, PolicyKind } from '../../../resources'
+import { reconcileResources } from '../../../resources/utils'
 import { AcmToastContext } from '../../../ui-components'
 import {
   getPlacementBindingsForResource,

@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, ButtonVariant, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
+import { Alert, ButtonVariant, Icon, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import moment from 'moment'
-import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
+import { rbacCreate, rbacUpdate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
   Placement,
@@ -46,7 +46,6 @@ export default function PolicyDetailsOverview() {
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const {
-    namespacesState,
     placementBindingsState,
     placementDecisionsState,
     placementRulesState,
@@ -60,7 +59,6 @@ export default function PolicyDetailsOverview() {
   const placementRules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyAutomations = useRecoilValue(policyAutomationState)
-  const namespaces = useRecoilValue(namespacesState)
   const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
@@ -74,13 +72,8 @@ export default function PolicyDetailsOverview() {
     (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
   )
   const [modal, setModal] = useState<ReactNode | undefined>()
-  const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
-  const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
-
-  useEffect(() => {
-    checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
-    checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
-  }, [namespaces])
+  const canCreatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacCreate(PolicyAutomationDefinition))
+  const canUpdatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacUpdate(PolicyAutomationDefinition))
 
   const { leftItems, rightItems } = useMemo(() => {
     const unauthorizedMessage = !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
@@ -112,7 +105,7 @@ export default function PolicyDetailsOverview() {
             <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
           ) : (
             <div>
-              <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+              <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
             </div>
           ),
       },
@@ -318,19 +311,31 @@ export default function PolicyDetailsOverview() {
           const statusList = []
           for (const status of Object.keys(clusterList)) {
             let statusMsg = t(' No status: ')
-            let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+            let icon = <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
             switch (status) {
               case 'noncompliant':
                 statusMsg = t(' Violations: ')
-                icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                icon = (
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
+                )
                 break
               case 'compliant':
                 statusMsg = t(' No violations: ')
-                icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                icon = (
+                  <Icon status="success">
+                    <CheckCircleIcon />
+                  </Icon>
+                )
                 break
               case 'pending':
                 statusMsg = ' Pending: '
-                icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                icon = (
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
+                )
                 break
             }
             statusList.push(
@@ -382,7 +387,7 @@ export default function PolicyDetailsOverview() {
           if (statusList.length === 0) {
             return (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {t('No status')}
+                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
               </div>
             )
           }

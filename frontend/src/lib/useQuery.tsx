@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources'
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources/utils'
 
 export function useQuery<T>(
   restFunc: () => IRequestResult<T | T[]> | undefined,

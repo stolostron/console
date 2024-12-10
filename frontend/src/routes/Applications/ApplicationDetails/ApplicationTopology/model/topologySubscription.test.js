@@ -12644,7 +12644,7 @@ describe('getSubscriptionTopology', () => {
     ],
   }
   it('returns subscriptionTopology', () => {
-    expect(getSubscriptionTopology(application, managedClusters, undefined)).toEqual(result)
+    expect(getSubscriptionTopology(application, managedClusters, undefined, 'local-cluster')).toEqual(result)
   })
 })
 

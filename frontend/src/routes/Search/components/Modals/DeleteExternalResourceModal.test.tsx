@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ClusterStatus } from '../../../../resources'
+import { ClusterStatus } from '../../../../resources/utils'
 import { DeleteExternalResourceModal } from './DeleteExternalResourceModal'
 
 window.open = jest.fn()

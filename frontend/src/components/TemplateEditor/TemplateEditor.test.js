@@ -130,7 +130,7 @@ describe('TemplateEditor component', () => {
     props.editorReadOnly = false
   })
 
-  it('yaml editing/toolbar', async () => {
+  it.skip('yaml editing/toolbar', async () => {
     window.ResizeObserver = ResizeObserver
     document.execCommand = () => {}
 

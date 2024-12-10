@@ -20,7 +20,7 @@ export function useFetchVapb() {
   })
   useEffect(() => {
     if (
-      apiGroup === 'constraints.gatekeeper.sh' &&
+      ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup) &&
       clusterName &&
       name &&
       template &&
@@ -30,6 +30,8 @@ export function useFetchVapb() {
       !data &&
       !error
     ) {
+      const vapbName = apiGroup === 'constraints.gatekeeper.sh' ? `gatekeeper-${name}` : name + '-binding'
+
       getVapb({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
@@ -46,7 +48,7 @@ export function useFetchVapb() {
                 },
                 {
                   property: 'name',
-                  values: [`gatekeeper-${name}`],
+                  values: [vapbName],
                 },
                 {
                   property: 'cluster',
@@ -64,6 +66,80 @@ export function useFetchVapb() {
   return { vapbItems: data?.searchResult?.[0]?.items, loading, err: error?.message }
 }
 
+export function useFetchVapbParamRefs() {
+  const urlParams = useParams()
+  const name = urlParams.templateName ?? '-'
+  const kind = urlParams.kind ?? '-'
+  const apiGroup = urlParams.apiGroup ?? ''
+  const { clusterName, template, templateLoading } = useTemplateDetailsContext()
+  const [getVapb, { loading, error, data }] = useSearchResultRelatedItemsLazyQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+  })
+  const [filtered, setFiltered] = useState<any[]>()
+
+  useEffect(() => {
+    if (
+      apiGroup === 'admissionregistration.k8s.io' &&
+      kind === 'ValidatingAdmissionPolicyBinding' &&
+      clusterName &&
+      name &&
+      template &&
+      !templateLoading &&
+      // These conditions reduce renders and hitting fireManagedClusterView
+      !loading &&
+      !error &&
+      !data
+    ) {
+      getVapb({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+        variables: {
+          input: [
+            {
+              filters: [
+                {
+                  property: 'apigroup',
+                  values: [apiGroup],
+                },
+                {
+                  property: 'kind',
+                  values: [kind],
+                },
+                {
+                  property: 'name',
+                  values: [name],
+                },
+                {
+                  property: 'cluster',
+                  values: [clusterName],
+                },
+              ],
+              limit: 10000,
+            },
+          ],
+        },
+      })
+    }
+
+    if (apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding' && data) {
+      setFiltered(
+        data?.searchResult?.[0]?.related
+          ?.map((related) => related?.items)
+          .flat()
+          .filter((item) => !['ValidatingAdmissionPolicy', 'Cluster'].includes(item.kind))
+      )
+    }
+  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getVapb])
+
+  return useMemo(
+    () => ({
+      loading,
+      err: error?.message,
+      relatedItems: filtered,
+    }),
+    [loading, error, filtered]
+  )
+}
+
 export function useFetchKyvernoRelated() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
@@ -75,6 +151,8 @@ export function useFetchKyvernoRelated() {
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
   const [filtered, setFiltered] = useState<any[]>()
+  const [violationNum, setViolationNum] = useState<number | undefined>()
+
   useEffect(() => {
     if (
       apiGroup === 'kyverno.io' &&
@@ -131,13 +209,16 @@ export function useFetchKyvernoRelated() {
 
   useEffect(() => {
     if (data) {
+      setViolationNum(0)
+
       // Attach a PolicyReport to a related resource.
       const reportMap = data.searchResult?.[0]?.related
         ?.filter((r) => ['PolicyReport', 'ClusterPolicyReport'].includes(r?.kind ?? ''))
         .map((r) => r?.items)
         .flat()
-        .reduce((accumulator, currentValue) => ({ ...accumulator, [currentValue.name]: currentValue }), {})
+        ?.reduce((accumulator, currentValue) => ({ ...accumulator, [currentValue.name]: currentValue }), {})
 
+      let violationAccumulator = 0
       setFiltered(
         data?.searchResult?.[0]?.related
           ?.map((related) => related?.items)
@@ -155,7 +236,9 @@ export function useFetchKyvernoRelated() {
                 continue
               }
 
-              if (Number(violationMapValue.split('=', 2)[1]) > 0) {
+              const violationNumber = Number(violationMapValue.split('=', 2)[1])
+              if (violationNumber > 0) {
+                violationAccumulator = violationAccumulator + violationNumber
                 compliant = 'noncompliant'
               } else {
                 compliant = 'compliant'
@@ -164,9 +247,12 @@ export function useFetchKyvernoRelated() {
               break
             }
 
-            return { ...item, policyReport, compliant }
-          })
+            return { ...item, compliant, policyReport }
+          }) // Filter out unrelated resources which don't have policyReport
+          .filter((item: any) => item.policyReport)
       )
+
+      setViolationNum(violationAccumulator)
     }
   }, [data, name, namespace])
 
@@ -175,7 +261,8 @@ export function useFetchKyvernoRelated() {
       loading,
       err: error?.message,
       relatedItems: filtered,
+      violationNum,
     }),
-    [loading, error, filtered]
+    [loading, error, filtered, violationNum]
   )
 }
