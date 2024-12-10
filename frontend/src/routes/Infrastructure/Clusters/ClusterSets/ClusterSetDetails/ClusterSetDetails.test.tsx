@@ -1819,7 +1819,7 @@ describe('ClusterSetDetails page', () => {
       nockSCRoksSatelite,
       nockBroker,
     ])
-  }, 90000)
+  })
   test('can uninstall submariner add-ons', async () => {
     await waitForText(mockManagedClusterSet.metadata.name!, true)
     await waitForText('Details')
