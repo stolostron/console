@@ -55,6 +55,7 @@ import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { preventDefaultSubmissionWithListener } from '../../../resources/utils'
 
 export function PolicyWizard(props: {
   title: string
@@ -85,6 +86,8 @@ export function PolicyWizard(props: {
       spec: { disabled: false },
     },
   ]
+
+  useEffect(preventDefaultSubmissionWithListener, [])
 
   return (
     <WizardPage

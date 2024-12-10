@@ -50,6 +50,7 @@ import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
 import { AcmAlert } from '../../ui-components'
+import { preventDefaultSubmissionWithListener } from '../../resources/utils'
 
 export interface Channel {
   metadata?: {
@@ -155,6 +156,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
+  useEffect(preventDefaultSubmissionWithListener, [])
 
   const hubCluster = useMemo(
     () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),

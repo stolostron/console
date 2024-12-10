@@ -17,6 +17,20 @@ export function getLatest<T>(items: T[], key: string) {
   })
 }
 
+export const preventDefaultSubmissionWithListener = () => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+    }
+  }
+  document.addEventListener('keydown', handleKeyDown)
+
+  // Cleanup
+  return () => {
+    document.removeEventListener('keydown', handleKeyDown)
+  }
+}
+
 /* istanbul ignore next */
 export const createDownloadFile = (filename: string, content: string, type?: string) => {
   const a = document.createElement('a')
