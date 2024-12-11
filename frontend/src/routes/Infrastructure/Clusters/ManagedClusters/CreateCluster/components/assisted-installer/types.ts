@@ -14,3 +14,4 @@ export type FieldName =
   | 'pullSecret'
   | 'openshiftVersion'
   | 'cpuArchitecture'
+  | 'controlPlaneCount'

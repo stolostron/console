@@ -1984,6 +1984,7 @@
   "Note: Resources that you do not have permission to view display a status of \"Not deployed\".": "Note: Resources that you do not have permission to view display a status of \"Not deployed\".",
   "Number input": "Number input",
   "Number of clusters where the grouped Argo applications' resources are deployed.": "Number of clusters where the grouped Argo applications' resources are deployed.",
+  "Number of control plane nodes": "Number of control plane nodes",
   "Number of nodes": "Number of nodes",
   "Number of resources grouped": "Number of resources grouped",
   "Nutanix requires x86_64 release image. No other architecture is supported.": "Nutanix requires x86_64 release image. No other architecture is supported.",
