@@ -89,7 +89,9 @@ type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[]
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
-// assume user will use filter when over MAXIMUM_OPTIONS
+// so we don't create 3000 elements, only create this many
+// with the assumption that if the user is looking for an option
+// they will use filter to find it
 const MAXIMUM_OPTIONS = 200
 
 /* istanbul ignore next */
