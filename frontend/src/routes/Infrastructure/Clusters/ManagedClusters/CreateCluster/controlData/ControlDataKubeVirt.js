@@ -2,7 +2,11 @@
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
-import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
+import {
+  getNumericValidator,
+  getNumericGTValidator,
+  VALID_DNS_LABEL,
+} from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
 import {
   appendKlusterletAddonConfig,
@@ -226,7 +230,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolCoreCount',
           type: 'number',
           initial: '2',
-          min: 1,
+          validation: getNumericGTValidator(t, 0),
         },
         {
           name: t('creation.ocp.memoryGB'),
@@ -234,7 +238,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolMemory',
           type: 'number',
           initial: '8',
-          min: 1,
+          validation: getNumericGTValidator(t, 0),
         },
         {
           name: t('Auto repair'),

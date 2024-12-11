@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import i18n from 'i18next'
-import { getIPValidator } from './validation-types'
+import { getIPValidator, getNumericGTValidator } from './validation-types'
 
 const t = i18n.t.bind(i18n)
 
@@ -92,5 +92,14 @@ describe('getIPValidator', () => {
     const tester = validator.contextTester!
     expect(tester('10.0.0.3', controlDataWithOtherIPs, {}, t)).toBeUndefined() // NOSONAR - IP address used in test
     expect(tester('10.0.0.1', controlDataWithOtherIPs, {}, t)).toEqual(duplicateAddressMessage) // NOSONAR - IP address used in test
+  })
+  it('generates a validator that can check for integer values greater than a threshold', () => {
+    const validator = getNumericGTValidator(t, 10)
+    expect(validator.required).toEqual(true)
+    expect(validator.tester?.test).toBeDefined()
+    const tester = validator.tester?.test!
+    expect(tester('5')).toEqual(false)
+    expect(tester('10')).toEqual(false)
+    expect(tester('11')).toEqual(true)
   })
 })
