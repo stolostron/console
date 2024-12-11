@@ -167,33 +167,51 @@ export default function DetailsPage() {
       </DropdownItem>,
     ]
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
+      const printableStatus = resource?.status?.printableStatus ?? ''
       actions.unshift(
         ...[
-          {
-            action: 'Start',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
-            managedPath: '/virtualmachines/start',
-          },
-          {
-            action: 'Stop',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
-            managedPath: '/virtualmachines/stop',
-          },
+          printableStatus === 'Stopped'
+            ? {
+                action: 'Start',
+                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
+                managedPath: '/virtualmachines/start',
+                isDisabled: [
+                  'Migrating',
+                  'Provisioning',
+                  'Running',
+                  'Starting',
+                  'Stopping',
+                  'Terminating',
+                  'Unknown',
+                ].includes(printableStatus),
+              }
+            : {
+                action: 'Stop',
+                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
+                managedPath: '/virtualmachines/stop',
+                isDisabled: ['Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(printableStatus),
+              },
           {
             action: 'Restart',
             hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
             managedPath: '/virtualmachines/restart',
+            isDisabled: ['Migrating', 'Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(
+              printableStatus
+            ),
           },
-          {
-            action: 'Pause',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
-            managedPath: '/virtualmachineinstances/pause',
-          },
-          {
-            action: 'Unpause',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
-            managedPath: '/virtualmachineinstances/unpause',
-          },
+          printableStatus === 'Paused'
+            ? {
+                action: 'Unpause',
+                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
+                managedPath: '/virtualmachineinstances/unpause',
+                isDisabled: printableStatus !== 'Paused',
+              }
+            : {
+                action: 'Pause',
+                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
+                managedPath: '/virtualmachineinstances/pause',
+                isDisabled: printableStatus !== 'Running',
+              },
         ].map((action) => (
           <DropdownItem
             key={`${action.action}-vm-resource`}
@@ -208,6 +226,7 @@ export default function DetailsPage() {
                 t
               )
             }
+            isDisabled={action.isDisabled}
           >
             {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
           </DropdownItem>
@@ -216,7 +235,7 @@ export default function DetailsPage() {
       )
     }
     return actions
-  }, [cluster, kind, name, namespace, isHubClusterResource, vmActionsEnabled, navigate, toast, t])
+  }, [resource, cluster, kind, name, namespace, isHubClusterResource, vmActionsEnabled, navigate, toast, t])
 
   return (
     <AcmPage
