@@ -47,6 +47,7 @@ import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { getVirtualMachineRowActions } from './utils'
+import { PluginContext } from '../../../lib/PluginContext'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -55,6 +56,8 @@ function VirtualMachineTable() {
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const isSearchAvailable = useIsSearchAvailable()
   const toast = useContext(AcmToastContext)
+  const { dataContext } = useContext(PluginContext)
+  const { loadStarted } = useContext(dataContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -135,36 +138,38 @@ function VirtualMachineTable() {
     ]
   }, [searchResultItems, t])
 
-  if (!isSearchAvailable) {
-    return (
-      <EmptyState>
-        <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
-        <Title size="lg" headingLevel="h4">
-          {t('Unable to display VirtualMachines')}
-        </Title>
-        <EmptyStateBody>
-          <Stack>
-            <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
-          </Stack>
-        </EmptyStateBody>
-      </EmptyState>
-    )
-  } else if (error) {
-    return (
-      <EmptyState>
-        <EmptyStateHeader
-          titleText={<>{t('Error querying for VirtualMachines')}</>}
-          icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />}
-          headingLevel="h4"
-        />
-        <EmptyStateBody>
-          <Stack>
-            <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
-            <StackItem>{error ? error.message : ''}</StackItem>
-          </Stack>
-        </EmptyStateBody>
-      </EmptyState>
-    )
+  if (loadStarted) {
+    if (!isSearchAvailable) {
+      return (
+        <EmptyState>
+          <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
+          <Title size="lg" headingLevel="h4">
+            {t('Unable to display VirtualMachines')}
+          </Title>
+          <EmptyStateBody>
+            <Stack>
+              <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+            </Stack>
+          </EmptyStateBody>
+        </EmptyState>
+      )
+    } else if (error) {
+      return (
+        <EmptyState>
+          <EmptyStateHeader
+            titleText={<>{t('Error querying for VirtualMachines')}</>}
+            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />}
+            headingLevel="h4"
+          />
+          <EmptyStateBody>
+            <Stack>
+              <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
+              <StackItem>{error ? error.message : ''}</StackItem>
+            </Stack>
+          </EmptyStateBody>
+        </EmptyState>
+      )
+    }
   }
 
   return (

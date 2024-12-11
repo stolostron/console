@@ -5,7 +5,7 @@
   "scripts": {
     "start": ". ../port-defaults.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
     "start:hot": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --hot=true --stats-children",
-    "launch": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --env LAUNCH --stats-children",
+    "launch": ". ../port-defaults.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --env LAUNCH --stats-children",
     "storybook": "storybook dev",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
     "tsc": "tsc --noEmit",
