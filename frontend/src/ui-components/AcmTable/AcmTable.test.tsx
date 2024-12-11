@@ -1038,9 +1038,9 @@ describe('AcmTable', () => {
     userEvent.click(getByText('Cluster'))
     userEvent.click(getByTestId('cluster-cluster21'))
     userEvent.click(getByTestId('cluster-cluster31'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(2)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(2)
     userEvent.click(getByLabelText('Close chip group'))
-    expect(container.querySelectorAll('.pf-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
   test('renders with customTableAction', () => {
