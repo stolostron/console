@@ -233,8 +233,12 @@ describe('VirtualMachinesPage Page', () => {
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered errors correctly
-    await waitFor(() => expect(screen.queryByText('Unable to display VirtualMachines')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('Enable search to view all managed VirtualMachines.')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Unable to display virtual machines')).toBeTruthy())
+    await waitFor(() =>
+      expect(
+        screen.queryByText('To view managed virtual machines, you must enable the Red Hat Advanced Cluster Management.')
+      ).toBeTruthy()
+    )
   })
 
   it('should render page with errors', async () => {

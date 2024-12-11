@@ -4,12 +4,12 @@ import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assis
 import {
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   PageSection,
   Stack,
   StackItem,
   TextVariants,
-  EmptyStateHeader,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -90,7 +90,7 @@ function VirtualMachineTable() {
     if (error) {
       return []
     } else if (loading) {
-      return undefined
+      return undefined // undefined items triggers loading state table
     }
     // combine VMI node & ip address data in VM object
     const reducedVMAndVMI = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
@@ -140,11 +140,13 @@ function VirtualMachineTable() {
       <EmptyState>
         <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
         <Title size="lg" headingLevel="h4">
-          {t('Unable to display VirtualMachines')}
+          {t('Unable to display virtual machines')}
         </Title>
         <EmptyStateBody>
           <Stack>
-            <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+            <StackItem>
+              {t('To view managed virtual machines, you must enable the Red Hat Advanced Cluster Management.')}
+            </StackItem>
           </Stack>
         </EmptyStateBody>
       </EmptyState>
