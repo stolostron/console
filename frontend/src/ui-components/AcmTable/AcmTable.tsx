@@ -80,6 +80,7 @@ import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 
@@ -272,7 +273,7 @@ function renderFilterSelectOption(filterId: string, option: TableFilterOptions, 
   return (
     <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
       <div className={filterOption}>
-        <HighlightSearchText text={option.option.value ?? '-'} searchText={search} />
+        <HighlightSearchText text={(option.option.label as string) ?? '-'} searchText={search} />
         <Badge className={filterOptionBadge} key={key} isRead>
           {option.count}
         </Badge>
