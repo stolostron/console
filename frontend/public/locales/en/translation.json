@@ -1872,7 +1872,7 @@
   "Namespace": "Namespace",
   "Namespace where the selected Argo application resources are deployed.": "Namespace where the selected Argo application resources are deployed.",
   "Namespace: {{namespace}}": "Namespace: {{namespace}}",
-  "namespace.exists.error": "The selected namespace is already used by an existing managed cluster.",
+  "namespace.exists.error": "The namespace you selected is already used by an existing managed cluster.",
   "Namespaces": "Namespaces",
   "Namespaces match label expressions": "Namespaces match label expressions",
   "Namespaces match labels": "Namespaces match labels",
