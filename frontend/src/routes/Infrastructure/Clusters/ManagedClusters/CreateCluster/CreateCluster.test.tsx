@@ -3189,18 +3189,18 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     // Simulate hitting Enter key
     const inputField = screen.getByTestId('emanspace')
-    await userEvent.type(inputField, 'test{enter}')
+    userEvent.type(inputField, 'test{enter}')
 
     // Check if the input field has the correct value
     expect(inputField).toHaveValue('test')
 
     //Check for validation message
     await waitFor(() => {
-      expect(screen.getByText('Namespace name cannot be the same as the cluster name')).toBeInTheDocument()
+      expect(screen.getByText('The namespace cannot be the same as the cluster name.')).toBeInTheDocument()
     })
 
     fireEvent.click(clearButtons[1])
-    await userEvent.type(inputField, 'test-namespace{enter}')
+    userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 

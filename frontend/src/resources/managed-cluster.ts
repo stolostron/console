@@ -57,10 +57,3 @@ export const createManagedCluster = (data: {
     spec: { hubAcceptsClient: true },
   })
 }
-
-export function listManagedClusters() {
-  return listResources<ManagedCluster>({
-    apiVersion: ManagedClusterApiVersion,
-    kind: ManagedClusterKind,
-  })
-}
