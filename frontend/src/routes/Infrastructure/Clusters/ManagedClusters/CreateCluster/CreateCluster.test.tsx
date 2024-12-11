@@ -82,6 +82,9 @@ import {
   mockClusterDeploymentAI,
   mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
+import userEvent from '@testing-library/user-event'
+import { mockNamespaces } from '../../../../Applications/Application.sharedmocks'
+import { mockManagedClusters } from '../ManagedClusters.sharedmocks'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -1472,7 +1475,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
     window.scrollBy = () => {}
     const initialNocks = [
-      nockList(mockListAllProjects, mockListAllProjectsResponse),
+      //nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -1875,7 +1878,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     window.scrollBy = () => {}
     const initialNocks = [
-      nockList(mockListAllProjects, mockListAllProjectsResponse),
+      //nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -2331,7 +2334,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     }
 
     const initialNocks: Scope[] = [
-      nockList(mockListAllProjects, mockListAllProjectsResponse),
+      //nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -2779,7 +2782,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       },
     }
     const initialNocks: Scope[] = [
-      nockList(mockListAllProjects, mockListAllProjectsResponse),
+      //nockList(mockListAllProjects, mockListAllProjectsResponse),
       nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
@@ -2861,14 +2864,14 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   const mockClusterProjectKubevirt: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
-    metadata: { name: 'test' },
+    metadata: { name: 'test-namespace' },
   }
 
   const mockClusterProjectKubevirtResponse: Project = {
     apiVersion: ProjectApiVersion,
     kind: ProjectKind,
     metadata: {
-      name: 'test',
+      name: 'test-namespace',
     },
   }
   const pullSecret = '{"pullSecret":"secret"}\n'
@@ -2940,7 +2943,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     kind: 'Secret',
     metadata: {
       name: 'pullsecret-cluster-test',
-      namespace: 'test',
+      namespace: 'test-namespace',
       labels: {
         'cluster.open-cluster-management.io/backup': 'cluster',
         'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
@@ -2959,7 +2962,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     kind: 'Secret',
     metadata: {
       name: 'sshkey-cluster-test',
-      namespace: 'test',
+      namespace: 'test-namespace',
       labels: {
         'cluster.open-cluster-management.io/backup': 'cluster',
         'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ns',
@@ -2977,7 +2980,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     kind: 'HostedCluster',
     metadata: {
       name: 'test',
-      namespace: 'test',
+      namespace: 'test-namespace',
     },
     spec: {
       etcd: {
@@ -3056,7 +3059,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     kind: 'NodePool',
     metadata: {
       name: 'nodepool',
-      namespace: 'test',
+      namespace: 'test-namespace',
     },
     spec: {
       arch: 'amd64',
@@ -3231,27 +3234,30 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByPlaceholderText('Select or enter a release image')
     await clickByText('OpenShift 4.15.36')
+    screen.logTestingPlaygroundURL()
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
+
     const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
     fireEvent.click(clearButtons[1])
     expect(inputElement).toHaveValue('')
 
     await clickByTestId('emanspace')
-    // Simulate typing text in the input field
-    await typeByTestId('emanspace', 'test')
 
     // Simulate hitting Enter key
     const inputField = screen.getByTestId('emanspace')
-    fireEvent.keyDown(inputField, { key: 'Enter', code: 'Enter' })
+    await userEvent.type(inputField, 'test{enter}')
 
     // Check if the input field has the correct value
     expect(inputField).toHaveValue('test')
+
+    //Check for validation message
+    await waitFor(() => {
+      expect(screen.getByText('Namespace name cannot be the same as the cluster name')).toBeInTheDocument()
+    })
     // screen.logTestingPlaygroundURL()
-    // Check for validation message
-    // await waitFor(() => {
-    //     expect(screen.getByText('Namespace name cannot be the same as the cluster name')).toBeInTheDocument()
-    // })
+    fireEvent.click(clearButtons[1])
+    await userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
@@ -3291,7 +3297,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByText('Create')
     await waitForText('Creating cluster ...')
-    screen.logTestingPlaygroundURL()
 
     // make sure creating
     await waitForNocks(createNocks)
