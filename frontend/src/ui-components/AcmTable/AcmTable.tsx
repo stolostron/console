@@ -58,7 +58,6 @@ import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
 import {
-  cloneElement,
   createContext,
   FormEvent,
   Fragment,
@@ -262,6 +261,22 @@ interface IValidFilters<T> {
 
 export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilterSelection> {
   availableOperators: SearchOperator[]
+}
+
+type TableFilterOptions = { option: TableFilterOption<string>; count: number }
+
+function renderFilterSelectOption(filterId: string, option: TableFilterOptions, search?: string) {
+  const key = `${filterId}-${option.option.value}`
+  return (
+    <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
+      <div className={filterOption}>
+        <HighlightSearchText text={option.option.value ?? '-'} searchText={search} />
+        <Badge className={filterOptionBadge} key={key} isRead>
+          {option.count}
+        </Badge>
+      </div>
+    </SelectOption>
+  )
 }
 
 function getValidFilterSelections<T>(
@@ -1598,10 +1613,11 @@ function TableColumnFilters<T>(
         allFilters: [] as ITableFilter<T>[],
         groupSelections: [] as FilterSelectOptionObject[],
         validFilters: [] as IValidFilters<T>[],
+        allOptions: [] as TableFilterOptions[],
       },
     ]
     for (const filter of filters) {
-      let options: { option: TableFilterOption<string>; count: number }[] = []
+      let options: TableFilterOptions[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
         const count = filterCounts?.[filter.id]
@@ -1624,13 +1640,18 @@ function TableColumnFilters<T>(
       /* istanbul ignore else */
       if (options.length) {
         if (options.length > SPLIT_FILTER_THRESHOLD) {
-          // assume user will use filter when over MAXIMUM_OPTIONS
-          options = options.slice(0, MAXIMUM_OPTIONS)
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],
             validFilters: [] as IValidFilters<T>[],
+            allOptions: options,
           })
+          // to avoid create lots of react components,
+          // just create a smaller set with the assumption that user
+          // won't be scrolling the entire list of 3000 clusters
+          // but will instead search for a cluster--at which point
+          // we will create react components for just that search
+          options = options.slice(0, MAXIMUM_OPTIONS)
           group = filterGroups[filterGroups.length - 1]
         }
         group.validFilters.push({ filter, options })
@@ -1661,29 +1682,16 @@ function TableColumnFilters<T>(
       filterGroups[0].groupSelections = allSelections
     }
 
-    return filterGroups.map(({ allFilters, groupSelections, validFilters }) => {
+    return filterGroups.map(({ allFilters, allOptions, groupSelections, validFilters }) => {
       return {
         groupFilters: allFilters,
+        groupOptions: allOptions,
         groupSelections,
         groupSelectionList: validFilters.map((filter) => {
           return (
             <SelectGroup key={filter.filter.id} label={filter.filter.label}>
               {filter.options.map((option) => {
-                const key = `${filter.filter.id}-${option.option.value}`
-                return (
-                  <SelectOption
-                    key={key}
-                    inputId={key}
-                    value={createFilterSelectOptionObject(filter.filter.id, option.option.value)}
-                  >
-                    <div className={filterOption}>
-                      {option.option.label}
-                      <Badge className={filterOptionBadge} key={key} isRead>
-                        {option.count}
-                      </Badge>
-                    </div>
-                  </SelectOption>
-                )
+                return renderFilterSelectOption(filter.filter.id, option)
               })}
             </SelectGroup>
           )
@@ -1692,23 +1700,20 @@ function TableColumnFilters<T>(
     })
   }, [filterCounts, filters, items, selections])
 
+  // used by filters with lots of options to filter the options
   const onFilterOptions = useCallback(
     (_: any, textInput: string, inx: number) => {
-      const options = filterSelectGroups[inx].groupSelectionList
-      if (textInput === '') {
-        return options
-      } else {
-        const filteredGroups = options
-          .map((group) => {
-            const filteredGroup = cloneElement(group, {
-              children: group.props.children.filter((item: { props: { value: { value: string } } }) => {
-                return item.props.value.value.toLowerCase().includes(textInput.toLowerCase())
-              }),
-            })
-            if (filteredGroup.props.children.length > 0) return filteredGroup
+      if (textInput !== '') {
+        const filterId = filterSelectGroups[inx].groupFilters[0].id
+        return filterSelectGroups[inx].groupOptions
+          .filter(({ option }) => {
+            return option?.value.toLowerCase().includes(textInput.toLowerCase())
           })
-          .filter(Boolean) as JSX.Element[]
-        return filteredGroups
+          .map((option) => {
+            return renderFilterSelectOption(filterId, option, textInput.toLowerCase())
+          })
+      } else {
+        return filterSelectGroups[inx].groupSelectionList
       }
     },
     [filterSelectGroups]
