@@ -39,16 +39,25 @@ spec:
     name: '{{{ai.name}}}'
   holdInstallation: true
   provisionRequirements:
-    workerAgents: 0
-{{#switch ai.highAvailabilityMode}}
-  {{#case 'Full'}}
-    controlPlaneAgents: 3
-  {{/case}}
-
-  {{#case 'None'}}
+    workerAgents: 0    
+    {{#if ai.controlPlaneAgents}}
+    {{#switch ai.controlPlaneAgents}}
+    {{#case '1'}}
     controlPlaneAgents: 1
-  {{/case}}
-{{/switch}}
+    {{/case}}
+    {{#case '3'}}
+    controlPlaneAgents: 3
+    {{/case}}
+    {{#case '4'}}
+    controlPlaneAgents: 4
+    {{/case}}
+    {{#case '5'}}
+    controlPlaneAgents: 5
+    {{/case}}
+    {{/switch}}
+    {{else}}
+    controlPlaneAgents: 3
+    {{/if}}
   imageSetRef:
     name: '{{{ai.openshiftVersion}}}'
   networking:
