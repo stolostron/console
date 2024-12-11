@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Chip, ChipGroup, PageSection, Select, SelectOption, SelectVariant } from '@patternfly/react-core'
+import { Button, Chip, ChipGroup, PageSection } from '@patternfly/react-core'
+import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -99,7 +100,7 @@ export default function OverviewClusterLabelSelector(props: {
           width={'auto'}
           maxHeight={'400px'}
           variant={SelectVariant.single}
-          onToggle={(isExpanded) => setLabelSelectIsOpen(isExpanded)}
+          onToggle={(_event, isExpanded) => setLabelSelectIsOpen(isExpanded)}
           hasInlineFilter
           onSelect={(_, selection) => {
             if (selectedClusterLabel === selection) {
@@ -124,7 +125,7 @@ export default function OverviewClusterLabelSelector(props: {
           width={'auto'}
           maxHeight={'400px'}
           variant={SelectVariant.checkbox}
-          onToggle={(isExpanded) => setValuesSelectIsOpen(isExpanded)}
+          onToggle={(_event, isExpanded) => setValuesSelectIsOpen(isExpanded)}
           onFilter={onFilter}
           hasInlineFilter
           onSelect={(_, selection) => {

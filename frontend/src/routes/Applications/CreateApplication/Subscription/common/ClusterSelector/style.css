@@ -6,10 +6,10 @@
   cursor: not-allowed !important;
 }
 
-.clusterSelector-container .pf-c-accordion__expanded-content-body::after {
+.clusterSelector-container .pf-v5-c-accordion__expanded-content-body::after {
   background-color: unset;
 }
 
-.clusterSelector-labels-section .labels-section .pf-c-select {
+.clusterSelector-labels-section .labels-section .pf-v5-c-select {
   margin-bottom: 10px;
 }

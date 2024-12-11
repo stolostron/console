@@ -39,6 +39,7 @@ import get from 'lodash/get'
 import debounce from 'lodash/debounce'
 import keyBy from 'lodash/keyBy'
 import merge from 'lodash/merge'
+import set from 'lodash/set'
 import { LostChangesContext, LostChangesPrompt } from '../LostChanges'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
@@ -824,14 +825,16 @@ export default class TemplateEditor extends React.Component {
     let editorIndex = this.editors.findIndex((e) => e.id === editor.id)
     if (editorIndex < 0) {
       editorIndex = this.editors.push(editor) - 1
+    } else {
+      // update to latest object for this editor ID
+      this.editors[editorIndex] = editor
     }
-    if (editorIndex > 1) {
-      otherYAMLTabs[editorIndex - 1].editor = editor
+    if (editorIndex >= 1) {
+      set(otherYAMLTabs, `${editorIndex - 1}.editor`, this.editors[editorIndex])
     } else {
       highlightDecorations(this.editors, this.state.decorationRows, this.state.i18n)
     }
     this.layoutEditors()
-
     editor.onDidChangeModelContent(() => {
       const model = editor.getModel()
       const hasUndo = model.canUndo()
@@ -869,12 +872,14 @@ export default class TemplateEditor extends React.Component {
         break
       case 'copyAll':
         if (editor) {
-          const save = editor.getSelection()
-          const range = editor.getModel().getFullModelRange()
-          editor.setSelection(range)
-          editor.focus()
-          document.execCommand('copy')
-          editor.setSelection(save)
+          if (editor && editor.getModel()) {
+            const model = editor.getModel()
+            const selection = editor.getSelection()
+            if (model && selection) {
+              const selectedText = model.getValueInRange(selection)
+              navigator.clipboard.writeText(selectedText || editor.getValue() || '')
+            }
+          }
         }
         break
       case 'undo':

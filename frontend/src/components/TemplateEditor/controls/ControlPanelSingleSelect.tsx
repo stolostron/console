@@ -2,7 +2,8 @@
 'use strict'
 
 import React, { SyntheticEvent, useCallback, useState } from 'react'
-import { Select, SelectOption, SelectOptionObject, SelectVariant, Spinner } from '@patternfly/react-core'
+import { Spinner } from '@patternfly/react-core'
+import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 import { TFunction } from 'react-i18next'
@@ -80,7 +81,7 @@ const ControlPanelSingleSelect = (props: {
       <div className="creation-view-controls-singleselect" ref={setControlRef}>
         <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
           {isLoading || isRefetching ? (
-            <div className="creation-view-controls-singleselect-loading  pf-c-form-control">
+            <div className="creation-view-controls-singleselect-loading  pf-v5-c-form-control">
               <Spinner size="md" />
               <div>{active}</div>
             </div>

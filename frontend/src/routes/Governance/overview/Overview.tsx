@@ -6,6 +6,7 @@ import {
   CardBody,
   CardTitle,
   ExpandableSection,
+  Icon,
   PageSection,
   Stack,
   Tooltip,
@@ -26,11 +27,13 @@ import {
 import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 import { useClusterViolationSummaryMap } from './ClusterViolationSummary'
 import { PolicySetViolationsCard } from './PolicySetViolationSummary'
-import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
+import { PolicyViolationsCard, usePolicyViolationSummary, ViolationSummary } from './PolicyViolationSummary'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import keyBy from 'lodash/keyBy'
 import { TFunction } from 'react-i18next'
 import { JSX } from 'react/jsx-runtime'
+import { LoadingPage } from '../../../components/LoadingPage'
+import { PluginContext } from '../../../lib/PluginContext'
 
 // # of clusters initially shown
 // the rest are shown by clicking "more"
@@ -47,32 +50,39 @@ export default function GovernanceOverview() {
   const policyViolationSummary = usePolicyViolationSummary(policies)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const { t } = useTranslation()
-
-  if (policies.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-  if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
-    return (
-      <PageSection isFilled>
-        <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
+  const { dataContext } = useContext(PluginContext)
+  const { loadStarted, loadCompleted } = useContext(dataContext)
+  if (loadCompleted || process.env.NODE_ENV === 'test') {
+    if (policies.length === 0) {
+      return (
+        <PageSection isFilled>
+          <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
+      return (
+        <PageSection isFilled>
+          <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+        </PageSection>
+      )
+    }
   }
   return (
     <PageSection>
       <Stack hasGutter>
-        <AcmMasonry minSize={415} maxColumns={3}>
-          <PolicySetViolationsCard />
-          <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
-          <ClustersCard />
-          <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
-          <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
-          <SecurityGroupCard key="controls" title={t('Controls')} group="controls" policies={policies} />
-        </AcmMasonry>
+        {loadStarted ? (
+          <AcmMasonry minSize={415} maxColumns={3}>
+            <PolicySetViolationsCard />
+            <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+            <ClustersCard />
+            <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
+            <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
+            <SecurityGroupCard key="controls" title={t('Controls')} group="controls" policies={policies} />
+          </AcmMasonry>
+        ) : (
+          <LoadingPage />
+        )}
       </Stack>
     </PageSection>
   )
@@ -161,57 +171,57 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                   <span>{violation.name}</span>
                   {violation.compliant ? (
                     <Tooltip content={t('policies.noviolations', { count: violation.compliant })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'compliant')}
-                          >
-                            {violation.compliant}
-                          </Button>{' '}
-                          &nbsp;
-                          <CheckCircleIcon color="var(--pf-global--success-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'compliant')}
+                        >
+                          {violation.compliant}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="success">
+                          <CheckCircleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
                   )}
                   {violation.noncompliant ? (
                     <Tooltip content={t('policy.violations', { count: violation.noncompliant })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'noncompliant')}
-                          >
-                            {violation.noncompliant}
-                          </Button>{' '}
-                          &nbsp;
-                          <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'noncompliant')}
+                        >
+                          {violation.noncompliant}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="danger">
+                          <ExclamationCircleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
                   )}
                   {violation.pending ? (
                     <Tooltip content={t('policies.pending', { count: violation.pending })}>
-                      <Fragment>
-                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() => onClick(violation, props.group, 'pending')}
-                          >
-                            {violation.pending}
-                          </Button>{' '}
-                          &nbsp;
-                          <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
-                        </span>
-                      </Fragment>
+                      <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        <Button
+                          isInline
+                          variant={ButtonVariant.link}
+                          onClick={() => onClick(violation, props.group, 'pending')}
+                        >
+                          {violation.pending}
+                        </Button>{' '}
+                        &nbsp;
+                        <Icon status="warning">
+                          <ExclamationTriangleIcon />
+                        </Icon>
+                      </span>
                     </Tooltip>
                   ) : (
                     <span />
@@ -267,12 +277,14 @@ function ClustersCard() {
 
   const { topClustersList, remainingNoncompliant, remainingUnknown, remainingCompliant } = useMemo(() => {
     const clusterMap = keyBy(clusters, 'metadata.name')
-    const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap).map((clusterKey) => {
-      return {
-        cluster: clusterMap[clusterKey],
-        violations: clusterViolationSummaryMap[clusterKey],
-      }
-    })
+    const clusterViolationSummaryList = Object.keys(clusterViolationSummaryMap)
+      .filter((clusterKey) => !!clusterMap[clusterKey])
+      .map((clusterKey) => {
+        return {
+          cluster: clusterMap[clusterKey],
+          violations: clusterViolationSummaryMap[clusterKey],
+        }
+      })
 
     // sort noncompliant clusters to the top of the list
     clusterViolationSummaryList.sort((a, b) => {
@@ -338,7 +350,7 @@ function ClustersCard() {
               {icon}
             </div>
           }
-          onToggle={xtraToggle}
+          onToggle={(_event, isExpanded) => xtraToggle?.(isExpanded)}
           isExpanded={isXtraExpanded}
         >
           {renderClusterList(xtraList, onClick, t)}
@@ -355,19 +367,25 @@ function ClustersCard() {
           {renderClusterList(topClustersList, onClick, t)}
           {renderExtraClusterList(
             remainingNoncompliant,
-            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+            <Icon status="danger">
+              <ExclamationCircleIcon />
+            </Icon>,
             onToggleNon,
             isExpandedNon
           )}
           {renderExtraClusterList(
             remainingUnknown,
-            <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>,
             onToggleUnk,
             isExpandedUnk
           )}
           {renderExtraClusterList(
             remainingCompliant,
-            <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>,
             onToggleCom,
             isExpandedCom
           )}
@@ -378,19 +396,19 @@ function ClustersCard() {
 }
 
 function renderClusterList(
-  clusterList: { cluster: any; violations: any }[],
-  onClick: { (cluster: ManagedCluster, compliance: string): void; (arg0: any, arg1: string): void },
+  clusterList: { cluster: ManagedCluster; violations: ViolationSummary }[],
+  onClick: { (cluster: ManagedCluster, compliance: string): void },
   t: TFunction
 ) {
   return (
     <div style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
       {clusterList.map(({ cluster, violations }) => {
-        const key = `${cluster.metadata.name}-card`
+        const key = `${cluster?.metadata?.name}-card`
         /* istanbul ignore if */
         if (!violations) return <Fragment key={key} />
         return (
           <Fragment key={key}>
-            <span>{cluster.metadata.name}</span>
+            <span>{cluster?.metadata?.name}</span>
             {violations.compliant ? (
               <Tooltip
                 content={t('policies.noviolations', {
@@ -403,7 +421,9 @@ function renderClusterList(
                       {violations.compliant}
                     </Button>{' '}
                     &nbsp;
-                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                    <Icon status="success">
+                      <CheckCircleIcon />
+                    </Icon>
                   </Fragment>
                 </span>
               </Tooltip>
@@ -421,7 +441,9 @@ function renderClusterList(
                     {violations.noncompliant}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                  <Icon status="danger">
+                    <ExclamationCircleIcon />
+                  </Icon>
                 </span>
               </Tooltip>
             ) : (
@@ -439,7 +461,9 @@ function renderClusterList(
                       {violations.pending}
                     </Button>{' '}
                     &nbsp;
-                    <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                    <Icon status="warning">
+                      <ExclamationTriangleIcon />
+                    </Icon>
                   </Fragment>
                 </span>
               </Tooltip>
@@ -457,7 +481,9 @@ function renderClusterList(
                     {violations.unknown}
                   </Button>{' '}
                   &nbsp;
-                  <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                  <Icon status="warning">
+                    <ExclamationTriangleIcon />
+                  </Icon>
                 </span>
               </Tooltip>
             ) : (

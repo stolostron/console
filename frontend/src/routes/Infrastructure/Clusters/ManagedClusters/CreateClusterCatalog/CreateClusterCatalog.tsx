@@ -260,14 +260,14 @@ export function CreateClusterCatalog() {
               <>
                 <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
                 <ExpandableSection
-                  style={{ backgroundColor: 'var(--pf-global--BackgroundColor--light-300)' }}
+                  style={{ backgroundColor: 'var(--pf-v5-global--BackgroundColor--light-300)' }}
                   isExpanded={isAdditionalProvidersExpanded}
-                  onToggle={onAdditionalProvidersToggle}
+                  onToggle={(_event, isExpanded: boolean) => onAdditionalProvidersToggle(isExpanded)}
                   toggleContent={
-                    <span style={{ color: 'var(--pf-global--Color--100)' }}>{t('Additional providers')}</span>
+                    <span style={{ color: 'var(--pf-v5-global--Color--100)' }}>{t('Additional providers')}</span>
                   }
                 >
-                  <div style={{ color: 'var(--pf-global--Color--100)', paddingBottom: '24px' }}>
+                  <div style={{ color: 'var(--pf-v5-global--Color--100)', paddingBottom: '24px' }}>
                     {t('Add credentials in order to get started with a new infrastructure provider.')}
                   </div>
                   <Catalog

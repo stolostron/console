@@ -5,6 +5,7 @@ import { getErrors, validate } from './validation'
 import { getMatchingValues, getUidSiblings, crossReference, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
+import { Monaco } from '@monaco-editor/react'
 
 export interface ProcessedType {
   parsed: {
@@ -36,7 +37,7 @@ export interface CachedValuesType {
 }
 
 export const processForm = (
-  monacoRef: any,
+  monaco: Monaco,
   code: string | undefined,
   resourceArr: unknown,
   changeStack:
@@ -87,7 +88,7 @@ export const processForm = (
     comparison,
     xreferences: crossReference(paths),
     ...process(
-      monacoRef,
+      monaco,
       yaml,
       documents,
       syntaxErrors,
@@ -107,7 +108,7 @@ export const processForm = (
 }
 
 export const processUser = (
-  monacoRef: any,
+  monaco: Monaco,
   yaml: string,
   secrets: (string | string[])[] | undefined,
   cachedSecrets: CachedValuesType[] | undefined,
@@ -132,7 +133,7 @@ export const processUser = (
   return {
     comparison,
     ...process(
-      monacoRef,
+      monaco,
       yaml,
       documents,
       syntaxErrors,
@@ -152,7 +153,7 @@ export const processUser = (
 }
 
 const process = (
-  monacoRef: any,
+  monaco: Monaco,
   yaml: string,
   documents: any,
   syntaxErrors: any[],
@@ -241,7 +242,7 @@ const process = (
       if (value && value.$p) {
         const range = get(mappings, getPathArray(value.$p))
         if (range?.$r) {
-          protectedRanges.push(new monacoRef.current.Range(range.$r, 0, range.$r + range.$l, 0))
+          protectedRanges.push(new monaco.Range(range.$r, 0, range.$r + range.$l, 0))
         }
       }
     })

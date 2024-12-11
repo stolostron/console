@@ -7,6 +7,7 @@ import { logger } from '../../lib/logger'
 import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
 import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
+import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
   'name' = 0,
@@ -98,6 +99,24 @@ const queryTemplate: IQuery = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
+// export function getApplications() {
+//   let items: ITransformedResource[] = []
+//   aggregateKubeApplications()
+//   Object.keys(applicationCache).forEach((key) => {
+//     if (applicationCache[key].resources) {
+//       items.push(...applicationCache[key].resources)
+//     } else if (Object.keys(applicationCache[key].resourceMap).length) {
+//       const allResources = Object.values(applicationCache[key].resourceMap)
+//       items.push(...allResources.flat())
+//     }
+//   })
+//   // mock a large environment
+//   if (process.env.MOCK_CLUSTERS) {
+//     items = items.concat(generateTransforms(getGiganticApps()).resources)
+//   }
+//   return items
+// }
+
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
   let timeoutID: string | number | NodeJS.Timeout
   const promises = [
@@ -126,7 +145,7 @@ export function stopAggregatingApplications(): void {
 }
 
 export function getApplications() {
-  const items: ITransformedResource[] = []
+  let items: ITransformedResource[] = []
   aggregateLocalApplications()
   Object.keys(applicationCache).forEach((key) => {
     if (applicationCache[key].resources) {
@@ -136,6 +155,10 @@ export function getApplications() {
       items.push(...allResources.flat())
     }
   })
+  // mock a large environment
+  if (process.env.MOCK_CLUSTERS) {
+    items = items.concat(transform(getGiganticApps()).resources)
+  }
   return items
 }
 

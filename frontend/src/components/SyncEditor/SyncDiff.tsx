@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Alert } from '@patternfly/react-core'
-import { TableComposable, Tbody, Tr, Td } from '@patternfly/react-table'
+import { Table /* data-codemods */, Tbody, Tr, Td } from '@patternfly/react-table'
 import { diffChars } from 'diff'
 import './SyncDiff.css'
 
@@ -127,7 +127,7 @@ export function SyncDiff(props: { stateChanges: SyncDiffType; errorMessage: stri
       {stateChanges?.errors?.length ? (
         <Alert isInline={true} title={errorMessage} variant={'danger'} />
       ) : (
-        <TableComposable className="diff-table" aria-label="Editor changes" variant={'compact'} borders={false}>
+        <Table className="diff-table" aria-label="Editor changes" variant={'compact'} borders={false}>
           <Tbody>
             {stateChanges?.changes?.map((change, rowIndex) => {
               const { type, previous, latest, line, path, reveal } = change
@@ -139,7 +139,7 @@ export function SyncDiff(props: { stateChanges: SyncDiffType; errorMessage: stri
               }
             })}
           </Tbody>
-        </TableComposable>
+        </Table>
       )}
     </div>
   )

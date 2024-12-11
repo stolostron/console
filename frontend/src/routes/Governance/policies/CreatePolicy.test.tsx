@@ -76,7 +76,7 @@ describe('Create Policy Page', () => {
     // step 2 -- policy templates
 
     await waitForText('Templates')
-    screen.getByRole('button', { name: 'Add policy template' }).click()
+    screen.getAllByRole('button', { name: 'Add policy template' })[0].click()
     screen.getByText('Namespace must exist').click()
     const configNameInput = screen.getByRole('textbox', { name: /name name/i })
     userEvent.type(configNameInput, '{selectall}test-policy-namespace')

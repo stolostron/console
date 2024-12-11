@@ -13,7 +13,7 @@ import {
   Text,
   TextContent,
   TextVariants,
-  Title,
+  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
@@ -109,14 +109,17 @@ export default function SummaryCard(props: {
           </div>
         ) : (
           <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-            <EmptyStateIcon
-              style={{ fontSize: '36px', marginBottom: '1rem' }}
-              icon={ExclamationCircleIcon}
-              color={'var(--pf-global--danger-color--100)'}
+            <EmptyStateHeader
+              titleText={<>{t('An unexpected error occurred while retrieving metrics.')}</>}
+              icon={
+                <EmptyStateIcon
+                  style={{ fontSize: '36px', marginBottom: '1rem' }}
+                  icon={ExclamationCircleIcon}
+                  color={'var(--pf-v5-global--danger-color--100)'}
+                />
+              }
+              headingLevel="h4"
             />
-            <Title size="md" headingLevel="h4">
-              {t('An unexpected error occurred while retrieving metrics.')}
-            </Title>
             <EmptyStateBody>{error}</EmptyStateBody>
           </EmptyState>
         )}

@@ -3,33 +3,42 @@
 import {
   EmptyState,
   EmptyStateBody,
-  EmptyStatePrimary,
   EmptyStateVariant,
   EmptyStateIcon,
-  Title,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core'
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 import { CubesIcon, SearchIcon } from '@patternfly/react-icons'
+import { LoadingPage } from '../../components/LoadingPage'
+import { PluginContext } from '../../lib/PluginContext'
 
 export function AcmEmptyState(props: {
   title: string
   message?: string | ReactNode
   action?: ReactNode
   showSearchIcon?: boolean
+  ignoreLoading?: boolean
 }) {
-  return (
-    <EmptyState variant={EmptyStateVariant.large}>
+  const { dataContext } = useContext(PluginContext)
+  const { loadCompleted } = useContext(dataContext)
+
+  return loadCompleted || props.ignoreLoading ? (
+    <EmptyState variant={EmptyStateVariant.lg}>
       {props.showSearchIcon ? (
         <EmptyStateIcon icon={SearchIcon}></EmptyStateIcon>
       ) : (
         <EmptyStateIcon icon={CubesIcon}></EmptyStateIcon>
       )}
-      <Title headingLevel="h4" size="lg">
-        {props.title}
-      </Title>
+      <EmptyStateHeader titleText={<>{props.title}</>} headingLevel="h4" />
       <EmptyStateBody>{props.message}</EmptyStateBody>
-      <EmptyStatePrimary>{props.action}</EmptyStatePrimary>
-      {/* <EmptyStateSecondaryActions>{props.secondaryActions}</EmptyStateSecondaryActions> */}
+      <EmptyStateFooter>
+        <EmptyStateActions>{props.action}</EmptyStateActions>
+        {/* <EmptyStateSecondaryActions>{props.secondaryActions}</EmptyStateSecondaryActions> */}
+      </EmptyStateFooter>
     </EmptyState>
+  ) : (
+    <LoadingPage />
   )
 }

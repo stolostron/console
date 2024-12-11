@@ -14,7 +14,7 @@ export const TextArea = () => {
 
   return (
     <AcmForm>
-      <AcmTextArea label="Label" id="123" value={value} onChange={setValue} />
+      <AcmTextArea label="Label" id="123" value={value} onChange={(_event, value) => setValue(value)} />
     </AcmForm>
   )
 }

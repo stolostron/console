@@ -12,10 +12,10 @@ import {
   Modal,
   ModalVariant,
   PageSection,
-  SelectOption,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -639,14 +639,6 @@ export default function PoliciesPage() {
     [namespaces, t, getSourceOptions]
   )
 
-  if (tableItems.length === 0) {
-    return (
-      <PageSection isFilled>
-        <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
-      </PageSection>
-    )
-  }
-
   return (
     <PageSection>
       {modal !== undefined && modal}
@@ -656,7 +648,7 @@ export default function PoliciesPage() {
         columns={policyColumns}
         keyFn={policyKeyFn}
         items={tableItems}
-        emptyState={undefined} // only shown when tableItems.length > 0
+        emptyState={<GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />}
         tableActions={tableActions}
         filters={filters}
         showExportButton
@@ -1107,7 +1099,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placement-bindings"
             isChecked={deletePlacementBindings}
-            onChange={setDeletePlacementBindings}
+            onChange={(_event, val) => setDeletePlacementBindings(val)}
             label={t('policy.modal.delete.associatedResources.placementBinding')}
           />
         </StackItem>
@@ -1126,7 +1118,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <Checkbox
             id="delete-placements"
             isChecked={deletePlacements}
-            onChange={setDeletePlacements}
+            onChange={(_event, val) => setDeletePlacements(val)}
             label={t('policy.modal.delete.associatedResources.placement')}
           />
         </StackItem>
@@ -1178,13 +1170,13 @@ function policyHasDeletePruneBehavior(policy: Policy) {
   return policy.spec['policy-templates']?.some((tmpl) => {
     if (
       tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
-      !tmpl.objectDefinition.spec.pruneObjectBehavior?.startsWith('Delete')
+      !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
     ) {
       return false
     }
     return (
       policy.spec.remediationAction?.endsWith('nforce') ||
-      tmpl.objectDefinition.spec.remediationAction?.endsWith('nforce')
+      tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
     )
   })
 }

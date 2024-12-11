@@ -5,7 +5,7 @@ import set from 'set-value'
 import {
   ItemContext,
   useItem,
-  Select,
+  WizSelect,
   WizMultiSelect,
   WizSingleSelect,
   WizStringsInput,
@@ -39,7 +39,7 @@ export function MatchExpression(props: { labelValuesMap?: Record<string, string[
           onValueChange={(_value, item) => set(item as object, 'values', [])}
         />
       )}
-      <Select
+      <WizSelect
         label={t('Operator')}
         path="operator"
         options={[

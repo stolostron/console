@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Dispatch, createContext, useState, SetStateAction, useMemo } from 'react'
+import { createContext, useState, useMemo, Dispatch, SetStateAction } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -10,15 +10,20 @@ import * as selectors from '../selectors'
 import * as reactQuery from '@tanstack/react-query'
 import { getBackendUrl } from '../resources/utils'
 
+// startLoading -- LoadPluginData is telling LoadData to make a call backend /events api to start sending resources
+// loadStarted -- means at least one packet has been sent from backend; /events sends resouces in packets to the browser can start populating list
+// loadCompleted -- means all packets have been sent; is a page doesn't get any data from packets it can show LoadingPage until this is sent
 export type PluginData = {
   recoil: typeof recoil
   atoms: typeof atoms
   selectors: typeof selectors
   reactQuery: typeof reactQuery
   backendUrl: string
-  loaded: boolean
+  loadCompleted: boolean
+  loadStarted: boolean
   startLoading: boolean
-  setLoaded: Dispatch<SetStateAction<boolean>>
+  setLoadCompleted: Dispatch<SetStateAction<boolean>>
+  setLoadStarted: Dispatch<SetStateAction<boolean>>
   load: () => void
 }
 
@@ -28,16 +33,19 @@ export const defaultContext = {
   selectors,
   reactQuery,
   backendUrl: '',
-  loaded: false,
+  loadCompleted: process.env.NODE_ENV === 'test',
+  loadStarted: process.env.NODE_ENV === 'test',
   startLoading: false,
-  setLoaded: () => {},
+  setLoadCompleted: () => {},
+  setLoadStarted: () => {},
   load: () => {},
 }
 
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
-  const [loaded, setLoaded] = useState(false)
+  const [loadStarted, setLoadStarted] = useState(process.env.NODE_ENV === 'test')
+  const [loadCompleted, setLoadCompleted] = useState(process.env.NODE_ENV === 'test')
   const [startLoading, setStartLoading] = useState(false)
   const backendUrl = getBackendUrl()
 
@@ -48,12 +56,14 @@ export const usePluginDataContextValue = () => {
       selectors,
       backendUrl,
       reactQuery,
-      loaded,
+      loadCompleted,
+      loadStarted,
       startLoading,
-      setLoaded,
+      setLoadCompleted,
+      setLoadStarted,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loaded, startLoading]
+    [backendUrl, loadStarted, loadCompleted, startLoading]
   )
   return contextValue
 }

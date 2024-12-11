@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Collapse } from '@mui/material'
-import { Alert, AlertActionCloseButton, AlertGroup, Flex } from '@patternfly/react-core'
+import { Alert, AlertActionCloseButton, AlertGroup, AlertProps, Flex } from '@patternfly/react-core'
 import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 
 export interface AcmAlertInfo {
-  type?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+  type?: AlertProps['variant']
   title: ReactNode
   message?: ReactNode
   actions?: ReactNode
@@ -98,7 +98,7 @@ export function AcmAlert(props: {
   message?: ReactNode
   actions?: ReactNode
   noClose?: boolean
-  variant?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+  variant?: AlertProps['variant']
   style?: CSSProperties
   className?: string
 }) {

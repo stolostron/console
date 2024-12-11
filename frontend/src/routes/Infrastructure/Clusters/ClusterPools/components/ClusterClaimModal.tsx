@@ -133,7 +133,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                   placeholder={t('clusterClaim.name.placeholder')}
                   value={clusterClaim?.metadata?.name}
                   isRequired
-                  onChange={(name) => {
+                  onChange={(_event, name) => {
                     updateClusterClaim((clusterClaim) => {
                       clusterClaim.metadata.name = name
                     })

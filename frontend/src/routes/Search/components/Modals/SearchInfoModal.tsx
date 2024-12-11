@@ -30,13 +30,13 @@ const exampleRow = css({
   alignItems: 'center',
   '& p': {
     paddingLeft: '1rem',
-    fontSize: 'var(	--pf-global--FontSize--sm)',
+    fontSize: 'var(	--pf-v5-global--FontSize--sm)',
   },
   '& > span': {
     margin: '0.4rem 0 !important',
-    fontSize: 'var(--pf-global--FontSize--xs)',
-    backgroundColor: 'var(--pf-global--palette--blue-50)',
-    color: 'var(--pf-global--info-color--200)',
+    fontSize: 'var(--pf-v5-global--FontSize--xs)',
+    backgroundColor: 'var(--pf-v5-global--palette--blue-50)',
+    color: 'var(--pf-v5-global--info-color--200)',
   },
 })
 

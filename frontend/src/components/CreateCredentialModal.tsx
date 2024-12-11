@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, ContextSelectorFooter } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
+import { ContextSelectorFooter } from '@patternfly/react-core/deprecated'
 import { Fragment } from 'react'
 
 import { useTranslation } from '../lib/acm-i18next'

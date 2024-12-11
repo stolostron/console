@@ -127,8 +127,8 @@ describe('ChannelController components 2. 2', () => {
     userEvent.click(container.querySelector(`button[aria-label="Go to last page"]`))
     userEvent.type(container.querySelector(`button[aria-label="Go to last page"]`), '{enter}')
 
-    userEvent.click(container.querySelector(`.pf-c-form-control`))
-    userEvent.type(container.querySelector(`.pf-c-form-control`), '{enter}')
+    userEvent.click(container.querySelector(`.pf-v5-c-form-control`))
+    userEvent.type(container.querySelector(`.pf-v5-c-form-control`), '{enter}')
   })
 })
 

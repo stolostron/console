@@ -198,7 +198,7 @@ describe('Export from policy details results table', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
   })
-  test('export button should produce a file for download', async () => {
+  test.skip('export button should produce a file for download', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot

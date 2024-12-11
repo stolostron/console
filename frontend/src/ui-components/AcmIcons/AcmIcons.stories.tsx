@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Page, PageSection } from '@patternfly/react-core'
+import { Icon, Page, PageSection } from '@patternfly/react-core'
 import { Meta } from '@storybook/react'
 
 import { AcmDescriptionList } from '../AcmDescriptionList/AcmDescriptionList'
@@ -24,7 +24,9 @@ export const Icons = (args: { size: 'lg' | 'md' | 'xl' | 'sm' }) => {
         key: icon,
         value: (
           <div style={{ width: '24px', height: '24px' }}>
-            <AcmIcon key={icon} icon={icon} size={args.size} />
+            <Icon size={args.size}>
+              <AcmIcon key={icon} icon={icon} />
+            </Icon>
           </div>
         ),
       }

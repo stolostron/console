@@ -24,13 +24,13 @@ describe('ControlPanelLabels component', () => {
     const Component = () => {
       return <ControlPanelLabels key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
     }
-    const { getByTestId, asFragment, container } = render(<Component />)
+    const { getByTestId, getByRole, asFragment } = render(<Component />)
     expect(asFragment()).toMatchSnapshot()
 
     userEvent.type(getByTestId('controlId'), 'label=test{enter}')
     expect(control.active).toEqual([{ key: 'label', value: 'test' }])
     userEvent.type(getByTestId('controlId'), 'label=test2{enter}')
-    container.querySelector('.pf-c-button').click()
+    userEvent.click(getByRole('button', { name: 'Close label=test' }))
     expect(control.active).toEqual([])
     userEvent.type(getByTestId('controlId'), 'label=test,')
     userEvent.type(getByTestId('controlId'), 'label={esc}')

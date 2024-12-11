@@ -1397,11 +1397,7 @@ exports[`Cluster creation control data for AZR generates correctly 1`] = `
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",
@@ -2861,11 +2857,7 @@ exports[`Cluster creation control data for AZR generates correctly for MCE 1`] =
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",
@@ -5721,11 +5713,7 @@ exports[`Cluster creation control data for AZR generates correctly with SNO enab
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon
-        color="currentColor"
-        noVerticalAlign={false}
-        size="sm"
-      />,
+      "icon": <ExternalLinkAltIcon />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",

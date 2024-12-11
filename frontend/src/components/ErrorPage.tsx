@@ -7,14 +7,17 @@ import {
   CardBody,
   EmptyState,
   EmptyStateBody,
-  EmptyStatePrimary,
   ExpandableSection,
   PageSection,
-  Title,
+  EmptyStateActions,
+  EmptyStateHeader,
+  EmptyStateFooter,
 } from '@patternfly/react-core'
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../lib/acm-i18next'
+import { LoadingPage } from './LoadingPage'
+import { PluginContext } from '../lib/PluginContext'
 
 export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {
   let title = t('Error')
@@ -125,17 +128,17 @@ export function ErrorState(props: { error: Error; actions?: ReactNode }) {
   const errorInfo = getErrorInfo(props.error, t)
   return (
     <EmptyState>
-      <Title size="lg" headingLevel="h4">
-        {errorInfo.title}
-      </Title>
+      <EmptyStateHeader titleText={<>{errorInfo.title}</>} headingLevel="h4" />
       <EmptyStateBody>{errorInfo.message}</EmptyStateBody>
-      {props.actions && <EmptyStatePrimary>{props.actions}</EmptyStatePrimary>}
+      <EmptyStateFooter>{props.actions && <EmptyStateActions>{props.actions}</EmptyStateActions>}</EmptyStateFooter>
     </EmptyState>
   )
 }
 
 export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
-  return (
+  const { dataContext } = useContext(PluginContext)
+  const { loadCompleted } = useContext(dataContext)
+  return loadCompleted ? (
     <PageSection>
       <Card>
         <CardBody>
@@ -143,5 +146,7 @@ export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
         </CardBody>
       </Card>
     </PageSection>
+  ) : (
+    <LoadingPage />
   )
 }
