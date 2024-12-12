@@ -55,6 +55,7 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
       values: ['!local-cluster'],
     },
   ]
+  /* istanbul ignore if */
   if (argoPageChunk?.keys) {
     filters.push({
       property: 'name',

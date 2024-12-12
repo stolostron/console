@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
-import { aggregateLocalApplications, aggregateRemoteApplications } from '../../src/routes/aggregators/applications'
+import {
+  aggregateLocalApplications,
+  aggregateRemoteApplications,
+  searchLoop,
+} from '../../src/routes/aggregators/applications'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
@@ -18,6 +22,7 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
+    await searchLoop()
     aggregateLocalApplications()
     await aggregateRemoteApplications(1)
 
@@ -264,6 +269,27 @@ const responseFiltered = {
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
+  //
+  // PING SEARCHAPI
+  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+    .post(
+      '/searchapi/graphql',
+      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Pod"]},{"property":"name","values":["search-api*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+    )
+    .reply(200, {
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                status: 'Running',
+              },
+            ],
+          },
+        ],
+      },
+    })
+
   // REMOTES: ARGO, OCP, FLUX
   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
     '/searchapi/graphql',
@@ -333,45 +359,6 @@ function setupNocks(prefixes?: boolean) {
     },
   })
 
-  // nock('https://search-search-api.undefined.svc.cluster.local:4010')
-  //   .post(
-  //     '/searchapi/graphql',
-  //     `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-  //     // "{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"}"
-  //   )
-  //   .reply(200, {})
-
-  //
-  // REMOTE/LOCAL OCP and FLUX--NOT SYSTEM
-  // pagedSearchQueries.forEach((query, inx) => {
-  //   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
-  //     '/searchapi/graphql',
-  //     `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-  //   )
-  //   if (inx === 0) {
-  //     nocked.reply(200, {
-  //       data: {
-  //         searchResult: [
-  //     })
-  //   } else {
-  //     nocked.reply(200, {})
-  //   }
-  // })
-
-  // nock('https://search-search-api.undefined.svc.cluster.local:4010')
-  //   .post(
-  //     '/searchapi/graphql',
-  //     `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-  //   )
-  //   .reply(200, {})
-
-  // // SYSTEM APPS
-  // nock('https://search-search-api.undefined.svc.cluster.local:4010')
-  //   .post(
-  //     '/searchapi/graphql',
-  //     '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
-  //   )
-  //   .reply(200, {})
   //
   // RBAC
   nock(process.env.CLUSTER_API_URL)

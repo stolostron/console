@@ -99,24 +99,6 @@ const queryTemplate: IQuery = {
   query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
 }
 
-// export function getApplications() {
-//   let items: ITransformedResource[] = []
-//   aggregateKubeApplications()
-//   Object.keys(applicationCache).forEach((key) => {
-//     if (applicationCache[key].resources) {
-//       items.push(...applicationCache[key].resources)
-//     } else if (Object.keys(applicationCache[key].resourceMap).length) {
-//       const allResources = Object.values(applicationCache[key].resourceMap)
-//       items.push(...allResources.flat())
-//     }
-//   })
-//   // mock a large environment
-//   if (process.env.MOCK_CLUSTERS) {
-//     items = items.concat(generateTransforms(getGiganticApps()).resources)
-//   }
-//   return items
-// }
-
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
   let timeoutID: string | number | NodeJS.Timeout
   const promises = [
@@ -134,8 +116,8 @@ export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 // //////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////
-export function startAggregatingApplications() {
-  void discoverSystemAppNamespacePrefixes()
+export async function startAggregatingApplications() {
+  await discoverSystemAppNamespacePrefixes()
   void searchLoop()
 }
 
@@ -205,7 +187,7 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
   return items
 }
 
-async function searchLoop() {
+export async function searchLoop() {
   let pass = 1
   let searchAPIMissing = false
   while (!stopping) {
@@ -247,6 +229,8 @@ async function searchLoop() {
     // process every APP_SEARCH_INTERVAL seconds
     if (process.env.NODE_ENV !== 'test') {
       await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL)))
+    } else {
+      stopping = true
     }
   }
 }
