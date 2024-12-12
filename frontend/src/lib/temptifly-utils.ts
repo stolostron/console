@@ -8,11 +8,7 @@ export function getControlByID(controlData: { id: string }[], id: string): any |
 }
 export const loadExistingNamespaces = (t: TFunction) => {
   return {
-    query: () => {
-      return new Promise((resolve, reject) => {
-        listProjects().promise.then(resolve).catch(reject)
-      })
-    },
+    query: () => listProjects().promise,
     loadingDesc: t('Loading namespaces...'),
     setAvailable: setAvailableNSSpecs.bind(null),
   }
