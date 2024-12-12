@@ -145,7 +145,7 @@ function VirtualMachineTable() {
         <EmptyStateBody>
           <Stack>
             <StackItem>
-              {t('To view managed virtual machines, you must enable the Red Hat Advanced Cluster Management.')}
+              {t('To view managed virtual machines, you must enable Search for Red Hat Advanced Cluster Management.')}
             </StackItem>
           </Stack>
         </EmptyStateBody>
