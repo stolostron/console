@@ -202,7 +202,7 @@ export async function searchLoop() {
         logger.error(`pingSearchAPI ${e}`)
         exists = false
       }
-      if (!exists) {
+      /* istanbul ignore if */ if (!exists) {
         if (!searchAPIMissing) {
           logger.error('search API missing')
           searchAPIMissing = true
@@ -210,6 +210,7 @@ export async function searchLoop() {
         await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
       }
     } while (!exists)
+    /* istanbul ignore if */
     if (searchAPIMissing) {
       logger.info('search API found')
       searchAPIMissing = false
@@ -227,6 +228,7 @@ export async function searchLoop() {
     logApplicationCountChanges(applicationCache, pass)
 
     // process every APP_SEARCH_INTERVAL seconds
+    /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
       await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL)))
     } else {

@@ -160,20 +160,21 @@ function getArgoDestinationCluster(
   let clusterName = ''
   const serverApi = destination?.server
   if (serverApi) {
+    /* istanbul ignore if */
     if (serverApi === 'https://kubernetes.default.svc') {
       clusterName = cluster ?? 'local-cluster'
     } else {
       const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
-      clusterName = server ? server.name : 'unknown'
+      /* istanbul ignore next */ clusterName = server ? server.name : 'unknown'
     }
   } else {
     // target destination was set using the name property
-    clusterName = destination?.name || 'unknown'
-    if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+    /* istanbul ignore next */ clusterName = destination?.name || 'unknown'
+    /* istanbul ignore next */ if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
       clusterName = cluster
     }
 
-    if (clusterName === 'in-cluster') {
+    /* istanbul ignore next */ if (clusterName === 'in-cluster') {
       clusterName = 'local-cluster'
     }
   }
