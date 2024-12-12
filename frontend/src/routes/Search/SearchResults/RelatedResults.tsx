@@ -10,10 +10,13 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
+import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { getVirtualMachineRowActions } from '../../Infrastructure/VirtualMachines/utils'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery, federatedErrorText } from '../search-helper'
@@ -33,6 +36,11 @@ export function RenderItemContent(
 ) {
   const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, hasFederatedError } = props
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
+  const allClusters = useAllClusters(true)
+  const { settingsState } = useSharedAtoms()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const rowActions = useGetRowActions(relatedKind, currentQuery, false, setDeleteResource, setDeleteExternalResource)
@@ -71,7 +79,23 @@ export function RenderItemContent(
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={rowActions}
+      rowActions={relatedKind.toLowerCase() !== 'virtualmachine' ? rowActions : undefined}
+      rowActionResolver={
+        // use the row action resolvers so we can dynamically display/enabled certain actions based on the resource status.
+        relatedKind.toLowerCase() === 'virtualmachine'
+          ? (item: any) =>
+              getVirtualMachineRowActions(
+                item,
+                allClusters,
+                setDeleteResource,
+                setDeleteExternalResource,
+                vmActionsEnabled,
+                toast,
+                navigate,
+                t
+              )
+          : undefined
+      }
     />
   )
 }
