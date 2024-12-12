@@ -146,7 +146,7 @@ export async function pingSearchAPI() {
           }
         } catch (e) {
           logger.error(`pingSearchAPI parse error ${e} ${body}`)
-          reject(new Error(new String(e).valueOf()))
+          reject(new Error(String(e).valueOf()))
         }
         clearTimeout(id)
       })

@@ -125,7 +125,7 @@ export function cacheOCPApplications(
         const helmRelease = helmReleases.find(
           (hr) => hr.metadata.name === itemLabel && hr.metadata.namespace === ocpApp.namespace
         )
-        if (helmRelease && helmRelease.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']) {
+        if (helmRelease?.metadata.annotations?.['apps.open-cluster-management.io/hosting-subscription']) {
           // don't list helm subscription apps as ocp
           return
         }
