@@ -39,6 +39,7 @@ describe('DetailsForm', () => {
                       cpuArchitecture: '',
                       platform: 'baremetal',
                       userManagedNetworking: false,
+                      customOpenshiftSelect: null,
                     },
                     step: {
                       title: {
