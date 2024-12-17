@@ -144,11 +144,13 @@ function VirtualMachineTable() {
         <EmptyState>
           <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
           <Title size="lg" headingLevel="h4">
-            {t('Unable to display VirtualMachines')}
+            {t('Unable to display virtual machines')}
           </Title>
           <EmptyStateBody>
             <Stack>
-              <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+              <StackItem>
+                {t('To view managed virtual machines, you must enable Search for Red Hat Advanced Cluster Management.')}
+              </StackItem>
             </Stack>
           </EmptyStateBody>
         </EmptyState>
