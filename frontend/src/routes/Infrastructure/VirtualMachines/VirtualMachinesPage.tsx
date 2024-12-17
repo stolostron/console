@@ -4,12 +4,12 @@ import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assis
 import {
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   PageSection,
   Stack,
   StackItem,
   TextVariants,
-  EmptyStateHeader,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
+import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
@@ -47,7 +48,6 @@ import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { getVirtualMachineRowActions } from './utils'
-import { PluginContext } from '../../../lib/PluginContext'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -93,7 +93,7 @@ function VirtualMachineTable() {
     if (error) {
       return []
     } else if (loading) {
-      return undefined
+      return undefined // undefined items triggers loading state table
     }
     // combine VMI node & ip address data in VM object
     const reducedVMAndVMI = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
@@ -144,11 +144,13 @@ function VirtualMachineTable() {
         <EmptyState>
           <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
           <Title size="lg" headingLevel="h4">
-            {t('Unable to display VirtualMachines')}
+            {t('Unable to display virtual machines')}
           </Title>
           <EmptyStateBody>
             <Stack>
-              <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+              <StackItem>
+                {t('To view managed virtual machines, you must enable Search for Red Hat Advanced Cluster Management.')}
+              </StackItem>
             </Stack>
           </EmptyStateBody>
         </EmptyState>
