@@ -236,7 +236,9 @@ describe('VirtualMachinesPage Page', () => {
     await waitFor(() => expect(screen.queryByText('Unable to display virtual machines')).toBeTruthy())
     await waitFor(() =>
       expect(
-        screen.queryByText('To view managed virtual machines, you must enable the Red Hat Advanced Cluster Management.')
+        screen.queryByText(
+          'To view managed virtual machines, you must enable Search for Red Hat Advanced Cluster Management.'
+        )
       ).toBeTruthy()
     )
   })
