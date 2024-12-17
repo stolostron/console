@@ -5,6 +5,7 @@ import { getArgoApps } from './applicationsArgo'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
+import { getGiganticApps } from '../../lib/gigantic'
 import { pingSearchAPI } from '../../lib/search'
 
 export enum AppColumns {
@@ -97,7 +98,7 @@ searchKeys.forEach((key) => {
 })
 
 export function getApplications() {
-  const items: ITransformedResource[] = []
+  let items: ITransformedResource[] = []
   aggregateKubeApplications()
   Object.keys(applicationCache).forEach((key) => {
     if (applicationCache[key].resources) {
@@ -107,6 +108,10 @@ export function getApplications() {
       items.push(...allResources.flat())
     }
   })
+  // mock a large environment
+  if (process.env.MOCK_CLUSTERS) {
+    items = items.concat(generateTransforms(getGiganticApps()).resources)
+  }
   return items
 }
 

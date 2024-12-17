@@ -156,6 +156,17 @@ export const getNumericValidator = (t: TFunction): Validator => ({
   required: true,
 })
 
+export const getNumericGTValidator = (t: TFunction, gt: number): Validator => ({
+  tester: {
+    test: (value: string) => {
+      const regex = /^\d+$/
+      return regex.test(value) && parseInt(value, 10) > gt
+    },
+  },
+  notification: t('Value must be integer greater than', [gt]),
+  required: true,
+})
+
 export const getAlphanumericWithPeriodValidator = (t: TFunction): Validator => ({
   tester: /^[A-Za-z0-9-_.]+$/,
   notification: t('creation.ocp.cluster.valid.alphanumeric.period'),

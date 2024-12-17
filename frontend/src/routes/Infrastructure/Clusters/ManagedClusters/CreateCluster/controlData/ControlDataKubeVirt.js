@@ -2,7 +2,11 @@
 import { Alert } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
-import { getNumericValidator, VALID_DNS_LABEL } from '../../../../../../components/TemplateEditor'
+import {
+  getNumericValidator,
+  getNumericGTValidator,
+  VALID_DNS_LABEL,
+} from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
 import {
   appendKlusterletAddonConfig,
@@ -17,7 +21,6 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
-import { loadExistingNamespaces } from '../../../../../../lib/temptifly-utils'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -117,13 +120,6 @@ export const getControlDataKubeVirt = (
       tooltip: t('tooltip.creation.ocp.hosted.cluster.namespace'),
       id: 'namespace',
       type: 'combobox',
-      fetchAvailable: loadExistingNamespaces(t),
-      active: 'clusters',
-      validation: {
-        constraint: VALID_DNS_LABEL,
-        notification: t('import.form.invalid.dns.label'),
-        required: true,
-      },
     },
     {
       name: t('creation.ocp.clusterSet'),
@@ -226,7 +222,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolCoreCount',
           type: 'number',
           initial: '2',
-          min: 1,
+          validation: getNumericGTValidator(t, 0),
         },
         {
           name: t('creation.ocp.memoryGB'),
@@ -234,7 +230,7 @@ export const getControlDataKubeVirt = (
           id: 'nodePoolMemory',
           type: 'number',
           initial: '8',
-          min: 1,
+          validation: getNumericGTValidator(t, 0),
         },
         {
           name: t('Auto repair'),

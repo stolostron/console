@@ -125,21 +125,10 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     },
   },
   {
-    "active": "clusters",
-    "fetchAvailable": {
-      "loadingDesc": "Loading namespaces...",
-      "query": [Function],
-      "setAvailable": [Function],
-    },
     "id": "namespace",
     "name": "Hosted cluster namespace",
     "tooltip": "The namespace where hosted cluster resources are created. Do not enter a namespace that matches the cluster name and do not use an existing managed cluster namespace.",
     "type": "combobox",
-    "validation": {
-      "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
-      "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
-      "required": true,
-    },
   },
   {
     "available": [],
@@ -248,18 +237,30 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       {
         "id": "nodePoolCoreCount",
         "initial": "2",
-        "min": 1,
         "name": "Core",
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
+        "validation": {
+          "notification": "Value must be integer greater than 0.",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
       },
       {
         "id": "nodePoolMemory",
         "initial": "8",
-        "min": 1,
         "name": "Memory (GiB)",
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
+        "validation": {
+          "notification": "Value must be integer greater than 0.",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
       },
       {
         "id": "nodePoolAutoRepair",
@@ -434,21 +435,10 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
     },
   },
   {
-    "active": "clusters",
-    "fetchAvailable": {
-      "loadingDesc": "Loading namespaces...",
-      "query": [Function],
-      "setAvailable": [Function],
-    },
     "id": "namespace",
     "name": "Hosted cluster namespace",
     "tooltip": "The namespace where hosted cluster resources are created. Do not enter a namespace that matches the cluster name and do not use an existing managed cluster namespace.",
     "type": "combobox",
-    "validation": {
-      "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
-      "notification": "The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character '-' is also permitted, as long as it does not appear in the first or last position.",
-      "required": true,
-    },
   },
   {
     "available": [],
@@ -557,18 +547,30 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       {
         "id": "nodePoolCoreCount",
         "initial": "2",
-        "min": 1,
         "name": "Core",
         "tooltip": "Number of cores assigned to each worker node VM",
         "type": "number",
+        "validation": {
+          "notification": "Value must be integer greater than 0.",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
       },
       {
         "id": "nodePoolMemory",
         "initial": "8",
-        "min": 1,
         "name": "Memory (GiB)",
         "tooltip": "Memory assigned to each worker node VM",
         "type": "number",
+        "validation": {
+          "notification": "Value must be integer greater than 0.",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
       },
       {
         "id": "nodePoolAutoRepair",

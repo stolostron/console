@@ -97,7 +97,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [filteredRows, setFilteredRows] = useState<number[]>([])
   const [userEdits, setUserEdits] = useState<any>([])
   const [customValidationErrors, setCustomValidationErrors] = useState<any>([])
-  const [resourceChanges, setResourceChanges] = useState<ProcessedType>()
   const [statusChanges, setStatusChanges] = useState<{
     changes: any[]
     errors: any[]
@@ -485,6 +484,23 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     ]
   )
 
+  // report resource changes to form
+  const reportResourceChanges = useCallback(
+    (resourceChanges: ProcessedType) => {
+      if (resourceChanges) {
+        const isArr = Array.isArray(resources)
+        const _resources = isArr ? resources : [resources]
+        if (onEditorChange && !isEqual(resourceChanges.resources, _resources)) {
+          const editChanges = {
+            resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
+          }
+          onEditorChange(editChanges)
+        }
+      }
+    },
+    [onEditorChange, resources]
+  )
+
   // react to changes from user editing yaml
   const editorChanged = useCallback(
     (value: string, e: { isFlush: any }) => {
@@ -532,7 +548,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           let customErrors = []
           if (!editorHasErrors) {
             const clonedUnredactedChange = cloneDeep(unredactedChange)
-            setResourceChanges(clonedUnredactedChange)
+            reportResourceChanges(clonedUnredactedChange)
             customErrors = setFormValues(syncs, clonedUnredactedChange) || []
             setCustomValidationErrors(customErrors)
           }
@@ -587,6 +603,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       lastUserEdits,
       monaco,
       readonly,
+      reportResourceChanges,
       secrets,
       showFiltered,
       showSecrets,
@@ -609,21 +626,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     },
     [debouncedEditorChange]
   )
-
-  // report resource changes to form
-  useEffect(() => {
-    if (resourceChanges) {
-      const isArr = Array.isArray(resources)
-      let _resources = isArr ? resourceChanges.resources : resourceChanges.resources[0]
-      _resources = isArr ? resources : [resources]
-      if (onEditorChange && !isEqual(resourceChanges.resources, _resources)) {
-        const editChanges = {
-          resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
-        }
-        onEditorChange(editChanges)
-      }
-    }
-  }, [onEditorChange, resourceChanges, resources])
 
   // report errors/user edits to form
   useEffect(() => {

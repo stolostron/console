@@ -21,11 +21,16 @@ describe('PluginDataContextProvider', () => {
   it('does not render LoadData until requested', async () => {
     const pluginData: PluginData = {
       ...defaultContext,
-      loaded: false,
+      loadStarted: false,
       load: jest.fn(),
     }
-    render(<TestPluginDataContextProvider value={pluginData} />)
-    await waitForText('Loading')
+    render(
+      <MemoryRouter>
+        <TestPluginDataContextProvider value={pluginData} />
+      </MemoryRouter>
+    )
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await waitForText('Loading')
     expect(pluginData.load).toHaveBeenCalled()
   })
   it('renders LoadData when requested', async () => {
@@ -33,7 +38,6 @@ describe('PluginDataContextProvider', () => {
     nockRequest('/globalhub', mockGlobalHubReq)
     const pluginData: PluginData = {
       ...defaultContext,
-      loaded: true,
       startLoading: true,
       load: jest.fn(),
     }

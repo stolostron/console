@@ -7,6 +7,7 @@ import { getEncodeStream } from './compression'
 import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
+import { getGiganticEvents } from './gigantic'
 
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
@@ -30,6 +31,18 @@ export interface ServerSideEvent<DataT = unknown> {
   name?: string
   namespace?: string
   data?: DataT
+}
+export interface WatchEvent {
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'EOP'
+  object: {
+    kind: string
+    apiVersion: string
+    metadata: {
+      name: string
+      namespace: string
+      resourceVersion: string
+    }
+  }
 }
 
 export interface ServerSideEventClient {
@@ -276,12 +289,104 @@ export class ServerSideEvents {
       }
     }
 
-    let sentCount = 0
-    for (const eventID in this.events) {
-      if (Number(eventID) <= lastEventID) continue
-      this.sendEvent(clientID, this.events[eventID])
-      sentCount++
+    // SORT EVENTS INTO SMALLER PACKETS
+    // SO THAT BROWSER PAGE LOADS QUICKER
+    // split events into packets
+    let parts = Object.values(this.events)
+
+    // mock a large environment
+    if (process.env.MOCK_CLUSTERS) {
+      const loaded = parts.pop()
+      parts = [...parts, ...getGiganticEvents()]
+      parts.push(loaded)
     }
+
+    // remove START, SETTINGS and LOADED from events
+    const start = parts.shift()
+    const end = parts.pop()
+    const inx = parts.findIndex(({ data }) => {
+      return (data as { type?: 'SETTINGS' }).type === 'SETTINGS'
+    })
+    const settings = parts.splice(inx, 1)[0]
+
+    // separate resource by kind
+    // we want to send the resources that populate the main console pages first
+    // then send the details 2nd
+    const clusters: ServerSideEvent<unknown>[] = []
+    const policies: ServerSideEvent<unknown>[] = []
+    const agents: ServerSideEvent<unknown>[] = []
+    const infos: ServerSideEvent<unknown>[] = []
+    const addons: ServerSideEvent<unknown>[] = []
+    const other: ServerSideEvent<unknown>[] = []
+    const remainder: ServerSideEvent<unknown>[] = []
+    parts.forEach((event) => {
+      const data = event.data as WatchEvent
+      switch (data.object.kind) {
+        case 'ManagedCluster':
+        case 'HostedCluster':
+        case 'ClusterDeployment':
+          clusters.push(event)
+          break
+        case 'Policy':
+        case 'PolicySet':
+          policies.push(event)
+          break
+        case 'AgentClusterInstall':
+          agents.push(event)
+          break
+        case 'ManagedClusterInfo':
+          infos.push(event)
+          break
+        case 'ManagedClusterAddOn':
+          addons.push(event)
+          break
+        case 'Search':
+        case 'Secret':
+          other.push(event)
+          break
+        default:
+          remainder.push(event)
+          break
+      }
+    })
+
+    // sort events alphabetically so that browser list fills from top to bottom
+    const compareFn =
+      (propName: 'name' | 'namespace') => (a: ServerSideEvent<unknown>, b: ServerSideEvent<unknown>) => {
+        const adata = a.data as WatchEvent
+        const bdata = b.data as WatchEvent
+        return adata.object.metadata[propName].localeCompare(bdata.object.metadata[propName])
+      }
+    clusters.sort(compareFn('name'))
+    infos.sort(compareFn('namespace'))
+    policies.sort(compareFn('name'))
+    addons.sort(compareFn('namespace'))
+
+    // send packets of resources
+    // with resources that fill main console pages first
+    let sentCount = 0
+    const sending = [start, settings]
+    do {
+      sending.push(...clusters.splice(0, 200))
+      sending.push(...agents.splice(0, 200))
+      sending.push(...infos.splice(0, 200))
+      sending.push(...policies.splice(0, 200))
+      sending.push(...addons.splice(0, 400))
+      sending.push(...other.splice(0, 100))
+
+      // EOP tells browser (LoadData) to process and recoil resources that have been sent so far
+      sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
+    } while (clusters.length || policies.length || addons.length || infos.length || agents.length)
+
+    // send the remaining resources
+    do {
+      sending.push(...remainder.splice(0, 1978))
+    } while (remainder.length)
+    sending.push(end)
+    sending.forEach((event) => {
+      this.sendEvent(clientID, event)
+      sentCount++
+    })
 
     logger.info({ msg: 'event stream start', events: sentCount })
 

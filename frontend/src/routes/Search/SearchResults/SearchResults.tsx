@@ -8,20 +8,23 @@ import {
   AccordionToggle,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   ExpandableSection,
   PageSection,
   Stack,
   StackItem,
   Tooltip,
-  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
+import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { getVirtualMachineRowActions } from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -76,6 +79,12 @@ function RenderAccordionItem(props: {
     idx,
     defaultIsExpanded,
   } = props
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
+  const allClusters = useAllClusters(true)
+  const { settingsState } = useSharedAtoms()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -100,11 +109,38 @@ function RenderAccordionItem(props: {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={rowActions}
+          rowActions={kindString.toLowerCase() !== 'virtualmachine' ? rowActions : undefined}
+          rowActionResolver={
+            // use the row action resolvers so we can dynamically display/enabled certain actions based on the resource status.
+            kindString.toLowerCase() === 'virtualmachine'
+              ? (item: any) =>
+                  getVirtualMachineRowActions(
+                    item,
+                    allClusters,
+                    setDeleteResource,
+                    setDeleteExternalResource,
+                    vmActionsEnabled,
+                    toast,
+                    navigate,
+                    t
+                  )
+              : undefined
+          }
         />
       )
     },
-    [rowActions, searchDefinitions]
+    [
+      rowActions,
+      searchDefinitions,
+      kindString,
+      setDeleteExternalResource,
+      setDeleteResource,
+      allClusters,
+      navigate,
+      t,
+      toast,
+      vmActionsEnabled,
+    ]
   )
 
   return (
