@@ -1164,9 +1164,9 @@ describe('CreateCluster on premise', () => {
       await typeByTestId('form-input-name-field', clusterName)
       await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
 
-      await clickByTestId('form-input-highAvailabilityMode-field')
+      await clickByTestId('form-input-highAvailabilityMode-field', 0)
       await waitForText('ai:SNO enables you to install OpenShift using only one host.')
-      await clickByTestId('form-input-highAvailabilityMode-field')
+      await clickByTestId('form-input-highAvailabilityMode-field', 0)
 
       await waitForText('OpenShift 4.8.15') // single value of combobox
       await typeByTestId('additionalLabels', 'myLabelKey=myValue')
