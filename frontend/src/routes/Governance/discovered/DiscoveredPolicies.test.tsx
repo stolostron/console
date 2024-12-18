@@ -106,6 +106,8 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     render(
@@ -160,6 +162,8 @@ describe('useFetchPolicies custom hook', () => {
       isFetching: false,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     render(
@@ -176,6 +180,8 @@ describe('useFetchPolicies custom hook', () => {
       isFetching: true,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     render(
@@ -250,6 +256,8 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     const { baseElement } = render(
@@ -393,6 +401,8 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     const { container } = render(
@@ -557,6 +567,8 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
 
     render(

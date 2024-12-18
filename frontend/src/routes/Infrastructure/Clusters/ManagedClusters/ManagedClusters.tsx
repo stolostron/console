@@ -884,30 +884,25 @@ export function useClusterLabelsColumn(isLarge: boolean): IAcmTableColumn<Cluste
     cell: (cluster) => {
       if (cluster.labels) {
         const labelKeys = Object.keys(cluster.labels)
-        let collapse
-        if (isLarge) {
-          collapse = labelKeys
-        } else {
-          collapse =
-            [
-              'cloud',
-              'clusterID',
-              'installer.name',
-              'installer.namespace',
-              'name',
-              'vendor',
-              'managed-by',
-              'local-cluster',
-              'openshiftVersion',
-            ].filter((label) => {
-              return labelKeys.includes(label)
-            }) ?? []
-          labelKeys.forEach((label) => {
-            if (label.includes('open-cluster-management.io')) {
-              collapse.push(label)
-            }
-          })
-        }
+        const collapse =
+          [
+            'cloud',
+            'clusterID',
+            'installer.name',
+            'installer.namespace',
+            'name',
+            'vendor',
+            'managed-by',
+            'local-cluster',
+            'openshiftVersion',
+          ].filter((label) => {
+            return labelKeys.includes(label)
+          }) ?? []
+        labelKeys.forEach((label) => {
+          if (label.includes('open-cluster-management.io')) {
+            collapse.push(label)
+          }
+        })
         return (
           <AcmLabels
             labels={cluster.labels}
@@ -915,6 +910,7 @@ export function useClusterLabelsColumn(isLarge: boolean): IAcmTableColumn<Cluste
             collapsedText={t('show.more', { count: collapse.length })}
             allCollapsedText={t('count.labels', { count: collapse.length })}
             collapse={collapse}
+            isCompact={isLarge}
           />
         )
       } else {

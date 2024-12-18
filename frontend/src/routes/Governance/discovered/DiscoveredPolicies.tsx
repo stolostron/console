@@ -7,6 +7,7 @@ import {
   IAcmTableColumn,
   AcmAlert,
   AcmTable,
+  AcmLabels,
 } from '../../../ui-components'
 import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -24,6 +25,7 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
+import { exportObjectString } from '../../../resources/utils'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -67,8 +69,16 @@ function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
   return '-'
 }
 
+function labelsCell(
+  item: DiscoverdPolicyTableItem,
+  labelMap: Record<string, { pairs?: Record<string, string>; labels?: string[] }> | undefined
+): ReactNode | string {
+  const labels = labelMap?.[item.id]?.pairs
+  return <AcmLabels labels={labels} isCompact={true} />
+}
+
 export default function DiscoveredPolicies() {
-  const { isFetching, data, err } = useFetchPolicies()
+  const { isFetching, data, labelOptions, labelMap, err } = useFetchPolicies()
   const { t } = useTranslation()
 
   const discoveredPoliciesCols = useMemo<IAcmTableColumn<DiscoverdPolicyTableItem>[]>(
@@ -98,6 +108,13 @@ export default function DiscoveredPolicies() {
         search: 'kind',
         id: 'kind',
         exportContent: (item: DiscoverdPolicyTableItem) => item.kind,
+      },
+      {
+        header: t('table.labels'),
+        cell: (item: DiscoverdPolicyTableItem) => labelsCell(item, labelMap),
+        exportContent: (item: DiscoverdPolicyTableItem) => {
+          return exportObjectString(labelMap ? labelMap[item.id]?.pairs : {})
+        },
       },
       {
         header: t('Response action'),
@@ -139,7 +156,7 @@ export default function DiscoveredPolicies() {
         exportContent: getSourceExportCSV,
       },
     ],
-    [t]
+    [labelMap, t]
   )
 
   const filters = useMemo<ITableFilter<DiscoverdPolicyTableItem>[]>(
@@ -208,6 +225,14 @@ export default function DiscoveredPolicies() {
       getResponseActionFilter(t),
       getSeverityFilter(t),
       {
+        id: 'label',
+        label: t('Label'),
+        options: labelOptions || [],
+        tableFilterFn: (selectedValues, item) => {
+          return selectedValues.some((val) => labelMap?.[item.id].labels.includes(val))
+        },
+      },
+      {
         id: 'source',
         label: t('Source'),
         options: data ? getSourceFilterOptions(data) : [],
@@ -216,7 +241,7 @@ export default function DiscoveredPolicies() {
         },
       },
     ],
-    [data, t]
+    [data, labelMap, labelOptions, t]
   )
 
   if (isFetching) {
