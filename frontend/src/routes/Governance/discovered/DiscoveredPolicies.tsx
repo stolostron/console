@@ -263,6 +263,7 @@ export default function DiscoveredPolicies() {
         items={data}
         emptyState={<AcmEmptyState title={t(`You don't have any policies.`)} message={t('There are no policies.')} />}
         filters={filters}
+        secondaryFilterIds={['label']}
         showExportButton
         exportFilePrefix="discoveredPolicies"
       />
