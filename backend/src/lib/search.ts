@@ -4,8 +4,8 @@ import { RequestOptions, request } from 'https'
 import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
-import { IResource } from '../resources/resource'
 import { logger } from './logger'
+import { IQuery } from '../routes/aggregators/applications'
 
 export type ISearchResult = {
   data: {
@@ -57,74 +57,13 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
   return options
 }
 
-// search api does not provide paging but we want to break up our searches so as not to overtax the search api by querying for all apps at once
-// this is pseudo-paging: we grab all apps that begin with a letter, that way we don't have overlapping results
-// we don't want to do this letter by letter because that would take 36 searches
-// so we create 6 groupings of letters and we try to make each group search return about the same number of apps
-export const pagedSearchQueries: string[][] = [
-  ['a*', 'i*', 'n*'],
-  ['e*', 'r*', 'o*'],
-  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
-  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
-  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
-  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
-]
-
-export async function getPagedSearchResources(
-  query: {
-    operationName: string
-    variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
-    query: string
-  },
-  usePagedQuery: boolean,
-  kind: string,
-  pass: number
-) {
+export async function getSearchResults(query: IQuery) {
   const options = await getServiceAccountOptions()
-  let resources: IResource[] = []
-  for (let i = 0; i < pagedSearchQueries.length; ) {
-    const _query = structuredClone(query)
-    // should we limit the results by groupings of apps that
-    // begin with certain letters?
-    if (usePagedQuery) {
-      const values = pagedSearchQueries[i]
-      _query.variables.input[0].filters.push({
-        property: 'name',
-        values,
-      })
-    }
-    let results: ISearchResult
-    try {
-      results = await getSearchResults(options, JSON.stringify(_query), kind, pass)
-    } catch (e) {
-      logger.error(`getPagedSearchResources ${kind} ${e}`)
-      continue
-    }
-    const items = (results.data?.searchResult?.[0]?.items || []) as IResource[]
-    resources = resources.concat(items)
-    if (process.env.NODE_ENV !== 'test') {
-      let timeout = 10000
-      if (items.length < 1000) timeout = 2000
-      await new Promise((r) => setTimeout(r, timeout))
-    }
-    if (!usePagedQuery) break
-    i++
-  }
-  return resources
-}
-
-export function getSearchResults(
-  options: string | RequestOptions | URL,
-  variables: string,
-  kind: string,
-  pass: number
-) {
-  // if acm/mce are starting up, increase the timeout in case search hasn't started yet
-  const requestTimeout = (pass <= 2 ? 10 : 2) * 60 * 1000
+  const requestTimeout = 2 * 60 * 1000
   return new Promise<ISearchResult>((resolve, reject) => {
     let body = ''
     const id = setTimeout(() => {
-      logger.error(`getSearchResults ${kind} request timeout`)
+      logger.error(`getSearchResults request timeout`)
       reject(Error('request timeout'))
     }, requestTimeout)
     const req = request(options, (res) => {
@@ -136,14 +75,14 @@ export function getSearchResults(
           const result = JSON.parse(body) as ISearchResult
           const message = typeof result === 'string' ? result : result.message
           if (message) {
-            logger.error(`getSearchResults ${kind} return error ${message}`)
+            logger.error(`getSearchResults return error ${message}`)
             reject(Error(result.message))
           }
           resolve(result)
         } catch (e) {
           // search might be overwhelmed
           // pause before next request
-          logger.error(`getSearchResults ${kind} parse error ${e} ${body}`)
+          logger.error(`getSearchResults parse error ${e} ${body}`)
           setTimeout(() => {
             reject(Error(body))
           }, requestTimeout)
@@ -152,10 +91,10 @@ export function getSearchResults(
       })
     })
     req.on('error', (e) => {
-      logger.error(`getSearchResults ${kind} request error ${e.message}`)
+      logger.error(`getSearchResults request error ${e.message}`)
       reject(e)
     })
-    req.write(variables)
+    req.write(JSON.stringify(query))
     req.end()
   })
 }
@@ -206,7 +145,8 @@ export async function pingSearchAPI() {
             reject(new Error('no data'))
           }
         } catch (e) {
-          reject(new Error(new String(e).valueOf()))
+          logger.error(`pingSearchAPI parse error ${e} ${body}`)
+          reject(new Error(String(e).valueOf()))
         }
         clearTimeout(id)
       })
