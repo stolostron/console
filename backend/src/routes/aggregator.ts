@@ -12,7 +12,7 @@ import {
 import { requestAggregatedStatuses } from './aggregators/statuses'
 
 export function startAggregating(): void {
-  startAggregatingApplications()
+  void startAggregatingApplications()
 }
 
 export function stopAggregating(): void {
