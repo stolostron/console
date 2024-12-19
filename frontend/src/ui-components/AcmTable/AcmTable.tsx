@@ -89,8 +89,6 @@ type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
 type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[] | number[]
 
-// when a filter has more then this many options, give it its own dropdown
-const SPLIT_FILTER_THRESHOLD = 30
 // so we don't create 3000 elements, only create this many
 // with the assumption that if the user is looking for an option
 // they will use filter to find it
@@ -567,6 +565,7 @@ export type AcmTableProps<T> = {
   noBorders?: boolean
   fuseThreshold?: number
   filters?: ITableFilter<T>[]
+  secondaryFilterIds?: string[]
   advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
   showColumManagement?: boolean
@@ -587,6 +586,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     customTableAction,
     additionalToolbarItems,
     filters = [],
+    secondaryFilterIds,
     advancedFilters = [],
     gridBreakPoint,
     initialSelectedItems,
@@ -1414,7 +1414,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   </ToolbarItem>
                 )}
                 {hasFilter && (
-                  <TableColumnFilters id={id} filters={filters} filterCounts={filterCounts} items={items} />
+                  <TableColumnFilters
+                    id={id}
+                    filters={filters}
+                    secondaryFilterIds={secondaryFilterIds}
+                    filterCounts={filterCounts}
+                    items={items}
+                  />
                 )}
               </ToolbarGroup>
             )}
@@ -1580,10 +1586,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 }
 
 function TableColumnFilters<T>(
-  props: Readonly<{ id?: string; filters: ITableFilter<T>[]; filterCounts: FilterCounts | undefined; items?: T[] }>
+  props: Readonly<{
+    id?: string
+    filters: ITableFilter<T>[]
+    secondaryFilterIds?: string[]
+    filterCounts: FilterCounts | undefined
+    items?: T[]
+  }>
 ) {
   const [isOpen, setIsOpen] = useState([false])
-  const { id, filters, items, filterCounts } = props
+  const { id, filters, secondaryFilterIds, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
     id,
     filters,
@@ -1651,12 +1663,13 @@ function TableColumnFilters<T>(
         }
       }
 
-      // split filters up if some have more then SPLIT_FILTER_THRESHOLD options
+      // if a secondaryFilterId is present (ex: specify 'labels' will make it its own dropdown)
+      // split filters up
       // (like an environment with lots of clusters)
       let group = filterGroups[0]
       /* istanbul ignore else */
       if (options.length) {
-        if (options.length > SPLIT_FILTER_THRESHOLD) {
+        if (secondaryFilterIds?.includes(filter.id)) {
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],
@@ -1715,7 +1728,7 @@ function TableColumnFilters<T>(
         }),
       }
     })
-  }, [filterCounts, filters, items, selections])
+  }, [filterCounts, filters, items, secondaryFilterIds, selections])
 
   // used by filters with lots of options to filter the options
   const onFilterOptions = useCallback(
