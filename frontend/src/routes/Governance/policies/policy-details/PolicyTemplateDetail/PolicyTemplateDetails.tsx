@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Flex, FlexItem, Icon, PageSection, Spinner, Title } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Icon, PageSection } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -7,9 +7,9 @@ import {
   ExternalLinkAltIcon,
 } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { v4 as uuidv4 } from 'uuid'
-import { NavigationPath } from '../../../../NavigationPath'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,
   AcmDescriptionList,
@@ -17,23 +17,16 @@ import {
   AcmTable,
   AcmTablePaginationContextProvider,
   compareStrings,
+  IAcmTableColumn,
   ListItems,
-} from '../../../../ui-components'
-import { DiffModal } from '../../components/DiffModal'
+} from '../../../../../ui-components'
+import { DiffModal } from '../../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
-import { getEngineWithSvg } from '../../common/util'
+import { getEngineWithSvg } from '../../../common/util'
 import { useFetchKyvernoRelated, useFetchVapb, useFetchVapbParamRefs } from './PolicyTemplateDetailHooks'
 import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
-import { fireManagedClusterView } from '../../../../resources'
-
-interface IRuleMessage {
-  ruleName: string
-  message: string
-}
-interface IRelatedObjMessages {
-  [relatedItemUid: string]: IRuleMessage[]
-}
+import { KyvernoRelatedResources } from './KyvernoRelatedResources'
 
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
@@ -51,7 +44,6 @@ export function PolicyTemplateDetails() {
   const isKyverno = ['kyverno.io'].includes(apiGroup)
   const isVAPB = apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding'
   const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
-  const relatedObjectsMessages: IRelatedObjMessages = {}
 
   useEffect(() => {
     if (isKyverno && kyvernoRelated.relatedItems !== undefined && kyvernoRelated.relatedItems) {
@@ -161,7 +153,7 @@ export function PolicyTemplateDetails() {
     return cols
   }, [t, name, kind, apiGroup, clusterName, apiVersion, namespace, hasVapb, template, vapb.loading, vapb.vapbItems])
 
-  const violationColumn = useMemo(() => {
+  const violationColumn: IAcmTableColumn<any> = useMemo(() => {
     return {
       header: t('Violations'),
       sort: (a: any, b: any) => compareStrings(a.compliant, b.compliant),
@@ -235,15 +227,16 @@ export function PolicyTemplateDetails() {
 
         let policyReportLink: ReactNode = <></>
         if (item.policyReport) {
-          const { cluster, kind, name, namespace, apigroup, apiversion } = item.policyReport
+          const { cluster, kind, name, namespace, apigroup, apiversion, _hubClusterResource } = item.policyReport
           const namespaceArg = namespace ? `&namespace=${namespace}` : ''
           const apigroupArg = apigroup ? `${apigroup}%2F` : ''
+          const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
           policyReportLink = (
             <div>
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+                href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
               >
                 {t('View report')}
                 <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
@@ -328,14 +321,15 @@ export function PolicyTemplateDetails() {
       {
         header: t('Name'),
         cell: (item: any) => {
-          const { cluster, kind, name, namespace, apiversion, apigroup } = item
+          const { cluster, kind, name, namespace, apiversion, apigroup, _hubClusterResource } = item
           const apigroupArg = apigroup ? `${apigroup}%2F` : ''
           const namespaceArg = namespace ? `&namespace=${namespace}` : ''
+          const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
           return (
             <a
               target="_blank"
               rel="noopener noreferrer"
-              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
+              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
             >
               {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
             </a>
@@ -366,67 +360,6 @@ export function PolicyTemplateDetails() {
     [t]
   )
 
-  const relatedResourceKyvernoColumns = useMemo(
-    () => [
-      {
-        header: t('Name'),
-        cell: (item: any) => {
-          const { cluster, kind, name, namespace, apiversion, apigroup } = item
-          const apigroupArg = apigroup ? `${apigroup}%2F` : ''
-          const namespaceArg = namespace ? `&namespace=${namespace}` : ''
-          return (
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}`}
-            >
-              {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-            </a>
-          )
-        },
-        sort: 'name',
-        search: 'name',
-      },
-      {
-        header: t('Namespace'),
-        cell: (item: any) => item.namespace ?? '-',
-        search: (item: any) => item.namespace,
-        sort: (a: any, b: any) => compareStrings(a.namespace, b.namespace),
-      },
-      {
-        header: t('Kind'),
-        cell: 'kind',
-        sort: 'kind',
-        search: 'kind',
-      },
-      {
-        header: t('API version'),
-        cell: (item: any) => (item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion),
-        sort: 'apigroup',
-        search: 'apigroup',
-      },
-      violationColumn,
-      {
-        header: t('Messages'),
-        cell: (item: any) => (
-          <KyvernoMessages
-            {...{
-              item,
-              kyvernoPolicyName: name,
-              KyvernoPolicyNamespace: namespace,
-              messageCache: relatedObjectsMessages,
-            }}
-          />
-        ),
-        sort: 'Messages',
-        search: 'Messages',
-      },
-    ],
-    // Don't include messageCache since it's just a cache and won't change how things are rendered.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, violationColumn, name, namespace]
-  )
-
   return (
     <div>
       {(vapb.err || kyvernoRelated.err) && (
@@ -445,170 +378,41 @@ export function PolicyTemplateDetails() {
         />
       </PageSection>
       <PageSection>
-        <Title headingLevel="h2">{isVAPB ? t('Parameter resources') : t('Related resources')}</Title>
-        <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
-          <AcmTable
-            items={relatedObjects}
-            emptyState={
-              isVAPB ? (
-                <AcmEmptyState
-                  title={t('No parameter resources')}
-                  message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
-                />
+        <Card>
+          <CardTitle>{isVAPB ? t('Parameter resources') : t('Related resources')}</CardTitle>
+          <CardBody>
+            <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
+              {isKyverno ? (
+                <KyvernoRelatedResources {...{ name, namespace, template, relatedObjects, violationColumn }} />
               ) : (
-                <AcmEmptyState
-                  title={t('No related resources')}
-                  message={t('There are no resources related to this policy template.')}
+                <AcmTable
+                  items={relatedObjects}
+                  emptyState={
+                    isVAPB ? (
+                      <AcmEmptyState
+                        title={t('No parameter resources')}
+                        message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
+                      />
+                    ) : (
+                      <AcmEmptyState
+                        title={t('No related resources')}
+                        message={t('There are no resources related to this policy template.')}
+                      />
+                    )
+                  }
+                  columns={isVAPB ? paramRefVAPBColumns : relatedResourceColumns}
+                  keyFn={(item: any) => `${item?.object?.kind}.${item?.object?.metadata.name}`}
+                  initialSort={{
+                    index: 0,
+                    direction: 'asc',
+                  }}
+                  perPageOptions={isKyverno ? [] : undefined}
                 />
-              )
-            }
-            columns={isKyverno ? relatedResourceKyvernoColumns : isVAPB ? paramRefVAPBColumns : relatedResourceColumns}
-            keyFn={(item) =>
-              isKyverno ? `${item.kind}.${item.name}` : `${item?.object?.kind}.${item?.object?.metadata.name}`
-            }
-            initialSort={{
-              index: 0,
-              direction: 'asc',
-            }}
-            perPageOptions={isKyverno ? [] : undefined}
-          />
-        </AcmTablePaginationContextProvider>
+              )}
+            </AcmTablePaginationContextProvider>
+          </CardBody>
+        </Card>
       </PageSection>
     </div>
-  )
-}
-
-const KyvernoMessages = ({
-  item,
-  kyvernoPolicyName,
-  KyvernoPolicyNamespace,
-  messageCache,
-}: {
-  item: any
-  kyvernoPolicyName: string
-  KyvernoPolicyNamespace?: string
-  messageCache: IRelatedObjMessages
-}) => {
-  // Cluster + '/' + Resource uid
-  const uid = item._uid
-  const {
-    cluster: reportCluster,
-    kind: reportKind,
-    name: reportName,
-    namespace: reportNs,
-    apigroup,
-    apiversion,
-  } = item.policyReport
-  const [loading, setLoading] = useState<boolean>(false)
-  const [ruleMsg, setRuleMsg] = useState<IRuleMessage[] | undefined>()
-  const [errString, setErrString] = useState<string | undefined>()
-  const reportVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
-
-  useEffect(
-    () => {
-      let ignore = false
-
-      const foundPolicyMessages = messageCache[uid]
-      if (foundPolicyMessages !== undefined) {
-        setRuleMsg(foundPolicyMessages)
-        setLoading(false)
-      } else if (!loading) {
-        setLoading(true)
-        const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
-
-        fireManagedClusterView(
-          reportCluster,
-          reportKind,
-          reportVersion,
-          reportName,
-          reportNs,
-          viewName,
-          viewName !== undefined
-        )
-          .then((viewResponse) => {
-            if (ignore) {
-              return
-            }
-
-            if (viewResponse?.message) {
-              setErrString(viewResponse.message)
-            } else {
-              // policy field: namespace/policyName
-              const results: { message: string; rule: string; policy: string }[] = viewResponse?.result?.results.filter(
-                ({ policy: policyNsName }: { policy: string }) => {
-                  // To avoid scenarios where a ClusterPolicy and a Kyverno Policy share the same name.
-                  const nsName = KyvernoPolicyNamespace
-                    ? KyvernoPolicyNamespace + '/' + kyvernoPolicyName
-                    : kyvernoPolicyName
-
-                  if (nsName === policyNsName) {
-                    return true
-                  }
-
-                  return false
-                }
-              )
-
-              const ruleMsgs = results.map((r) => ({ ruleName: r.rule, message: r.message }))
-              messageCache[uid] = ruleMsgs
-
-              setRuleMsg(ruleMsgs)
-            }
-          })
-          .catch((err: Error) => {
-            if (ignore) {
-              return
-            }
-
-            console.error('Error getting resource: ', err)
-            setErrString(err.message)
-          })
-          .finally(() => {
-            if (ignore) {
-              return
-            }
-
-            setLoading(false)
-          })
-      }
-
-      return () => {
-        ignore = true
-      }
-    },
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
-
-  if (errString) {
-    return (
-      <div>
-        <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-        {errString}
-      </div>
-    )
-  }
-
-  if (loading) {
-    return <Spinner size="md" />
-  }
-
-  return (
-    <Flex direction={{ default: 'column' }} style={{ gap: 4 }}>
-      {ruleMsg?.map((rm) => {
-        return (
-          <FlexItem key={rm.ruleName} style={{ margin: 0 }}>
-            {rm.message ? (
-              <>
-                <b>{rm.ruleName}:</b> {rm.message}
-              </>
-            ) : (
-              <>-</>
-            )}
-          </FlexItem>
-        )
-      })}
-    </Flex>
   )
 }

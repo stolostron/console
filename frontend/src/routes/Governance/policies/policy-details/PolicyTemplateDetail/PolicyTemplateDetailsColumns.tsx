@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Skeleton } from '@patternfly/react-core'
-import { ListItems } from '../../../../ui-components'
+import { ListItems } from '../../../../../ui-components'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath } from '../../../../../NavigationPath'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 // Any resources that are related to Vapb then add these rows

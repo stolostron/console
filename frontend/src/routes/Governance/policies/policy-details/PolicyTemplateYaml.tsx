@@ -2,8 +2,8 @@
 import { PageSection } from '@patternfly/react-core'
 import YamlEditor from '../../../../components/YamlEditor'
 import jsYaml from 'js-yaml'
-import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useEffect, useState } from 'react'
+import { useTemplateDetailsContext } from './PolicyTemplateDetail/PolicyTemplateDetailsPage'
 
 export default function PolicyTemplateYaml() {
   const { template } = useTemplateDetailsContext()
