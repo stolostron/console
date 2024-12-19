@@ -78,7 +78,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         'process.env.TRANSLATION_NAMESPACE': JSON.stringify(`plugin__${env.plugin}`),
       }) as unknown as webpack.WebpackPluginInstance,
       new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
-      new MonacoWebpackPlugin({ languages: ['yaml'] }),
+      new MonacoWebpackPlugin({ languages: ['yaml'], globalAPI: true }),
       new MiniCssExtractPlugin({
         filename: '[name].[contenthash:8].css',
         chunkFilename: '[id].[contenthash:8].css',
