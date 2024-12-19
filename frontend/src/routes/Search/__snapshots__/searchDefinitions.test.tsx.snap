@@ -497,6 +497,31 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub default res
 </body>
 `;
 
+exports[`Correctly returns VMLaunchLinks 1`] = `
+<body>
+  <div>
+    <div
+      style="display: contents;"
+    >
+      <span
+        class="pf-v5-c-label"
+      >
+        <button
+          class="pf-v5-c-label__content"
+          type="button"
+        >
+          <span
+            class="pf-v5-c-label__text"
+          >
+            Launch links
+          </span>
+        </button>
+      </span>
+    </div>
+  </div>
+</body>
+`;
+
 exports[`Correctly returns all resource definitions: SearchDefinitions-application 1`] = `
 [
   {
@@ -2426,7 +2451,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "sort": "ready",
   },
   {
-    "cell": <CreateExternalVMLink
+    "cell": <VMLaunchLinks
       item={
         {
           "cluster": "testCluster",
@@ -2440,7 +2465,8 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
       t={[Function]}
     />,
-    "header": "VM details",
+    "header": "",
+    "id": "launch-links",
   },
   {
     "cell": "in a month",
@@ -2597,7 +2623,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "sort": "ipaddress",
   },
   {
-    "cell": <CreateExternalVMLink
+    "cell": <VMLaunchLinks
       item={
         {
           "cluster": "testCluster",
@@ -2611,8 +2637,8 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
       t={[Function]}
     />,
-    "header": "VM details",
-    "id": "details-link",
+    "header": "",
+    "id": "launch-links",
     "isDefault": false,
     "isFirstVisitChecked": true,
     "order": 7,

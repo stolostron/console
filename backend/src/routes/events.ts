@@ -195,6 +195,17 @@ const definitions: IWatchOptions[] = [
   { kind: 'AgentMachine', apiVersion: 'capi-provider.agent-install.openshift.io/v1alpha1' },
   { kind: 'ConfigMap', apiVersion: 'v1', labelSelector: { 'hypershift.openshift.io/supported-versions': 'true' } },
   { kind: 'Search', apiVersion: 'search.open-cluster-management.io/v1alpha1' },
+  // Configmaps that contain Grafana dashboard IDs
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-clusters-overview' },
+  },
+  {
+    kind: 'ConfigMap',
+    apiVersion: 'v1',
+    fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
+  },
 ]
 
 export function startWatching(): void {

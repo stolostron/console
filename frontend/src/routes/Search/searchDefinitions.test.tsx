@@ -5,7 +5,8 @@ import { render } from '@testing-library/react'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { managedClusterInfosState } from '../../atoms'
+import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
+import { ConfigMapApiVersion, ConfigMapKind } from '../../resources'
 import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../resources/managed-cluster-info'
 import {
   CreateApplicationTopologyLink,
@@ -19,6 +20,7 @@ import {
   GetAge,
   getSearchDefinitions,
   GetUrlSearchParam,
+  VMLaunchLinks,
 } from './searchDefinitions'
 const t = i18next.t.bind(i18next)
 
@@ -674,6 +676,55 @@ test('Correctly returns empty CreateExternalVMLink', () => {
     <RecoilRoot>
       <MemoryRouter>
         <CreateExternalVMLink item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns VMLaunchLinks', () => {
+  const item = {
+    cluster: 'testCluster',
+    name: 'testVM',
+    namespace: 'testVM',
+  }
+  const { baseElement } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(configMapsState, [
+          {
+            apiVersion: ConfigMapApiVersion,
+            kind: ConfigMapKind,
+            metadata: {
+              name: 'grafana-dashboard-acm-openshift-virtualization-single-vm-view',
+              namespace: 'open-cluster-management',
+            },
+            data: {
+              'acm-openshift-virtualization-single-vm-view.json': '{ "uid": "dashboardID" }',
+            },
+          },
+        ])
+        snapshot.set(clusterManagementAddonsState, [
+          {
+            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+            kind: 'ClusterManagementAddOn',
+            metadata: {
+              annotations: {
+                'console.open-cluster-management.io/launch-link': 'https://testURL.com',
+              },
+              labels: {
+                'installer.name': 'multiclusterhub',
+                'installer.namespace': 'open-cluster-management',
+              },
+              name: 'observability-controller',
+            },
+            spec: {},
+          },
+        ])
+      }}
+    >
+      <MemoryRouter>
+        <VMLaunchLinks item={item} t={t} />
       </MemoryRouter>
     </RecoilRoot>
   )

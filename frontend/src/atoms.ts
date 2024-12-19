@@ -178,6 +178,13 @@ export function usePolicies() {
   )
 }
 
+export function useIsObservailityInstalled() {
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  return useMemo(() => {
+    return clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller').length > 0
+  }, [clusterManagementAddons])
+}
+
 // Search is available if api, collector, indexer & postgres are in ready state
 export function useIsSearchAvailable() {
   const searchOperator = useRecoilValue(searchOperatorState)
