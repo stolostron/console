@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Label, LabelGroup, Popover, PopoverPosition } from '@patternfly/react-core'
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { css } from '@emotion/css'
 import { useTranslation } from '../../lib/acm-i18next'
 
@@ -62,7 +62,7 @@ export function AcmLabels(props: {
   /* istanbul ignore next */
   const expandedText = props.expandedText ?? t('Show less')
 
-  if (props.labels === undefined) return <Fragment />
+  if (props.labels === undefined) return <div>-</div>
   const labelCount = labels.length + hidden.length
 
   const renderLabelGroup = () => {

@@ -145,14 +145,14 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
       >
-        <HighlightSearchText text={application.metadata?.name} searchText={search} />
+        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate />
       </Link>
     </span>
   )
 }
 
 export function getApplicationNamespace(resource: IApplicationResource, search: string) {
-  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
+  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
 }
 
 // Map resource kind to type column
