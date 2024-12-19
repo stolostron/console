@@ -1129,6 +1129,7 @@ export default function ApplicationsOverview() {
         keyFn={keyFn}
         items={tableItems}
         filters={filters}
+        secondaryFilterIds={['cluster']}
         setRequestView={setRequestedView}
         resultView={resultView}
         resultCounts={resultCounts}

@@ -63,31 +63,32 @@ export function AcmLabels(props: {
   const expandedText = props.expandedText ?? t('Show less')
 
   if (props.labels === undefined) return <Fragment />
+  const labelCount = labels.length + hidden.length
 
   const renderLabelGroup = () => {
     return (
-      <LabelGroup isCompact numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
+      <LabelGroup isVertical numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
         {labels.map((label) => (
-          <Label key={label} className={acmLabel} isCompact>
+          <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
             {label}
           </Label>
         ))}
         {hidden.map((label) => (
-          <Label key={label} className={acmLabel} isCompact>
+          <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
             {label}
           </Label>
         ))}
       </LabelGroup>
     )
   }
-  const labelCount = labels.length + hidden.length
   if (labelCount) {
     return props.isCompact ? (
       <Popover
-        id={`${'sdfg'}-label-help-popover`}
+        id={'labels-popover'}
         bodyContent={renderLabelGroup()}
-        position={PopoverPosition.right}
-        flipBehavior={['right', 'right-end', 'right-end']}
+        position={PopoverPosition.left}
+        flipBehavior={['left', 'left-end', 'left-end']}
+        hasAutoWidth
       >
         <ul className="pf-v5-c-label-group__list" aria-label="Label group category">
           <li className="pf-v5-c-label-group__list-item">

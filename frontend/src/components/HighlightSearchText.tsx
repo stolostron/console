@@ -22,7 +22,7 @@ export function HighlightSearchText(props: Readonly<{ text?: string; searchText?
                 : {}
             }
           >
-            {isLargeLabel !== seg.isBold ? '...' : seg.text}
+            {isLargeLabel && !seg.isBold ? '...' : seg.text}
           </span>
         ))}
       </>
