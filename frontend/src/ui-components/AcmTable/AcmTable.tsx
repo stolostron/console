@@ -567,6 +567,7 @@ export type AcmTableProps<T> = {
   noBorders?: boolean
   fuseThreshold?: number
   filters?: ITableFilter<T>[]
+  secondaryFilterIds?: string[]
   advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
   showColumManagement?: boolean
@@ -587,6 +588,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     customTableAction,
     additionalToolbarItems,
     filters = [],
+    secondaryFilterIds,
     advancedFilters = [],
     gridBreakPoint,
     initialSelectedItems,
@@ -1414,7 +1416,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   </ToolbarItem>
                 )}
                 {hasFilter && (
-                  <TableColumnFilters id={id} filters={filters} filterCounts={filterCounts} items={items} />
+                  <TableColumnFilters
+                    id={id}
+                    filters={filters}
+                    secondaryFilterIds={secondaryFilterIds}
+                    filterCounts={filterCounts}
+                    items={items}
+                  />
                 )}
               </ToolbarGroup>
             )}
@@ -1580,10 +1588,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 }
 
 function TableColumnFilters<T>(
-  props: Readonly<{ id?: string; filters: ITableFilter<T>[]; filterCounts: FilterCounts | undefined; items?: T[] }>
+  props: Readonly<{
+    id?: string
+    filters: ITableFilter<T>[]
+    secondaryFilterIds?: string[]
+    filterCounts: FilterCounts | undefined
+    items?: T[]
+  }>
 ) {
   const [isOpen, setIsOpen] = useState([false])
-  const { id, filters, items, filterCounts } = props
+  const { id, filters, secondaryFilterIds, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
     id,
     filters,
@@ -1652,11 +1666,12 @@ function TableColumnFilters<T>(
       }
 
       // split filters up if some have more then SPLIT_FILTER_THRESHOLD options
+      // also if a secondaryFilterId is present (ex: specify 'labels' will make it its own dropdown)
       // (like an environment with lots of clusters)
       let group = filterGroups[0]
       /* istanbul ignore else */
       if (options.length) {
-        if (options.length > SPLIT_FILTER_THRESHOLD) {
+        if (options.length > SPLIT_FILTER_THRESHOLD || secondaryFilterIds?.includes(filter.id)) {
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],

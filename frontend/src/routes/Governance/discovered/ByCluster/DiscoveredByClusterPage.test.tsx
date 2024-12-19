@@ -67,6 +67,8 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -151,6 +153,8 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -256,6 +260,8 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     const { container } = render(
       <RecoilRoot
@@ -439,6 +445,8 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -495,6 +503,8 @@ describe('DiscoveredByClusterPage', () => {
       isFetching: false,
       data: undefined,
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -531,6 +541,8 @@ describe('DiscoveredByClusterPage', () => {
       isFetching: false,
       data: undefined,
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -567,6 +579,8 @@ describe('DiscoveredByClusterPage', () => {
       isFetching: false,
       data: undefined,
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -603,6 +617,8 @@ describe('DiscoveredByClusterPage', () => {
       isFetching: false,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -639,6 +655,8 @@ describe('DiscoveredByClusterPage', () => {
       isFetching: true,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
@@ -735,6 +753,8 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
+      labelMap: undefined,
+      labelOptions: undefined,
     })
     render(
       <RecoilRoot
