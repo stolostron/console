@@ -1,21 +1,46 @@
 /* Copyright Contributors to the Open Cluster Management project */
+const MAX_LABEL_WIDTH = 28
 
 export function HighlightSearchText(props: Readonly<{ text?: string; searchText?: string }>) {
   const { text, searchText } = props
-  return (
-    <>
-      {getSlicedText(text, searchText).map((idSplit) => (
-        <span key={idSplit.text} className={idSplit.isBold ? 'pf-v5-u-font-weight-bold' : ''}>
-          {idSplit.text}
-        </span>
-      ))}
-    </>
-  )
+  const segments = getSlicedText(text, searchText)
+  if (segments.length > 1) {
+    const isLargeLabel = text && text.length > MAX_LABEL_WIDTH
+    return (
+      <>
+        {segments.map((seg) => (
+          <span
+            key={seg.text}
+            style={
+              seg.isBold
+                ? {
+                    color: 'var(--pf-v5-global--link--Color)',
+                    textDecoration: 'underline',
+                    background: 'none',
+                    fontWeight: 600,
+                  }
+                : {}
+            }
+          >
+            {isLargeLabel !== seg.isBold ? '...' : seg.text}
+          </span>
+        ))}
+      </>
+    )
+  } else {
+    return truncate(text)
+  }
 }
 
 interface SlicedText {
   text: string
   isBold: boolean
+}
+
+export const truncate = (label?: string) => {
+  return label && label?.length > MAX_LABEL_WIDTH
+    ? (label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3))
+    : label
 }
 
 const getSlicedText = (itemId: string = '', filterText: string = ''): SlicedText[] => {
