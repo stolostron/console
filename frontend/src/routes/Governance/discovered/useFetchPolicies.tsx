@@ -60,6 +60,8 @@ export interface DiscoverdPolicyTableItem {
 export function useFetchPolicies(policyName?: string, policyKind?: string, apiGroup?: string) {
   const [isFetching, setIsFetching] = useState(true)
   const [data, setData] = useState<DiscoverdPolicyTableItem[]>()
+  const [labelOptions, setLabelOptions] = useState<{ label: string; value: string }[]>()
+  const [labelMap, setLabelMap] = useState<Record<string, { pairs: Record<string, string>; labels: string[] }>>()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
@@ -224,5 +226,34 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     channels,
   ])
 
-  return { isFetching, data, err: searchErr }
+  useEffect(() => {
+    const allLabels = new Set<string>()
+    const labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }> = {}
+    data?.forEach((item) => {
+      item.policies.forEach(({ label }) => {
+        const labels: string[] = []
+        const pairs: Record<string, string> = {}
+        label?.split(';').forEach((lbl) => {
+          labels.push(lbl.trim())
+          const [key, value] = lbl.split('=').map((seg) => seg.trim())
+          if (
+            !['cluster-name', 'cluster-namespace'].includes(key) &&
+            !key.startsWith('policy.open-cluster-management.io/')
+          ) {
+            pairs[key] = value
+            allLabels.add(lbl.trim())
+          }
+        })
+        labelMap[item.id] = { pairs, labels }
+      })
+    })
+    setLabelOptions(
+      Array.from(allLabels).map((lbl) => {
+        return { label: lbl, value: lbl }
+      })
+    )
+    setLabelMap(labelMap)
+  }, [data])
+
+  return { isFetching, data, err: searchErr, labelOptions, labelMap }
 }
