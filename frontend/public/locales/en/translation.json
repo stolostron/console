@@ -1513,7 +1513,7 @@
   "Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.": "Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.",
   "hosted control plane": "hosted control plane",
   "Hosted control plane": "Hosted control plane",
-  "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.": "Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.",
+  "Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.": "Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.",
   "Hosted control plane operator must be enabled in order to continue": "Hosted control plane operator must be enabled in order to continue",
   "hosted.cluster.namespace.error": "The namespace cannot be the same as the cluster name.",
   "hostInfraEnvCounts": "$t(hostCount, {\"count\": {{hostCount}} }) in $t(infraEnvCount, {\"count\": {{infraEnvCount}} })",
