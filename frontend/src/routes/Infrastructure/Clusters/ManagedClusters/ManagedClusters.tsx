@@ -86,7 +86,6 @@ import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -996,7 +995,7 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
     search: 'creationDate',
     cellTransforms: [nowrap],
     cell: (cluster) => {
-      return <AcmTimestamp timestamp={cluster.creationTimestamp ?? ''} />
+      return getCreationTimestampString(cluster)
     },
     exportContent: (cluster) => {
       return getCreationTimestampString(cluster)
