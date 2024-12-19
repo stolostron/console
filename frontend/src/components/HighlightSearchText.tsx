@@ -8,10 +8,10 @@ export function HighlightSearchText(props: Readonly<{ text?: string; searchText?
     const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
     return (
       <>
-        {segments.map((seg) => {
+        {segments.map((seg, inx) => {
           return (
             <span
-              key={text}
+              key={Number(inx)}
               style={
                 seg.isBold
                   ? {
