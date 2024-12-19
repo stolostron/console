@@ -94,7 +94,7 @@ export default function PolicySetCard(props: {
       <Card
         isRounded
         isFullHeight
-        isSelectable
+        isSelectableRaised
         isSelected={selectedCardID === cardID}
         id={cardID}
         key={cardID}
