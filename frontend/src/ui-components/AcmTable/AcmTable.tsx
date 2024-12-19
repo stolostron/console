@@ -1730,7 +1730,7 @@ function TableColumnFilters<T>(
         }),
       }
     })
-  }, [filterCounts, filters, items, secondaryFilterIds, selections])
+  }, [filterCounts, filters, items, selections])
 
   // used by filters with lots of options to filter the options
   const onFilterOptions = useCallback(
