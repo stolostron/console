@@ -106,7 +106,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
             files: ['./src/**/*.{ts,tsx,js,jsx}'],
           },
         }),
-      new MonacoWebpackPlugin({ languages: ['yaml'] }),
+      new MonacoWebpackPlugin({ languages: ['yaml'], globalAPI: true }),
       isProduction &&
         new CopyPlugin({
           patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html', '**/translation.json'] } }],
