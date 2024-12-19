@@ -257,22 +257,24 @@ export default function VirtualMachinesPage() {
         <AcmPageHeader
           title={t('Virtual machines')}
           actions={
-            <AcmActionGroup>
-              {[
-                <AcmButton
-                  key={'observability-launch-link'}
-                  variant="link"
-                  component="a"
-                  target="_blank"
-                  isInline={true}
-                  href={vmMetricLink}
-                  icon={<ExternalLinkAltIcon />}
-                  iconPosition="right"
-                >
-                  {t('Observability dashboards')}
-                </AcmButton>,
-              ]}
-            </AcmActionGroup>
+            isObservailityInstalled ? (
+              <AcmActionGroup>
+                {[
+                  <AcmButton
+                    key={'observability-launch-link'}
+                    variant="link"
+                    component="a"
+                    target="_blank"
+                    isInline={true}
+                    href={vmMetricLink}
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                  >
+                    {t('Observability dashboards')}
+                  </AcmButton>,
+                ]}
+              </AcmActionGroup>
+            ) : undefined
           }
         />
       }
