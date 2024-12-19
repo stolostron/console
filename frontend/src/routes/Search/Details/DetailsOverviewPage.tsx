@@ -15,7 +15,7 @@ import {
   Text,
   Tooltip,
 } from '@patternfly/react-core'
-import { GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
@@ -23,8 +23,10 @@ import { findResourceFieldLineNumber } from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { OwnerReference } from '../../../resources'
-import { AcmAlert, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
+import { ConfigMap, OwnerReference } from '../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
 
 export function ResourceSearchLink(props: {
@@ -216,6 +218,11 @@ export default function DetailsOverviewPage() {
   const { cluster, resource, resourceLoading, resourceError, name } = useSearchDetailsContext()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const allClusters = useAllClusters(true)
+  const { useIsObservailityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
+  const configMaps = useRecoilValue(configMapsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const isObservailityInstalled = useIsObservailityInstalled()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
 
   const { labelsLineNumber, annotationsLineNumber, tolerationsLineNumber } = useMemo(() => {
@@ -318,6 +325,35 @@ export default function DetailsOverviewPage() {
       }
     }
   }, [cluster, resource, navigate])
+
+  const vmCNVLink = useMemo(() => {
+    const clusterURL = allClusters.filter((c) => c.name === cluster)?.[0]?.consoleURL
+    if (resource) {
+      return `${clusterURL}/k8s/ns/${resource.metadata?.namespace}/kubevirt.io~v1~VirtualMachine/${name}`
+    }
+    return ''
+  }, [allClusters, cluster, resource, name])
+
+  const vmMetricLink = useMemo(() => {
+    const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
+    let grafanaLink = obsCont?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    if (grafanaLink) {
+      grafanaLink = new URL(grafanaLink).origin
+    }
+    if (isObservailityInstalled && resource) {
+      const vmDashboard = configMaps.filter(
+        (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
+      )
+      if (vmDashboard.length > 0) {
+        const parsedDashboardData = JSON.parse(
+          vmDashboard[0].data?.['acm-openshift-virtualization-single-vm-view.json']
+        )
+        const dashboardId = parsedDashboardData?.uid
+        return `${grafanaLink}/d/${dashboardId}/executive-dashboards-single-virtual-machine-view?orgId=1&var-name=${name}&var-namespace=${resource?.metadata?.namespace}&var-cluster=${cluster}`
+      }
+    }
+    return ''
+  }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservailityInstalled])
 
   if (resourceError) {
     return (
@@ -496,6 +532,61 @@ export default function DetailsOverviewPage() {
                   />
                 </DescriptionListDescription>
               </DescriptionListGroup>
+
+              {resource.kind.toLowerCase() === 'virtualmachine' && (
+                <>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Details')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      <AcmButton
+                        variant="link"
+                        component="a"
+                        target="_blank"
+                        isInline={true}
+                        href={vmCNVLink}
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                      >
+                        {t('Launch')}
+                      </AcmButton>
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Web console')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      <AcmButton
+                        variant="link"
+                        component="a"
+                        target="_blank"
+                        isInline={true}
+                        href={`${vmCNVLink}/console`}
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                      >
+                        {t('Launch')}
+                      </AcmButton>
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  {isObservailityInstalled && (
+                    <DescriptionListGroup>
+                      <DescriptionListTerm>{t('Metrics')}</DescriptionListTerm>
+                      <DescriptionListDescription>
+                        <AcmButton
+                          variant="link"
+                          component="a"
+                          target="_blank"
+                          isInline={true}
+                          href={vmMetricLink}
+                          icon={<ExternalLinkAltIcon />}
+                          iconPosition="right"
+                        >
+                          {t('Launch')}
+                        </AcmButton>
+                      </DescriptionListDescription>
+                    </DescriptionListGroup>
+                  )}
+                </>
+              )}
             </DescriptionList>
           </Stack>
         </PageSection>
