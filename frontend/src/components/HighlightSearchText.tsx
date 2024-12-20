@@ -42,7 +42,7 @@ interface SlicedText {
 
 export const truncate = (label?: string) => {
   return label && label?.length > MAX_LABEL_WIDTH
-    ? (label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3))
+    ? label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
     : label
 }
 
