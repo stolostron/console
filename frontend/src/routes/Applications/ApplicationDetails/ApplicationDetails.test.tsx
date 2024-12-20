@@ -18,9 +18,8 @@ import {
   subscriptionsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
-import { PluginContext } from '../../../lib/PluginContext'
-import { PluginDataContext } from '../../../lib/PluginDataContext'
-import { ocpApi, waitForText } from '../../../lib/test-util'
+import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { waitForText } from '../../../lib/test-util'
 import { ApplicationActionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
@@ -372,9 +371,8 @@ describe('Applications Page', () => {
           <MockedProvider mocks={mocks}>
             <PluginContext.Provider
               value={{
+                ...defaultPlugin,
                 acmExtensions: acmExtension,
-                dataContext: PluginDataContext,
-                ocpApi,
               }}
             >
               <ApplicationDetailsPage />

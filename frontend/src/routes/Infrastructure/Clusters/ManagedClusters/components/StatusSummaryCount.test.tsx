@@ -5,9 +5,8 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
-import { PluginContext } from '../../../../../lib/PluginContext'
-import { PluginDataContext } from '../../../../../lib/PluginDataContext'
-import { clickByText, waitForNotText, waitForText, ocpApi } from '../../../../../lib/test-util'
+import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
+import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Policy, PolicyReport } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import {
@@ -330,7 +329,7 @@ describe('StatusSummaryCount', () => {
   test('renders without applications and governance', async () => {
     render(
       <PluginContext.Provider
-        value={{ isApplicationsAvailable: false, isGovernanceAvailable: false, dataContext: PluginDataContext, ocpApi }}
+        value={{ ...defaultPlugin, isApplicationsAvailable: false, isGovernanceAvailable: false }}
       >
         <Component />
       </PluginContext.Provider>
