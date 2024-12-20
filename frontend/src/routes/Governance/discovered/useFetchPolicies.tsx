@@ -5,7 +5,13 @@ import { grouping } from './grouping'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { searchClient } from '../../Search/search-sdk/search-client'
-import { parseDiscoveredPolicies, resolveSource, getSourceText, parseStringMap } from '../common/util'
+import {
+  parseDiscoveredPolicies,
+  parseDiscoveredPolicyLabels,
+  resolveSource,
+  getSourceText,
+  parseStringMap,
+} from '../common/util'
 export interface ISourceType {
   type: string //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
@@ -60,8 +66,11 @@ export interface DiscoverdPolicyTableItem {
 export function useFetchPolicies(policyName?: string, policyKind?: string, apiGroup?: string) {
   const [isFetching, setIsFetching] = useState(true)
   const [data, setData] = useState<DiscoverdPolicyTableItem[]>()
-  const [labelOptions, setLabelOptions] = useState<{ label: string; value: string }[]>()
-  const [labelMap, setLabelMap] = useState<Record<string, { pairs: Record<string, string>; labels: string[] }>>()
+  const [labelData, setLabelData] = useState<{
+    labelOptions: { label: string; value: string }[]
+    labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
+  }>()
+  // const [labelMap, setLabelMap] = useState<Record<string, { pairs: Record<string, string>; labels: string[] }>>()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)
@@ -193,8 +202,9 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
       const worker = new Worker(blobURL)
 
       worker.onmessage = (e: MessageEvent<any>) => {
-        setData(parseDiscoveredPolicies(e.data) as DiscoverdPolicyTableItem[])
-
+        const parsedData = parseDiscoveredPolicies(e.data) as DiscoverdPolicyTableItem[]
+        setData(parsedData)
+        setLabelData(parseDiscoveredPolicyLabels(parsedData))
         setIsFetching(false)
       }
 
@@ -226,34 +236,5 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     channels,
   ])
 
-  useEffect(() => {
-    const allLabels = new Set<string>()
-    const labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }> = {}
-    data?.forEach((item) => {
-      item.policies.forEach(({ label }) => {
-        const labels: string[] = []
-        const pairs: Record<string, string> = {}
-        label?.split(';').forEach((lbl) => {
-          labels.push(lbl.trim())
-          const [key, value] = lbl.split('=').map((seg) => seg.trim())
-          if (
-            !['cluster-name', 'cluster-namespace'].includes(key) &&
-            !key.startsWith('policy.open-cluster-management.io/')
-          ) {
-            pairs[key] = value
-            allLabels.add(lbl.trim())
-          }
-        })
-        labelMap[item.id] = { pairs, labels }
-      })
-    })
-    setLabelOptions(
-      Array.from(allLabels).map((lbl) => {
-        return { label: lbl, value: lbl }
-      })
-    )
-    setLabelMap(labelMap)
-  }, [data])
-
-  return { isFetching, data, err: searchErr, labelOptions, labelMap }
+  return { isFetching, data, err: searchErr, labelData }
 }

@@ -78,7 +78,8 @@ function labelsCell(
 }
 
 export default function DiscoveredPolicies() {
-  const { isFetching, data, labelOptions, labelMap, err } = useFetchPolicies()
+  const { isFetching, data, labelData, err } = useFetchPolicies()
+  const { labelOptions, labelMap } = labelData || {}
   const { t } = useTranslation()
 
   const discoveredPoliciesCols = useMemo<IAcmTableColumn<DiscoverdPolicyTableItem>[]>(
