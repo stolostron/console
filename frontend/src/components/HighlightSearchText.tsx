@@ -1,21 +1,49 @@
 /* Copyright Contributors to the Open Cluster Management project */
+const MAX_LABEL_WIDTH = 28
 
-export function HighlightSearchText(props: Readonly<{ text?: string; searchText?: string }>) {
-  const { text, searchText } = props
-  return (
-    <>
-      {getSlicedText(text, searchText).map((idSplit) => (
-        <span key={idSplit.text} className={idSplit.isBold ? 'pf-v5-u-font-weight-bold' : ''}>
-          {idSplit.text}
-        </span>
-      ))}
-    </>
-  )
+export function HighlightSearchText(props: Readonly<{ text?: string; searchText?: string; isTruncate?: boolean }>) {
+  const { text, searchText, isTruncate } = props
+  const segments = getSlicedText(text, searchText)
+  if (segments.length > 1) {
+    const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
+    return (
+      <>
+        {segments.map((seg, inx) => {
+          return (
+            <span
+              key={Number(inx)}
+              style={
+                seg.isBold
+                  ? {
+                      color: 'var(--pf-v5-global--link--Color)',
+                      textDecoration: 'underline',
+                      background: 'none',
+                      fontWeight: 600,
+                    }
+                  : {}
+              }
+            >
+              {isTruncateLabel && !seg.isBold ? '...' : seg.text}
+            </span>
+          )
+        })}
+      </>
+    )
+  } else if (isTruncate) {
+    return truncate(text)
+  }
+  return text
 }
 
 interface SlicedText {
   text: string
   isBold: boolean
+}
+
+export const truncate = (label?: string) => {
+  return label && label?.length > MAX_LABEL_WIDTH
+    ? label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
+    : label
 }
 
 const getSlicedText = (itemId: string = '', filterText: string = ''): SlicedText[] => {
@@ -84,7 +112,7 @@ const lcs = (str1: string, str2: string) => {
             sequence += str1[i]
           } else {
             lastSubsBegin = thisSubsBegin
-            sequence = str1.substring(lastSubsBegin, i + 1) // - lastSubsBegin);
+            sequence = str1.substring(lastSubsBegin, i + 1)
           }
         }
       }
@@ -109,7 +137,7 @@ const lcss = (str1: string, str2: string) => {
     let match
     matches = []
     let res = lcs(item, find)
-    if (res.length > 1) {
+    if (res.length > 0) {
       // escape search pattern (ex: if there's a period, escape to \\.)
       const { length: len } = res
       res = res.replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&')
@@ -129,7 +157,7 @@ const lcss = (str1: string, str2: string) => {
         ]
         // so that we don't constantly find the same matches over and over again
         // we replace the matching characters with spaces
-        // iow the above strings become '987   87' and '873   ' so that 456 isn't found again
+        // iow the above strings (873456 and 98745687) become '987   87' and '873   ' so that 456 isn't found again
         item = item.replace(regex, () => ' '.repeat(len))
         find = find.replace(regex, () => ' '.repeat(len))
       }

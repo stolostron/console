@@ -8,7 +8,13 @@ import { AcmLabels } from './AcmLabels'
 describe('AcmLabels', () => {
   test('renders empty with undefined', () => {
     const { container } = render(<AcmLabels labels={undefined} />)
-    expect(container).toMatchInlineSnapshot('<div />')
+    expect(container).toMatchInlineSnapshot(`
+<div>
+  <div>
+    -
+  </div>
+</div>
+`)
   })
   test('renders with string array', () => {
     const { getByText } = render(<AcmLabels labels={['foo=bar', 'cluster=management', 'test=']} />)
