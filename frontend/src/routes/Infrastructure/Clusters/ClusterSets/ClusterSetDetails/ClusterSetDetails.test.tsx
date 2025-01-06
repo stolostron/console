@@ -1167,6 +1167,38 @@ const mockSubmarinerAddOn: ManagedClusterAddOn = {
   spec: {
     installNamespace: 'submariner-operator',
   },
+  status: {
+    conditions: [
+      {
+        type: 'SubmarinerConnectionDegraded',
+        status: 'False',
+        reason: 'ConnectionStable',
+      },
+      {
+        type: 'SubmarinerAgentDegraded',
+        status: 'False',
+        reason: 'AllSystemsOperational',
+      },
+      {
+        type: 'SubmarinerGatewayNodesLabeled',
+        status: 'True',
+        reason: 'NodesLabeledSuccessfully',
+      },
+      {
+        type: 'RouteAgentConnectionDegraded',
+        status: 'False',
+        reason: 'ConnectionStable',
+      },
+    ],
+    addOnMeta: {
+      displayName: 'Submariner Add-On',
+      description: 'Manages Submariner deployment for cross-cluster networking.',
+    },
+    addOnConfiguration: {
+      crdName: 'submarinerconfigs.submariner.io',
+      crName: 'submariner',
+    },
+  },
 }
 
 export const mockSubmarinerAddon: Record<string, ManagedClusterAddOn[]> = {
