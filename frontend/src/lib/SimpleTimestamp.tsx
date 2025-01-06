@@ -4,13 +4,39 @@ import React from 'react'
 
 interface SimpleTimestampProps {
   timestamp: string | number | Date
+  relative?: boolean
 }
 
-export const SimpleTimestamp: React.FC<SimpleTimestampProps> = ({ timestamp }) => {
+export const SimpleTimestamp: React.FC<SimpleTimestampProps> = ({ timestamp, relative }) => {
   const date = new Date(timestamp)
 
   if (isNaN(date.getTime())) {
     return <>Invalid Date</>
+  }
+
+  if (relative) {
+    const now = new Date()
+    const diffInMs = date.getTime() - now.getTime()
+
+    const diffInSeconds = Math.round(diffInMs / 1000)
+    const diffInMinutes = Math.round(diffInSeconds / 60)
+    const diffInHours = Math.round(diffInMinutes / 60)
+    const diffInDays = Math.round(diffInHours / 24)
+
+    const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+
+    let formattedTime: string
+    if (Math.abs(diffInSeconds) < 60) {
+      formattedTime = formatter.format(diffInSeconds, 'seconds')
+    } else if (Math.abs(diffInMinutes) < 60) {
+      formattedTime = formatter.format(diffInMinutes, 'minutes')
+    } else if (Math.abs(diffInHours) < 24) {
+      formattedTime = formatter.format(diffInHours, 'hours')
+    } else {
+      formattedTime = formatter.format(diffInDays, 'days')
+    }
+
+    return <>{formattedTime}</>
   }
 
   const day = date.getDate()
