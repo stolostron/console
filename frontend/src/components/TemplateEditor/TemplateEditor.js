@@ -835,8 +835,16 @@ export default class TemplateEditor extends React.Component {
       highlightDecorations(this.editors, this.state.decorationRows, this.state.i18n)
     }
     this.layoutEditors()
+    editor.clearedUndoRedoStack = false
     editor.onDidChangeModelContent(() => {
+      const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
+      const activeId = document.activeElement?.id
+      const formHasFocus = !editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1
       const model = editor.getModel()
+      if (!editor.clearedUndoRedoStack || formHasFocus) {
+        model._undoRedoService._editStacks.clear()
+        editor.clearedUndoRedoStack = true
+      }
       const hasUndo = model.canUndo()
       const hasRedo = model.canRedo()
       this.setState({ hasUndo, hasRedo })
