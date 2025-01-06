@@ -28,4 +28,31 @@ describe('SimpleTimestamp', () => {
     render(<SimpleTimestamp timestamp={dateObjectTimestamp} />)
     expect(screen.getByText('Jan 3, 2025, 1:53 PM')).toBeInTheDocument()
   })
+  test('renders the component with relative time in seconds', () => {
+    const now = new Date()
+    const relativeTimestamp = new Date(now.getTime() - 30 * 1000)
+    render(<SimpleTimestamp timestamp={relativeTimestamp} relative />)
+    expect(screen.getByText('30 seconds ago')).toBeInTheDocument()
+  })
+
+  test('renders the component with relative time in minutes', () => {
+    const now = new Date()
+    const relativeTimestamp = new Date(now.getTime() - 5 * 60 * 1000)
+    render(<SimpleTimestamp timestamp={relativeTimestamp} relative />)
+    expect(screen.getByText('5 minutes ago')).toBeInTheDocument()
+  })
+
+  test('renders the component with relative time in hours', () => {
+    const now = new Date()
+    const relativeTimestamp = new Date(now.getTime() - 2 * 60 * 60 * 1000)
+    render(<SimpleTimestamp timestamp={relativeTimestamp} relative />)
+    expect(screen.getByText('2 hours ago')).toBeInTheDocument()
+  })
+
+  test('renders the component with relative time in days', () => {
+    const now = new Date()
+    const relativeTimestamp = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+    render(<SimpleTimestamp timestamp={relativeTimestamp} relative />)
+    expect(screen.getByText('3 days ago')).toBeInTheDocument()
+  })
 })
