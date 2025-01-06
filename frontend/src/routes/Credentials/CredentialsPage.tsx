@@ -13,7 +13,6 @@ import {
   Provider,
   ProviderLongTextMap,
 } from '../../ui-components'
-import moment from 'moment'
 import { Fragment, useMemo, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
@@ -31,6 +30,7 @@ import {
   unpackProviderConnection,
 } from '../../resources'
 import { deleteResource } from '../../resources/utils'
+import AcmTimestamp from '../../lib/AcmTimestamp'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -231,13 +231,18 @@ export function CredentialsTable(props: {
             sort: 'metadata.creationTimestamp',
             cell: (resource) => (
               <span style={{ whiteSpace: 'nowrap' }}>
-                {resource.metadata.creationTimestamp && moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
+                {resource.metadata?.creationTimestamp ? (
+                  <AcmTimestamp timestamp={resource.metadata.creationTimestamp} relative={true} />
+                ) : (
+                  '—'
+                )}
               </span>
             ),
             exportContent: (item: Secret) => {
               if (item.metadata.creationTimestamp) {
-                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
+                return new Date(item.metadata.creationTimestamp).toISOString()
               }
+              return ''
             },
           },
           {
