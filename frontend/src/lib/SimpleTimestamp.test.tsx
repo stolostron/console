@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect'
 import SimpleTimestamp from './SimpleTimestamp'
 
 describe('SimpleTimestamp', () => {
-  const timestamp = '2025-01-03T18:53:59Z'
+  const timestamp = '2025-01-03T18:53:59.000Z'
 
   test('renders the component with a valid timestamp', () => {
     render(<SimpleTimestamp timestamp={timestamp} />)
