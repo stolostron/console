@@ -8,6 +8,7 @@ import { TimestampProps } from '@openshift-console/dynamic-plugin-sdk'
 
 type AcmTimestampProps = TimestampProps & {
   showIcon?: boolean
+  relative?: boolean
 }
 
 const AcmTimestamp: React.FC<AcmTimestampProps> = ({
@@ -16,6 +17,7 @@ const AcmTimestamp: React.FC<AcmTimestampProps> = ({
   omitSuffix,
   className = '',
   showIcon = false,
+  relative = false,
 }) => {
   const {
     ocpApi: { Timestamp },
@@ -37,7 +39,7 @@ const AcmTimestamp: React.FC<AcmTimestampProps> = ({
       }`}
     />
   ) : (
-    <SimpleTimestamp timestamp={timestamp} />
+    <SimpleTimestamp timestamp={timestamp} relative={relative} />
   )
 }
 
