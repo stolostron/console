@@ -841,10 +841,10 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
 
 export function VMLaunchLinks(props: { item: any; t: TFunction }) {
   const { item, t } = props
-  const { useIsObservailityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
+  const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const isObservailityInstalled = useIsObservailityInstalled()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
   const allClusters = useAllClusters(true)
   const vmCluster = item.cluster
   const clusterURL = allClusters.filter((c) => c.name === vmCluster)?.[0]?.consoleURL
@@ -855,7 +855,7 @@ export function VMLaunchLinks(props: { item: any; t: TFunction }) {
     if (grafanaLink) {
       grafanaLink = new URL(grafanaLink).origin
     }
-    if (isObservailityInstalled) {
+    if (isObservabilityInstalled) {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
       )
@@ -868,7 +868,7 @@ export function VMLaunchLinks(props: { item: any; t: TFunction }) {
       }
     }
     return ''
-  }, [item, clusterManagementAddons, configMaps, isObservailityInstalled])
+  }, [item, clusterManagementAddons, configMaps, isObservabilityInstalled])
 
   return (
     <Popover
@@ -896,7 +896,7 @@ export function VMLaunchLinks(props: { item: any; t: TFunction }) {
           >
             {t('Virtual machine console')}
           </AcmButton>
-          {isObservailityInstalled && (
+          {isObservabilityInstalled && (
             <AcmButton
               variant="link"
               component="a"

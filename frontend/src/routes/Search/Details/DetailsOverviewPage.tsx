@@ -219,10 +219,10 @@ export default function DetailsOverviewPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { useIsObservailityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
+  const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const isObservailityInstalled = useIsObservailityInstalled()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
 
   const { labelsLineNumber, annotationsLineNumber, tolerationsLineNumber } = useMemo(() => {
@@ -340,7 +340,7 @@ export default function DetailsOverviewPage() {
     if (grafanaLink) {
       grafanaLink = new URL(grafanaLink).origin
     }
-    if (isObservailityInstalled && resource) {
+    if (isObservabilityInstalled && resource) {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
       )
@@ -353,7 +353,7 @@ export default function DetailsOverviewPage() {
       }
     }
     return ''
-  }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservailityInstalled])
+  }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservabilityInstalled])
 
   if (resourceError) {
     return (
@@ -567,7 +567,7 @@ export default function DetailsOverviewPage() {
                       </AcmButton>
                     </DescriptionListDescription>
                   </DescriptionListGroup>
-                  {isObservailityInstalled && (
+                  {isObservabilityInstalled && (
                     <DescriptionListGroup>
                       <DescriptionListTerm>{t('Metrics')}</DescriptionListTerm>
                       <DescriptionListDescription>

@@ -178,7 +178,7 @@ export function usePolicies() {
   )
 }
 
-export function useIsObservailityInstalled() {
+export function useIsObservabilityInstalled() {
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   return useMemo(() => {
     return clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller').length > 0

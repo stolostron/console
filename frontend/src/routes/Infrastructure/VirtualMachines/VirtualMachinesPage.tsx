@@ -223,8 +223,8 @@ function VirtualMachineTable() {
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
-  const { useIsObservailityInstalled, clusterManagementAddonsState, configMapsState } = useSharedAtoms()
-  const isObservailityInstalled = useIsObservailityInstalled()
+  const { useIsObservabilityInstalled, clusterManagementAddonsState, configMapsState } = useSharedAtoms()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
   const configMaps = useRecoilValue(configMapsState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   usePageVisitMetricHandler(Pages.virtualMachines)
@@ -235,7 +235,7 @@ export default function VirtualMachinesPage() {
     if (grafanaLink) {
       grafanaLink = new URL(grafanaLink).origin
     }
-    if (isObservailityInstalled) {
+    if (isObservabilityInstalled) {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-clusters-overview'
       )
@@ -248,7 +248,7 @@ export default function VirtualMachinesPage() {
       }
     }
     return ''
-  }, [clusterManagementAddons, configMaps, isObservailityInstalled])
+  }, [clusterManagementAddons, configMaps, isObservabilityInstalled])
 
   return (
     <AcmPage
@@ -257,7 +257,7 @@ export default function VirtualMachinesPage() {
         <AcmPageHeader
           title={t('Virtual machines')}
           actions={
-            isObservailityInstalled ? (
+            isObservabilityInstalled ? (
               <AcmActionGroup>
                 {[
                   <AcmButton
