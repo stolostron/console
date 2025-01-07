@@ -194,3 +194,17 @@ export const VALIDATE_BASE_DNS_NAME_REQUIRED: Validator = {
 }
 
 export const VALID_DNS_LABEL = '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+
+export const getK8sNameValidator = (t: TFunction): Validator => ({
+  tester: {
+    test: (value) => {
+      const regex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
+      const parts = value.split('/')
+      if (parts.length !== 2) return false
+      const [namespace, name] = parts
+      return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
+    },
+  },
+  notification: t('Invalid format. Use <namespace>/<name>'),
+  required: true,
+})

@@ -887,23 +887,25 @@ const resetMultitextControlData = (ctrl) => {
   ctrl.controlData = [createNewMultiTextControlData(ctrl)]
 }
 
-const updateMultitextControlData = (ctrl, ingressArray) => {
+const updateMultitextControlData = (ctrl, entriesArray) => {
   const controlDataLength = ctrl.controlData.length
-  const ingressArrayLength = ingressArray.length
+  const entriesArrayLength = entriesArray.length
 
-  if (ingressArrayLength > controlDataLength) {
-    for (let i = controlDataLength; i < ingressArrayLength; i++) {
+  if (entriesArrayLength > controlDataLength) {
+    for (let i = controlDataLength; i < entriesArrayLength; i++) {
       ctrl.controlData.push(createNewMultiTextControlData(ctrl))
     }
-  } else if (ingressArrayLength === 0) {
+  } else if (entriesArrayLength === 0) {
     ctrl.controlData = [createNewMultiTextControlData(ctrl)]
-  } else if (ingressArrayLength < controlDataLength) {
-    ctrl.controlData.splice(0, controlDataLength - ingressArrayLength)
+  } else if (entriesArrayLength < controlDataLength) {
+    ctrl.controlData.splice(0, controlDataLength - entriesArrayLength)
   }
 }
 
 export const ingressVIPsReverse = (ctrl, path) => {
   const ingressVIPsVal = _.get(path, getSourcePath('unknown[0].platform.vsphere.ingressVIPs'))
+  console.log('Path:', path);
+  console.log(ingressVIPsVal)
 
   if (ingressVIPsVal && ingressVIPsVal?.['$v']?.length) {
     const ingressArray = ingressVIPsVal['$v'].map((object) => {
@@ -920,6 +922,35 @@ export const ingressVIPsReverse = (ctrl, path) => {
       }
     })
   } else if (ctrl.controlData.length > 1 && ingressVIPsVal) {
+    resetMultitextControlData(ctrl)
+    ctrl.active.multitextEntries = ['']
+  }
+}
+
+export const additionalNetworksReverse = (ctrl, path) => {
+  const additionalNetworksVal = _.get(path, getSourcePath('spec.platform.kubevirt.additionalNetworks'))
+  console.log('Path:', path)
+  console.log('Additional Networks:', additionalNetworksVal)
+
+  if (additionalNetworksVal && additionalNetworksVal?.['$v']?.length) {
+    const networksArray = additionalNetworksVal['$v'].map((object) => {
+      const value = object['$v']
+      console.log(value)
+
+      return typeof value === 'object' && value !== null
+        ? value
+        : { name: value }
+    })
+
+    updateMultitextControlData(ctrl, networksArray)
+    ctrl.active.multitextEntries = networksArray.map((network) => network.name)
+
+    networksArray.forEach((entry, index) => {
+      if (ctrl.controlData?.[index]) {
+        ctrl.controlData[index].active = entry.name
+      }
+    })
+  } else if (ctrl.controlData.length > 1 && additionalNetworksVal) {
     resetMultitextControlData(ctrl)
     ctrl.active.multitextEntries = ['']
   }

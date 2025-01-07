@@ -137,6 +137,17 @@ spec:
           {{#if this.rootVolumeVolMode}}
           volumeMode: {{{this.rootVolumeVolMode}}}
           {{/if}}
+      {{#if additionalNetworks}}
+      additionalNetworks:
+        {{#each additionalNetworks.multitextEntries}}
+          {{#if .}}
+          - {{.}}
+          {{/if}}
+        {{/each}}
+      {{/if}}
+      {{#if defaultPodNetwork}}
+      defaultPodNetwork: true
+      {{/if}}
   release:
     image: {{{@root.releaseImage}}}
 {{/each}}

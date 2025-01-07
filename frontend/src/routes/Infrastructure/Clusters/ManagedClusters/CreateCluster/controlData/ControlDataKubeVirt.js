@@ -9,9 +9,11 @@ import {
 } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
 import {
+  additionalNetworksReverse,
   appendKlusterletAddonConfig,
   appendWarning,
   getSimplifiedImageName,
+  k8sNamePattern,
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
@@ -21,6 +23,8 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
+import { VALID_K8_NAME } from '../../../../../../components/TemplateEditor'
+import { getK8sNameValidator } from '../../../../../../components/TemplateEditor'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -56,6 +60,18 @@ export const getControlDataKubeVirt = (
   includeKlusterletAddonConfig = true,
   localCluster
 ) => {
+  // const isLocalInfrastructure = (globalControl) => {
+  //   console.log(globalControl, 'globalControl')
+  //   return globalControl.some((c) => c.id === 'infrastructure' && c.active === 'local')
+  // }
+
+  // const getAvailableNetworks = (globalControl) => {
+  //   if (isLocalInfrastructure(globalControl)) {
+  //     return ['default/namespace1', 'default/namespace2']
+  //   }
+  //   return []
+  // }
+
   const controlData = [
     //////////////////////////////////  AI form  //////////////////////////////////
     {
@@ -276,6 +292,48 @@ export const getControlDataKubeVirt = (
           type: 'combobox',
           placeholder: t('Select a volume mode'),
           available: ['Block', 'Filesystem'],
+        },
+        ///////////////////////////// Node Pools Networking options section /////////////////////////////
+        {
+          id: 'networkingOptionsSection',
+          type: 'section',
+          collapsable: true,
+          collapsed: true,
+          title: t('Networking options'),
+        },
+        {
+          id: 'networkInfo',
+          type: 'title',
+          info: t('Configure networking options for your nodepool'),
+        },
+        {
+          id: 'additionalNetworks',
+          type: 'multitext',
+          name: t('Additional networks'),
+          tooltip: t('tooltip.creation.nodepool.additional.network'),
+          placeholder: t('Enter additional networks in the format <namespace>/<name>'),
+          description: t(
+            'Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition'
+          ),
+          addButtonText: t('Add additional network'),
+          validation: getK8sNameValidator(t),
+          active: { multitextEntries: [''] },
+          reverse: additionalNetworksReverse,
+          controlData: [
+            {
+              id: 'additionalNetworks',
+              type: 'multitextMember',
+              active: '',
+              // name: '',
+            },
+          ],
+        },
+        {
+          name: t('Attach default pod network'),
+          tooltip: t('tooltip.creation.ocp.node.pool.default.pod.network'),
+          id: 'defaultPodNetwork',
+          type: 'checkbox',
+          active: true,
         },
       ],
     },

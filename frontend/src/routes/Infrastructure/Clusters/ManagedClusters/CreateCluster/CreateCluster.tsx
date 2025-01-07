@@ -2,7 +2,7 @@
 import { css } from '@emotion/css'
 import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
-import { cloneDeep, get, keyBy, set } from 'lodash'
+import { cloneDeep, get, keyBy, set, uniq } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
@@ -64,6 +64,7 @@ import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
 import './style.css'
 import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/validation-types'
+import { act } from '@testing-library/react'
 // Register the custom 'and' helper
 Handlebars.registerHelper('and', function (a, b) {
   return a && b
@@ -342,9 +343,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
+        console.log(control, 'control.connection')
         setConnectionControl(control)
         break
       case 'namespace':
+        // console.log(control, 'control.namespace')
         if (infrastructureType === Provider.kubevirt) {
           control.validation = { contextTester: validateKubeVirtNamespace }
           //  only include namespaces that do not correspond to an existing managed cluster

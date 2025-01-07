@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import i18n from 'i18next'
-import { getIPValidator, getNumericGTValidator } from './validation-types'
+import { getIPValidator, getNumericGTValidator, getK8sNameValidator } from './validation-types'
+import { TFunction } from 'react-i18next'
 
 const t = i18n.t.bind(i18n)
 
@@ -101,5 +102,40 @@ describe('getIPValidator', () => {
     expect(tester('5')).toEqual(false)
     expect(tester('10')).toEqual(false)
     expect(tester('11')).toEqual(true)
+  })
+})
+
+describe.only('getK8sNameValidator', () => {
+  const t: TFunction = (key: string) => key
+
+  it('should validate a correct Kubernetes name', () => {
+    const validator = getK8sNameValidator(t)
+    expect(validator.tester.test('valid-name')).toBe(true)
+    expect(validator.tester.test('validname')).toBe(true)
+    expect(validator.tester.test('valid-name-123')).toBe(true)
+    expect(validator.tester.test('valid-namespace/valid-name')).toBe(true)
+    expect(validator.tester.test('namespace/name')).toBe(true)
+    expect(validator.tester.test('valid-namespace/valid-name-123')).toBe(true)
+  })
+
+  it('should invalidate an incorrect Kubernetes name', () => {
+    const validator = getK8sNameValidator(t)
+    expect(validator.tester.test('InvalidName')).toBe(false)
+    expect(validator.tester.test('invalid_name')).toBe(false)
+    expect(validator.tester.test('invalid.name')).toBe(false)
+    expect(validator.tester.test('-invalidname')).toBe(false)
+    expect(validator.tester.test('invalidname-')).toBe(false)
+    expect(validator.tester.test('')).toBe(false)
+    expect(validator.tester.test('a'.repeat(254))).toBe(false) // Exceeds 253 characters
+    expect(validator.tester.test('InvalidNamespace/InvalidName')).toBe(false)
+    expect(validator.tester.test('invalid_namespace/invalid_name')).toBe(false)
+    expect(validator.tester.test('invalid.namespace/invalid.name')).toBe(false)
+    expect(validator.tester.test('-invalidnamespace/invalidname')).toBe(false)
+    expect(validator.tester.test('invalidnamespace-/invalidname-')).toBe(false)
+    expect(validator.tester.test('invalidnamespace/')).toBe(false)
+    expect(validator.tester.test('/invalidname')).toBe(false)
+    expect(validator.tester.test('')).toBe(false)
+    expect(validator.tester.test('a'.repeat(254) + '/name')).toBe(false) // Exceeds 253 characters
+    expect(validator.tester.test('namespace/' + 'a'.repeat(254))).toBe(false) // Exceeds 253 characters
   })
 })
