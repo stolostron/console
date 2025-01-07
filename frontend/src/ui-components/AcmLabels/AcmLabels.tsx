@@ -90,11 +90,7 @@ export function AcmLabels(props: {
         flipBehavior={['left', 'left-end', 'left-end']}
         hasAutoWidth
       >
-        <ul className="pf-v5-c-label-group__list" aria-label="Label group category">
-          <li className="pf-v5-c-label-group__list-item">
-            <Label isOverflowLabel>{t('{{count}} labels', { count: labelCount })}</Label>
-          </li>
-        </ul>
+        <Label isOverflowLabel>{t('{{count}} labels', { count: labelCount })}</Label>
       </Popover>
     ) : (
       renderLabelGroup()

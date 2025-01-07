@@ -70,7 +70,6 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     labelOptions: { label: string; value: string }[]
     labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
   }>()
-  // const [labelMap, setLabelMap] = useState<Record<string, { pairs: Record<string, string>; labels: string[] }>>()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
   const subscriptions = useRecoilValue(subscriptionsState)

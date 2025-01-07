@@ -89,6 +89,8 @@ type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
 type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[] | number[]
 
+// when a filter has more then this many options, give it its own dropdown
+const SPLIT_FILTER_THRESHOLD = 30
 // so we don't create 3000 elements, only create this many
 // with the assumption that if the user is looking for an option
 // they will use filter to find it
@@ -1669,7 +1671,7 @@ function TableColumnFilters<T>(
       let group = filterGroups[0]
       /* istanbul ignore else */
       if (options.length) {
-        if (secondaryFilterIds?.includes(filter.id)) {
+        if (options.length > SPLIT_FILTER_THRESHOLD || secondaryFilterIds?.includes(filter.id)) {
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],
