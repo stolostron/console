@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Label, LabelGroup } from '@patternfly/react-core'
-import { Fragment, useMemo } from 'react'
+import { Label, LabelGroup, Popover, PopoverPosition } from '@patternfly/react-core'
+import { useMemo } from 'react'
 import { css } from '@emotion/css'
 import { useTranslation } from '../../lib/acm-i18next'
 
@@ -16,6 +16,7 @@ export function AcmLabels(props: {
   collapsedText?: string
   expandedText?: string
   allCollapsedText?: string
+  isCompact?: boolean
 }) {
   const { t } = useTranslation()
   const labelsRecord: Record<string, string> = useMemo(() => {
@@ -61,20 +62,39 @@ export function AcmLabels(props: {
   /* istanbul ignore next */
   const expandedText = props.expandedText ?? t('Show less')
 
-  if (props.labels === undefined) return <Fragment />
+  if (props.labels === undefined) return <div>-</div>
+  const labelCount = labels.length + hidden.length
 
-  return (
-    <LabelGroup numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
-      {labels.map((label) => (
-        <Label key={label} className={acmLabel}>
-          {label}
-        </Label>
-      ))}
-      {hidden.map((label) => (
-        <Label key={label} className={acmLabel}>
-          {label}
-        </Label>
-      ))}
-    </LabelGroup>
-  )
+  const renderLabelGroup = () => {
+    return (
+      <LabelGroup isVertical numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
+        {labels.map((label) => (
+          <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
+            {label}
+          </Label>
+        ))}
+        {hidden.map((label) => (
+          <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
+            {label}
+          </Label>
+        ))}
+      </LabelGroup>
+    )
+  }
+  if (labelCount) {
+    return props.isCompact ? (
+      <Popover
+        id={'labels-popover'}
+        bodyContent={renderLabelGroup()}
+        position={PopoverPosition.left}
+        flipBehavior={['left', 'left-end', 'left-end']}
+        hasAutoWidth
+      >
+        <Label isOverflowLabel>{t('{{count}} labels', { count: labelCount })}</Label>
+      </Popover>
+    ) : (
+      renderLabelGroup()
+    )
+  }
+  return <div>-</div>
 }

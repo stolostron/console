@@ -1003,9 +1003,10 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
-  test('renders a table with multiple filters to handle lots of options', async () => {
+  test('renders a table with secondary filter', async () => {
     const { container, getByText, getByTestId, getByLabelText } = render(
       <Table
+        secondaryFilterIds={['cluster']}
         filters={[
           {
             label: 'Gender',
