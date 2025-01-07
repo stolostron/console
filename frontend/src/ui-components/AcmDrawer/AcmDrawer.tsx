@@ -14,6 +14,7 @@ import {
   DrawerPanelContentProps,
 } from '@patternfly/react-core'
 import { AcmAlertProvider, AcmAlertContext } from '../AcmAlert/AcmAlert'
+import { css } from '@emotion/css'
 
 export const AcmDrawerContext = createContext<{
   drawerContext?: AcmDrawerProps
@@ -104,6 +105,10 @@ export function AcmDrawer(props: AcmDrawerProps) {
   )
 }
 
+// OpenShift console has a global override for drawer body height: https://github.com/openshift/console/blob/release-4.17/frontend/public/style/_overrides.scss#L211
+// Override the override
+const overrideDrawerBodyHeight = css({ '.pf-v5-c-drawer__body': { height: 'unset' } })
+
 function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObject<HTMLDivElement> }) {
   const alertContext = useContext(AcmAlertContext)
   useEffect(() => {
@@ -114,7 +119,11 @@ function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObj
   }, [props.isExpanded])
 
   return (
-    <DrawerPanelContent isResizable={props.isResizable} {...props.panelContentProps}>
+    <DrawerPanelContent
+      isResizable={props.isResizable}
+      {...props.panelContentProps}
+      className={overrideDrawerBodyHeight}
+    >
       {!props.disableDrawerHead && (
         <DrawerHead>
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}

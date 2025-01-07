@@ -19,8 +19,10 @@ import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
 import { PluginContext } from '../../../lib/PluginContext'
+import { ConfigMap } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
+  AcmActionGroup,
   AcmButton,
   AcmEmptyState,
   AcmPage,
@@ -221,10 +223,62 @@ function VirtualMachineTable() {
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
+  const { useIsObservabilityInstalled, clusterManagementAddonsState, configMapsState } = useSharedAtoms()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
+  const configMaps = useRecoilValue(configMapsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   usePageVisitMetricHandler(Pages.virtualMachines)
 
+  const vmMetricLink = useMemo(() => {
+    const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
+    let grafanaLink = obsCont?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    if (grafanaLink) {
+      grafanaLink = new URL(grafanaLink).origin
+    }
+    if (isObservabilityInstalled) {
+      const vmDashboard = configMaps.filter(
+        (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-clusters-overview'
+      )
+      if (vmDashboard.length > 0) {
+        const parsedDashboardData = JSON.parse(
+          vmDashboard[0].data?.['acm-openshift-virtualization-clusters-overview.json']
+        )
+        const dashboardId = parsedDashboardData?.uid
+        return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
+      }
+    }
+    return ''
+  }, [clusterManagementAddons, configMaps, isObservabilityInstalled])
+
   return (
-    <AcmPage hasDrawer header={<AcmPageHeader title={t('Virtual machines')} />}>
+    <AcmPage
+      hasDrawer
+      header={
+        <AcmPageHeader
+          title={t('Virtual machines')}
+          actions={
+            isObservabilityInstalled ? (
+              <AcmActionGroup>
+                {[
+                  <AcmButton
+                    key={'observability-launch-link'}
+                    variant="link"
+                    component="a"
+                    target="_blank"
+                    isInline={true}
+                    href={vmMetricLink}
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                  >
+                    {t('Observability dashboards')}
+                  </AcmButton>,
+                ]}
+              </AcmActionGroup>
+            ) : undefined
+          }
+        />
+      }
+    >
       <AcmPageContent id="virtual-machines">
         <PageSection>
           <VirtualMachineTable />
