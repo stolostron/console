@@ -930,7 +930,6 @@ export const ingressVIPsReverse = (ctrl, path) => {
 export const additionalNetworksReverse = (ctrl, path) => {
   const additionalNetworksVal = _.get(path, getSourcePath('spec.platform.kubevirt.additionalNetworks'))
   console.log('Path:', path)
-  console.log('Additional Networks:', additionalNetworksVal)
 
   if (additionalNetworksVal && additionalNetworksVal?.['$v']?.length) {
     const networksArray = additionalNetworksVal['$v'].map((object) => {
