@@ -200,11 +200,15 @@ export const getK8sNameValidator = (t: TFunction): Validator => ({
     test: (value) => {
       const regex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
       const parts = value.split('/')
-      if (parts.length !== 2) return false
-      const [namespace, name] = parts
-      return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
+      if (parts.length === 1) {
+        return regex.test(value) && value.length <= 253
+      } else if (parts.length === 2) {
+        const [namespace, name] = parts
+        return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
+      }
+      return false
     },
   },
-  notification: t('Invalid format. Use <namespace>/<name>'),
+  notification: t('Invalid format. Use <namespace>/<name> or <name>'),
   required: true,
 })

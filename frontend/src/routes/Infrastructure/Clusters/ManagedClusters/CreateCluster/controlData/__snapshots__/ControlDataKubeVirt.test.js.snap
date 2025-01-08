@@ -314,6 +314,53 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "tooltip": "Volume Mode used for the worker node VM’s root volume",
         "type": "combobox",
       },
+      {
+        "collapsable": true,
+        "collapsed": true,
+        "id": "networkingOptionsSection",
+        "title": "Networking options",
+        "type": "section",
+      },
+      {
+        "id": "networkInfo",
+        "info": "Configure networking options for your nodepool",
+        "type": "title",
+      },
+      {
+        "active": {
+          "multitextEntries": [
+            "",
+          ],
+        },
+        "addButtonText": "Add additional network",
+        "controlData": [
+          {
+            "active": "",
+            "id": "additionalNetworks",
+            "type": "multitextMember",
+          },
+        ],
+        "description": "Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition",
+        "id": "additionalNetworks",
+        "name": "Additional networks",
+        "placeholder": "Enter additional networks in the format <namespace>/<name>",
+        "tooltip": "tooltip.creation.nodepool.additional.network",
+        "type": "multitext",
+        "validation": {
+          "notification": "Invalid format. Use <namespace>/<name> or <name>",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
+      },
+      {
+        "active": true,
+        "id": "defaultPodNetwork",
+        "name": "Attach default pod network",
+        "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
+        "type": "checkbox",
+      },
     ],
     "id": "nodepools",
     "prompts": {
@@ -623,6 +670,53 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "placeholder": "Select a volume mode",
         "tooltip": "Volume Mode used for the worker node VM’s root volume",
         "type": "combobox",
+      },
+      {
+        "collapsable": true,
+        "collapsed": true,
+        "id": "networkingOptionsSection",
+        "title": "Networking options",
+        "type": "section",
+      },
+      {
+        "id": "networkInfo",
+        "info": "Configure networking options for your nodepool",
+        "type": "title",
+      },
+      {
+        "active": {
+          "multitextEntries": [
+            "",
+          ],
+        },
+        "addButtonText": "Add additional network",
+        "controlData": [
+          {
+            "active": "",
+            "id": "additionalNetworks",
+            "type": "multitextMember",
+          },
+        ],
+        "description": "Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition",
+        "id": "additionalNetworks",
+        "name": "Additional networks",
+        "placeholder": "Enter additional networks in the format <namespace>/<name>",
+        "tooltip": "tooltip.creation.nodepool.additional.network",
+        "type": "multitext",
+        "validation": {
+          "notification": "Invalid format. Use <namespace>/<name> or <name>",
+          "required": true,
+          "tester": {
+            "test": [Function],
+          },
+        },
+      },
+      {
+        "active": true,
+        "id": "defaultPodNetwork",
+        "name": "Attach default pod network",
+        "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
+        "type": "checkbox",
       },
     ],
     "id": "nodepools",
