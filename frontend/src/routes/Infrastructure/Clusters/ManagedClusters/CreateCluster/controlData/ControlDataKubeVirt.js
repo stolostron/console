@@ -324,7 +324,6 @@ export const getControlDataKubeVirt = (
               id: 'additionalNetworks',
               type: 'multitextMember',
               active: '',
-              // name: '',
             },
           ],
         },

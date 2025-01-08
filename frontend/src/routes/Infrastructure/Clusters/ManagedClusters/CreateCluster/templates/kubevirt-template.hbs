@@ -141,7 +141,7 @@ spec:
       additionalNetworks:
         {{#each additionalNetworks.multitextEntries}}
           {{#if .}}
-          - {{.}}
+          - name: {{.}}
           {{/if}}
         {{/each}}
       {{/if}}

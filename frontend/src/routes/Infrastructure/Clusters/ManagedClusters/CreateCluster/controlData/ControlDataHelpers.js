@@ -904,7 +904,7 @@ const updateMultitextControlData = (ctrl, entriesArray) => {
 
 export const ingressVIPsReverse = (ctrl, path) => {
   const ingressVIPsVal = _.get(path, getSourcePath('unknown[0].platform.vsphere.ingressVIPs'))
-  console.log('Path:', path);
+  console.log('Path:', path)
   console.log(ingressVIPsVal)
 
   if (ingressVIPsVal && ingressVIPsVal?.['$v']?.length) {
@@ -937,9 +937,7 @@ export const additionalNetworksReverse = (ctrl, path) => {
       const value = object['$v']
       console.log(value)
 
-      return typeof value === 'object' && value !== null
-        ? value
-        : { name: value }
+      return typeof value === 'object' && value !== null ? value : { name: value }
     })
 
     updateMultitextControlData(ctrl, networksArray)
