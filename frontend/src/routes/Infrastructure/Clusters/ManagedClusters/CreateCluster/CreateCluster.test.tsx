@@ -761,6 +761,8 @@ const mockNodePools = {
             size: '32Gi',
           },
         },
+        additionalNetworks: null,
+        defaultPodNetwork: true,
       },
     },
     release: {
@@ -1835,7 +1837,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         platform: {
           type: 'KubeVirt',
           kubevirt: {
-            additionalNetworks: [{ name: 'ns1/name1' }],
             compute: {
               cores: 2,
               memory: '8Gi',
@@ -1846,6 +1847,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
                 size: '32Gi',
               },
             },
+            additionalNetworks: [{ name: 'ns1/name1' }],
+            defaultPodNetwork: true,
           },
         },
         release: {
@@ -1891,10 +1894,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       /enter additional networks in the format <namespace>\/<name>/i
     )
     fireEvent.change(additionalNetworksInput, { target: { value: 'ns1/name1' } })
-    // await clickByText('Add additional network')
-    // screen.logTestingPlaygroundURL()
-    // const additionalNetworksInput2 = screen.getByRole('textbox')
-    // fireEvent.change(additionalNetworksInput2, { target: { value: 'ns2/name2' } })
+    await clickByText('Add additional network')
 
     // Review and Save step
     await clickByText('Next')
@@ -2190,6 +2190,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
+          additionalNetworks: null,
+          defaultPodNetwork: true,
         },
       },
       release: {
@@ -2611,6 +2613,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
+          additionalNetworks: null,
+          defaultPodNetwork: true,
         },
       },
       release: {
@@ -3035,6 +3039,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
+          additionalNetworks: null,
+          defaultPodNetwork: true,
         },
       },
       release: {
