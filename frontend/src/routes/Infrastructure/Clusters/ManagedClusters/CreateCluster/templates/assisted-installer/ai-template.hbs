@@ -40,8 +40,8 @@ spec:
   holdInstallation: true
   provisionRequirements:
     workerAgents: 0    
-    {{#if ai.controlPlaneAgents}}    
-    controlPlaneAgents: {{{ai.controlPlaneAgents}}}   
+    {{#if ai.controlPlaneCount}}
+    controlPlaneAgents: {{{ai.controlPlaneCount}}}
     {{else}}
     controlPlaneAgents: 3
     {{/if}}
