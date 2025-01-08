@@ -6,14 +6,13 @@ import {
   getNumericValidator,
   getNumericGTValidator,
   VALID_DNS_LABEL,
+  getK8sNameValidator,
 } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
 import {
-  additionalNetworksReverse,
   appendKlusterletAddonConfig,
   appendWarning,
   getSimplifiedImageName,
-  k8sNamePattern,
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
@@ -23,8 +22,6 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
-import { VALID_K8_NAME } from '../../../../../../components/TemplateEditor'
-import { getK8sNameValidator } from '../../../../../../components/TemplateEditor'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -318,7 +315,6 @@ export const getControlDataKubeVirt = (
           addButtonText: t('Add additional network'),
           validation: getK8sNameValidator(t),
           active: { multitextEntries: [''] },
-          reverse: additionalNetworksReverse,
           controlData: [
             {
               id: 'additionalNetworks',

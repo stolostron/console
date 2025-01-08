@@ -904,8 +904,6 @@ const updateMultitextControlData = (ctrl, entriesArray) => {
 
 export const ingressVIPsReverse = (ctrl, path) => {
   const ingressVIPsVal = _.get(path, getSourcePath('unknown[0].platform.vsphere.ingressVIPs'))
-  console.log('Path:', path)
-  console.log(ingressVIPsVal)
 
   if (ingressVIPsVal && ingressVIPsVal?.['$v']?.length) {
     const ingressArray = ingressVIPsVal['$v'].map((object) => {
@@ -922,32 +920,6 @@ export const ingressVIPsReverse = (ctrl, path) => {
       }
     })
   } else if (ctrl.controlData.length > 1 && ingressVIPsVal) {
-    resetMultitextControlData(ctrl)
-    ctrl.active.multitextEntries = ['']
-  }
-}
-
-export const additionalNetworksReverse = (ctrl, path) => {
-  const additionalNetworksVal = _.get(path, getSourcePath('spec.platform.kubevirt.additionalNetworks'))
-  console.log('Path:', path)
-
-  if (additionalNetworksVal && additionalNetworksVal?.['$v']?.length) {
-    const networksArray = additionalNetworksVal['$v'].map((object) => {
-      const value = object['$v']
-      console.log(value)
-
-      return typeof value === 'object' && value !== null ? value : { name: value }
-    })
-
-    updateMultitextControlData(ctrl, networksArray)
-    ctrl.active.multitextEntries = networksArray.map((network) => network.name)
-
-    networksArray.forEach((entry, index) => {
-      if (ctrl.controlData?.[index]) {
-        ctrl.controlData[index].active = entry.name
-      }
-    })
-  } else if (ctrl.controlData.length > 1 && additionalNetworksVal) {
     resetMultitextControlData(ctrl)
     ctrl.active.multitextEntries = ['']
   }
