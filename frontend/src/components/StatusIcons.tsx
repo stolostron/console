@@ -114,7 +114,7 @@ export function StatusIcons(props: {
           <Tooltip content={tooltip}>
             <Flex spaceItems={{ default: 'spaceItemsSm' }}>
               <FlexItem>{icon}</FlexItem>
-              <FlexItem>{getCount(count, href, onClick)}</FlexItem>
+              <FlexItem spacer={{ default: 'spacerMd' }}>{getCount(count, href, onClick)}</FlexItem>
             </Flex>
           </Tooltip>
         </Fragment>
