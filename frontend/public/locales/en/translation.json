@@ -1473,6 +1473,7 @@
   "Governance": "Governance",
   "Governance provides an extensible policy framework for enterprises to harden security for software engineering, secure engineering, and resiliency. Enhance your security to meet internal standards by using policies to verify which clusters are at risk": "Governance provides an extensible policy framework for enterprises to harden security for software engineering, secure engineering, and resiliency. Enhance your security to meet internal standards by using policies to verify which clusters are at risk",
   "GPU Accelerated Compute": "GPU Accelerated Compute",
+  "grc.gatekeeper.mutation.no.resources": "You don't have any mutated resources or {{flag}} flag might need to be added",
   "Guest": "Guest",
   "H1 - 16 TB of HDD-based local storage": "H1 - 16 TB of HDD-based local storage",
   "Health check": "Health check",

@@ -21,6 +21,7 @@ import {
   getSourceExportCSV,
   getSourceFilterOptions,
   policyViolationSummary,
+  responseActionCell,
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
@@ -101,12 +102,12 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Response action'),
-        cell: 'responseAction',
+        cell: responseActionCell,
         sort: 'responseAction',
         search: 'responseAction',
         id: 'responseAction',
         tooltip: t('discoveredPolicies.tooltip.responseAction'),
-        exportContent: (item: DiscoverdPolicyTableItem) => item.responseAction,
+        exportContent: (item: DiscoverdPolicyTableItem) => item.responseAction ?? '-',
       },
       {
         header: t('Severity'),

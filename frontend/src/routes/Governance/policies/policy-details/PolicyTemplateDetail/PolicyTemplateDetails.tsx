@@ -24,7 +24,7 @@ import { DiffModal } from '../../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
 import { getEngineWithSvg } from '../../../common/util'
-import { useFetchKyvernoRelated, useFetchVapb, useFetchVapbParamRefs } from './PolicyTemplateDetailHooks'
+import { useFetchKyvernoRelated, useFetchVapb, useFetchOnlyRelatedResources } from './PolicyTemplateDetailHooks'
 import { addRowsForHasVapb, addRowsForOperatorPolicy, addRowsForVapb } from './PolicyTemplateDetailsColumns'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
 
@@ -39,10 +39,11 @@ export function PolicyTemplateDetails() {
   const { clusterName, template, templateLoading, handleAuditViolation } = useTemplateDetailsContext()
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
   const vapb = useFetchVapb() // Used by gatekeeper constraints and kyverno resources
-  const vapbRelated = useFetchVapbParamRefs() // Used when just displaying a VAPB
+  const relatedResourcesFromSearch = useFetchOnlyRelatedResources()
   const kyvernoRelated = useFetchKyvernoRelated()
   const isKyverno = ['kyverno.io'].includes(apiGroup)
   const isVAPB = apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding'
+  const isGatekeeperMutation = apiGroup === 'mutations.gatekeeper.sh'
   const hasVapb = ['constraints.gatekeeper.sh', 'kyverno.io'].includes(apiGroup)
 
   useEffect(() => {
@@ -55,10 +56,14 @@ export function PolicyTemplateDetails() {
   }, [kyvernoRelated, apiGroup, isKyverno, handleAuditViolation])
 
   useEffect(() => {
-    if (isVAPB && vapbRelated.relatedItems !== undefined && vapbRelated.relatedItems) {
-      setRelatedObjects(vapbRelated.relatedItems)
+    if (
+      (isGatekeeperMutation || isVAPB) &&
+      relatedResourcesFromSearch.relatedItems !== undefined &&
+      relatedResourcesFromSearch.relatedItems
+    ) {
+      setRelatedObjects(relatedResourcesFromSearch.relatedItems)
     }
-  }, [vapbRelated, apiGroup, kind, isVAPB])
+  }, [relatedResourcesFromSearch, apiGroup, kind, isVAPB, isGatekeeperMutation])
 
   useEffect(() => {
     if (apiGroup === 'constraints.gatekeeper.sh' && template?.status?.totalViolations !== undefined) {
@@ -103,10 +108,10 @@ export function PolicyTemplateDetails() {
     }
 
     // Data from Search-api handles their loading page
-    if (!templateLoading && !isKyverno) {
+    if (!templateLoading && !isKyverno && !isGatekeeperMutation && !isVAPB) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading, isKyverno, handleAuditViolation])
+  }, [apiGroup, clusterName, template, templateLoading, isKyverno, handleAuditViolation, isGatekeeperMutation, isVAPB])
 
   const descriptionItems = useMemo(() => {
     let cols: ListItems[] = [
@@ -360,6 +365,33 @@ export function PolicyTemplateDetails() {
     [t]
   )
 
+  const emptyState: JSX.Element = useMemo(() => {
+    if (isVAPB) {
+      return (
+        <AcmEmptyState
+          title={t('No parameter resources')}
+          message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
+        />
+      )
+    }
+
+    if (isGatekeeperMutation) {
+      return (
+        <AcmEmptyState
+          title={t('No related resources')}
+          message={t('grc.gatekeeper.mutation.no.resources', { flag: '--mutations-annotations' })}
+        />
+      )
+    }
+
+    return (
+      <AcmEmptyState
+        title={t('No related resources')}
+        message={t('There are no resources related to this policy template.')}
+      />
+    )
+  }, [isVAPB, isGatekeeperMutation, t])
+
   return (
     <div>
       {(vapb.err || kyvernoRelated.err) && (
@@ -387,20 +419,8 @@ export function PolicyTemplateDetails() {
               ) : (
                 <AcmTable
                   items={relatedObjects}
-                  emptyState={
-                    isVAPB ? (
-                      <AcmEmptyState
-                        title={t('No parameter resources')}
-                        message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
-                      />
-                    ) : (
-                      <AcmEmptyState
-                        title={t('No related resources')}
-                        message={t('There are no resources related to this policy template.')}
-                      />
-                    )
-                  }
-                  columns={isVAPB ? paramRefVAPBColumns : relatedResourceColumns}
+                  emptyState={emptyState}
+                  columns={isVAPB || isGatekeeperMutation ? paramRefVAPBColumns : relatedResourceColumns}
                   keyFn={(item: any) => `${item?.object?.kind}.${item?.object?.metadata.name}`}
                   initialSort={{
                     index: 0,

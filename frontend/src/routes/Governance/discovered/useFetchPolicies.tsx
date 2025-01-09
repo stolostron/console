@@ -122,6 +122,16 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
         filters: [
           {
             property: 'apigroup',
+            values: ['mutations.gatekeeper.sh'],
+          },
+        ],
+        relatedKinds: ['$DO-NOT-RETURN'],
+        limit: 100000,
+      },
+      {
+        filters: [
+          {
+            property: 'apigroup',
             values: ['admissionregistration.k8s.io'],
           },
           {

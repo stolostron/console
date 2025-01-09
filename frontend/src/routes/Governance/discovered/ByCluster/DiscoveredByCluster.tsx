@@ -38,6 +38,7 @@ export default function DiscoveredByCluster({
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''
   const isVapb = ['admissionregistration.k8s.io'].includes(policies?.[0]?.apigroup ?? '')
+  const isGatekeeperMutation = apiGroup === 'mutations.gatekeeper.sh'
   const cols = useMemo(() => {
     let extraColumns: IAcmTableColumn<DiscoveredPolicyItem>[] = []
 
@@ -73,8 +74,17 @@ export default function DiscoveredByCluster({
       ]
     }
 
-    return byClusterCols(t, helmReleases, subscriptions, channels, policyKind, isVapb, extraColumns)
-  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t, isVapb])
+    let cols = byClusterCols(t, helmReleases, subscriptions, channels, policyKind, isVapb, extraColumns)
+
+    if (isGatekeeperMutation) {
+      cols = cols.filter((col) => {
+        // remove violation, response action columns
+        return col.id == 'cluster' || col.id == 'source' || col.id == 'severity'
+      })
+    }
+
+    return cols
+  }, [channels, helmReleases, kindHead, subscriptions, policyKind, apiGroup, t, isGatekeeperMutation, isVapb])
 
   const operatorPolicyStats: any = useMemo(() => {
     if (policyKind !== 'OperatorPolicy') {
@@ -216,80 +226,89 @@ export default function DiscoveredByCluster({
       ])
     }
 
+    if (isGatekeeperMutation) {
+      filters = filters.filter((col) => {
+        // remove violation column
+        return col.id == 'cluster' || col.id == 'source' || col.id == 'severity'
+      })
+    }
     return filters
-  }, [t, policyKind, policies])
+  }, [t, policyKind, policies, isGatekeeperMutation])
 
   return (
     <>
-      {policies && policies.length > 0 && policyKind !== 'ValidatingAdmissionPolicyBinding' && (
-        <PageSection style={{ paddingBottom: '0' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flexShrink: '0' }}>
-            <DiscoveredViolationsCard
-              policyKind={policyKind}
-              policyViolationSummary={policyViolationSummary(policies ?? [])}
-              title={policyKind + ' ' + t('cluster violations')}
-            />
-            {policyKind === 'OperatorPolicy' && (
-              <>
-                <AcmDonutChart
-                  title={t('Deployments unavailable')}
-                  description={t('Overview of unavailable deployments')}
-                  donutLabel={{
-                    title: operatorPolicyStats['deploymentsUnavailable'],
-                    subTitle: t('Unavailable'),
-                  }}
-                  data={[
-                    {
-                      key: t('unavailable'),
-                      value: operatorPolicyStats['deploymentsUnavailable'],
-                      isPrimary: true,
-                      useForTitleCount: true,
-                      link: locationPath + '?deploymentAvailable=no',
-                    },
-                    {
-                      key: t('with no status'),
-                      value: operatorPolicyStats['deploymentsUnknown'],
-                    },
-                    {
-                      key: t('available'),
-                      value: operatorPolicyStats['deploymentsAvailable'],
-                      link: locationPath + '?deploymentAvailable=yes',
-                    },
-                  ]}
-                  colorScale={colorThemes.criticalLowSuccess}
-                />
-                <AcmDonutChart
-                  title={t('Upgrade availability')}
-                  description={t('Overview of available upgrades')}
-                  donutLabel={{
-                    title: operatorPolicyStats['upgradesAvailable'],
-                    subTitle: t('Available'),
-                  }}
-                  data={[
-                    {
-                      key: t('available'),
-                      value: operatorPolicyStats['upgradesAvailable'],
-                      isPrimary: true,
-                      useForTitleCount: true,
-                      link: locationPath + '?upgradeAvailable=yes',
-                    },
-                    {
-                      key: t('with no status'),
-                      value: operatorPolicyStats['upgradesUnknown'],
-                    },
-                    {
-                      key: t('unavailable'),
-                      value: operatorPolicyStats['upgradesUnavailable'],
-                      link: locationPath + '?upgradeAvailable=no',
-                    },
-                  ]}
-                  colorScale={colorThemes.criticalLowSuccess}
-                />
-              </>
-            )}
-          </div>
-        </PageSection>
-      )}
+      {policies &&
+        policies.length > 0 &&
+        policyKind !== 'ValidatingAdmissionPolicyBinding' &&
+        !isGatekeeperMutation && (
+          <PageSection style={{ paddingBottom: '0' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flexShrink: '0' }}>
+              <DiscoveredViolationsCard
+                policyKind={policyKind}
+                policyViolationSummary={policyViolationSummary(policies ?? [])}
+                title={policyKind + ' ' + t('cluster violations')}
+              />
+              {policyKind === 'OperatorPolicy' && (
+                <>
+                  <AcmDonutChart
+                    title={t('Deployments unavailable')}
+                    description={t('Overview of unavailable deployments')}
+                    donutLabel={{
+                      title: operatorPolicyStats['deploymentsUnavailable'],
+                      subTitle: t('Unavailable'),
+                    }}
+                    data={[
+                      {
+                        key: t('unavailable'),
+                        value: operatorPolicyStats['deploymentsUnavailable'],
+                        isPrimary: true,
+                        useForTitleCount: true,
+                        link: locationPath + '?deploymentAvailable=no',
+                      },
+                      {
+                        key: t('with no status'),
+                        value: operatorPolicyStats['deploymentsUnknown'],
+                      },
+                      {
+                        key: t('available'),
+                        value: operatorPolicyStats['deploymentsAvailable'],
+                        link: locationPath + '?deploymentAvailable=yes',
+                      },
+                    ]}
+                    colorScale={colorThemes.criticalLowSuccess}
+                  />
+                  <AcmDonutChart
+                    title={t('Upgrade availability')}
+                    description={t('Overview of available upgrades')}
+                    donutLabel={{
+                      title: operatorPolicyStats['upgradesAvailable'],
+                      subTitle: t('Available'),
+                    }}
+                    data={[
+                      {
+                        key: t('available'),
+                        value: operatorPolicyStats['upgradesAvailable'],
+                        isPrimary: true,
+                        useForTitleCount: true,
+                        link: locationPath + '?upgradeAvailable=yes',
+                      },
+                      {
+                        key: t('with no status'),
+                        value: operatorPolicyStats['upgradesUnknown'],
+                      },
+                      {
+                        key: t('unavailable'),
+                        value: operatorPolicyStats['upgradesUnavailable'],
+                        link: locationPath + '?upgradeAvailable=no',
+                      },
+                    ]}
+                    colorScale={colorThemes.criticalLowSuccess}
+                  />
+                </>
+              )}
+            </div>
+          </PageSection>
+        )}
       <PageSection>
         <AcmTable<DiscoveredPolicyItem>
           id={`${policyKind}ByCluster`}
