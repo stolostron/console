@@ -57,18 +57,6 @@ export const getControlDataKubeVirt = (
   includeKlusterletAddonConfig = true,
   localCluster
 ) => {
-  // const isLocalInfrastructure = (globalControl) => {
-  //   console.log(globalControl, 'globalControl')
-  //   return globalControl.some((c) => c.id === 'infrastructure' && c.active === 'local')
-  // }
-
-  // const getAvailableNetworks = (globalControl) => {
-  //   if (isLocalInfrastructure(globalControl)) {
-  //     return ['default/namespace1', 'default/namespace2']
-  //   }
-  //   return []
-  // }
-
   const controlData = [
     //////////////////////////////////  AI form  //////////////////////////////////
     {
