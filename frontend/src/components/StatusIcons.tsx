@@ -112,12 +112,12 @@ export function StatusIcons(props: {
         <Fragment key={key}>
           {index !== 0 && <Divider key={`${key}_d`} orientation={{ default: 'vertical' }} />}
           <FlexItem>
-          <Tooltip content={tooltip}>
-            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-              <FlexItem>{icon}</FlexItem>
-              <FlexItem>{getCount(count, href, onClick)}</FlexItem>
-            </Flex>
-          </Tooltip>
+            <Tooltip content={tooltip}>
+              <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                <FlexItem>{icon}</FlexItem>
+                <FlexItem>{getCount(count, href, onClick)}</FlexItem>
+              </Flex>
+            </Tooltip>
           </FlexItem>
         </Fragment>
       ))}
