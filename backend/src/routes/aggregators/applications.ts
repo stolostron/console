@@ -230,7 +230,7 @@ export async function searchLoop() {
     // process every APP_SEARCH_INTERVAL seconds
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL)))
+      await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL) || 60000))
     } else {
       stopping = true
     }
