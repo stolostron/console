@@ -27,3 +27,7 @@
 .portal-controls > div {
   margin-left: 16px;
 }
+
+.compare-applications-button:hover {
+  text-decoration: underline !important;
+}
