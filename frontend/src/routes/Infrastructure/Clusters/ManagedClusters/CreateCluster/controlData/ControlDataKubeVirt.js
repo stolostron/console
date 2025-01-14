@@ -23,7 +23,6 @@ import {
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
-import { getControlByID } from '../../../../../../lib/temptifly-utils'
 
 const operatorAlert = (localCluster, t) => {
   return (
