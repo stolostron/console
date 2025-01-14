@@ -761,7 +761,6 @@ const mockNodePools = {
             size: '32Gi',
           },
         },
-        additionalNetworks: null,
         defaultPodNetwork: true,
       },
     },
@@ -1848,7 +1847,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
             additionalNetworks: [{ name: 'ns1/name1' }],
-            defaultPodNetwork: true,
+            defaultPodNetwork: false,
           },
         },
         release: {
@@ -1895,6 +1894,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     )
     fireEvent.change(additionalNetworksInput, { target: { value: 'ns1/name1' } })
     await clickByText('Add additional network')
+
+    const defaultPodNetworkCheckbox = screen.getByRole('checkbox', { name: /default pod network/i })
+    fireEvent.click(defaultPodNetworkCheckbox)
 
     // Review and Save step
     await clickByText('Next')
@@ -2190,7 +2192,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          additionalNetworks: null,
           defaultPodNetwork: true,
         },
       },
@@ -2613,7 +2614,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          additionalNetworks: null,
           defaultPodNetwork: true,
         },
       },
@@ -3039,7 +3039,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          additionalNetworks: null,
           defaultPodNetwork: true,
         },
       },

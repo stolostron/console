@@ -68,6 +68,17 @@ import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/
 Handlebars.registerHelper('and', function (a, b) {
   return a && b
 })
+Handlebars.registerHelper('gt', function (value1, value2) {
+  return value1 > value2
+})
+// Filter out empty entries
+Handlebars.registerHelper('filter', function (array: any[]) {
+  return array.filter((item: string) => item && item.trim() !== '')
+})
+// Get length of array
+Handlebars.registerHelper('length', function (array) {
+  return Array.isArray(array) ? array.length : 0
+})
 
 interface CreationStatus {
   status: string
@@ -342,7 +353,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
-        console.log(control, 'control.connection')
         setConnectionControl(control)
         break
       case 'namespace':
