@@ -927,7 +927,7 @@ export function VMLaunchLinks(props: { item: any; t: TFunction }) {
         }}
         color="grey"
       >
-        {'Launch links'}
+        {t('Launch links')}
       </Label>
     </Popover>
   )
