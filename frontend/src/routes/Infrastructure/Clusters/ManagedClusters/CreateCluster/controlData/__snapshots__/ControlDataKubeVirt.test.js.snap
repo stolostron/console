@@ -328,9 +328,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       },
       {
         "active": {
-          "multitextEntries": [
-            "",
-          ],
+          "multitextEntries": [],
         },
         "addButtonText": "Add additional network",
         "controlData": [
@@ -347,8 +345,8 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "tooltip": "tooltip.creation.nodepool.additional.network",
         "type": "multitext",
         "validation": {
-          "notification": "Invalid format. Use <namespace>/<name> or <name>",
-          "required": true,
+          "notification": "Invalid format. Use <namespace>/<name>",
+          "required": false,
           "tester": {
             "test": [Function],
           },
@@ -358,8 +356,12 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "active": true,
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
+        "onSelect": [Function],
         "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
         "type": "checkbox",
+        "validation": {
+          "required": false,
+        },
       },
     ],
     "id": "nodepools",
@@ -685,9 +687,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       },
       {
         "active": {
-          "multitextEntries": [
-            "",
-          ],
+          "multitextEntries": [],
         },
         "addButtonText": "Add additional network",
         "controlData": [
@@ -704,8 +704,8 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "tooltip": "tooltip.creation.nodepool.additional.network",
         "type": "multitext",
         "validation": {
-          "notification": "Invalid format. Use <namespace>/<name> or <name>",
-          "required": true,
+          "notification": "Invalid format. Use <namespace>/<name>",
+          "required": false,
           "tester": {
             "test": [Function],
           },
@@ -715,8 +715,12 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "active": true,
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
+        "onSelect": [Function],
         "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
         "type": "checkbox",
+        "validation": {
+          "required": false,
+        },
       },
     ],
     "id": "nodepools",
