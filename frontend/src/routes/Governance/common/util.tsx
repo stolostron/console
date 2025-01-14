@@ -27,7 +27,7 @@ import { IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
 import { LostChangesContext } from '../../../components/LostChanges'
-import { DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
+import { DiscoverdPolicyTableItem, DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
 import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 import Kubernetes from '../../../logos/kubernetes.svg'
@@ -711,6 +711,7 @@ export function getEngineString(apiGroup: string): string {
     case 'policy.open-cluster-management.io':
       return 'Open Cluster Management'
     case 'constraints.gatekeeper.sh':
+    case 'mutations.gatekeeper.sh':
     case 'templates.gatekeeper.sh':
       return 'Gatekeeper'
     case 'admissionregistration.k8s.io':
@@ -761,6 +762,35 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
       {engine}{' '}
     </div>
   )
+}
+
+export function parseDiscoveredPolicyLabels(data: DiscoverdPolicyTableItem[]) {
+  const allLabels = new Set<string>()
+  const labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }> = {}
+  data?.forEach((item) => {
+    item.policies.forEach(({ label }) => {
+      const labels: string[] = []
+      const pairs: Record<string, string> = {}
+      label?.split(';').forEach((lbl) => {
+        labels.push(lbl.trim())
+        const [key, value] = lbl.split('=').map((seg) => seg.trim())
+        if (
+          !['cluster-name', 'cluster-namespace'].includes(key) &&
+          !key.startsWith('policy.open-cluster-management.io/')
+        ) {
+          pairs[key] = value
+          allLabels.add(lbl.trim())
+        }
+      })
+      labelMap[item.id] = { pairs, labels }
+    })
+  })
+  return {
+    labelMap,
+    labelOptions: Array.from(allLabels).map((lbl) => {
+      return { label: lbl, value: lbl }
+    }),
+  }
 }
 
 /* istanbul ignore next */

@@ -713,8 +713,11 @@ export function getProvider({
   // Hosted clusters imported from a managed MCE cluster will not have provider set
   // Look it up from the corresponding DiscoveredCluster
   if (getIsHostedCluster(managedCluster) && providerLabel === 'OTHER') {
-    if (discoveredCluster?.spec.isManagedCluster && discoveredCluster?.spec.cloudProvider)
+    if (discoveredCluster?.spec.isManagedCluster && discoveredCluster?.spec.cloudProvider) {
       providerLabel = discoveredCluster.spec.cloudProvider.toUpperCase()
+    } else if (platformClusterClaim !== undefined) {
+      providerLabel = platformClusterClaim.value.toUpperCase()
+    }
   }
 
   let provider: Provider | undefined
@@ -1520,11 +1523,17 @@ export function getClusterStatus(
 }
 
 export function getIsHostedCluster(managedCluster?: ManagedCluster) {
+  const hostedClusterClaim = managedCluster?.status?.clusterClaims?.find(
+    (claim) => claim.name === 'hostedcluster.hypershift.openshift.io'
+  )
+
   if (
     managedCluster?.metadata.annotations &&
     managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] &&
     managedCluster?.metadata.annotations['import.open-cluster-management.io/klusterlet-deploy-mode'] === 'Hosted'
   ) {
+    return true
+  } else if (hostedClusterClaim !== undefined && hostedClusterClaim.value === 'true') {
     return true
   } else {
     return false

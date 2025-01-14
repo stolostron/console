@@ -80,6 +80,7 @@ import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
 import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { PluginContext } from '../../lib/PluginContext'
@@ -87,6 +88,13 @@ import { PluginContext } from '../../lib/PluginContext'
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
 type SearchFn<T> = (item: T) => string | boolean | number | string[] | boolean[] | number[]
+
+// when a filter has more then this many options, give it its own dropdown
+const SPLIT_FILTER_THRESHOLD = 30
+// so we don't create 3000 elements, only create this many
+// with the assumption that if the user is looking for an option
+// they will use filter to find it
+const MAXIMUM_OPTIONS = 200
 
 /* istanbul ignore next */
 export interface IAcmTableColumn<T> {
@@ -250,9 +258,29 @@ export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
   options: TableFilterOption<FilterOptionValueT>[]
   showEmptyOptions?: boolean
 }
+interface IValidFilters<T> {
+  filter: ITableFilter<T>
+  options: { option: TableFilterOption<string>; count: number }[]
+}
 
 export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilterSelection> {
   availableOperators: SearchOperator[]
+}
+
+type TableFilterOptions = { option: TableFilterOption<string>; count: number }
+
+function renderFilterSelectOption(filterId: string, option: TableFilterOptions, search?: string) {
+  const key = `${filterId}-${option.option.value}`
+  return (
+    <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
+      <div className={filterOption}>
+        <HighlightSearchText text={(option.option.label as string) ?? '-'} searchText={search} />
+        <Badge className={filterOptionBadge} key={key} isRead>
+          {option.count}
+        </Badge>
+      </div>
+    </SelectOption>
+  )
 }
 
 function getValidFilterSelections<T>(
@@ -539,6 +567,7 @@ export type AcmTableProps<T> = {
   noBorders?: boolean
   fuseThreshold?: number
   filters?: ITableFilter<T>[]
+  secondaryFilterIds?: string[]
   advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
   showColumManagement?: boolean
@@ -559,6 +588,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     customTableAction,
     additionalToolbarItems,
     filters = [],
+    secondaryFilterIds,
     advancedFilters = [],
     gridBreakPoint,
     initialSelectedItems,
@@ -1386,7 +1416,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                   </ToolbarItem>
                 )}
                 {hasFilter && (
-                  <TableColumnFilters id={id} filters={filters} filterCounts={filterCounts} items={items} />
+                  <TableColumnFilters
+                    id={id}
+                    filters={filters}
+                    secondaryFilterIds={secondaryFilterIds}
+                    filterCounts={filterCounts}
+                    items={items}
+                  />
                 )}
               </ToolbarGroup>
             )}
@@ -1552,10 +1588,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 }
 
 function TableColumnFilters<T>(
-  props: Readonly<{ id?: string; filters: ITableFilter<T>[]; filterCounts: FilterCounts | undefined; items?: T[] }>
+  props: Readonly<{
+    id?: string
+    filters: ITableFilter<T>[]
+    secondaryFilterIds?: string[]
+    filterCounts: FilterCounts | undefined
+    items?: T[]
+  }>
 ) {
-  const [isOpen, setIsOpen] = useState(false)
-  const { id, filters, items, filterCounts } = props
+  const [isOpen, setIsOpen] = useState([false])
+  const { id, filters, secondaryFilterIds, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
     id,
     filters,
@@ -1597,12 +1639,16 @@ function TableColumnFilters<T>(
   }, [filterSelections])
 
   const filterSelectGroups = useMemo(() => {
-    const validFilters: {
-      filter: ITableFilter<T>
-      options: { option: TableFilterOption<string>; count: number }[]
-    }[] = []
+    const filterGroups = [
+      {
+        allFilters: [] as ITableFilter<T>[],
+        groupSelections: [] as FilterSelectOptionObject[],
+        validFilters: [] as IValidFilters<T>[],
+        allOptions: [] as TableFilterOptions[],
+      },
+    ]
     for (const filter of filters) {
-      const options: { option: TableFilterOption<string>; count: number }[] = []
+      let options: TableFilterOptions[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
         const count = filterCounts?.[filter.id]
@@ -1618,82 +1664,150 @@ function TableColumnFilters<T>(
           options.push({ option, count: count ?? 0 })
         }
       }
+
+      // if a secondaryFilterId is present (ex: specify 'labels' will make it its own dropdown)
+      // split filters up
+      // (like an environment with lots of clusters)
+      let group = filterGroups[0]
       /* istanbul ignore else */
       if (options.length) {
-        validFilters.push({ filter, options })
+        if (options.length > SPLIT_FILTER_THRESHOLD || secondaryFilterIds?.includes(filter.id)) {
+          filterGroups.push({
+            allFilters: [] as ITableFilter<T>[],
+            groupSelections: [] as FilterSelectOptionObject[],
+            validFilters: [] as IValidFilters<T>[],
+            allOptions: options,
+          })
+          // to avoid create lots of react components,
+          // just create a smaller set with the assumption that user
+          // won't be scrolling the entire list of 3000 clusters
+          // but will instead search for a cluster--at which point
+          // we will create react components for just that search
+          options = options.slice(0, MAXIMUM_OPTIONS)
+          group = filterGroups[filterGroups.length - 1]
+        }
+        group.validFilters.push({ filter, options })
       }
+      group.allFilters.push(filter)
     }
 
-    return validFilters.map((filter) => (
-      <SelectGroup key={filter.filter.id} label={filter.filter.label}>
-        {filter.options.map((option) => {
-          const key = `${filter.filter.id}-${option.option.value}`
+    // if user has made selections and there are multiple filters
+    // because some have lots of options, split the selections up by filter
+    filterGroups[0].groupSelections = selections
+    if (filterGroups.length > 1) {
+      let allSelections = [...selections]
+      filterGroups.forEach((group, inx) => {
+        if (inx !== 0) {
+          const remainingSelections = [] as FilterSelectOptionObject[]
+          filterGroups[inx].groupSelections = allSelections.filter((selected) => {
+            // there should only be one validFilter in extra filter dropdowns
+            // just for the type filter type (ex: cluster) in this dropdown
+            if (group.validFilters[0].filter.id !== selected.filterId) {
+              remainingSelections.push(selected)
+              return false
+            }
+            return true
+          })
+          allSelections = remainingSelections
+        }
+      })
+      filterGroups[0].groupSelections = allSelections
+    }
+
+    return filterGroups.map(({ allFilters, allOptions, groupSelections, validFilters }) => {
+      return {
+        groupFilters: allFilters,
+        groupOptions: allOptions,
+        groupSelections,
+        groupSelectionList: validFilters.map((filter) => {
           return (
-            <SelectOption
-              key={key}
-              inputId={key}
-              value={createFilterSelectOptionObject(filter.filter.id, option.option.value)}
-            >
-              <div className={filterOption}>
-                {option.option.label}
-                <Badge className={filterOptionBadge} key={key} isRead>
-                  {option.count}
-                </Badge>
-              </div>
-            </SelectOption>
+            <SelectGroup key={filter.filter.id} label={filter.filter.label}>
+              {filter.options.map((option) => {
+                return renderFilterSelectOption(filter.filter.id, option)
+              })}
+            </SelectGroup>
           )
-        })}
-      </SelectGroup>
-    ))
-  }, [filterCounts, filters, items, selections])
+        }),
+      }
+    })
+  }, [filterCounts, filters, items, secondaryFilterIds, selections])
+
+  // used by filters with lots of options to filter the options
+  const onFilterOptions = useCallback(
+    (_: any, textInput: string, inx: number) => {
+      if (textInput !== '') {
+        const filterId = filterSelectGroups[inx].groupFilters[0].id
+        return filterSelectGroups[inx].groupOptions
+          .filter(({ option }) => {
+            return option?.value.toLowerCase().includes(textInput.toLowerCase())
+          })
+          .map((option) => {
+            return renderFilterSelectOption(filterId, option, textInput.toLowerCase())
+          })
+      } else {
+        return filterSelectGroups[inx].groupSelectionList
+      }
+    },
+    [filterSelectGroups]
+  )
 
   return (
     <ToolbarItem>
-      {filters.reduce(
-        (acc, current) => (
-          <ToolbarFilter
-            key={'acm-table-filter-key'}
-            chips={current.options
-              .filter((option: TableFilterOption<string>) => {
-                const currentCategorySelected = filterSelections[current.id] ?? []
-                return currentCategorySelected.includes(option.value)
-              })
-              .map<ToolbarChip>((option: TableFilterOption<string>) => {
-                return { key: option.value, node: option.label }
-              })}
-            deleteChip={(_category, chip) => {
-              chip = chip as ToolbarChip
-              onDelete(current.id, chip)
-            }}
-            deleteChipGroup={() => onDeleteGroup(current.id)}
-            categoryName={current.label}
-          >
-            {acc}
-          </ToolbarFilter>
-        ),
-        <Select
-          key={'acm-table-filter-select-key'}
-          variant={SelectVariant.checkbox}
-          aria-label={'acm-table-filter-select-key'}
-          onToggle={() => setIsOpen(!isOpen)}
-          onSelect={(
-            _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-            selection: SelectOptionObject
-          ) => onFilterSelect(selection as FilterSelectOptionObject)}
-          selections={selections}
-          isOpen={isOpen}
-          isGrouped
-          placeholderText={
-            <div>
-              <FilterIcon className={filterLabelMargin} />
-              {t('Filter')}
-            </div>
-          }
-          noResultsFoundText={t('No results found')}
-        >
-          {filterSelectGroups}
-        </Select>
-      )}
+      <div style={{ display: 'flex' }}>
+        {filterSelectGroups.map(({ groupFilters, groupSelections, groupSelectionList }, inx) => {
+          return groupFilters.reduce(
+            (acc, current) => (
+              <ToolbarFilter
+                key={'acm-table-filter-key'}
+                chips={current.options
+                  .filter((option: TableFilterOption<string>) => {
+                    const currentCategorySelected = filterSelections[current.id] ?? []
+                    return currentCategorySelected.includes(option.value)
+                  })
+                  .map<ToolbarChip>((option: TableFilterOption<string>) => {
+                    return { key: option.value, node: option.label }
+                  })}
+                deleteChip={(_category, chip) => {
+                  chip = chip as ToolbarChip
+                  onDelete(current.id, chip)
+                }}
+                deleteChipGroup={() => onDeleteGroup(current.id)}
+                categoryName={current.label}
+              >
+                {acc}
+              </ToolbarFilter>
+            ),
+            <Select
+              key={'acm-table-filter-select-key'}
+              variant={SelectVariant.checkbox}
+              aria-label={'acm-table-filter-select-key'}
+              onToggle={() => {
+                const arr = [...isOpen]
+                arr[inx] = !isOpen[inx]
+                setIsOpen(arr)
+              }}
+              onSelect={(
+                _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
+                selection: SelectOptionObject
+              ) => onFilterSelect(selection as FilterSelectOptionObject)}
+              selections={groupSelections}
+              isOpen={isOpen[inx]}
+              isGrouped
+              placeholderText={
+                <div>
+                  <FilterIcon className={filterLabelMargin} />
+                  {inx === 0 ? t('Filter') : filterSelectGroups[inx].groupFilters[0].label}
+                </div>
+              }
+              noResultsFoundText={t('No results found')}
+              onFilter={(e, textInput) => onFilterOptions(e, textInput, inx)}
+              hasInlineFilter={inx !== 0}
+            >
+              {groupSelectionList}
+            </Select>
+          )
+        })}
+      </div>
     </ToolbarItem>
   )
 }

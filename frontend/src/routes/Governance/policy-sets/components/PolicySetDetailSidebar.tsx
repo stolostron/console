@@ -69,13 +69,13 @@ function renderDonutChart(
   }))
 
   return (
-    <div style={{ height: 230, marginTop: -16, marginBottom: -16 }}>
+    <div style={{ maxHeight: '230px', maxWidth: '450px', marginTop: '-16px', marginBottom: '-16px' }}>
       <ChartDonut
         ariaTitle={t('Policy cluster violations')}
         ariaDesc={t('Policy cluster violations chart')}
         legendOrientation="vertical"
         legendPosition="right"
-        // constrainToVisibleArea={true}
+        constrainToVisibleArea={true}
         data={chartData}
         legendComponent={
           <ChartLegend data={legendData} labelComponent={<ChartLabel />} colorScale={colorThemes.criticalLowSuccess} />

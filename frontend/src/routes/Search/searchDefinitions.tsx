@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ButtonProps, Icon, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import moment from 'moment'
@@ -12,6 +12,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
+import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -378,9 +379,10 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('ready', t('Ready')),
         {
-          header: t('VM details'),
+          id: 'launch-links',
+          header: '',
           cell: (item: any) => {
-            return <CreateExternalVMLink item={item} t={t} />
+            return <VMLaunchLinks item={item} t={t} />
           },
         },
       ]),
@@ -416,13 +418,13 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           ...AddColumn('ipaddress', t('IP address')),
         },
         {
-          id: 'details-link',
+          id: 'launch-links',
           order: 7,
           isDefault: false,
           isFirstVisitChecked: true,
-          header: t('VM details'),
+          header: '',
           cell: (item: any) => {
-            return <CreateExternalVMLink item={item} t={t} />
+            return <VMLaunchLinks item={item} t={t} />
           },
         },
         {
@@ -835,4 +837,98 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
     )
   }
   return <>{'-'}</>
+}
+
+export function VMLaunchLinks(props: { item: any; t: TFunction }) {
+  const { item, t } = props
+  const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
+  const configMaps = useRecoilValue(configMapsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const isObservabilityInstalled = useIsObservabilityInstalled()
+  const allClusters = useAllClusters(true)
+  const vmCluster = item.cluster
+  const clusterURL = allClusters.filter((c) => c.name === vmCluster)?.[0]?.consoleURL
+
+  const vmMetricLink = useMemo(() => {
+    const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
+    let grafanaLink = obsCont?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    if (grafanaLink) {
+      grafanaLink = new URL(grafanaLink).origin
+    }
+    if (isObservabilityInstalled) {
+      const vmDashboard = configMaps.filter(
+        (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
+      )
+      if (vmDashboard.length > 0) {
+        const parsedDashboardData = JSON.parse(
+          vmDashboard[0].data?.['acm-openshift-virtualization-single-vm-view.json']
+        )
+        const dashboardId = parsedDashboardData?.uid
+        return `${grafanaLink}/d/${dashboardId}/executive-dashboards-single-virtual-machine-view?orgId=1&var-name=${item.name}&var-namespace=${item.namespace}&var-cluster=${item.cluster}`
+      }
+    }
+    return ''
+  }, [item, clusterManagementAddons, configMaps, isObservabilityInstalled])
+
+  return (
+    <Popover
+      bodyContent={
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <AcmButton
+            variant="link"
+            component="a"
+            target="_blank"
+            isInline={true}
+            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`}
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+          >
+            {t('Virtual machine details')}
+          </AcmButton>
+          <AcmButton
+            variant="link"
+            component="a"
+            target="_blank"
+            isInline={true}
+            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}/console`}
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+          >
+            {t('Virtual machine console')}
+          </AcmButton>
+          {isObservabilityInstalled && (
+            <AcmButton
+              variant="link"
+              component="a"
+              target="_blank"
+              isInline={true}
+              href={vmMetricLink}
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
+            >
+              {t('Observability metrics')}
+            </AcmButton>
+          )}
+        </div>
+      }
+      className="label-with-popover"
+      enableFlip
+      hasAutoWidth
+      minWidth="18.75rem"
+      maxWidth="30rem"
+      position={'top'}
+      flipBehavior={['bottom', 'top', 'right', 'left']}
+      zIndex={999}
+    >
+      <Label
+        onClick={(event) => {
+          event.preventDefault()
+          event.nativeEvent.preventDefault()
+        }}
+        color="grey"
+      >
+        {'Launch links'}
+      </Label>
+    </Popover>
+  )
 }

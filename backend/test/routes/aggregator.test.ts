@@ -1,11 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
-import { aggregateKubeApplications, aggregateSearchAPIApplications } from '../../src/routes/aggregators/applications'
-import { pagedSearchQueries } from '../../src/lib/search'
+import {
+  aggregateLocalApplications,
+  aggregateRemoteApplications,
+  searchLoop,
+} from '../../src/routes/aggregators/applications'
 import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
-import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/applicationsOCP'
+import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
@@ -19,8 +22,9 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications()
-    await aggregateSearchAPIApplications(1)
+    await searchLoop()
+    aggregateLocalApplications()
+    await aggregateRemoteApplications(1)
 
     // NO FILTER
     const res = await request('POST', '/aggregate/applications', {
@@ -44,8 +48,8 @@ describe(`aggregator Route`, function () {
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateKubeApplications()
-    await aggregateSearchAPIApplications(1)
+    aggregateLocalApplications()
+    await aggregateRemoteApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/applications', {
@@ -75,8 +79,8 @@ describe(`aggregator Route`, function () {
     // fill in application cache from resourceCache and search api mocks
     const prefixes = await discoverSystemAppNamespacePrefixes()
     expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
-    aggregateKubeApplications()
-    await aggregateSearchAPIApplications(1)
+    aggregateLocalApplications()
+    await aggregateRemoteApplications(1)
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
@@ -90,14 +94,15 @@ describe(`aggregator Route`, function () {
 const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
-  itemCount: '2',
+  itemCount: '3',
   filterCounts: {
     type: {
       subscription: 1,
       appset: 1,
+      openshift: 1,
     },
     cluster: {
-      'local-cluster': 2,
+      'local-cluster': 3,
     },
   },
   systemAppNSPrefixes: systemPrefixes,
@@ -265,118 +270,95 @@ const responseFiltered = {
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
   //
-  // REMOTE ARGO
-  pagedSearchQueries.forEach((query, inx) => {
-    const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
-      '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-    )
-    if (inx === 0) {
-      nocked.reply(200, {
-        data: {
-          searchResult: [
-            {
-              items: [
-                {
-                  apigroup: 'argoproj.io',
-                  apiversion: 'v1alpha1',
-                  cluster: 'feng-managed',
-                  created: '2021-12-03T18:55:47Z',
-                  destinationName: 'in-cluster',
-                  destinationNamespace: 'feng-remote-namespace',
-                  kind: 'application',
-                  name: 'feng-remote-argo8',
-                  namespace: 'openshift-gitops',
-                  path: 'helloworld-perf',
-                  repoURL: 'https://github.com/fxiang1/app-samples',
-                  status: 'Healthy',
-                  targetRevision: 'HEAD',
-                  _clusterNamespace: 'feng-managed',
-                  _rbac: 'feng-managed_argoproj.io_applications',
-                  _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
-                },
-              ],
-            },
-          ],
-        },
-      })
-    } else {
-      nocked.reply(200, {})
-    }
-  })
-
+  // PING SEARCHAPI
   nock('https://search-search-api.undefined.svc.cluster.local:4010')
     .post(
       '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-      // "{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"}"
+      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Pod"]},{"property":"name","values":["search-api*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
     )
-    .reply(200, {})
+    .reply(200, {
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                status: 'Running',
+              },
+            ],
+          },
+        ],
+      },
+    })
 
-  //
-  // REMOTE/LOCAL OCP and FLUX--NOT SYSTEM
-  pagedSearchQueries.forEach((query, inx) => {
-    const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
-      '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]},{"property":"name","values":[${query.map((q) => `"${q}"`).join(',')}]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-    )
-    if (inx === 0) {
-      nocked.reply(200, {
-        data: {
-          searchResult: [
-            {
-              items: [
-                // local OCP
-                {
-                  apiversion: 'apps/v1',
-                  kind: 'deployment',
-                  label: 'app=authentication-operator',
-                  name: 'authentication-operator',
-                  namespace: 'authentication-operator-ns',
-                  cluster: 'local-cluster',
-                },
-                // remote OCP
-                {
-                  apiversion: 'apps/v1',
-                  kind: 'deployment',
-                  label: 'app=authentication-operator',
-                  name: 'authentication-operator',
-                  namespace: 'authentication-operator-ns',
-                  cluster: 'test-cluster',
-                },
-                // FLUX
-                {
-                  apiversion: 'apps/v1',
-                  kind: 'deployment',
-                  name: 'test-app',
-                  namespace: 'test-app-ns',
-                  label:
-                    'app=test-app;kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
-                  cluster: 'test-cluster',
-                },
-              ],
-            },
-          ],
-        },
-      })
-    } else {
-      nocked.reply(200, {})
-    }
-  })
-
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
-    .post(
-      '/searchapi/graphql',
-      `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-    )
-    .reply(200, {})
-
-  // SYSTEM APPS
+  // REMOTES: ARGO, OCP, FLUX
   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
     '/searchapi/graphql',
-    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
   )
-  nocked.reply(200, {})
+  nocked.reply(200, {
+    data: {
+      searchResult: [
+        {
+          items: [
+            // remote ARGO
+            {
+              apigroup: 'argoproj.io',
+              apiversion: 'v1alpha1',
+              cluster: 'feng-managed',
+              created: '2021-12-03T18:55:47Z',
+              destinationName: 'in-cluster',
+              destinationNamespace: 'feng-remote-namespace',
+              kind: 'application',
+              name: 'feng-remote-argo8',
+              namespace: 'openshift-gitops',
+              path: 'helloworld-perf',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              status: 'Healthy',
+              targetRevision: 'HEAD',
+              _clusterNamespace: 'feng-managed',
+              _rbac: 'feng-managed_argoproj.io_applications',
+              _uid: 'feng-managed/9896aad3-6789-4350-876c-bd3749c85b5d',
+            },
+          ],
+        },
+        {
+          items: [
+            // local OCP
+            {
+              apiversion: 'apps/v1',
+              kind: 'deployment',
+              label: 'app=authentication-operator',
+              name: 'authentication-operator',
+              namespace: 'authentication-operator-ns',
+              cluster: 'local-cluster',
+            },
+            // remote OCP
+            {
+              apiversion: 'apps/v1',
+              kind: 'deployment',
+              label: 'app=authentication-operator',
+              name: 'authentication-operator',
+              namespace: 'authentication-operator-ns',
+              cluster: 'test-cluster',
+            },
+            // FLUX
+            {
+              apiversion: 'apps/v1',
+              kind: 'deployment',
+              name: 'test-app',
+              namespace: 'test-app-ns',
+              label:
+                'app=test-app;kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
+              cluster: 'test-cluster',
+            },
+          ],
+        },
+        // remote System
+        { items: [] },
+      ],
+    },
+  })
+
   //
   // RBAC
   nock(process.env.CLUSTER_API_URL)

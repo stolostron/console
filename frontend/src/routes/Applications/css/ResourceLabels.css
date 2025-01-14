@@ -13,8 +13,7 @@
   --pf-v5-c-popover__content--PaddingLeft: var(--pf-v5-c-popover__content--Padding);
   --pf-v5-c-popover__content--PaddingBottom: var(--pf-v5-c-popover__content--Padding);
   --pf-v5-c-popover__content--PaddingRight: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover--c-button--sibling--PaddingRight: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover--c-button--Right: var(--pf-v5-c-popover__content--Padding);
+  --pf-v5-c-popover__close--Right: 0;
 }
 .label-with-popover.pf-v5-c-popover .pf-v5-c-popover__content .pf-v5-c-button {
   --pf-v5-c-button--PaddingTop: 1rem;

@@ -4,12 +4,12 @@ import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assis
 import {
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   PageSection,
   Stack,
   StackItem,
   TextVariants,
-  EmptyStateHeader,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -18,8 +18,11 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
+import { PluginContext } from '../../../lib/PluginContext'
+import { ConfigMap } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
+  AcmActionGroup,
   AcmButton,
   AcmEmptyState,
   AcmPage,
@@ -47,7 +50,6 @@ import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { getVirtualMachineRowActions } from './utils'
-import { PluginContext } from '../../../lib/PluginContext'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -93,7 +95,7 @@ function VirtualMachineTable() {
     if (error) {
       return []
     } else if (loading) {
-      return undefined
+      return undefined // undefined items triggers loading state table
     }
     // combine VMI node & ip address data in VM object
     const reducedVMAndVMI = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
@@ -144,11 +146,13 @@ function VirtualMachineTable() {
         <EmptyState>
           <EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-global--danger-color--100)'} />
           <Title size="lg" headingLevel="h4">
-            {t('Unable to display VirtualMachines')}
+            {t('Unable to display virtual machines')}
           </Title>
           <EmptyStateBody>
             <Stack>
-              <StackItem>{t('Enable search to view all managed VirtualMachines.')}</StackItem>
+              <StackItem>
+                {t('To view managed virtual machines, you must enable Search for Red Hat Advanced Cluster Management.')}
+              </StackItem>
             </Stack>
           </EmptyStateBody>
         </EmptyState>
@@ -219,10 +223,62 @@ function VirtualMachineTable() {
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
+  const { useIsObservabilityInstalled, clusterManagementAddonsState, configMapsState } = useSharedAtoms()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
+  const configMaps = useRecoilValue(configMapsState)
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   usePageVisitMetricHandler(Pages.virtualMachines)
 
+  const vmMetricLink = useMemo(() => {
+    const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
+    let grafanaLink = obsCont?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    if (grafanaLink) {
+      grafanaLink = new URL(grafanaLink).origin
+    }
+    if (isObservabilityInstalled) {
+      const vmDashboard = configMaps.filter(
+        (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-clusters-overview'
+      )
+      if (vmDashboard.length > 0) {
+        const parsedDashboardData = JSON.parse(
+          vmDashboard[0].data?.['acm-openshift-virtualization-clusters-overview.json']
+        )
+        const dashboardId = parsedDashboardData?.uid
+        return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
+      }
+    }
+    return ''
+  }, [clusterManagementAddons, configMaps, isObservabilityInstalled])
+
   return (
-    <AcmPage hasDrawer header={<AcmPageHeader title={t('Virtual machines')} />}>
+    <AcmPage
+      hasDrawer
+      header={
+        <AcmPageHeader
+          title={t('Virtual machines')}
+          actions={
+            isObservabilityInstalled ? (
+              <AcmActionGroup>
+                {[
+                  <AcmButton
+                    key={'observability-launch-link'}
+                    variant="link"
+                    component="a"
+                    target="_blank"
+                    isInline={true}
+                    href={vmMetricLink}
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                  >
+                    {t('Observability dashboards')}
+                  </AcmButton>,
+                ]}
+              </AcmActionGroup>
+            ) : undefined
+          }
+        />
+      }
+    >
       <AcmPageContent id="virtual-machines">
         <PageSection>
           <VirtualMachineTable />
