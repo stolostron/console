@@ -924,3 +924,14 @@ export const ingressVIPsReverse = (ctrl, path) => {
     ctrl.active.multitextEntries = ['']
   }
 }
+
+export const onChangeDefaultPodNetwork = (control, controlData) => {
+  const nodePoolsGroup = getControlByID(controlData, 'nodepools')
+  const additionalNetworksControl = getControlByID(nodePoolsGroup.controlData, 'additionalNetworks')
+  const hasAdditionalNetworks = additionalNetworksControl.active.multitextEntries.length > 0
+
+  //If there are no additional networks, ensure the checkbox is checked
+  if (!hasAdditionalNetworks) {
+    control.active = true
+  }
+}
