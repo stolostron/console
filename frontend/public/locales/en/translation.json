@@ -1663,7 +1663,7 @@
   "Instance type": "Instance type",
   "Internal server error": "Internal server error",
   "internet": "internet",
-  "Invalid format. Use <namespace>/<name> or <name>": "Invalid format. Use <namespace>/<name> or <name>",
+  "Invalid format. Use <namespace>/<name>": "Invalid format. Use <namespace>/<name>",
   "invalidclustername.message": "The cluster name is invalid. Change the name to the RFC 1123 standard which consists of lower case alphanumeric characters, '-', and must start and end with an alphanumeric character.",
   "IP address": "IP address",
   "It will not be destroyed when you perform this action.": "It will not be destroyed when you perform this action.",
