@@ -200,15 +200,28 @@ export const getK8sNameValidator = (t: TFunction): Validator => ({
     test: (value) => {
       const regex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
       const parts = value.split('/')
-      if (parts.length === 1) {
-        return regex.test(value) && value.length <= 253
-      } else if (parts.length === 2) {
-        const [namespace, name] = parts
-        return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
-      }
-      return false
+      if (parts.length !== 2) return false
+      const [namespace, name] = parts
+      return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
     },
   },
-  notification: t('Invalid format. Use <namespace>/<name> or <name>'),
+  notification: t('Invalid format. Use <namespace>/<name>'),
   required: true,
 })
+// export const getK8sNameValidator = (t: TFunction): Validator => ({
+//   tester: {
+//     test: (value) => {
+//       const regex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/
+//       const parts = value.split('/')
+//       if (parts.length === 1) {
+//         return regex.test(value) && value.length <= 253
+//       } else if (parts.length === 2) {
+//         const [namespace, name] = parts
+//         return regex.test(namespace) && namespace.length <= 253 && regex.test(name) && name.length <= 253
+//       }
+//       return false
+//     },
+//   },
+//   notification: t('Invalid format. Use <namespace>/<name>'),
+//   required: true,
+// })
