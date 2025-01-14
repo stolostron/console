@@ -839,7 +839,7 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
   return <>{'-'}</>
 }
 
-export function VMLaunchLinks(props: { item: any; t: TFunction }) {
+export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
