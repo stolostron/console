@@ -422,7 +422,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           order: 7,
           isDefault: false,
           isFirstVisitChecked: true,
-          header: '',
+          header: t('Launch links'),
           cell: (item: any) => {
             return <VMLaunchLinks item={item} t={t} />
           },
