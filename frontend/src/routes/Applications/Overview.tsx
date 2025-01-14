@@ -1093,7 +1093,7 @@ export default function ApplicationsOverview() {
         position="bottom"
         maxWidth="850px"
       >
-        <AcmButton variant="link" className="compare-applications-button">
+        <AcmButton variant="link" isInline style={{ marginTop: '8px', marginLeft: '16px' }}>
           {t('Compare application types')}
         </AcmButton>
       </Popover>
