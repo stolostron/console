@@ -342,7 +342,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "id": "additionalNetworks",
         "name": "Additional networks",
         "placeholder": "Enter additional networks in the format <namespace>/<name>",
-        "tooltip": "tooltip.creation.nodepool.additional.network",
+        "tooltip": "Specify additional networks to be attached to the nodes in the format '[namespace]/[name]'.",
         "type": "multitext",
         "validation": {
           "notification": "Invalid format. Use <namespace>/<name>",
@@ -357,7 +357,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
         "onSelect": [Function],
-        "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
+        "tooltip": "Check this box to attach the default pod network to your cluster nodes.",
         "type": "checkbox",
         "validation": {
           "required": false,
@@ -701,7 +701,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "id": "additionalNetworks",
         "name": "Additional networks",
         "placeholder": "Enter additional networks in the format <namespace>/<name>",
-        "tooltip": "tooltip.creation.nodepool.additional.network",
+        "tooltip": "Specify additional networks to be attached to the nodes in the format '[namespace]/[name]'.",
         "type": "multitext",
         "validation": {
           "notification": "Invalid format. Use <namespace>/<name>",
@@ -716,7 +716,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
         "onSelect": [Function],
-        "tooltip": "tooltip.creation.ocp.node.pool.default.pod.network",
+        "tooltip": "Check this box to attach the default pod network to your cluster nodes.",
         "type": "checkbox",
         "validation": {
           "required": false,
