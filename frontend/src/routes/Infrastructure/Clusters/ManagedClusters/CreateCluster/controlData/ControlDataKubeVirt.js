@@ -17,11 +17,13 @@ import {
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
   onChangeConnection,
+  onChangeDefaultPodNetwork,
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -301,8 +303,11 @@ export const getControlDataKubeVirt = (
             'Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition'
           ),
           addButtonText: t('Add additional network'),
-          validation: getK8sNameValidator(t),
-          active: { multitextEntries: [''] },
+          validation: {
+            ...getK8sNameValidator(t),
+            required: false,
+          },
+          active: { multitextEntries: [] },
           controlData: [
             {
               id: 'additionalNetworks',
@@ -317,6 +322,10 @@ export const getControlDataKubeVirt = (
           id: 'defaultPodNetwork',
           type: 'checkbox',
           active: true,
+          validation: {
+            required: false,
+          },
+          onSelect: onChangeDefaultPodNetwork,
         },
       ],
     },
