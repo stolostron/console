@@ -2637,7 +2637,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
       t={[Function]}
     />,
-    "header": "",
+    "header": "Launch links",
     "id": "launch-links",
     "isDefault": false,
     "isFirstVisitChecked": true,
