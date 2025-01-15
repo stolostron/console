@@ -31,5 +31,5 @@ export const getFieldLabels = (t: TFunction): Partial<{ [K in FieldName]: string
   pullSecret: t('Pull secret'),
   openshiftVersion: t('OpenShift version'),
   cpuArchitecture: t('CPU architecture'),
-  controlPlaneCount: t("Number of control plane nodes"),
+  controlPlaneCount: t('Number of control plane nodes'),
 })

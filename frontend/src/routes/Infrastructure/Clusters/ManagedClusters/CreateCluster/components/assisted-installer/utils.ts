@@ -686,7 +686,7 @@ export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (valu
   }
 
   if (values.imageType) {
-    appendPatch(patches, '/spec/imageType', values.imageType, infraEnv.spec?.imageType);
+    appendPatch(patches, '/spec/imageType', values.imageType, infraEnv.spec?.imageType)
   }
   // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
   const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
