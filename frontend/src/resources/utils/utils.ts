@@ -55,5 +55,5 @@ export function exportObjectString(object: Record<string, string>) {
 
 export function returnCSVSafeString(exportValue: string | ReactNode) {
   // extract newlines
-  return `"${typeof exportValue === 'string' ? exportValue.split('\n').join() : exportValue}"`
+  return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replace(/"/g, '""') : exportValue}"`
 }
