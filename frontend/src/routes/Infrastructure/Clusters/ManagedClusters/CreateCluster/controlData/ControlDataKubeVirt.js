@@ -17,10 +17,10 @@ import {
   LOAD_OCP_IMAGES,
   numberedControlNameFunction,
   onChangeConnection,
-  onChangeDefaultPodNetwork,
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
+  updateDefaultPodNetwork,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 
@@ -314,6 +314,7 @@ export const getControlDataKubeVirt = (
               active: '',
             },
           ],
+          onSelect: updateDefaultPodNetwork,
         },
         {
           name: t('Attach default pod network'),
@@ -321,10 +322,10 @@ export const getControlDataKubeVirt = (
           id: 'defaultPodNetwork',
           type: 'checkbox',
           active: true,
+          disabled: true,
           validation: {
             required: false,
           },
-          onSelect: onChangeDefaultPodNetwork,
         },
       ],
     },
