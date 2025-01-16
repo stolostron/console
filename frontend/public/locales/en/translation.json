@@ -1883,7 +1883,7 @@
   "name": "name",
   "Name": "Name",
   "Name needs to be unique to the namespace on each of the managed clusters.": "Name needs to be unique to the namespace on each of the managed clusters.",
-  "The name specifies the network attached to the nodes in the format \"[namespace]/[name]\" to reference the multus network attachment definition": "The name specifies the network attached to the nodes in the format \"[namespace]/[name]\" to reference the multus network attachment definition",
+  "Name specify the network attached to the nodes in the format \"[namespace]/[name]\" to reference the multus network attachment definition": "Name specify the network attached to the nodes in the format \"[namespace]/[name]\" to reference the multus network attachment definition",
   "Name your search and provide a description so that you can access it in the future.": "Name your search and provide a description so that you can access it in the future.",
   "namespace": "namespace",
   "Namespace": "Namespace",
