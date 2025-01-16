@@ -40,15 +40,9 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
-import {
-  ClusterCount,
-  getAge,
-  getClusterCountString,
-  getEditLink,
-  getMoment,
-  getSearchLink,
-} from './helpers/resource-helper'
+import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 import { useHubCluster } from './helpers/useHubCluster'
+import { getMoment } from '../../resources/utils'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions

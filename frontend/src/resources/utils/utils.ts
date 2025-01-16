@@ -2,6 +2,7 @@
 
 import get from 'get-value'
 import { ReactNode } from 'react'
+import moment from 'moment'
 
 export function getLatest<T>(items: T[], key: string) {
   if (items.length === 0) {
@@ -56,4 +57,13 @@ export function exportObjectString(object: Record<string, string>) {
 export function returnCSVSafeString(exportValue: string | ReactNode) {
   // extract newlines
   return `"${typeof exportValue === 'string' ? exportValue.split('\n').join() : exportValue}"`
+}
+
+export const getMoment = (timestamp: string, locale = '') => {
+  const momentObj = moment(
+    timestamp,
+    timestamp.toString().includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss'
+  )
+  momentObj.locale(locale.toLowerCase())
+  return momentObj
 }
