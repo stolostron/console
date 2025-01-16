@@ -925,13 +925,28 @@ export const ingressVIPsReverse = (ctrl, path) => {
   }
 }
 
-export const onChangeDefaultPodNetwork = (control, controlData) => {
-  const nodePoolsGroup = getControlByID(controlData, 'nodepools')
-  const additionalNetworksControl = getControlByID(nodePoolsGroup.controlData, 'additionalNetworks')
-  const hasAdditionalNetworks = additionalNetworksControl.active.multitextEntries.length > 0
+export const updateDefaultPodNetwork = (_nameControl, globalControl) => {
+  const nodepools = globalControl.find(({ id: idCtrl }) => idCtrl === 'nodepools')
+  if (nodepools) {
+    const activeNodePools = nodepools?.active || []
 
-  //If there are no additional networks, ensure the checkbox is checked
-  if (!hasAdditionalNetworks) {
-    control.active = true
+    activeNodePools.forEach((nodepool) => {
+      const additionalNetworks = nodepool.find(({ id }) => id === 'additionalNetworks')
+      const defaultPodNetwork = nodepool.find(({ id }) => id === 'defaultPodNetwork')
+
+      if (additionalNetworks && defaultPodNetwork) {
+        // check if there are any networks
+        const hasNetworks = additionalNetworks.active?.multitextEntries?.some((entry) => entry.trim() !== '') || false
+
+        if (hasNetworks) {
+          // if networks exist, enable checkbox
+          defaultPodNetwork.disabled = false
+        } else {
+          // if no networks, force it to be checked and disabled
+          defaultPodNetwork.disabled = true
+          defaultPodNetwork.active = true
+        }
+      }
+    })
   }
 }
