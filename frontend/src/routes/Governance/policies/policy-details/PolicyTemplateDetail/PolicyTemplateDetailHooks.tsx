@@ -67,7 +67,10 @@ export function useFetchVapb() {
   return { vapbItems: data?.searchResult?.[0]?.items, loading, err: error?.message }
 }
 
-export function useFetchVapbParamRefs() {
+const availableKindList = ['ValidatingAdmissionPolicyBinding', 'Assign', 'AssignImage', 'AssignMetadata']
+const availableApiGroups = ['admissionregistration.k8s.io', 'mutations.gatekeeper.sh']
+
+export function useFetchOnlyRelatedResources() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
   const kind = urlParams.kind ?? '-'
@@ -80,8 +83,8 @@ export function useFetchVapbParamRefs() {
 
   useEffect(() => {
     if (
-      apiGroup === 'admissionregistration.k8s.io' &&
-      kind === 'ValidatingAdmissionPolicyBinding' &&
+      availableApiGroups.includes(apiGroup) &&
+      availableKindList.includes(kind) &&
       clusterName &&
       name &&
       template &&
@@ -120,16 +123,18 @@ export function useFetchVapbParamRefs() {
         },
       })
     }
+  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getVapb])
 
-    if (apiGroup === 'admissionregistration.k8s.io' && kind === 'ValidatingAdmissionPolicyBinding' && data) {
+  useEffect(() => {
+    if (availableApiGroups.includes(apiGroup) && availableKindList.includes(kind) && data) {
       setFiltered(
         data?.searchResult?.[0]?.related
           ?.map((related) => related?.items)
           .flat()
-          .filter((item) => !['ValidatingAdmissionPolicy', 'Cluster'].includes(item.kind))
+          .filter((item) => ![...availableKindList, 'Cluster'].includes(item.kind))
       )
     }
-  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getVapb])
+  }, [apiGroup, data, kind])
 
   return useMemo(
     () => ({

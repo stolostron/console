@@ -711,6 +711,7 @@ export function getEngineString(apiGroup: string): string {
     case 'policy.open-cluster-management.io':
       return 'Open Cluster Management'
     case 'constraints.gatekeeper.sh':
+    case 'mutations.gatekeeper.sh':
     case 'templates.gatekeeper.sh':
       return 'Gatekeeper'
     case 'admissionregistration.k8s.io':

@@ -107,16 +107,18 @@ export function StatusIcons(props: {
   }
 
   return (
-    <Flex display={{ default: 'inlineFlex' }}>
+    <Flex display={{ default: 'inlineFlex' }} spaceItems={{ default: 'spaceItemsMd' }}>
       {statuses.map(({ key, icon, count, tooltip, href, onClick }, index) => (
         <Fragment key={key}>
           {index !== 0 && <Divider key={`${key}_d`} orientation={{ default: 'vertical' }} />}
-          <Tooltip content={tooltip}>
-            <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-              <FlexItem>{icon}</FlexItem>
-              <FlexItem>{getCount(count, href, onClick)}</FlexItem>
-            </Flex>
-          </Tooltip>
+          <FlexItem>
+            <Tooltip content={tooltip}>
+              <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                <FlexItem>{icon}</FlexItem>
+                <FlexItem>{getCount(count, href, onClick)}</FlexItem>
+              </Flex>
+            </Tooltip>
+          </FlexItem>
         </Fragment>
       ))}
     </Flex>

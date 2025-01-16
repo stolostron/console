@@ -33,7 +33,7 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
-import { Cluster } from '../../../resources/utils'
+import { Cluster, getMoment } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
@@ -349,15 +349,6 @@ export const getResourceLabel = (type: string, count: number, t: TFunction) => {
   const label = getResourceType(type, t)
   const optionalCount = count > 1 ? ` (${count})` : ''
   return label + optionalCount
-}
-
-export const getMoment = (timestamp: string, locale = '') => {
-  const momentObj = moment(
-    timestamp,
-    timestamp.toString().includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss'
-  )
-  momentObj.locale(locale.toLowerCase())
-  return momentObj
 }
 
 export const getAge = (item: IResource, locale: string, timestampKey: string) => {

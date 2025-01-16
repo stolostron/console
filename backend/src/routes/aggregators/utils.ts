@@ -312,7 +312,10 @@ export function getNextApplicationPageChunk(
         currentPageChunk.limit += n
         // start a new page if limit exceeds page maximum
         // but consolidate letters that have no occurance with this one
-        if (currentPageChunk.limit + (inx < sz ? prefixFrequency[inx + 1] : 0) > Number(process.env.APP_SEARCH_LIMIT)) {
+        if (
+          currentPageChunk.limit + (inx < sz ? prefixFrequency[inx + 1] : 0) >
+          (Number(process.env.APP_SEARCH_LIMIT) || 5000)
+        ) {
           applicationPageChunks.push(currentPageChunk)
           currentPageChunk = {
             limit: 0,

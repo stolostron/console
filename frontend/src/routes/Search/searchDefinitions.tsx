@@ -422,7 +422,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           order: 7,
           isDefault: false,
           isFirstVisitChecked: true,
-          header: '',
+          header: t('Launch links'),
           cell: (item: any) => {
             return <VMLaunchLinks item={item} t={t} />
           },
@@ -839,7 +839,7 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
   return <>{'-'}</>
 }
 
-export function VMLaunchLinks(props: { item: any; t: TFunction }) {
+export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
@@ -927,7 +927,7 @@ export function VMLaunchLinks(props: { item: any; t: TFunction }) {
         }}
         color="grey"
       >
-        {'Launch links'}
+        {t('Launch links')}
       </Label>
     </Popover>
   )
