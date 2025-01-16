@@ -79,7 +79,7 @@ import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
-import { createDownloadFile, returnCSVSafeString } from '../../resources/utils'
+import { createDownloadFile, returnCSVSafeString, parseLabel, equalsLabel } from '../../resources/utils'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
@@ -257,6 +257,7 @@ export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
   /** Options is an array to define the exact filter options */
   options: TableFilterOption<FilterOptionValueT>[]
   showEmptyOptions?: boolean
+  isNegatable?: boolean
 }
 interface IValidFilters<T> {
   filter: ITableFilter<T>
@@ -269,12 +270,28 @@ export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilt
 
 type TableFilterOptions = { option: TableFilterOption<string>; count: number }
 
-function renderFilterSelectOption(filterId: string, option: TableFilterOptions, search?: string) {
+// render filter options with highlights for searched filter text
+// if option is a label like 'key=value' add a toggle button that toggles between = and !=
+function renderFilterSelectOption(
+  filterId: string,
+  option: TableFilterOptions,
+  isNegatable?: boolean,
+  toggleNegate?: (filterId: string, option: TableFilterOptions) => void,
+  search?: string
+) {
   const key = `${filterId}-${option.option.value}`
+  const handleNegate = () => {
+    toggleNegate?.(filterId, option)
+  }
   return (
     <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
       <div className={filterOption}>
-        <HighlightSearchText text={(option.option.label as string) ?? '-'} searchText={search} />
+        <HighlightSearchText
+          text={(option.option.label as string) ?? '-'}
+          isNegatable={isNegatable}
+          toggleNegate={handleNegate}
+          searchText={search}
+        />
         <Badge className={filterOptionBadge} key={key} isRead>
           {option.count}
         </Badge>
@@ -283,6 +300,9 @@ function renderFilterSelectOption(filterId: string, option: TableFilterOptions, 
   )
 }
 
+// filter options are retrieved from the url query and in the local storage
+// but they maybe old, so we make sure they're still valid by matching them up
+// with current filter options
 function getValidFilterSelections<T>(
   filters: ITableFilter<T>[],
   selections: CurrentFilters<FilterSelection> | ParsedQuery<string>
@@ -303,12 +323,14 @@ function getValidFilterSelections<T>(
         }
 
         // Filter out invalid options
+        const isNegatable = !!filter.isNegatable
         validSelections[key] = filterValues.filter((fv) => {
-          const matchedOption = filter.options.find(({ value }) => value === fv)
-          if (!matchedOption) {
+          const inx = filter.options.findIndex(({ value }) => equalsLabel(isNegatable, value, fv))
+          if (inx === -1) {
             removedOptions = true
+            return false
           }
-          return matchedOption
+          return true
         }) as string[]
 
         // if none left
@@ -404,6 +426,30 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     [filterSelections, updateFilters]
   )
 
+  // for filters that are labels (ex: key=value), toggle the label between = and !=
+  const negateFilterValue = useCallback(
+    (key: string, value: string) => {
+      let newFilters
+      if (!filterSelections[key]?.includes(value)) {
+        const newFilter = { [key]: [value] }
+        const { validSelections } = getValidFilterSelections(filters, newFilter)
+        if (validSelections[key]?.length) {
+          newFilters = { ...filterSelections, [key]: [...(filterSelections[key] || []), value] }
+        }
+      } else {
+        newFilters = { ...filterSelections }
+      }
+      if (newFilters) {
+        const inx = newFilters[key].findIndex((fv) => fv === value)
+        const p = parseLabel(value)
+        const toggledValue = `${p.prefix}${p.oper === '=' ? '!=' : '='}${p.suffix}`
+        newFilters[key].splice(inx, 1, toggledValue)
+        updateFilters(newFilters)
+      }
+    },
+    [filterSelections, filters, updateFilters]
+  )
+
   const removeFilter = useCallback(
     (key: string) => {
       if (filterSelections[key]) {
@@ -426,7 +472,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
     }
   }, [navigate, pathname, queuedSearch])
 
-  return { filterSelections, addFilterValue, removeFilterValue, removeFilter, clearFilters }
+  return { filterSelections, addFilterValue, removeFilterValue, negateFilterValue, removeFilter, clearFilters }
 }
 
 function setLocalStorage(key: string | undefined, value: any) {
@@ -1598,10 +1644,11 @@ function TableColumnFilters<T>(
 ) {
   const [isOpen, setIsOpen] = useState([false])
   const { id, filters, secondaryFilterIds, items, filterCounts } = props
-  const { filterSelections, addFilterValue, removeFilterValue, removeFilter } = useTableFilterSelections({
-    id,
-    filters,
-  })
+  const { filterSelections, addFilterValue, removeFilterValue, removeFilter, negateFilterValue } =
+    useTableFilterSelections({
+      id,
+      filters,
+    })
   const { t } = useTranslation()
 
   const onFilterSelect = useCallback(
@@ -1614,6 +1661,13 @@ function TableColumnFilters<T>(
       }
     },
     [addFilterValue, filterSelections, removeFilterValue]
+  )
+
+  const onToggleNegate = useCallback(
+    (filterId: string, option: TableFilterOptions) => {
+      negateFilterValue(filterId, option.option.value)
+    },
+    [negateFilterValue]
   )
 
   const onDelete = useCallback(
@@ -1648,26 +1702,41 @@ function TableColumnFilters<T>(
       },
     ]
     for (const filter of filters) {
+      const isNegatable = !!filter.isNegatable
       let options: TableFilterOptions[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
         const count = filterCounts?.[filter.id]
           ? filterCounts[filter.id][option.value]
           : items?.filter((item) => filter.tableFilterFn([option.value], item)).length
+
+        // option is one of the options static filter options from our table (see derived table)
+        // we use that to find its matching current selection (from selections)
+        // we need to do special processing to match a selection like (key!=value)
+        //  because it won't directly match the original option (key=value)
+        const selectedOption = selections.find(
+          (selection) => selection.filterId === filter.id && equalsLabel(isNegatable, option.value, selection.value)
+        )
+
+        // if the selection is a key!=value we can't use the original option (key=value)
+        // so we create a new option instead
+        const opt: TableFilterOption<string> =
+          isNegatable && selectedOption ? { label: selectedOption.value, value: selectedOption.value } : { ...option }
+
         /* istanbul ignore next */
         if (
           filter.showEmptyOptions ||
           (count !== undefined && count > 0) ||
           // if option is selected, it may be impacting results, so always show it even if options with 0 matches are being filtered
-          selections.find((selection) => selection.filterId === filter.id && selection.value === option.value)
+          selectedOption
         ) {
-          options.push({ option, count: count ?? 0 })
+          options.push({ option: opt, count: count ?? 0 })
         }
       }
 
-      // if a secondaryFilterId is present (ex: specify 'labels' will make it its own dropdown)
-      // split filters up
-      // (like an environment with lots of clusters)
+      // filter options can be spread out into multiple dropdowns if:
+      // 1 there's more then SPLIT_FILTER_THRESHOLD options or
+      // 2 the secondaryFilterId  (ex: secondaryFilterId = 'labels' will make it its own labels dropdown)
       let group = filterGroups[0]
       /* istanbul ignore else */
       if (options.length) {
@@ -1683,6 +1752,7 @@ function TableColumnFilters<T>(
           // won't be scrolling the entire list of 3000 clusters
           // but will instead search for a cluster--at which point
           // we will create react components for just that search
+          // in onFilterOptions
           options = options.slice(0, MAXIMUM_OPTIONS)
           group = filterGroups[filterGroups.length - 1]
         }
@@ -1691,8 +1761,8 @@ function TableColumnFilters<T>(
       group.allFilters.push(filter)
     }
 
-    // if user has made selections and there are multiple filters
-    // because some have lots of options, split the selections up by filter
+    // if user has made selections and there are multiple filter dropdowns
+    // split the selections up by filter dropdown
     filterGroups[0].groupSelections = selections
     if (filterGroups.length > 1) {
       let allSelections = [...selections]
@@ -1723,32 +1793,55 @@ function TableColumnFilters<T>(
           return (
             <SelectGroup key={filter.filter.id} label={filter.filter.label}>
               {filter.options.map((option) => {
-                return renderFilterSelectOption(filter.filter.id, option)
+                return renderFilterSelectOption(filter.filter.id, option, filter.filter.isNegatable, onToggleNegate)
               })}
             </SelectGroup>
           )
         }),
       }
     })
-  }, [filterCounts, filters, items, secondaryFilterIds, selections])
+  }, [filterCounts, filters, items, onToggleNegate, secondaryFilterIds, selections])
 
   // used by filters with lots of options to filter the options
   const onFilterOptions = useCallback(
     (_: any, textInput: string, inx: number) => {
       if (textInput !== '') {
-        const filterId = filterSelectGroups[inx].groupFilters[0].id
+        const { id, isNegatable } = filterSelectGroups[inx].groupFilters[0]
         return filterSelectGroups[inx].groupOptions
           .filter(({ option }) => {
             return option?.value.toLowerCase().includes(textInput.toLowerCase())
           })
           .map((option) => {
-            return renderFilterSelectOption(filterId, option, textInput.toLowerCase())
+            return renderFilterSelectOption(id, option, isNegatable, onToggleNegate, textInput.toLowerCase())
           })
       } else {
         return filterSelectGroups[inx].groupSelectionList
       }
     },
-    [filterSelectGroups]
+    [filterSelectGroups, onToggleNegate]
+  )
+
+  // create toolbar chips
+  const createChips = useCallback(
+    (current: ITableFilter<T>) => {
+      const currentCategorySelected = filterSelections[current.id] ?? []
+      // if options are made up of labels (key=value) just use the current selection values
+      if (current.isNegatable) {
+        return currentCategorySelected.map((value) => {
+          return { key: value, node: value }
+        })
+      } else {
+        // else we need to get the correct label/value from derived table
+        return current.options
+          .filter((option: TableFilterOption<string>) => {
+            return currentCategorySelected.includes(option.value)
+          })
+          .map<ToolbarChip>((option: TableFilterOption<string>) => {
+            return { key: option.value, node: option.label }
+          })
+      }
+    },
+    [filterSelections]
   )
 
   return (
@@ -1759,14 +1852,7 @@ function TableColumnFilters<T>(
             (acc, current) => (
               <ToolbarFilter
                 key={'acm-table-filter-key'}
-                chips={current.options
-                  .filter((option: TableFilterOption<string>) => {
-                    const currentCategorySelected = filterSelections[current.id] ?? []
-                    return currentCategorySelected.includes(option.value)
-                  })
-                  .map<ToolbarChip>((option: TableFilterOption<string>) => {
-                    return { key: option.value, node: option.label }
-                  })}
+                chips={createChips(current)}
                 deleteChip={(_category, chip) => {
                   chip = chip as ToolbarChip
                   onDelete(current.id, chip)

@@ -25,7 +25,7 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { exportObjectString } from '../../../resources/utils'
+import { exportObjectString, parseLabel } from '../../../resources/utils'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -229,8 +229,19 @@ export default function DiscoveredPolicies() {
         id: 'label',
         label: t('Label'),
         options: labelOptions || [],
+        isNegatable: true,
         tableFilterFn: (selectedValues, item) => {
-          return selectedValues.some((val) => labelMap?.[item.id].labels.includes(val))
+          return selectedValues.some((val) => {
+            const p = parseLabel(val)
+            const labels = labelMap?.[item.id].labels || []
+            if (p.oper === '!=') {
+              // when the label is key!=value
+              // we don't add this item to the table
+              return !labels.includes(`${p.prefix}=${p.suffix}`)
+            } else {
+              return labels.includes(val)
+            }
+          })
         },
       },
       {

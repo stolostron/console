@@ -57,3 +57,26 @@ export function returnCSVSafeString(exportValue: string | ReactNode) {
   // extract newlines
   return `"${typeof exportValue === 'string' ? exportValue.split('\n').join() : exportValue}"`
 }
+
+export function parseLabel(label?: string | null) {
+  let prefix, oper, suffix
+  if (label && label.includes('=')) {
+    ;[prefix, suffix] = label.split('=')
+    if (prefix.endsWith('!')) {
+      prefix = prefix.slice(0, -1)
+      oper = '!='
+    } else {
+      oper = '='
+    }
+  }
+  return { prefix, oper, suffix }
+}
+
+export function equalsLabel(isNegatable: boolean, label: string, filterLabel: string | null) {
+  if (isNegatable) {
+    const p = parseLabel(filterLabel)
+    return label === `${p.prefix}=${p.suffix}`
+  } else {
+    return label === filterLabel
+  }
+}

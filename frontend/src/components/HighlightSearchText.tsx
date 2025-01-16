@@ -1,28 +1,52 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { css } from '@emotion/css'
+import { Button } from '@patternfly/react-core'
+import { parseLabel } from '../resources/utils'
+import { MouseEventHandler } from 'react'
+
 const MAX_LABEL_WIDTH = 28
 
-export function HighlightSearchText(props: Readonly<{ text?: string; searchText?: string; isTruncate?: boolean }>) {
-  const { text, searchText, isTruncate } = props
+const buttonClass = css({
+  padding: '4px 2px !important',
+  lineHeight: '10px !important',
+  margin: '0 2px',
+  minWidth: '24px',
+  ':before, :after': {
+    borderColor: 'lightgray !important',
+  },
+})
+
+const highlightClass = css({
+  color: 'var(--pf-v5-global--link--Color)',
+  textDecoration: 'underline',
+  background: 'none',
+  fontWeight: 600,
+})
+
+// render text with highlights for searched filter text
+// if text is a label like 'key=value', add a toggle button that toggles between = and !=
+// if truncate is set, also make label smaller with ellipses
+export function HighlightSearchText(
+  props: Readonly<{
+    text?: string
+    searchText?: string
+    isNegatable?: boolean
+    toggleNegate?: () => void
+    isTruncate?: boolean
+  }>
+) {
+  const { text, searchText, isNegatable, toggleNegate, isTruncate } = props
   const segments = getSlicedText(text, searchText)
   if (segments.length > 1) {
     const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
     return (
       <>
         {segments.map((seg, inx) => {
+          if (isNegatable && !!parseLabel(seg.text).oper) {
+            return renderToggleButton(seg.text, toggleNegate)
+          }
           return (
-            <span
-              key={Number(inx)}
-              style={
-                seg.isBold
-                  ? {
-                      color: 'var(--pf-v5-global--link--Color)',
-                      textDecoration: 'underline',
-                      background: 'none',
-                      fontWeight: 600,
-                    }
-                  : {}
-              }
-            >
+            <span key={Number(inx)} className={seg.isBold ? highlightClass : ''}>
               {isTruncateLabel && !seg.isBold ? '...' : seg.text}
             </span>
           )
@@ -31,8 +55,23 @@ export function HighlightSearchText(props: Readonly<{ text?: string; searchText?
     )
   } else if (isTruncate) {
     return truncate(text)
+  } else if (isNegatable && text) {
+    return renderToggleButton(text, toggleNegate)
   }
   return text
+}
+
+const renderToggleButton = (label: string, toggleNegate: MouseEventHandler<HTMLButtonElement> | undefined) => {
+  const { prefix, oper, suffix } = parseLabel(label)
+  return (
+    <>
+      <span>{prefix}</span>
+      <Button variant="plain" className={buttonClass} onClick={toggleNegate}>
+        {oper}
+      </Button>
+      <span style={{ marginRight: '4px' }}>{suffix}</span>
+    </>
+  )
 }
 
 interface SlicedText {
