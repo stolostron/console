@@ -341,6 +341,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "description": "Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition",
         "id": "additionalNetworks",
         "name": "Additional networks",
+        "onSelect": [Function],
         "placeholder": "Enter additional networks in the format <namespace>/<name>",
         "tooltip": "Specify additional networks to be attached to the nodes in the format '[namespace]/[name]'.",
         "type": "multitext",
@@ -354,9 +355,9 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       },
       {
         "active": true,
+        "disabled": true,
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
-        "onSelect": [Function],
         "tooltip": "Check this box to attach the default pod network to your cluster nodes.",
         "type": "checkbox",
         "validation": {
@@ -700,6 +701,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "description": "Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition",
         "id": "additionalNetworks",
         "name": "Additional networks",
+        "onSelect": [Function],
         "placeholder": "Enter additional networks in the format <namespace>/<name>",
         "tooltip": "Specify additional networks to be attached to the nodes in the format '[namespace]/[name]'.",
         "type": "multitext",
@@ -713,9 +715,9 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       },
       {
         "active": true,
+        "disabled": true,
         "id": "defaultPodNetwork",
         "name": "Attach default pod network",
-        "onSelect": [Function],
         "tooltip": "Check this box to attach the default pod network to your cluster nodes.",
         "type": "checkbox",
         "validation": {
