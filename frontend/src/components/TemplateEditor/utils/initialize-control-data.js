@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
+import { cloneDeep } from 'lodash'
 import get from 'lodash/get'
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
 const initialControl = (control, onControlInitialize) => {
   const { type, isInitialized } = control
   if (!isInitialized) {
-    control = Object.assign({}, control)
+    control = cloneDeep(control)
 
     // initialize control's active value
     initializeControlActive(type, control)
