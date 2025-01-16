@@ -43,33 +43,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/route.openshift.io/v1/namespaces/multicluster-engine/routes/cluster-proxy-addon-user')
-      .reply(200, {
-        kind: 'Route',
-        apiVersion: 'route.openshift.io/v1',
-        metadata: {
-          name: 'cluster-proxy-addon-user',
-          namespace: 'multicluster-engine',
-        },
-        spec: {
-          host: 'testCluster.red-chesterfield.com',
-          to: {
-            kind: 'Service',
-            name: 'cluster-proxy-addon-user',
-            weight: 100,
-          },
-          port: {
-            targetPort: 'user-port',
-          },
-          tls: {
-            termination: 'reencrypt',
-            insecureEdgeTerminationPolicy: 'Redirect',
-          },
-          wildcardPolicy: 'None',
-        },
-      })
-    nock('https://testcluster.red-chesterfield.com')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(200, {
         statusCode: 200,
@@ -116,33 +90,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/route.openshift.io/v1/namespaces/multicluster-engine/routes/cluster-proxy-addon-user')
-      .reply(200, {
-        kind: 'Route',
-        apiVersion: 'route.openshift.io/v1',
-        metadata: {
-          name: 'cluster-proxy-addon-user',
-          namespace: 'multicluster-engine',
-        },
-        spec: {
-          host: 'testCluster.red-chesterfield.com',
-          to: {
-            kind: 'Service',
-            name: 'cluster-proxy-addon-user',
-            weight: 100,
-          },
-          port: {
-            targetPort: 'user-port',
-          },
-          tls: {
-            termination: 'reencrypt',
-            insecureEdgeTerminationPolicy: 'Redirect',
-          },
-          wildcardPolicy: 'None',
-        },
-      })
-    nock('https://testcluster.red-chesterfield.com')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(500, {
         name: 'fetchError',
@@ -180,10 +128,7 @@ describe('Virtual Machine actions', function () {
       kind: 'SecretList',
       items: [],
     })
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/route.openshift.io/v1/namespaces/multicluster-engine/routes/cluster-proxy-addon-user')
-      .reply(400)
-    nock('https://testcluster.red-chesterfield.com')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(500, {
         name: 'Error',
@@ -231,33 +176,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/route.openshift.io/v1/namespaces/multicluster-engine/routes/cluster-proxy-addon-user')
-      .reply(200, {
-        kind: 'Route',
-        apiVersion: 'route.openshift.io/v1',
-        metadata: {
-          name: 'cluster-proxy-addon-user',
-          namespace: 'multicluster-engine',
-        },
-        spec: {
-          host: 'testCluster.red-chesterfield.com',
-          to: {
-            kind: 'Service',
-            name: 'cluster-proxy-addon-user',
-            weight: 100,
-          },
-          port: {
-            targetPort: 'user-port',
-          },
-          tls: {
-            termination: 'reencrypt',
-            insecureEdgeTerminationPolicy: 'Redirect',
-          },
-          wildcardPolicy: 'None',
-        },
-      })
-    nock('https://testcluster.red-chesterfield.com')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(502, 'plain text error', { [constants.HTTP2_HEADER_CONTENT_TYPE]: ['text/plain'] })
     const res = await request('PUT', '/virtualmachines/start', {
