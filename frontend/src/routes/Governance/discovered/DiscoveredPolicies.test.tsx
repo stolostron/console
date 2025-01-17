@@ -226,8 +226,6 @@ describe('useFetchPolicies custom hook', () => {
         name: /!=/i,
       })
       .click()
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
   })
 
   test('Should render error page', async () => {
