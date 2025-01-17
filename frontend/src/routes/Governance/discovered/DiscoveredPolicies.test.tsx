@@ -7,8 +7,20 @@ import { waitForText, waitForNotText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
 
+const storageMock = (function () {
+  return {
+    getItem: function () {
+      return '{"label":["governance!=some"]}'
+    },
+    setItem: function () {},
+  }
+})()
+
 describe('useFetchPolicies custom hook', () => {
   test('Should render all cols for discovered policies', async () => {
+    Object.defineProperty(window, 'localStorage', {
+      value: storageMock,
+    })
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
       data: [
@@ -29,7 +41,7 @@ describe('useFetchPolicies custom hook', () => {
               created: '2024-08-15T14:01:52Z',
               kind: 'ConfigurationPolicy',
               kind_plural: 'configurationpolicies',
-              label: '',
+              label: 'governance=all',
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'Compliant',
@@ -49,7 +61,7 @@ describe('useFetchPolicies custom hook', () => {
               created: '2024-08-15T14:01:52Z',
               kind: 'ConfigurationPolicy',
               kind_plural: 'configurationpolicies',
-              label: '',
+              label: 'governance=all',
               name: 'check-policy-reports',
               namespace: 'managed2',
               compliant: 'NomCompliant',
@@ -83,7 +95,7 @@ describe('useFetchPolicies custom hook', () => {
               apigroup: 'constraints.gatekeeper.sh',
               apiversion: 'v1beta1',
               cluster: 'local-cluster',
-              label: '',
+              label: 'governance=any',
               created: '2024-09-13T13:05:13Z',
               kind: 'K8sRequiredLabels',
               kind_plural: 'k8srequiredlabels',
@@ -106,7 +118,56 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
+      labelData: {
+        labelMap: {
+          'ns-must-have-gkK8sRequiredLabelsconstraints.gatekeeper.sh': {
+            pairs: {
+              governance: 'all',
+            },
+            labels: [
+              'cluster-name=local-cluster',
+              'cluster-namespace=local-cluster',
+              'governance=all',
+              'policy.open-cluster-management.io/cluster-name=local-cluster',
+              'policy.open-cluster-management.io/cluster-namespace=local-cluster',
+              'policy.open-cluster-management.io/policy=default.test3',
+            ],
+          },
+          'check-policy-reportsConfigurationPolicy': {
+            pairs: {
+              governance: 'all',
+            },
+            labels: [
+              'cluster-name=local-cluster',
+              'cluster-namespace=local-cluster',
+              'governance=all',
+              'policy.open-cluster-management.io/cluster-name=local-cluster',
+              'policy.open-cluster-management.io/cluster-namespace=local-cluster',
+              'policy.open-cluster-management.io/policy=default.test5',
+            ],
+          },
+          'policy-podConfigurationPolicypolicy.open-cluster-management.io': {
+            pairs: {},
+            labels: [
+              'cluster-name=local-cluster',
+              'cluster-namespace=local-cluster',
+              'policy.open-cluster-management.io/cluster-name=local-cluster',
+              'policy.open-cluster-management.io/cluster-namespace=local-cluster',
+              'policy.open-cluster-management.io/policy=default.test1',
+            ],
+          },
+        },
+        labelOptions: [
+          {
+            label: 'governance=some',
+            value: 'governance=some',
+          },
+          {
+            label: 'governance=all',
+            value: 'governance=all',
+          },
+        ],
+      },
     })
 
     render(
@@ -146,7 +207,7 @@ describe('useFetchPolicies custom hook', () => {
 
     // Test the kind filter
     await waitForText('Filter')
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getAllByRole('button', { name: 'Options menu' })[0].click()
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
 
     await waitForNotText('check-policy-reports')
