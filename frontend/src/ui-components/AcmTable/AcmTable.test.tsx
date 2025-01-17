@@ -1102,14 +1102,16 @@ describe('AcmTable', () => {
   })
 })
 
+describe('returnCSVSafeString', ()=>{
 test('returns a csv safe string replacing new line with space', () => {
   const content = 'testing for multiline\ndescription'
   const exportContent = returnCSVSafeString(content)
-  expect(exportContent).toEqual("\"testing for multiline description\"")
+  expect(exportContent).toEqual('"testing for multiline description"')
 })
 
 test('returns a csv safe string escaping double quotes', () => {
   const content = 'testing for description with double quotes "'
   const exportContent = returnCSVSafeString(content)
-  expect(exportContent).toEqual("\"testing for description with double quotes \"\"\"")
+  expect(exportContent).toEqual('"testing for description with double quotes """')
+})
 })
