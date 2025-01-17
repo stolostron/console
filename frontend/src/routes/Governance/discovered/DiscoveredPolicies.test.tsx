@@ -7,20 +7,20 @@ import { waitForText, waitForNotText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
 
-// const storageMock = (function () {
-//   return {
-//     getItem: function () {
-//       return '{"label":["governance!=some"]}'
-//     },
-//     setItem: function () {},
-//   }
-// })()
+const storageMock = (function () {
+  return {
+    getItem: function () {
+      return '{"label":["governance!=some"]}'
+    },
+    setItem: function () {},
+  }
+})()
 
 describe('useFetchPolicies custom hook', () => {
   test('Should render all cols for discovered policies', async () => {
-    // Object.defineProperty(window, 'localStorage', {
-    //   value: storageMock,
-    // })
+    Object.defineProperty(window, 'localStorage', {
+      value: storageMock,
+    })
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
       data: [
