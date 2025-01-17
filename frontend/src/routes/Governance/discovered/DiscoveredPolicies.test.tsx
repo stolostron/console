@@ -2,7 +2,7 @@
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './ByCluster/common'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { waitForText, waitForNotText } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
@@ -215,6 +215,19 @@ describe('useFetchPolicies custom hook', () => {
 
     // Unset the filter so the state doesn't carry over
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
+
+    // click != button in label filter
+    screen.getAllByRole('button', { name: 'Options menu' })[1].click()
+    const group = screen.getByRole('group', {
+      name: /acm-table-filter-select-key/i,
+    })
+    within(group)
+      .getByRole('button', {
+        name: /!=/i,
+      })
+      .click()
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
   })
 
   test('Should render error page', async () => {
