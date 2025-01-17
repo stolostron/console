@@ -1063,7 +1063,7 @@ describe('AcmTable', () => {
   test('returns a csv safe string from export callback', () => {
     const exportContent = addSubRowsCallback()[0].exportSubRow[0].exportContent()
     expect(exportContent).toEqual("'Ready':'true','Hibernating':'false'")
-  }) 
+  })
 
   test.skip('export button should produce a file for download', () => {
     const addSubRowsCallback = () => {
