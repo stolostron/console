@@ -17,7 +17,7 @@ import {
 } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
-import { exportObjectString } from '../../resources/utils'
+import { exportObjectString, returnCSVSafeString } from '../../resources/utils'
 import { SearchOperator } from '../AcmSearchInput'
 import { handleStandardComparison } from '../../lib/search-utils'
 
@@ -1063,7 +1063,7 @@ describe('AcmTable', () => {
   test('returns a csv safe string from export callback', () => {
     const exportContent = addSubRowsCallback()[0].exportSubRow[0].exportContent()
     expect(exportContent).toEqual("'Ready':'true','Hibernating':'false'")
-  })
+  }) 
 
   test.skip('export button should produce a file for download', () => {
     const addSubRowsCallback = () => {
@@ -1100,4 +1100,16 @@ describe('AcmTable', () => {
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
   })
+})
+
+test('returns a csv safe string replacing new line with space', () => {
+  const content = 'testing for multiline\ndescription'
+  const exportContent = returnCSVSafeString(content)
+  expect(exportContent).toEqual("\"testing for multiline description\"")
+})
+
+test('returns a csv safe string escaping double quotes', () => {
+  const content = 'testing for description with double quotes "'
+  const exportContent = returnCSVSafeString(content)
+  expect(exportContent).toEqual("\"testing for description with double quotes \"\"\"")
 })
