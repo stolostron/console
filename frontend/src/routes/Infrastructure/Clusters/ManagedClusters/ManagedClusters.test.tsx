@@ -48,6 +48,7 @@ import {
   mockManagedClusterInfo7,
   mockHostedClusters,
   mockManagedClusterInfo8,
+  mockManagedCluster9,
 } from './ManagedClusters.sharedmocks'
 
 function getClusterCuratorCreateResourceAttributes(name: string) {
@@ -264,6 +265,30 @@ describe('Clusters Page regional hub cluster', () => {
     await waitForNock(metricNock)
     await waitForText(mockManagedCluster8.metadata.name!, true)
     await waitForText('Hub')
+  })
+  test('should treat regional hub clusters as standalone if addon unreachable', async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+    const mockRegionalHubClustersUnreachable: ManagedCluster[] = [mockManagedCluster9]
+    const mockRegionalHubClusterInfosUnreachable: ManagedClusterInfo[] = [mockManagedClusterInfo8]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, mockRegionalHubClustersUnreachable)
+          snapshot.set(managedClusterInfosState, mockRegionalHubClusterInfosUnreachable)
+          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForNock(metricNock)
+    await waitForText(mockManagedCluster8.metadata.name!, true)
+    await waitForNotText('Hub')
+    await waitForText('Standalone')
   })
 })
 
