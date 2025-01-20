@@ -87,7 +87,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
         } catch (err) {
           return {
             statusCode: response.status,
-            body: 'Error getting resource text response.',
+            body: `Error getting resource text response: ${err.message}`,
           }
         }
       } else {
@@ -100,7 +100,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
         } catch (err) {
           return {
             statusCode: response.status,
-            body: 'Error getting resource json response.',
+            body: `Error getting resource json response: ${err.message}`,
           }
         }
       }
