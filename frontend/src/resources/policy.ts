@@ -49,7 +49,7 @@ export interface PolicyTemplate {
     apiVersion: string
     kind: string
     metadata: { name: string }
-    spec: {
+    spec?: {
       namespaceSelector?: {
         exclude?: string[]
         include?: string[]
@@ -93,7 +93,7 @@ export function getPolicySeverity(policy: Policy): PolicySeverity {
   if (!policy.spec['policy-templates']) return PolicySeverity.High
   let severity = PolicySeverity.Unknown
   for (const template of policy.spec['policy-templates']) {
-    switch (template.objectDefinition.spec.severity) {
+    switch (template.objectDefinition?.spec?.severity) {
       case 'low':
         if (severity < PolicySeverity.Low) severity = PolicySeverity.Low
         break
