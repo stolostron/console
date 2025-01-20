@@ -4,7 +4,7 @@ import { Agent } from 'https'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
-import { getCACertificate } from './serviceAccountToken'
+import { getServiceCACertificate } from './serviceAccountToken'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
   constants
@@ -71,7 +71,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
   return fetchRetry(url, {
     method: 'PUT',
     headers,
-    agent: new Agent({ ca: getCACertificate() }),
+    agent: new Agent({ ca: getServiceCACertificate() }),
     body: JSON.stringify(body),
     compress: true,
   })
