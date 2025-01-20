@@ -2,6 +2,7 @@
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { jsonPut, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
@@ -66,8 +67,10 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           // the VM name is needed between the kind and action for the correct api url.
           const splitURL = req.url.split('/')
           const joinedURL = `${splitURL[1]}/${body.vmName}/${splitURL[2]}`
-          const proxyService = 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092'
-          const path = `${proxyService}/${body.managedCluster}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${joinedURL}`
+          const mce = await getMultiClusterEngine()
+          const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+          const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
+          const path = `${proxyURL}/${body.managedCluster}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${joinedURL}`
           const headers: OutgoingHttpHeaders = { authorization: `Bearer ${managedClusterToken}` }
           for (const header of proxyHeaders) {
             if (req.headers[header]) headers[header] = req.headers[header]
