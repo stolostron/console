@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
 import { Cluster, IResource } from '../../resources/resource'
-import { getKubeResources } from '../events'
+import { getKubeResources, getHubClusterName } from '../events'
 import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
 
@@ -52,7 +52,7 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
     },
     {
       property: 'cluster',
-      values: ['!local-cluster'],
+      values: [`!${getHubClusterName()}`],
     },
   ]
   /* istanbul ignore if */
@@ -96,7 +96,7 @@ function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
     argoAppSet.add(
       `${argoApp.metadata.name}-${
         definedNamespace ?? argoApp.spec.destination.namespace
-      }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, 'local-cluster')}`
+      }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, getHubClusterName())}`
     )
     const isChildOfAppset =
       argoApp.metadata.ownerReferences && argoApp.metadata?.ownerReferences[0].kind === 'ApplicationSet'
@@ -162,7 +162,7 @@ function getArgoDestinationCluster(
   if (serverApi) {
     /* istanbul ignore if */
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ?? 'local-cluster'
+      clusterName = cluster ?? getHubClusterName()
     } else {
       const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
       /* istanbul ignore next */ clusterName = server ? server.name : 'unknown'
@@ -170,12 +170,12 @@ function getArgoDestinationCluster(
   } else {
     // target destination was set using the name property
     /* istanbul ignore next */ clusterName = destination?.name || 'unknown'
-    /* istanbul ignore next */ if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+    /* istanbul ignore next */ if (cluster && (clusterName === 'in-cluster' || clusterName === getHubClusterName())) {
       clusterName = cluster
     }
 
     /* istanbul ignore next */ if (clusterName === 'in-cluster') {
-      clusterName = 'local-cluster'
+      clusterName = getHubClusterName()
     }
   }
   return clusterName

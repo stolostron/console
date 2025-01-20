@@ -48,6 +48,11 @@ export function getKubeResources(kind: string, apiVersion: string) {
   })
 }
 
+let hubClusterName = 'local-cluster'
+export function getHubClusterName() {
+  return hubClusterName
+}
+
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
@@ -554,6 +559,12 @@ function cacheResource(resource: IResource) {
 
   const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
   cache[uid] = { resource, eventID }
+
+  if (resource.kind === 'ManagedCluster') {
+    if (resource?.metadata?.labels['local-cluster'] === 'true') {
+      hubClusterName = resource?.metadata?.name
+    }
+  }
 }
 
 function deleteResource(resource: IResource) {

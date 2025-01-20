@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources } from '../events'
+import { getKubeResources, getHubClusterName } from '../events'
 import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { ITransformedResource } from '../../lib/pagination'
 import {
@@ -134,7 +134,7 @@ function getApplicationClusters(
     case 'subscription':
       return getSubscriptionCluster(resource, subscriptions, placementDecisions)
   }
-  return ['local-cluster']
+  return [getHubClusterName()]
 }
 
 function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
@@ -155,7 +155,7 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
   const clusterDecisions = placementDecision?.status?.decisions || []
 
   clusterDecisions.forEach((cd: { clusterName: string }) => {
-    if (cd.clusterName !== 'local-cluster') {
+    if (cd.clusterName !== getHubClusterName()) {
       clusterSet.add(cd.clusterName)
     }
   })
@@ -213,10 +213,10 @@ function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
     return resource.status?.cluster
   } else if (
     resource.spec.destination?.name === 'in-cluster' ||
-    resource.spec.destination?.name === 'local-cluster' ||
+    resource.spec.destination?.name === getHubClusterName() ||
     resource.spec.destination?.server === 'https://kubernetes.default.svc'
   ) {
-    return 'local-cluster'
+    return getHubClusterName()
   } else {
     return getArgoDestinationCluster(resource.spec.destination, clusters, resource.status.cluster)
   }
@@ -240,20 +240,20 @@ export function getArgoDestinationCluster(
   } else {
     // target destination was set using the name property
     clusterName = destination?.name || 'unknown'
-    if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+    if (cluster && (clusterName === 'in-cluster' || clusterName === getHubClusterName())) {
       clusterName = cluster
     }
 
     if (clusterName === 'in-cluster') {
-      clusterName = 'local-cluster'
+      clusterName = getHubClusterName()
     }
   }
   return clusterName
 }
 
-//////////////////////////////////////////////////////////////////
-// /////////////////// map created from events.ts /////////////////
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////// map created from cluster kube resources collected by events.ts /////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
 export type ClusterMapType = {
   [key: string]: IResource
 }
