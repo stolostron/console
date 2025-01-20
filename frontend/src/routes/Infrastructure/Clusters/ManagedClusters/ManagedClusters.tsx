@@ -734,7 +734,7 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster, search) => (
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
-          <HighlightSearchText text={cluster.namespace} searchText={search} isTruncate />
+          <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
         </span>
       </>
     ),
