@@ -730,13 +730,11 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
       'Standalone clusters will display the namespace used by the ManagedCluster resource. Hosted clusters will display the hosting namespace when the status is "Pending import" and the ManagedCluster namespace when the status is "Ready".'
     ),
     sort: 'namespace',
-    search: (cluster) => [cluster.namespace as string, cluster.hive.clusterPoolNamespace as string],
+    search: 'namespace',
     cell: (cluster, search) => (
-      <>
-        <span style={{ whiteSpace: 'nowrap' }}>
-          <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
-        </span>
-      </>
+      <span style={{ whiteSpace: 'nowrap' }}>
+        <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
+      </span>
     ),
     exportContent: (cluster) => cluster.namespace,
   }
