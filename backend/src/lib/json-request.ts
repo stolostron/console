@@ -4,7 +4,6 @@ import { Agent } from 'https'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
-import { logger } from './logger'
 import { getServiceCACertificate } from './serviceAccountToken'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
@@ -65,9 +64,7 @@ export function jsonPost<T = unknown>(
 }
 
 export function jsonPut(url: string, body: unknown, token?: string): Promise<PutResponse> {
-  const headers: HeadersInit = {
-    [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
-  }
+  const headers: HeadersInit = {}
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
   return fetchRetry(url, {
     method: 'PUT',
@@ -76,38 +73,10 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
     body: JSON.stringify(body),
     compress: true,
   })
-    .then(async (response) => {
-      let responseData = undefined
-      logger.warn(response)
-      logger.warn(response.body)
-      if (response.headers.get('content-type')?.includes('text/plain')) {
-        try {
-          responseData = await response.text()
-          return {
-            statusCode: response.status,
-            body: responseData,
-          }
-        } catch (err) {
-          return {
-            statusCode: response.status,
-            body: 'Error getting resource text response.',
-          }
-        }
-      } else {
-        try {
-          responseData = (await response.json()) as unknown
-          return {
-            statusCode: response.status,
-            body: responseData,
-          }
-        } catch (err) {
-          return {
-            statusCode: response.status,
-            body: 'Error getting resource json response.',
-          }
-        }
-      }
-    })
+    .then(async (response) => ({
+      // No response body from cluster-proxy kubevirt requests.
+      statusCode: response.status,
+    }))
     .catch((err: Error) => {
       const errResult = {
         body: {
