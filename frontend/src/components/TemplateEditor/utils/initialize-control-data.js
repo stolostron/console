@@ -53,7 +53,18 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
 const initialControl = (control, onControlInitialize) => {
   const { type, isInitialized } = control
   if (!isInitialized) {
-    control = cloneDeep(control)
+
+    let controlData
+    let active
+    if (control.controlData) {
+      controlData = cloneDeep(control.controlData)
+      active = cloneDeep(control.active)
+    }
+    control = Object.assign({}, control)
+    if (controlData) {
+      control.controlData = controlData
+      control.active = active
+    }
 
     // initialize control's active value
     initializeControlActive(type, control)
