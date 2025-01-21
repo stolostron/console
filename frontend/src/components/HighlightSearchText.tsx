@@ -30,20 +30,20 @@ export function HighlightSearchText(
   props: Readonly<{
     text?: string
     searchText?: string
-    isNegatable?: boolean
-    toggleNegate?: () => void
+    supportsInequality?: boolean
+    toggleEquality?: () => void
     isTruncate?: boolean
   }>
 ) {
-  const { text, searchText, isNegatable, toggleNegate, isTruncate } = props
+  const { text, searchText, supportsInequality, toggleEquality, isTruncate } = props
   const segments = getSlicedText(text, searchText)
   if (segments.length > 1) {
     const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
     return (
       <>
         {segments.map((seg, inx) => {
-          if (isNegatable && !!parseLabel(seg.text).oper) {
-            return renderToggleButton(seg.text, toggleNegate)
+          if (supportsInequality && !!parseLabel(seg.text).oper) {
+            return renderToggleButton(seg.text, toggleEquality)
           }
           return (
             <span key={Number(inx)} className={seg.isBold ? highlightClass : ''}>
@@ -55,18 +55,18 @@ export function HighlightSearchText(
     )
   } else if (isTruncate) {
     return truncate(text)
-  } else if (isNegatable && text) {
-    return renderToggleButton(text, toggleNegate)
+  } else if (supportsInequality && text) {
+    return renderToggleButton(text, toggleEquality)
   }
   return text
 }
 
-const renderToggleButton = (label: string, toggleNegate: MouseEventHandler<HTMLButtonElement> | undefined) => {
+const renderToggleButton = (label: string, toggleEquality: MouseEventHandler<HTMLButtonElement> | undefined) => {
   const { prefix, oper, suffix } = parseLabel(label)
   return (
     <>
       <span>{prefix}</span>
-      <Button variant="plain" className={buttonClass} onClick={toggleNegate}>
+      <Button variant="plain" className={buttonClass} onClick={toggleEquality}>
         {oper}
       </Button>
       <span style={{ marginRight: '4px' }}>{suffix}</span>

@@ -230,19 +230,31 @@ export default function DiscoveredPolicies() {
         id: 'label',
         label: t('Label'),
         options: labelOptions || [],
-        isNegatable: true,
+        supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
         tableFilterFn: (selectedValues, item) => {
-          return selectedValues.some((val) => {
-            const p = parseLabel(val)
-            const labels = labelMap?.[item.id].labels || []
-            if (p.oper === '!=') {
-              // when the label is key!=value
-              // we don't add this item to the table
-              return !labels.includes(`${p.prefix}=${p.suffix}`)
-            } else {
-              return labels.includes(val)
-            }
+          // if no filters, let all items thru
+          if (!selectedValues.length) return true
+          // if all fillters have != thru all items that don't have that label
+          const allInequity = selectedValues.every((val) => {
+            return val.includes('!=')
           })
+          const labels = labelMap?.[item.id]?.labels || []
+          if (allInequity) {
+            return selectedValues.every((val) => {
+              const p = parseLabel(val)
+              return !labels.includes(`${p.prefix}=${p.suffix}`)
+            })
+          } else {
+            // else if an item has a match, but doen't have a !=, let it thru
+            let hasEquity = false
+            let hasInequity = false
+            selectedValues.forEach((val) => {
+              const p = parseLabel(val)
+              if (p.oper === '=' && labels.includes(val)) hasEquity = true
+              if (p.oper === '!=' && labels.includes(`${p.prefix}=${p.suffix}`)) hasInequity = true
+            })
+            return !hasInequity && hasEquity
+          }
         },
       },
       {

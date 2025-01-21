@@ -73,8 +73,8 @@ export function parseLabel(label?: string | null) {
   return { prefix, oper, suffix }
 }
 
-export function equalsLabel(isNegatable: boolean, label: string, filterLabel: string | null) {
-  if (isNegatable) {
+export function matchesFilterValue(supportsInequality: boolean, label: string, filterLabel: string | null) {
+  if (supportsInequality) {
     const p = parseLabel(filterLabel)
     return label === `${p.prefix}=${p.suffix}`
   } else {

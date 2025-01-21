@@ -79,7 +79,7 @@ import { AcmManageColumn } from './AcmManageColumn'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
 import { ParsedQuery, parse, stringify } from 'query-string'
 import { IAlertContext } from '../AcmAlert/AcmAlert'
-import { createDownloadFile, returnCSVSafeString, parseLabel, equalsLabel } from '../../resources/utils'
+import { createDownloadFile, returnCSVSafeString, parseLabel, matchesFilterValue } from '../../resources/utils'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
@@ -257,7 +257,7 @@ export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
   /** Options is an array to define the exact filter options */
   options: TableFilterOption<FilterOptionValueT>[]
   showEmptyOptions?: boolean
-  isNegatable?: boolean
+  supportsInequality?: boolean
 }
 interface IValidFilters<T> {
   filter: ITableFilter<T>
@@ -275,21 +275,21 @@ type TableFilterOptions = { option: TableFilterOption<string>; count: number }
 function renderFilterSelectOption(
   filterId: string,
   option: TableFilterOptions,
-  isNegatable?: boolean,
-  toggleNegate?: (filterId: string, option: TableFilterOptions) => void,
+  supportsInequality?: boolean,
+  toggleEquality?: (filterId: string, option: TableFilterOptions) => void,
   search?: string
 ) {
   const key = `${filterId}-${option.option.value}`
-  const handleNegate = () => {
-    toggleNegate?.(filterId, option)
+  const handleInequality = () => {
+    toggleEquality?.(filterId, option)
   }
   return (
     <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
       <div className={filterOption}>
         <HighlightSearchText
           text={(option.option.label as string) ?? '-'}
-          isNegatable={isNegatable}
-          toggleNegate={handleNegate}
+          supportsInequality={supportsInequality}
+          toggleEquality={handleInequality}
           searchText={search}
         />
         <Badge className={filterOptionBadge} key={key} isRead>
@@ -323,9 +323,9 @@ function getValidFilterSelections<T>(
         }
 
         // Filter out invalid options
-        const isNegatable = !!filter.isNegatable
+        const supportsInequality = !!filter.supportsInequality
         validSelections[key] = filterValues.filter((fv) => {
-          const inx = filter.options.findIndex(({ value }) => equalsLabel(isNegatable, value, fv))
+          const inx = filter.options.findIndex(({ value }) => matchesFilterValue(supportsInequality, value, fv))
           if (inx === -1) {
             removedOptions = true
             return false
@@ -1663,7 +1663,7 @@ function TableColumnFilters<T>(
     [addFilterValue, filterSelections, removeFilterValue]
   )
 
-  const onToggleNegate = useCallback(
+  const onToggleEquality = useCallback(
     (filterId: string, option: TableFilterOptions) => {
       negateFilterValue(filterId, option.option.value)
     },
@@ -1702,7 +1702,7 @@ function TableColumnFilters<T>(
       },
     ]
     for (const filter of filters) {
-      const isNegatable = !!filter.isNegatable
+      const supportsInequality = !!filter.supportsInequality
       let options: TableFilterOptions[] = []
       for (const option of filter.options) {
         /* istanbul ignore next */
@@ -1715,13 +1715,16 @@ function TableColumnFilters<T>(
         // we need to do special processing to match a selection like (key!=value)
         //  because it won't directly match the original option (key=value)
         const selectedOption = selections.find(
-          (selection) => selection.filterId === filter.id && equalsLabel(isNegatable, option.value, selection.value)
+          (selection) =>
+            selection.filterId === filter.id && matchesFilterValue(supportsInequality, option.value, selection.value)
         )
 
         // if the selection is a key!=value we can't use the original option (key=value)
         // so we create a new option instead
         const opt: TableFilterOption<string> =
-          isNegatable && selectedOption ? { label: selectedOption.value, value: selectedOption.value } : { ...option }
+          supportsInequality && selectedOption
+            ? { label: selectedOption.value, value: selectedOption.value }
+            : { ...option }
 
         /* istanbul ignore next */
         if (
@@ -1741,6 +1744,10 @@ function TableColumnFilters<T>(
       /* istanbul ignore else */
       if (options.length) {
         if (options.length > SPLIT_FILTER_THRESHOLD || secondaryFilterIds?.includes(filter.id)) {
+          options.sort((a, b) => {
+            return a?.option?.label?.toString().localeCompare(b?.option?.label?.toString() || '') || 0
+          })
+
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
             groupSelections: [] as FilterSelectOptionObject[],
@@ -1793,32 +1800,37 @@ function TableColumnFilters<T>(
           return (
             <SelectGroup key={filter.filter.id} label={filter.filter.label}>
               {filter.options.map((option) => {
-                return renderFilterSelectOption(filter.filter.id, option, filter.filter.isNegatable, onToggleNegate)
+                return renderFilterSelectOption(
+                  filter.filter.id,
+                  option,
+                  filter.filter.supportsInequality,
+                  onToggleEquality
+                )
               })}
             </SelectGroup>
           )
         }),
       }
     })
-  }, [filterCounts, filters, items, onToggleNegate, secondaryFilterIds, selections])
+  }, [filterCounts, filters, items, onToggleEquality, secondaryFilterIds, selections])
 
   // used by filters with lots of options to filter the options
   const onFilterOptions = useCallback(
     (_: any, textInput: string, inx: number) => {
       if (textInput !== '') {
-        const { id, isNegatable } = filterSelectGroups[inx].groupFilters[0]
+        const { id, supportsInequality } = filterSelectGroups[inx].groupFilters[0]
         return filterSelectGroups[inx].groupOptions
           .filter(({ option }) => {
             return option?.value.toLowerCase().includes(textInput.toLowerCase())
           })
           .map((option) => {
-            return renderFilterSelectOption(id, option, isNegatable, onToggleNegate, textInput.toLowerCase())
+            return renderFilterSelectOption(id, option, supportsInequality, onToggleEquality, textInput.toLowerCase())
           })
       } else {
         return filterSelectGroups[inx].groupSelectionList
       }
     },
-    [filterSelectGroups, onToggleNegate]
+    [filterSelectGroups, onToggleEquality]
   )
 
   // create toolbar chips
@@ -1826,7 +1838,7 @@ function TableColumnFilters<T>(
     (current: ITableFilter<T>) => {
       const currentCategorySelected = filterSelections[current.id] ?? []
       // if options are made up of labels (key=value) just use the current selection values
-      if (current.isNegatable) {
+      if (current.supportsInequality) {
         return currentCategorySelected.map((value) => {
           return { key: value, node: value }
         })
