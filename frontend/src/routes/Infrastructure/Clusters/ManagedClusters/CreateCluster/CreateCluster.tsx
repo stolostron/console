@@ -350,6 +350,30 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }
 
+  function validateAdditionalNetworks(active: string) {
+    const parts = active.split('/')
+    if (parts.length !== 2) {
+      return t('Value must be in <namespace>/<name> format.')
+    }
+
+    const [namespace, name] = parts
+    const dnsLabelRegex = new RegExp(VALID_DNS_LABEL)
+
+    if (!dnsLabelRegex.test(namespace) || namespace.length > 63) {
+      return t(
+        'The namespace is invalid. The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character "-" is also permitted, as long as it does not appear in the first or last position.'
+      )
+    }
+
+    if (!dnsLabelRegex.test(name) || name.length > 63) {
+      return t(
+        'The name is invalid. The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character "-" is also permitted, as long as it does not appear in the first or last position.'
+      )
+    }
+
+    return undefined
+  }
+
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
@@ -364,6 +388,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           )
           control.active = 'clusters'
           control.available = ['clusters', ...hostedClusterNamespaces.map((hcn) => hcn.metadata.name)]
+        }
+        break
+      case 'additionalNetworks':
+        if (infrastructureType === Provider.kubevirt) {
+          control.validation = {
+            contextTester: validateAdditionalNetworks,
+            required: false,
+          }
         }
         break
       case 'clusterSet':
