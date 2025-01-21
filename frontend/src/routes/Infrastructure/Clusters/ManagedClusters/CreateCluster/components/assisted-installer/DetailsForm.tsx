@@ -30,7 +30,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import React from 'react'
 import { FieldName } from './types'
-import { getFieldLabels } from './hypershift/utils'
+import { getFieldLabels, getPlatform } from './hypershift/utils'
 import { getFirstAgentServiceConfig } from '../../../../../InfraEnvironments/InfraEnvironmentsPage'
 
 type FormControl = {
@@ -147,6 +147,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       },
       pullSecret: {},
       controlPlaneCount: { path: 'AgentClusterInstall[0].spec.provisionRequirements.controlPlaneAgents' },
+      platform: { path: 'AgentClusterInstall[0].spec.platformType', transform: (a?: string) => a?.toLowerCase() },
     }),
     [control.additionalProps?.aiFlow]
   )
@@ -185,8 +186,13 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       }
       Object.keys(fields).forEach((key) => {
         const path = fields[key].path
+        const transform = fields[key].transform
         if (path) {
-          set(active, key, getValue(templateObject, path) || '')
+          set(
+            active,
+            key,
+            (transform && transform(getValue(templateObject, path))) || getValue(templateObject, path) || ''
+          )
         }
       })
       if (!isEqual(active, control.active)) {
@@ -207,6 +213,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         let desc = get(control, `active.${key}`)
         if (key === 'openshiftVersion') {
           desc = getVersion(get(control, `active.${key}`))
+        } else if (key === 'platform') {
+          desc = getPlatform(get(control, `active.${key}`))
         }
         return {
           term: fieldLabels[key as FieldName] ?? 'Error' + key,
