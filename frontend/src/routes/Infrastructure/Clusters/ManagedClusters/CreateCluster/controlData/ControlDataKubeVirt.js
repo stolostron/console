@@ -6,7 +6,6 @@ import {
   getNumericValidator,
   getNumericGTValidator,
   VALID_DNS_LABEL,
-  getK8sNameValidator,
 } from '../../../../../../components/TemplateEditor'
 import { AcmButton } from '../../../../../../ui-components'
 import {
@@ -297,15 +296,11 @@ export const getControlDataKubeVirt = (
           type: 'multitext',
           name: t('Additional networks'),
           tooltip: t('tooltip.creation.nodepool.additional.network'),
-          placeholder: t('Enter additional networks in the format <namespace>/<name>'),
+          placeholder: t('Enter the additional network in the format <namespace>/<name>'),
           description: t(
-            'Name specify the network attached to the nodes in the format "[namespace]/[name]" to reference the multus network attachment definition'
+            'Name specify the network attached to the nodes in the format "<namespace>/<name>" to reference the multus network attachment definition'
           ),
           addButtonText: t('Add additional network'),
-          validation: {
-            ...getK8sNameValidator(t),
-            required: false,
-          },
           active: { multitextEntries: [] },
           controlData: [
             {
