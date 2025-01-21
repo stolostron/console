@@ -4,6 +4,7 @@ import { Agent } from 'https'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
+import { logger } from './logger'
 import { getServiceCACertificate } from './serviceAccountToken'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
@@ -77,6 +78,8 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
   })
     .then(async (response) => {
       let responseData = undefined
+      logger.warn(response)
+      logger.warn(response.body)
       if (response.headers.get('content-type')?.includes('text/plain')) {
         try {
           responseData = await response.text()
@@ -87,7 +90,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
         } catch (err) {
           return {
             statusCode: response.status,
-            body: `Error getting resource text response: ${err.message}`,
+            body: 'Error getting resource text response.',
           }
         }
       } else {
@@ -100,7 +103,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
         } catch (err) {
           return {
             statusCode: response.status,
-            body: `Error getting resource json response: ${err.message}`,
+            body: 'Error getting resource json response.',
           }
         }
       }
