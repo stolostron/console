@@ -73,7 +73,7 @@ export function jsonPut(url: string, body: unknown, token?: string): Promise<Put
     body: JSON.stringify(body),
     compress: true,
   })
-    .then(async (response) => ({
+    .then((response) => ({
       // No response body from cluster-proxy kubevirt requests.
       statusCode: response.status,
     }))

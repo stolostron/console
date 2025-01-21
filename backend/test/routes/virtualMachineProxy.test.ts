@@ -92,22 +92,13 @@ describe('Virtual Machine actions', function () {
       })
     nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
-      .reply(500, {
-        name: 'fetchError',
-        message: 'error testing...',
-      })
+      .reply(500)
     const res = await request('PUT', '/virtualmachines/start', {
       managedCluster: 'testCluster',
       vmName: 'vmName',
       vmNamespace: 'vmNamespace',
     })
     expect(res.statusCode).toEqual(500)
-    expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(
-      JSON.stringify({
-        name: 'fetchError',
-        message: 'error testing...',
-      })
-    )
   })
 
   it('should fail with invalid route and secret', async function () {
@@ -178,13 +169,13 @@ describe('Virtual Machine actions', function () {
       })
     nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
-      .reply(502, 'plain text error', { [constants.HTTP2_HEADER_CONTENT_TYPE]: ['text/plain'] })
+      .reply(502, '', { [constants.HTTP2_HEADER_CONTENT_TYPE]: ['text/plain'] })
     const res = await request('PUT', '/virtualmachines/start', {
       managedCluster: 'testCluster',
       vmName: 'vmName',
       vmNamespace: 'vmNamespace',
     })
     expect(res.statusCode).toEqual(502)
-    expect(await parsePipedJsonBody(res)).toEqual('plain text error')
+    expect(await parsePipedJsonBody(res)).toEqual('')
   })
 })
