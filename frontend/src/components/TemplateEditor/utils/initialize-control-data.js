@@ -53,7 +53,6 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
 const initialControl = (control, onControlInitialize) => {
   const { type, isInitialized } = control
   if (!isInitialized) {
-
     let controlData
     let active
     if (control.controlData) {
