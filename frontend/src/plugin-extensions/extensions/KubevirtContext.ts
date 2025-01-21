@@ -2,10 +2,12 @@
 import { CodeRef, Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import * as OpenshiftDynamicPluginSDK from '@openshift-console/dynamic-plugin-sdk'
 import { Context } from 'react'
+import { getResourceUrl } from '../../routes/Search/Details/KubevirtPluginWrapper'
 
 /** Properties type */
 export type KubevirtPluginData = {
   dynamicPluginSDK: typeof OpenshiftDynamicPluginSDK
+  getResourceURL: typeof getResourceUrl
 }
 
 export type KubevirtPluginDataProps = {

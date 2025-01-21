@@ -14,7 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { PathParam, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
@@ -50,6 +50,8 @@ import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { getVirtualMachineRowActions } from './utils'
+import KubevirtPluginWrapper from '../../Search/Details/KubevirtPluginWrapper'
+import { NavigationPath } from '../../../NavigationPath'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -58,7 +60,7 @@ function VirtualMachineTable() {
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const isSearchAvailable = useIsSearchAvailable()
   const toast = useContext(AcmToastContext)
-  const { dataContext } = useContext(PluginContext)
+  const { acmExtensions, dataContext } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -70,6 +72,7 @@ function VirtualMachineTable() {
   const clusterVersions = useRecoilValue(clusterVersionState)
   const clusterVersion = clusterVersions?.[0]
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
+  const { cluster, namespace } = useParams<PathParam<NavigationPath.virtualMachinesForNamespace>>()
 
   const rowActionResolver = useCallback(
     (item: any) => {
@@ -89,7 +92,14 @@ function VirtualMachineTable() {
 
   const { data, loading, error } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    variables: { input: [convertStringToQuery('kind:VirtualMachine,VirtualMachineInstance', -1)] }, // no limit - return all resources
+    variables: {
+      input: [
+        convertStringToQuery(
+          `kind:VirtualMachine,VirtualMachineInstance${cluster ? ` cluster:${cluster}` : ''}${namespace ? ` namespace:${namespace}` : ''}`,
+          -1
+        ),
+      ],
+    }, // no limit - return all resources
   })
   const searchResultItems: ISearchResult[] | undefined = useMemo(() => {
     if (error) {
@@ -176,6 +186,10 @@ function VirtualMachineTable() {
     }
   }
 
+  let VirtualMachinesList
+  if (acmExtensions?.virtualMachinesList) {
+    VirtualMachinesList = acmExtensions.virtualMachinesList.properties.component
+  }
   return (
     <Fragment>
       <DeleteResourceModal
@@ -216,7 +230,16 @@ function VirtualMachineTable() {
           />
         }
         showColumManagement
-      ></AcmTable>
+      />
+      {VirtualMachinesList && (
+        <KubevirtPluginWrapper>
+          <VirtualMachinesList
+            namespace={namespace}
+            kind="kubevirt.io~v1~VirtualMachine"
+            // model={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
+          />
+        </KubevirtPluginWrapper>
+      )}
     </Fragment>
   )
 }

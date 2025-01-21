@@ -8,5 +8,5 @@ export function useLocalHubManagedCluster() {
 }
 
 export function useLocalHubName() {
-  return useLocalHubManagedCluster()?.metadata.name || 'local-cluster'
+  return useLocalHubManagedCluster()?.metadata.name
 }

@@ -132,6 +132,8 @@ export enum NavigationPath {
 
   // Infrastructure - Virtual Machines
   virtualMachines = '/multicloud/infrastructure/virtualmachines',
+  virtualMachinesForCluster = '/multicloud/infrastructure/virtualmachines/:cluster',
+  virtualMachinesForNamespace = '/multicloud/infrastructure/virtualmachines/:cluster/:namespace',
 
   // Applications
   applications = '/multicloud/applications',
