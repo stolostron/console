@@ -1893,26 +1893,26 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     // Assert that the checkbox is disabled and checked
     const defaultPodNetworkCheckbox = screen.getByRole('checkbox', { name: /default pod network/i })
-   
+
     expect(defaultPodNetworkCheckbox).toBeDisabled()
 
     expect(defaultPodNetworkCheckbox).toBeChecked()
 
-    // Enter network details       
+    // Enter network details
     const additionalNetworksInput = screen.getByPlaceholderText(
-      /enter additional networks in the format <namespace>\/<name>/i
+      'Enter the additional network in the format <namespace>/<name>'
     )
     fireEvent.change(additionalNetworksInput, { target: { value: 'ns1/name1' } })
     // Assert that the checkbox is enabled and checked
-  expect(defaultPodNetworkCheckbox).toBeEnabled()
-  expect(defaultPodNetworkCheckbox).toBeChecked()
+    expect(defaultPodNetworkCheckbox).toBeEnabled()
+    expect(defaultPodNetworkCheckbox).toBeChecked()
 
     await clickByText('Add additional network')
     const additionalNetworksInput2 = screen.getByTestId('text-additionalNetworks-1')
     fireEvent.change(additionalNetworksInput2, { target: { value: 'ns2/name2' } })
     // uncheck the default pod network checkbox
     fireEvent.click(defaultPodNetworkCheckbox)
-  
+
     // Review and Save step
     await clickByText('Next')
 
@@ -3742,12 +3742,12 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     const nodePoolNameInput1 = screen.getByTestId('nodePoolName')
     fireEvent.change(nodePoolNameInput1, { target: { value: 'nodepool1' } })
 
-    // Enter network details       
+    // Enter network details
     const additionalNetworksInput = screen.getByPlaceholderText(
-      /enter additional networks in the format <namespace>\/<name>/i
+      'Enter the additional network in the format <namespace>/<name>'
     )
     fireEvent.change(additionalNetworksInput, { target: { value: 'ns1/name1' } })
-    
+
     const defaultPodNetworkCheckbox = screen.getByRole('checkbox', { name: /default pod network/i })
     // uncheck the default pod network checkbox
     fireEvent.click(defaultPodNetworkCheckbox)
@@ -3777,10 +3777,10 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockCreate(mockPullSecretKubevirt1),
       nockCreate(mockSSHKeySecret2),
     ]
-    
+
     await clickByText('Create')
     await waitForText('Creating cluster ...')
-    
+
     // make sure creating
     await waitForNocks(createNocks)
   })
