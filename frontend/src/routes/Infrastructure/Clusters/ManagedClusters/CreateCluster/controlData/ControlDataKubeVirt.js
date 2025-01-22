@@ -297,9 +297,6 @@ export const getControlDataKubeVirt = (
           name: t('Additional networks'),
           tooltip: t('tooltip.creation.nodepool.additional.network'),
           placeholder: t('Enter the additional network in the format <namespace>/<name>'),
-          description: t(
-            'Name specify the network attached to the nodes in the format "<namespace>/<name>" to reference the multus network attachment definition'
-          ),
           addButtonText: t('Add additional network'),
           active: { multitextEntries: [] },
           controlData: [
