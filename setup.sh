@@ -101,3 +101,6 @@ EOF
   SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE -o="jsonpath={.status.ingress[0].host}")
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi
+
+CLUSTER_PROXY_ADDON_USER_ROUTE=https://$(oc get route cluster-proxy-addon-user -n $INSTALLATION_NAMESPACE_MCE -o="jsonpath={.status.ingress[0].host}")
+echo CLUSTER_PROXY_ADDON_USER_ROUTE=$CLUSTER_PROXY_ADDON_USER_ROUTE >> ./backend/.env

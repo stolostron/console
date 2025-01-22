@@ -2,11 +2,11 @@
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { jsonPut, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
+import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { ResourceList } from '../resources/resource-list'
-import { Route } from '../resources/route'
 import { Secret } from '../resources/secret'
 import { canAccess } from './events'
 
@@ -63,32 +63,19 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
               return undefined
             })
 
-          // Get cluster proxy host
-          const proxyServer = await jsonRequest(
-            process.env.CLUSTER_API_URL +
-              '/apis/route.openshift.io/v1/namespaces/multicluster-engine/routes/cluster-proxy-addon-user',
-            token
-          )
-            .then((response: Route) => {
-              const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-              return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
-            })
-            .catch((err: Error): undefined => {
-              logger.error({ msg: 'Error getting cluster proxy Route', error: err.message })
-              return undefined
-            })
-
           // req.url is one of: /virtualmachines/<action> OR /virtualmachineinstances/<action>
           // the VM name is needed between the kind and action for the correct api url.
           const splitURL = req.url.split('/')
           const joinedURL = `${splitURL[1]}/${body.vmName}/${splitURL[2]}`
-          const path = `${proxyServer}/${body.managedCluster}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${joinedURL}`
+          const mce = await getMultiClusterEngine()
+          const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+          const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
+          const path = `${proxyURL}/${body.managedCluster}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${joinedURL}`
           const headers: OutgoingHttpHeaders = { authorization: `Bearer ${managedClusterToken}` }
           for (const header of proxyHeaders) {
             if (req.headers[header]) headers[header] = req.headers[header]
           }
 
-          if (!path) return respondInternalServerError(req, res)
           await jsonPut(path, {}, managedClusterToken)
             .then((results) => {
               if (results?.statusCode >= 200 && results?.statusCode < 300) {
