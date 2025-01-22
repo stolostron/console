@@ -171,6 +171,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/username',
         '/multicloud/userpreference',
         '/multicloud/version',
+        '/multicloud/virtualmachines',
         '/multicloud/virtualmachineinstances',
       ].map((backendPath) => ({
         path: backendPath,
