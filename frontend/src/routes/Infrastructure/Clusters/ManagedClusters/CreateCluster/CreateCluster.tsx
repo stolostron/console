@@ -360,15 +360,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     const dnsLabelRegex = new RegExp(VALID_DNS_LABEL)
 
     if (!dnsLabelRegex.test(namespace) || namespace.length > 63) {
-      return t(
-        'The namespace is invalid. The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character "-" is also permitted, as long as it does not appear in the first or last position.'
-      )
+      return t('namespace.invalid.dns.label')
     }
 
     if (!dnsLabelRegex.test(name) || name.length > 63) {
-      return t(
-        'The name is invalid. The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character "-" is also permitted, as long as it does not appear in the first or last position.'
-      )
+      return t('name.invalid.dns.label')
     }
 
     return undefined
