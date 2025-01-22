@@ -34,7 +34,7 @@ export function transform(items: ITransformedResource[], clusters?: Cluster[], i
       ['t'], // time window
       [app.metadata.creationTimestamp as string],
     ]
-    app.isRemote = isRemote
+    app.remoteClusters = isRemote && _clusters
   })
   return { resources: items }
 }
