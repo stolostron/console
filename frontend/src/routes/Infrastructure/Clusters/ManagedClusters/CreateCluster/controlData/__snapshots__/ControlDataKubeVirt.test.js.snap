@@ -343,7 +343,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
         "name": "Additional networks",
         "onSelect": [Function],
         "placeholder": "Enter the additional network in the format <namespace>/<name>",
-        "tooltip": "The name specifies the network attached to the nodes in the format "<namespace>/<name>" to reference the multus network attachment definition",
+        "tooltip": "The name specifies the network attached to the nodes in the format <namespace>/<name> to reference the multus network attachment definition",
         "type": "multitext",
       },
       {
@@ -696,7 +696,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         "name": "Additional networks",
         "onSelect": [Function],
         "placeholder": "Enter the additional network in the format <namespace>/<name>",
-        "tooltip": "The name specifies the network attached to the nodes in the format "<namespace>/<name>" to reference the multus network attachment definition",
+        "tooltip": "The name specifies the network attached to the nodes in the format <namespace>/<name> to reference the multus network attachment definition",
         "type": "multitext",
       },
       {
