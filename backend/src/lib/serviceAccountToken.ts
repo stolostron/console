@@ -51,17 +51,15 @@ function base64DecodeValue(value: string): string {
 
 type Certificates = string | string[]
 
-function getCertificate(name: string, base64DefaultValue: string): Certificates {
+function getCertificate(name: string, base64DefaultValue: string, includeRoot?: boolean): Certificates {
   const internal_cert = readServiceAccountFile(name, base64DecodeValue(base64DefaultValue))
-  return process.env.NODE_ENV === 'production'
-    ? internal_cert
-    : [...(internal_cert ? [internal_cert] : []), ...rootCertificates] // include root certificates for development against clusters with signed certificates
+  return [internal_cert, ...(includeRoot ? rootCertificates : [])] // include root certificates in addition to internal cluster certificates
 }
 
 let ca_cert: Certificates
 export function getCACertificate(): Certificates {
   if (ca_cert === undefined) {
-    ca_cert = getCertificate('ca.crt', process.env.CA_CERT)
+    ca_cert = getCertificate('ca.crt', process.env.CA_CERT, true)
   }
   return ca_cert
 }
@@ -69,7 +67,12 @@ export function getCACertificate(): Certificates {
 let service_ca_cert: Certificates
 export function getServiceCACertificate(): Certificates {
   if (service_ca_cert === undefined) {
-    service_ca_cert = getCertificate('service-ca.crt', process.env.SERVICE_CA_CERT)
+    // in dev mode, connections to Services need to be proxied via Routes, so they need root certificates
+    service_ca_cert = getCertificate(
+      'service-ca.crt',
+      process.env.SERVICE_CA_CERT,
+      process.env.NODE_ENV !== 'production'
+    )
   }
   return service_ca_cert
 }
