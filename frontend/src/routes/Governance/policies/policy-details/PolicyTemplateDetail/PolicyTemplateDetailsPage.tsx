@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../../ui-components'
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { v4 as uuidv4 } from 'uuid'
-import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../resources'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { fireManagedClusterView } from '../../../../../resources'
 import { PageSection } from '@patternfly/react-core'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { TemplateDetailTitle } from '../../components/TemplateDetailTitle'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { TemplateDetailTitle } from '../../../components/TemplateDetailTitle'
 
 export type TemplateDetailsContext = {
   clusterName: string

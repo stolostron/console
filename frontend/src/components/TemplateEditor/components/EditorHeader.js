@@ -69,6 +69,7 @@ class EditorHeader extends React.Component {
               variant="inline-compact"
               isBlock
               onCopy={() => handleEditorCommand('copyAll')}
+              style={{ backgroundColor: '#25282c' }}
             />
           </div>
         </div>

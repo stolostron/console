@@ -17,7 +17,6 @@ import {
 } from '@patternfly/react-core'
 import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
-import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
@@ -34,7 +33,7 @@ import {
   PolicyKind,
   PolicySet,
 } from '../../../resources'
-import { patchResource, replaceResource } from '../../../resources/utils'
+import { getMoment, patchResource, replaceResource } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmAlert,
@@ -271,7 +270,7 @@ export default function PoliciesPage() {
         isFirstVisitChecked: false,
         exportContent: (item) => {
           if (item.policy.metadata?.creationTimestamp) {
-            return moment(new Date(item.policy.metadata?.creationTimestamp)).fromNow()
+            return getMoment(item.policy.metadata?.creationTimestamp).toString()
           }
           return '-'
         },

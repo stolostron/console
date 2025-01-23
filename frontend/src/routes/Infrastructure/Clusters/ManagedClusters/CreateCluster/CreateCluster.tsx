@@ -68,6 +68,17 @@ import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/
 Handlebars.registerHelper('and', function (a, b) {
   return a && b
 })
+Handlebars.registerHelper('gt', function (value1, value2) {
+  return value1 > value2
+})
+// Filter out empty entries
+Handlebars.registerHelper('filter', function (array: any[]) {
+  return array.filter((item: string) => item && item.trim() !== '')
+})
+// Get length of array
+Handlebars.registerHelper('length', function (array) {
+  return Array.isArray(array) ? array.length : 0
+})
 
 interface CreationStatus {
   status: string
@@ -339,6 +350,26 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }
 
+  function validateAdditionalNetworks(active: string) {
+    const parts = active.split('/')
+    if (parts.length !== 2) {
+      return t('Value must be in <namespace>/<name> format.')
+    }
+
+    const [namespace, name] = parts
+    const dnsLabelRegex = new RegExp(VALID_DNS_LABEL)
+
+    if (!dnsLabelRegex.test(namespace) || namespace.length > 63) {
+      return t('namespace.invalid.dns.label')
+    }
+
+    if (!dnsLabelRegex.test(name) || name.length > 63) {
+      return t('name.invalid.dns.label')
+    }
+
+    return undefined
+  }
+
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
@@ -353,6 +384,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           )
           control.active = 'clusters'
           control.available = ['clusters', ...hostedClusterNamespaces.map((hcn) => hcn.metadata.name)]
+        }
+        break
+      case 'additionalNetworks':
+        if (infrastructureType === Provider.kubevirt) {
+          control.validation = {
+            contextTester: validateAdditionalNetworks,
+            required: false,
+          }
         }
         break
       case 'clusterSet':

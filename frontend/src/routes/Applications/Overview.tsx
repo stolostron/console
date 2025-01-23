@@ -66,7 +66,6 @@ import {
   getClusterCountSearchLink,
   getClusterCountString,
   getClusterList,
-  getMoment,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
@@ -74,6 +73,7 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { getMoment } from '../../resources/utils'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'

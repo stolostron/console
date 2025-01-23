@@ -116,6 +116,17 @@ export const mockManagedCluster8: ManagedCluster = {
   },
   spec: { hubAcceptsClient: true },
 }
+export const mockManagedCluster9: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'regional-cluster',
+    labels: {
+      'feature.open-cluster-management.io/addon-multicluster-global-hub-controller': 'unreachable',
+    },
+  },
+  spec: { hubAcceptsClient: true },
+}
 export const mockManagedClusters: ManagedCluster[] = [
   mockManagedCluster0,
   mockManagedCluster1,

@@ -66,6 +66,7 @@ class EditorButton extends React.Component {
           role={'button'}
           aria-label={tooltip}
           title={tooltip}
+          id={`${icon}-button`}
           onClick={this.handleClick}
           onKeyPress={this.handleKeyPress}
         >

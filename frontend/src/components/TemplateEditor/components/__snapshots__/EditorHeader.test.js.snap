@@ -62,6 +62,7 @@ exports[`EditorHeader component renders as expected 1`] = `
         class="pf-v5-c-clipboard-copy pf-m-inline pf-m-block"
         data-ouia-component-type="PF5/ClipboardCopy"
         data-ouia-safe="true"
+        style="background-color: rgb(37, 40, 44);"
       >
         <span
           class="pf-v5-c-clipboard-copy__text"

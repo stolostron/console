@@ -23,6 +23,7 @@ exports[`EditorBar component renders as expected 1`] = `
         >
           <div
             class="editor-bar-button restore"
+            id="undefined-button"
             role="button"
             tabindex="0"
           >
@@ -34,6 +35,7 @@ exports[`EditorBar component renders as expected 1`] = `
         >
           <div
             class="editor-bar-button undo disabled"
+            id="undo-button"
             role="button"
             tabindex="0"
           >
@@ -53,6 +55,7 @@ exports[`EditorBar component renders as expected 1`] = `
           </div>
           <div
             class="editor-bar-button redo"
+            id="redo-button"
             role="button"
             tabindex="0"
           >
@@ -116,6 +119,7 @@ exports[`EditorBar component renders as expected 1`] = `
             </div>
             <div
               class="editor-bar-button previous disabled"
+              id="previous-button"
               role="button"
               tabindex="0"
             >
@@ -135,6 +139,7 @@ exports[`EditorBar component renders as expected 1`] = `
             </div>
             <div
               class="editor-bar-button next disabled"
+              id="next-button"
               role="button"
               tabindex="0"
             >
@@ -164,6 +169,7 @@ exports[`EditorBar component renders as expected 1`] = `
       >
         <div
           class="editor-bar-button close"
+          id="close-button"
           role="button"
           tabindex="0"
         >

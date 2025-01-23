@@ -17,7 +17,7 @@ import {
 } from './AcmTable'
 import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
-import { exportObjectString } from '../../resources/utils'
+import { exportObjectString, returnCSVSafeString } from '../../resources/utils'
 import { SearchOperator } from '../AcmSearchInput'
 import { handleStandardComparison } from '../../lib/search-utils'
 
@@ -1003,9 +1003,10 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
-  test('renders a table with multiple filters to handle lots of options', async () => {
+  test('renders a table with secondary filter', async () => {
     const { container, getByText, getByTestId, getByLabelText } = render(
       <Table
+        secondaryFilterIds={['cluster']}
         filters={[
           {
             label: 'Gender',
@@ -1098,5 +1099,19 @@ describe('AcmTable', () => {
 
     expect(createElementSpyOn).toHaveBeenCalledWith('a')
     expect(anchorMocked.download).toContain('table-values')
+  })
+})
+
+describe('returnCSVSafeString', () => {
+  test('returns a csv safe string replacing new line with space', () => {
+    const content = 'testing for multiline\ndescription'
+    const exportContent = returnCSVSafeString(content)
+    expect(exportContent).toEqual('"testing for multiline description"')
+  })
+
+  test('returns a csv safe string escaping double quotes', () => {
+    const content = 'testing for description with double quotes "'
+    const exportContent = returnCSVSafeString(content)
+    expect(exportContent).toEqual('"testing for description with double quotes """')
   })
 })

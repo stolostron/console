@@ -18,7 +18,7 @@ import {
   AcmSelect,
   AcmToastContext,
 } from '../../../../../ui-components'
-import { cloneDeep, groupBy, pick } from 'lodash'
+import { cloneDeep, get, groupBy, isEqual, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
@@ -100,9 +100,6 @@ type State = {
   defaultLabels: Labels
   managedClusterSet: string
   additionalLabels: Labels
-  kacDefaultLabels: Labels
-  kacManagedClusterSet: string
-  kacAdditionalLabels: Labels
   templateName?: string
   token: string
   server: string
@@ -115,13 +112,20 @@ type State = {
   credential: string
 }
 
+function getLabelsFromState(state: State) {
+  return {
+    ...state.defaultLabels,
+    ...(state.managedClusterSet ? { [managedClusterSetLabel]: state.managedClusterSet } : {}),
+    ...state.additionalLabels,
+  }
+}
+
 type Action =
   | ({ type: 'setClusterName' } & Pick<State, 'clusterName'>)
   | ({ type: 'setImportMode' } & Pick<State, 'importMode'>)
   | ({ type: 'setManagedClusterSet' } & Pick<State, 'managedClusterSet'>)
   | ({ type: 'setAdditionalLabels' } & Pick<State, 'additionalLabels'>)
-  | { type: 'computeAdditionalLabels'; labels: State['additionalLabels'] }
-  | { type: 'computeKACAdditionalLabels'; labels: State['kacAdditionalLabels'] }
+  | { type: 'computeAdditionalLabels'; labels: Labels; labelsKAC?: Labels }
   | ({ type: 'setTemplateName' } & Pick<State, 'templateName'>)
   | ({ type: 'setToken' } & Pick<State, 'token'>)
   | ({ type: 'setServer' } & Pick<State, 'server'>)
@@ -187,9 +191,6 @@ function getInitialState({
     defaultLabels,
     managedClusterSet: '',
     additionalLabels: {},
-    kacDefaultLabels: defaultLabels,
-    kacManagedClusterSet: '',
-    kacAdditionalLabels: {},
     templateName: '',
     token: '',
     server: initialServer,
@@ -260,7 +261,6 @@ export default function ImportClusterPage() {
             ...state,
             clusterName: action.clusterName,
             defaultLabels: { ...state.defaultLabels, name: action.clusterName },
-            kacDefaultLabels: { ...state.kacDefaultLabels, name: action.clusterName },
           }
         case 'setImportMode':
           return { ...state, importMode: action.importMode }
@@ -268,40 +268,34 @@ export default function ImportClusterPage() {
           return {
             ...state,
             managedClusterSet: action.managedClusterSet,
-            kacManagedClusterSet: action.managedClusterSet,
           }
         case 'setAdditionalLabels':
-          return { ...state, additionalLabels: action.additionalLabels, kacAdditionalLabels: action.additionalLabels }
+          return { ...state, additionalLabels: action.additionalLabels }
         case 'computeAdditionalLabels': {
-          // Update cluster set
-          const managedClusterSet = action.labels?.[managedClusterSetLabel] ?? ''
-          // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
-          // Changed default labels get added to additional labels to shadow the defaults
-          const additionalLabelKeys = Object.keys(action.labels).filter(
-            (key) =>
-              key !== managedClusterSetLabel &&
-              (!Object.keys(state.defaultLabels).includes(key) || state.defaultLabels[key] !== action.labels[key])
-          )
-          return {
-            ...state,
-            managedClusterSet,
-            additionalLabels: pick(action.labels, additionalLabelKeys),
+          const currentLabels = getLabelsFromState(state)
+          let newLabels = undefined
+          if (!isEqual(currentLabels, action.labels)) {
+            newLabels = action.labels
+          } else if (isACMAvailable && !isEqual(currentLabels, action.labelsKAC)) {
+            newLabels = action.labelsKAC
           }
-        }
-        case 'computeKACAdditionalLabels': {
-          // Update cluster set
-          const kacManagedClusterSet = action.labels?.[managedClusterSetLabel] ?? ''
-          // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
-          // Changed default labels get added to additional labels to shadow the defaults
-          const kacAdditionalLabelKeys = Object.keys(action.labels).filter(
-            (key) =>
-              key !== managedClusterSetLabel &&
-              (!Object.keys(state.kacDefaultLabels).includes(key) || state.kacDefaultLabels[key] !== action.labels[key])
-          )
-          return {
-            ...state,
-            kacManagedClusterSet,
-            kacAdditionalLabels: pick(action.labels, kacAdditionalLabelKeys),
+          if (newLabels) {
+            // Update cluster set
+            const managedClusterSet = newLabels?.[managedClusterSetLabel] ?? ''
+            // Additonal labels excludes the ManagedClusterSet label and any unchanged default labels
+            // Changed default labels get added to additional labels to shadow the defaults
+            const additionalLabelKeys = Object.keys(newLabels).filter(
+              (key) =>
+                key !== managedClusterSetLabel &&
+                (!Object.keys(state.defaultLabels).includes(key) || state.defaultLabels[key] !== newLabels[key])
+            )
+            return {
+              ...state,
+              managedClusterSet,
+              additionalLabels: pick(newLabels, additionalLabelKeys),
+            }
+          } else {
+            return state
           }
         }
         case 'setTemplateName':
@@ -346,7 +340,7 @@ export default function ImportClusterPage() {
         }
       }
     },
-    [ocmCredentials]
+    [isACMAvailable, ocmCredentials]
   )
 
   const [state, dispatch] = useReducer(
@@ -443,7 +437,7 @@ export default function ImportClusterPage() {
         spec: {
           clusterName: initialClusterName,
           clusterNamespace: initialClusterName,
-          clusterLabels: { ...state.kacDefaultLabels },
+          clusterLabels: { ...state.defaultLabels },
           applicationManager: { enabled: true },
           policyController: { enabled: true },
           searchCollector: { enabled: true },
@@ -457,7 +451,6 @@ export default function ImportClusterPage() {
     initialClusterName,
     state.defaultLabels,
     state.importMode,
-    state.kacDefaultLabels,
     isACMAvailable,
     initialClusterID,
     initialAuthMethod,
@@ -473,8 +466,16 @@ export default function ImportClusterPage() {
       setState: (clusterName: State['clusterName']) => dispatch({ type: 'setClusterName', clusterName }),
     },
     {
-      path: 'ManagedCluster[0].metadata.labels',
-      setState: (labels: State['additionalLabels']) => dispatch({ type: 'computeAdditionalLabels', labels }),
+      getter: (template: any) => {
+        const labels = get(template, 'ManagedCluster[0].metadata.labels', {})
+        let labelsKAC = undefined
+        if (isACMAvailable) {
+          labelsKAC = get(template, 'KlusterletAddonConfig[0].spec.clusterLabels', {})
+        }
+        return { labels, labelsKAC }
+      },
+      setState: ({ labels, labelsKAC }: { labels: Labels; labelsKAC?: Labels }) =>
+        dispatch({ type: 'computeAdditionalLabels', labels, labelsKAC }),
     },
     {
       path: 'Secret[0].stringData.server',
@@ -492,14 +493,6 @@ export default function ImportClusterPage() {
       path: 'Secret[0].stringData.clusterID',
       setState: (clusterID: State['clusterID']) => dispatch({ type: 'setClusterID', clusterID }),
     },
-    ...(isACMAvailable
-      ? [
-          {
-            path: 'KlusterletAddonConfig[0].spec.clusterLabels',
-            setState: (labels: State['additionalLabels']) => dispatch({ type: 'computeKACAdditionalLabels', labels }),
-          },
-        ]
-      : []),
   ]
 
   const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
@@ -723,19 +716,11 @@ export default function ImportClusterPage() {
 }
 
 const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) => {
-  const {
-    state: {
-      defaultLabels,
-      managedClusterSet,
-      kacDefaultLabels,
-      additionalLabels,
-      kacManagedClusterSet,
-      kacAdditionalLabels,
-    },
-    dispatch,
-  } = props
+  const { state, dispatch } = props
+  const { defaultLabels, managedClusterSet, additionalLabels } = state
   const { t } = useTranslation()
   const resources = useItem() as any[]
+  const { update } = useData()
   const mode = useDisplayMode()
 
   const managedCluster = resources.find((item) => item.kind === ManagedClusterKind) as ManagedCluster
@@ -743,46 +728,20 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
     (item) => item.kind === KlusterletAddonConfigKind
   ) as KlusterletAddonConfig
 
-  const syncLabels = useCallback(
-    (defaults: Labels, clusterSet: string, labels: Labels) => {
-      managedCluster.metadata.labels = {
-        ...defaults,
-        [managedClusterSetLabel]: clusterSet,
-        ...labels,
-      }
-      if (!clusterSet) {
-        delete managedCluster.metadata.labels[managedClusterSetLabel]
-      }
-      if (klusterletAddonConfig) {
-        klusterletAddonConfig.spec.clusterLabels = {
-          ...defaults,
-          [managedClusterSetLabel]: clusterSet,
-          ...labels,
-        }
-        if (!clusterSet) {
-          delete klusterletAddonConfig.spec.clusterLabels[managedClusterSetLabel]
-        }
-      }
-      dispatch({ type: 'setManagedClusterSet', managedClusterSet: clusterSet })
-      dispatch({ type: 'setAdditionalLabels', additionalLabels: labels })
-    },
-    [dispatch, managedCluster, klusterletAddonConfig]
-  )
-
   const onChangeAdditionalLabels = useCallback(
-    (labels: Labels) => syncLabels(defaultLabels, managedClusterSet, labels),
-    [defaultLabels, managedClusterSet, syncLabels]
+    (labels: Labels) => dispatch({ type: 'setAdditionalLabels', additionalLabels: labels }),
+    [dispatch]
   )
 
   useLayoutEffect(() => {
-    syncLabels(defaultLabels, managedClusterSet, additionalLabels)
+    const newLabels = getLabelsFromState(state)
+    managedCluster.metadata.labels = { ...newLabels }
+    if (klusterletAddonConfig) {
+      klusterletAddonConfig.spec.clusterLabels = { ...newLabels }
+    }
+    update(resources)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels)])
-
-  useLayoutEffect(() => {
-    syncLabels(kacDefaultLabels, kacManagedClusterSet, kacAdditionalLabels)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(kacAdditionalLabels), kacManagedClusterSet, JSON.stringify(kacDefaultLabels)])
+  }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels), update])
 
   const controlId = 'additionalLabels'
   const controlLabel = t('import.form.labels.label')

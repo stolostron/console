@@ -151,7 +151,7 @@ export const byClusterCols = (
   ...(moreCols ?? []),
   {
     header: t('Response action'),
-    cell: 'responseAction',
+    cell: responseActionCell,
     sort: 'responseAction',
     search: 'responseAction',
     id: 'responseAction',
@@ -441,4 +441,11 @@ export const getSourceExportCSV = (item: DiscoveredPolicyItem | DiscoverdPolicyT
   }
 
   return item.source?.type
+}
+
+export function responseActionCell(item: Readonly<DiscoverdPolicyTableItem | DiscoveredPolicyItem>) {
+  const { responseAction } = item
+
+  if (!responseAction) return <>-</>
+  return <>{responseAction}</>
 }

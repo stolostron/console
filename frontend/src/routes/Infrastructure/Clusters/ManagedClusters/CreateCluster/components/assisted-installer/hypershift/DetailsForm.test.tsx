@@ -40,6 +40,7 @@ describe('DetailsForm', () => {
                       platform: 'baremetal',
                       userManagedNetworking: false,
                       customOpenshiftSelect: null,
+                      controlPlaneCount: 3,
                     },
                     step: {
                       title: {

@@ -106,6 +106,7 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelData: undefined,
     })
 
     render(
@@ -160,6 +161,7 @@ describe('useFetchPolicies custom hook', () => {
       isFetching: false,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelData: undefined,
     })
 
     render(
@@ -176,6 +178,7 @@ describe('useFetchPolicies custom hook', () => {
       isFetching: true,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
+      labelData: undefined,
     })
 
     render(
@@ -250,6 +253,7 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelData: undefined,
     })
 
     const { baseElement } = render(
@@ -393,6 +397,7 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelData: undefined,
     })
 
     const { container } = render(
@@ -557,6 +562,7 @@ describe('useFetchPolicies custom hook', () => {
         },
       ],
       err: undefined,
+      labelData: undefined,
     })
 
     render(
@@ -578,7 +584,7 @@ describe('useFetchPolicies custom hook', () => {
 
     expect(
       screen.getByRole('row', {
-        name: /require-owner-labels Kyverno ClusterPolicy Audit Medium 1 Local/,
+        name: /require-owner-labels Kyverno ClusterPolicy - Audit Medium 1 Local/,
       })
     ).toBeInTheDocument()
 

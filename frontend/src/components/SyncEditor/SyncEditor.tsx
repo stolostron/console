@@ -179,6 +179,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     window.getEditorValue = () => editor.getValue()
     setEditor(editor)
     setMonaco(monaco)
+    layoutEditor(editor)
   }
 
   useEffect(() => {
@@ -752,25 +753,32 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     ]
   )
 
-  useResizeObserver(pageRef, (entry) => {
-    const { width } = entry.contentRect
-    let { height } = entry.contentRect
-
-    if (pageRef.current) {
-      height = window.innerHeight - pageRef.current?.getBoundingClientRect().top
-    }
-
-    if (variant === 'toolbar') {
-      height -= 36
-    }
-    if (editorHasErrors) {
-      height -= 75
-    }
-    if (editor) {
-      editor.layout({ width, height })
-      setShowCondensed(width < 500)
-    }
+  useResizeObserver(pageRef, () => {
+    layoutEditor(editor)
   })
+  const layoutEditor = useCallback(
+    (editor: any) => {
+      if (pageRef.current && editor) {
+        const rect = pageRef.current.getBoundingClientRect()
+        const { width } = rect
+        let { height } = rect
+
+        if (pageRef.current) {
+          height = window.innerHeight - pageRef.current?.getBoundingClientRect().top
+        }
+
+        if (variant === 'toolbar') {
+          height -= 36
+        }
+        if (editorHasErrors) {
+          height -= 75
+        }
+        editor.layout({ width, height })
+        setShowCondensed(width < 500)
+      }
+    },
+    [editorHasErrors, variant]
+  )
 
   return (
     <div ref={pageRef} className="sync-editor__container">

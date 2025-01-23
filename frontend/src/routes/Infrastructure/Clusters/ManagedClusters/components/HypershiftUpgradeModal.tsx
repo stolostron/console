@@ -525,7 +525,7 @@ export function HypershiftUpgradeModal(props: {
                         variant="info"
                         title={t('Version availability')}
                         message={t(
-                          'Hosted control plane is already upgrade to the latest version available. Cluster node pools can be upgraded to match the control plane.'
+                          'Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.'
                         )}
                       />
                     </Td>

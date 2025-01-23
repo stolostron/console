@@ -1,37 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { getPagedSearchResources } from '../../lib/search'
 import { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms, getArgoDestinationCluster } from './applications'
-
-// query limit per letter
-const ARGO_APP_QUERY_LIMIT = 20000
-const query = {
-  operationName: 'searchResult',
-  variables: {
-    input: [
-      {
-        filters: [
-          {
-            property: 'kind',
-            values: ['Application'],
-          },
-          {
-            property: 'apigroup',
-            values: ['argoproj.io'],
-          },
-          {
-            property: 'cluster',
-            values: ['!local-cluster'],
-          },
-        ],
-        limit: ARGO_APP_QUERY_LIMIT,
-      },
-    ],
-  },
-  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
-}
+import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -64,17 +36,51 @@ interface IArgoAppRemoteResource {
   syncStatus: string
 }
 
-export async function getArgoApps(applicationCache: ApplicationCacheType, clusters: Cluster[], pass: number) {
+let argoPageChunk: ApplicationPageChunk
+const argoPageChunks: ApplicationPageChunk[] = []
+
+export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
+  argoPageChunk = getNextApplicationPageChunk(applicationCache, argoPageChunks, 'remoteArgoApps')
+  const filters = [
+    {
+      property: 'kind',
+      values: ['Application'],
+    },
+    {
+      property: 'apigroup',
+      values: ['argoproj.io'],
+    },
+    {
+      property: 'cluster',
+      values: ['!local-cluster'],
+    },
+  ]
+  /* istanbul ignore if */
+  if (argoPageChunk?.keys) {
+    filters.push({
+      property: 'name',
+      values: argoPageChunk.keys,
+    })
+  }
+  query.variables.input.push({
+    filters,
+    limit: SEARCH_QUERY_LIMIT,
+  })
+}
+
+export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
   const argoAppSet = new Set<string>()
+  const clusters: Cluster[] = getClusters()
   try {
-    applicationCache['localArgoApps'] = generateTransforms(getLocalArgoApps(argoAppSet, clusters))
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters))
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
   try {
-    applicationCache['remoteArgoApps'] = generateTransforms(await getRemoteArgoApps(argoAppSet, pass), clusters, true)
+    // cache remote argo apps
+    cacheRemoteApps(applicationCache, getRemoteArgoApps(argoAppSet, remoteArgoApps), argoPageChunk, 'remoteArgoApps')
   } catch (e) {
-    logger.error(`getRemoteArgoApps exception ${e}`)
+    logger.error(`cacheRemoteApps exception ${e}`)
   }
   return argoAppSet
 }
@@ -89,7 +95,7 @@ function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
     // cache Argo app signature for filtering OCP apps later
     argoAppSet.add(
       `${argoApp.metadata.name}-${
-        definedNamespace ? definedNamespace : argoApp.spec.destination.namespace
+        definedNamespace ?? argoApp.spec.destination.namespace
       }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, 'local-cluster')}`
     )
     const isChildOfAppset =
@@ -101,16 +107,8 @@ function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
   })
 }
 
-let usePagedQuery = true
-async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
-  const argoApps = (await getPagedSearchResources(
-    query,
-    usePagedQuery,
-    'Remote ArgoCD',
-    pass
-  )) as unknown as IArgoAppRemoteResource[]
-  usePagedQuery = argoApps.length > 1000
-
+function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[]) {
+  const argoApps = remoteArgoApps as unknown as IArgoAppRemoteResource[]
   const apps: IResource[] = []
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {
     argoAppSet.add(`${argoApp.name}-${argoApp.destinationNamespace}-${argoApp.cluster}`)
@@ -151,4 +149,34 @@ async function getRemoteArgoApps(argoAppSet: Set<string>, pass: number) {
   })
 
   return apps
+}
+
+function getArgoDestinationCluster(
+  destination: { name?: string; namespace: string; server?: string },
+  clusters: Cluster[],
+  cluster?: string
+) {
+  // cluster is the name of the managed cluster where the Argo app is defined
+  let clusterName = ''
+  const serverApi = destination?.server
+  if (serverApi) {
+    /* istanbul ignore if */
+    if (serverApi === 'https://kubernetes.default.svc') {
+      clusterName = cluster ?? 'local-cluster'
+    } else {
+      const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
+      /* istanbul ignore next */ clusterName = server ? server.name : 'unknown'
+    }
+  } else {
+    // target destination was set using the name property
+    /* istanbul ignore next */ clusterName = destination?.name || 'unknown'
+    /* istanbul ignore next */ if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+      clusterName = cluster
+    }
+
+    /* istanbul ignore next */ if (clusterName === 'in-cluster') {
+      clusterName = 'local-cluster'
+    }
+  }
+  return clusterName
 }

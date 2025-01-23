@@ -2,6 +2,7 @@
 'use strict'
 
 import React from 'react'
+import debounce from 'lodash/debounce'
 import PropTypes from 'prop-types'
 import { DecorationType } from '../utils/source-utils'
 import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
@@ -32,8 +33,8 @@ class YamlEditor extends React.Component {
           language: 'yaml',
           height: '100%',
           width: '100%',
+          theme: 'console',
           options: {
-            theme: 'console',
             wordWrap: 'wordWrapColumn',
             wordWrapColumn: 132,
             wordWrapMinified: false,
@@ -50,6 +51,7 @@ class YamlEditor extends React.Component {
           editorWillMount: this.editorWillMount.bind(this),
           onChange: onYamlChange,
         }),
+      editorHasFocus: false,
     }
   }
 
@@ -159,14 +161,31 @@ class YamlEditor extends React.Component {
         }
       }).bind(this)
     )
+
+    editor.onMouseDown(
+      debounce(() => {
+        const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
+        this.setState({ editorHasFocus })
+      }, 0)
+    )
+
+    editor.onDidBlurEditorWidget(() => {
+      const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
+      const activeId = document.activeElement?.id
+      if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
+        this.setState({ editorHasFocus })
+      }
+    })
   }
 
   shouldComponentUpdate(nextProps) {
+    // if editor has focus, ignore form changes, since editor is doing all the changes
     return (
-      this.props.yaml !== nextProps.yaml ||
-      this.props.hide !== nextProps.hide ||
-      this.props.readOnly !== nextProps.readOnly ||
-      this.props.showCondensed !== nextProps.showCondensed
+      !this.state.editorHasFocus &&
+      (this.props.yaml !== nextProps.yaml ||
+        this.props.hide !== nextProps.hide ||
+        this.props.readOnly !== nextProps.readOnly ||
+        this.props.showCondensed !== nextProps.showCondensed)
     )
   }
 
@@ -193,9 +212,9 @@ class YamlEditor extends React.Component {
         {editor &&
           React.cloneElement(editor, {
             value: yaml,
+            theme: 'console',
             options: {
               ...this.state.editor.props.options,
-              theme: 'console',
               wordWrapColumn: showCondensed ? 512 : 256,
               minimap: {
                 enabled: !showCondensed,

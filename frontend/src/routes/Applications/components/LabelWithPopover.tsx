@@ -32,7 +32,6 @@ export function LabelWithPopover(props: {
             event.nativeEvent.preventDefault()
           }}
           color="grey"
-          href="#"
           icon={props.labelIcon}
         >
           {props.labelContent}

@@ -1,28 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { managedClusterAddonsState } from '../../../../atoms'
-import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
-import { NavigationPath } from '../../../../NavigationPath'
-import { ManagedClusterAddOn } from '../../../../resources'
+import { managedClusterAddonsState } from '../../../../../atoms'
+import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { ManagedClusterAddOn } from '../../../../../resources'
 import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
-import PolicyTemplateYaml from './PolicyTemplateYaml'
+import PolicyTemplateYaml from '../PolicyTemplateYaml'
 import {
   useSearchResultItemsLazyQuery,
   useSearchResultRelatedItemsLazyQuery,
-} from '../../../Search/search-sdk/search-sdk'
+} from '../../../../Search/search-sdk/search-sdk'
 
-jest.mock('../../../../components/YamlEditor', () => {
+jest.mock('../../../../../components/YamlEditor', () => {
   return function YamlEditor() {
     return <div>Yaml Editor Open</div>
   }
 })
 
-jest.mock('../../../Search/search-sdk/search-sdk')
+jest.mock('../../../../Search/search-sdk/search-sdk')
 
 const getResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
@@ -456,7 +455,8 @@ describe('Policy Template Details Page', () => {
                       name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
                       numRuleViolations: '1',
                       _policyViolationCounts: 'require-owner-labels=1',
-                      rules: 'require-owner-labels',
+                      policy: 'require-owner-labels',
+                      rules: 'k-kafka-address; require-labels',
                       scope: 'e2e-rbac-test-1',
                     },
                     {
@@ -478,10 +478,44 @@ describe('Policy Template Details Page', () => {
                       name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
                       numRuleViolations: '1',
                       _policyViolationCounts: 'require-owner-labels=1',
-                      rules: 'require-owner-labels',
+                      rules: 'rule-kafka-address; require-labels',
                       scope: 'e2e-rbac-test-1',
                     },
                   ],
+                },
+                {
+                  kind: 'ConfigMap',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/8fc338fa-0591-44da-8a06-98ea7d74a7f7'],
+                      _uid: 'local-cluster/21a57360-61f4-440b-8fbc-b6df5fed554b',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      created: '2024-12-05T20:11:54Z',
+                      kind: 'ConfigMap',
+                      kind_plural: 'configmaps',
+                      label:
+                        'app.kubernetes.io/managed-by=kyverno; generate.kyverno.io/policy-name=zk-kafka-address; generate.kyverno.io/policy-namespace=; generate.kyverno.io/rule-name=rule-kafka-address; generate.kyverno.io/trigger-group=; generate.kyverno.io/trigger-kind=Namespace; generate.kyverno.io/trigger-namespace=; generate.kyverno.io/trigger-uid=119a8c80-3630-48ff-8e70-371670479d52; generate.kyverno.io/trigger-version=v1; somekey=somevalue',
+                      name: 'zk-kafka-address',
+                      namespace: 'test2',
+                    },
+                    {
+                      _hubClusterResource: 'true',
+                      _relatedUids: ['local-cluster/8fc338fa-0591-44da-8a06-98ea7d74a7f7'],
+                      _uid: 'local-cluster/04eb82db-c4a9-40ea-9c5e-c507c27638aa',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      created: '2024-12-05T20:11:58Z',
+                      kind: 'ConfigMap',
+                      kind_plural: 'configmaps',
+                      label:
+                        'app.kubernetes.io/managed-by=kyverno; generate.kyverno.io/policy-name=zk-kafka-address; generate.kyverno.io/policy-namespace=; generate.kyverno.io/rule-name=rule-kafka-address; generate.kyverno.io/trigger-group=; generate.kyverno.io/trigger-kind=Namespace; generate.kyverno.io/trigger-namespace=; generate.kyverno.io/trigger-uid=3ee7223d-20f2-4700-aadc-acd3c741e587; generate.kyverno.io/trigger-version=v1; somekey=somevalue',
+                      name: 'zk-kafka-address',
+                      namespace: 'test3',
+                    },
+                  ],
+                  __typename: 'SearchRelatedResult',
                 },
               ],
             },
@@ -492,7 +526,7 @@ describe('Policy Template Details Page', () => {
       },
     ])()
   })
-  test.skip('Should render Policy Template Details Page', async () => {
+  test('Should render Policy Template Details Page', async () => {
     const path =
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'policy.open-cluster-management.io/v1/ConfigurationPolicy/config-policy'
@@ -539,7 +573,11 @@ describe('Policy Template Details Page', () => {
     const yamlButton = container.querySelectorAll('.pf-c-nav__link')
     expect(yamlButton).not.toBeNull()
 
-    userEvent.click(yamlButton[1])
+    screen
+      .getByRole('link', {
+        name: /yaml/i,
+      })
+      .click()
 
     await waitForText('Yaml Editor Open')
 
@@ -1140,7 +1178,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('IamPolicy is no longer supported')
   })
 
-  test.skip('Should render discovered policy detail page successfully', async () => {
+  test('Should render discovered policy detail page successfully', async () => {
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
 
     const { container } = render(
@@ -1198,7 +1236,11 @@ describe('Policy Template Details Page', () => {
     await waitForText('YAML')
     const yamlButton = container.querySelectorAll('.pf-c-nav__link')
     expect(yamlButton).not.toBeNull()
-    userEvent.click(yamlButton[1])
+    screen
+      .getByRole('link', {
+        name: /yaml/i,
+      })
+      .click()
 
     await waitForText('Yaml Editor Open')
 
@@ -1350,6 +1392,38 @@ describe('Policy Template Details Page', () => {
                 },
               },
             },
+            {
+              name: 'rule-kafka-address',
+              match: {
+                any: [
+                  {
+                    resources: {
+                      kinds: ['Namespace'],
+                      names: ['test2', 'test3'],
+                    },
+                  },
+                ],
+              },
+              generate: {
+                synchronize: true,
+                apiVersion: 'v1',
+                kind: 'ConfigMap',
+                name: 'config-created',
+                namespace: '{{request.object.metadata.name}}',
+                data: {
+                  kind: 'ConfigMap',
+                  metadata: {
+                    labels: {
+                      somekey: 'somevalue',
+                    },
+                  },
+                  data: {
+                    ZK_ADDRESS: '192.168.10.10:2181,192.168.10.11:2181,192.168.10.12:2181',
+                    KAFKA_ADDRESS: '192.168.10.13:9092,192.168.10.14:9092,192.168.10.15:9092',
+                  },
+                },
+              },
+            },
           ],
         },
       },
@@ -1459,6 +1533,13 @@ describe('Policy Template Details Page', () => {
               seconds: 1731688479,
             },
           },
+          {
+            policy: 'require-owner-labels',
+            result: 'fail',
+            rule: 'rule-kafka-address',
+            scored: 'true',
+            source: 'kyverno',
+          },
         ],
       },
     }
@@ -1517,7 +1598,6 @@ describe('Policy Template Details Page', () => {
     expect(screen.getByRole('link', { name: 'require-owner-labels-binding' })).toBeInTheDocument()
 
     // Verify the "Related resources" table rows
-
     await waitFor(
       () => {
         // Wait until policyReport messages are up
@@ -1534,13 +1614,17 @@ describe('Policy Template Details Page', () => {
       { timeout: 5000, interval: 1000 }
     )
 
+    screen.getByText('Validate')
+    screen.getByText('Generate')
+    screen.getByText('Generate match resources')
+
     // Verify openshift-etcd-operator row
     const openshiftRow = screen.getByRole('row', {
       name: /openshift-etcd-operator - namespace v1 violations view report require-labels: validation error: the label `owner` is required. rule require-labels failed at path \/metadata\/labels\/owner\//i,
     })
     const violationPolicyReportLink = within(openshiftRow).getByRole('link', { name: 'View report' })
     expect(violationPolicyReportLink.getAttribute('href')).toEqual(
-      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=6cdec79f-980f-4947-95ab-3ce9789b270f`
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=6cdec79f-980f-4947-95ab-3ce9789b270f&_hubClusterResource=true`
     )
     screen.getByRole('link', {
       name: /openshift-etcd-operator/i,
@@ -1551,7 +1635,7 @@ describe('Policy Template Details Page', () => {
     })
     const passingPolicyReportLink = within(passingRow).getByRole('link', { name: 'View report' })
     expect(passingPolicyReportLink.getAttribute('href')).toEqual(
-      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6`
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=ClusterPolicyReport&apiversion=wgpolicyk8s.io%2Fv1alpha2&name=b56b0432-75f8-4440-ac53-86a993c3c2f6&_hubClusterResource=true`
     )
 
     // Check violation badge next to title
@@ -1752,7 +1836,7 @@ describe('Policy Template Details Page', () => {
 
     const name = screen.getByRole('link', { name: 'nginx-pod-a' })
     expect(name.getAttribute('href')).toEqual(
-      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Pod&apiversion=v1&name=nginx-pod-a&namespace=default`
+      `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Pod&apiversion=v1&name=nginx-pod-a&namespace=default&_hubClusterResource=true`
     )
   })
 })
