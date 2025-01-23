@@ -5,6 +5,7 @@ import { FormGroup, Radio } from '@patternfly/react-core'
 import { AcmForm } from '../../../../../../ui-components'
 import { css } from '@emotion/css'
 import { TFunction } from 'i18next'
+import { FormEvent } from 'react'
 
 const formWrapper = css({
   paddingBottom: '25px',
@@ -14,7 +15,10 @@ const formWrapper = css({
 })
 
 type FormControl = {
-  active: any
+  active: {
+    controllerAvailabilityPolicy: 'HighlyAvailable' | 'SingleReplica'
+    infrastructureAvailabilityPolicy: 'HighlyAvailable' | 'SingleReplica'
+  }
 }
 
 type AvailabilityOptionsFormProps = {
@@ -22,16 +26,16 @@ type AvailabilityOptionsFormProps = {
   handleChange: (control: FormControl) => void
 }
 
-const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: any) => {
-  const { control, handleChange } = props
+const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = ({ control, handleChange }) => {
   const { t } = useTranslation()
 
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
+  const handleRadioChange = (event: FormEvent<HTMLInputElement>) => {
+    const target = event.target as HTMLInputElement
+    const { name, value } = target
 
     control.active = {
       ...control.active,
-      [name]: value
+      [name]: value,
     }
     handleChange(control)
   }
