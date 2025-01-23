@@ -1,58 +1,61 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../../../../../NavigationPath'
-
+import { fireEvent, render, screen } from '@testing-library/react'
 import AvailabilityOptionsForm from './AvailabilityOptionsForm'
-import { waitForText } from '../../../../../../lib/test-util'
-import userEvent from '@testing-library/user-event'
 
-describe('Availability Options Form', () => {
-  const handleChange = jest.fn()
-  const activeControl = {
-    controller: 'HighlyAvailable',
-    infra: 'HighlyAvailable',
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}))
+
+describe('AvailabilityOptionsForm', () => {
+  const mockHandleChange = jest.fn()
+  const defaultProps = {
+    control: {
+      active: {
+        controllerAvailabilityPolicy: 'HighlyAvailable' as const,
+        infrastructureAvailabilityPolicy: 'HighlyAvailable' as const,
+      },
+    },
+    handleChange: mockHandleChange,
   }
 
-  const Component = () => {
-    return (
-      <RecoilRoot>
-        <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
-          <Routes>
-            <Route
-              path={NavigationPath.createCluster}
-              element={
-                <AvailabilityOptionsForm
-                  control={{
-                    active: activeControl,
-                  }}
-                  handleChange={handleChange}
-                />
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
-    )
-  }
+  it('Controller availability policy should have HighlyAvailable checked by default', () => {
+    render(<AvailabilityOptionsForm {...defaultProps} />)
+    const haRadio = screen.getByTestId('controller-ha')
+    expect(haRadio).toBeChecked()
+  })
 
-  test('renders with highly available selected by default', async () => {
-    render(<Component />)
-    await waitForText('Controller availability policy')
+  it('Controller availability policy should allow switching to SingleReplica', () => {
+    render(<AvailabilityOptionsForm {...defaultProps} />)
 
-    const controllerRadioHA = screen.getByTestId('controller-ha')
-    const infraRadioHA = screen.getByTestId('infra-ha')
-    const controllerRadioSingle = screen.getByTestId('controller-single')
-    const infraRadioSingle = screen.getByTestId('infra-single')
+    const singleRadio = screen.getByTestId('controller-single')
+    fireEvent.click(singleRadio)
 
-    expect(controllerRadioHA).toHaveProperty('checked', true)
-    expect(infraRadioHA).toHaveProperty('checked', true)
+    expect(mockHandleChange).toHaveBeenCalledWith({
+      active: {
+        ...defaultProps.control.active,
+        controllerAvailabilityPolicy: 'SingleReplica',
+      },
+    })
+  })
 
-    userEvent.click(controllerRadioSingle)
-    userEvent.click(infraRadioSingle)
+  it('Infrastructure availability policy should have HighlyAvailable checked by default', () => {
+    render(<AvailabilityOptionsForm {...defaultProps} />)
+    const haRadio = screen.getByTestId('infra-ha')
+    expect(haRadio).toBeChecked()
+  })
 
-    expect(controllerRadioSingle).toHaveProperty('checked', true)
-    expect(infraRadioSingle).toHaveProperty('checked', true)
+  it('Infrastructure availability policy should allow switching to SingleReplica', () => {
+    render(<AvailabilityOptionsForm {...defaultProps} />)
+    const singleRadio = screen.getByTestId('infra-single')
+    fireEvent.click(singleRadio)
+
+    expect(mockHandleChange).toHaveBeenCalledWith({
+      active: {
+        ...defaultProps.control.active,
+        infrastructureAvailabilityPolicy: 'SingleReplica',
+      },
+    })
   })
 })
