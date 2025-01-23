@@ -134,6 +134,11 @@ export const isGlobalHubState = atom<boolean>({
   default: false,
 })
 
+export const hubClusterNameState = atom<string>({
+  key: 'hubClusterName',
+  default: 'local-cluster',
+})
+
 export interface Settings {
   LOG_LEVEL?: string
   SAVED_SEARCH_LIMIT?: string
@@ -159,6 +164,7 @@ export interface WatchEvent {
       name: string
       namespace: string
       resourceVersion: string
+      labels: Record<string, string>
     }
   }
 }

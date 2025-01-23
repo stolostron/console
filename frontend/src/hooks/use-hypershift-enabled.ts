@@ -5,10 +5,11 @@ import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
 
 export const useIsHypershiftEnabled = () => {
   const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
-  const { managedClusterAddonsState, multiClusterEnginesState } = useSharedAtoms()
+  const { managedClusterAddonsState, multiClusterEnginesState, hubClusterNameState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
   const [multiClusterEngine] = useRecoilValue(multiClusterEnginesState)
-  const hypershiftAddon = (managedClusterAddOns?.['local-cluster'] || []).find(
+  const [hubClusterName] = useRecoilValue(hubClusterNameState)
+  const hypershiftAddon = (managedClusterAddOns?.[hubClusterName] || []).find(
     (mca) => mca.metadata.name === 'hypershift-addon'
   )
   useEffect(() => {

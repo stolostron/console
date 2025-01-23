@@ -55,6 +55,7 @@ import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateClu
 import { CredentialsType } from './CredentialsType'
 import { useProjects } from '../../hooks/useProjects'
 import schema from './schema.json'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -145,6 +146,8 @@ export function CredentialsForm(
     API_TOKEN = 'offline-token',
     SERVICE_ACCOUNT = 'service-account',
   }
+  const { hubClusterNameState } = useSharedAtoms()
+  const hubClusterName = useRecoilValue(hubClusterNameState)
 
   const handleAuthMethodChange = (value: OCMAuthMethod) => {
     setAuthMethod(value)
@@ -329,8 +332,8 @@ export function CredentialsForm(
 
   // AWS S3 bucket
   const s3values = useMemo(
-    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
-    []
+    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: hubClusterName }),
+    [hubClusterName]
   )
 
   const { cancelForm } = useContext(LostChangesContext)

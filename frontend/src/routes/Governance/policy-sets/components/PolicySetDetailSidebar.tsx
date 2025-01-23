@@ -102,13 +102,16 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     placementDecisionsState,
     placementRulesState,
     placementsState,
+    hubClusterNameState,
   } = useSharedAtoms()
+
   const managedClusters = useRecoilValue(managedClustersState)
   const policies = useAddRemediationPolicies()
   const placements = useRecoilValue(placementsState)
   const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
+  const hubClusterName = useRecoilValue(hubClusterNameState)
   const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
   const selectType = (type: 'Clusters' | 'Policies') => {
     setType(type)
@@ -187,7 +190,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 'name',
                 'vendor',
                 'managed-by',
-                'local-cluster',
+                hubClusterName,
                 'openshiftVersion',
               ].filter((label) => {
                 return labelKeys.includes(label)
@@ -220,7 +223,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         },
       },
     ],
-    [clusterPolicyViolationsColumn, managedClusters, t]
+    [clusterPolicyViolationsColumn, hubClusterName, managedClusters, t]
   )
 
   const decision = useMemo(

@@ -100,6 +100,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     secretsState,
     settingsState,
     subscriptionOperatorsState,
+    hubClusterNameState,
   } = useSharedAtoms()
   const {
     ansibleCredentialsValue,
@@ -114,6 +115,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const templateEditorRef = useRef<null>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
+  const hubClusterName = useRecoilValue(hubClusterNameState)
 
   const { projects } = useProjects()
 
@@ -207,7 +209,10 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange])
 
-  const localCluster = useMemo(() => allClusters.find((cls) => cls.name === 'local-cluster'), [allClusters])
+  const localCluster = useMemo(
+    () => allClusters.find((cls) => cls.name === hubClusterName),
+    [allClusters, hubClusterName]
+  )
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()

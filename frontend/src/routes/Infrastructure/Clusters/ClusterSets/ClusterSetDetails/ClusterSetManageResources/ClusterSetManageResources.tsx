@@ -78,10 +78,11 @@ export function ClusterSetManageResourcesContent() {
   clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
 
   const clusters = useAllClusters()
-  const { clusterCuratorsState, managedClusterSetsState, hostedClustersState } = useSharedAtoms()
+  const { clusterCuratorsState, managedClusterSetsState, hostedClustersState, hubClusterNameState } = useSharedAtoms()
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
+  const hubClusterName = useRecoilValue(hubClusterNameState)
 
   const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
   const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
@@ -114,7 +115,7 @@ export function ClusterSetManageResourcesContent() {
   const clusterNodesColumn = useClusterNodesColumn()
   // collapse all cluster labels when there are lots clusters
   // so that each cluster row doesn't take up multiple rows
-  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10)
+  const clusterLabelsColumn = useClusterLabelsColumn(hubClusterName, clusters.length > 10)
 
   const columns = useMemo<IAcmTableColumn<Cluster>[]>(
     () => [

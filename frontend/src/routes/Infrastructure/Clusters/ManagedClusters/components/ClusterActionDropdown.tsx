@@ -61,14 +61,21 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
-  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState, clusterImageSetsState } =
-    useSharedAtoms()
+  const {
+    hostedClustersState,
+    infraEnvironmentsState,
+    agentMachinesState,
+    agentsState,
+    clusterImageSetsState,
+    hubClusterNameState,
+  } = useSharedAtoms()
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const hubClusterName = useRecoilValue(hubClusterNameState)
 
   const { cluster } = props
 
@@ -463,6 +470,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
                 ) as HostedClusterK8sResource,
                 t,
+                hubClusterName,
                 toastContext,
                 isACMAvailable
               ) as IRequestResult
@@ -502,18 +510,19 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
       ].filter((action) => clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable)),
     [
-      cluster,
-      destroyRbac,
-      navigate,
-      isSearchAvailable,
-      modalColumns,
       t,
-      infraEnvs,
-      hostedClusters,
-      toastContext,
+      cluster,
+      isSearchAvailable,
       importTemplate,
-      isHypershiftUpdateAvailable,
+      destroyRbac,
+      modalColumns,
+      infraEnvs,
+      navigate,
+      hostedClusters,
+      hubClusterName,
+      toastContext,
       isACMAvailable,
+      isHypershiftUpdateAvailable,
     ]
   )
 

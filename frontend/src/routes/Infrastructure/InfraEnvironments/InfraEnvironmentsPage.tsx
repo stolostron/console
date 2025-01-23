@@ -281,8 +281,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       name: infraEnv.metadata?.name!,
     })
 
-  const { clusterVersionState } = useSharedAtoms()
+  const { clusterVersionState, hubClusterNameState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)
+  const hubClusterName = useRecoilValue(hubClusterNameState)
 
   const [modalProps, setModalProps] = useState<BulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
     open: false,
@@ -483,7 +484,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                         'name',
                         'vendor',
                         'managed-by',
-                        'local-cluster',
+                        hubClusterName,
                       ].filter((label) => labelKeys.includes(label)) ?? []
                     return (
                       <AcmLabels
