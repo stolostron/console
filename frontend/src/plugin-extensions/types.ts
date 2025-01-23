@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ResolvedExtension, ResourceListPage } from '@openshift-console/dynamic-plugin-sdk'
+import { ResolvedExtension } from '@openshift-console/dynamic-plugin-sdk'
 import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 import { OverviewTab } from './extensions'
 import { SearchDetails } from './extensions/SearchDetails'
 import { KubevirtPluginContextExtension } from './extensions/KubevirtContext'
+import { ResourceList } from './extensions/ResourceList'
 
 export type AcmExtension = Partial<{
   applicationAction: ApplicationActionProps[]
@@ -11,5 +12,5 @@ export type AcmExtension = Partial<{
   overviewTab: ResolvedExtension<OverviewTab>[]
   searchDetails: ResolvedExtension<SearchDetails>[]
   kubevirtContext: ResolvedExtension<KubevirtPluginContextExtension>[]
-  virtualMachinesList: ResolvedExtension<ResourceListPage>
+  virtualMachinesList: ResolvedExtension<ResourceList>
 }>

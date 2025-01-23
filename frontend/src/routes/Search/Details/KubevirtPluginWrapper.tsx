@@ -1,39 +1,112 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React, { useContext, createContext } from 'react'
-import { PluginContext } from '../../../lib/PluginContext'
-import { KubevirtPluginData } from '../../../plugin-extensions/extensions/KubevirtContext'
-import { ResourceSearchLink } from './DetailsOverviewPage'
-import { K8sGroupVersionKind, K8sModel, K8sResourceCommon, ResourceIcon } from '@openshift-console/dynamic-plugin-sdk'
-import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { useContext, useMemo, PropsWithChildren } from 'react'
+import {
+  K8sModel,
+  K8sResourceCommon,
+  ResourceIcon,
+  ResourceLinkProps,
+  WatchK8sResource,
+} from '@openshift-console/dynamic-plugin-sdk'
+import * as DefaultDynamicPluginSDK from '@openshift-console/dynamic-plugin-sdk'
+import { useIsLocalHub, useLocalHubName } from '../../../hooks/use-local-hub'
 import { NavigationPath } from '../../../NavigationPath'
-import { generatePath } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { GetUrlSearchParam } from '../searchDefinitions'
+import { searchClient } from '../search-sdk/search-client'
+import { convertStringToQuery } from '../search-helper'
+import { useSearchResultItemsQuery } from '../search-sdk/search-sdk'
+import { ClusterScope, ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
+import { useKubevirtPluginContext } from '../../../plugin-extensions/hooks/useKubevirtPluginContext'
+import classNames from 'classnames'
 
-// Define a default context
-const DefaultKubevirtPluginContext = createContext<KubevirtPluginData>({} as KubevirtPluginData)
+const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
+  const {
+    className,
+    displayName,
+    inline = false,
+    kind,
+    groupVersionKind,
+    linkTo = true,
+    name,
+    nameSuffix,
+    namespace,
+    hideIcon,
+    title,
+    children,
+    dataTest,
+    onClick,
+    truncate,
+  } = props
+  const localCluster = useLocalHubName() ?? 'local-cluster'
+  const { cluster = localCluster, localHubOverride } = useContext(ClusterScopeContext)
 
-const getResourceLinkOverride = (clusterName: string) => {
-  const ResourceLink = (props: { name?: string; groupVersionKind?: K8sGroupVersionKind }) => {
-    const { name = '', groupVersionKind } = props
-    if (!groupVersionKind) {
-      return null
-    }
-    const { version, kind } = groupVersionKind
-    return (
-      <span className="co-resource-item">
-        <ResourceIcon kind={groupVersionKind.kind} />
-        <ResourceSearchLink
-          className="co-resource-item__resource-name"
-          cluster={clusterName}
-          apiversion={version}
-          kind={kind}
-          name={name}
-        />{' '}
-      </span>
-    )
+  if (useIsLocalHub(cluster) && !localHubOverride) {
+    const { ResourceLink: ResourceLinkDefault } = DefaultDynamicPluginSDK
+    return <ResourceLinkDefault {...props} />
   }
 
-  return ResourceLink
+  if (!kind && !groupVersionKind) {
+    return null
+  }
+
+  let apigroup, apiversion, apikind
+  if (groupVersionKind) {
+    ;({ group: apigroup, version: apiversion, kind: apikind } = groupVersionKind)
+  } else if (kind) {
+    const parts = kind.split('~')
+    apikind = parts.pop()
+    apiversion = parts.pop() ?? 'v1'
+    apigroup = parts.pop() ?? ''
+    if (apigroup === 'core') {
+      apigroup = ''
+    }
+  }
+  let path = undefined
+  if (linkTo) {
+    if (apigroup === 'cluster.open-cluster-management.io' && apikind === 'ManagedCluster') {
+      path = generatePath(NavigationPath.clusterDetails, { namespace: name ?? null, name: name ?? null })
+    } else {
+      path = `${NavigationPath.resources}${GetUrlSearchParam({
+        cluster,
+        kind: apikind,
+        apigroup,
+        apiversion,
+        name,
+        namespace,
+      })}`
+    }
+  }
+
+  const value = displayName ? displayName : name
+  const classes = classNames('co-resource-item', className, {
+    'co-resource-item--inline': inline,
+    'co-resource-item--truncate': truncate,
+  })
+
+  return (
+    <span className={classes}>
+      {!hideIcon && <ResourceIcon kind={kind} groupVersionKind={groupVersionKind} />}
+      {path ? (
+        <Link
+          to={path}
+          title={title}
+          className="co-resource-item__resource-name"
+          data-test-id={value}
+          data-test={dataTest ?? value}
+          onClick={onClick}
+        >
+          {value}
+          {nameSuffix}
+        </Link>
+      ) : (
+        <span className="co-resource-item__resource-name" data-test-id={value} data-test={dataTest ?? value}>
+          {value}
+          {nameSuffix}
+        </span>
+      )}
+      {children}
+    </span>
+  )
 }
 
 const ALL_NAMESPACES_SESSION_KEY = '#ALL_NS#'
@@ -83,25 +156,98 @@ export const getResourceUrl = (urlProps: ResourceUrlProps): string | null => {
   return `/k8s/${namespaced ? namespaceUrl : 'cluster'}/${ref}/${name}`
 }
 
-const KubevirtPluginWrapper = (props: { children: React.ReactNode; clusterName?: string }) => {
-  const { children, clusterName } = props
+const useMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
+  console.log(`USE-MULTICLUSTER-SEARCH-WATCH ${JSON.stringify(watchOptions)}`)
+  const { groupVersionKind, limit, namespace, namespaced } = watchOptions
+  const { group, version, kind } = groupVersionKind ?? {}
+  const {
+    data: result,
+    loading,
+    error,
+  } = useSearchResultItemsQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        convertStringToQuery(
+          `apigroup:${group} apiversion:${version} kind:${kind}${namespaced && namespace ? ` ${namespace}` : ''}`,
+          limit ?? -1
+        ),
+      ],
+    },
+  })
+  const data = useMemo(
+    () =>
+      result?.searchResult?.[0]?.items?.map((item) => {
+        const resource: any = {
+          cluster: item.cluster,
+          apiVersion: `${item.apigroup ? `${item.apigroup}/` : ''}${item.apiversion}`,
+          kind: item.kind,
+          metadata: {
+            creationTimestamp: item.created,
+            name: item.name,
+            namespace: item.namespace,
+          },
+        }
+        // Reverse the flattening of specific resources by the search-collector
+        // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
+        switch (kind) {
+          case 'VirtualMachine':
+            resource.spec = {
+              running: item._specRunning,
+              runStrategy: item._specRunStrategy,
+              template: { spec: { domain: { cpu: { cores: item.cpu }, memory: { guest: item.memory } } } },
+            }
+            resource.status = { conditions: [{ type: 'Ready', status: item.ready }], printableStatus: item.status }
+            break
+          case 'VirtualMachineInstance':
+            resource.status = {
+              conditions: [
+                { type: 'LiveMigratable', status: item.liveMigratable },
+                { type: 'Ready', status: item.ready },
+              ],
+              interfaces: [{ ipAddress: item.ipaddress, name: 'default' }],
+              nodeName: item.node,
+              phase: item.phase,
+            }
+        }
+        return resource
+      }),
+    [kind, result]
+  )
+  return [data, !loading, error]
+}
+
+const KubevirtPluginWrapper = ({
+  children,
+  currentCluster,
+  currentNamespace,
+}: PropsWithChildren<{
+  currentCluster?: string
+  currentNamespace?: string
+}>) => {
   const localHubName = useLocalHubName()
+  const defaultClusterName = currentCluster ?? localHubName ?? 'local-cluster'
 
-  const isLocalCluster = localHubName === clusterName
-  const defaultClusterName = clusterName ?? localHubName ?? 'local-cluster'
+  const KubevirtPluginContext = useKubevirtPluginContext()
 
-  const { acmExtensions } = useContext(PluginContext)
-  const KubevirtPluginContext = acmExtensions?.kubevirtContext?.[0].properties.context ?? DefaultKubevirtPluginContext
-  const { dynamicPluginSDK, ...other } = useContext(KubevirtPluginContext)
+  const contextValue = useMemo(
+    () => ({
+      clusterScope: { ClusterScope },
+      currentCluster,
+      currentNamespace,
+      dynamicPluginSDK: { ...DefaultDynamicPluginSDK, ResourceLink },
+      getResourceUrl,
+      supportsMulticluster: true,
+      useMulticlusterSearchWatch,
+    }),
+    [currentCluster, currentNamespace]
+  )
 
-  if (isLocalCluster) {
-    return <>{children}</>
-  }
-
-  const ResourceLink = getResourceLinkOverride(defaultClusterName)
-  const contextOverride = { dynamicPluginSDK: { ...dynamicPluginSDK, ResourceLink }, ...other, getResourceUrl }
-
-  return <KubevirtPluginContext.Provider value={contextOverride}>{children}</KubevirtPluginContext.Provider>
+  return (
+    <KubevirtPluginContext.Provider value={contextValue}>
+      <ClusterScope cluster={defaultClusterName}>{children}</ClusterScope>
+    </KubevirtPluginContext.Provider>
+  )
 }
 
 export default KubevirtPluginWrapper

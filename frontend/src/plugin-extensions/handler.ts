@@ -5,6 +5,7 @@ import { ApplicationActionProps, ApplicationListColumnProps } from './properties
 import { AcmExtension } from './types'
 import { isSearchDetails } from './extensions/SearchDetails'
 import { isKubevirtPluginContext } from './extensions/KubevirtContext'
+import { isResourceList } from './extensions/ResourceList'
 
 // Type guards
 export function useAcmExtension() {
@@ -43,9 +44,9 @@ export function useAcmExtension() {
   }
 
   // Resolve VirtualMachines list page
-  const [resourceListPages, resolvedResourceListPages] = useResolvedExtensions(isResourceListPage)
-  if (resolvedResourceListPages) {
-    acmExtension.virtualMachinesList = resourceListPages.find((rl) => {
+  const [resourceLists, resolvedResourceLists] = useResolvedExtensions(isResourceList)
+  if (resolvedResourceLists) {
+    acmExtension.virtualMachinesList = resourceLists.find((rl) => {
       const { group, version, kind } = rl.properties.model
       return group === 'kubevirt.io' && version === 'v1' && kind == 'VirtualMachine'
     })

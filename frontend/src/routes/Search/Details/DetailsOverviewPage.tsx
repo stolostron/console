@@ -387,7 +387,7 @@ export default function DetailsOverviewPage() {
 
   if (resource && !resourceLoading && !resourceError) {
     return resource.kind === 'VirtualMachine' && VirtualMachinesOverviewTab ? (
-      <KubevirtPluginWrapper clusterName={cluster}>
+      <KubevirtPluginWrapper currentCluster={cluster}>
         <VirtualMachinesOverviewTab obj={resource} />
       </KubevirtPluginWrapper>
     ) : (

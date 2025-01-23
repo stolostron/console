@@ -232,11 +232,11 @@ function VirtualMachineTable() {
         showColumManagement
       />
       {VirtualMachinesList && (
-        <KubevirtPluginWrapper>
+        <KubevirtPluginWrapper currentCluster={cluster} currentNamespace={namespace}>
           <VirtualMachinesList
-            namespace={namespace}
-            kind="kubevirt.io~v1~VirtualMachine"
-            // model={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
+          // namespace={namespace}
+          // kind="kubevirt.io~v1~VirtualMachine"
+          // model={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
           />
         </KubevirtPluginWrapper>
       )}

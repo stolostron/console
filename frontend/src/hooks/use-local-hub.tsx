@@ -8,5 +8,10 @@ export function useLocalHubManagedCluster() {
 }
 
 export function useLocalHubName() {
-  return useLocalHubManagedCluster()?.metadata.name
+  return useLocalHubManagedCluster()?.metadata.name ?? 'local-cluster'
+}
+
+export function useIsLocalHub(cluster: string) {
+  const localHubName = useLocalHubManagedCluster()?.metadata.name
+  return localHubName === cluster || (!localHubName && cluster === 'local-cluster')
 }

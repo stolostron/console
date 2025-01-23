@@ -1,13 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CodeRef, Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import * as OpenshiftDynamicPluginSDK from '@openshift-console/dynamic-plugin-sdk'
-import { Context } from 'react'
+import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { Context, FC } from 'react'
 import { getResourceUrl } from '../../routes/Search/Details/KubevirtPluginWrapper'
+import { ClusterScope } from '../ClusterScopeContext'
 
 /** Properties type */
 export type KubevirtPluginData = {
+  currentCluster?: string
+  currentNamespace?: string
   dynamicPluginSDK: typeof OpenshiftDynamicPluginSDK
   getResourceURL: typeof getResourceUrl
+  supportsMulticluster: boolean
+  useMulticlusterSearchWatch: <T>(watchOptions: WatchK8sResource) => [T | undefined, boolean, Error | undefined]
+  clusterScope: { ClusterScope: FC<ClusterScope>; withCluster: (cluster?: string) => typeof OpenshiftDynamicPluginSDK }
 }
 
 export type KubevirtPluginDataProps = {
