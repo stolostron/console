@@ -271,7 +271,7 @@ export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilt
 type TableFilterOptions = { option: TableFilterOption<string>; count: number }
 
 // render filter options with highlights for searched filter text
-// if option is a label like 'key=value' add a toggle button that toggles between = and !=
+// if option is a label like 'key=value', add a toggle button that toggles between = and !=
 function renderFilterSelectOption(
   filterId: string,
   option: TableFilterOptions,
