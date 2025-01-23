@@ -6,7 +6,7 @@ import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
-import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
+import { managedClusterAddonsState, multiClusterEnginesState, hubClusterNameState } from '../../../../../atoms'
 import {
   mockManagedClusterAddOn,
   mockMultiClusterEngine,
@@ -22,6 +22,7 @@ describe('CreateAWSControlPlane', () => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
+          snapshot.set(hubClusterNameState, 'local-cluster')
           snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
           snapshot.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
