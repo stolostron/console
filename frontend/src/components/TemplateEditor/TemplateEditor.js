@@ -356,7 +356,7 @@ export default class TemplateEditor extends React.Component {
               </DrawerPanelContent>
             }
           >
-            <DrawerContentBody>
+            <DrawerContentBody style={{ height: '100%' }}>
               <PageSection isFilled type="wizard" style={{ height: '100%' }}>
                 {this.renderControls(isLoaded)}
               </PageSection>

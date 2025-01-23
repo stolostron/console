@@ -146,6 +146,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           : 'ClusterDeployment[0].metadata.annotations["agentBareMetal-cpuArchitecture"]',
       },
       pullSecret: {},
+      controlPlaneCount: { path: 'AgentClusterInstall[0].spec.provisionRequirements.controlPlaneAgents' },
     }),
     [control.additionalProps?.aiFlow]
   )

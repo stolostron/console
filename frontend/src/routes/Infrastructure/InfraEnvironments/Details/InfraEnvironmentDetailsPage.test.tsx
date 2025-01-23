@@ -5,7 +5,7 @@ import set from 'lodash/set'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
-import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockPatch } from '../../../../lib/nock-util'
 import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { IResource } from '../../../../resources/resource'
@@ -64,6 +64,34 @@ describe('Infrastructure Environment Details page', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can render', async () => {
     const initialNocks = [nockGet(mockPullSecret as IResource)]
+    const generateNocks = [
+      nockPatch(
+        {
+          apiVersion: 'agent-install.openshift.io/v1beta1',
+          kind: 'infraenvs',
+          metadata: {
+            namespace: 'infra-env-name',
+            name: 'infra-env-name',
+          },
+        } as IResource,
+        [
+          {
+            op: 'add',
+            path: '/spec/imageType',
+            value: 'minimal-iso',
+          },
+        ]
+      ),
+      nockGet({
+        apiVersion: 'agent-install.openshift.io/v1beta1',
+        kind: 'infraenvs',
+        metadata: {
+          namespace: 'infra-env-name',
+          name: 'infra-env-name',
+        },
+      }),
+    ]
+
     render(<Component />)
 
     await waitForText('ai:Infrastructure environment details')
@@ -75,13 +103,12 @@ describe('Infrastructure Environment Details page', () => {
     // Open discovery ISO dialog
     await clickHostAction('ai:With Discovery ISO')
 
-    // Discovery ISO download state
-    await waitForText('ai:Discovery ISO is ready to be downloaded')
-    await waitForText('ai:Download Discovery ISO')
+    // // Discovery ISO download state
+    await waitForText('ai:Generate Discovery ISO')
+    await clickByText('ai:Generate Discovery ISO')
 
-    // note: the input-element ID is auto-generated
-    // await waitForTestId('text-input-1')
-    // await waitFor(() => expect(getByTestId('text-input-1')).toHaveValue(mockInfraEnv1.status.isoDownloadURL))
+    await waitForNocks(generateNocks)
+    await waitForText('ai:Download Discovery ISO')
 
     await clickByText('ai:Close')
     await waitForNotText('ai:Download Discovery ISO')

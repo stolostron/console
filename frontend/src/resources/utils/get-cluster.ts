@@ -1543,7 +1543,9 @@ export function getIsHostedCluster(managedCluster?: ManagedCluster) {
 export function getIsRegionalHubCluster(managedCluster?: ManagedCluster) {
   if (
     managedCluster?.metadata.labels &&
-    managedCluster?.metadata.labels?.['feature.open-cluster-management.io/addon-multicluster-global-hub-controller']
+    managedCluster?.metadata.labels?.['feature.open-cluster-management.io/addon-multicluster-global-hub-controller'] &&
+    managedCluster?.metadata.labels?.['feature.open-cluster-management.io/addon-multicluster-global-hub-controller'] ===
+      'available'
   ) {
     return true
   } else {

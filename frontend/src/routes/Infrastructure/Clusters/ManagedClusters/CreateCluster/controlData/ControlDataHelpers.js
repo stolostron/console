@@ -887,18 +887,18 @@ const resetMultitextControlData = (ctrl) => {
   ctrl.controlData = [createNewMultiTextControlData(ctrl)]
 }
 
-const updateMultitextControlData = (ctrl, ingressArray) => {
+const updateMultitextControlData = (ctrl, entriesArray) => {
   const controlDataLength = ctrl.controlData.length
-  const ingressArrayLength = ingressArray.length
+  const entriesArrayLength = entriesArray.length
 
-  if (ingressArrayLength > controlDataLength) {
-    for (let i = controlDataLength; i < ingressArrayLength; i++) {
+  if (entriesArrayLength > controlDataLength) {
+    for (let i = controlDataLength; i < entriesArrayLength; i++) {
       ctrl.controlData.push(createNewMultiTextControlData(ctrl))
     }
-  } else if (ingressArrayLength === 0) {
+  } else if (entriesArrayLength === 0) {
     ctrl.controlData = [createNewMultiTextControlData(ctrl)]
-  } else if (ingressArrayLength < controlDataLength) {
-    ctrl.controlData.splice(0, controlDataLength - ingressArrayLength)
+  } else if (entriesArrayLength < controlDataLength) {
+    ctrl.controlData.splice(0, controlDataLength - entriesArrayLength)
   }
 }
 
@@ -922,5 +922,31 @@ export const ingressVIPsReverse = (ctrl, path) => {
   } else if (ctrl.controlData.length > 1 && ingressVIPsVal) {
     resetMultitextControlData(ctrl)
     ctrl.active.multitextEntries = ['']
+  }
+}
+
+export const updateDefaultPodNetwork = (_nameControl, globalControl) => {
+  const nodepools = globalControl.find(({ id: idCtrl }) => idCtrl === 'nodepools')
+  if (nodepools) {
+    const activeNodePools = nodepools?.active || []
+
+    activeNodePools.forEach((nodepool) => {
+      const additionalNetworks = nodepool.find(({ id }) => id === 'additionalNetworks')
+      const defaultPodNetwork = nodepool.find(({ id }) => id === 'defaultPodNetwork')
+
+      if (additionalNetworks && defaultPodNetwork) {
+        // check if there are any networks
+        const hasNetworks = additionalNetworks.active?.multitextEntries?.some((entry) => entry.trim() !== '') || false
+
+        if (hasNetworks) {
+          // if networks exist, enable checkbox
+          defaultPodNetwork.disabled = false
+        } else {
+          // if no networks, force it to be checked and disabled
+          defaultPodNetwork.disabled = true
+          defaultPodNetwork.active = true
+        }
+      }
+    })
   }
 }

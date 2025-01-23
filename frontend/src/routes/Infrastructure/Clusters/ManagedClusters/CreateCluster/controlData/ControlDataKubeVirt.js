@@ -19,6 +19,7 @@ import {
   onImageChange,
   reverseImageSet,
   reverseStorageClass,
+  updateDefaultPodNetwork,
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 
@@ -276,6 +277,47 @@ export const getControlDataKubeVirt = (
           type: 'combobox',
           placeholder: t('Select a volume mode'),
           available: ['Block', 'Filesystem'],
+        },
+        ///////////////////////////// Node Pools Networking options section /////////////////////////////
+        {
+          id: 'networkingOptionsSection',
+          type: 'section',
+          collapsable: true,
+          collapsed: true,
+          title: t('Networking options'),
+        },
+        {
+          id: 'networkInfo',
+          type: 'title',
+          info: t('Configure networking options for your nodepool'),
+        },
+        {
+          id: 'additionalNetworks',
+          type: 'multitext',
+          name: t('Additional networks'),
+          tooltip: t('tooltip.creation.nodepool.additional.network'),
+          placeholder: t('Enter the additional network in the format <namespace>/<name>'),
+          addButtonText: t('Add additional network'),
+          active: { multitextEntries: [] },
+          controlData: [
+            {
+              id: 'additionalNetworks',
+              type: 'multitextMember',
+              active: '',
+            },
+          ],
+          onSelect: updateDefaultPodNetwork,
+        },
+        {
+          name: t('Attach default pod network'),
+          tooltip: t('tooltip.creation.ocp.node.pool.default.pod.network'),
+          id: 'defaultPodNetwork',
+          type: 'checkbox',
+          active: true,
+          disabled: true,
+          validation: {
+            required: false,
+          },
         },
       ],
     },
