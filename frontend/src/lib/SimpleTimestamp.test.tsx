@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect'
 import SimpleTimestamp from './SimpleTimestamp'
 
 describe('SimpleTimestamp', () => {
-  const timestamp = '2025-01-03T18:53:59.000Z'  // This is in UTC (6:53 PM UTC)
+  const timestamp = '2025-01-03T18:53:59.000Z'
 
   test('renders the component with a valid timestamp', () => {
     render(<SimpleTimestamp timestamp={timestamp} />)
@@ -19,7 +19,7 @@ describe('SimpleTimestamp', () => {
   })
 
   test('renders the component with a numeric timestamp', () => {
-    const numericTimestamp = new Date(timestamp).getTime() // Equivalent to '2025-01-03T18:53:59Z'
+    const numericTimestamp = new Date(timestamp).getTime()
     render(<SimpleTimestamp timestamp={numericTimestamp} />)
     expect(screen.getByText(/Jan 3, 2025/)).toBeInTheDocument()
   })
@@ -56,5 +56,4 @@ describe('SimpleTimestamp', () => {
     render(<SimpleTimestamp timestamp={relativeTimestamp} relative />)
     expect(screen.getByText('3 days ago')).toBeInTheDocument()
   })
-
 })
