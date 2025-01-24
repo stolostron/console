@@ -12,7 +12,7 @@ import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { ITransformedResource } from '../lib/pagination'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
-import { getServiceAccountToken } from '../lib/serviceAccountToken'
+import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 
@@ -281,7 +281,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
     const request = got
       .get(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
-        https: { rejectUnauthorized: false },
+        https: { certificateAuthority: getCACertificate() },
       })
       .json<{
         metadata: { _continue?: string; continue?: string; resourceVersion: string }
@@ -360,7 +360,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
       const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
       const request = got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
-        https: { rejectUnauthorized: false },
+        https: { certificateAuthority: getCACertificate() },
         timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
       })
       // TODO use abort signal when on node 16

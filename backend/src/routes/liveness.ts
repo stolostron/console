@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
 import { FetchError } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
@@ -29,14 +28,11 @@ export function setDead(): void {
   }
 }
 
-const agent = new Agent({ rejectUnauthorized: false })
-
 export async function apiServerPing(): Promise<void> {
   const msg = 'kube api server ping failed'
   try {
     const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
       headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${getServiceAccountToken()}` },
-      agent,
     })
     if (response.status !== 200) {
       const { status } = response
