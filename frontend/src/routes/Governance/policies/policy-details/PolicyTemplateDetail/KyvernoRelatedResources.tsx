@@ -6,6 +6,10 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   EmptyState,
+  Toolbar,
+  ToolbarContent,
+  ToolbarGroup,
+  ToolbarItem,
 } from '@patternfly/react-core'
 import { FunctionComponent, useEffect, useMemo, useState } from 'react'
 import { AcmEmptyState, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
@@ -99,26 +103,32 @@ export const KyvernoRelatedResources: FunctionComponent<IKyvernoRelatedResources
 
   return (
     <>
+      <Toolbar inset={{ default: 'insetMd', xl: 'insetLg' }}>
+        <ToolbarContent>
+          <ToolbarGroup align={{ default: 'alignLeft' }}>
+            <ToolbarItem>
+              <ToggleGroup aria-label="choose kyverno resource panel">
+                {Object.keys(classifiedRelatedObjects)
+                  .sort((a: string, b: string) => {
+                    const order = Object.keys(kyvernoPolicyMenuLabels)
+                    return order.indexOf(a) - order.indexOf(b)
+                  })
+                  .filter((policyTypeId: string) => kyvernoPolicyMenuLabels[policyTypeId])
+                  .map((policyTypeId: string) => (
+                    <ToggleGroupItem
+                      key={policyTypeId}
+                      text={kyvernoPolicyMenuLabels[policyTypeId]}
+                      buttonId={policyTypeId}
+                      isSelected={selectedId === policyTypeId}
+                      onChange={handleItemClick}
+                    />
+                  ))}
+              </ToggleGroup>
+            </ToolbarItem>
+          </ToolbarGroup>
+        </ToolbarContent>
+      </Toolbar>
       <AcmTable
-        extraToolbarControls={
-          <ToggleGroup aria-label="choose kyverno resource panel">
-            {Object.keys(classifiedRelatedObjects)
-              .sort((a: string, b: string) => {
-                const order = Object.keys(kyvernoPolicyMenuLabels)
-                return order.indexOf(a) - order.indexOf(b)
-              })
-              .filter((policyTypeId: string) => kyvernoPolicyMenuLabels[policyTypeId])
-              .map((policyTypeId: string) => (
-                <ToggleGroupItem
-                  key={policyTypeId}
-                  text={kyvernoPolicyMenuLabels[policyTypeId]}
-                  buttonId={policyTypeId}
-                  isSelected={selectedId === policyTypeId}
-                  onChange={handleItemClick}
-                />
-              ))}
-          </ToggleGroup>
-        }
         items={classifiedRelatedObjects[selectedId] ?? []}
         emptyState={
           <AcmEmptyState
