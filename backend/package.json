@@ -28,6 +28,7 @@
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
     "got": "^12.5.3",
+    "http2-proxy": "^5.0.53",
     "https-proxy-agent": "^7.0.4",
     "node-fetch": "2.6.7",
     "pino": "7.11.0",

@@ -120,7 +120,9 @@ EOF
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi
 
-CLUSTER_PROXY_ADDON_USER_ROUTE=https://$(oc get route cluster-proxy-addon-user -n $INSTALLATION_NAMESPACE_MCE -o="jsonpath={.status.ingress[0].host}")
+CLUSTER_PROXY_ADDON_USER_HOST=$(oc get route cluster-proxy-addon-user -n $INSTALLATION_NAMESPACE_MCE -o="jsonpath={.status.ingress[0].host}")
+echo CLUSTER_PROXY_ADDON_USER_HOST=$CLUSTER_PROXY_ADDON_USER_HOST >> ./backend/.env
+CLUSTER_PROXY_ADDON_USER_ROUTE=https://$CLUSTER_PROXY_ADDON_USER_HOST
 echo CLUSTER_PROXY_ADDON_USER_ROUTE=$CLUSTER_PROXY_ADDON_USER_ROUTE >> ./backend/.env
 
 # ACM Observability will need to be installed first to set this env variable. Instructions: https://github.com/stolostron/multicluster-observability-operator
