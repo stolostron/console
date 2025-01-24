@@ -30,6 +30,7 @@ import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 import { virtualMachineProxy } from './routes/virtualMachineProxy'
 import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
+import { managedClusterProxy } from './routes/managedClusterProxy'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -75,6 +76,7 @@ router.put('/virtualmachineinstances/*', virtualMachineProxy)
 router.post('/virtualmachinesnapshots', virtualMachineProxy)
 router.post('/virtualmachinerestores', virtualMachineProxy)
 router.get('/multiclusterhub/components', multiClusterHubComponents)
+router.all('/managedclusterproxy/*', managedClusterProxy)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
