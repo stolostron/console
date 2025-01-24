@@ -8,9 +8,7 @@ import { logger } from '../lib/logger'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
-import { getAuthenticatedToken } from '../lib/token'
-import { ResourceList } from '../resources/resource-list'
-import { Secret } from '../resources/secret'
+import { getAuthenticatedToken, getManagedClusterToken } from '../lib/token'
 import { canAccess } from './events'
 
 const {
@@ -60,17 +58,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
 
         if (hasAuth) {
           // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
-          const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
-          const managedClusterToken: string = await jsonRequest(secretPath, serviceAccountToken)
-            .then((response: ResourceList<Secret>) => {
-              const secret = response.items.find((secret) => secret.metadata.name === 'virtual-machine-actor')
-              const proxyToken = secret.data?.token ?? ''
-              return Buffer.from(proxyToken, 'base64').toString('ascii')
-            })
-            .catch((err: Error): undefined => {
-              logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
-              return undefined
-            })
+          const managedClusterToken: string = await getManagedClusterToken(body.managedCluster, serviceAccountToken)
 
           const mce = await getMultiClusterEngine()
           const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
