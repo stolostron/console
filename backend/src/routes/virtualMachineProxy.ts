@@ -6,9 +6,7 @@ import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getServiceAgent } from '../lib/agent'
-import { getAuthenticatedToken } from '../lib/token'
-import { ResourceList } from '../resources/resource-list'
-import { Secret } from '../resources/secret'
+import { getAuthenticatedToken, getManagedClusterToken } from '../lib/token'
 import { canAccess } from './events'
 
 const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
@@ -53,16 +51,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
         if (hasAuth) {
           // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
           const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
-          const managedClusterToken: string = await jsonRequest(secretPath, serviceAccountToken)
-            .then((response: ResourceList<Secret>) => {
-              const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
-              const proxyToken = secret.data?.token ?? ''
-              return Buffer.from(proxyToken, 'base64').toString('ascii')
-            })
-            .catch((err: Error): undefined => {
-              logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
-              return undefined
-            })
+          const managedClusterToken: string = await getManagedClusterToken(body.managedCluster, serviceAccountToken)
 
           // req.url is one of: /virtualmachines/<action> OR /virtualmachineinstances/<action>
           // the VM name is needed between the kind and action for the correct api url.

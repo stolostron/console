@@ -3,6 +3,10 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { parseCookies } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
 import { unauthorized } from './respond'
+import { logger } from '../lib/logger'
+import { ResourceList } from '../resources/resource-list'
+import { Secret } from '../resources/secret'
+import { jsonRequest } from './json-request'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
@@ -37,4 +41,18 @@ export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2S
     unauthorized(req, res)
   }
   throw new Error('Unauthenticated request')
+}
+
+export async function getManagedClusterToken(managedClusterName: string, serviceAccountToken: string) {
+  const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${managedClusterName}/secrets`
+  return jsonRequest(secretPath, serviceAccountToken)
+    .then((response: ResourceList<Secret>) => {
+      const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
+      const proxyToken = secret.data?.token ?? ''
+      return Buffer.from(proxyToken, 'base64').toString('ascii')
+    })
+    .catch((err: Error): undefined => {
+      logger.error({ msg: `Error getting secret in namespace ${managedClusterName}`, error: err.message })
+      return undefined
+    })
 }

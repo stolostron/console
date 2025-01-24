@@ -18,6 +18,7 @@ import { useSearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { ClusterScope, ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
 import { useKubevirtPluginContext } from '../../../plugin-extensions/hooks/useKubevirtPluginContext'
 import classNames from 'classnames'
+import { useK8sGetResource } from './useK8sGetResource'
 
 const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
   const {
@@ -229,18 +230,19 @@ const KubevirtPluginWrapper = ({
   const defaultClusterName = currentCluster ?? localHubName ?? 'local-cluster'
 
   const KubevirtPluginContext = useKubevirtPluginContext()
+  const useK8sWatchResource = useK8sGetResource
 
   const contextValue = useMemo(
     () => ({
       clusterScope: { ClusterScope },
       currentCluster,
       currentNamespace,
-      dynamicPluginSDK: { ...DefaultDynamicPluginSDK, ResourceLink },
+      dynamicPluginSDK: { ...DefaultDynamicPluginSDK, ResourceLink, useK8sWatchResource },
       getResourceUrl,
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
     }),
-    [currentCluster, currentNamespace]
+    [currentCluster, currentNamespace, useK8sWatchResource]
   )
 
   return (
