@@ -2,7 +2,6 @@
 import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
-import moment from 'moment'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -16,6 +15,7 @@ import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
 import { TFunction } from 'react-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 export interface ResultsTableData {
   templateName: string
@@ -25,7 +25,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: moment.MomentInput
+  timestamp: string | number | Date | undefined
   policyName: string
   policyNamespace: string
   remediationAction: string
@@ -277,9 +277,8 @@ export default function PolicyDetailsResults() {
         header: t('Last report'),
         sort: 'timestamp',
         cell: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
-        exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
+          item.timestamp ? <AcmTimestamp timestamp={item.timestamp} relative={true} /> : '—',
+        exportContent: (item: ResultsTableData) => (item.timestamp ? new Date(item.timestamp).toLocaleString() : '—'),
       },
       {
         header: t('History'),
