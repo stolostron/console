@@ -698,7 +698,6 @@ export function canAccess(
     }
     return result.body.status.allowed
   })
-  // }
 
   accessCache[token][key] = {
     time: Date.now(),
