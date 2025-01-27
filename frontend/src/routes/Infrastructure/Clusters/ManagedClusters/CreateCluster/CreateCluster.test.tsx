@@ -1770,8 +1770,8 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
           ],
           networkType: 'OVNKubernetes',
         },
-        controllerAvailabilityPolicy: 'HighlyAvailable',
-        infrastructureAvailabilityPolicy: 'HighlyAvailable',
+        controllerAvailabilityPolicy: 'SingleReplica',
+        infrastructureAvailabilityPolicy: 'SingleReplica',
         platform: {
           type: 'KubeVirt',
           kubevirt: {
@@ -1882,6 +1882,26 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByTestId('emanspace')
     await typeByTestId('emanspace', 'new-hns')
     fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
+
+    // Check default radio button selections for availability policies to be 'HighlyAvailable'
+    const controllerHighlyAvailable = screen.getByTestId('controller-ha')
+    const infraHighlyAvailable = screen.getByTestId('infra-ha')
+
+    expect(controllerHighlyAvailable).toBeChecked()
+    expect(infraHighlyAvailable).toBeChecked()
+
+    // Change both policies to SingleReplica
+    const controllerSingleReplica = screen.getByTestId('controller-single')
+    const infraSingleReplica = screen.getByTestId('infra-single')
+
+    fireEvent.click(controllerSingleReplica)
+    fireEvent.click(infraSingleReplica)
+
+    expect(controllerSingleReplica).toBeChecked()
+    expect(infraSingleReplica).toBeChecked()
+    expect(controllerHighlyAvailable).not.toBeChecked()
+    expect(infraHighlyAvailable).not.toBeChecked()
+
     // step 2 -- node pools
     await clickByText('Next')
     const nodePoolNameInput = screen.getByTestId('nodePoolName')

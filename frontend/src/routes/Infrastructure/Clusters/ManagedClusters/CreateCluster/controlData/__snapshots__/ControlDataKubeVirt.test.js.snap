@@ -182,8 +182,8 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
   },
   {
     "active": {
-      "controller": "HighlyAvailable",
-      "infra": "HighlyAvailable",
+      "controllerAvailabilityPolicy": "HighlyAvailable",
+      "infrastructureAvailabilityPolicy": "HighlyAvailable",
     },
     "component": <AvailabilityOptionsForm />,
     "id": "availabilityOptions",
@@ -534,8 +534,8 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
   },
   {
     "active": {
-      "controller": "HighlyAvailable",
-      "infra": "HighlyAvailable",
+      "controllerAvailabilityPolicy": "HighlyAvailable",
+      "infrastructureAvailabilityPolicy": "HighlyAvailable",
     },
     "component": <AvailabilityOptionsForm />,
     "id": "availabilityOptions",
