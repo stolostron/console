@@ -27,6 +27,8 @@ import {
   waitForNotText,
   waitForTestId,
   waitForText,
+  getCSVExportSpies,
+  getCSVDownloadLink,
 } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterDefinition, ManagedClusterInfo, ResourceAttributes } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
@@ -296,6 +298,8 @@ describe('Clusters Page export', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
     const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
@@ -316,24 +320,27 @@ describe('Clusters Page export', () => {
     await waitForNock(metricNock)
     await waitForText(mockManagedCluster0.metadata.name!, true)
   })
-  test.skip('export button should produce a file for download', async () => {
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
+  test('export button should produce a file for download', async () => {
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
-
+    // download for subscriptions
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Status,Infrastructure,Control plane type,Distribution version,Labels,Nodes,Add-ons,Creation date\n' +
+          '"managed-cluster-0-clusterset","managed-cluster-0-clusterset","Creating","Amazon Web Services","Standalone",-,"\'cluster.open-cluster-management.io/clusterset\':\'test-cluster-set\'","healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-6-no-managed-cluster","managed-cluster-6-no-managed-cluster","Detached","Amazon Web Services","Standalone",-,-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-1","managed-cluster-1","Failed","Google Cloud Platform","Standalone",-,"\'cloud\':\'Google\'","healthy: 0, danger: 0, unknown: 0","healthy: 1, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-2-no-upgrade","managed-cluster-2-no-upgrade","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-3-upgrade-available","managed-cluster-3-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-4-upgrading","managed-cluster-4-upgrading","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
+          '"managed-cluster-5-upgrade-available","managed-cluster-5-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 1, danger: 1, unknown: 1","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"',
+      ],
+      { type: 'text/csv' }
+    )
 
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^managedclusters-[\d]+\.csv$/)
   })
 })

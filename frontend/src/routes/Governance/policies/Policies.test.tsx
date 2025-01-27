@@ -11,7 +11,7 @@ import {
   policySetsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { waitForText } from '../../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule } from '../../../resources'
 import PoliciesPage, { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from './Policies'
 import {
@@ -461,24 +461,22 @@ describe('Export from policy table', () => {
     )
 
     await waitForText(mockPolicy[0].metadata.name!)
-
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     screen.getByLabelText('export-search-result').click()
     screen.getByText('Export all to CSV').click()
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Source,Automation,Created,Description,Standards,Controls,Categories\n' +
+          '"policy-set-with-1-placement-policy","test","Enabled","inform","-","no violations: 1 cluster, violations: 0 clusters, pending: 0 clusters, unknown: 0 clusters","Local","-","-","-","-","-","-"\n' +
+          '"policy1","test","Enabled","inform","-","-","Local","-","-","Test policy description","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^rhacmallpolicies-[\d]+\.csv$/)
   })
 })

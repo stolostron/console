@@ -4,7 +4,14 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText, waitForNotText, clickByLabel, clickByText } from '../../../../lib/test-util'
+import {
+  waitForText,
+  waitForNotText,
+  clickByLabel,
+  clickByText,
+  getCSVExportSpies,
+  getCSVDownloadLink,
+} from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy, mockPendingPolicy, mockPolicyBinding } from '../../governance.sharedMocks'
 import { Policy } from '../../../../resources'
@@ -198,7 +205,7 @@ describe('Export from policy details results table', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
   })
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot
@@ -221,21 +228,21 @@ describe('Export from policy details results table', () => {
 
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Cluster,Violations,Template,Message,Remediation,Last report\n' +
+          '"local-cluster","No violations","policy-set-with-1-placement-policy-1","notification - namespaces [test] found as specified, therefore this Object template is compliant","inform","Wed Feb 16 2022 19:07:46 GMT+0000"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^policy-set-with-1-placement-policy-test-[\d]+\.csv$/
+    )
   })
 })

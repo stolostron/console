@@ -7,7 +7,7 @@ import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { waitForTestId, waitForText } from '../../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage, {
   getFirstAgentServiceConfig,
@@ -128,25 +128,23 @@ describe('Infrastructure Environments page utility functions', () => {
 })
 
 describe('Export from host inventory table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     const { getByLabelText, getByText } = render(<Component />)
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     userEvent.click(getByLabelText('export-search-result'))
     userEvent.click(getByText('Export all to CSV'))
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Infrastructure environment name,Namespace,Labels,Location,Hosts,Creation date\n' +
+          '"infra-env-name","infra-env-name","\'agentclusterinstalls.extensions.hive.openshift.io/location\':\'brno\',\'networkType\':\'dhcp\'","brno","healthy: 0, danger: 0, warning: 0","-"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^hostenvironments-[\d]+\.csv$/)
   })
 })

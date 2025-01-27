@@ -24,6 +24,8 @@ import {
   waitForNotText,
   typeByTestId,
   clickByLabel,
+  getCSVExportSpies,
+  getCSVDownloadLink,
 } from '../../../../lib/test-util'
 import {
   mockClusterDeployments,
@@ -114,24 +116,22 @@ describe('ClusterSets page with csv export', () => {
       </PluginContext.Provider>
     )
   })
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Cluster status,Namespace bindings\n' +
+          '"test-cluster-set","healthy: 0, running: 0, warning: 0, progress: 1, danger: 0, detached: 0, pending: 0, sleep: 0, unknown: 0",-\n' +
+          '"global","healthy: 4, running: 0, warning: 0, progress: 1, danger: 1, detached: 0, pending: 0, sleep: 0, unknown: 0",-',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^clustersets-[\d]+\.csv$/)
   })
 })

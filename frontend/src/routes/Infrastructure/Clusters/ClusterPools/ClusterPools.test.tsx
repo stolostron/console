@@ -31,6 +31,8 @@ import {
   clickByLabel,
   clickByText,
   clickRowAction,
+  getCSVDownloadLink,
+  getCSVExportSpies,
   selectTableRow,
   typeByTestId,
   typeByText,
@@ -545,7 +547,7 @@ describe('ClusterPools page', () => {
 })
 
 describe('Export from clusterpool table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
@@ -557,22 +559,20 @@ describe('Export from clusterpool table', () => {
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Namespace,Cluster status,Available clusters,Infrastructure,Distribution version\n' +
+          '"test-pool","test-pool-namespace",-,"1 out of 2","Amazon Web Services","-"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^clusterpool-[\d]+\.csv$/)
   })
 })
 

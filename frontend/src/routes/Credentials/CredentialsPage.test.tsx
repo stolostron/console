@@ -17,6 +17,8 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
+  getCSVDownloadLink,
+  getCSVExportSpies,
   selectTableRow,
   waitForNock,
   waitForNocks,
@@ -267,28 +269,27 @@ describe('provider connections page RBAC', () => {
 })
 
 describe('Export from clusterpool table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
     render(
       <TestProviderConnectionsPage providerConnections={[...mockProviderConnections, cloudRedHatProviderConnection]} />
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Credential type,Namespace,Additional actions,Created\n' +
+          '"provider-connection-1","Red Hat Ansible Automation Platform","provider-connection-namespace","-",-\n' +
+          '"provider-connection-2","unknown","provider-connection-namespace","-","7 months ago"\n' +
+          '"ocm-api-token","Red Hat OpenShift Cluster Manager","ocm","Create cluster discovery",-',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^credentials-[\d]+\.csv$/)
   })
 })
