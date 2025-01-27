@@ -246,6 +246,9 @@ const validateControl = (control, controlData, templateObjectMap, templateExcept
       case 'hidden':
         validateTextControl(control, controlData, templateObjectMap, templateExceptionMap, isFinalValidate, i18n)
         break
+      case 'multitext':
+        validateMultiTextControl(control, controlData, templateObjectMap, templateExceptionMap, isFinalValidate, i18n)
+        break
       case 'checkbox':
       case 'radio':
         validateCheckboxControl(control, templateObjectMap, templateExceptionMap, i18n)
@@ -287,22 +290,16 @@ const shouldValidateControl = (control) => {
   return required
 }
 
-const validateTextControl = (control, controlData, templateObjectMap, templateExceptionMap, isFinalValidate, i18n) => {
-  const {
-    id,
-    name,
-    availableMap,
-    sourcePathMap,
-    validation: { contextTester, tester, notification },
-    template,
-    controlId,
-    ref,
-  } = control
-  let active = control.active
+const handleActiveValue = (control, embeddedTextControl) => {
+  let active = control.type === 'multitext' ? embeddedTextControl.active : control.active
   if (typeof active === 'number') {
     active = active.toString()
   }
-  // ex: text input is in the form of a uri
+  return active
+}
+
+const handleTemplate = (activeValue, template, id) => {
+  let active = activeValue
   if (active && template) {
     const parts = template.split(`{{{${id}}}}`)
     active = active.replace(parts[0], '')
@@ -310,7 +307,27 @@ const validateTextControl = (control, controlData, templateObjectMap, templateEx
       active = active.replace(new RegExp(parts[1] + '$'), '')
     }
   }
-  control.active = active
+  return active
+}
+
+const handleExceptions = (
+  active,
+  control,
+  controlData,
+  templateObjectMap,
+  templateExceptionMap,
+  isFinalValidate,
+  i18n,
+  embeddedTextControl
+) => {
+  const {
+    availableMap,
+    sourcePathMap,
+    validation: { contextTester, tester, notification },
+    controlId,
+    ref,
+    name,
+  } = control
   if (availableMap && typeof availableMap[active] === 'string') {
     active = availableMap[active]
   }
@@ -330,6 +347,9 @@ const validateTextControl = (control, controlData, templateObjectMap, templateEx
     } else {
       exception = i18n('validation.missing.value', [name])
     }
+    if (control.type === 'multitext') {
+      embeddedTextControl.exception = exception
+    }
     if (exception) {
       control.exception = exception
       addExceptions(exception, sourcePathMap, templateExceptionMap, templateObjectMap, controlId, ref, i18n)
@@ -338,6 +358,61 @@ const validateTextControl = (control, controlData, templateObjectMap, templateEx
   if (tester) {
     tester.lastIndex = 0
   }
+  return active
+}
+
+const validateTextControl = (
+  control,
+  controlData,
+  templateObjectMap,
+  templateExceptionMap,
+  isFinalValidate,
+  i18n,
+  embeddedTextControl
+) => {
+  let active = handleActiveValue(control, embeddedTextControl)
+  active = handleTemplate(active, control.template, control.id)
+  if (control.type !== 'multitext') {
+    control.active = active
+  }
+  handleExceptions(
+    active,
+    control,
+    controlData,
+    templateObjectMap,
+    templateExceptionMap,
+    isFinalValidate,
+    i18n,
+    embeddedTextControl
+  )
+}
+
+export const validateMultiTextControl = (
+  control,
+  controlData,
+  templateObjectMap,
+  templateExceptionMap,
+  isFinalValidate,
+  i18n
+) => {
+  let exceptionFound
+  control.controlData.forEach((multitextControl) => {
+    validateTextControl(
+      control,
+      controlData,
+      templateObjectMap,
+      templateExceptionMap,
+      isFinalValidate,
+      i18n,
+      multitextControl
+    )
+    if (multitextControl.exception && multitextControl.active) {
+      exceptionFound = multitextControl.exception
+    } else {
+      multitextControl.exception = ''
+    }
+  })
+  control.exception = exceptionFound
 }
 
 const validateSingleSelectControl = (control, templateObjectMap, templateExceptionMap, i18n) => {

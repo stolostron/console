@@ -14,6 +14,7 @@ import {
   VALIDATE_BASE_DNS_NAME_REQUIRED,
   VALID_DNS_LABEL,
 } from '../../../../../../components/TemplateEditor'
+import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -787,6 +788,22 @@ function versionGreater(version, x, y) {
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
 }
 
+export const isHidden_lt_OCP412 = (_control, controlData) => {
+  const imageSet = getControlByID(controlData, 'imageSet')
+  if (imageSet && imageSet.active) {
+    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '<')
+  }
+  return false
+}
+
+export const isHidden_gteq_OCP412 = (_control, controlData) => {
+  const imageSet = getControlByID(controlData, 'imageSet')
+  if (imageSet && imageSet.active) {
+    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '>=')
+  }
+  return true
+}
+
 export const isHidden_lt_OCP48 = (control, controlData) => {
   const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
   const imageSet = getControlByID(controlData, 'imageSet')
@@ -857,4 +874,53 @@ export const appendWarning = (warning, controlData) => {
 
 export const disabledForFirstInGroup = (control) => {
   return control.grpNum === 0
+}
+
+const createNewMultiTextControlData = (ctrl) => ({
+  id: ctrl.controlData[0].id,
+  type: 'multitextMember',
+  active: '',
+  validation: ctrl.validation,
+})
+
+const resetMultitextControlData = (ctrl) => {
+  ctrl.controlData = [createNewMultiTextControlData(ctrl)]
+}
+
+const updateMultitextControlData = (ctrl, ingressArray) => {
+  const controlDataLength = ctrl.controlData.length
+  const ingressArrayLength = ingressArray.length
+
+  if (ingressArrayLength > controlDataLength) {
+    for (let i = controlDataLength; i < ingressArrayLength; i++) {
+      ctrl.controlData.push(createNewMultiTextControlData(ctrl))
+    }
+  } else if (ingressArrayLength === 0) {
+    ctrl.controlData = [createNewMultiTextControlData(ctrl)]
+  } else if (ingressArrayLength < controlDataLength) {
+    ctrl.controlData.splice(0, controlDataLength - ingressArrayLength)
+  }
+}
+
+export const ingressVIPsReverse = (ctrl, path) => {
+  const ingressVIPsVal = _.get(path, getSourcePath('unknown[0].platform.vsphere.ingressVIPs'))
+
+  if (ingressVIPsVal && ingressVIPsVal?.['$v']?.length) {
+    const ingressArray = ingressVIPsVal['$v'].map((object) => {
+      const value = object['$v']
+      return typeof value === 'string' ? value : ''
+    })
+
+    updateMultitextControlData(ctrl, ingressArray)
+    ctrl.active.multitextEntries = ingressArray
+
+    ingressArray.forEach((entry, index) => {
+      if (ctrl.controlData?.[index]) {
+        ctrl.controlData[index].active = entry
+      }
+    })
+  } else if (ctrl.controlData.length > 1 && ingressVIPsVal) {
+    resetMultitextControlData(ctrl)
+    ctrl.active.multitextEntries = ['']
+  }
 }

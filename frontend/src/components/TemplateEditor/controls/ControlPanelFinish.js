@@ -179,7 +179,7 @@ class ControlPanelFinish extends React.Component {
   }
 
   renderControl(control, i18n) {
-    const { id, type, active, availableMap, name, exception, validation, summary, hidden } = control
+    const { id, type, active, availableMap, name, exception, validation, summary, hidden, controlData } = control
     let term
     let desc
     let summaries
@@ -191,6 +191,13 @@ class ControlPanelFinish extends React.Component {
       case 'treeselect':
         term = name
         desc = active
+        break
+      case 'multitext':
+        term = name
+        desc = controlData
+          .filter((innerControl) => innerControl.active !== '')
+          .map((innerControl) => innerControl.active)
+          .join(', ')
         break
       case 'multiselect':
         term = name
