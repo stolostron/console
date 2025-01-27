@@ -66,7 +66,11 @@ export async function getAuthorizedResources(
     // perform it in item chunks
     const _resources = resources.slice(inx, inx + chunkSize)
     const queue = (_resources as ITransformedResource[]).map((resource) => {
-      return (resource.isRemote ? canListResources(token, resource) : canAccessRemoteResource(token, resource))
+      return (
+        resource.remoteClusters
+          ? canAccessRemoteResource(token, resource.remoteClusters)
+          : canListResources(token, resource)
+      )
         .then((allowResource) => (allowResource ? resource : undefined))
         .catch((err: unknown) => undefined) as Promise<IResource>
     })
@@ -88,17 +92,22 @@ function canListResources(token: string, resource: IResource): Promise<boolean> 
   })
 }
 
-function canAccessRemoteResource(token: string, resource: IResource): Promise<boolean> {
-  if (!resource.metadata?.namespace) return Promise.resolve(false)
-  return canAccess(
-    {
-      kind: 'ManagedClusterView',
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      metadata: { namespace: resource.metadata.namespace },
-    },
-    'create',
-    token
-  )
+// can this user access at least one of these remote clusters
+function canAccessRemoteResource(token: string, clusterNames: string[]): Promise<boolean> {
+  const promises = clusterNames.map((namespace) => {
+    return canAccess(
+      {
+        kind: 'ManagedClusterView',
+        apiVersion: 'view.open-cluster-management.io/v1beta1',
+        metadata: { namespace },
+      },
+      'create',
+      token
+    )
+  })
+  return Promise.allSettled(promises).then((results) => {
+    return results.some((result) => result)
+  })
 }
 
 export interface ResourceCache {

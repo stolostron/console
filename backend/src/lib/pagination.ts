@@ -38,7 +38,7 @@ export interface IResultListView {
 
 export interface ITransformedResource extends IResource {
   transform?: string[][]
-  isRemote?: boolean
+  remoteClusters?: string[]
 }
 
 export interface PaginatedResults {
@@ -142,7 +142,7 @@ export function paginate(
     items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
 
     // remove the transform work attribute
-    items = items.map(({ transform, isRemote, ...keepAttrs }) => keepAttrs)
+    items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)
 
     const results: IResultListView = {
       page: rpage,
