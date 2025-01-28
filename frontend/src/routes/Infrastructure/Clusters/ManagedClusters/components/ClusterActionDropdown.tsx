@@ -43,6 +43,7 @@ import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -61,21 +62,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
-  const {
-    hostedClustersState,
-    infraEnvironmentsState,
-    agentMachinesState,
-    agentsState,
-    clusterImageSetsState,
-    hubClusterNameState,
-  } = useSharedAtoms()
+  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState, clusterImageSetsState } =
+    useSharedAtoms()
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const hubClusterName = useRecoilValue(hubClusterNameState)
+  const localHubName = useLocalHubName()
 
   const { cluster } = props
 
@@ -470,7 +465,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
                 ) as HostedClusterK8sResource,
                 t,
-                hubClusterName,
+                localHubName,
                 toastContext,
                 isACMAvailable
               ) as IRequestResult
@@ -519,7 +514,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
       infraEnvs,
       navigate,
       hostedClusters,
-      hubClusterName,
+      localHubName,
       toastContext,
       isACMAvailable,
       isHypershiftUpdateAvailable,

@@ -23,7 +23,7 @@ import { TFunction } from 'i18next'
 import { useContext } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export const importHostedControlPlaneCluster = (
   selectedHostedClusterResource: HostedClusterK8sResource,
@@ -97,8 +97,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const { cluster, managedCluster } = useClusterDetailsContext()
   const toastContext = useContext(AcmToastContext)
   const { isACMAvailable } = useContext(PluginContext)
-  const { hubClusterNameState } = useSharedAtoms()
-  const hubClusterName = useRecoilValue(hubClusterNameState)
+  const localHubName = useLocalHubName()
 
   const [credentials, setCredentials] = React.useState<LoginCredential>()
   const name = cluster?.kubeadmin
@@ -144,7 +143,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                     importHostedControlPlaneCluster(
                       selectedHostedClusterResource,
                       t,
-                      hubClusterName,
+                      localHubName,
                       toastContext,
                       isACMAvailable
                     )

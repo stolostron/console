@@ -10,7 +10,6 @@ import {
   infraEnvironmentsState,
   managedClusterAddonsState,
   multiClusterEnginesState,
-  hubClusterNameState,
 } from '../../../../../atoms'
 import { AgentK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { mockInfraEnv1, mockAgents } from '../components/cim/EditAICluster.sharedmocks'
@@ -37,7 +36,6 @@ describe('CreateControlPlane', () => {
           snapshot.set(infraEnvironmentsState, infraEnvsMock || [])
           snapshot.set(agentsState, agentsMock || [])
           snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
-          snapshot.set(hubClusterNameState, 'local-cluster')
           snapshot.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])

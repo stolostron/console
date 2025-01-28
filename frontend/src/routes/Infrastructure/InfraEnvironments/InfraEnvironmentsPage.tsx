@@ -58,6 +58,7 @@ import {
 import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { Dictionary } from 'lodash'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
 
 // Will change perspective, still in the OCP Console app
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
@@ -281,9 +282,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       name: infraEnv.metadata?.name!,
     })
 
-  const { clusterVersionState, hubClusterNameState } = useSharedAtoms()
+  const { clusterVersionState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)
-  const hubClusterName = useRecoilValue(hubClusterNameState)
+  const localHubName = useLocalHubName()
 
   const [modalProps, setModalProps] = useState<BulkActionModalProps<InfraEnvK8sResource> | { open: false }>({
     open: false,
@@ -484,7 +485,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                         'name',
                         'vendor',
                         'managed-by',
-                        hubClusterName,
+                        localHubName,
                       ].filter((label) => labelKeys.includes(label)) ?? []
                     return (
                       <AcmLabels

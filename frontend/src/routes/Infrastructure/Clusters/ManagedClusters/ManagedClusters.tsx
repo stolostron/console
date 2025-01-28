@@ -86,6 +86,7 @@ import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -97,14 +98,13 @@ export default function ManagedClusters() {
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
   const clusters = useAllClusters(true)
-  const { hubClusterNameState } = useSharedAtoms()
-  const hubClusterName = useRecoilValue(hubClusterNameState)
+  const localHubName = useLocalHubName()
 
   const onBoardingModalID = 'clusteronboardingmodal'
   const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
     localStorage.getItem(onBoardingModalID)
       ? localStorage.getItem(onBoardingModalID) === 'show'
-      : clusters.length === 1 && clusters.find((lc) => lc.name === hubClusterName) !== undefined //Check if one cluster exists and it is local-cluster
+      : clusters.length === 1 && clusters.find((lc) => lc.name === localHubName) !== undefined //Check if one cluster exists and it is local-cluster
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -208,11 +208,11 @@ export function ClustersTable(props: {
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
     sessionStorage.removeItem('DiscoveredClusterApiURL')
   }, [])
-  const { clusterCuratorsState, hostedClustersState, infraEnvironmentsState, hubClusterNameState } = useSharedAtoms()
+  const { clusterCuratorsState, hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
-  const hubClusterName = useRecoilValue(hubClusterNameState)
+  const localHubName = useLocalHubName()
 
   const { t } = useTranslation()
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
@@ -232,9 +232,9 @@ export function ClustersTable(props: {
   const clusterNamespaceColumn = useClusterNamespaceColumn()
   const clusterStatusColumn = useClusterStatusColumn()
   const clusterProviderColumn = useClusterProviderColumn()
-  const clusterControlPlaneColumn = useClusterControlPlaneColumn(hubClusterName)
+  const clusterControlPlaneColumn = useClusterControlPlaneColumn(localHubName)
   const clusterDistributionColumn = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)
-  const clusterLabelsColumn = useClusterLabelsColumn(hubClusterName, props.clusters!.length > 10)
+  const clusterLabelsColumn = useClusterLabelsColumn(localHubName, props.clusters!.length > 10)
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()

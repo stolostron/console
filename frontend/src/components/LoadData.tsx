@@ -142,7 +142,6 @@ import {
   gitOpsClustersState,
   helmReleaseState,
   hostedClustersState,
-  hubClusterNameState,
   infraEnvironmentsState,
   infrastructuresState,
   isGlobalHubState,
@@ -239,7 +238,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
-  const setHubClusterName = useSetRecoilState(hubClusterNameState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -471,13 +469,6 @@ export function LoadData(props: { children?: ReactNode }) {
                   }
                   return { ...map }
                 })
-              }
-            }
-            // set hub cluster name state
-            if (kind === 'ManagedCluster' && groupVersion === 'cluster.open-cluster-management.io') {
-              const hubCluster = watchEvents.find((evt) => evt.object?.metadata?.labels?.['local-cluster'] === 'true')
-              if (hubCluster) {
-                setHubClusterName(hubCluster.object.metadata.name)
               }
             }
           }
