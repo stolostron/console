@@ -202,6 +202,7 @@ export default function DiscoveredPolicies() {
           { label: 'CertificatePolicy', value: 'CertificatePolicy' },
           { label: 'ConfigurationPolicy', value: 'ConfigurationPolicy' },
           { label: 'Gatekeeper constraint', value: 'Gatekeeper' },
+          { label: 'Gatekeeper mutations', value: 'Gatekeeper Mutations' },
           { label: 'OperatorPolicy', value: 'OperatorPolicy' },
           { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
           { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
@@ -210,6 +211,10 @@ export default function DiscoveredPolicies() {
         tableFilterFn: (selectedValues, item) => {
           if (item.apigroup === 'constraints.gatekeeper.sh') {
             return selectedValues.includes('Gatekeeper')
+          }
+
+          if (item.apigroup === 'mutations.gatekeeper.sh') {
+            return selectedValues.includes('Gatekeeper Mutations')
           }
 
           if (item.apigroup === 'kyverno.io') {

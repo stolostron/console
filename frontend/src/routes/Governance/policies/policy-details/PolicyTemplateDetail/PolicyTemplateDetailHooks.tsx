@@ -67,7 +67,7 @@ export function useFetchVapb() {
   return { vapbItems: data?.searchResult?.[0]?.items, loading, err: error?.message }
 }
 
-const availableKindList = ['ValidatingAdmissionPolicyBinding', 'Assign', 'AssignImage', 'AssignMetadata']
+const availableKindList = ['ValidatingAdmissionPolicyBinding', 'Assign', 'AssignImage', 'AssignMetadata', 'ModifySet']
 const availableApiGroups = ['admissionregistration.k8s.io', 'mutations.gatekeeper.sh']
 
 export function useFetchOnlyRelatedResources() {
