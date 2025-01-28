@@ -135,7 +135,7 @@ export function AcmAlert(props: {
         style={props.style}
         className={props.className}
       >
-        {alertInfo?.message || props.message || props.subtitle}
+        <p style={{ whiteSpace: 'pre-wrap' }}>{alertInfo?.message || props.message || props.subtitle}</p>
       </Alert>
     </Collapse>
   )

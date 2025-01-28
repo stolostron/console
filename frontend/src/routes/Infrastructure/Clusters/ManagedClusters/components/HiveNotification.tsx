@@ -91,7 +91,7 @@ export function HiveNotification() {
             </AcmButton>
           </Fragment>
         }
-        message={clusterProvisionStatus}
+        message={formatHiveLogText(clusterProvisionStatus)}
       />
     </div>
   )
@@ -123,4 +123,14 @@ export function launchToYaml(cluster: Cluster, configMaps: ConfigMap[]) {
   const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
   const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
   window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/hive.openshift.io~v1~${kind}/${name}/yaml`)
+}
+
+export function formatHiveLogText(message: string | undefined) {
+  if (typeof message === 'string') {
+    let messageArray = message.split('\n')
+    if (messageArray.length > 9) {
+      message = `${messageArray.slice(0, 8).join('\n')}...`
+    }
+  }
+  return message
 }
