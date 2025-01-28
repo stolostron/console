@@ -9,6 +9,7 @@ import { logger } from '../lib/logger'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 import { setDead } from './liveness'
+import { getCACertificate } from '../lib/serviceAccountToken'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 let oauthInfoPromise: Promise<OAuthInfo>
@@ -80,7 +81,10 @@ export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void 
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
 
-  const gotOptions = { headers: { Authorization: `Bearer ${token}` }, https: { rejectUnauthorized: false } }
+  const gotOptions = {
+    headers: { Authorization: `Bearer ${token}` },
+    https: { certificateAuthority: getCACertificate() },
+  }
 
   let tokenName = token
   const sha256Prefix = 'sha256~'

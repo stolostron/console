@@ -1,20 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants } from 'http2'
 import { Agent } from 'https'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
-import { getServiceCACertificate } from './serviceAccountToken'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
   constants
 
-const agent = new Agent({ rejectUnauthorized: false })
-
 export function jsonRequest<T>(url: string, token?: string, retry?: number): Promise<T> {
   const headers: HeadersInit = { [HTTP2_HEADER_ACCEPT]: 'application/json' }
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
-  return fetchRetry(url, { headers, agent, compress: true }, retry).then(
+  return fetchRetry(url, { headers, compress: true }, retry).then(
     (response) => response.json() as unknown as Promise<T>
   )
 }
@@ -40,7 +36,7 @@ export function jsonPost<T = unknown>(
   body: unknown,
   token?: string,
   userAgent?: string,
-  proxyAgent?: HttpsProxyAgent<string>
+  agent?: Agent
 ): Promise<PostResponse<T>> {
   const headers: HeadersInit = {
     [HTTP2_HEADER_ACCEPT]: 'application/json',
@@ -51,7 +47,7 @@ export function jsonPost<T = unknown>(
   return fetchRetry(url, {
     method: 'POST',
     headers,
-    agent: proxyAgent || agent,
+    agent,
     body: JSON.stringify(body),
     compress: true,
   }).then(async (response) => {
@@ -63,13 +59,13 @@ export function jsonPost<T = unknown>(
   })
 }
 
-export function jsonPut(url: string, body: unknown, token?: string): Promise<PutResponse> {
+export function jsonPut(url: string, body: unknown, token?: string, agent?: Agent): Promise<PutResponse> {
   const headers: HeadersInit = {}
   if (token) headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${token}`
   return fetchRetry(url, {
     method: 'PUT',
     headers,
-    agent: new Agent({ ca: getServiceCACertificate() }),
+    agent,
     body: JSON.stringify(body),
     compress: true,
   })

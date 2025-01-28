@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch'
+import { getDefaultAgent } from './agent'
 
 export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number): Promise<Response> {
   let retries: number
@@ -12,12 +13,17 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
       retries = 0
   }
 
+  const requestInit = { ...(init ?? {}) }
+  if (!requestInit.agent) {
+    requestInit.agent = getDefaultAgent()
+  }
+
   let delay = 1000
 
   return new Promise(function (resolve, reject) {
     async function fetchAttempt() {
       try {
-        const response = await fetch(url, init)
+        const response = await fetch(url, requestInit)
         switch (response.status) {
           case 429: // Too Many Requests
             {
