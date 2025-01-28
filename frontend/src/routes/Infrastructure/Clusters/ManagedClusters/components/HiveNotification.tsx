@@ -127,7 +127,7 @@ export function launchToYaml(cluster: Cluster, configMaps: ConfigMap[]) {
 
 export function formatHiveLogText(message: string | undefined) {
   if (typeof message === 'string') {
-    let messageArray = message.split('\n')
+    const messageArray = message.split('\n')
     if (messageArray.length > 9) {
       message = `${messageArray.slice(0, 8).join('\n')}...`
     }
