@@ -512,6 +512,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       break
     case HostInventoryInfrastructureType.CIM:
       template = Handlebars.compile(cimTemplate)
+      Handlebars.registerHelper('convert', getPlatform)
+
       controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM)
       break

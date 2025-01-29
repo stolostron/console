@@ -147,7 +147,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       },
       pullSecret: {},
       controlPlaneCount: { path: 'AgentClusterInstall[0].spec.provisionRequirements.controlPlaneAgents' },
-      platform: { path: 'AgentClusterInstall[0].spec.platformType', transform: (a?: string) => a?.toLowerCase() },
+      platform: { path: 'AgentClusterInstall[0].spec.platformType', transform: (a?: string) => a?.toLowerCase() || a },
     }),
     [control.additionalProps?.aiFlow]
   )
