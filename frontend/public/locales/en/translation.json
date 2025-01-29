@@ -3184,6 +3184,7 @@
   "validate.baseDomain.baseDNSPeriod": "The base DNS domain must not begin with a period.",
   "validate.baseDomain.name": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
   "validate.certificate": "Must be a valid certificate",
+  "Value must be in <user>@<domain> format.": "Value must be in <user>@<domain> format.",
   "validate.http.proxy.url.not.valid": "The URL must be valid and use the http scheme.",
   "validate.https.proxy.url.not.valid": "The URL must be valid and use the http or https scheme.",
   "validate.https.url.not.valid": "The URL must be valid and use the https scheme.",

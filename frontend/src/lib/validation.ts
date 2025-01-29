@@ -384,6 +384,10 @@ export function validateVCenterServer(value: string, t: TFunction) {
   }
 }
 
+export function validateVcenterUsername(value: string, t: TFunction) {
+  if (!value.includes('@')) return t('Value must be in <user>@<domain> format.')
+}
+
 export function validateCidr(value: string, t: TFunction) {
   if (value == '') {
     return undefined
