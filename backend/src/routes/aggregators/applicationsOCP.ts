@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
 import { IResource } from '../../resources/resource'
-import { getKubeResources } from '../events'
+import { getKubeResources, getHubClusterName } from '../events'
 import { AppColumns, ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk, cacheRemoteApps } from './utils'
 
@@ -154,7 +154,7 @@ export function cacheOCPApplications(
       const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
       const resourceName = value.name
       let apps
-      if (value.cluster === 'local-cluster') {
+      if (value.cluster === getHubClusterName()) {
         apps = localOCPApps
       } else {
         apps = remoteOCPApps
@@ -237,7 +237,7 @@ function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string
       }, [])
       clusterNameChunks.push(...chunks)
     } else {
-      clusterNameChunks.push(['local-cluster'])
+      clusterNameChunks.push([getHubClusterName()])
     }
 
     // update remoteSysApps map
