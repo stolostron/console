@@ -371,7 +371,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
   },
   {
     "id": "storageInfo",
-    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Note that not all capabilities of an infrastructure cluster's StorageClass may be available in the corresponding guest cluster's StorageClass. These mappings are immutable after creation.",
+    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Not all infrastructure clusters StorageClass capabilities might be available in the corresponding guest cluster StorageClass. The mappings are immutable after creation.",
     "type": "title",
   },
   {
@@ -827,7 +827,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
   },
   {
     "id": "storageInfo",
-    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Note that not all capabilities of an infrastructure cluster's StorageClass may be available in the corresponding guest cluster's StorageClass. These mappings are immutable after creation.",
+    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Not all infrastructure clusters StorageClass capabilities might be available in the corresponding guest cluster StorageClass. The mappings are immutable after creation.",
     "type": "title",
   },
   {
