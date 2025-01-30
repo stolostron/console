@@ -62,6 +62,21 @@ export interface HostedCluster extends IResource {
           }
           infraNamespace: string
         }
+        storageDriver?: {
+          type?: 'None' | 'Default' | 'Manual'
+          manual: {
+            storageClassMapping: {
+              infraStorageClassName: string
+              guestStorageClassName: string
+              group?: string
+            }[]
+            volumeSnapshotClassMapping: {
+              infraVolumeSnapshotClassName: string
+              guestVolumeSnapshotClassName: string
+              group?: string
+            }[]
+          }
+        }
       }
     }
     infraID: string
