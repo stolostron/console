@@ -50,23 +50,6 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
-function validateString(active, _controlData, _templateObjectMap, i18n) {
-  if (!active) {
-    return undefined
-  }
-
-  const nameRegex = /^[a-zA-Z0-9.-]+$/
-  if (!nameRegex.test(active)) {
-    return i18n('Must be string containing only alphanumeric characters, dots, or hyphens')
-  }
-
-  if (active.length > 253) {
-    return i18n('Name cannot be longer than 253 characters')
-  }
-
-  return undefined
-}
-
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
