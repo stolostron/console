@@ -62,6 +62,7 @@ import getControlDataHypershift from './controlData/ControlDataHypershift'
 import { getControlDataKubeVirt } from './controlData/ControlDataKubeVirt'
 import getControlDataOST from './controlData/ControlDataOST'
 import getControlDataVMW from './controlData/ControlDataVMW'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import './style.css'
 import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/validation-types'
 // Register the custom 'and' helper
@@ -125,7 +126,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const templateEditorRef = useRef<null>()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
-
+  const localHubName = useLocalHubName()
   const { projects } = useProjects()
 
   // setup translation
@@ -218,7 +219,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange])
 
-  const localCluster = useMemo(() => allClusters.find((cls) => cls.name === 'local-cluster'), [allClusters])
+  const localCluster = useMemo(() => allClusters.find((cls) => cls.name === localHubName), [allClusters, localHubName])
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()

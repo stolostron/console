@@ -43,6 +43,7 @@ import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -69,6 +70,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const localHubName = useLocalHubName()
 
   const { cluster } = props
 
@@ -463,6 +465,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
                 ) as HostedClusterK8sResource,
                 t,
+                localHubName,
                 toastContext,
                 isACMAvailable
               ) as IRequestResult
@@ -502,18 +505,19 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
       ].filter((action) => clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable)),
     [
-      cluster,
-      destroyRbac,
-      navigate,
-      isSearchAvailable,
-      modalColumns,
       t,
-      infraEnvs,
-      hostedClusters,
-      toastContext,
+      cluster,
+      isSearchAvailable,
       importTemplate,
-      isHypershiftUpdateAvailable,
+      destroyRbac,
+      modalColumns,
+      infraEnvs,
+      navigate,
+      hostedClusters,
+      localHubName,
+      toastContext,
       isACMAvailable,
+      isHypershiftUpdateAvailable,
     ]
   )
 

@@ -53,6 +53,7 @@ import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
 import { getControlPlaneString } from '../../ManagedClusters'
+import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
@@ -76,6 +77,7 @@ export function ClusterOverviewPageContent() {
   const { canGetSecret, cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
     useClusterDetailsContext()
   const { t } = useTranslation()
+  const localHubName = useLocalHubName()
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
@@ -111,7 +113,7 @@ export function ClusterOverviewPageContent() {
     },
     clusterControlPlaneType: {
       key: t('table.clusterControlPlaneType'),
-      value: getControlPlaneString(cluster, t),
+      value: getControlPlaneString(cluster, localHubName, t),
     },
     clusterClaim: {
       key: t('table.clusterClaim'),
