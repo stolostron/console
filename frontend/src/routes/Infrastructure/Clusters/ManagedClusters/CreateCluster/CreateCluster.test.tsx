@@ -1210,6 +1210,7 @@ describe('CreateCluster on premise', () => {
   )
 })
 
+// verifies adding storage class and volumesnapshotclass to the hosted cluster
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
@@ -1318,6 +1319,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         type: 'KubeVirt',
         kubevirt: {
           baseDomainPassthrough: true,
+          storageDriver: {
+            manual: {
+              storageClassMapping: [
+                {
+                  infraStorageClassName: 'storage-class1',
+                  guestStorageClassName: 'guest-storage1',
+                  group: 'group1',
+                },
+              ],
+              volumeSnapshotClassMapping: [
+                {
+                  infraVolumeSnapshotClassName: 'snapshot-class1',
+                  guestVolumeSnapshotClassName: 'guest-snap1',
+                  group: 'group1',
+                },
+              ],
+            },
+          },
           credentials: {
             infraKubeConfigSecret: {
               name: 'infra-cluster-test',
@@ -1490,6 +1509,18 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
+    await clickByText('Next')
+
     // nocks for cluster creation
     const createNocks = [
       nockCreate(mockProject, mockProjectResponse),
@@ -1513,6 +1544,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 })
 
 // test verifies addition of 2 additional networks to a node pool and the expected behavior of the default pod netwoek checkbox
+// verifies adding storage class and volumesnapshotclass to the hosted cluster
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
@@ -1783,6 +1815,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
               infraNamespace: 'kubevirt-namespace',
             },
+            storageDriver: {
+              manual: {
+                storageClassMapping: [
+                  {
+                    infraStorageClassName: 'storage-class1',
+                    guestStorageClassName: 'guest-storage1',
+                    group: 'group1',
+                  },
+                ],
+                volumeSnapshotClassMapping: [
+                  {
+                    infraVolumeSnapshotClassName: 'snapshot-class1',
+                    guestVolumeSnapshotClassName: 'guest-snap1',
+                    group: 'group1',
+                  },
+                ],
+              },
+            },
           },
         },
         infraID: 'test',
@@ -1912,6 +1962,18 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
+    await clickByText('Next')
+
     // nocks for cluster creation
     const createNocks = [
       nockCreate(mockProject, mockProjectResponse),
@@ -1934,6 +1996,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 })
 
+// verifies adding storage class and volumesnapshotclass to the hosted cluster
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has external infrastructure - Wizard Credential creation', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
@@ -2136,6 +2199,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         type: 'KubeVirt',
         kubevirt: {
           baseDomainPassthrough: true,
+          storageDriver: {
+            manual: {
+              storageClassMapping: [
+                {
+                  infraStorageClassName: 'storage-class1',
+                  guestStorageClassName: 'guest-storage1',
+                  group: 'group1',
+                },
+              ],
+              volumeSnapshotClassMapping: [
+                {
+                  infraVolumeSnapshotClassName: 'snapshot-class1',
+                  guestVolumeSnapshotClassName: 'guest-snap1',
+                  group: 'group1',
+                },
+              ],
+            },
+          },
           credentials: {
             infraKubeConfigSecret: {
               name: 'infra-cluster-test',
@@ -2378,6 +2459,18 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
+    await clickByText('Next')
+
     // nocks for cluster creation
     const createNocks = [
       nockCreate(mockProject, mockProjectResponse),
@@ -2398,6 +2491,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 })
 
+// verifies adding storage class and volumesnapshotclass to the hosted cluster
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has no external infrastructure - Wizard Credential creation', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
@@ -2565,6 +2659,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         type: 'KubeVirt',
         kubevirt: {
           baseDomainPassthrough: true,
+          storageDriver: {
+            manual: {
+              storageClassMapping: [
+                {
+                  infraStorageClassName: 'storage-class1',
+                  guestStorageClassName: 'guest-storage1',
+                  group: 'group1',
+                },
+              ],
+              volumeSnapshotClassMapping: [
+                {
+                  infraVolumeSnapshotClassName: 'snapshot-class1',
+                  guestVolumeSnapshotClassName: 'guest-snap1',
+                  group: 'group1',
+                },
+              ],
+            },
+          },
         },
       },
       infraID: 'test',
@@ -2801,6 +2913,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     const nodePoolNameInput = screen.getByTestId('nodePoolName')
     fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    await clickByText('Next')
+
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
     await clickByText('Next')
 
     // nocks for cluster creation
@@ -2823,6 +2948,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 })
 
+// verifies adding storage class and volumesnapshotclass to the hosted cluster
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has no external infrastructure - Wizard Credential creation', () => {
   const mockProject = {
     apiVersion: ProjectApiVersion,
@@ -2990,6 +3116,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         type: 'KubeVirt',
         kubevirt: {
           baseDomainPassthrough: true,
+          storageDriver: {
+            manual: {
+              storageClassMapping: [
+                {
+                  infraStorageClassName: 'storage-class1',
+                  guestStorageClassName: 'guest-storage1',
+                  group: 'group1',
+                },
+              ],
+              volumeSnapshotClassMapping: [
+                {
+                  infraVolumeSnapshotClassName: 'snapshot-class1',
+                  guestVolumeSnapshotClassName: 'guest-snap1',
+                  group: 'group1',
+                },
+              ],
+            },
+          },
         },
       },
       infraID: 'test',
@@ -3249,6 +3393,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     const nodePoolNameInput = screen.getByTestId('nodePoolName')
     fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    await clickByText('Next')
+
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
     await clickByText('Next')
 
     // nocks for cluster creation
@@ -3270,6 +3427,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await waitForNocks(createNocks)
   })
 })
+
 // test verifies each node pool definition track its own set of additional networks - with 2 node pools
 describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential that has no external infrastructure - Wizard Credential creation', () => {
   const mockProject = {
@@ -3438,6 +3596,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         type: 'KubeVirt',
         kubevirt: {
           baseDomainPassthrough: true,
+          storageDriver: {
+            manual: {
+              storageClassMapping: [
+                {
+                  infraStorageClassName: 'storage-class1',
+                  guestStorageClassName: 'guest-storage1',
+                  group: 'group1',
+                },
+              ],
+              volumeSnapshotClassMapping: [
+                {
+                  infraVolumeSnapshotClassName: 'snapshot-class1',
+                  guestVolumeSnapshotClassName: 'guest-snap1',
+                  group: 'group1',
+                },
+              ],
+            },
+          },
         },
       },
       infraID: 'test',
@@ -3625,6 +3801,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   })
 
   // verifies adding networks to 2 different node pools
+  // verifies adding storage class and volumesnapshotclass to the hosted cluster
   test('KubeVirt cluster creation with a kubervirt credential that has no external infrastructure', async () => {
     const clusterImageSetKubervirt: ClusterImageSetK8sResource = {
       apiVersion: ClusterImageSetApiVersion,
@@ -3683,6 +3860,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await waitForNocks(initialNocks)
     await waitForText('Cluster details', true)
     await waitForText('Node pools')
+    await waitForText('Storage mapping')
     await waitForText('Review and create')
 
     // fill-in Cluster details
@@ -3761,6 +3939,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     fireEvent.click(defaultPodNetworkCheckbox)
 
     await clickByText('Next')
+
+    // storage mapping
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+
+    // volume snapshot mapping
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+
+    await clickByText('Next')
+
     // nocks for cluster creation
     const createNocks = [
       nockCreate(mockProject, mockProjectResponse),
@@ -3773,7 +3964,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockCreate(mockPullSecretKubevirt1),
       nockCreate(mockSSHKeySecret2),
     ]
-
     await clickByText('Create')
     await waitForText('Creating cluster ...')
 
