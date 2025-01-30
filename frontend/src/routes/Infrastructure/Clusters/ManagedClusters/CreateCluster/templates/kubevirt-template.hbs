@@ -48,6 +48,28 @@ spec:
           key: kubeconfig
         infraNamespace: {{{externalInfraNamespace}}}
       {{/if}}
+      storageDriver:
+        manual:
+          storageClassMapping:
+            {{#each storageClassMapping}}
+            {{#if (and this.infraStorageClassName this.guestStorageClassName)}}
+            - infraStorageClassName: {{{this.infraStorageClassName}}}
+              guestStorageClassName: {{{this.guestStorageClassName}}}
+              {{#if this.storageClassGroup}}
+              group: {{{this.storageClassGroup}}}
+              {{/if}}
+            {{/if}}
+            {{/each}}
+          volumeSnapshotClassMapping:
+            {{#each volumeSnapshotClassMapping}}
+            {{#if (and this.infraVolumeSnapshotClassName this.guestVolumeSnapshotClassName)}}
+            - infraVolumeSnapshotClassName: {{{this.infraVolumeSnapshotClassName}}}
+              guestVolumeSnapshotClassName: {{{this.guestVolumeSnapshotClassName}}}
+              {{#if this.volumeSnapshotGroup}}
+              group: {{{this.volumeSnapshotGroup}}}
+              {{/if}}
+            {{/if}}
+            {{/each}}  
   infraID: '{{{clusterName}}}'
   services:
     - service: OAuthServer
