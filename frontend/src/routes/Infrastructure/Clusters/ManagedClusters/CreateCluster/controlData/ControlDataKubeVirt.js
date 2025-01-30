@@ -50,6 +50,23 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
+function validateString(active, _controlData, _templateObjectMap, i18n) {
+  if (!active) {
+    return undefined
+  }
+
+  const nameRegex = /^[a-zA-Z0-9.-]+$/
+  if (!nameRegex.test(active)) {
+    return i18n('Must be string containing only alphanumeric characters, dots, or hyphens')
+  }
+
+  if (active.length > 253) {
+    return i18n('Name cannot be longer than 253 characters')
+  }
+
+  return undefined
+}
+
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
@@ -315,6 +332,119 @@ export const getControlDataKubeVirt = (
           type: 'checkbox',
           active: true,
           disabled: true,
+          validation: {
+            required: false,
+          },
+        },
+      ],
+    },
+    ///////////////////////////// Storage Mappings Step /////////////////////////////
+    {
+      id: 'storageMappingsStep',
+      type: 'step',
+      title: t('Storage mapping'),
+    },
+    {
+      id: 'storageInfo',
+      type: 'title',
+      info: t('storage.mapping.info'),
+    },
+    {
+      id: 'storageClassMapping',
+      type: 'group',
+      prompts: {
+        addPrompt: t('Add storage class mapping'),
+        deletePrompt: t('Delete storage class mapping'),
+      },
+      controlData: [
+        {
+          id: 'storageMappingGroup',
+          type: 'section',
+          collapsable: true,
+          subtitle: numberedControlNameFunction((i18n, num) => i18n('Storage class mapping {{num}}', { num })),
+        },
+        {
+          id: 'infraStorageClassName',
+          name: t('Infrastructure storage class'),
+          tooltip: t(
+            'The name of the infrastructure cluster storage class that will be exposed in the guest cluster. This mapping cannot be changed after creation.'
+          ),
+          type: 'text',
+          placeholder: t('Enter infrastructure cluster storage class'),
+          validation: {
+            constraint: VALID_DNS_LABEL,
+            required: true,
+          },
+        },
+        {
+          id: 'guestStorageClassName',
+          name: t('Guest storage class'),
+          tooltip: t('The name that will be used for this storage class within the guest cluster.'),
+          type: 'text',
+          placeholder: t('Enter guest cluster storage class name'),
+          validation: {
+            constraint: VALID_DNS_LABEL,
+            required: true,
+          },
+        },
+        {
+          id: 'storageClassGroup',
+          name: t('Group'),
+          tooltip: t(
+            'Optional: Enter a group name matching a storage class group. This snapshot class will only work with storage classes that share the same group name.'
+          ),
+          type: 'text',
+          placeholder: t('Enter group name'),
+        },
+      ],
+    },
+    {
+      id: 'volumeSnapshotClassMapping',
+      type: 'group',
+      tooltip: t(
+        'Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.'
+      ),
+      prompts: {
+        addPrompt: t('Add volume snapshot class mapping'),
+        deletePrompt: t('Delete volume snapshot class mapping'),
+      },
+      controlData: [
+        {
+          id: 'snapshotMappingGroup',
+          type: 'section',
+          collapsable: true,
+          subtitle: numberedControlNameFunction((i18n, num) => i18n('Volume snapshot class mapping {{num}}', { num })),
+        },
+        {
+          id: 'infraVolumeSnapshotClassName',
+          name: t('Infrastructure volume snapshot class'),
+          tooltip: t(
+            'The name of the infrastructure cluster volume snapshot class that will be exposed in the guest cluster.'
+          ),
+          type: 'text',
+          placeholder: t('Enter infrastructure cluster volume snapshot class'),
+          validation: {
+            constraint: VALID_DNS_LABEL,
+            required: true,
+          },
+        },
+        {
+          id: 'guestVolumeSnapshotClassName',
+          name: t('Guest volume snapshot class'),
+          tooltip: t('The name that will be used for this volume snapshot class within the guest cluster.'),
+          type: 'text',
+          placeholder: t('Enter guest cluster volume snapshot class name'),
+          validation: {
+            constraint: VALID_DNS_LABEL,
+            required: true,
+          },
+        },
+        {
+          id: 'volumeSnapshotGroup',
+          name: t('Group'),
+          tooltip: t('Optional group name to associate volume snapshot classes with storage classes'),
+          type: 'text',
+          placeholder: t('Enter group name'),
           validation: {
             required: false,
           },
