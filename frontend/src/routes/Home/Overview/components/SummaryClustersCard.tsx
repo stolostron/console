@@ -90,7 +90,7 @@ export function SummaryClustersCard(props: {
   }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title])
 
   const legendWidth = useMemo(() => {
-    const columns = Math.trunc(legendData.length / 6)
+    const columns = Math.ceil(legendData.length / 6)
     const remainder = legendData.length % 6 > 0 ? 150 : 0
     return columns * 150 + remainder
   }, [legendData])
