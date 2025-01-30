@@ -129,7 +129,7 @@ export function formatHiveLogText(message: string | undefined) {
   if (typeof message === 'string') {
     const messageArray = message.split('\n')
     if (messageArray.length > 9) {
-      message = `${messageArray.slice(0, 8).join('\n')}...`
+      message = `${messageArray.slice(0, 9).join('\n')}...`
     }
   }
   return message
