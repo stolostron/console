@@ -2,6 +2,7 @@
 import { ReactNode, useContext, useEffect } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
+import { LoadingPage } from './LoadingPage'
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
@@ -12,5 +13,5 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
     }
   }, [load, loadStarted])
 
-  return <LostChangesProvider>{props.children}</LostChangesProvider>
+  return loadStarted ? <LostChangesProvider>{props.children}</LostChangesProvider> : <LoadingPage />
 }
