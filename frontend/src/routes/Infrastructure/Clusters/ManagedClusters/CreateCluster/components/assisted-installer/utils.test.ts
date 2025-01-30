@@ -61,15 +61,11 @@ describe('networking patch utils', () => {
         ingressVIP: '10.10.10.10',
       },
     }
-    const patches = getNetworkingPatches(
-      aci,
-      {
-        managedNetworkingType: 'userManaged',
-        enableProxy: false,
-        editProxy: false,
-      },
-      false
-    )
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+    })
     expect(patches.length).toBe(5)
   })
   it('enables cluster networking', () => {
@@ -84,17 +80,13 @@ describe('networking patch utils', () => {
         },
       },
     }
-    const patches = getNetworkingPatches(
-      aci,
-      {
-        managedNetworkingType: 'clusterManaged',
-        enableProxy: false,
-        editProxy: false,
-        apiVip: '10.10.10.10',
-        ingressVip: '10.10.10.10',
-      },
-      false
-    )
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      apiVip: '10.10.10.10',
+      ingressVip: '10.10.10.10',
+    })
     expect(patches.length).toBe(6)
   })
 })
