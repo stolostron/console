@@ -365,6 +365,110 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     "type": "group",
   },
   {
+    "id": "storageMappingsStep",
+    "title": "Storage mapping",
+    "type": "step",
+  },
+  {
+    "id": "storageInfo",
+    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Note that not all capabilities of an infrastructure cluster's StorageClass may be available in the corresponding guest cluster's StorageClass. These mappings are immutable after creation.",
+    "type": "title",
+  },
+  {
+    "controlData": [
+      {
+        "collapsable": true,
+        "id": "storageMappingGroup",
+        "subtitle": [Function],
+        "type": "section",
+      },
+      {
+        "id": "infraStorageClassName",
+        "name": "Infrastructure storage class",
+        "placeholder": "Enter infrastructure cluster storage class",
+        "tooltip": "The name of the infrastructure cluster storage class that will be exposed in the guest cluster. This mapping cannot be changed after creation.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "guestStorageClassName",
+        "name": "Guest storage class",
+        "placeholder": "Enter guest cluster storage class name",
+        "tooltip": "The name that will be used for this storage class within the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "storageClassGroup",
+        "name": "Group",
+        "placeholder": "Enter group name",
+        "tooltip": "Optional: Enter a group name matching a storage class group. This snapshot class will only work with storage classes that share the same group name.",
+        "type": "text",
+      },
+    ],
+    "id": "storageClassMapping",
+    "prompts": {
+      "addPrompt": "Add storage class mapping",
+      "deletePrompt": "Delete storage class mapping",
+    },
+    "type": "group",
+  },
+  {
+    "controlData": [
+      {
+        "collapsable": true,
+        "id": "snapshotMappingGroup",
+        "subtitle": [Function],
+        "type": "section",
+      },
+      {
+        "id": "infraVolumeSnapshotClassName",
+        "name": "Infrastructure volume snapshot class",
+        "placeholder": "Enter infrastructure cluster volume snapshot class",
+        "tooltip": "The name of the infrastructure cluster volume snapshot class that will be exposed in the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "guestVolumeSnapshotClassName",
+        "name": "Guest volume snapshot class",
+        "placeholder": "Enter guest cluster volume snapshot class name",
+        "tooltip": "The name that will be used for this volume snapshot class within the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "volumeSnapshotGroup",
+        "name": "Group",
+        "placeholder": "Enter group name",
+        "tooltip": "Optional group name to associate volume snapshot classes with storage classes",
+        "type": "text",
+        "validation": {
+          "required": false,
+        },
+      },
+    ],
+    "id": "volumeSnapshotClassMapping",
+    "prompts": {
+      "addPrompt": "Add volume snapshot class mapping",
+      "deletePrompt": "Delete volume snapshot class mapping",
+    },
+    "tooltip": "Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.",
+    "type": "group",
+  },
+  {
     "active": true,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
@@ -714,6 +818,110 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       "addPrompt": "Add node pool",
       "deletePrompt": "Delete node pool",
     },
+    "type": "group",
+  },
+  {
+    "id": "storageMappingsStep",
+    "title": "Storage mapping",
+    "type": "step",
+  },
+  {
+    "id": "storageInfo",
+    "info": "Storage class mappings define how infrastructure cluster storage is exposed in the guest cluster through the KubeVirt CSI driver. Manual configuration allows explicit mapping of infrastructure StorageClasses to guest StorageClasses. Note that not all capabilities of an infrastructure cluster's StorageClass may be available in the corresponding guest cluster's StorageClass. These mappings are immutable after creation.",
+    "type": "title",
+  },
+  {
+    "controlData": [
+      {
+        "collapsable": true,
+        "id": "storageMappingGroup",
+        "subtitle": [Function],
+        "type": "section",
+      },
+      {
+        "id": "infraStorageClassName",
+        "name": "Infrastructure storage class",
+        "placeholder": "Enter infrastructure cluster storage class",
+        "tooltip": "The name of the infrastructure cluster storage class that will be exposed in the guest cluster. This mapping cannot be changed after creation.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "guestStorageClassName",
+        "name": "Guest storage class",
+        "placeholder": "Enter guest cluster storage class name",
+        "tooltip": "The name that will be used for this storage class within the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "storageClassGroup",
+        "name": "Group",
+        "placeholder": "Enter group name",
+        "tooltip": "Optional: Enter a group name matching a storage class group. This snapshot class will only work with storage classes that share the same group name.",
+        "type": "text",
+      },
+    ],
+    "id": "storageClassMapping",
+    "prompts": {
+      "addPrompt": "Add storage class mapping",
+      "deletePrompt": "Delete storage class mapping",
+    },
+    "type": "group",
+  },
+  {
+    "controlData": [
+      {
+        "collapsable": true,
+        "id": "snapshotMappingGroup",
+        "subtitle": [Function],
+        "type": "section",
+      },
+      {
+        "id": "infraVolumeSnapshotClassName",
+        "name": "Infrastructure volume snapshot class",
+        "placeholder": "Enter infrastructure cluster volume snapshot class",
+        "tooltip": "The name of the infrastructure cluster volume snapshot class that will be exposed in the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "guestVolumeSnapshotClassName",
+        "name": "Guest volume snapshot class",
+        "placeholder": "Enter guest cluster volume snapshot class name",
+        "tooltip": "The name that will be used for this volume snapshot class within the guest cluster.",
+        "type": "text",
+        "validation": {
+          "constraint": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+          "required": true,
+        },
+      },
+      {
+        "id": "volumeSnapshotGroup",
+        "name": "Group",
+        "placeholder": "Enter group name",
+        "tooltip": "Optional group name to associate volume snapshot classes with storage classes",
+        "type": "text",
+        "validation": {
+          "required": false,
+        },
+      },
+    ],
+    "id": "volumeSnapshotClassMapping",
+    "prompts": {
+      "addPrompt": "Add volume snapshot class mapping",
+      "deletePrompt": "Delete volume snapshot class mapping",
+    },
+    "tooltip": "Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.",
     "type": "group",
   },
   {
