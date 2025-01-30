@@ -350,7 +350,7 @@ export const getControlDataKubeVirt = (
           id: 'infraStorageClassName',
           name: t('Infrastructure storage class'),
           tooltip: t(
-            'The name of the infrastructure cluster storage class that will be exposed in the guest cluster. This mapping cannot be changed after creation.'
+            'The name of the infrastructure cluster storage class that is exposed in the guest cluster. You cannot change the mapping after creation.'
           ),
           type: 'text',
           placeholder: t('Enter infrastructure cluster storage class'),
@@ -362,7 +362,7 @@ export const getControlDataKubeVirt = (
         {
           id: 'guestStorageClassName',
           name: t('Guest storage class'),
-          tooltip: t('The name that will be used for this storage class within the guest cluster.'),
+          tooltip: t('The name that is used for this storage class within the guest cluster.'),
           type: 'text',
           placeholder: t('Enter guest cluster storage class name'),
           validation: {
@@ -374,7 +374,7 @@ export const getControlDataKubeVirt = (
           id: 'storageClassGroup',
           name: t('Group'),
           tooltip: t(
-            'Optional: Enter a group name matching a storage class group. This snapshot class will only work with storage classes that share the same group name.'
+            'Optional: Enter a group name matching a storage class group. This snapshot class will only works with storage classes that share the same group name.'
           ),
           type: 'text',
           placeholder: t('Enter group name'),
@@ -402,7 +402,7 @@ export const getControlDataKubeVirt = (
           id: 'infraVolumeSnapshotClassName',
           name: t('Infrastructure volume snapshot class'),
           tooltip: t(
-            'The name of the infrastructure cluster volume snapshot class that will be exposed in the guest cluster.'
+            'The name of the infrastructure cluster volume snapshot class that is exposed in the guest cluster.'
           ),
           type: 'text',
           placeholder: t('Enter infrastructure cluster volume snapshot class'),
@@ -414,7 +414,7 @@ export const getControlDataKubeVirt = (
         {
           id: 'guestVolumeSnapshotClassName',
           name: t('Guest volume snapshot class'),
-          tooltip: t('The name that will be used for this volume snapshot class within the guest cluster.'),
+          tooltip: t('The name that is used for this volume snapshot class within the guest cluster.'),
           type: 'text',
           placeholder: t('Enter guest cluster volume snapshot class name'),
           validation: {
