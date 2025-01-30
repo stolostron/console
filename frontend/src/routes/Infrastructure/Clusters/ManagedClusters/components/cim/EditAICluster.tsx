@@ -203,7 +203,7 @@ const EditAICluster: React.FC = () => {
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={() => navigate(-1)}
                 onSaveDetails={onSaveDetails}
-                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values, isNutanix)}
+                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) =>
                   onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                 }
