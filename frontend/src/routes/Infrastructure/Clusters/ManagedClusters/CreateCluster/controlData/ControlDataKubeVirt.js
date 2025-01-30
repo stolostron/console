@@ -374,7 +374,7 @@ export const getControlDataKubeVirt = (
           id: 'storageClassGroup',
           name: t('Group'),
           tooltip: t(
-            'Optional: Enter a group name matching a storage class group. This snapshot class will only works with storage classes that share the same group name.'
+            'Optional: Enter a group name matching a storage class group. This snapshot class only works with storage classes that share the same group name.'
           ),
           type: 'text',
           placeholder: t('Enter group name'),
