@@ -86,7 +86,7 @@ import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -98,12 +98,13 @@ export default function ManagedClusters() {
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
   const clusters = useAllClusters(true)
+  const localHubName = useLocalHubName()
 
   const onBoardingModalID = 'clusteronboardingmodal'
   const [openOnboardingModal, setOpenOnboardingModal] = useState<boolean>(
     localStorage.getItem(onBoardingModalID)
       ? localStorage.getItem(onBoardingModalID) === 'show'
-      : clusters.length === 1 && clusters.find((lc) => lc.name === 'local-cluster') !== undefined //Check if one cluster exists and it is local-cluster
+      : clusters.length === 1 && clusters.find((lc) => lc.name === localHubName) !== undefined //Check if one cluster exists and it is local-cluster
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +212,7 @@ export function ClustersTable(props: {
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const localHubName = useLocalHubName()
 
   const { t } = useTranslation()
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
@@ -230,9 +232,9 @@ export function ClustersTable(props: {
   const clusterNamespaceColumn = useClusterNamespaceColumn()
   const clusterStatusColumn = useClusterStatusColumn()
   const clusterProviderColumn = useClusterProviderColumn()
-  const clusterControlPlaneColumn = useClusterControlPlaneColumn()
+  const clusterControlPlaneColumn = useClusterControlPlaneColumn(localHubName)
   const clusterDistributionColumn = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)
-  const clusterLabelsColumn = useClusterLabelsColumn(props.clusters!.length > 10)
+  const clusterLabelsColumn = useClusterLabelsColumn(localHubName, props.clusters!.length > 10)
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
@@ -731,9 +733,12 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
       'Standalone clusters will display the namespace used by the ManagedCluster resource. Hosted clusters will display the hosting namespace when the status is "Pending import" and the ManagedCluster namespace when the status is "Ready".'
     ),
     sort: 'namespace',
-    cell: (cluster, search) => {
-      return <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
-    },
+    search: 'namespace',
+    cell: (cluster, search) => (
+      <span style={{ whiteSpace: 'nowrap' }}>
+        <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
+      </span>
+    ),
     exportContent: (cluster) => cluster.namespace,
   }
 }
@@ -768,7 +773,7 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, undefined>) => {
+export const getControlPlaneString = (cluster: Cluster, hubClusterName: string, t: TFunction<string, undefined>) => {
   const clusterHasControlPlane = () => {
     return cluster.nodes?.nodeList?.some((node: NodeInfo) => getRoles(node).includes('control-plane')) || false
   }
@@ -777,7 +782,7 @@ export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, und
     cluster.isHypershift ||
     (cluster.distribution?.displayVersion?.includes('ROSA') && !clusterHasControlPlane())
 
-  const isHub = cluster.name === 'local-cluster' || cluster.isRegionalHubCluster
+  const isHub = cluster.name === hubClusterName || cluster.isRegionalHubCluster
 
   if (isHub && isHosted) {
     return t('Hub, Hosted')
@@ -794,15 +799,15 @@ export const getControlPlaneString = (cluster: Cluster, t: TFunction<string, und
   return t('Standalone')
 }
 
-export function useClusterControlPlaneColumn(): IAcmTableColumn<Cluster> {
+export function useClusterControlPlaneColumn(hubClusterName: string): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
     header: t('table.controlplane'),
     cell: (cluster) => {
-      return getControlPlaneString(cluster, t)
+      return getControlPlaneString(cluster, hubClusterName, t)
     },
     exportContent: (cluster) => {
-      return getControlPlaneString(cluster, t)
+      return getControlPlaneString(cluster, hubClusterName, t)
     },
   }
 }
@@ -876,7 +881,7 @@ export function useClusterDistributionColumn(
   }
 }
 
-export function useClusterLabelsColumn(isLarge: boolean): IAcmTableColumn<Cluster> {
+export function useClusterLabelsColumn(hubClusterName: string, isLarge: boolean): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
     header: t('table.labels'),
@@ -894,7 +899,7 @@ export function useClusterLabelsColumn(isLarge: boolean): IAcmTableColumn<Cluste
             'name',
             'vendor',
             'managed-by',
-            'local-cluster',
+            hubClusterName,
             'openshiftVersion',
           ].filter((label) => {
             return labelKeys.includes(label)

@@ -5,6 +5,7 @@ import { FormGroup, Radio } from '@patternfly/react-core'
 import { AcmForm } from '../../../../../../ui-components'
 import { css } from '@emotion/css'
 import { TFunction } from 'i18next'
+import { FormEvent } from 'react'
 
 const formWrapper = css({
   paddingBottom: '25px',
@@ -14,7 +15,10 @@ const formWrapper = css({
 })
 
 type FormControl = {
-  active: any
+  active: {
+    controllerAvailabilityPolicy: 'HighlyAvailable' | 'SingleReplica'
+    infrastructureAvailabilityPolicy: 'HighlyAvailable' | 'SingleReplica'
+  }
 }
 
 type AvailabilityOptionsFormProps = {
@@ -22,26 +26,16 @@ type AvailabilityOptionsFormProps = {
   handleChange: (control: FormControl) => void
 }
 
-const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: any) => {
-  const { control } = props
+const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = ({ control, handleChange }) => {
   const { t } = useTranslation()
 
-  const handleChange = (_: any, event: any) => {
-    const { control, handleChange } = props
+  const handleRadioChange = (event: FormEvent<HTMLInputElement>) => {
+    const target = event.target as HTMLInputElement
+    const { name, value } = target
 
-    let targetName = ''
-    try {
-      targetName = event.target.name
-    } catch {
-      targetName = ''
-    }
-
-    if (targetName) {
-      if (targetName === 'controllerAvailabilityPolicy') {
-        control.active.controller = event.target.value
-      } else if (targetName === 'infraAvailabilityPolicy') {
-        control.active.infra = event.target.value
-      }
+    control.active = {
+      ...control.active,
+      [name]: value,
     }
     handleChange(control)
   }
@@ -81,8 +75,8 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
           name={'controllerAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
-          defaultChecked={control.active.controller === 'HighlyAvailable'}
-          onChange={handleChange}
+          isChecked={control.active?.controllerAvailabilityPolicy === 'HighlyAvailable'}
+          onChange={handleRadioChange}
         />
         <Radio
           id={'controller-single'}
@@ -90,8 +84,8 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
           name={'controllerAvailabilityPolicy'}
           label={labelSingle()}
           value={'SingleReplica'}
-          defaultChecked={control.active.controller === 'SingleReplica'}
-          onChange={handleChange}
+          isChecked={control.active.controllerAvailabilityPolicy === 'SingleReplica'}
+          onChange={handleRadioChange}
         />
       </FormGroup>
       <FormGroup
@@ -104,20 +98,20 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
         <Radio
           id={'infra-ha'}
           data-testid="infra-ha"
-          name={'infraAvailabilityPolicy'}
+          name={'infrastructureAvailabilityPolicy'}
           label={labelHA()}
           value={'HighlyAvailable'}
-          defaultChecked={control.active.infra === 'HighlyAvailable'}
-          onChange={handleChange}
+          isChecked={control.active?.infrastructureAvailabilityPolicy === 'HighlyAvailable'}
+          onChange={handleRadioChange}
         />
         <Radio
           data-testid="infra-single"
           id={'infra-single'}
-          name={'infraAvailabilityPolicy'}
+          name={'infrastructureAvailabilityPolicy'}
           label={labelSingle()}
           value={'SingleReplica'}
-          defaultChecked={control.active.infra === 'SingleReplica'}
-          onChange={handleChange}
+          isChecked={control.active.infrastructureAvailabilityPolicy === 'SingleReplica'}
+          onChange={handleRadioChange}
         />
       </FormGroup>
     </AcmForm>
@@ -127,11 +121,11 @@ const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = (props: 
 export default AvailabilityOptionsForm
 
 export const summary = (control: any, t: TFunction) => {
-  const { controller, infra } = control.active || {}
-  const getDesc = (ctrl: string) => (ctrl === 'HighlyAvailable' ? t('Highly available') : t('Single replica'))
+  const { controllerAvailabilityPolicy, infrastructureAvailabilityPolicy } = control.active || {}
+  const getDesc = (value: string) => (value === 'HighlyAvailable' ? t('Highly available') : t('Single replica'))
 
-  const controllerDesc = getDesc(controller)
-  const infraDesc = getDesc(infra)
+  const controllerDesc = getDesc(controllerAvailabilityPolicy)
+  const infraDesc = getDesc(infrastructureAvailabilityPolicy)
 
   return [
     { term: t('Controller availability policy'), desc: controllerDesc },

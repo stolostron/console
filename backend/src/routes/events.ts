@@ -12,7 +12,7 @@ import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { ITransformedResource } from '../lib/pagination'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
-import { getServiceAccountToken } from '../lib/serviceAccountToken'
+import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 
@@ -48,6 +48,11 @@ export function getKubeResources(kind: string, apiVersion: string) {
   })
 }
 
+let hubClusterName = 'local-cluster'
+export function getHubClusterName() {
+  return hubClusterName
+}
+
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
@@ -66,7 +71,11 @@ export async function getAuthorizedResources(
     // perform it in item chunks
     const _resources = resources.slice(inx, inx + chunkSize)
     const queue = (_resources as ITransformedResource[]).map((resource) => {
-      return (resource.isRemote ? canListResources(token, resource) : canAccessRemoteResource(token, resource))
+      return (
+        resource.remoteClusters
+          ? canAccessRemoteResource(token, resource.remoteClusters)
+          : canListResources(token, resource)
+      )
         .then((allowResource) => (allowResource ? resource : undefined))
         .catch((err: unknown) => undefined) as Promise<IResource>
     })
@@ -88,17 +97,22 @@ function canListResources(token: string, resource: IResource): Promise<boolean> 
   })
 }
 
-function canAccessRemoteResource(token: string, resource: IResource): Promise<boolean> {
-  if (!resource.metadata?.namespace) return Promise.resolve(false)
-  return canAccess(
-    {
-      kind: 'ManagedClusterView',
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      metadata: { namespace: resource.metadata.namespace },
-    },
-    'create',
-    token
-  )
+// can this user access at least one of these remote clusters
+function canAccessRemoteResource(token: string, clusterNames: string[]): Promise<boolean> {
+  const promises = clusterNames.map((namespace) => {
+    return canAccess(
+      {
+        kind: 'ManagedClusterView',
+        apiVersion: 'view.open-cluster-management.io/v1beta1',
+        metadata: { namespace },
+      },
+      'create',
+      token
+    )
+  })
+  return Promise.allSettled(promises).then((results) => {
+    return results.some((result) => result)
+  })
 }
 
 export interface ResourceCache {
@@ -272,7 +286,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
     const request = got
       .get(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
-        https: { rejectUnauthorized: false },
+        https: { certificateAuthority: getCACertificate() },
       })
       .json<{
         metadata: { _continue?: string; continue?: string; resourceVersion: string }
@@ -351,7 +365,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
       const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
       const request = got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
-        https: { rejectUnauthorized: false },
+        https: { certificateAuthority: getCACertificate() },
         timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
       })
       // TODO use abort signal when on node 16
@@ -554,6 +568,12 @@ function cacheResource(resource: IResource) {
 
   const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
   cache[uid] = { resource, eventID }
+
+  if (resource.kind === 'ManagedCluster') {
+    if (resource?.metadata?.labels['local-cluster'] === 'true') {
+      hubClusterName = resource?.metadata?.name
+    }
+  }
 }
 
 function deleteResource(resource: IResource) {

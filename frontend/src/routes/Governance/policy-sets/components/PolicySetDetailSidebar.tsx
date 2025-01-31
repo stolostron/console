@@ -39,6 +39,7 @@ import {
   usePolicySetClusterPolicyViolationsColumn,
 } from '../../overview/ClusterViolationSummary'
 import { useAddRemediationPolicies } from '../../common/useCustom'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 
 function renderDonutChart(
   clusterComplianceSummary: { compliant: string[]; nonCompliant: string[]; pending: string[] },
@@ -109,6 +110,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
+  const localHubName = useLocalHubName()
   const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
   const selectType = (type: 'Clusters' | 'Policies') => {
     setType(type)
@@ -187,7 +189,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 'name',
                 'vendor',
                 'managed-by',
-                'local-cluster',
+                localHubName,
                 'openshiftVersion',
               ].filter((label) => {
                 return labelKeys.includes(label)
@@ -220,7 +222,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         },
       },
     ],
-    [clusterPolicyViolationsColumn, managedClusters, t]
+    [clusterPolicyViolationsColumn, localHubName, managedClusters, t]
   )
 
   const decision = useMemo(

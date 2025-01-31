@@ -5,6 +5,7 @@ import { logger } from '../lib/logger'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
+import { getServiceAgent } from '../lib/agent'
 import { getAuthenticatedToken } from '../lib/token'
 import { ResourceList } from '../resources/resource-list'
 import { Secret } from '../resources/secret'
@@ -76,7 +77,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
             if (req.headers[header]) headers[header] = req.headers[header]
           }
 
-          await jsonPut(path, {}, managedClusterToken)
+          await jsonPut(path, {}, managedClusterToken, getServiceAgent())
             .then((results) => {
               if (results?.statusCode >= 200 && results?.statusCode < 300) {
                 res.setHeader('Content-Type', 'application/json')

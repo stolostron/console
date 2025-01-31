@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonPost, jsonRequest } from '../lib/json-request'
@@ -32,7 +31,6 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     const serviceAccountToken = getServiceAccountToken()
-    const agent = new Agent({ rejectUnauthorized: false })
 
     const headers: HeadersInit = {
       [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAccountToken}`,
@@ -100,7 +98,6 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
               const fetchResponse = await fetchRetry(path, {
                 method: req.method,
                 headers,
-                agent,
                 body,
                 compress: true,
               })

@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { IncomingMessage, OutgoingHttpHeaders } from 'http'
 import { constants } from 'http2'
-import { Agent, request, RequestOptions } from 'https'
+import { request, RequestOptions } from 'https'
 import { AbortSignal } from 'node-fetch/externals'
 import { logger } from './logger'
-
-const agent = new Agent({ rejectUnauthorized: false })
+import { getDefaultAgent } from './agent'
 
 const { HTTP2_HEADER_CONTENT_LENGTH, HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } =
   constants
@@ -35,7 +34,7 @@ export function requestRetry(options: {
     options.headers[HTTP2_HEADER_AUTHORIZATION] = `Bearer ${options.token}`
   }
   const requestOptions = options as RequestOptions
-  requestOptions.agent = agent
+  requestOptions.agent = getDefaultAgent()
 
   let delay = 10000
   let retries = 0

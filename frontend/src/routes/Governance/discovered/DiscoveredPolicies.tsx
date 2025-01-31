@@ -26,7 +26,7 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { exportObjectString } from '../../../resources/utils'
+import { exportObjectString, parseLabel } from '../../../resources/utils'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -202,6 +202,7 @@ export default function DiscoveredPolicies() {
           { label: 'CertificatePolicy', value: 'CertificatePolicy' },
           { label: 'ConfigurationPolicy', value: 'ConfigurationPolicy' },
           { label: 'Gatekeeper constraint', value: 'Gatekeeper' },
+          { label: 'Gatekeeper mutations', value: 'Gatekeeper Mutations' },
           { label: 'OperatorPolicy', value: 'OperatorPolicy' },
           { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
           { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
@@ -210,6 +211,10 @@ export default function DiscoveredPolicies() {
         tableFilterFn: (selectedValues, item) => {
           if (item.apigroup === 'constraints.gatekeeper.sh') {
             return selectedValues.includes('Gatekeeper')
+          }
+
+          if (item.apigroup === 'mutations.gatekeeper.sh') {
+            return selectedValues.includes('Gatekeeper Mutations')
           }
 
           if (item.apigroup === 'kyverno.io') {
@@ -230,8 +235,31 @@ export default function DiscoveredPolicies() {
         id: 'label',
         label: t('Label'),
         options: labelOptions || [],
+        supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
         tableFilterFn: (selectedValues, item) => {
-          return selectedValues.some((val) => labelMap?.[item.id].labels.includes(val))
+          // if no filters, let all items thru
+          if (!selectedValues.length) return true
+          // if all fillters have != thru all items that don't have that label
+          const allInequity = selectedValues.every((val) => {
+            return val.includes('!=')
+          })
+          const labels = labelMap?.[item.id]?.labels || []
+          if (allInequity) {
+            return selectedValues.every((val) => {
+              const p = parseLabel(val)
+              return !labels.includes(`${p.prefix}=${p.suffix}`)
+            })
+          } else {
+            // else if an item has a match, but doen't have a !=, let it thru
+            let hasEquity = false
+            let hasInequity = false
+            selectedValues.forEach((val) => {
+              const p = parseLabel(val)
+              if (p.oper === '=' && labels.includes(val)) hasEquity = true
+              if (p.oper === '!=' && labels.includes(`${p.prefix}=${p.suffix}`)) hasInequity = true
+            })
+            return !hasInequity && hasEquity
+          }
         },
       },
       {

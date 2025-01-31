@@ -23,10 +23,12 @@ import { TFunction } from 'i18next'
 import { useContext } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export const importHostedControlPlaneCluster = (
   selectedHostedClusterResource: HostedClusterK8sResource,
   t: TFunction,
+  hubClusterName: string,
   toastContext: IAlertContext,
   isACMAvailable: boolean | undefined
 ) => {
@@ -50,7 +52,7 @@ export const importHostedControlPlaneCluster = (
   }
 
   const clusterAnnotations: Record<string, string> = {
-    'import.open-cluster-management.io/hosting-cluster-name': 'local-cluster',
+    'import.open-cluster-management.io/hosting-cluster-name': hubClusterName,
     'import.open-cluster-management.io/klusterlet-deploy-mode': 'Hosted',
     'open-cluster-management/created-via': 'hypershift',
   }
@@ -95,6 +97,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const { cluster, managedCluster } = useClusterDetailsContext()
   const toastContext = useContext(AcmToastContext)
   const { isACMAvailable } = useContext(PluginContext)
+  const localHubName = useLocalHubName()
 
   const [credentials, setCredentials] = React.useState<LoginCredential>()
   const name = cluster?.kubeadmin
@@ -137,7 +140,13 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                   variant="link"
                   style={{ paddingLeft: '0px' }}
                   onClick={() =>
-                    importHostedControlPlaneCluster(selectedHostedClusterResource, t, toastContext, isACMAvailable)
+                    importHostedControlPlaneCluster(
+                      selectedHostedClusterResource,
+                      t,
+                      localHubName,
+                      toastContext,
+                      isACMAvailable
+                    )
                   }
                   isDisabled={HostedClusterReadyStatus?.status !== 'True'}
                 >

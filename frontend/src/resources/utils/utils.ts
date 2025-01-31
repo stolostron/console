@@ -59,6 +59,29 @@ export function returnCSVSafeString(exportValue: string | ReactNode) {
   return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replace(/"/g, '""') : exportValue}"`
 }
 
+export function parseLabel(label?: string | null) {
+  let prefix, oper, suffix
+  if (label && label.includes('=')) {
+    ;[prefix, suffix] = label.split('=')
+    if (prefix.endsWith('!')) {
+      prefix = prefix.slice(0, -1)
+      oper = '!='
+    } else {
+      oper = '='
+    }
+  }
+  return { prefix, oper, suffix }
+}
+
+export function matchesFilterValue(supportsInequality: boolean, label: string, filterLabel: string | null) {
+  if (supportsInequality) {
+    const p = parseLabel(filterLabel)
+    return label === `${p.prefix}=${p.suffix}`
+  } else {
+    return label === filterLabel
+  }
+}
+
 export const getMoment = (timestamp: string, locale = '') => {
   const momentObj = moment(
     timestamp,

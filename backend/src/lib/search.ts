@@ -24,19 +24,18 @@ export type ISearchResult = {
   message?: string
 }
 
-export async function getServiceAccountOptions() {
+export async function getServiceAccountSearchRequestOptions() {
   const serviceAccountToken = getServiceAccountToken()
   const headers: OutgoingHttpHeaders = {
     authorization: `Bearer ${serviceAccountToken}`,
     accept: 'application/json',
     'content-type': 'application/json',
   }
-  const options = await getSearchOptions(headers)
-  options.rejectUnauthorized = false
+  const options = await getSearchRequestOptions(headers)
   return options
 }
 
-export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<RequestOptions> {
+export async function getSearchRequestOptions(headers: OutgoingHttpHeaders): Promise<RequestOptions> {
   const mch = await getMultiClusterHub()
   const namespace = getNamespace()
   const machineNs = process.env.NODE_ENV === 'test' ? 'undefined' : `${mch?.metadata?.namespace || namespace}`
@@ -58,7 +57,7 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
 }
 
 export async function getSearchResults(query: IQuery) {
-  const options = await getServiceAccountOptions()
+  const options = await getServiceAccountSearchRequestOptions()
   const requestTimeout = 2 * 60 * 1000
   return new Promise<ISearchResult>((resolve, reject) => {
     let body = ''
@@ -122,7 +121,7 @@ const ping = {
 }
 
 export async function pingSearchAPI() {
-  const options = await getServiceAccountOptions()
+  const options = await getServiceAccountSearchRequestOptions()
   return new Promise<boolean>((resolve, reject) => {
     let body = ''
     const id = setTimeout(

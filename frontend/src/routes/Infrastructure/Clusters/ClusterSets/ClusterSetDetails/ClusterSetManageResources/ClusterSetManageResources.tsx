@@ -33,6 +33,7 @@ import {
   useClusterProviderColumn,
 } from '../../../ManagedClusters/ManagedClusters'
 import { noop } from 'lodash'
+import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
 
 export function ClusterSetManageResourcesPage() {
   const { t } = useTranslation()
@@ -82,7 +83,7 @@ export function ClusterSetManageResourcesContent() {
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
-
+  const localHubName = useLocalHubName()
   const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
   const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
   const [selectedResources, setSelectedResources] = useState<Cluster[]>(
@@ -114,7 +115,7 @@ export function ClusterSetManageResourcesContent() {
   const clusterNodesColumn = useClusterNodesColumn()
   // collapse all cluster labels when there are lots clusters
   // so that each cluster row doesn't take up multiple rows
-  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10)
+  const clusterLabelsColumn = useClusterLabelsColumn(localHubName, clusters.length > 10)
 
   const columns = useMemo<IAcmTableColumn<Cluster>[]>(
     () => [

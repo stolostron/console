@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
+import { useLocalHubName } from '../hooks/use-local-hub'
 
 export const useIsHypershiftEnabled = () => {
   const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
+  const localHubName = useLocalHubName()
   const { managedClusterAddonsState, multiClusterEnginesState } = useSharedAtoms()
   const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
   const [multiClusterEngine] = useRecoilValue(multiClusterEnginesState)
-  const hypershiftAddon = (managedClusterAddOns?.['local-cluster'] || []).find(
+  const hypershiftAddon = (managedClusterAddOns?.[localHubName] || []).find(
     (mca) => mca.metadata.name === 'hypershift-addon'
   )
   useEffect(() => {

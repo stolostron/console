@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
@@ -8,6 +7,7 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { ResourceList } from '../resources/resource-list'
 import { Secret } from '../resources/secret'
+import { getProxyAgent } from '../lib/agent'
 interface Credential {
   auths: {
     'cloud.openshift.com': {
@@ -53,10 +53,6 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
         // https://github.com/RedHatInsights/insights-results-smart-proxy/blob/master/server/router_utils.go#L168
         const userAgent = 'acm-operator/v2.10.0 cluster/acm-hub'
         const insightsPath = 'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
-        let proxyAgent: HttpsProxyAgent<string> = undefined
-        if (process.env.HTTPS_PROXY) {
-          proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
-        }
 
         // create array of clusterIds with length of 100
         const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
@@ -70,10 +66,12 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch((err: Error) => {
-            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-            return { error: err.message }
-          })
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, getProxyAgent()).catch(
+            (err: Error) => {
+              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+              return { error: err.message }
+            }
+          )
         })
 
         await Promise.all(reqs).then((results) => {

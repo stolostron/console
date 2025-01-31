@@ -5,7 +5,7 @@ import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
 import { notFound } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { getSearchOptions } from '../lib/search'
+import { getSearchRequestOptions } from '../lib/search'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -22,7 +22,7 @@ export async function search(req: Http2ServerRequest, res: Http2ServerResponse):
     for (const header of proxyHeaders) {
       if (req.headers[header]) headers[header] = req.headers[header]
     }
-    const options = await getSearchOptions(headers)
+    const options = await getSearchRequestOptions(headers)
     pipeline(
       req,
       request(options, (response) => {
