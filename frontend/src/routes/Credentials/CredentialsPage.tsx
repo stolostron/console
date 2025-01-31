@@ -31,6 +31,7 @@ import {
 } from '../../resources'
 import { deleteResource } from '../../resources/utils'
 import AcmTimestamp from '../../lib/AcmTimestamp'
+import moment from 'moment'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -232,7 +233,7 @@ export function CredentialsTable(props: {
             cell: (resource) => (
               <span style={{ whiteSpace: 'nowrap' }}>
                 {resource.metadata?.creationTimestamp ? (
-                  <AcmTimestamp timestamp={resource.metadata.creationTimestamp} relative={true} />
+                  <AcmTimestamp timestamp={resource.metadata.creationTimestamp} />
                 ) : (
                   '—'
                 )}
@@ -240,9 +241,8 @@ export function CredentialsTable(props: {
             ),
             exportContent: (item: Secret) => {
               if (item.metadata.creationTimestamp) {
-                return new Date(item.metadata.creationTimestamp).toISOString()
+                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
               }
-              return ''
             },
           },
           {

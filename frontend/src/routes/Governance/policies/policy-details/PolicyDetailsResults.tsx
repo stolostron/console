@@ -16,6 +16,7 @@ import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
 import { TFunction } from 'react-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import moment from 'moment'
 
 export interface ResultsTableData {
   templateName: string
@@ -276,9 +277,9 @@ export default function PolicyDetailsResults() {
       {
         header: t('Last report'),
         sort: 'timestamp',
-        cell: (item: ResultsTableData) =>
-          item.timestamp ? <AcmTimestamp timestamp={item.timestamp} relative={true} /> : '—',
-        exportContent: (item: ResultsTableData) => (item.timestamp ? new Date(item.timestamp).toLocaleString() : '—'),
+        cell: (item: ResultsTableData) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '—'),
+        exportContent: (item: ResultsTableData) =>
+          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
       },
       {
         header: t('History'),
