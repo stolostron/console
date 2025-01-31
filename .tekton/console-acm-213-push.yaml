@@ -32,6 +32,8 @@ spec:
     value: .
   - name: hermetic
     value: "true"
+  - name: build-source-image
+    value: "true"
   - name: prefetch-input
     value:
     - path: .
