@@ -220,7 +220,7 @@ describe('add credentials page', () => {
       'vmw',
       {
         vCenter: 'vcenter.example.com',
-        username: 'username',
+        username: 'username@domain',
         password: 'password',
         cacertificate: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
         cluster: 'cluster',
