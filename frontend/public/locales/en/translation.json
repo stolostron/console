@@ -3213,6 +3213,7 @@
   "Value": "Value",
   "Value must be a valid IPv4 CIDR.": "Value must be a valid IPv4 CIDR.",
   "Value must be in <namespace>/<name> format.": "Value must be in <namespace>/<name> format.",
+  "Value must be in <user>@<domain> format.": "Value must be in <user>@<domain> format.",
   "Value must be integer greater than": "Value must be integer greater than {{0}}.",
   "values": "values",
   "Values": "Values",

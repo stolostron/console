@@ -30,6 +30,7 @@ import {
   validatePublicSshKey,
   validateRequiredPrefix,
   validateVCenterServer,
+  validateVcenterUsername,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
@@ -484,6 +485,7 @@ export function CredentialsForm(
         }
         break
     }
+
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
       stringData.pullSecret += '\n'
     }
@@ -975,6 +977,7 @@ export function CredentialsForm(
             ),
             value: username,
             onChange: setUsername,
+            validation: (value) => validateVcenterUsername(value, t),
             isRequired: true,
           },
           {
