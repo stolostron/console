@@ -35,7 +35,7 @@ const operatorAlert = (localCluster, t) => {
           component="a"
           isInline
           href={
-            localCluster.consoleURL
+            localCluster?.consoleURL
               ? `${localCluster.consoleURL}/operatorhub/all-namespaces?keyword=Openshift+Virtualization`
               : ''
           }
