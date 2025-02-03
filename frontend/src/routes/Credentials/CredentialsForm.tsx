@@ -339,7 +339,34 @@ export function CredentialsForm(
 
   const isHostedControlPlane = credentialsType === Provider.awss3
 
-  function getStringCredentialsData(credentialsType: string, stringData: any) {
+  function stateToData() {
+    const stringData: ProviderConnectionStringData = {}
+    const secret: ProviderConnection = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name,
+        namespace,
+        labels: {
+          ...(providerConnection ? providerConnection.metadata.labels : {}),
+          ...{
+            'cluster.open-cluster-management.io/type': credentialsType,
+            'cluster.open-cluster-management.io/credentials': '',
+          },
+        },
+      },
+      stringData,
+    }
+    let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
+    if (annotations) {
+      delete annotations['kubectl.kubernetes.io/last-applied-configuration']
+      if (Object.keys(annotations).length === 0) annotations = undefined
+    }
+    if (annotations) {
+      secret.metadata.annotations = annotations
+    }
+
     switch (credentialsType) {
       case Provider.aws:
         stringData.aws_access_key_id = aws_access_key_id
@@ -456,37 +483,6 @@ export function CredentialsForm(
         }
         break
     }
-  }
-
-  function stateToData() {
-    const stringData: ProviderConnectionStringData = {}
-    const secret: ProviderConnection = {
-      apiVersion: 'v1',
-      kind: 'Secret',
-      type: 'Opaque',
-      metadata: {
-        name,
-        namespace,
-        labels: {
-          ...(providerConnection ? providerConnection.metadata.labels : {}),
-          ...{
-            'cluster.open-cluster-management.io/type': credentialsType,
-            'cluster.open-cluster-management.io/credentials': '',
-          },
-        },
-      },
-      stringData,
-    }
-    let annotations = providerConnection ? providerConnection?.metadata.annotations : undefined
-    if (annotations) {
-      delete annotations['kubectl.kubernetes.io/last-applied-configuration']
-      if (Object.keys(annotations).length === 0) annotations = undefined
-    }
-    if (annotations) {
-      secret.metadata.annotations = annotations
-    }
-
-    getStringCredentialsData(credentialsType, stringData)
 
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
       stringData.pullSecret += '\n'
