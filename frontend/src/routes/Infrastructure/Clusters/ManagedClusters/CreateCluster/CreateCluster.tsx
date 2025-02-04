@@ -79,6 +79,10 @@ Handlebars.registerHelper('filter', function (array: any[]) {
 Handlebars.registerHelper('length', function (array) {
   return Array.isArray(array) ? array.length : 0
 })
+Handlebars.registerHelper('or', (...args) => {
+  const values = args.slice(0, -1)
+  return values.some(Boolean)
+})
 
 interface CreationStatus {
   status: string
