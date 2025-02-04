@@ -64,13 +64,13 @@ export interface HostedCluster extends IResource {
         }
         storageDriver?: {
           type?: 'None' | 'Default' | 'Manual'
-          manual: {
-            storageClassMapping: {
+          manual?: {
+            storageClassMapping?: {
               infraStorageClassName: string
               guestStorageClassName: string
               group?: string
             }[]
-            volumeSnapshotClassMapping: {
+            volumeSnapshotClassMapping?: {
               infraVolumeSnapshotClassName: string
               guestVolumeSnapshotClassName: string
               group?: string
