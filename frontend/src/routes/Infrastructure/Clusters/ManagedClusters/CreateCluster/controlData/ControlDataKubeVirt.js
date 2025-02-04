@@ -335,6 +335,7 @@ export const getControlDataKubeVirt = (
     {
       id: 'storageClassMapping',
       type: 'group',
+      startWithNone: true, // start with no items in group
       prompts: {
         addPrompt: t('Add storage class mapping'),
         deletePrompt: t('Delete storage class mapping'),
@@ -384,6 +385,7 @@ export const getControlDataKubeVirt = (
     {
       id: 'volumeSnapshotClassMapping',
       type: 'group',
+      startWithNone: true, // start with no items in group
       tooltip: t(
         'Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.'
       ),
