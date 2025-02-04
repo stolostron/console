@@ -1509,12 +1509,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
@@ -1962,12 +1972,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
@@ -2459,12 +2479,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // Review and Save step
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
@@ -2916,12 +2946,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
@@ -3396,12 +3436,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
@@ -3940,12 +3990,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     await clickByText('Next')
 
-    // storage mapping
+    // verify initial state - only prompts visible
+    expect(screen.getByText('Add storage class mapping')).toBeInTheDocument()
+    expect(screen.getByText('Add volume snapshot class mapping')).toBeInTheDocument()
+
+    // verify no mapping fields visible initially
+    expect(screen.queryByTestId('infraStorageClassName')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('infraVolumeSnapshotClassName')).not.toBeInTheDocument()
+
+    // add storage mapping
+    await clickByText('Add storage class mapping')
     await typeByTestId('infraStorageClassName', 'storage-class1')
     await typeByTestId('guestStorageClassName', 'guest-storage1')
     await typeByTestId('storageClassGroup', 'group1')
 
-    // volume snapshot mapping
+    // add volume snapshot mapping
+    await clickByText('Add volume snapshot class mapping')
     await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
     await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
     await typeByTestId('volumeSnapshotGroup', 'group1')
