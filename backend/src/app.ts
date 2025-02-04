@@ -72,7 +72,7 @@ router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
 router.put('/virtualmachines/*', virtualMachineProxy)
 router.put('/virtualmachineinstances/*', virtualMachineProxy)
-router.get('/managedclusterproxy/*', managedClusterProxy)
+router.all('/managedclusterproxy/*', managedClusterProxy)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

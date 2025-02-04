@@ -73,7 +73,7 @@ export async function managedClusterProxy(req: Http2ServerRequest, res: Http2Ser
       const headers = { ...requestHeaders } as HeadersInit
 
       await fetchRetry(resourceUri, {
-        method: 'GET',
+        method: req.method,
         headers: headers,
         agent: new Agent({ ca: getServiceCACertificate() }),
       })
@@ -86,20 +86,20 @@ export async function managedClusterProxy(req: Http2ServerRequest, res: Http2Ser
           logger.error({ msg: 'Error on managedcluster request', error: err.message })
           respondInternalServerError(req, res)
         })
-        // await fetchRetry(resourceUri, {
-        //   method: 'GET',
-        //   headers: headers,
-        //   agent: new Agent({ ca: getServiceCACertificate() }),
-        // })
-        //   .then((response) => response.blob())
-        //   .then(async (blob: any) => {
-        //     res.setHeader('Content-Type', 'application/octet-stream')
-        //     res.end(Buffer.from(await blob.arrayBuffer()))
-        //   })
-        //   .catch((err: Error): void => {
-        //     logger.error({ msg: 'Error on managedcluster request', error: err.message })
-        //     respondInternalServerError(req, res)
-        //   })
+      // await fetchRetry(resourceUri, {
+      //   method: 'GET',
+      //   headers: headers,
+      //   agent: new Agent({ ca: getServiceCACertificate() }),
+      // })
+      //   .then((response) => response.blob())
+      //   .then(async (blob: any) => {
+      //     res.setHeader('Content-Type', 'application/octet-stream')
+      //     res.end(Buffer.from(await blob.arrayBuffer()))
+      //   })
+      //   .catch((err: Error): void => {
+      //     logger.error({ msg: 'Error on managedcluster request', error: err.message })
+      //     respondInternalServerError(req, res)
+      //   })
     } catch (err) {
       logger.error(err)
       respondInternalServerError(req, res)

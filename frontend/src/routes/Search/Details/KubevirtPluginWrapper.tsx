@@ -1,9 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext, useMemo, PropsWithChildren } from 'react'
 import {
+  ConsoleFetch,
+  consoleFetch as consoleFetchDefault,
   K8sModel,
   K8sResourceCommon,
   ResourceIcon,
+  ResourceLink as ResourceLinkDefault,
   ResourceLinkProps,
   WatchK8sResource,
 } from '@openshift-console/dynamic-plugin-sdk'
@@ -19,6 +22,24 @@ import { ClusterScope, ClusterScopeContext } from '../../../plugin-extensions/Cl
 import { useKubevirtPluginContext } from '../../../plugin-extensions/hooks/useKubevirtPluginContext'
 import classNames from 'classnames'
 import { useK8sGetResource } from './useK8sGetResource'
+import { getBackendUrl } from '../../../resources/utils'
+
+const KUBERNETES_API_PREFIX = '/api/kubernetes/'
+
+const getWithCluster = (localHubName?: string) => {
+  return (cluster?: string) => {
+    const isLocalCluster = localHubName === cluster || (!localHubName && cluster === 'local-cluster')
+    const consoleFetch: ConsoleFetch = isLocalCluster
+      ? consoleFetchDefault
+      : async (url, options, timeout) => {
+          const overrideUrl = url?.startsWith(KUBERNETES_API_PREFIX)
+            ? `${getBackendUrl()}/managedclusterproxy/${cluster}/${url.substring(KUBERNETES_API_PREFIX.length)}`
+            : url
+          return consoleFetchDefault(overrideUrl, options, timeout)
+        }
+    return { ...DefaultDynamicPluginSDK, consoleFetch }
+  }
+}
 
 const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
   const {
@@ -42,7 +63,6 @@ const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
   const { cluster = localCluster, localHubOverride } = useContext(ClusterScopeContext)
 
   if (useIsLocalHub(cluster) && !localHubOverride) {
-    const { ResourceLink: ResourceLinkDefault } = DefaultDynamicPluginSDK
     return <ResourceLinkDefault {...props} />
   }
 
@@ -158,7 +178,6 @@ export const getResourceUrl = (urlProps: ResourceUrlProps): string | null => {
 }
 
 const useMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
-  console.log(`USE-MULTICLUSTER-SEARCH-WATCH ${JSON.stringify(watchOptions)}`)
   const { groupVersionKind, limit, namespace, namespaced } = watchOptions
   const { group, version, kind } = groupVersionKind ?? {}
   const {
@@ -232,18 +251,18 @@ const KubevirtPluginWrapper = ({
   const KubevirtPluginContext = useKubevirtPluginContext()
   const useK8sWatchResource = useK8sGetResource
 
-  const contextValue = useMemo(
-    () => ({
-      clusterScope: { ClusterScope },
+  const contextValue = useMemo(() => {
+    const withCluster = getWithCluster(localHubName)
+    return {
+      clusterScope: { ClusterScope, withCluster },
       currentCluster,
       currentNamespace,
-      dynamicPluginSDK: { ...DefaultDynamicPluginSDK, ResourceLink, useK8sWatchResource },
+      dynamicPluginSDK: { ...withCluster(defaultClusterName), ResourceLink, useK8sWatchResource },
       getResourceUrl,
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
-    }),
-    [currentCluster, currentNamespace, useK8sWatchResource]
-  )
+    }
+  }, [currentCluster, currentNamespace, defaultClusterName, localHubName, useK8sWatchResource])
 
   return (
     <KubevirtPluginContext.Provider value={contextValue}>
