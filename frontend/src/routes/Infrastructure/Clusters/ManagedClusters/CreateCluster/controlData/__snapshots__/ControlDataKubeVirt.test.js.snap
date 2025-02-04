@@ -417,6 +417,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       "addPrompt": "Add storage class mapping",
       "deletePrompt": "Delete storage class mapping",
     },
+    "startWithNone": true,
     "type": "group",
   },
   {
@@ -465,6 +466,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       "addPrompt": "Add volume snapshot class mapping",
       "deletePrompt": "Delete volume snapshot class mapping",
     },
+    "startWithNone": true,
     "tooltip": "Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.",
     "type": "group",
   },
@@ -873,6 +875,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       "addPrompt": "Add storage class mapping",
       "deletePrompt": "Delete storage class mapping",
     },
+    "startWithNone": true,
     "type": "group",
   },
   {
@@ -921,6 +924,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       "addPrompt": "Add volume snapshot class mapping",
       "deletePrompt": "Delete volume snapshot class mapping",
     },
+    "startWithNone": true,
     "tooltip": "Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.",
     "type": "group",
   },
