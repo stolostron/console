@@ -99,5 +99,13 @@
             "path": "/multicloud/governance",
             "component": { "$codeRef": "governance.default" }
         }
+    },
+    {
+        "type": "console.page/route/standalone",
+        "properties": {
+            "path": "/multicloud/infrastructure/vmconsole/:cluster/:ns/:name",
+            "exact": false,
+            "component": { "$codeRef": "vmconsole.default" }
+        }
     }
 ]

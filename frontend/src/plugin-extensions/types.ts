@@ -5,6 +5,7 @@ import { OverviewTab } from './extensions'
 import { SearchDetails } from './extensions/SearchDetails'
 import { KubevirtPluginContextExtension } from './extensions/KubevirtContext'
 import { ResourceList } from './extensions/ResourceList'
+import { ComponentType } from 'react'
 
 export type AcmExtension = Partial<{
   applicationAction: ApplicationActionProps[]
@@ -13,4 +14,5 @@ export type AcmExtension = Partial<{
   searchDetails: ResolvedExtension<SearchDetails>[]
   kubevirtContext: ResolvedExtension<KubevirtPluginContextExtension>[]
   virtualMachinesList: ResolvedExtension<ResourceList>
+  ConsoleStandAlone: ComponentType
 }>

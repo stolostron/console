@@ -1,10 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CodeRef, Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import * as OpenshiftDynamicPluginSDK from '@openshift-console/dynamic-plugin-sdk'
-import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 import { Context, FC } from 'react'
-import { getResourceUrl } from '../../routes/Search/Details/KubevirtPluginWrapper'
+import { getGetStandaloneVMConsoleUrl, getResourceUrl } from '../../routes/Search/Details/KubevirtPluginWrapper'
 import { ClusterScope } from '../ClusterScopeContext'
+
+type MulticlusterResource<T> = { cluster?: string } & T
+export type SearchResult<R extends K8sResourceCommon | K8sResourceCommon[]> = R extends (infer T)[]
+  ? MulticlusterResource<T>[]
+  : MulticlusterResource<R>
 
 /** Properties type */
 export type KubevirtPluginData = {
@@ -13,9 +18,12 @@ export type KubevirtPluginData = {
   currentNamespace?: string
   dynamicPluginSDK: typeof OpenshiftDynamicPluginSDK
   getResourceUrl: typeof getResourceUrl
+  getStandaloneVMConsoleUrl: ReturnType<typeof getGetStandaloneVMConsoleUrl>
   k8sAPIPath: string
   supportsMulticluster: boolean
-  useMulticlusterSearchWatch: <T>(watchOptions: WatchK8sResource) => [T | undefined, boolean, Error | undefined]
+  useMulticlusterSearchWatch: <T extends K8sResourceCommon | K8sResourceCommon[]>(
+    watchOptions: WatchK8sResource
+  ) => [SearchResult<T> | undefined, boolean, Error | undefined]
 }
 
 export type KubevirtPluginDataProps = {

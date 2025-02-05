@@ -23,6 +23,7 @@ import { useKubevirtPluginContext } from '../../../plugin-extensions/hooks/useKu
 import classNames from 'classnames'
 import { useK8sGetResource } from './useK8sGetResource'
 import { getBackendUrl } from '../../../resources/utils'
+import { KubevirtPluginData, SearchResult } from '../../../plugin-extensions/extensions/KubevirtContext'
 
 const KUBERNETES_API_PREFIX = '/api/kubernetes/'
 
@@ -44,6 +45,12 @@ const getWithCluster = (localHubName?: string) => {
 const getK8sAPIPath = (localHubName: string | undefined, cluster: string) => {
   const isLocalCluster = localHubName === cluster || (!localHubName && cluster === 'local-cluster')
   return isLocalCluster ? '/api/kubernetes' : `${getBackendUrl()}/managedclusterproxy/${cluster}`
+}
+
+export const getGetStandaloneVMConsoleUrl = (cluster: string) => {
+  return ({ name, namespace }: { name: string; namespace: string }) => {
+    return generatePath(NavigationPath.virtualMachineConsole, { cluster, ns: namespace, name })
+  }
 }
 
 const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
@@ -182,7 +189,9 @@ export const getResourceUrl = (urlProps: ResourceUrlProps): string | null => {
   return `/k8s/${namespaced ? namespaceUrl : 'cluster'}/${ref}/${name}`
 }
 
-const useMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
+const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch'] = (
+  watchOptions: WatchK8sResource
+) => {
   const { groupVersionKind, limit, namespace, namespaced } = watchOptions
   const { group, version, kind } = groupVersionKind ?? {}
   const {
@@ -239,7 +248,7 @@ const useMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
       }),
     [kind, result]
   )
-  return [data, !loading, error]
+  return [data as SearchResult<any>, !loading, error]
 }
 
 const KubevirtPluginWrapper = ({
@@ -252,8 +261,10 @@ const KubevirtPluginWrapper = ({
 }>) => {
   const localHubName = useLocalHubName()
   const defaultClusterName = currentCluster ?? localHubName ?? 'local-cluster'
+  const isLocalHub = useIsLocalHub(defaultClusterName)
 
   const KubevirtPluginContext = useKubevirtPluginContext()
+  const { getStandaloneVMConsoleUrl } = useContext(KubevirtPluginContext)
   const useK8sWatchResource = useK8sGetResource
 
   const contextValue = useMemo(() => {
@@ -264,11 +275,22 @@ const KubevirtPluginWrapper = ({
       currentNamespace,
       dynamicPluginSDK: { ...withCluster(defaultClusterName), ResourceLink, useK8sWatchResource },
       getResourceUrl,
+      getStandaloneVMConsoleUrl: isLocalHub
+        ? getStandaloneVMConsoleUrl
+        : getGetStandaloneVMConsoleUrl(defaultClusterName),
       k8sAPIPath: getK8sAPIPath(localHubName, defaultClusterName),
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
     }
-  }, [currentCluster, currentNamespace, defaultClusterName, localHubName, useK8sWatchResource])
+  }, [
+    currentCluster,
+    currentNamespace,
+    defaultClusterName,
+    getStandaloneVMConsoleUrl,
+    isLocalHub,
+    localHubName,
+    useK8sWatchResource,
+  ])
 
   return (
     <KubevirtPluginContext.Provider value={contextValue}>

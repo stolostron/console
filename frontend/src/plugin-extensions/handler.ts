@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { isResourceListPage, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { isApplicationAction, isApplicationListColumn, isOverviewTab } from './extensions'
 import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
 import { AcmExtension } from './types'
 import { isSearchDetails } from './extensions/SearchDetails'
 import { isKubevirtPluginContext } from './extensions/KubevirtContext'
 import { isResourceList } from './extensions/ResourceList'
+import { isVirtualMachineConsole } from './extensions/VirtualMachineConsole'
 
 // Type guards
 export function useAcmExtension() {
@@ -50,6 +51,12 @@ export function useAcmExtension() {
       const { group, version, kind } = rl.properties.model
       return group === 'kubevirt.io' && version === 'v1' && kind == 'VirtualMachine'
     })
+  }
+
+  // Resolve VirtualMachineConsole page
+  const [virtualMachineConsole, resolvedVirtualMachineConsole] = useResolvedExtensions(isVirtualMachineConsole)
+  if (resolvedVirtualMachineConsole) {
+    acmExtension.ConsoleStandAlone = virtualMachineConsole?.[0]?.properties.component
   }
 
   // list of all acm supported extensions
