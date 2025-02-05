@@ -15,6 +15,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
 import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 import { handleVMActions } from '../SearchResults/utils'
+import { v4 as uuidv4 } from 'uuid'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -75,7 +76,8 @@ export default function DetailsPage() {
             setResourceError(err.message)
           })
       } else {
-        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+        const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
+        fireManagedClusterView(cluster, kind, apiversion, name, namespace, viewName, viewName !== undefined)
           .then((viewResponse) => {
             if (viewResponse?.message) {
               setResourceError(viewResponse.message)
