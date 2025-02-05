@@ -285,7 +285,7 @@ describe('Export from clusterpool table', () => {
       [
         'Name,Credential type,Namespace,Additional actions,Created\n' +
           '"provider-connection-1","Red Hat Ansible Automation Platform","provider-connection-namespace","-",-\n' +
-          '"provider-connection-2","unknown","provider-connection-namespace","-","7 months ago"\n' +
+          '"provider-connection-2","unknown","provider-connection-namespace","-","2024-06-28T03:06:13.000Z"\n' +
           '"ocm-api-token","Red Hat OpenShift Cluster Manager","ocm","Create cluster discovery",-',
       ],
       { type: 'text/csv' }

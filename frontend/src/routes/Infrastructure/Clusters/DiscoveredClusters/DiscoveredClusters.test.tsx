@@ -155,8 +155,8 @@ describe('DiscoveredClusters', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Last active,Namespace,Type,OpenShift version,Infrastructure provider,Created,Discovered\n' +
-          '"test-cluster-01","4 years","alpha","OpenShift Container Platform","4.5.5","aws","4 years","Invalid date"\n' +
-          '"test-cluster-02","4 years","discovered-cluster-namespace","OpenShift Container Platform","4.6.1","gcp","4 years","Invalid date"',
+          '"test-cluster-01","2020-07-30T19:09:43.000Z","alpha","OpenShift Container Platform","4.5.5","aws","2020-07-30T19:09:43.000Z",-\n' +
+          '"test-cluster-02","2020-07-30T19:09:43.000Z","discovered-cluster-namespace","OpenShift Container Platform","4.6.1","gcp","2020-07-30T19:09:43.000Z",-',
       ],
       { type: 'text/csv' }
     )

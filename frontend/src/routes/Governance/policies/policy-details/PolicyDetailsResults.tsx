@@ -10,13 +10,12 @@ import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-ut
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
-import { getGroupFromApiVersion } from '../../../../resources/utils'
+import { getGroupFromApiVersion, getISOStringTimestamp } from '../../../../resources/utils'
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
 import { TFunction } from 'react-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import moment from 'moment'
 
 export interface ResultsTableData {
   templateName: string
@@ -278,8 +277,11 @@ export default function PolicyDetailsResults() {
         header: t('Last report'),
         sort: 'timestamp',
         cell: (item: ResultsTableData) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '—'),
-        exportContent: (item: ResultsTableData) =>
-          item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').toString() : '-',
+        exportContent: (item: ResultsTableData) => {
+          if (item.timestamp) {
+            return getISOStringTimestamp(item.timestamp.toString())
+          }
+        },
       },
       {
         header: t('History'),

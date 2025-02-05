@@ -237,7 +237,7 @@ describe('Export from policy details results table', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Cluster,Violations,Template,Message,Remediation,Last report\n' +
-          '"local-cluster","No violations","policy-set-with-1-placement-policy-1","notification - namespaces [test] found as specified, therefore this Object template is compliant","inform","Wed Feb 16 2022 19:07:46 GMT+0000"',
+          '"local-cluster","No violations","policy-set-with-1-placement-policy-1","notification - namespaces [test] found as specified, therefore this Object template is compliant","inform","2022-02-16T19:07:46.000Z"',
       ],
       { type: 'text/csv' }
     )

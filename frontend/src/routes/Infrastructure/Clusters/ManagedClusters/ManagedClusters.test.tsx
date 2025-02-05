@@ -330,13 +330,13 @@ describe('Clusters Page export', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Status,Infrastructure,Control plane type,Distribution version,Labels,Nodes,Add-ons,Creation date\n' +
-          '"managed-cluster-0-clusterset","managed-cluster-0-clusterset","Creating","Amazon Web Services","Standalone",-,"\'cluster.open-cluster-management.io/clusterset\':\'test-cluster-set\'","healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-6-no-managed-cluster","managed-cluster-6-no-managed-cluster","Detached","Amazon Web Services","Standalone",-,-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-1","managed-cluster-1","Failed","Google Cloud Platform","Standalone",-,"\'cloud\':\'Google\'","healthy: 0, danger: 0, unknown: 0","healthy: 1, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-2-no-upgrade","managed-cluster-2-no-upgrade","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-3-upgrade-available","managed-cluster-3-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-4-upgrading","managed-cluster-4-upgrading","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"\n' +
-          '"managed-cluster-5-upgrade-available","managed-cluster-5-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 1, danger: 1, unknown: 1","healthy: 0, danger: 0, in progress: 0, unknown: 0","-"',
+          '"managed-cluster-0-clusterset","managed-cluster-0-clusterset","Creating","Amazon Web Services","Standalone",-,"\'cluster.open-cluster-management.io/clusterset\':\'test-cluster-set\'","healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-6-no-managed-cluster","managed-cluster-6-no-managed-cluster","Detached","Amazon Web Services","Standalone",-,-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-1","managed-cluster-1","Failed","Google Cloud Platform","Standalone",-,"\'cloud\':\'Google\'","healthy: 0, danger: 0, unknown: 0","healthy: 1, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-2-no-upgrade","managed-cluster-2-no-upgrade","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-3-upgrade-available","managed-cluster-3-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-4-upgrading","managed-cluster-4-upgrading","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
+          '"managed-cluster-5-upgrade-available","managed-cluster-5-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 1, danger: 1, unknown: 1","healthy: 0, danger: 0, in progress: 0, unknown: 0",-',
       ],
       { type: 'text/csv' }
     )

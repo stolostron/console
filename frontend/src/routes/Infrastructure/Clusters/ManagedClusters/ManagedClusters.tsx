@@ -46,6 +46,7 @@ import {
   getClusterStatusLabel,
   ResourceErrorCode,
   patchResource,
+  getISOStringTimestamp,
 } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
@@ -978,11 +979,6 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
-const getCreationTimestampString = (cluster: Cluster) => {
-  const dateTimeCell = getDateTimeCell(cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-')
-  return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
-}
-
 export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
@@ -1001,7 +997,9 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
       return <AcmTimestamp timestamp={cluster.creationTimestamp ?? ''} />
     },
     exportContent: (cluster) => {
-      return getCreationTimestampString(cluster)
+      if (cluster.creationTimestamp) {
+        return getISOStringTimestamp(cluster.creationTimestamp)
+      }
     },
   }
 }

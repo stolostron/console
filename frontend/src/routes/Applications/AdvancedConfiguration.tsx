@@ -13,11 +13,9 @@ import {
   TextVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -37,12 +35,14 @@ import {
   SubscriptionDefinition,
   SubscriptionKind,
 } from '../../resources'
+import { getISOStringTimestamp } from '../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
 import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 import { useHubCluster } from './helpers/useHubCluster'
-import { getMoment } from '../../resources/utils'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -531,7 +531,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             },
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
-                return getMoment(resource.metadata?.creationTimestamp).toString()
+                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
               }
             },
             sort: 'metadata.creationTimestamp',
@@ -645,7 +645,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
-                return getMoment(resource.metadata?.creationTimestamp).toString()
+                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
               }
             },
           },
@@ -697,7 +697,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
-                return getMoment(resource.metadata?.creationTimestamp).toString()
+                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
               }
             },
           },
@@ -761,7 +761,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
-                return getMoment(resource.metadata?.creationTimestamp).toString()
+                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
               }
             },
           },

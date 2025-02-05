@@ -59,6 +59,10 @@ export function returnCSVSafeString(exportValue: string | ReactNode) {
   return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replace(/"/g, '""') : exportValue}"`
 }
 
+export const getISOStringTimestamp = (timestamp: string) => {
+  return new Date(timestamp).toISOString()
+}
+
 export function parseLabel(label?: string | null) {
   let prefix, oper, suffix
   if (label && label.includes('=')) {

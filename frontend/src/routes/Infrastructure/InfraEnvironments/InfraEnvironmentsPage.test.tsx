@@ -141,7 +141,7 @@ describe('Export from host inventory table', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Infrastructure environment name,Namespace,Labels,Location,Hosts,Creation date\n' +
-          '"infra-env-name","infra-env-name","\'agentclusterinstalls.extensions.hive.openshift.io/location\':\'brno\',\'networkType\':\'dhcp\'","brno","healthy: 0, danger: 0, warning: 0","-"',
+          '"infra-env-name","infra-env-name","\'agentclusterinstalls.extensions.hive.openshift.io/location\':\'brno\',\'networkType\':\'dhcp\'","brno","healthy: 0, danger: 0, warning: 0",-',
       ],
       { type: 'text/csv' }
     )

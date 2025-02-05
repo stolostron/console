@@ -51,6 +51,7 @@ import {
   ResourceError,
   createResource,
   exportObjectString,
+  getISOStringTimestamp,
   getResource,
   listResources,
   patchResource,
@@ -556,7 +557,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                   return getDateTimeCellValue(infraEnv)
                 },
                 exportContent: (infraEnv) => {
-                  return getDateTimeCellValue(infraEnv)
+                  if (infraEnv.metadata?.creationTimestamp) {
+                    return getISOStringTimestamp(infraEnv.metadata?.creationTimestamp)
+                  }
                 },
               },
               {

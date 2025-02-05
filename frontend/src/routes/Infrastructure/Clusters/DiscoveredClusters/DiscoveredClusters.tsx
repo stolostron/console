@@ -21,6 +21,7 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { getISOStringTimestamp } from '../../../../resources/utils'
 
 export default function DiscoveredClustersPage() {
   return (
@@ -230,12 +231,11 @@ export function DiscoveredClustersTable(props: {
                 .humanize()}
         </span>
       ),
-      exportContent: (discoveredCluster) =>
-        discoveredCluster.spec.activityTimestamp === undefined
-          ? 'N/A'
-          : moment
-              .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.activityTimestamp).getTime()))
-              .humanize(),
+      exportContent: (discoveredCluster) => {
+        if (discoveredCluster.spec.activityTimestamp) {
+          return getISOStringTimestamp(discoveredCluster.spec.activityTimestamp)
+        }
+      },
     },
     {
       header: t('dcTbl.namespace'),
@@ -300,11 +300,9 @@ export function DiscoveredClustersTable(props: {
         </span>
       ),
       exportContent: (discoveredCluster) => {
-        return discoveredCluster.spec.creationTimestamp === undefined
-          ? ['N/A']
-          : moment
-              .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.creationTimestamp).getTime()))
-              .humanize()
+        if (discoveredCluster.spec.creationTimestamp) {
+          return getISOStringTimestamp(discoveredCluster.spec.creationTimestamp)
+        }
       },
     },
     {
@@ -324,13 +322,9 @@ export function DiscoveredClustersTable(props: {
         </span>
       ),
       exportContent: (discoveredCluster) => {
-        return discoveredCluster.spec.creationTimestamp === undefined
-          ? ['N/A']
-          : moment
-              .duration(
-                Math.abs(new Date().getTime() - new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime())
-              )
-              .humanize()
+        if (discoveredCluster.metadata?.creationTimestamp) {
+          return getISOStringTimestamp(discoveredCluster.metadata?.creationTimestamp)
+        }
       },
     },
   ]

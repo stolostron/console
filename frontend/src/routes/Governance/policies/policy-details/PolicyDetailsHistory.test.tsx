@@ -194,7 +194,7 @@ describe('Export from policy details history table', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Violations,Message,Last report\n' +
-          '"No violations","notification - namespaces [test] found as specified, therefore this Object template is compliant","Wed Feb 16 2022 19:07:46 GMT+0000"',
+          '"No violations","notification - namespaces [test] found as specified, therefore this Object template is compliant","2022-02-16T19:07:46.000Z"',
       ],
       { type: 'text/csv' }
     )
