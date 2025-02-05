@@ -41,6 +41,11 @@ const getWithCluster = (localHubName?: string) => {
   }
 }
 
+const getK8sAPIPath = (localHubName: string | undefined, cluster: string) => {
+  const isLocalCluster = localHubName === cluster || (!localHubName && cluster === 'local-cluster')
+  return isLocalCluster ? '/api/kubernetes' : `${getBackendUrl()}/managedclusterproxy/${cluster}`
+}
+
 const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
   const {
     className,
@@ -259,6 +264,7 @@ const KubevirtPluginWrapper = ({
       currentNamespace,
       dynamicPluginSDK: { ...withCluster(defaultClusterName), ResourceLink, useK8sWatchResource },
       getResourceUrl,
+      k8sAPIPath: getK8sAPIPath(localHubName, defaultClusterName),
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
     }

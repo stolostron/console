@@ -8,13 +8,14 @@ import { ClusterScope } from '../ClusterScopeContext'
 
 /** Properties type */
 export type KubevirtPluginData = {
+  clusterScope: { ClusterScope: FC<ClusterScope>; withCluster: (cluster?: string) => typeof OpenshiftDynamicPluginSDK }
   currentCluster?: string
   currentNamespace?: string
   dynamicPluginSDK: typeof OpenshiftDynamicPluginSDK
-  getResourceURL: typeof getResourceUrl
+  getResourceUrl: typeof getResourceUrl
+  k8sAPIPath: string
   supportsMulticluster: boolean
   useMulticlusterSearchWatch: <T>(watchOptions: WatchK8sResource) => [T | undefined, boolean, Error | undefined]
-  clusterScope: { ClusterScope: FC<ClusterScope>; withCluster: (cluster?: string) => typeof OpenshiftDynamicPluginSDK }
 }
 
 export type KubevirtPluginDataProps = {
