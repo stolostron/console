@@ -1,12 +1,9 @@
-import * as _ from 'lodash'
+/* Copyright Contributors to the Open Cluster Management project */
 import { useContext, useEffect, useState } from 'react'
 import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { getResourceNameApiPath, getResourcePlural } from '../../../resources'
 import { ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: FIXME missing exports due to out-of-sync @types/react-redux version
 
 type GetK8sResult<R extends K8sResourceCommon | K8sResourceCommon[]> = [R, boolean, any]
 

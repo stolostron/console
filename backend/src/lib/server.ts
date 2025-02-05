@@ -12,6 +12,7 @@ import {
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
 import { logger } from './logger'
+import { managedClusterProxyWS } from '../routes/managedClusterProxy'
 
 let server: Http2Server | undefined
 
@@ -77,6 +78,12 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             if (socketID < nextSocketID) nextSocketID = socketID
             sockets[socketID] = undefined
           })
+        })
+        .on('upgrade', (req: Http2ServerRequest, socket: TLSSocket, head: Buffer) => {
+          if (req.url.startsWith('/multicloud/managedclusterproxy')) {
+            req.url = req.url.substring(11)
+            return managedClusterProxyWS(req, socket, head)
+          }
         })
         .on('request', (req: Http2ServerRequest, res: Http2ServerResponse) => {
           if (isStopping) {

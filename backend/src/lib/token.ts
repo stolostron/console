@@ -7,6 +7,7 @@ import { logger } from '../lib/logger'
 import { ResourceList } from '../resources/resource-list'
 import { Secret } from '../resources/secret'
 import { jsonRequest } from './json-request'
+import { TLSSocket } from 'tls'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
@@ -43,7 +44,24 @@ export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2S
   throw new Error('Unauthenticated request')
 }
 
+export async function getAuthenticatedTokenWS(req: Http2ServerRequest, socket: TLSSocket): Promise<string> {
+  const token = getToken(req)
+  if (token) {
+    const authResponse = await isAuthenticated(token)
+    if (authResponse.status === constants.HTTP_STATUS_OK) {
+      return token
+    } else {
+      socket.destroy()
+      void authResponse.blob()
+    }
+  } else {
+    socket.destroy()
+  }
+  throw new Error('Unauthenticated request')
+}
+
 export async function getManagedClusterToken(managedClusterName: string, serviceAccountToken: string) {
+  // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
   const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${managedClusterName}/secrets`
   return jsonRequest(secretPath, serviceAccountToken)
     .then((response: ResourceList<Secret>) => {

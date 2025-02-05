@@ -29,7 +29,7 @@ import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 import { virtualMachineProxy } from './routes/virtualMachineProxy'
-import { managedClusterProxy } from './routes/managedClusterProxy'
+import { managedclusterProxy } from './routes/managedClusterProxy'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -72,7 +72,7 @@ router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
 router.put('/virtualmachines/*', virtualMachineProxy)
 router.put('/virtualmachineinstances/*', virtualMachineProxy)
-router.all('/managedclusterproxy/*', managedClusterProxy)
+router.all('/managedclusterproxy/*', managedclusterProxy)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

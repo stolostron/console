@@ -50,7 +50,6 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
 
         if (hasAuth) {
           // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
-          const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
           const managedClusterToken: string = await getManagedClusterToken(body.managedCluster, serviceAccountToken)
 
           // req.url is one of: /virtualmachines/<action> OR /virtualmachineinstances/<action>
