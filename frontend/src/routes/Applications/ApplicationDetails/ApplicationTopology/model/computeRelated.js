@@ -189,7 +189,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
   })
 
   // need to preprocess and sync up podStatusMap for controllerrevision to parent
-  syncControllerRevisionPodStatusMap(resourceMap)
+  syncControllerRevisionPodStatusMap(resourceMap, topology.hubClusterName)
   syncReplicaSetCountToPodNode(resourceMap)
   return resourceMap
 }
