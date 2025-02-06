@@ -22,6 +22,7 @@ import {
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////// CREATE MAP OF RELATED TYPES ///////////////////////
 ///////////////////////////////////////////////////////////////////////////
+const SPEC_CLUSTERSNAMES = 'specs.clustersNames'
 
 //creates a map with all related kinds for this app, not only pod types
 export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGrouped, hasHelmReleases, topology) => {
@@ -68,7 +69,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
         //cluster node, set search found clusters objects here
         updateAppClustersMatchingSearch(node, clustersObjects)
       }
-      const nodeClusters = node.type === 'subscription' ? clusterNamesList : _.get(node, 'specs.clustersNames')
+      const nodeClusters = node.type === 'subscription' ? clusterNamesList : _.get(node, SPEC_CLUSTERSNAMES)
       _.set(
         node,
         'specs.searchClusters',
@@ -189,7 +190,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
   })
 
   // need to preprocess and sync up podStatusMap for controllerrevision to parent
-  syncControllerRevisionPodStatusMap(resourceMap)
+  syncControllerRevisionPodStatusMap(resourceMap, topology.hubClusterName)
   syncReplicaSetCountToPodNode(resourceMap)
   return resourceMap
 }
@@ -285,7 +286,7 @@ export const syncReplicaSetCountToPodNode = (resourceMap) => {
       const pod = resourceMap[resourceName]
       const parentName = _.get(pod, 'specs.parent.parentName', '')
       const parentType = _.get(pod, 'specs.parent.parentType', '')
-      const clusterName = _.get(pod, 'specs.clustersNames', '').toString()
+      const clusterName = _.get(pod, SPEC_CLUSTERSNAMES, '').toString()
       const parentResource =
         resourceMap[`${parentType}-${parentName}-${clusterName}`] || resourceMap[`${parentType}-${parentName}-`]
 
@@ -297,7 +298,7 @@ export const syncReplicaSetCountToPodNode = (resourceMap) => {
             const replicaSet = replicaSetValueArr[0]
             const desiredCount = replicaSet.desired || 1
             _.set(pod, 'specs.replicaCount', desiredCount)
-            _.set(pod, 'specs.resourceCount', desiredCount * _.get(pod, 'specs.clustersNames', []).length)
+            _.set(pod, 'specs.resourceCount', desiredCount * _.get(pod, SPEC_CLUSTERSNAMES, []).length)
           }
         }
       }
