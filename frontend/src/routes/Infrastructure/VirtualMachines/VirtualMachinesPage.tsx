@@ -98,7 +98,7 @@ function VirtualMachineTable() {
       return undefined // undefined items triggers loading state table
     }
     // combine VMI node & ip address data in VM object
-    const reducedVMAndVMI = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
+    const reducedVMAndVMI: ISearchResult[] = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
       const key = `${curr.name}/${curr.namespace}/${curr.cluster}`
       if (curr.kind === 'VirtualMachine') {
         acc[key] = {
@@ -114,7 +114,7 @@ function VirtualMachineTable() {
       }
       return acc
     }, {})
-    return Object.values(reducedVMAndVMI ?? {})
+    return Object.values(reducedVMAndVMI ?? {}).filter((vm: any) => vm.name) // filter out objects that are missing the VM data (only have VMI data)
   }, [data?.searchResult, error, loading])
 
   const filters = useMemo<ITableFilter<any>[]>(() => {
