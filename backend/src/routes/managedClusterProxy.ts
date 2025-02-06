@@ -1,31 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { logger } from '../lib/logger'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
-import { getAuthenticatedToken, getAuthenticatedTokenWS, getManagedClusterToken } from '../lib/token'
+import { getAuthenticatedToken, getManagedClusterToken, isHttp2ServerResponse } from '../lib/token'
 import { canAccess } from './events'
-import { fetchRetry } from '../lib/fetch-retry'
-import { HeadersInit } from 'node-fetch'
-import { Agent } from 'https'
 import { getServiceCACertificate } from '../lib/serviceAccountToken'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import proxy from 'http2-proxy'
-import { getServiceAgent } from '../lib/agent'
 import { TLSSocket } from 'tls'
 
-const { HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_CONTENT_TYPE } = constants
+const REMOVE_HEADERS = [constants.HTTP2_HEADER_HOST, 'origin']
 
-const proxyHeaders = [
-  constants.HTTP2_HEADER_ACCEPT,
-  constants.HTTP2_HEADER_ACCEPT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_LENGTH,
-  constants.HTTP2_HEADER_CONTENT_TYPE,
-]
-
-export async function managedclusterProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-  const token = await getAuthenticatedToken(req, res)
+export async function managedClusterProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>
+export async function managedClusterProxy(req: Http2ServerRequest, socket: TLSSocket, head: Buffer): Promise<void>
+export async function managedClusterProxy(
+  req: Http2ServerRequest,
+  resOrSocket: Http2ServerResponse | TLSSocket,
+  head?: Buffer
+): Promise<void> {
+  const token = await getAuthenticatedToken(req, resOrSocket)
   if (!token) return
 
   const serviceAccountToken = getServiceAccountToken()
@@ -48,34 +42,62 @@ export async function managedclusterProxy(req: Http2ServerRequest, res: Http2Ser
 
   if (!hasAuth) {
     logger.error({ msg: 'Unauthorized request...' })
-    return respond(res, 'Unauthorized request...', 401)
+    if (isHttp2ServerResponse(resOrSocket)) {
+      return respond(resOrSocket, 'Unauthorized request...', 401)
+    } else {
+      resOrSocket.destroy()
+    }
   }
 
   try {
     const managedClusterToken: string = await getManagedClusterToken(managedCluster, serviceAccountToken)
     const mce = await getMultiClusterEngine()
-    const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local`
     const proxyHost = process.env.CLUSTER_PROXY_ADDON_USER_HOST || proxyService
-    const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9902
+    const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9092
 
     req.url = `/${managedCluster}/${apiPath}`
-    req.headers['authorization'] = `Bearer ${managedClusterToken}`
-    delete req.headers['host']
 
-    await proxy.web(req, res, {
+    for (const header of REMOVE_HEADERS) {
+      if (req.headers[header]) {
+        delete req.headers[header]
+      }
+    }
+    req.headers[constants.HTTP2_HEADER_AUTHORIZATION] = `Bearer ${managedClusterToken}`
+
+    logger.info(`HOSTNAME: ${proxyHost} PORT: ${proxyPort}`)
+
+    const proxyOptions = {
       protocol: 'https',
       hostname: proxyHost,
       port: proxyPort,
       ca: getServiceCACertificate(),
-    })
+    } as const
+
+    const proxyHandler = (err: Error) => {
+      if (err) {
+        logger.error(err)
+        throw err
+      }
+    }
+
+    if (isHttp2ServerResponse(resOrSocket)) {
+      await proxy.web(req, resOrSocket, proxyOptions, proxyHandler)
+    } else {
+      await proxy.ws(req, resOrSocket, head, proxyOptions, proxyHandler)
+    }
   } catch (err) {
     logger.error(err)
-    respondInternalServerError(req, res)
+    if (isHttp2ServerResponse(resOrSocket)) {
+      respondInternalServerError(req, resOrSocket)
+    } else {
+      resOrSocket.destroy()
+    }
   }
 }
 
 export async function managedClusterProxyWS(req: Http2ServerRequest, socket: TLSSocket, head: Buffer): Promise<void> {
-  const token = await getAuthenticatedTokenWS(req, socket)
+  const token = await getAuthenticatedToken(req, socket)
   if (!token) return
 
   const serviceAccountToken = getServiceAccountToken()
@@ -104,14 +126,21 @@ export async function managedClusterProxyWS(req: Http2ServerRequest, socket: TLS
   try {
     const managedClusterToken: string = await getManagedClusterToken(managedCluster, serviceAccountToken)
     const mce = await getMultiClusterEngine()
-    const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local`
     const proxyHost = process.env.CLUSTER_PROXY_ADDON_USER_HOST || proxyService
-    const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9902
+    const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9092
 
     req.url = `/${managedCluster}/${apiPath}`
-    req.headers['authorization'] = `Bearer ${managedClusterToken}`
-    delete req.headers['host']
-    delete req.headers['origin']
+
+    for (const header of REMOVE_HEADERS) {
+      if (req.headers[header]) {
+        const value = Array.isArray(req.headers[header]) ? req.headers[header].join(', ') : req.headers[header]
+        delete req.headers[header]
+      }
+    }
+    req.headers[constants.HTTP2_HEADER_AUTHORIZATION] = `Bearer ${managedClusterToken}`
+
+    logger.info(`HOSTNAME: ${proxyHost} PORT: ${proxyPort}`)
 
     await proxy.ws(
       req,
@@ -123,9 +152,10 @@ export async function managedClusterProxyWS(req: Http2ServerRequest, socket: TLS
         port: proxyPort,
         ca: getServiceCACertificate(),
       },
-      (err, req, socket, head) => {
+      (err) => {
         if (err) {
-          socket.destroy()
+          logger.error(err)
+          throw err
         }
       }
     )

@@ -28,34 +28,39 @@ export async function isAuthenticated(token: string) {
   })
 }
 
-export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2ServerResponse): Promise<string> {
-  const token = getToken(req)
-  if (token) {
-    const authResponse = await isAuthenticated(token)
-    if (authResponse.status === constants.HTTP_STATUS_OK) {
-      return token
-    } else {
-      res.writeHead(authResponse.status).end()
-      void authResponse.blob()
-    }
-  } else {
-    unauthorized(req, res)
-  }
-  throw new Error('Unauthenticated request')
-}
+export const isHttp2ServerResponse = (
+  resOrSocket: Http2ServerResponse | TLSSocket
+): resOrSocket is Http2ServerResponse => 'socket' in resOrSocket
 
-export async function getAuthenticatedTokenWS(req: Http2ServerRequest, socket: TLSSocket): Promise<string> {
+export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2ServerResponse): Promise<string>
+export async function getAuthenticatedToken(req: Http2ServerRequest, socket: TLSSocket): Promise<string>
+export async function getAuthenticatedToken(
+  req: Http2ServerRequest,
+  resOrSocket: Http2ServerResponse | TLSSocket
+): Promise<string>
+export async function getAuthenticatedToken(
+  req: Http2ServerRequest,
+  resOrSocket: Http2ServerResponse | TLSSocket
+): Promise<string> {
   const token = getToken(req)
+
   if (token) {
     const authResponse = await isAuthenticated(token)
     if (authResponse.status === constants.HTTP_STATUS_OK) {
       return token
     } else {
-      socket.destroy()
+      if (isHttp2ServerResponse(resOrSocket)) {
+        resOrSocket.writeHead(authResponse.status).end()
+      } else {
+        resOrSocket.destroy()
+      }
+
       void authResponse.blob()
     }
+  } else if (isHttp2ServerResponse(resOrSocket)) {
+    unauthorized(req, resOrSocket)
   } else {
-    socket.destroy()
+    resOrSocket.destroy()
   }
   throw new Error('Unauthenticated request')
 }
