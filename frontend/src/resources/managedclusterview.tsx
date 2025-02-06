@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import _ from 'lodash'
 import { ResourceError, createResource, deleteResource, getResource } from './utils/resource-request'
 import { getGroupFromApiVersion } from './utils/utils'
+import { v4 as uuidv4 } from 'uuid'
 
 export const ManagedClusterViewApiVersion = 'view.open-cluster-management.io/v1beta1'
 export type ManagedClusterViewApiVersionType = 'view.open-cluster-management.io/v1beta1'
@@ -77,9 +78,7 @@ export async function fireManagedClusterView(
   resourceKind: string,
   resourceApiVersion: string,
   resourceName: string,
-  resourceNamespace?: string,
-  managedClusterViewName?: string,
-  skipCheckExisting?: boolean
+  resourceNamespace?: string
 ) {
   if (resourceKind.toLowerCase() === 'secret' || resourceKind.toLowerCase() === 'secrets') {
     // We do not allow users to view secrets as this could allow lesser permissioned users to get around RBAC.
@@ -89,9 +88,15 @@ export async function fireManagedClusterView(
     }
   }
 
+  const skipCheckExisting = process.env.NODE_ENV !== 'test'
   const viewName =
-    managedClusterViewName ??
-    crypto.createHash('sha1').update(`${clusterName}-${resourceName}-${resourceKind}`).digest('hex').substr(0, 63)
+    process.env.NODE_ENV === 'test'
+      ? crypto
+          .createHash('sha1')
+          .update(`${clusterName}-${resourceName}-${resourceKind}`)
+          .digest('hex')
+          .substring(0, 63)
+      : uuidv4()
 
   let getResult: any
 
