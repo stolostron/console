@@ -12,9 +12,8 @@ import {
   nockSearch,
   nockAggegateRequest,
 } from '../../lib/nock-util'
-import { PluginContext } from '../../lib/PluginContext'
-import { PluginDataContext } from '../../lib/PluginDataContext'
-import { ocpApi, waitForText } from '../../lib/test-util'
+import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
+import { waitForText } from '../../lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -116,9 +115,8 @@ describe('Applications Page', () => {
         <MemoryRouter>
           <PluginContext.Provider
             value={{
+              ...defaultPlugin,
               acmExtensions: acmExtension,
-              dataContext: PluginDataContext,
-              ocpApi,
             }}
           >
             <Routes>

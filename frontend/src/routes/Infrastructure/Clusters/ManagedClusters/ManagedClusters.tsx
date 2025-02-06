@@ -87,6 +87,7 @@ import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -997,7 +998,7 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
     search: 'creationDate',
     cellTransforms: [nowrap],
     cell: (cluster) => {
-      return getCreationTimestampString(cluster)
+      return <AcmTimestamp timestamp={cluster.creationTimestamp ?? ''} />
     },
     exportContent: (cluster) => {
       return getCreationTimestampString(cluster)

@@ -5,8 +5,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { PluginContext } from '../../../lib/PluginContext'
-import { PluginDataContext } from '../../../lib/PluginDataContext'
+import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
 import Overview from './Overview'
 import { getAddonRequest, getAddonResponse } from './Overview.sharedmocks'
@@ -29,13 +28,8 @@ it('should render overview page with extension', async () => {
           <MockedProvider mocks={[]}>
             <PluginContext.Provider
               value={{
+                ...defaultPlugin,
                 isACMAvailable: false,
-                isOverviewAvailable: true,
-                isSubmarinerAvailable: true,
-                isApplicationsAvailable: true,
-                isGovernanceAvailable: true,
-                isSearchAvailable: true,
-                dataContext: PluginDataContext,
                 acmExtensions: {
                   overviewTab: [
                     {
@@ -49,9 +43,6 @@ it('should render overview page with extension', async () => {
                       },
                     },
                   ],
-                },
-                ocpApi: {
-                  useK8sWatchResource: () => [[] as any, true, undefined],
                 },
               }}
             >
@@ -81,13 +72,8 @@ it('should render overview page layout when extension tab crashes', async () => 
           <MockedProvider mocks={[]}>
             <PluginContext.Provider
               value={{
+                ...defaultPlugin,
                 isACMAvailable: false,
-                isOverviewAvailable: true,
-                isSubmarinerAvailable: true,
-                isApplicationsAvailable: true,
-                isGovernanceAvailable: true,
-                isSearchAvailable: true,
-                dataContext: PluginDataContext,
                 acmExtensions: {
                   overviewTab: [
                     {
@@ -103,9 +89,6 @@ it('should render overview page layout when extension tab crashes', async () => 
                       },
                     },
                   ],
-                },
-                ocpApi: {
-                  useK8sWatchResource: () => [[] as any, true, undefined],
                 },
               }}
             >
