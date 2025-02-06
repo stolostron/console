@@ -99,7 +99,7 @@ export function SummaryClustersCard(props: {
   }
 
   const legendWidth = useMemo(() => {
-    var stringLegend = legendData.reduce((longest, current) => {
+    const stringLegend = legendData.reduce((longest, current) => {
       return current.name && current.name.length > longest.length ? current.name : longest
     }, '')
     const width = getLegendWidth(stringLegend)
