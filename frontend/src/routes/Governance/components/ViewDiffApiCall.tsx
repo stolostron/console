@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../resources'
-import { v4 as uuidv4 } from 'uuid'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Alert, Button, Divider, Modal, ModalVariant, Skeleton, Title } from '@patternfly/react-core'
@@ -29,9 +28,7 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
       setRelatedObjs(undefined)
       setTemplateErr(undefined)
 
-      const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
-
-      fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster, viewName, viewName !== undefined)
+      fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster)
         .then((viewResponse) => {
           if (ignore) {
             return
