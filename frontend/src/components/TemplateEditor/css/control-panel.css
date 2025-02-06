@@ -839,3 +839,9 @@
   margin: 16px 0px 24px 0px;
   font-size: smaller;
 }
+.storage-mapping-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}

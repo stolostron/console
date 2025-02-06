@@ -9,7 +9,7 @@ import get from 'lodash/get'
 ///////////////////////////////////////////////////////////////////////////////
 export const initializeControlData = (initialControlData, onControlInitialize, i18n, uniqueGroupID, inGroup) => {
   const parentControlData = initialControlData.map((control) => {
-    const { type, controlData, groupCnt = 1 } = control
+    const { type, controlData, groupCnt = 1, startWithNone } = control
     switch (type) {
       case 'group': {
         let active = control.active
@@ -18,6 +18,9 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
         }
         if (!control.nextUniqueGroupID) {
           control.nextUniqueGroupID = 1
+        }
+        if (startWithNone && active.length === 0) {
+          return control
         }
         while (active.length < groupCnt) {
           active.push(initializeControlData(controlData, onControlInitialize, i18n, control.nextUniqueGroupID, true))

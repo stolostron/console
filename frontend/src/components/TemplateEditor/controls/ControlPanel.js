@@ -265,13 +265,23 @@ class ControlPanel extends React.Component {
   }
 
   renderGroup(control, grpId = '') {
-    const { id, active = [], hidden, prompts } = control
+    const { id, active = [], hidden, prompts, startWithNone } = control
     active.forEach((controlData) => {
       controlData.forEach((ctrl) => {
         ctrl.group = control
       })
     })
     const isHidden = typeof hidden === 'function' ? hidden() : hidden
+    // shows add button only when no mappings and startWithNone is true
+    if (startWithNone && active.length === 0) {
+      return (
+        prompts?.addPrompt && (
+          <div className="storage-mapping-buttons" key={id}>
+            {this.renderAddGroupButton(control)}
+          </div>
+        )
+      )
+    }
     return (
       !isHidden && (
         <React.Fragment key={id}>
@@ -286,7 +296,8 @@ class ControlPanel extends React.Component {
               <React.Fragment key={`${controlData[0].id}Group${inx}`}>
                 <div className="creation-view-group-container" key={groupType}>
                   {prompts &&
-                    ((prompts.disableDeleteForFirst && inx > 0) ||
+                    (startWithNone ||
+                      (prompts.disableDeleteForFirst && inx > 0) ||
                       (!prompts.disableDeleteForFirst && active.length > 1)) &&
                     this.renderDeleteGroupButton(control, inx)}
                   {this.renderGroupControlSections(controlData, inx, groupId)}
