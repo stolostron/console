@@ -89,10 +89,24 @@ export function SummaryClustersCard(props: {
     return component
   }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title])
 
+  const getLegendWidth = (legendData: string) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (ctx){
+      ctx.font = '18px RedHatText'
+      return ctx.measureText(legendData).width
+    } 
+    else return 150
+  }
+
   const legendWidth = useMemo(() => {
-    const columns = Math.ceil(legendData.length / 6)
-    const remainder = legendData.length % 6 > 0 ? 150 : 0
-    return columns * 150 + remainder
+    var stringLegend = legendData.reduce((longest, current) => {
+      return current.name && current.name.length > longest.length ? current.name : longest
+    }, '')
+    const width = getLegendWidth(stringLegend)
+    const columns = Math.trunc(legendData.length / 6)
+    const remainder = legendData.length % 6 > 0 ? width : 0
+    return columns * width + remainder
   }, [legendData])
 
   const legend = useMemo(() => {
