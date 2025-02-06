@@ -1,11 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext, useEffect, useState } from 'react'
-import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import {
+  K8sResourceCommon,
+  UseK8sWatchResource,
+  WatchK8sResource,
+  WatchK8sResult,
+  useK8sWatchResource as useK8sWatchResourceDefault,
+} from '@openshift-console/dynamic-plugin-sdk'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { getResourceNameApiPath, getResourcePlural } from '../../../resources'
 import { ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
-
-type GetK8sResult<R extends K8sResourceCommon | K8sResourceCommon[]> = [R, boolean, any]
+import { useIsLocalHub, useLocalHubName } from '../../../hooks/use-local-hub'
 
 export type Query = { [key: string]: any }
 
@@ -17,20 +22,25 @@ export type MakeQuery = (
   limit?: number
 ) => Query
 
-export const useK8sGetResource = (resource: WatchK8sResource | null): GetK8sResult<any> => {
+export const useK8sWatchResource: UseK8sWatchResource = <R extends K8sResourceCommon | K8sResourceCommon[]>(
+  resource: WatchK8sResource | null
+): WatchK8sResult<R> => {
   const noResource = !resource
   const { isList, groupVersionKind, namespace, name } = resource ?? {}
   const { group, version, kind = '' } = groupVersionKind ?? {}
 
-  const [data, setData] = useState<any>(isList ? [] : {})
+  const [data, setData] = useState<R>((isList ? [] : {}) as R)
   const [loaded, setLoaded] = useState<boolean>(false)
   const [error, setError] = useState<any>(undefined)
-  const { cluster: clusterName } = useContext(ClusterScopeContext)
+  const localHubName = useLocalHubName()
+  const { cluster = localHubName } = useContext(ClusterScopeContext)
+  const isLocalHub = useIsLocalHub(cluster)
+  const [dataDefault, loadedDefault, errorDefault] = useK8sWatchResourceDefault<R>(isLocalHub ? resource : null)
 
   useEffect(() => {
     const fetchData = async () => {
       if (noResource) {
-        setData(isList ? [] : {})
+        setData((isList ? [] : {}) as R)
         setLoaded(false)
         setError(undefined)
         return
@@ -50,7 +60,7 @@ export const useK8sGetResource = (resource: WatchK8sResource | null): GetK8sResu
           plural: pluralResourceKind,
         })
 
-        const requestPath = `${getBackendUrl()}/managedclusterproxy/${clusterName}${resourcePath}`
+        const requestPath = `${getBackendUrl()}/managedclusterproxy/${cluster}${resourcePath}`
         const headers: HeadersInit = { ['Content-Type']: 'application/json' }
 
         fetchRetry({
@@ -77,8 +87,27 @@ export const useK8sGetResource = (resource: WatchK8sResource | null): GetK8sResu
         setLoaded(true)
       }
     }
-    fetchData()
-  }, [clusterName, group, isList, kind, name, namespace, noResource, version])
+    if (isLocalHub) {
+      setData(dataDefault)
+      setLoaded(loadedDefault)
+      setError(errorDefault)
+    } else {
+      fetchData()
+    }
+  }, [
+    cluster,
+    dataDefault,
+    errorDefault,
+    group,
+    isList,
+    isLocalHub,
+    kind,
+    loadedDefault,
+    name,
+    namespace,
+    noResource,
+    version,
+  ])
 
   return [data, loaded, error]
 }

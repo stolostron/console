@@ -21,16 +21,16 @@ import { useSearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { ClusterScope, ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
 import { useKubevirtPluginContext } from '../../../plugin-extensions/hooks/useKubevirtPluginContext'
 import classNames from 'classnames'
-import { useK8sGetResource } from './useK8sGetResource'
+import { useK8sWatchResource } from './useK8sWatchResource'
 import { getBackendUrl } from '../../../resources/utils'
 import { KubevirtPluginData, SearchResult } from '../../../plugin-extensions/extensions/KubevirtContext'
 
 const KUBERNETES_API_PREFIX = '/api/kubernetes/'
 
-const getWithCluster = (localHubName?: string) => {
+const getWithCluster = (localHubName: string) => {
   return (cluster?: string) => {
-    const isLocalCluster = localHubName === cluster || (!localHubName && cluster === 'local-cluster')
-    const consoleFetch: ConsoleFetch = isLocalCluster
+    const isLocalHub = localHubName === cluster
+    const consoleFetch: ConsoleFetch = isLocalHub
       ? consoleFetchDefault
       : async (url, options, timeout) => {
           const overrideUrl = url?.startsWith(KUBERNETES_API_PREFIX)
@@ -42,9 +42,9 @@ const getWithCluster = (localHubName?: string) => {
   }
 }
 
-const getK8sAPIPath = (localHubName: string | undefined, cluster: string) => {
-  const isLocalCluster = localHubName === cluster || (!localHubName && cluster === 'local-cluster')
-  return isLocalCluster ? '/api/kubernetes' : `${getBackendUrl()}/managedclusterproxy/${cluster}`
+const getK8sAPIPath = (localHubName: string, cluster: string) => {
+  const isLocalHub = localHubName === cluster
+  return isLocalHub ? '/api/kubernetes' : `${getBackendUrl()}/managedclusterproxy/${cluster}`
 }
 
 export const getGetStandaloneVMConsoleUrl = (cluster: string) => {
@@ -71,7 +71,7 @@ const ResourceLink: React.FC<ResourceLinkProps> = (props) => {
     onClick,
     truncate,
   } = props
-  const localCluster = useLocalHubName() ?? 'local-cluster'
+  const localCluster = useLocalHubName()
   const { cluster = localCluster, localHubOverride } = useContext(ClusterScopeContext)
 
   if (useIsLocalHub(cluster) && !localHubOverride) {
@@ -260,13 +260,11 @@ const KubevirtPluginWrapper = ({
   currentNamespace?: string
 }>) => {
   const localHubName = useLocalHubName()
-  const defaultClusterName = currentCluster ?? localHubName ?? 'local-cluster'
+  const defaultClusterName = currentCluster ?? localHubName
   const isLocalHub = useIsLocalHub(defaultClusterName)
 
   const KubevirtPluginContext = useKubevirtPluginContext()
   const { getStandaloneVMConsoleUrl } = useContext(KubevirtPluginContext)
-  const useK8sWatchResource = useK8sGetResource
-
   const contextValue = useMemo(() => {
     const withCluster = getWithCluster(localHubName)
     return {
@@ -282,15 +280,7 @@ const KubevirtPluginWrapper = ({
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
     }
-  }, [
-    currentCluster,
-    currentNamespace,
-    defaultClusterName,
-    getStandaloneVMConsoleUrl,
-    isLocalHub,
-    localHubName,
-    useK8sWatchResource,
-  ])
+  }, [currentCluster, currentNamespace, defaultClusterName, getStandaloneVMConsoleUrl, isLocalHub, localHubName])
 
   return (
     <KubevirtPluginContext.Provider value={contextValue}>
