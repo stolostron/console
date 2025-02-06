@@ -91,7 +91,11 @@ export async function fireManagedClusterView(
   const skipCheckExisting = process.env.NODE_ENV !== 'test'
   const viewName =
     process.env.NODE_ENV === 'test'
-      ? crypto.createHash('sha1').update(`${clusterName}-${resourceName}-${resourceKind}`).digest('hex').substr(0, 63)
+      ? crypto
+          .createHash('sha1')
+          .update(`${clusterName}-${resourceName}-${resourceKind}`)
+          .digest('hex')
+          .substring(0, 63)
       : uuidv4()
 
   let getResult: any
