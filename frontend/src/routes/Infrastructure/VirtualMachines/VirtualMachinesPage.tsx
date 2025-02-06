@@ -15,6 +15,7 @@ import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-ic
 import { Fragment, useMemo, useState } from 'react'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { OCP_DOC } from '../../../lib/doc-util'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
@@ -41,7 +42,6 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult, useGetRowActions } from '../../Search/SearchResults/utils'
-import { OCP_DOC } from '../../../lib/doc-util'
 
 function VirtualMachineTable() {
   const { t } = useTranslation()
@@ -71,10 +71,10 @@ function VirtualMachineTable() {
     if (error) {
       return []
     } else if (loading) {
-      return undefined
+      return undefined // undefined items triggers loading state table
     }
     // combine VMI node & ip address data in VM object
-    const reducedVMAndVMI = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
+    const reducedVMAndVMI: ISearchResult[] = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
       const key = `${curr.name}/${curr.namespace}/${curr.cluster}`
       if (curr.kind === 'VirtualMachine') {
         acc[key] = {
@@ -90,7 +90,7 @@ function VirtualMachineTable() {
       }
       return acc
     }, {})
-    return Object.values(reducedVMAndVMI)
+    return Object.values(reducedVMAndVMI ?? {}).filter((vm: any) => vm.name) // filter out objects that are missing the VM data (only have VMI data)
   }, [data?.searchResult, error, loading])
 
   const filters = useMemo<ITableFilter<any>[]>(() => {
