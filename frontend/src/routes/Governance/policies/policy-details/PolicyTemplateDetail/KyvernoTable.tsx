@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Flex, FlexItem, Spinner } from '@patternfly/react-core'
-import { v4 as uuidv4 } from 'uuid'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { compareStrings } from '../../../../../ui-components'
 import { IRelatedObjMessages, IRuleMessage } from './KyvernoRelatedResources'
@@ -82,17 +81,8 @@ export const KyvernoMessages = ({
         setLoading(false)
       } else if (!loading) {
         setLoading(true)
-        const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
 
-        fireManagedClusterView(
-          reportCluster,
-          reportKind,
-          reportVersion,
-          reportName,
-          reportNs,
-          viewName,
-          viewName !== undefined
-        )
+        fireManagedClusterView(reportCluster, reportKind, reportVersion, reportName, reportNs)
           .then((viewResponse) => {
             if (ignore) {
               return

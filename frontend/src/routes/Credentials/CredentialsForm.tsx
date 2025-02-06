@@ -30,6 +30,7 @@ import {
   validatePublicSshKey,
   validateRequiredPrefix,
   validateVCenterServer,
+  validateVcenterUsername,
 } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
@@ -55,6 +56,7 @@ import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateClu
 import { CredentialsType } from './CredentialsType'
 import { useProjects } from '../../hooks/useProjects'
 import schema from './schema.json'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -145,6 +147,7 @@ export function CredentialsForm(
     API_TOKEN = 'offline-token',
     SERVICE_ACCOUNT = 'service-account',
   }
+  const localHubName = useLocalHubName()
 
   const handleAuthMethodChange = (value: OCMAuthMethod) => {
     setAuthMethod(value)
@@ -329,8 +332,8 @@ export function CredentialsForm(
 
   // AWS S3 bucket
   const s3values = useMemo(
-    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: 'local-cluster' }),
-    []
+    () => ({ name: 'hypershift-operator-oidc-provider-s3-credentials', namespace: localHubName }),
+    [localHubName]
   )
 
   const { cancelForm } = useContext(LostChangesContext)
@@ -482,6 +485,7 @@ export function CredentialsForm(
         }
         break
     }
+
     if (stringData?.pullSecret && !stringData.pullSecret.endsWith('\n')) {
       stringData.pullSecret += '\n'
     }
@@ -973,6 +977,7 @@ export function CredentialsForm(
             ),
             value: username,
             onChange: setUsername,
+            validation: (value) => validateVcenterUsername(value, t),
             isRequired: true,
           },
           {

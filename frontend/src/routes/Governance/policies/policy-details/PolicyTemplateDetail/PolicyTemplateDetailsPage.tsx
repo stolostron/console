@@ -3,7 +3,6 @@ import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem 
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { v4 as uuidv4 } from 'uuid'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../../resources'
 import { PageSection } from '@patternfly/react-core'
@@ -122,17 +121,8 @@ export function PolicyTemplateDetailsPage() {
     if (kind && templateName && apiVersion) {
       setTemplateLoading(true)
       const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-      const viewName = process.env.NODE_ENV === 'test' ? undefined : uuidv4()
 
-      fireManagedClusterView(
-        templateClusterName,
-        kind,
-        version,
-        templateName,
-        templateNamespace,
-        viewName,
-        viewName !== undefined
-      )
+      fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
         .then((viewResponse) => {
           if (ignore) {
             return

@@ -307,7 +307,13 @@ describe('HypershiftImportCommand import HCP', () => {
     nockPostRequest('/api/v1/namespaces', namespace, 200)
     nockPostRequest('/apis/cluster.open-cluster-management.io/v1/managedclusters', managedCluster, 200)
     nockPostRequest('/apis/agent.open-cluster-management.io/v1/namespaces/feng-test/klusterletaddonconfigs', kac, 400)
-    const requestResult = importHostedControlPlaneCluster(mockHostedCluster, t, toastContextMock, false)
+    const requestResult = importHostedControlPlaneCluster(
+      mockHostedCluster,
+      t,
+      'local-cluster',
+      toastContextMock,
+      false
+    )
 
     let errCode = 200
     try {
@@ -323,7 +329,7 @@ describe('HypershiftImportCommand import HCP', () => {
     nockPostRequest('/api/v1/namespaces', namespace, 200)
     nockPostRequest('/apis/cluster.open-cluster-management.io/v1/managedclusters', managedCluster, 200)
     nockPostRequest('/apis/agent.open-cluster-management.io/v1/namespaces/feng-test/klusterletaddonconfigs', kac, 404)
-    const requestResult = importHostedControlPlaneCluster(mockHostedCluster, t, toastContextMock, true)
+    const requestResult = importHostedControlPlaneCluster(mockHostedCluster, t, 'local-cluster', toastContextMock, true)
 
     let errCode = 200
     try {
