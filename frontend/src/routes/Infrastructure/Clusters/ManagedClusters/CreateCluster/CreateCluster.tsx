@@ -353,6 +353,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         return t('import.form.invalid.dns.label')
       }
     }
+    return undefined
   }
 
   function validateAdditionalNetworks(active: string) {
@@ -382,7 +383,10 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         break
       case 'namespace':
         if (infrastructureType === Provider.kubevirt) {
-          control.validation = { contextTester: validateKubeVirtNamespace }
+          control.validation = {
+            contextTester: validateKubeVirtNamespace,
+            required: true,
+          }
           //  only include namespaces that do not correspond to an existing managed cluster
           const hostedClusterNamespaces = namespaces.filter(
             (ns) => !managedClusters.find((mc) => mc.metadata.name === ns.metadata.name)
