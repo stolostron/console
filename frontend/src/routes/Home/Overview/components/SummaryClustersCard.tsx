@@ -92,11 +92,10 @@ export function SummaryClustersCard(props: {
   const getLegendWidth = (legendData: string) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    if (ctx){
+    if (ctx) {
       ctx.font = '18px RedHatText'
       return ctx.measureText(legendData).width
-    } 
-    else return 150
+    } else return 150
   }
 
   const legendWidth = useMemo(() => {
