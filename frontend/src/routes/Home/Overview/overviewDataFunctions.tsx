@@ -3,6 +3,7 @@ import { PrometheusResponse } from '@openshift-console/dynamic-plugin-sdk'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 
+import { Icon } from '@patternfly/react-core'
 import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
 import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
@@ -447,23 +448,23 @@ export function getAddonHealth(
     {
       key: t('Degraded'),
       value: addonData['Degraded'].count,
-      link: `${NavigationPath.managedClusters}?addons=Degraded`,
+      link: `${NavigationPath.managedClusters}?add-ons=Degraded`,
     },
     {
       key: t('Progressing'),
       value: addonData['Progressing'].count,
-      link: `${NavigationPath.managedClusters}?addons=Progressing`,
+      link: `${NavigationPath.managedClusters}?add-ons=Progressing`,
     },
     {
       key: t('Unknown'),
       value: addonData['Unknown'].count,
-      link: `${NavigationPath.managedClusters}?addons=Unknown`,
+      link: `${NavigationPath.managedClusters}?add-ons=Unknown`,
     },
     {
       key: t('Available'),
       value: addonData['Available'].count,
       isPrimary: true,
-      link: `${NavigationPath.managedClusters}?addons=Available`,
+      link: `${NavigationPath.managedClusters}?add-ons=Available`,
     },
   ]
 }
