@@ -4,23 +4,23 @@ exports[`Correctly returns getAddonHealth 1`] = `
 Array [
   Object {
     "key": "Degraded",
-    "link": "/multicloud/infrastructure/clusters/managed?addons=Degraded",
+    "link": "/multicloud/infrastructure/clusters/managed?add-ons=Degraded",
     "value": 1,
   },
   Object {
     "key": "Progressing",
-    "link": "/multicloud/infrastructure/clusters/managed?addons=Progressing",
+    "link": "/multicloud/infrastructure/clusters/managed?add-ons=Progressing",
     "value": 1,
   },
   Object {
     "key": "Unknown",
-    "link": "/multicloud/infrastructure/clusters/managed?addons=Unknown",
+    "link": "/multicloud/infrastructure/clusters/managed?add-ons=Unknown",
     "value": 3,
   },
   Object {
     "isPrimary": true,
     "key": "Available",
-    "link": "/multicloud/infrastructure/clusters/managed?addons=Available",
+    "link": "/multicloud/infrastructure/clusters/managed?add-ons=Available",
     "value": 3,
   },
 ]
