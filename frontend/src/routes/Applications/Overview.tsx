@@ -465,6 +465,7 @@ export default function ApplicationsOverview() {
               transforms: appListColumn?.transforms,
               cellTransforms: appListColumn?.cellTransforms,
               tooltip: appListColumn?.tooltip,
+              isActionCol: appListColumn?.isActionCol ?? true,
               cell: (application) => {
                 return <CellComp resource={application} />
               },
