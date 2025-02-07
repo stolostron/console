@@ -8,13 +8,15 @@ import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource } from '../../../resources'
+import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
 import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 import { handleVMActions } from '../SearchResults/utils'
+import { PluginContext } from '../../../lib/PluginContext'
+import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -56,6 +58,8 @@ export default function DetailsPage() {
   const [resourceActionsOpen, setResourceActionsOpen] = useState(false)
   const [isDeleteResourceModalOpen, setIsDeleteResourceModalOpen] = useState(false)
   const { cluster, kind, apiversion, namespace, name, isHubClusterResource } = getResourceParams()
+  const { acmExtensions } = useContext(PluginContext)
+  const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   useEffect(() => {
     if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
@@ -234,8 +238,47 @@ export default function DetailsPage() {
         <Divider key={'action-divider'} />
       )
     }
+    if (acmExtensions?.virtualMachineAction?.length) {
+      // Virtual machine action extensions
+      acmExtensions?.virtualMachineAction?.forEach((actionExtension) => {
+        // Check if the resource is a virtual machine
+        // apiVersion: kubevirt.io/v1, kind: VirtualMachine
+        if (isResourceTypeOf(resource, actionExtension?.model as IResourceDefinition[])) {
+          const ModalComp = actionExtension.component
+          const close = () => setPluginModal(<></>)
+          actions.push(
+            <DropdownItem
+              id={actionExtension.id}
+              key={actionExtension.id}
+              component="button"
+              onClick={async () =>
+                setPluginModal(<ModalComp isOpen={true} close={close} resource={resource} cluster={cluster} />)
+              }
+              isDisabled={actionExtension?.isDisabled?.(resource) || false}
+              tooltip={actionExtension.tooltip}
+              tooltipProps={actionExtension.tooltipProps}
+              isAriaDisabled={actionExtension.isAriaDisabled}
+            >
+              {actionExtension.title}
+            </DropdownItem>
+          )
+        }
+      })
+    }
     return actions
-  }, [resource, cluster, kind, name, namespace, isHubClusterResource, vmActionsEnabled, navigate, toast, t])
+  }, [
+    resource,
+    cluster,
+    kind,
+    name,
+    namespace,
+    isHubClusterResource,
+    vmActionsEnabled,
+    navigate,
+    toast,
+    t,
+    acmExtensions,
+  ])
 
   return (
     <AcmPage
@@ -304,6 +347,7 @@ export default function DetailsPage() {
         />
       )}
       <Outlet context={searchDetailsContext} />
+      {pluginModal}
     </AcmPage>
   )
 }
