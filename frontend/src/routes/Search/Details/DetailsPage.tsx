@@ -3,18 +3,20 @@
 
 import { Divider } from '@patternfly/react-core'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
-import { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
+import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource } from '../../../resources'
+import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
 import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 import { handleVMActions } from '../SearchResults/utils'
+import { PluginContext } from '../../../lib/PluginContext'
+import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -56,6 +58,8 @@ export default function DetailsPage() {
   const [resourceActionsOpen, setResourceActionsOpen] = useState(false)
   const [isDeleteResourceModalOpen, setIsDeleteResourceModalOpen] = useState(false)
   const { cluster, kind, apiversion, namespace, name, isHubClusterResource } = getResourceParams()
+  const { acmExtensions } = useContext(PluginContext)
+  const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   useEffect(() => {
     if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
@@ -234,77 +238,121 @@ export default function DetailsPage() {
         <Divider key={'action-divider'} />
       )
     }
+    if (acmExtensions?.virtualMachineAction?.length) {
+      // Virtual machine action extensions
+      acmExtensions?.virtualMachineAction?.forEach((actionExtension) => {
+        // Check if the resource is a virtual machine
+        // apiVersion: kubevirt.io/v1, kind: VirtualMachine
+        if (isResourceTypeOf(resource, actionExtension?.model as IResourceDefinition[])) {
+          const ModalComp = actionExtension.component
+          const close = () => setPluginModal(<></>)
+          actions.push(
+            <DropdownItem
+              id={actionExtension.id}
+              key={actionExtension.id}
+              component="button"
+              onClick={async () =>
+                setPluginModal(<ModalComp isOpen={true} close={close} resource={resource} cluster={cluster} />)
+              }
+              isDisabled={actionExtension?.isDisabled?.(resource) || false}
+              tooltip={actionExtension.tooltip}
+              tooltipProps={actionExtension.tooltipProps}
+              isAriaDisabled={actionExtension.isAriaDisabled}
+            >
+              {actionExtension.title}
+            </DropdownItem>
+          )
+        }
+      })
+    }
     return actions
-  }, [resource, cluster, kind, name, namespace, isHubClusterResource, vmActionsEnabled, navigate, toast, t])
+  }, [
+    resource,
+    cluster,
+    kind,
+    name,
+    namespace,
+    isHubClusterResource,
+    vmActionsEnabled,
+    navigate,
+    toast,
+    t,
+    acmExtensions,
+  ])
 
   return (
-    <AcmPage
-      header={
-        <AcmPageHeader
-          title={name}
-          breadcrumb={[
-            {
-              text: t('Search'),
-              to: breadcrumbLink,
-            },
-            {
-              text: t('{{kind}} details', { kind }),
-              to: '',
-            },
-          ]}
-          navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
-                <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
-                <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
-                <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>{t('Related resources')}</Link>
-              </AcmSecondaryNavItem>
-              {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                  <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
+    <React.Fragment>
+      {pluginModal}
+      <AcmPage
+        header={
+          <AcmPageHeader
+            title={name}
+            breadcrumb={[
+              {
+                text: t('Search'),
+                to: breadcrumbLink,
+              },
+              {
+                text: t('{{kind}} details', { kind }),
+                to: '',
+              },
+            ]}
+            navigation={
+              <AcmSecondaryNav>
+                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
+                  <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
                 </AcmSecondaryNavItem>
-              )}
-            </AcmSecondaryNav>
-          }
-          actions={
-            <Dropdown
-              isOpen={resourceActionsOpen}
-              position={'right'}
-              toggle={
-                <DropdownToggle onToggle={() => setResourceActionsOpen(!resourceActionsOpen)}>
-                  {t('Actions')}
-                </DropdownToggle>
-              }
-              dropdownItems={getResourceActions}
-              onSelect={() => setResourceActionsOpen(false)}
-            />
-          }
-        />
-      }
-    >
-      {resource && (
-        <DeleteResourceModal
-          open={isDeleteResourceModalOpen}
-          close={() => setIsDeleteResourceModalOpen(false)}
-          resource={{
-            apiversion: resource.apiVersion ?? '',
-            cluster,
-            kind,
-            namespace,
-            name,
-            _uid: resource.metadata?.uid ?? '',
-            _hubClusterResource: isHubClusterResource,
-          }}
-          currentQuery={''}
-          relatedResource={false}
-        />
-      )}
-      <Outlet context={searchDetailsContext} />
-    </AcmPage>
+                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
+                  <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
+                </AcmSecondaryNavItem>
+                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
+                  <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>
+                    {t('Related resources')}
+                  </Link>
+                </AcmSecondaryNavItem>
+                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
+                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
+                    <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
+                  </AcmSecondaryNavItem>
+                )}
+              </AcmSecondaryNav>
+            }
+            actions={
+              <Dropdown
+                isOpen={resourceActionsOpen}
+                position={'right'}
+                toggle={
+                  <DropdownToggle onToggle={() => setResourceActionsOpen(!resourceActionsOpen)}>
+                    {t('Actions')}
+                  </DropdownToggle>
+                }
+                dropdownItems={getResourceActions}
+                onSelect={() => setResourceActionsOpen(false)}
+              />
+            }
+          />
+        }
+      >
+        {resource && (
+          <DeleteResourceModal
+            open={isDeleteResourceModalOpen}
+            close={() => setIsDeleteResourceModalOpen(false)}
+            resource={{
+              apiversion: resource.apiVersion ?? '',
+              cluster,
+              kind,
+              namespace,
+              name,
+              _uid: resource.metadata?.uid ?? '',
+              _hubClusterResource: isHubClusterResource,
+            }}
+            currentQuery={''}
+            relatedResource={false}
+          />
+        )}
+        <Outlet context={searchDetailsContext} />
+      </AcmPage>
+    </React.Fragment>
   )
 }
 

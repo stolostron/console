@@ -41,7 +41,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
-import { ApplicationActionProps } from '../../plugin-extensions/properties'
+import { ActionExtensionProps } from '../../plugin-extensions/properties'
 import { IResultStatuses } from '../../lib/useAggregates'
 
 export const mockArgoCD: IResource = {
@@ -434,7 +434,7 @@ export const mockFluxApplication0: OCPAppResource = {
     cluster: 'test-cluster',
   },
 }
-const applicationActionProps: ApplicationActionProps = {
+const applicationActionProps: ActionExtensionProps = {
   id: 'failover',
   title: 'Failover application',
   model: [
