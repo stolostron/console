@@ -3,7 +3,6 @@ import { PrometheusResponse } from '@openshift-console/dynamic-plugin-sdk'
 import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 
-import { Icon } from '@patternfly/react-core'
 import { IResultStatuses } from '../../../lib/useAggregates'
 import { NavigationPath } from '../../../NavigationPath'
 import { Addon, AddonStatus, Cluster, Policy, PolicyReport, PolicyReportResults } from '../../../resources'
