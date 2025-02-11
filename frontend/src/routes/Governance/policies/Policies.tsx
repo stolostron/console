@@ -33,7 +33,7 @@ import {
   PolicyKind,
   PolicySet,
 } from '../../../resources'
-import { getMoment, patchResource, replaceResource } from '../../../resources/utils'
+import { getISOStringTimestamp, patchResource, replaceResource } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmAlert,
@@ -270,9 +270,8 @@ export default function PoliciesPage() {
         isFirstVisitChecked: false,
         exportContent: (item) => {
           if (item.policy.metadata?.creationTimestamp) {
-            return getMoment(item.policy.metadata?.creationTimestamp).toString()
+            return getISOStringTimestamp(item.policy.metadata?.creationTimestamp)
           }
-          return '-'
         },
       },
       {

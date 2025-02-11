@@ -6,7 +6,15 @@ import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
-import { clickByLabel, clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
+import {
+  clickByLabel,
+  clickByText,
+  getCSVDownloadLink,
+  getCSVExportSpies,
+  waitForNocks,
+  waitForNotText,
+  waitForText,
+} from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import DiscoveredClustersPage from './DiscoveredClusters'
 import {
@@ -121,11 +129,11 @@ describe('DiscoveredClusters', () => {
     await waitForText('Create discovery settings')
   })
 
-  test('export button should produce a file for download', () => {
+  test('export button should produce a file for download', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, [])
+          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
           snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
           snapshot.set(secretsState, [mockCRHCredential])
         }}
@@ -138,21 +146,20 @@ describe('DiscoveredClusters', () => {
 
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    clickByLabel('export-search-result')
-    clickByText('Export all to CSV')
+    await clickByLabel('export-search-result')
+    await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Last active,Namespace,Type,OpenShift version,Infrastructure provider,Created,Discovered\n' +
+          '"test-cluster-01","2020-07-30T19:09:43.000Z","alpha","OpenShift Container Platform","4.5.5","aws","2020-07-30T19:09:43.000Z",-\n' +
+          '"test-cluster-02","2020-07-30T19:09:43.000Z","discovered-cluster-namespace","OpenShift Container Platform","4.6.1","gcp","2020-07-30T19:09:43.000Z",-',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^discoveredclusters-[\d]+\.csv$/)
   })
 })

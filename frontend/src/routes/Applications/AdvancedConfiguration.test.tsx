@@ -417,9 +417,9 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Channel,Applications,Clusters,Time window,Created\n' +
-          '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"Thu Jul 30 2026 03:18:48 GMT+0000"\n' +
-          '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"Thu Jul 30 2026 03:18:48 GMT+0000"\n' +
-          '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","Thu Jul 30 2026 03:18:48 GMT+0000"',
+          '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"2026-07-30T03:18:48.000Z"\n' +
+          '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"2026-07-30T03:18:48.000Z"\n' +
+          '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","2026-07-30T03:18:48.000Z"',
       ],
       { type: 'text/csv' }
     )
@@ -439,7 +439,7 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Type,Subscriptions,Clusters,Created\n' +
-          '"ggithubcom-app-samples-ns/ggithubcom-app-samples","default","Git",-,"None","Fri Jun 28 2024 03:18:48 GMT+0000"',
+          '"ggithubcom-app-samples-ns/ggithubcom-app-samples","default","Git",-,"None","2024-06-28T03:18:48.000Z"',
       ],
       { type: 'text/csv' }
     )
@@ -459,7 +459,7 @@ describe('Export from application tables', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Clusters,Created\n' +
-          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","Fri Jun 28 2024 03:18:48 GMT+0000"',
+          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","2024-06-28T03:18:48.000Z"',
       ],
       { type: 'text/csv' }
     )
@@ -478,7 +478,7 @@ describe('Export from application tables', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","Fri Jun 28 2024 03:18:48 GMT+0000"',
+        'Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","2024-06-28T03:18:48.000Z"',
       ],
       { type: 'text/csv' }
     )

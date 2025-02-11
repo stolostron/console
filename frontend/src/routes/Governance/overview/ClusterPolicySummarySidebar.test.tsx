@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
-import { waitForText, clickByText, clickByLabel } from '../../../lib/test-util'
+import { waitForText, clickByText, clickByLabel, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { ManagedCluster, Policy } from '../../../resources'
 import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 
@@ -113,7 +113,7 @@ describe('Policies Page', () => {
 })
 
 describe('Export from ClusterPolicySummarySidebar table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -127,21 +127,15 @@ describe('Export from ClusterPolicySummarySidebar table', () => {
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      ['Policy name,Cluster violation\n' + '"policy-0","noncompliant"\n' + '"policy-1","compliant"'],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^clusterpolicysummary-[\d]+\.csv$/)
   })
 })

@@ -27,6 +27,8 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
+  getCSVDownloadLink,
+  getCSVExportSpies,
   selectTableRow,
   waitForNock,
   waitForNotText,
@@ -281,7 +283,7 @@ describe('Automations page - operator checking', () => {
 })
 
 describe('Export from automation table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     nockIgnoreOperatorCheck()
     render(
       <TestIntegrationPage
@@ -292,21 +294,20 @@ describe('Export from automation table', () => {
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Credential,Ansible templates\n' +
+          '"test-curator1","ansible-credential-i","1"\n' +
+          '"test-curator2",-,"1"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^ansibleautomation-[\d]+\.csv$/)
   })
 })

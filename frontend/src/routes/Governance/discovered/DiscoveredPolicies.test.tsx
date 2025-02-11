@@ -3,7 +3,7 @@ import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './ByCluster/common'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { waitForText, waitForNotText } from '../../../lib/test-util'
+import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
 
@@ -666,5 +666,28 @@ describe('useFetchPolicies custom hook', () => {
     screen.getByRole('button', { name: 'Options menu' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
+  })
+  test('export button should produce a file for download', () => {
+    render(
+      <MemoryRouter>
+        <DiscoveredPolicies />
+      </MemoryRouter>
+    )
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
+
+    screen.getByTestId('export-search-result').click()
+    screen.getByText('Export all to CSV').click()
+
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Engine,Kind,Labels,Response action,Severity,Cluster violations,Source\n' +
+          '"require-owner-labels","Kyverno","ClusterPolicy",-,"Audit","medium","no violations: 0 clusters, violations: 1 cluster, pending: 0 clusters, unknown: 0 clusters","Local"\n' +
+          '"require-team-label","Kyverno","Policy",-,"Audit","critical","no violations: 1 cluster, violations: 1 cluster, pending: 0 clusters, unknown: 0 clusters","Local"',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^discoveredPolicies-[\d]+\.csv$/)
   })
 })

@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import {
+  nockAggegateRequest,
   nockIgnoreApiPaths,
   nockIgnoreRBAC,
   nockPostRequest,
   nockSearch,
-  nockAggegateRequest,
 } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
-import { waitForText } from '../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -22,6 +22,8 @@ import {
   ManagedClusterKind,
   SubscriptionKind,
 } from '../../resources'
+import { getISOStringTimestamp } from '../../resources/utils'
+import { AcmToastGroup, AcmToastProvider } from '../../ui-components'
 import {
   acmExtension,
   mockApplication0,
@@ -112,18 +114,21 @@ describe('Applications Page', () => {
           snapshot.set(managedClustersState, mockClusters)
         }}
       >
-        <MemoryRouter>
-          <PluginContext.Provider
-            value={{
-              ...defaultPlugin,
-              acmExtensions: acmExtension,
-            }}
-          >
-            <Routes>
-              <Route path="*" element={<Overview />} />
-            </Routes>
-          </PluginContext.Provider>
-        </MemoryRouter>
+        <AcmToastProvider>
+          <AcmToastGroup />
+          <MemoryRouter>
+            <PluginContext.Provider
+              value={{
+                ...defaultPlugin,
+                acmExtensions: acmExtension,
+              }}
+            >
+              <Routes>
+                <Route path="*" element={<Overview />} />
+              </Routes>
+            </PluginContext.Provider>
+          </MemoryRouter>
+        </AcmToastProvider>
       </RecoilRoot>
     )
   })
@@ -131,7 +136,6 @@ describe('Applications Page', () => {
   test('should display info', async () => {
     // wait for page to load
     await waitForText('feng-remote-argo8')
-
     expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
@@ -233,29 +237,37 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
   })
 
-  test.skip('export button should produce a file for download', async () => {
-    nockAggegateRequest('applications', fetchAggregate.req, applicationAggregate.res)
+  test('export button should produce a file for download', async () => {
+    nockAggegateRequest('applications', fetchAggregate.req, fetchAggregate.res)
 
     await waitForText('feng-remote-argo8')
 
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    userEvent.click(screen.getByLabelText('export-search-result'))
+    userEvent.click(screen.getByTestId('export-search-result'))
     userEvent.click(screen.getByText('Export all to CSV'))
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
+    await waitFor(() => {
+      const toastElement = screen.getByText(/Export successful/i)
+      expect(toastElement).toBeInTheDocument()
+    })
 
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Name,Type,Namespace,Clusters,Repository,Health Status,Sync Status,Time window,Created\n' +
+          `"application-0","Subscription","namespace-0","Local",-,-,-,-,"${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","openshift-gitops","None","git",-,-,-,-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None","git",-,-,-,-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","unknown","git",-,-,-,-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","unknown","git",-,-,-,-\n' +
+          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,-,-,-,-\n' +
+          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,-,-,-,-',
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^applicationsoverview-[\d]+\.csv$/)
   })
 })

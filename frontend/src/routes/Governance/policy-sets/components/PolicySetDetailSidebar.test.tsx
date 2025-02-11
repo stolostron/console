@@ -10,7 +10,13 @@ import {
   placementRulesState,
   policiesState,
 } from '../../../../atoms'
-import { clickByText, clickByLabel, waitForText } from '../../../../lib/test-util'
+import {
+  clickByText,
+  clickByLabel,
+  waitForText,
+  getCSVExportSpies,
+  getCSVDownloadLink,
+} from '../../../../lib/test-util'
 import {
   PlacementBinding,
   PlacementDecision,
@@ -407,7 +413,7 @@ describe('PolicySets Page with Pending policyset', () => {
   })
 })
 describe('Export from policy details results table', () => {
-  test.skip('export button should produce a file for download', async () => {
+  test('export button should produce a file for download', async () => {
     const policySet: PolicySet = {
       apiVersion: 'policy.open-cluster-management.io/v1beta1',
       kind: 'PolicySet',
@@ -451,33 +457,21 @@ describe('Export from policy details results table', () => {
 
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const documentBody = document.body.appendChild
-    const documentCreate = document.createElement('a').dispatchEvent
 
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    // switch to the policies table
-    await clickByText('Policies')
-
-    // find the policy names in table
-    await waitForText(mockPolicy.metadata.name!)
-
-    await clickByLabel('export-search-result')
-    await clickByText('Export all to CSV')
-
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
-
-    document.body.appendChild = documentBody
-    document.createElement('a').dispatchEvent = documentCreate
+    expect(blobConstructorSpy).toHaveBeenCalledWith(
+      [
+        'Cluster name,Policy violations,Labels\n' +
+          "\"local-cluster\",\"no violations: 0 policies, violations: 0 policies, pending: 1 policy, unknown: 0 policies\",\"'cloud':'Amazon','name':'local-cluster','openshiftVersion':'4.9.7','vendor':'OpenShift'\"",
+      ],
+      { type: 'text/csv' }
+    )
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
+      /^policy-set-with-1-placement-rule-clusterdetails-[\d]+\.csv$/
+    )
   })
 })

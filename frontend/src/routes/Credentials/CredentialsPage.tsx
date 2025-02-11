@@ -29,9 +29,8 @@ import {
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
-import { deleteResource } from '../../resources/utils'
+import { deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import AcmTimestamp from '../../lib/AcmTimestamp'
-import moment from 'moment'
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -241,7 +240,7 @@ export function CredentialsTable(props: {
             ),
             exportContent: (item: Secret) => {
               if (item.metadata.creationTimestamp) {
-                return moment(new Date(item.metadata.creationTimestamp)).fromNow()
+                return getISOStringTimestamp(item.metadata.creationTimestamp)
               }
             },
           },

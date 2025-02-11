@@ -73,7 +73,7 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { getMoment } from '../../resources/utils'
+import { getISOStringTimestamp } from '../../resources/utils'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -634,7 +634,7 @@ export default function ApplicationsOverview() {
         search: 'transformed.createdText',
         exportContent: (resource) => {
           if (resource.metadata?.creationTimestamp) {
-            return getMoment(resource.metadata?.creationTimestamp).toString()
+            return getISOStringTimestamp(resource.metadata?.creationTimestamp)
           }
         },
       },

@@ -20,6 +20,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { exportObjectString, returnCSVSafeString } from '../../resources/utils'
 import { SearchOperator } from '../AcmSearchInput'
 import { handleStandardComparison } from '../../lib/search-utils'
+import { getCSVDownloadLink, getCSVExportSpies } from '../../lib/test-util'
 
 const axe = configureAxe({
   rules: {
@@ -1065,7 +1066,7 @@ describe('AcmTable', () => {
     expect(exportContent).toEqual("'Ready':'true','Hibernating':'false'")
   })
 
-  test.skip('export button should produce a file for download', () => {
+  test('export button should produce a file for download', () => {
     const addSubRowsCallback = () => {
       return [
         {
@@ -1083,22 +1084,26 @@ describe('AcmTable', () => {
         },
       ]
     }
+    const { getByTestId, getByText, container } = render(
+      <Table items={exampleData.slice(0, 1)} showExportButton addSubRows={addSubRowsCallback} />
+    )
+    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
+
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
-    const { getByTestId, getByText, container } = render(<Table showExportButton addSubRows={addSubRowsCallback} />)
-
-    const anchorMocked = { href: '', click: jest.fn(), download: 'table-values', style: { display: '' } } as any
-    const createElementSpyOn = jest.spyOn(document, 'createElement').mockReturnValueOnce(anchorMocked)
-    document.body.appendChild = jest.fn()
-    document.createElement('a').dispatchEvent = jest.fn()
 
     expect(container.querySelector('#export-search-result')).toBeInTheDocument()
     userEvent.click(getByTestId('export-search-result'))
-    expect(getByText('Export all to CSV')).toBeInTheDocument()
     userEvent.click(getByText('Export all to CSV'))
 
-    expect(createElementSpyOn).toHaveBeenCalledWith('a')
-    expect(anchorMocked.download).toContain('table-values')
+    userEvent.click(getByTestId('export-search-result'))
+    const arrayTest = [
+      'First Name,Last Name,EMail,Gender,IP Address,UID,Clusters,Status Labels\n' + "-,-,-,-,-,-,-,\"'Ready':'true'\"",
+    ]
+
+    expect(blobConstructorSpy).toHaveBeenCalledWith(arrayTest, { type: 'text/csv' })
+
+    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^table-values-[\d]+\.csv$/)
   })
 })
 
