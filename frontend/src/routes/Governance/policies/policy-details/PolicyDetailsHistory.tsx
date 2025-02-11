@@ -9,6 +9,7 @@ import { Policy, PolicyStatusDetails } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../resources/utils'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 interface HistoryTableData {
   message: string
@@ -136,7 +137,7 @@ export function PolicyDetailsHistory(props: {
       {
         header: t('Last report'),
         sort: 'index',
-        cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
+        cell: (item: any) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '-'),
         exportContent: (item: any) => {
           if (item.timestamp) {
             return getISOStringTimestamp(item.timestamp)

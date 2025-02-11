@@ -2,7 +2,6 @@
 import { Alert, ButtonVariant, Icon, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
-import moment from 'moment'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -32,6 +31,7 @@ import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViola
 import { useGovernanceData } from '../../useGovernanceData'
 import { usePropagatedPolicies } from '../../common/useCustom'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 interface TableData {
   apiVersion: string
@@ -125,7 +125,7 @@ export default function PolicyDetailsOverview() {
       },
       {
         key: t('Created'),
-        value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
+        value: policy.metadata.creationTimestamp ? <AcmTimestamp timestamp={policy.metadata.creationTimestamp} /> : '-',
       },
       {
         key: t('Automation'),
