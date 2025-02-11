@@ -12,16 +12,6 @@ import { getResourceNameApiPath, getResourcePlural } from '../../../resources'
 import { ClusterScopeContext } from '../../../plugin-extensions/ClusterScopeContext'
 import { useIsLocalHub, useLocalHubName } from '../../../hooks/use-local-hub'
 
-export type Query = { [key: string]: any }
-
-export type MakeQuery = (
-  namespace?: string,
-  labelSelector?: any,
-  fieldSelector?: any,
-  name?: string,
-  limit?: number
-) => Query
-
 export const useK8sWatchResource: UseK8sWatchResource = <R extends K8sResourceCommon | K8sResourceCommon[]>(
   resource: WatchK8sResource | null
 ): WatchK8sResult<R> => {
