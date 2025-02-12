@@ -43,11 +43,6 @@ export function SummaryClustersCard(props: {
     link: d.link,
   }))
 
-  const offset = useMemo(
-    () => (legendData.length < 6 ? (150 - legendData.length * 16) / 2 - legendData.length : (150 - 6 * 16) / 2 - 10),
-    [legendData]
-  )
-
   const chart = useMemo(() => {
     const commonProps = {
       ariaTitle: title,
@@ -94,15 +89,28 @@ export function SummaryClustersCard(props: {
     const ctx = canvas.getContext('2d')
     if (ctx) {
       ctx.font = '12px RedHatText'
-      return ctx.measureText(legendData).width
+      return ctx.measureText(legendData).width + 37
     } else return 150
   }
 
   const legendWidth = useMemo(() => {
-    const width = Math.max(...legendData.map(({ name }) => getLegendWidth(name || ''))) + 20
-    const columns = Math.trunc(legendData.length / 6)
-    const remainder = legendData.length % 6 > 0 ? width : 0
-    return columns * width + remainder
+    const totalLabels = legendData.length
+    const itemsPerColumn = 6
+    const columns = Math.ceil(totalLabels / itemsPerColumn)
+    const widths = []
+    for (let i = 0; i < columns; i++) {
+      const longest = Math.max(
+        ...legendData.slice(i * itemsPerColumn, (i + 1) * itemsPerColumn).map((item) => getLegendWidth(item.name || ''))
+      )
+      widths.push(longest)
+    }
+    return widths.reduce((acc, current) => {
+      return acc + current
+    }, 0)
+  }, [legendData])
+
+  const legendHeight = useMemo(() => {
+    return (legendData.length < 6 ? legendData.length : 6) * 22
   }, [legendData])
 
   const legend = useMemo(() => {
@@ -113,16 +121,15 @@ export function SummaryClustersCard(props: {
           data={legendData}
           itemsPerRow={6}
           rowGutter={-5}
-          gutter={10}
+          gutter={0}
           symbolSpacer={8}
-          height={150}
+          height={legendHeight}
           width={legendWidth}
           orientation={'vertical'}
-          y={offset}
         />
       </div>
     )
-  }, [legendData, legendWidth, offset])
+  }, [legendData, legendWidth, legendHeight])
 
   return (
     <div>
@@ -132,7 +139,7 @@ export function SummaryClustersCard(props: {
         style={{ height: '200px', ['--pf-v5-c-card__title--not--last-child--PaddingBottom' as any]: 0 }}
       >
         <CardTitle>{title}</CardTitle>
-        <div style={{ display: 'flex', height: '150px' }}>
+        <div style={{ display: 'flex', height: '150px', alignItems: 'center' }}>
           <div style={{ width: '150px', marginRight: '16px' }}>{chart}</div>
           {legend}
         </div>
