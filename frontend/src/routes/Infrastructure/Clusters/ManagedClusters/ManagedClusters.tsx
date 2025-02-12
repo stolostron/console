@@ -950,7 +950,7 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
       )
     },
     exportContent: (cluster) => {
-      return `healthy: ${cluster.nodes!.ready}, danger: ${cluster.nodes!.unhealthy}, unknown: ${cluster.nodes!.unknown}`
+      return `${t('healthy')}: ${cluster.nodes!.ready}, ${t('danger')}: ${cluster.nodes!.unhealthy}, ${t('unknown')}: ${cluster.nodes!.unknown}`
     },
   }
 }
@@ -974,7 +974,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
       )
     },
     exportContent: (cluster) => {
-      return `healthy: ${cluster.addons!.available}, danger: ${cluster.addons!.degraded}, in progress: ${cluster.addons!.progressing}, unknown: ${cluster.addons!.unknown}`
+      return `${t('healthy')}: ${cluster.addons!.available}, ${t('danger')}: ${cluster.addons!.degraded}, ${t('in progress')}: ${cluster.addons!.progressing}, ${t('unknown')}: ${cluster.addons!.unknown}`
     },
   }
 }
