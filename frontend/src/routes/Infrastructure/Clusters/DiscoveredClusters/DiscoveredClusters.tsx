@@ -227,7 +227,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.spec.activityTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.spec.activityTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),
@@ -295,7 +295,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.spec.creationTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.spec.creationTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),
@@ -313,7 +313,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.metadata.creationTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.metadata.creationTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),
