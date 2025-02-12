@@ -13,7 +13,6 @@ import {
 } from '../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import * as moment from 'moment'
 import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
@@ -22,6 +21,7 @@ import { navigateToBackCancelLocation, NavigationPath } from '../../../../Naviga
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { getISOStringTimestamp } from '../../../../resources/utils'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 export default function DiscoveredClustersPage() {
   return (
@@ -224,11 +224,11 @@ export function DiscoveredClustersTable(props: {
       sort: 'spec.activityTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-          {discoveredCluster.spec.activityTimestamp === undefined
-            ? ['N/A']
-            : moment
-                .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.activityTimestamp).getTime()))
-                .humanize()}
+          {discoveredCluster.spec.activityTimestamp ? (
+            <AcmTimestamp timestamp={discoveredCluster.spec.activityTimestamp} />
+          ) : (
+            ['-']
+          )}
         </span>
       ),
       exportContent: (discoveredCluster) => {
@@ -292,11 +292,11 @@ export function DiscoveredClustersTable(props: {
       sort: 'spec.creationTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-          {discoveredCluster.spec.creationTimestamp === undefined
-            ? ['N/A']
-            : moment
-                .duration(Math.abs(new Date().getTime() - new Date(discoveredCluster.spec.creationTimestamp).getTime()))
-                .humanize()}
+          {discoveredCluster.spec.creationTimestamp ? (
+            <AcmTimestamp timestamp={discoveredCluster.spec.creationTimestamp} />
+          ) : (
+            ['-']
+          )}
         </span>
       ),
       exportContent: (discoveredCluster) => {
@@ -310,15 +310,11 @@ export function DiscoveredClustersTable(props: {
       sort: 'metadata.creationTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-          {discoveredCluster.spec.creationTimestamp === undefined
-            ? ['N/A']
-            : moment
-                .duration(
-                  Math.abs(
-                    new Date().getTime() - new Date(discoveredCluster.metadata.creationTimestamp ?? '').getTime()
-                  )
-                )
-                .humanize()}
+          {discoveredCluster.metadata.creationTimestamp ? (
+            <AcmTimestamp timestamp={discoveredCluster.metadata.creationTimestamp} />
+          ) : (
+            ['-']
+          )}
         </span>
       ),
       exportContent: (discoveredCluster) => {
