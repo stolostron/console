@@ -39,6 +39,7 @@ import {
 } from '../../../../resources'
 import { ApplicationDataType, ApplicationDetailsContext } from '../ApplicationDetails'
 import { ApplicationOverviewPageContent } from './ApplicationOverview'
+import { getShortDateTime } from '../../helpers/resource-helper'
 
 //////////////// Mock Data /////////////////
 
@@ -230,7 +231,7 @@ const mockApplicationDataSubscription: ApplicationDataType = {
               'magchen-sibling-ns/magchen-sibling-subscription-1-local',
             'apps.open-cluster-management.io/reconcile-option': 'merge',
           },
-          creationTimestamp: '2022-03-01T21:30:02Z',
+          creationTimestamp: getShortDateTime('2022-03-01T21:30:02Z'),
           generation: 1,
           labels: {
             app: 'magchen-sibling',
@@ -570,7 +571,7 @@ describe('Overview Tab', () => {
     await waitForText('Clusters')
     await waitForText('None')
     // created
-    await waitForText('Mar 1 2022, 9:30 pm')
+    await waitForText('Mar 1, 2022, 4:30 PM')
 
     await waitForText('Set time window')
   })
@@ -603,8 +604,9 @@ describe('Overview Tab', () => {
     // cluster
     await waitForText('Clusters')
     await waitForText('None')
+
     // created
-    await waitForText('Mar 1 2022, 9:30 pm')
+    await waitForText('Mar 1, 2022, 4:30 PM')
 
     await clickByText('View blocked time window')
     await waitForText('Edit time window')
