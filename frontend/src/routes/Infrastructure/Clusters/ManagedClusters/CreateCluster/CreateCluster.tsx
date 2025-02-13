@@ -376,6 +376,21 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     return undefined
   }
 
+  function validateKubeVirtNodePoolName(active: any, _controlData: any, templateObjectMap: any) {
+    const totalNodePools = templateObjectMap['<<main>>'].NodePool.length
+    const current = templateObjectMap['<<main>>'].NodePool[totalNodePools - 1].$raw.metadata.name
+    if (totalNodePools > 1) {
+      for (let i = 0; i < totalNodePools - 1; i++) {
+        if (current === templateObjectMap['<<main>>'].NodePool[i].$raw.metadata.name)
+          return t('nodepoolname.exists.error')
+      }
+    }
+    if (!KubeVirtNamespaceRegExp.test(active)) {
+      return t('import.form.invalid.dns.label')
+    }
+    return undefined
+  }
+
   function onControlInitialize(control: any) {
     switch (control.id) {
       case 'connection':
@@ -393,6 +408,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           )
           control.active = 'clusters'
           control.available = ['clusters', ...hostedClusterNamespaces.map((hcn) => hcn.metadata.name)]
+        }
+        break
+      case 'nodePoolName':
+        if (infrastructureType === Provider.kubevirt) {
+          control.validation = {
+            contextTester: validateKubeVirtNodePoolName,
+            required: true,
+          }
         }
         break
       case 'additionalNetworks':

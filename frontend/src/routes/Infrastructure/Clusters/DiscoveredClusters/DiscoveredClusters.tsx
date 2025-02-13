@@ -22,6 +22,7 @@ import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderC
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 export default function DiscoveredClustersPage() {
   return (
@@ -227,7 +228,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.spec.activityTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.spec.activityTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),
@@ -295,7 +296,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.spec.creationTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.spec.creationTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),
@@ -313,7 +314,7 @@ export function DiscoveredClustersTable(props: {
           {discoveredCluster.metadata.creationTimestamp ? (
             <AcmTimestamp timestamp={discoveredCluster.metadata.creationTimestamp} />
           ) : (
-            ['N/A']
+            ['-']
           )}
         </span>
       ),

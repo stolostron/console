@@ -370,11 +370,11 @@ export function ClusterPoolsTable(props: {
 
                 if (clusterStatusAvailable) {
                   return (
-                    `healthy: ${status?.healthy}, running: ${status?.running}, ` +
-                    `warning: ${status?.warning}, progress: ${status?.progress}, ` +
-                    `danger: ${status?.danger}, detached: ${status?.detached}, ` +
-                    `pending: ${status?.pending}, sleep: ${status?.sleep}, ` +
-                    `unknown: ${status?.unknown}`
+                    `${t('healthy')}: ${status?.healthy}, ${t('running')}: ${status?.running}, ` +
+                    `${t('warning')}: ${status?.warning}, ${t('progress')}: ${status?.progress}, ` +
+                    `${t('danger')}: ${status?.danger}, ${t('detached')}: ${status?.detached}, ` +
+                    `${t('pending')}: ${status?.pending}, ${t('sleep')}: ${status?.sleep}, ` +
+                    `${t('unknown')}: ${status?.unknown}`
                   )
                 }
               }
