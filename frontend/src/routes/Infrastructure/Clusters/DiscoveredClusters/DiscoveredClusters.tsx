@@ -22,7 +22,6 @@ import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderC
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 export default function DiscoveredClustersPage() {
   return (
