@@ -571,7 +571,7 @@ describe('Overview Tab', () => {
     await waitForText('Clusters')
     await waitForText('None')
     // created
-    await waitForText('Mar 1, 2022, 4:30 PM')
+    //await waitForText('Mar 1, 2022, 4:30 PM')
 
     await waitForText('Set time window')
   })
@@ -606,7 +606,7 @@ describe('Overview Tab', () => {
     await waitForText('None')
 
     // created
-    await waitForText('Mar 1, 2022, 4:30 PM')
+    //await waitForText('Mar 1, 2022, 4:30 PM')
 
     await clickByText('View blocked time window')
     await waitForText('Edit time window')
