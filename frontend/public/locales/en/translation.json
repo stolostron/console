@@ -1982,7 +1982,7 @@
   "node.status.ready": "Ready",
   "node.status.unhealthy": "Unhealthy",
   "node.status.unknown": "Unknown",
-  "nodepoolname.exists.error": "The node pool name needs to be unique.",
+  "nodepoolname.exists.error": "The node pool name must be unique.",
   "Nodes": "Nodes",
   "nodes xN": "nodes xN",
   "None": "None",
