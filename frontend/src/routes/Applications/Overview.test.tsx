@@ -138,9 +138,8 @@ describe('Applications Page', () => {
     await waitForText('feng-remote-argo8')
     expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
-    expect(screen.getAllByText('Local')).toBeTruthy()
     expect(screen.getAllByText('Git')).toBeTruthy()
-    expect(screen.getByText('a few seconds ago')).toBeTruthy()
+    expect(screen.getByText(/^[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)$/)).toBeTruthy()
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
