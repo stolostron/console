@@ -6,7 +6,7 @@ import {
   useResolvedExtensions,
 } from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
-import { ReactNode, useMemo } from 'react'
+import { useMemo, useEffect, useState, Context, PropsWithChildren } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
@@ -19,11 +19,19 @@ import { AcmFeedbackModal } from './AcmFeedbackModal'
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'
 
-export function PluginContextProvider(props: { children?: ReactNode }) {
+export function PluginContextProvider({
+  pluginDataContext: pluginDataContextOverride,
+  children,
+}: PropsWithChildren<{ pluginDataContext?: Context<PluginData> }>) {
+  const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
+    useK8sWatchResource: () => [[] as any, false, undefined],
+  })
   const [hrefs] = useResolvedExtensions(isHrefNavItem)
 
   const [pluginDataContexts, extensionsReady] = useResolvedExtensions(isPluginDataContext)
-  const pluginDataContext = extensionsReady && pluginDataContexts.length && pluginDataContexts[0]
+  const pluginDataContext =
+    pluginDataContextOverride ??
+    (extensionsReady && pluginDataContexts.length && pluginDataContexts?.[0].properties.context)
 
   const [isOverviewAvailable, isApplicationsAvailable, isGovernanceAvailable, isSearchAvailable] = useMemo(() => {
     const hrefAvailable = (id: string) =>
@@ -52,7 +60,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         isGovernanceAvailable,
         isSearchAvailable,
         isSubmarinerAvailable,
-        dataContext: pluginDataContext.properties.context,
+        dataContext: pluginDataContext,
         acmExtensions,
         ocpApi: { Timestamp, useK8sWatchResource },
       }}
@@ -62,9 +70,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
             <AcmToastGroup />
-            <AcmTablePaginationContextProvider localStorageKey="clusters">
-              {props.children}
-            </AcmTablePaginationContextProvider>
+            <AcmTablePaginationContextProvider localStorageKey="clusters">{children}</AcmTablePaginationContextProvider>
           </AcmToastProvider>
         </div>
       </div>
