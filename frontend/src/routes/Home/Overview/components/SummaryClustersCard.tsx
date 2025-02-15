@@ -11,19 +11,14 @@ type Data = {
   link?: string
 }
 type LegendData = {
-  name?: string
+  name: string
   link?: string
 }
 
 const LegendLabel = ({ ...props }) => {
   const link = props.datum?.link
-  return link ? (
-    <Link to={link}>
-      <ChartLabel {...props} style={{ fontSize: 12, fill: 'var(--pf-v5-global--Color--100)' }} />
-    </Link>
-  ) : (
-    <ChartLabel {...props} style={{ fontSize: 12, fill: 'var(--pf-v5-global--Color--100)' }} />
-  )
+  const chartLabel = <ChartLabel {...props} />
+  return link ? <Link to={link}>{chartLabel}</Link> : chartLabel
 }
 
 export function SummaryClustersCard(props: {
@@ -84,52 +79,41 @@ export function SummaryClustersCard(props: {
     return component
   }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title])
 
-  const getLegendWidth = (legendData: string) => {
+  const FONT_SIZE = 12
+  const FONT_FAMILY = 'RedHatText'
+  const ITEMS_PER_COLUMN = 6
+  const GUTTER = 10
+  const ROW_GUTTER = -5
+  const SYMBOL = 8
+  const SYMBOL_SPACER = 8
+  const ROW_HEIGHT = 18.5
+
+  const getLabelWidth = (legendData: string) => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (ctx) {
-      ctx.font = '12px RedHatText'
-      return ctx.measureText(legendData).width + 37
+      ctx.font = `${FONT_SIZE}px ${FONT_FAMILY}`
+      const width = ctx.measureText(legendData).width
+      return width
     } else return 150
   }
 
   const legendWidth = useMemo(() => {
     const totalLabels = legendData.length
-    const itemsPerColumn = 6
-    const columns = Math.ceil(totalLabels / itemsPerColumn)
-    const widths = []
+    const columns = Math.ceil(totalLabels / ITEMS_PER_COLUMN)
+    let cumulativeLongestLabelWidth = 0
     for (let i = 0; i < columns; i++) {
       const longest = Math.max(
-        ...legendData.slice(i * itemsPerColumn, (i + 1) * itemsPerColumn).map((item) => getLegendWidth(item.name || ''))
+        ...legendData.slice(i * ITEMS_PER_COLUMN, (i + 1) * ITEMS_PER_COLUMN).map((item) => getLabelWidth(item.name))
       )
-      widths.push(longest)
+      cumulativeLongestLabelWidth += longest
     }
-    return widths.reduce((acc, current) => {
-      return acc + current
-    }, 0)
+    return cumulativeLongestLabelWidth + columns * (SYMBOL + SYMBOL_SPACER + GUTTER)
   }, [legendData])
 
   const legendHeight = useMemo(() => {
-    return (legendData.length < 6 ? legendData.length : 6) * 22
+    return (legendData.length < ITEMS_PER_COLUMN ? legendData.length : ITEMS_PER_COLUMN) * ROW_HEIGHT
   }, [legendData])
-
-  const legend = useMemo(() => {
-    return (
-      <div>
-        <ChartLegend
-          labelComponent={<LegendLabel />}
-          data={legendData}
-          itemsPerRow={6}
-          rowGutter={-5}
-          gutter={0}
-          symbolSpacer={8}
-          height={legendHeight}
-          width={legendWidth}
-          orientation={'vertical'}
-        />
-      </div>
-    )
-  }, [legendData, legendWidth, legendHeight])
 
   return (
     <div>
@@ -141,7 +125,20 @@ export function SummaryClustersCard(props: {
         <CardTitle>{title}</CardTitle>
         <div style={{ display: 'flex', height: '150px', alignItems: 'center' }}>
           <div style={{ width: '150px', marginRight: '16px' }}>{chart}</div>
-          {legend}
+          <div>
+            <ChartLegend
+              labelComponent={<LegendLabel />}
+              data={legendData}
+              itemsPerRow={ITEMS_PER_COLUMN}
+              rowGutter={ROW_GUTTER}
+              gutter={GUTTER}
+              symbolSpacer={SYMBOL_SPACER}
+              height={legendHeight}
+              width={legendWidth}
+              orientation={'vertical'}
+              style={{ labels: { fontSize: FONT_SIZE, fontFamily: FONT_FAMILY } }}
+            />
+          </div>
         </div>
       </Card>
     </div>
