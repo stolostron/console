@@ -361,13 +361,6 @@ export const onChangeDisconnect = (control, controlData) => {
     }
   })
 }
-export function getOSTNetworkingControlData(t) {
-  // Kuryr should only be available for Openstack
-  const networkData = networkingControlData(t)
-  const modifiedData = networkData.find((object) => object.id == 'networkType')
-  modifiedData.available.push('Kuryr')
-  return networkData
-}
 
 export const onImageChange = (control, controlData) => {
   const networkDefault = getControlByID(controlData, 'networkType')
