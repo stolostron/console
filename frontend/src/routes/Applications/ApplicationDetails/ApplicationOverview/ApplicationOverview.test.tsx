@@ -39,7 +39,6 @@ import {
 } from '../../../../resources'
 import { ApplicationDataType, ApplicationDetailsContext } from '../ApplicationDetails'
 import { ApplicationOverviewPageContent } from './ApplicationOverview'
-import { getShortDateTime } from '../../helpers/resource-helper'
 
 //////////////// Mock Data /////////////////
 
@@ -231,7 +230,7 @@ const mockApplicationDataSubscription: ApplicationDataType = {
               'magchen-sibling-ns/magchen-sibling-subscription-1-local',
             'apps.open-cluster-management.io/reconcile-option': 'merge',
           },
-          creationTimestamp: getShortDateTime('2022-03-01T21:30:02Z'),
+          creationTimestamp: '2022-03-01T21:30:02Z',
           generation: 1,
           labels: {
             app: 'magchen-sibling',

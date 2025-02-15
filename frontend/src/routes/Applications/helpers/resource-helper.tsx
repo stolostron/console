@@ -36,6 +36,7 @@ import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
+
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const appSetPlacementStr =
   'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
@@ -351,7 +352,7 @@ export const getResourceLabel = (type: string, count: number, t: TFunction) => {
   return label + optionalCount
 }
 
-export const getAge = (item: IResource, _locale: string, timestampKey: string) => {
+export const getResourceTimestamp = (item: IResource, _locale: string, timestampKey: string) => {
   const key = timestampKey ? timestampKey : 'created'
   const createdTime = _.get(item, key)
   return createdTime ? <AcmTimestamp timestamp={createdTime} /> : <span>-</span>
@@ -398,10 +399,6 @@ export const getEditLink = (params: {
     kind,
     apiversion,
   })}`
-}
-
-export const getShortDateTime = (timestamp: string) => {
-  return timestamp ? <AcmTimestamp timestamp={timestamp} /> : <span>-</span>
 }
 
 export const getAppSetRelatedResources = (appSet: IResource, applicationSets: ApplicationSet[]) => {

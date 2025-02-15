@@ -57,7 +57,7 @@ import { DeleteResourceModal, IDeleteResourceModalProps } from './components/Del
 import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 import {
-  getAge,
+  getResourceTimestamp,
   getAnnotation,
   getAppChildResources,
   getAppSetRelatedResources,
@@ -414,7 +414,7 @@ export default function ApplicationsOverview() {
           clusterCount: clusterTransformData,
           clusterList: clusterList,
           resourceText: resourceText,
-          createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
+          createdText: getResourceTimestamp(tableItem, '', 'metadata.creationTimestamp'),
           timeWindow: timeWindow,
           namespace: transformedNamespace,
           healthStatus: getAppHealthStatus(tableItem),
@@ -628,7 +628,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Created'),
         cell: (resource) => {
-          return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+          return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
         },
         sort: 'metadata.creationTimestamp',
         search: 'transformed.createdText',

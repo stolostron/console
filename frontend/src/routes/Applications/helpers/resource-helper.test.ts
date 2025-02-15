@@ -19,7 +19,6 @@ import {
   mockSubscriptions,
 } from '../Application.sharedmocks'
 import {
-  getAge,
   getAppChildResources,
   getAppSetRelatedResources,
   getArgoClusterList,
@@ -29,9 +28,9 @@ import {
   getClusterCountString,
   getEditLink,
   getResourceLabel,
+  getResourceTimestamp,
   getResourceType,
   getSearchLink,
-  getShortDateTime,
   groupByRepoType,
   isArgoPullModel,
   normalizeRepoType,
@@ -171,7 +170,7 @@ describe('getResourceLabel', () => {
   })
 })
 
-describe('getAge', () => {
+describe('getResourceTimestamp', () => {
   it('should get a valid time', () => {
     const resource = {
       apiVersion: 'v1',
@@ -181,7 +180,7 @@ describe('getAge', () => {
       },
     }
 
-    const result = getAge(resource as any, '', 'metadata.creationTimestamp')
+    const result = getResourceTimestamp(resource as any, '', 'metadata.creationTimestamp')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toBeInTheDocument()
@@ -194,7 +193,7 @@ describe('getAge', () => {
       metadata: {},
     }
 
-    const result = getAge(resource as any, '', 'metadata.creationTimestamp')
+    const result = getResourceTimestamp(resource as any, '', 'metadata.creationTimestamp')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toHaveTextContent('-')
@@ -209,12 +208,13 @@ describe('getAge', () => {
       },
     }
 
-    const result = getAge(resource as any, '', 'unknown')
+    const result = getResourceTimestamp(resource as any, '', 'unknown')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toHaveTextContent('-')
   })
 })
+
 describe('getSearchLink', () => {
   it('should work with no props', () => {
     expect(getSearchLink({})).toEqual('/multicloud/search')
@@ -267,28 +267,6 @@ describe('getEditLink', () => {
     ).toEqual(
       '/multicloud/search/resources/yaml?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
     )
-  })
-})
-
-describe('getShortDateTime', () => {
-  it('renders timestamp for valid date', () => {
-    const { container } = render(getShortDateTime('2024-02-11T12:00:00Z'))
-    expect(container).toBeInTheDocument()
-  })
-
-  it('returns dash for empty timestamp', () => {
-    const { container } = render(getShortDateTime(''))
-    expect(container).toHaveTextContent('-')
-  })
-
-  it('returns dash for null timestamp', () => {
-    const { container } = render(getShortDateTime(null as unknown as string))
-    expect(container).toHaveTextContent('-')
-  })
-
-  it('returns dash for undefined timestamp', () => {
-    const { container } = render(getShortDateTime(undefined as unknown as string))
-    expect(container).toHaveTextContent('-')
   })
 })
 
