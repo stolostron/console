@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
@@ -570,7 +570,7 @@ describe('Overview Tab', () => {
     await waitForText('Clusters')
     await waitForText('None')
     // created
-    await screen.findByText(/Mar 1, 2022, \d{1,2}:\d{2} (AM|PM)/)
+    await waitForText('Mar 1 2022, 9:30 pm')
 
     await waitForText('Set time window')
   })
@@ -604,7 +604,7 @@ describe('Overview Tab', () => {
     await waitForText('Clusters')
     await waitForText('None')
     // created
-    await screen.findByText(/Mar 1, 2022, \d{1,2}:\d{2} (AM|PM)/)
+    await waitForText('Mar 1 2022, 9:30 pm')
 
     await clickByText('View blocked time window')
     await waitForText('Edit time window')
