@@ -1,11 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Label,
   PageSection,
   Popover,
-  Split,
-  SplitItem,
   Stack,
   StackItem,
   Text,
@@ -13,7 +10,7 @@ import {
   TextVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
