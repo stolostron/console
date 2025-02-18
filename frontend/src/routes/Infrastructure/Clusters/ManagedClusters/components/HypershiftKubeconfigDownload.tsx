@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { saveAs } from 'file-saver'
-import { HostedClusterK8sResource, SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { HostedClusterK8sResource } from '../../../../../resources/hosted-cluster'
 
 type HypershiftKubeconfigDownloadProps = {
   hostedCluster: HostedClusterK8sResource | undefined
@@ -11,8 +12,10 @@ type HypershiftKubeconfigDownloadProps = {
 
 const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: HypershiftKubeconfigDownloadProps) => {
   const { t } = useTranslation()
+  const kubeconfigSecretName = hostedCluster?.status?.customkubeconfig
+    ? hostedCluster.status.customkubeconfig?.name
+    : hostedCluster?.status?.kubeconfig?.name
   const handleKubeconfigDownload = async () => {
-    const kubeconfigSecretName = hostedCluster?.status?.kubeconfig?.name
     const kubeconfigSecretNamespace = hostedCluster?.metadata?.namespace
 
     if (kubeconfigSecretName && kubeconfigSecretNamespace) {
@@ -33,11 +36,7 @@ const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: Hypershift
   }
 
   return (
-    <Button
-      variant={ButtonVariant.link}
-      onClick={handleKubeconfigDownload}
-      isDisabled={!hostedCluster?.status?.kubeconfig?.name}
-    >
+    <Button variant={ButtonVariant.link} onClick={handleKubeconfigDownload} isDisabled={!kubeconfigSecretName}>
       {t('Download kubeconfig')}
     </Button>
   )

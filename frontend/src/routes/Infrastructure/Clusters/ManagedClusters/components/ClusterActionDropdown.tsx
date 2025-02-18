@@ -17,6 +17,7 @@ import {
   ClusterDeployment,
   ClusterDeploymentDefinition,
   HostedClusterDefinition,
+  HostedClusterK8sResource,
   ManagedClusterDefinition,
   NodePool,
   SecretDefinition,
@@ -40,7 +41,7 @@ import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
-import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage } from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'

@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Page } from '@patternfly/react-core'
-import {
-  AgentClusterInstallK8sResource,
-  AgentK8sResource,
-  HostedClusterK8sResource,
-  InfraEnvK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   generatePath,
@@ -25,6 +20,7 @@ import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath
 import {
   ClusterCurator,
   ClusterDeployment,
+  HostedClusterK8sResource,
   ManagedCluster,
   ManagedClusterAddOn,
   SecretDefinition,

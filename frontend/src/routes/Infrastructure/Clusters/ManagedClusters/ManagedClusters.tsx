@@ -1,10 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  AgentClusterInstallK8sResource,
-  getVersionFromReleaseImage,
-  HostedClusterK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, getVersionFromReleaseImage } from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
   ButtonVariant,
@@ -32,6 +28,7 @@ import {
   ClusterDeploymentDefinition,
   ClusterImageSet,
   getRoles,
+  HostedClusterK8sResource,
   ManagedClusterDefinition,
   NodeInfo,
 } from '../../../../resources'

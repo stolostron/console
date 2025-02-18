@@ -30,10 +30,9 @@ import {
   ClusterImageSetK8sResource,
   getOCPVersions,
   getVersionFromReleaseImage,
-  HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
-import { NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
+import { HostedClusterK8sResource, NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
 import {
   createResource,
   HypershiftCloudPlatformType,

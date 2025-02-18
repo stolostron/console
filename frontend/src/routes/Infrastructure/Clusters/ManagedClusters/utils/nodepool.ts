@@ -1,11 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  AgentK8sResource,
-  AgentMachineK8sResource,
-  HostedClusterK8sResource,
-  NodePoolK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentK8sResource, AgentMachineK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterK8sResource } from '../../../../../resources'
 
 const CLUSTER_NAME_LABEL = 'cluster.x-k8s.io/cluster-name'
 const NODEPOOL_NAME_ANNOTATION = 'cluster.x-k8s.io/cloned-from-name'

@@ -2,15 +2,10 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import {
-  AgentK8sResource,
-  AgentMachineK8sResource,
-  HostedClusterK8sResource,
-  NodePoolK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentK8sResource, AgentMachineK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { ConfigMap, NodePool } from '../../../../../resources'
+import { ConfigMap, HostedClusterK8sResource, NodePool } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'

@@ -11,6 +11,7 @@ import {
   ClusterImageSetApiVersion,
   ClusterImageSetKind,
   HostedClusterApiVersion,
+  HostedClusterK8sResource,
   HostedClusterKind,
   NodePool,
   ResourceAttributes,
@@ -24,7 +25,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 
 const mockDistributionInfo: DistributionInfo = {

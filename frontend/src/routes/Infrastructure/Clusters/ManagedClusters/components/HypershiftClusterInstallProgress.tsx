@@ -1,15 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ProgressStepper, Stack, StackItem } from '@patternfly/react-core'
-import {
-  HostedClusterK8sResource,
-  NodePoolK8sResource,
-  ClusterImageSetK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { NodePoolK8sResource, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import HostedClusterProgress from './HostedClusterProgress'
 import NodePoolsProgress from './NodePoolsProgress'
 
 import './HypershiftClusterInstallProgress.css'
 import { createContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { HostedClusterK8sResource } from '../../../../../resources'
 
 type HypershiftClusterInstallProgressProps = {
   hostedCluster: HostedClusterK8sResource

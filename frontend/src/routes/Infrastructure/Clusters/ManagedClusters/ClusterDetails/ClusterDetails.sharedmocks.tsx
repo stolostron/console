@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources'
+import { HostedClusterK8sResource, MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
 

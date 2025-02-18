@@ -9,13 +9,14 @@ import { waitForText } from '../../../../../lib/test-util'
 import {
   ClusterImageSetApiVersion,
   ClusterImageSetKind,
+  HostedClusterK8sResource,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
-import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 
 const mockHostedCluster0: HostedClusterK8sResource = {

@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   CertificateSigningRequest,
   CertificateSigningRequestApiVersion,
@@ -12,6 +10,7 @@ import {
   ClusterManagementAddOnApiVersion,
   ClusterManagementAddOnKind,
   HostedClusterApiVersion,
+  HostedClusterK8sResource,
   HostedClusterKind,
   ManagedCluster,
   ManagedClusterAddOn,

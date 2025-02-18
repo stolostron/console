@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { nockIgnoreApiPaths, nockPostRequest } from '../../../../../lib/nock-util'
-import { KlusterletAddonConfig, ManagedCluster, Namespace } from '../../../../../resources'
+import { HostedClusterK8sResource, KlusterletAddonConfig, ManagedCluster, Namespace } from '../../../../../resources'
 import { ResourceError } from '../../../../../resources/utils'
 
 const mockHostedCluster: HostedClusterK8sResource = {
