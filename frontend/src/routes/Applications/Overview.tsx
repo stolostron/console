@@ -1035,7 +1035,7 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-subscription',
-            text: t('Subscription'),
+            text: t('Subscription (Deprecated)'),
           },
         ]}
         isKebab={false}
@@ -1078,7 +1078,7 @@ export default function ApplicationsOverview() {
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{t('Subscription')}</Text>
+                <Text>{t('Subscription (Deprecated)')}</Text>
               </span>
               <span>
                 <Text>

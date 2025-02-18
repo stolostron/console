@@ -792,13 +792,13 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       <AcmExpandableCard title={t('Learn more about the terminology')} id="ApplicationDeploymentHighlightsTerminology">
         <Split hasGutter>
           <TerminologyCard
-            title={t('Subscriptions')}
+            title={t('Subscriptions (Deprecated)')}
             description={t(
               'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
             )}
           />
           <TerminologyCard
-            title={t('Channels')}
+            title={t('Channels (Deprecated)')}
             description={t(
               'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
             )}
