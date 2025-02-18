@@ -1,8 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Label,
   PageSection,
   Popover,
+  Split,
+  SplitItem,
   Stack,
   StackItem,
   Text,
@@ -10,7 +13,7 @@ import {
   TextVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
@@ -74,6 +77,7 @@ import {
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getISOStringTimestamp } from '../../resources/utils'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -1035,7 +1039,7 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-subscription',
-            text: t('Subscription (Deprecated)'),
+            text: <DeprecatedTitle title={t('Subscription')} />,
           },
         ]}
         isKebab={false}
@@ -1078,7 +1082,9 @@ export default function ApplicationsOverview() {
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{t('Subscription (Deprecated)')}</Text>
+                <Text>
+                  <DeprecatedTitle title={t('Subscription')} />
+                </Text>
               </span>
               <span>
                 <Text>
