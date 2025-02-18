@@ -1093,7 +1093,7 @@ export default function ApplicationsOverview() {
         position="bottom"
         maxWidth="850px"
       >
-        <AcmButton variant="link" isInline style={{ marginTop: '8px', marginLeft: '16px' }}>
+        <AcmButton variant="link" isInline>
           {t('Compare application types')}
         </AcmButton>
       </Popover>
@@ -1102,7 +1102,11 @@ export default function ApplicationsOverview() {
   )
 
   const additionalToolbarItems = useMemo(
-    () => <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>,
+    () => (
+      <ToolbarItem alignSelf="center" key="compare-app-types">
+        {compareAppTypesLink}
+      </ToolbarItem>
+    ),
     [compareAppTypesLink]
   )
   const emptyStateActions = useMemo(
