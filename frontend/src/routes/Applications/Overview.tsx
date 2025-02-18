@@ -1102,7 +1102,11 @@ export default function ApplicationsOverview() {
   )
 
   const additionalToolbarItems = useMemo(
-    () => <ToolbarItem key="compare-app-types">{compareAppTypesLink}</ToolbarItem>,
+    () => (
+      <ToolbarItem alignSelf="center" key="compare-app-types">
+        {compareAppTypesLink}
+      </ToolbarItem>
+    ),
     [compareAppTypesLink]
   )
   const emptyStateActions = useMemo(
