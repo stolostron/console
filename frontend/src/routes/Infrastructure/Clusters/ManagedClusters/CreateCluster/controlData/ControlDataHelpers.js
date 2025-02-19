@@ -367,11 +367,16 @@ export const onImageChange = (control, controlData) => {
   if (networkDefault) {
     const { setActive } = networkDefault
     const { active: version } = control
-
-    if (versionGreater(version, 4, 11)) {
-      setActive('OVNKubernetes')
+    if (versionGreater(version, 4, 16)) {
+      networkDefault.type = 'text'
+      networkDefault.active = 'OVNKubernetes'
+      networkDefault.disabled = true
     } else {
-      setActive('OpenShiftSDN')
+      if (versionGreater(version, 4, 11)) {
+        setActive('OVNKubernetes')
+      } else {
+        setActive('OpenShiftSDN')
+      }
     }
   }
 }
