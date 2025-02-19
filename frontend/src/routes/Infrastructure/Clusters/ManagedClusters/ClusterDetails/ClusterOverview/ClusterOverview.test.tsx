@@ -23,6 +23,7 @@ import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from
 import { clickByText, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
+  HostedClusterK8sResource,
   HostedClusterKind,
   Secret,
   SecretApiVersion,
@@ -38,7 +39,6 @@ import {
   mockRegionalHubCluster,
 } from '../ClusterDetails.sharedmocks'
 import { ClusterOverviewPageContent } from './ClusterOverview'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

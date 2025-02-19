@@ -5,6 +5,7 @@ import {
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
   getLatestAnsibleJob,
+  HostedClusterK8sResource,
   NodePool,
 } from '../../../../../resources'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
@@ -18,7 +19,7 @@ import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom-v5-compat'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'

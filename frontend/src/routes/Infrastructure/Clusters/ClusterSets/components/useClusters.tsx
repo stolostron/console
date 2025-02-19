@@ -1,10 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  AgentClusterInstallK8sResource,
-  HostedClusterK8sResource,
-  NodePoolK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   CertificateSigningRequest,
   ClusterClaim,
@@ -13,6 +9,7 @@ import {
   ClusterManagementAddOn,
   ClusterPool,
   DiscoveredCluster,
+  HostedClusterK8sResource,
   isGlobalClusterSet,
   ManagedCluster,
   ManagedClusterAddOn,

@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
-import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import cloneDeep from 'lodash/cloneDeep'
@@ -88,6 +88,7 @@ import {
   KlusterletAddonConfig,
   KlusterletAddonConfigApiVersion,
   KlusterletAddonConfigKind,
+  HostedClusterK8sResource,
 } from '../../../../../resources'
 import {
   MultiClusterEngine,

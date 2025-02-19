@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AlertVariant, List, ListComponent, ListItem, OrderType, Stack, StackItem } from '@patternfly/react-core'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import * as React from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -12,6 +11,7 @@ import {
   Namespace,
   NamespaceKind,
   NamespaceApiVersion,
+  HostedClusterK8sResource,
 } from '../../../../../resources'
 import { ResourceError, ResourceErrorCode, createResource } from '../../../../../resources/utils'
 import { AcmAlert, AcmButton, AcmToastContext, IAlertContext } from '../../../../../ui-components'

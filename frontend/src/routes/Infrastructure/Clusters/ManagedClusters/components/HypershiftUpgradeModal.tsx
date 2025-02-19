@@ -3,16 +3,12 @@
 import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { SelectOption } from '@patternfly/react-core/deprecated'
 import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import {
-  AgentK8sResource,
-  AgentMachineK8sResource,
-  HostedClusterK8sResource,
-  NodePoolK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentK8sResource, AgentMachineK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   HostedClusterApiVersion,
+  HostedClusterK8sResource,
   HostedClusterKind,
   IResource,
   NodePool,

@@ -2,10 +2,11 @@
 
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { HostedClusterK8sResource, SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { getResource } from '../../../../../resources/utils'
 import HypershiftKubconfigDownload from './HypershiftKubeconfigDownload'
+import { HostedClusterK8sResource } from '../../../../../resources'
 
 const fetchSecret = (name: string, namespace: string) => {
   return getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise

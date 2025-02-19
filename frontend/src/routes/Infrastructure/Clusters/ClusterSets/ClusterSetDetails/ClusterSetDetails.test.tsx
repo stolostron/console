@@ -4,7 +4,6 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import * as YAML from 'yaml'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
@@ -67,6 +66,7 @@ import {
   BrokerKind,
   BrokerApiVersion,
   InstallPlanApproval,
+  HostedClusterK8sResource,
 } from '../../../../../resources'
 import {
   mockClusterDeployments,

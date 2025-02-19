@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { ExpandableSectionToggle, Icon, ProgressStep, Spinner, Stack, StackItem } from '@patternfly/react-core'
 import { CheckCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import ConditionsTable from './ConditionsTable'
 import { AcmButton } from '../../../../../ui-components'
@@ -11,6 +10,7 @@ import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { DistributionField } from './DistributionField'
 import { onToggle } from '../utils/utils'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
+import { HostedClusterK8sResource } from '../../../../../resources'
 
 type HostedClusterProgressProps = {
   hostedCluster: HostedClusterK8sResource

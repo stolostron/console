@@ -8,7 +8,6 @@ import {
   getConsoleUrl as getConsoleUrlAI,
   getClusterApiUrl as getClusterApiUrlAI,
   AgentClusterInstallK8sResource,
-  HostedClusterK8sResource,
   NodePoolK8sResource,
   ClusterDeploymentK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
@@ -24,7 +23,7 @@ import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import { TFunction } from 'react-i18next'
-import { ClusterManagementAddOn, DiscoveredCluster, ManagedClusterAddOn } from '../'
+import { ClusterManagementAddOn, DiscoveredCluster, HostedClusterK8sResource, ManagedClusterAddOn } from '../'
 import { HypershiftCloudPlatformType } from './constants'
 import {
   checkCuratorLatestOperation,
