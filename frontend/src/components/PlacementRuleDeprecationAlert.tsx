@@ -14,7 +14,7 @@ const PlacementRuleDeprecationAlert = () => {
         <TextContent style={{ paddingTop: '5px' }}>
           <Trans i18nKey="<bold>Best practice:</bold> Use Placement." components={{ bold: <strong /> }} />
         </TextContent>
-        <ViewDocumentationLink doclink={DOC_LINKS.DEPRECATIONS_AND_REMOVALS} />
+        <ViewDocumentationLink doclink={DOC_LINKS.DEPRECATIONS} />
       </Alert>
     </React.Fragment>
   )
