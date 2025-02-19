@@ -9,6 +9,14 @@ export default function VirtualMachines() {
   return (
     <Routes>
       <Route path={virtualMachineChildPath(NavigationPath.virtualMachines)} element={<VirtualMachinesPage />} />
+      <Route
+        path={virtualMachineChildPath(NavigationPath.virtualMachinesForCluster)}
+        element={<VirtualMachinesPage />}
+      />
+      <Route
+        path={virtualMachineChildPath(NavigationPath.virtualMachinesForNamespace)}
+        element={<VirtualMachinesPage />}
+      />
       <Route path="*" element={<Navigate to={NavigationPath.virtualMachines} replace />} />
     </Routes>
   )

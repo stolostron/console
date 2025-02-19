@@ -41,7 +41,7 @@ const Automations = lazy(() => import('./routes/Infrastructure/Automations/Autom
 const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
 const VirtualMachines = lazy(() => import('./routes/Infrastructure/VirtualMachines/VirtualMachines'))
 
-// GOVERNANCE
+// GOVERNANCEjkjhkl
 const Governance = lazy(() => import('./routes/Governance/Governance'))
 
 // APPLICATIONS
