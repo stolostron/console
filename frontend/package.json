@@ -16,7 +16,7 @@
     "check": "npm run i18n && npm run prettier && npm run lint && npm run tsc",
     "check:fix": "npm run i18n:fix && npm run prettier:fix && npm run lint:fix && npm run tsc",
     "clean": "rm -rf coverage build",
-    "test": "npm run jest --",
+    "test": "TZ=UTC jest",
     "jest": "TZ=UTC jest",
     "jest:update-snapshot": "TZ=UTC jest --updateSnapshot",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
