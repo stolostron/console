@@ -4,8 +4,8 @@ import {
   Card,
   CardBody,
   CardTitle,
-  PageSection,
   Split,
+  PageSection,
   Stack,
   StackItem,
   Text,
@@ -14,7 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
@@ -49,6 +49,7 @@ import {
   getSearchLink,
 } from './helpers/resource-helper'
 import { useHubCluster } from './helpers/useHubCluster'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -784,7 +785,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
     []
   )
 
-  function TerminologyCard(props: { title: string; description: string }) {
+  function TerminologyCard(props: { title: ReactNode; description: string }) {
     return (
       <Card isPlain isCompact>
         <CardTitle>{props.title}</CardTitle>
@@ -798,13 +799,13 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       <AcmExpandableCard title={t('Learn more about the terminology')} id="ApplicationDeploymentHighlightsTerminology">
         <Split hasGutter>
           <TerminologyCard
-            title={t('Subscriptions')}
+            title={<DeprecatedTitle title={t('Subscriptions')} />}
             description={t(
               'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
             )}
           />
           <TerminologyCard
-            title={t('Channels')}
+            title={<DeprecatedTitle title={t('Channels')} />}
             description={t(
               'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
             )}
@@ -816,7 +817,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             )}
           />
           <TerminologyCard
-            title={t('Placement rules (Deprecated)')}
+            title={<DeprecatedTitle title={t('Placement rules')} />}
             description={t(
               'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
             )}

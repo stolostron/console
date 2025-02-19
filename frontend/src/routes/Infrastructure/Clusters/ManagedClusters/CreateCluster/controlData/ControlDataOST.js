@@ -8,7 +8,6 @@ import {
   proxyControlData,
   automationControlData,
   getSimplifiedImageName,
-  getOSTNetworkingControlData,
   getWorkerName,
   isHidden_lt_OCP48,
   isHidden_lt_OCP47,
@@ -21,6 +20,7 @@ import {
   appendKlusterletAddonConfig,
   onImageChange,
   reverseImageSet,
+  networkingControlData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -294,7 +294,7 @@ export const getControlDataOST = (
       active: [],
       validation: getIPValidator({ optional: true }),
     },
-    ...getOSTNetworkingControlData(t),
+    ...networkingControlData(t),
     ...proxyControlData(t),
     ///////////////////////  openstack  /////////////////////////////////////
     {

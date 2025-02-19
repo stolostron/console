@@ -333,7 +333,6 @@ exports[`Cluster creation control data for OST generates correctly 1`] = `
     "available": [
       "OpenShiftSDN",
       "OVNKubernetes",
-      "Kuryr",
     ],
     "id": "networkType",
     "name": "Network type",
@@ -961,7 +960,6 @@ exports[`Cluster creation control data for OST generates correctly for MCE 1`] =
     "available": [
       "OpenShiftSDN",
       "OVNKubernetes",
-      "Kuryr",
     ],
     "id": "networkType",
     "name": "Network type",
@@ -1589,7 +1587,6 @@ exports[`Cluster creation control data for OST generates correctly with SNO enab
     "available": [
       "OpenShiftSDN",
       "OVNKubernetes",
-      "Kuryr",
     ],
     "id": "networkType",
     "name": "Network type",
