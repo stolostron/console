@@ -24,7 +24,10 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { getVirtualMachineRowActions } from '../../Infrastructure/VirtualMachines/utils'
+import {
+  getVirtualMachineRowActions,
+  getVirtualMachineRowActionExtensions,
+} from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -41,6 +44,7 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { ISearchResult, useGetRowActions } from './utils'
+import { PluginContext } from '../../../lib/PluginContext'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -93,6 +97,8 @@ function RenderAccordionItem(props: {
   const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
   const kindString = kind.split('.').pop() ?? ''
   const rowActions = useGetRowActions(kindString, currentQuery, false, setDeleteResource, setDeleteExternalResource)
+  const { acmExtensions } = useContext(PluginContext)
+  const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
@@ -122,7 +128,9 @@ function RenderAccordionItem(props: {
                     vmActionsEnabled,
                     toast,
                     navigate,
-                    t
+                    t,
+                    // get the row action extensions for the virtual machine
+                    getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction, setPluginModal)
                   )
               : undefined
           }
@@ -144,25 +152,28 @@ function RenderAccordionItem(props: {
   )
 
   return (
-    <AccordionItem key={`${kind}-accordion-item`}>
-      <AccordionToggle
-        onClick={() => {
-          setIsExpanded(!isExpanded)
-        }}
-        isExpanded={isExpanded}
-        id={accordionItemKey}
-      >
-        <span className={accordionItemHeader}>
-          <span className={accordionItemKind}>
-            {kindString}
-            {/* Cluster is not a real Kube resource and therefore does not have apigroup/apiversion */}
-            {kindString.toLowerCase() !== 'cluster' && <span className={accordionItemGroup}>{apiGroup}</span>}
-            <div className={accordionItemGroup}>{`(${items.length})`}</div>
+    <Fragment>
+      {pluginModal}
+      <AccordionItem key={`${kind}-accordion-item`}>
+        <AccordionToggle
+          onClick={() => {
+            setIsExpanded(!isExpanded)
+          }}
+          isExpanded={isExpanded}
+          id={accordionItemKey}
+        >
+          <span className={accordionItemHeader}>
+            <span className={accordionItemKind}>
+              {kindString}
+              {/* Cluster is not a real Kube resource and therefore does not have apigroup/apiversion */}
+              {kindString.toLowerCase() !== 'cluster' && <span className={accordionItemGroup}>{apiGroup}</span>}
+              <div className={accordionItemGroup}>{`(${items.length})`}</div>
+            </span>
           </span>
-        </span>
-      </AccordionToggle>
-      <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kindString, items)}</AccordionContent>
-    </AccordionItem>
+        </AccordionToggle>
+        <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kindString, items)}</AccordionContent>
+      </AccordionItem>
+    </Fragment>
   )
 }
 
