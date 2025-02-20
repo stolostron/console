@@ -372,6 +372,8 @@ export const onImageChange = (control, controlData) => {
       networkDefault.active = 'OVNKubernetes'
       networkDefault.disabled = true
     } else {
+      networkDefault.type = 'singleselect'
+      networkDefault.disabled = false
       if (versionGreater(version, 4, 11)) {
         setActive('OVNKubernetes')
       } else {
