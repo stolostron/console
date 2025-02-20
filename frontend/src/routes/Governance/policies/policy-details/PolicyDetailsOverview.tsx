@@ -125,7 +125,7 @@ export default function PolicyDetailsOverview() {
       },
       {
         key: t('Created'),
-        value: policy.metadata.creationTimestamp ? <AcmTimestamp timestamp={policy.metadata.creationTimestamp} /> : '-',
+        value: <AcmTimestamp timestamp={policy.metadata?.creationTimestamp ?? ''} />,
       },
       {
         key: t('Automation'),

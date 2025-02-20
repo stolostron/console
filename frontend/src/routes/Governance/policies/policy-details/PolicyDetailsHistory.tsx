@@ -137,7 +137,7 @@ export function PolicyDetailsHistory(props: {
       {
         header: t('Last report'),
         sort: 'index',
-        cell: (item: any) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '-'),
+        cell: (item: any) => <AcmTimestamp timestamp={item.timestamp} />,
         exportContent: (item: any) => {
           if (item.timestamp) {
             return getISOStringTimestamp(item.timestamp)

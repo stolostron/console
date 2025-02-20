@@ -240,11 +240,7 @@ export function ApplicationOverviewPageContent() {
         },
         {
           key: t('Created'),
-          value: applicationData.application.metadata.creationTimestamp ? (
-            <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />
-          ) : (
-            '-'
-          ),
+          value: <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />,
         },
         {
           key: t('Last reconciled'),
@@ -253,7 +249,7 @@ export function ApplicationOverviewPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-          value: lastSyncedTimeStamp ? <AcmTimestamp timestamp={lastSyncedTimeStamp} /> : <span>-</span>,
+          value: <AcmTimestamp timestamp={lastSyncedTimeStamp} />,
         },
       ]
     } else {
@@ -293,17 +289,13 @@ export function ApplicationOverviewPageContent() {
         },
         {
           key: t('Created'),
-          value: applicationData.application.metadata.creationTimestamp ? (
-            <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />
-          ) : (
-            '-'
-          ),
+          value: <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />,
         },
         {
           key: t('Last sync requested'),
           value: (
             <Fragment>
-              {renderData(lastSynced, lastSynced ? <AcmTimestamp timestamp={lastSynced} /> : '-', '30%')}
+              {renderData(lastSynced, <AcmTimestamp timestamp={lastSynced} />, '30%')}
               {renderData(
                 lastSynced,
                 hasSyncPermission ? (

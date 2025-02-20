@@ -534,7 +534,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
@@ -647,7 +647,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
@@ -699,7 +699,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
@@ -763,7 +763,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {

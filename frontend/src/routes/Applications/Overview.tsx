@@ -415,7 +415,7 @@ export default function ApplicationsOverview() {
           clusterCount: clusterTransformData,
           clusterList: clusterList,
           resourceText: resourceText,
-          createdText: getResourceTimestamp(tableItem, '', 'metadata.creationTimestamp'),
+          createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           timeWindow: timeWindow,
           namespace: transformedNamespace,
           healthStatus: getAppHealthStatus(tableItem),
@@ -630,9 +630,7 @@ export default function ApplicationsOverview() {
         header: t('Created'),
         cell: (resource) => {
           return (
-            <span style={{ whiteSpace: 'nowrap' }}>
-              {getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}
-            </span>
+            <span style={{ whiteSpace: 'nowrap' }}>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
           )
         },
         transforms: [cellWidth(10)],

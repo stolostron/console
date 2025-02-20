@@ -180,7 +180,7 @@ describe('getResourceTimestamp', () => {
       },
     }
 
-    const result = getResourceTimestamp(resource as any, '', 'metadata.creationTimestamp')
+    const result = getResourceTimestamp(resource as any, 'metadata.creationTimestamp')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toBeInTheDocument()
@@ -193,7 +193,7 @@ describe('getResourceTimestamp', () => {
       metadata: {},
     }
 
-    const result = getResourceTimestamp(resource as any, '', 'metadata.creationTimestamp')
+    const result = getResourceTimestamp(resource as any, 'metadata.creationTimestamp')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toHaveTextContent('-')
@@ -208,7 +208,7 @@ describe('getResourceTimestamp', () => {
       },
     }
 
-    const result = getResourceTimestamp(resource as any, '', 'unknown')
+    const result = getResourceTimestamp(resource as any, 'unknown')
     const { container } = render(React.createElement('div', null, result))
 
     expect(container).toHaveTextContent('-')

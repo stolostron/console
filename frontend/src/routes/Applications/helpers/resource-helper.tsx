@@ -352,10 +352,10 @@ export const getResourceLabel = (type: string, count: number, t: TFunction) => {
   return label + optionalCount
 }
 
-export const getResourceTimestamp = (item: IResource, _locale: string, timestampKey: string) => {
+export const getResourceTimestamp = (item: IResource, timestampKey: string) => {
   const key = timestampKey ? timestampKey : 'created'
   const createdTime = _.get(item, key)
-  return createdTime ? <AcmTimestamp timestamp={createdTime} /> : <span>-</span>
+  return <AcmTimestamp timestamp={createdTime} />
 }
 
 export const getSearchLink = (params: any) => {
