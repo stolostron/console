@@ -140,7 +140,7 @@ describe('Applications Page', () => {
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
     expect(screen.getAllByText('Git')).toBeTruthy()
-    expect(screen.getByText(/^[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2} (AM|PM)$/)).toBeTruthy()
+    expect(screen.getByText('Feb 20, 2024, 3:30 PM')).toBeInTheDocument()
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
