@@ -92,7 +92,7 @@ export const mockApplication0: Application = {
   metadata: {
     name: 'application-0',
     namespace: 'namespace-0',
-    creationTimestamp: `${moment().format()}`,
+    creationTimestamp: '2024-02-20T15:30:00Z',
     annotations: {
       'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
     },
