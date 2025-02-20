@@ -284,8 +284,6 @@ i18n
     },
   })
 
-process.env.TZ = 'UTC'
-
 window.matchMedia =
   window.matchMedia ||
   function () {
