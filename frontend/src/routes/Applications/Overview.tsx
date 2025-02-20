@@ -513,7 +513,7 @@ export default function ApplicationsOverview() {
             </TextContent>
           </span>
         ),
-        transforms: [cellWidth(15)],
+        transforms: [cellWidth(10)],
         // probably don't need search if we have a type filter
         exportContent: (resource) => {
           return getApplicationType(resource, systemAppNSPrefixes, t)
@@ -629,8 +629,13 @@ export default function ApplicationsOverview() {
       {
         header: t('Created'),
         cell: (resource) => {
-          return <span>{getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}</span>
+          return (
+            <span style={{ whiteSpace: 'nowrap' }}>
+              {getResourceTimestamp(resource, '', 'metadata.creationTimestamp')}
+            </span>
+          )
         },
+        transforms: [cellWidth(10)],
         sort: 'metadata.creationTimestamp',
         search: 'transformed.createdText',
         exportContent: (resource) => {
