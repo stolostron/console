@@ -1,5 +1,3 @@
-/* Copyright Contributors to the Open Cluster Management project */
-import moment from 'moment'
 import {
   Application,
   ApplicationApiVersion,
