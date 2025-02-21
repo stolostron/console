@@ -12,6 +12,7 @@ interface TimestampProps {
   simple?: boolean
   omitSuffix?: boolean
   className?: string
+  noDateText?: string
 }
 
 const MockTimestamp: React.FC<TimestampProps> = ({ timestamp, simple, omitSuffix, className }) => (
@@ -39,6 +40,15 @@ const mockPluginContextValue = {
 
 describe('AcmTimestamp', () => {
   const timestamp = 'Jan 3, 2025, 6:53 PM'
+
+  test('renders dash when timestamp is undefined', () => {
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={undefined} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText('-')).toBeInTheDocument()
+  })
 
   test('renders the component with the Timestamp from PluginContext', () => {
     render(
@@ -101,23 +111,5 @@ describe('AcmTimestamp', () => {
       </PluginContext.Provider>
     )
     expect(screen.getByText(timestamp)).toBeInTheDocument()
-  })
-
-  test('renders the SimpleTimestamp component with an invalid timestamp', () => {
-    const invalidTimestamp = ''
-    const mockContextWithoutTimestamp = {
-      ...mockPluginContextValue,
-      ocpApi: {
-        ...mockPluginContextValue.ocpApi,
-        Timestamp: undefined,
-      },
-    }
-
-    render(
-      <PluginContext.Provider value={mockContextWithoutTimestamp}>
-        <AcmTimestamp timestamp={invalidTimestamp} />
-      </PluginContext.Provider>
-    )
-    expect(screen.getByText('Invalid Date')).toBeInTheDocument()
   })
 })

@@ -224,11 +224,7 @@ export function DiscoveredClustersTable(props: {
       sort: 'spec.activityTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
-          {discoveredCluster.spec.activityTimestamp ? (
-            <AcmTimestamp timestamp={discoveredCluster.spec.activityTimestamp} />
-          ) : (
-            ['-']
-          )}
+          <AcmTimestamp timestamp={discoveredCluster.spec.activityTimestamp} />
         </span>
       ),
       exportContent: (discoveredCluster) => {
@@ -292,11 +288,7 @@ export function DiscoveredClustersTable(props: {
       sort: 'spec.creationTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
-          {discoveredCluster.spec.creationTimestamp ? (
-            <AcmTimestamp timestamp={discoveredCluster.spec.creationTimestamp} />
-          ) : (
-            ['-']
-          )}
+          <AcmTimestamp timestamp={discoveredCluster.spec.creationTimestamp} />
         </span>
       ),
       exportContent: (discoveredCluster) => {
@@ -310,11 +302,7 @@ export function DiscoveredClustersTable(props: {
       sort: 'metadata.creationTimestamp',
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
-          {discoveredCluster.metadata.creationTimestamp ? (
-            <AcmTimestamp timestamp={discoveredCluster.metadata.creationTimestamp} />
-          ) : (
-            ['-']
-          )}
+          <AcmTimestamp timestamp={discoveredCluster.metadata.creationTimestamp} />
         </span>
       ),
       exportContent: (discoveredCluster) => {

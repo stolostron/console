@@ -6,12 +6,15 @@ import { PluginContext } from './PluginContext'
 import { useContext } from 'react'
 import { TimestampProps } from '@openshift-console/dynamic-plugin-sdk'
 
-type AcmTimestampProps = TimestampProps & {
+type AcmTimestampProps = Omit<TimestampProps, 'timestamp'> & {
   showIcon?: boolean
+  noDateText?: string
+  timestamp: TimestampProps['timestamp'] | undefined
 }
 
 const AcmTimestamp: React.FC<AcmTimestampProps> = ({
   timestamp,
+  noDateText = '-',
   simple,
   omitSuffix,
   className = '',
@@ -20,6 +23,10 @@ const AcmTimestamp: React.FC<AcmTimestampProps> = ({
   const {
     ocpApi: { Timestamp },
   } = useContext(PluginContext)
+
+  if (!timestamp) {
+    return noDateText
+  }
 
   return Timestamp ? (
     <Timestamp
