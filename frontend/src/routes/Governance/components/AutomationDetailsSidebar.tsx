@@ -11,7 +11,6 @@ import {
   Text,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import moment from 'moment'
 import { useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
@@ -24,13 +23,14 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmEmptyState, AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 export interface JobTableData {
   name: string
   namespace: string
   status: string
-  started: string
-  finished: string
+  started: React.ReactNode
+  finished: React.ReactNode
 }
 
 export function AutomationDetailsSidebar(props: {
@@ -98,12 +98,16 @@ export function AutomationDetailsSidebar(props: {
             name: job.metadata.name!,
             namespace: job.metadata.namespace!,
             status: jobResult?.status ?? 'No status',
-            started: jobResult?.started
-              ? moment(new Date(jobResult?.started)).fromNow()
-              : moment(new Date(ansibleResultCondition?.lastTransitionTime ?? '')).fromNow(),
-            finished: jobResult?.finished
-              ? moment(new Date(jobResult?.finished)).fromNow()
-              : moment(new Date(ansibleResultCondition?.lastTransitionTime ?? '')).fromNow(),
+            started: jobResult?.started ? (
+              <AcmTimestamp timestamp={jobResult.started} />
+            ) : (
+              <AcmTimestamp timestamp={ansibleResultCondition?.lastTransitionTime ?? ''} />
+            ),
+            finished: jobResult?.finished ? (
+              <AcmTimestamp timestamp={jobResult.finished} />
+            ) : (
+              <AcmTimestamp timestamp={ansibleResultCondition?.lastTransitionTime ?? ''} />
+            ),
           }
         }),
     [ansibleJobs, policyAutomationMatch.metadata.name]

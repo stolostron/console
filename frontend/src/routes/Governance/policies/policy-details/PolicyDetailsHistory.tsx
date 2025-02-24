@@ -2,7 +2,6 @@
 
 import { Icon, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import moment from 'moment'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
@@ -13,7 +12,7 @@ import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 interface HistoryTableData {
   message: string
-  timestamp: moment.MomentInput
+  timestamp: string
   index: number
 }
 
