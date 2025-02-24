@@ -18,9 +18,9 @@ import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/depr
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
-import moment from 'moment-timezone'
 import _ from 'lodash'
 import './style.css'
+import getTimeZones from '@vvo/tzdb'
 
 export class TimeWindow extends Component {
   static propTypes = {
@@ -49,13 +49,18 @@ export class TimeWindow extends Component {
     }
     this.props.control.validation = this.validation.bind(this)
 
-    this.timezoneList = this.renderTimezones(moment.tz.names(), moment.tz.guess(true), 'timezone-dropdown').map(
-      (tz) => (
-        <SelectOption key={tz.key} value={tz.value}>
-          {tz.label}
-        </SelectOption>
-      )
-    )
+    const allTimezones = getTimeZones()
+    const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+    this.timezoneList = this.renderTimezones(
+      allTimezones.map((tz) => tz.name),
+      localTimezone,
+      'timezone-dropdown'
+    ).map((tz) => (
+      <SelectOption key={tz.key} value={tz.value}>
+        {tz.label}
+      </SelectOption>
+    ))
 
     this.daysMap = new Map([
       ['mon', 'Monday'],
@@ -378,25 +383,25 @@ export class TimeWindow extends Component {
   }
 
   parseTime = (time) => {
-    const amSuffix = 'AM'
-    const pmSuffix = 'PM'
-    time = time.trim()
-    if (time !== '' && this.validateTime(time)) {
-      // Format AM/PM according to design
-      let ampm = ''
-      if (time.toLowerCase().includes(amSuffix.toLowerCase().trim())) {
-        time = time.toLowerCase().replace(amSuffix.toLowerCase().trim(), '').trim()
-        ampm = amSuffix
-      } else if (time.toLowerCase().includes(pmSuffix.toLowerCase().trim())) {
-        time = time.toLowerCase().replace(pmSuffix.toLowerCase().trim(), '').trim()
-        ampm = pmSuffix
-      } else {
-        // if this 12 hour time is missing am/pm but otherwise valid,
-        // append am/pm depending on time of day
-        ampm = new Date().getHours() > 11 ? pmSuffix : amSuffix
-      }
-      return `${time}${ampm}`
-    } else {
+    const timeStr = time.trim()
+    if (!timeStr) {
+      return ''
+    }
+
+    try {
+      // Create a date object with the time
+      const [hours, minutes] = timeStr.split(':')
+      const date = new Date()
+      date.setHours(parseInt(hours, 10))
+      date.setMinutes(parseInt(minutes, 10))
+
+      // Format in 12-hour format with AM/PM
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    } catch {
       return ''
     }
   }
@@ -518,6 +523,11 @@ export const reverse = (control, templateObject) => {
   if (!control.active) {
     let showTimeSection = false
     const timezone = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.location'))
+    if (timezone) {
+      const allTimezones = getTimeZones().map((tz) => tz.name)
+      control.active.timezone = allTimezones.includes(timezone.$v) ? timezone.$v : ''
+    }
+
     const mode = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.windowtype'))
     let weekdays = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.daysofweek'))
     weekdays = (removeVs(weekdays && weekdays.$v) || []).map((day) => {
