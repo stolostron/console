@@ -5,7 +5,6 @@
 import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import moment from 'moment'
 import queryString from 'query-string'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
@@ -16,6 +15,7 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import AcmTimestamp from '../../lib/AcmTimestamp'
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -451,12 +451,7 @@ export const useSearchDefinitions = () => {
 
 export function GetAge(item: any, key: string) {
   const createdTime = _.get(item, key)
-  if (createdTime?.includes('T')) {
-    return moment(createdTime, 'YYYY-MM-DDTHH:mm:ssZ').fromNow()
-  } else if (createdTime) {
-    return moment(createdTime, 'YYYY-MM-DD HH:mm:ss').fromNow()
-  }
-  return '-'
+  return createdTime ? <AcmTimestamp timestamp={createdTime} /> : '-'
 }
 
 export const GetUrlSearchParam = (resource: any) => {
