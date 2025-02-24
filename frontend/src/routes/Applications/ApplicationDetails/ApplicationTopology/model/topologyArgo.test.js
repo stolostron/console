@@ -1127,6 +1127,641 @@ const managedClusters = [
   },
 ]
 
+const application2 = {
+  name: 'feng-argo-hello',
+  namespace: 'openshift-gitops',
+  app: {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      creationTimestamp: '2023-01-23T15:34:03Z',
+      generation: 20,
+      name: 'feng-argo-hello',
+      namespace: 'openshift-gitops',
+      resourceVersion: '1100922',
+      uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+    },
+    spec: {
+      destination: {
+        name: '',
+        namespace: 'feng-argo-hello',
+        server: 'https://kubernetes.default.svc',
+      },
+      project: 'default',
+      source: {
+        path: 'helloworld',
+        repoURL: 'https://github.com/fxiang1/app-samples',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {
+        automated: {
+          prune: true,
+          selfHeal: true,
+        },
+        syncOptions: ['CreateNamespace=true'],
+      },
+    },
+    status: {
+      health: {
+        status: 'Healthy',
+      },
+      history: [
+        {
+          deployStartedAt: '2023-01-23T15:34:03Z',
+          deployedAt: '2023-01-23T15:34:09Z',
+          id: 0,
+          revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+          source: {
+            path: 'helloworld',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'HEAD',
+          },
+        },
+      ],
+      operationState: {
+        finishedAt: '2023-01-23T15:34:09Z',
+        message: 'successfully synced (all tasks run)',
+        operation: {
+          initiatedBy: {
+            automated: true,
+          },
+          retry: {
+            limit: 5,
+          },
+          sync: {
+            prune: true,
+            revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+            syncOptions: ['CreateNamespace=true'],
+          },
+        },
+        phase: 'Succeeded',
+        startedAt: '2023-01-23T15:34:03Z',
+        syncResult: {
+          resources: [
+            {
+              group: '',
+              hookPhase: 'Succeeded',
+              kind: 'Namespace',
+              message: 'namespace/feng-argo-hello created',
+              name: 'feng-argo-hello',
+              namespace: '',
+              status: 'Synced',
+              syncPhase: 'PreSync',
+              version: 'v1',
+            },
+            {
+              group: '',
+              hookPhase: 'Running',
+              kind: 'Service',
+              message: 'service/helloworld-app-svc created',
+              name: 'helloworld-app-svc',
+              namespace: 'feng-argo-hello',
+              status: 'Synced',
+              syncPhase: 'Sync',
+              version: 'v1',
+            },
+            {
+              group: 'apps',
+              hookPhase: 'Running',
+              kind: 'Deployment',
+              message: 'deployment.apps/helloworld-app-deploy created',
+              name: 'helloworld-app-deploy',
+              namespace: 'feng-argo-hello',
+              status: 'Synced',
+              syncPhase: 'Sync',
+              version: 'v1',
+            },
+            {
+              group: 'route.openshift.io',
+              hookPhase: 'Running',
+              kind: 'Route',
+              message: 'route.route.openshift.io/helloworld-app-route created',
+              name: 'helloworld-app-route',
+              namespace: 'feng-argo-hello',
+              status: 'Synced',
+              syncPhase: 'Sync',
+              version: 'v1',
+            },
+          ],
+          revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+          source: {
+            path: 'helloworld',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'HEAD',
+          },
+        },
+      },
+      reconciledAt: '2023-01-23T16:00:05Z',
+      resources: [
+        {
+          health: {
+            status: 'Healthy',
+          },
+          kind: 'Service',
+          name: 'helloworld-app-svc',
+          namespace: 'feng-argo-hello',
+          status: 'Synced',
+          version: 'v1',
+        },
+        {
+          group: 'apps',
+          health: {
+            status: 'Healthy',
+          },
+          kind: 'Deployment',
+          name: 'helloworld-app-deploy',
+          namespace: 'feng-argo-hello',
+          status: 'Synced',
+          version: 'v1',
+        },
+        {
+          group: 'route.openshift.io',
+          health: {
+            message: 'Route is healthy',
+            status: 'Healthy',
+          },
+          kind: 'Route',
+          name: 'helloworld-app-route',
+          namespace: 'feng-argo-hello',
+          status: 'Synced',
+          version: 'v1',
+        },
+      ],
+      sourceType: 'Directory',
+      summary: {
+        images: ['quay.io/fxiang1/helloworld:0.0.1'],
+      },
+      sync: {
+        comparedTo: {
+          destination: {
+            name: 'local-cluster',
+            namespace: 'feng-argo-hello',
+          },
+          source: {
+            path: 'helloworld',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'HEAD',
+          },
+        },
+        revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+        status: 'Synced',
+      },
+    },
+  },
+  metadata: {
+    creationTimestamp: '2023-01-23T15:34:03Z',
+    generation: 20,
+    name: 'feng-argo-hello',
+    namespace: 'openshift-gitops',
+    resourceVersion: '1100922',
+    uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+  },
+  isArgoApp: true,
+  isAppSet: false,
+  isOCPApp: false,
+  isFluxApp: false,
+}
+
+const argoData2 = {
+  topology: {
+    nodes: [
+      {
+        name: 'feng-argo-hello',
+        namespace: 'openshift-gitops',
+        type: 'application',
+        id: 'application--feng-argo-hello',
+        uid: 'application--feng-argo-hello',
+        specs: {
+          isDesign: true,
+          resourceCount: 0,
+          raw: {
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'Application',
+            metadata: {
+              creationTimestamp: '2023-01-23T15:34:03Z',
+              generation: 20,
+              name: 'feng-argo-hello',
+              namespace: 'openshift-gitops',
+              resourceVersion: '1100922',
+              uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+            },
+            spec: {
+              destination: {
+                name: '',
+                namespace: 'feng-argo-hello',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'HEAD',
+              },
+              syncPolicy: {
+                automated: {
+                  prune: true,
+                  selfHeal: true,
+                },
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+            status: {
+              health: {
+                status: 'Healthy',
+              },
+              history: [
+                {
+                  deployStartedAt: '2023-01-23T15:34:03Z',
+                  deployedAt: '2023-01-23T15:34:09Z',
+                  id: 0,
+                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+              ],
+              operationState: {
+                finishedAt: '2023-01-23T15:34:09Z',
+                message: 'successfully synced (all tasks run)',
+                operation: {
+                  initiatedBy: {
+                    automated: true,
+                  },
+                  retry: {
+                    limit: 5,
+                  },
+                  sync: {
+                    prune: true,
+                    revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                    syncOptions: ['CreateNamespace=true'],
+                  },
+                },
+                phase: 'Succeeded',
+                startedAt: '2023-01-23T15:34:03Z',
+                syncResult: {
+                  resources: [
+                    {
+                      group: '',
+                      hookPhase: 'Succeeded',
+                      kind: 'Namespace',
+                      message: 'namespace/feng-argo-hello created',
+                      name: 'feng-argo-hello',
+                      namespace: '',
+                      status: 'Synced',
+                      syncPhase: 'PreSync',
+                      version: 'v1',
+                    },
+                    {
+                      group: '',
+                      hookPhase: 'Running',
+                      kind: 'Service',
+                      message: 'service/helloworld-app-svc created',
+                      name: 'helloworld-app-svc',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                    {
+                      group: 'apps',
+                      hookPhase: 'Running',
+                      kind: 'Deployment',
+                      message: 'deployment.apps/helloworld-app-deploy created',
+                      name: 'helloworld-app-deploy',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                    {
+                      group: 'route.openshift.io',
+                      hookPhase: 'Running',
+                      kind: 'Route',
+                      message: 'route.route.openshift.io/helloworld-app-route created',
+                      name: 'helloworld-app-route',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                  ],
+                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+              },
+              reconciledAt: '2023-01-23T16:00:05Z',
+              resources: [
+                {
+                  health: {
+                    status: 'Healthy',
+                  },
+                  kind: 'Service',
+                  name: 'helloworld-app-svc',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+                {
+                  group: 'apps',
+                  health: {
+                    status: 'Healthy',
+                  },
+                  kind: 'Deployment',
+                  name: 'helloworld-app-deploy',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+                {
+                  group: 'route.openshift.io',
+                  health: {
+                    message: 'Route is healthy',
+                    status: 'Healthy',
+                  },
+                  kind: 'Route',
+                  name: 'helloworld-app-route',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+              ],
+              sourceType: 'Directory',
+              summary: {
+                images: ['quay.io/fxiang1/helloworld:0.0.1'],
+              },
+              sync: {
+                comparedTo: {
+                  destination: {
+                    name: 'local-cluster',
+                    namespace: 'feng-argo-hello',
+                  },
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+                revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                status: 'Synced',
+              },
+            },
+          },
+          allSubscriptions: [],
+          allChannels: [],
+          allClusters: {
+            isLocal: true,
+            remoteCount: 0,
+          },
+          clusterNames: ['local-cluster'],
+          relatedApps: [
+            {
+              _clusterNamespace: '',
+              _hubClusterResource: 'true',
+              _uid: 'local-cluster/2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+              apigroup: 'argoproj.io',
+              apiversion: 'v1alpha1',
+              applicationSet: '',
+              chart: '',
+              cluster: 'local-cluster',
+              created: '2023-01-23T15:34:03Z',
+              destinationName: 'local-cluster',
+              destinationNamespace: 'feng-argo-hello',
+              destinationServer: '',
+              healthStatus: 'Healthy',
+              kind: 'Application',
+              kind_plural: 'applications',
+              name: 'feng-argo-hello',
+              namespace: 'openshift-gitops',
+              path: 'helloworld',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              syncStatus: 'Synced',
+              targetRevision: 'HEAD',
+              destinationCluster: 'local-cluster',
+            },
+          ],
+        },
+      },
+      {
+        name: 'local-cluster',
+        namespace: '',
+        type: 'cluster',
+        id: 'member--clusters--',
+        uid: 'member--clusters--',
+        specs: {
+          title: 'helloworld',
+          subscription: null,
+          resourceCount: 1,
+          clustersNames: ['local-cluster'],
+          clusters: [
+            {
+              name: 'local-cluster',
+            },
+          ],
+          sortedClusterNames: ['local-cluster'],
+          appClusters: ['local-cluster'],
+          targetNamespaces: {
+            'local-cluster': ['feng-argo-hello'],
+          },
+        },
+      },
+      {
+        name: 'helloworld-app-svc',
+        namespace: 'feng-argo-hello',
+        type: 'service',
+        id: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+        uid: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+        specs: {
+          isDesign: false,
+          raw: {
+            metadata: {
+              name: 'helloworld-app-svc',
+              namespace: 'feng-argo-hello',
+            },
+            health: {
+              status: 'Healthy',
+            },
+            kind: 'Service',
+            name: 'helloworld-app-svc',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+            apiVersion: 'v1',
+          },
+          clustersNames: ['local-cluster'],
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+        },
+      },
+      {
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        type: 'deployment',
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        specs: {
+          isDesign: false,
+          raw: {
+            metadata: {
+              name: 'helloworld-app-deploy',
+              namespace: 'feng-argo-hello',
+            },
+            group: 'apps',
+            health: {
+              status: 'Healthy',
+            },
+            kind: 'Deployment',
+            name: 'helloworld-app-deploy',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+            apiVersion: 'apps/v1',
+          },
+          clustersNames: ['local-cluster'],
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+        },
+      },
+      {
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        type: 'replicaset',
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        specs: {
+          isDesign: false,
+          resourceCount: null,
+          clustersNames: ['local-cluster'],
+          replicaCount: 1,
+          parent: {
+            parentId:
+              'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+            parentName: 'helloworld-app-deploy',
+            parentType: 'deployment',
+          },
+        },
+      },
+      {
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        type: 'pod',
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+        specs: {
+          isDesign: false,
+          resourceCount: null,
+          clustersNames: ['local-cluster'],
+          replicaCount: 1,
+          parent: {
+            parentId:
+              'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+            parentName: 'helloworld-app-deploy',
+            parentType: 'replicaset',
+          },
+        },
+      },
+      {
+        name: 'helloworld-app-route',
+        namespace: 'feng-argo-hello',
+        type: 'route',
+        id: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+        uid: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+        specs: {
+          isDesign: false,
+          raw: {
+            metadata: {
+              name: 'helloworld-app-route',
+              namespace: 'feng-argo-hello',
+            },
+            group: 'route.openshift.io',
+            health: {
+              message: 'Route is healthy',
+              status: 'Healthy',
+            },
+            kind: 'Route',
+            name: 'helloworld-app-route',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+            apiVersion: 'route.openshift.io/v1',
+          },
+          clustersNames: ['local-cluster'],
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+        },
+      },
+    ],
+    links: [
+      {
+        from: {
+          uid: 'application--feng-argo-hello',
+        },
+        to: {
+          uid: 'member--clusters--',
+        },
+        type: '',
+        specs: {
+          isDesign: true,
+        },
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+        },
+        type: '',
+      },
+    ],
+  },
+  cluster: 'feng-hs-import',
+}
+
 it('getArgoTopology success scenario', () => {
   const result = {
     links: [
@@ -1584,4 +2219,462 @@ it('getArgoTopology success scenario', () => {
     ],
   }
   expect(getArgoTopology(application, argoData, managedClusters, 'local-cluster')).toEqual(result)
+})
+
+it('getArgoTopology success scenario', () => {
+  const result = {
+    links: [
+      {
+        from: {
+          uid: 'application--feng-argo-hello',
+        },
+        specs: {
+          isDesign: true,
+        },
+        to: {
+          uid: 'member--clusters--',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+        },
+        type: '',
+      },
+      {
+        from: {
+          uid: 'member--clusters--',
+        },
+        to: {
+          uid: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+        },
+        type: '',
+      },
+    ],
+    nodes: [
+      {
+        id: 'application--feng-argo-hello',
+        name: 'feng-argo-hello',
+        namespace: 'openshift-gitops',
+        specs: {
+          activeChannel: undefined,
+          allChannels: [],
+          allClusters: {
+            isLocal: false,
+            remoteCount: 1,
+          },
+          allSubscriptions: [],
+          channels: undefined,
+          clusterNames: ['feng-hs-import'],
+          isDesign: true,
+          raw: {
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'Application',
+            metadata: {
+              creationTimestamp: '2023-01-23T15:34:03Z',
+              generation: 20,
+              name: 'feng-argo-hello',
+              namespace: 'openshift-gitops',
+              resourceVersion: '1100922',
+              uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+            },
+            spec: {
+              destination: {
+                name: '',
+                namespace: 'feng-argo-hello',
+                server: 'https://kubernetes.default.svc',
+              },
+              project: 'default',
+              source: {
+                path: 'helloworld',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'HEAD',
+              },
+              syncPolicy: {
+                automated: {
+                  prune: true,
+                  selfHeal: true,
+                },
+                syncOptions: ['CreateNamespace=true'],
+              },
+            },
+            status: {
+              health: {
+                status: 'Healthy',
+              },
+              history: [
+                {
+                  deployStartedAt: '2023-01-23T15:34:03Z',
+                  deployedAt: '2023-01-23T15:34:09Z',
+                  id: 0,
+                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+              ],
+              operationState: {
+                finishedAt: '2023-01-23T15:34:09Z',
+                message: 'successfully synced (all tasks run)',
+                operation: {
+                  initiatedBy: {
+                    automated: true,
+                  },
+                  retry: {
+                    limit: 5,
+                  },
+                  sync: {
+                    prune: true,
+                    revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                    syncOptions: ['CreateNamespace=true'],
+                  },
+                },
+                phase: 'Succeeded',
+                startedAt: '2023-01-23T15:34:03Z',
+                syncResult: {
+                  resources: [
+                    {
+                      group: '',
+                      hookPhase: 'Succeeded',
+                      kind: 'Namespace',
+                      message: 'namespace/feng-argo-hello created',
+                      name: 'feng-argo-hello',
+                      namespace: '',
+                      status: 'Synced',
+                      syncPhase: 'PreSync',
+                      version: 'v1',
+                    },
+                    {
+                      group: '',
+                      hookPhase: 'Running',
+                      kind: 'Service',
+                      message: 'service/helloworld-app-svc created',
+                      name: 'helloworld-app-svc',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                    {
+                      group: 'apps',
+                      hookPhase: 'Running',
+                      kind: 'Deployment',
+                      message: 'deployment.apps/helloworld-app-deploy created',
+                      name: 'helloworld-app-deploy',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                    {
+                      group: 'route.openshift.io',
+                      hookPhase: 'Running',
+                      kind: 'Route',
+                      message: 'route.route.openshift.io/helloworld-app-route created',
+                      name: 'helloworld-app-route',
+                      namespace: 'feng-argo-hello',
+                      status: 'Synced',
+                      syncPhase: 'Sync',
+                      version: 'v1',
+                    },
+                  ],
+                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+              },
+              reconciledAt: '2023-01-23T16:00:05Z',
+              resources: [
+                {
+                  health: {
+                    status: 'Healthy',
+                  },
+                  kind: 'Service',
+                  name: 'helloworld-app-svc',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+                {
+                  group: 'apps',
+                  health: {
+                    status: 'Healthy',
+                  },
+                  kind: 'Deployment',
+                  name: 'helloworld-app-deploy',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+                {
+                  group: 'route.openshift.io',
+                  health: {
+                    message: 'Route is healthy',
+                    status: 'Healthy',
+                  },
+                  kind: 'Route',
+                  name: 'helloworld-app-route',
+                  namespace: 'feng-argo-hello',
+                  status: 'Synced',
+                  version: 'v1',
+                },
+              ],
+              sourceType: 'Directory',
+              summary: {
+                images: ['quay.io/fxiang1/helloworld:0.0.1'],
+              },
+              sync: {
+                comparedTo: {
+                  destination: {
+                    name: 'local-cluster',
+                    namespace: 'feng-argo-hello',
+                  },
+                  source: {
+                    path: 'helloworld',
+                    repoURL: 'https://github.com/fxiang1/app-samples',
+                    targetRevision: 'HEAD',
+                  },
+                },
+                revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
+                status: 'Synced',
+              },
+            },
+          },
+          relatedApps: [
+            {
+              _clusterNamespace: '',
+              _hubClusterResource: 'true',
+              _uid: 'local-cluster/2a86cc10-0a18-43f6-8b66-63fd6393ee49',
+              apigroup: 'argoproj.io',
+              apiversion: 'v1alpha1',
+              applicationSet: '',
+              chart: '',
+              cluster: 'local-cluster',
+              created: '2023-01-23T15:34:03Z',
+              destinationCluster: 'local-cluster',
+              destinationName: 'local-cluster',
+              destinationNamespace: 'feng-argo-hello',
+              destinationServer: '',
+              healthStatus: 'Healthy',
+              kind: 'Application',
+              kind_plural: 'applications',
+              name: 'feng-argo-hello',
+              namespace: 'openshift-gitops',
+              path: 'helloworld',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              syncStatus: 'Synced',
+              targetRevision: 'HEAD',
+            },
+          ],
+          resourceCount: 0,
+        },
+        type: 'application',
+        uid: 'application--feng-argo-hello',
+      },
+      {
+        id: 'member--clusters--',
+        name: 'feng-hs-import',
+        namespace: '',
+        specs: {
+          appClusters: undefined,
+          clusters: [
+            {
+              metadata: {
+                name: 'feng-hs-import',
+                namespace: 'feng-hs-import',
+              },
+              remoteClusterDestination: '',
+              status: 'ok',
+            },
+          ],
+          clustersNames: ['feng-hs-import'],
+          resourceCount: 1,
+          sortedClusterNames: ['feng-hs-import'],
+          subscription: null,
+          targetNamespaces: undefined,
+          title: 'helloworld',
+        },
+        type: 'cluster',
+        uid: 'member--clusters--',
+      },
+      {
+        id: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+        name: 'helloworld-app-svc',
+        namespace: 'feng-argo-hello',
+        specs: {
+          clustersNames: ['feng-hs-import'],
+          isDesign: false,
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+          raw: {
+            apiVersion: 'v1',
+            health: {
+              status: 'Healthy',
+            },
+            kind: 'Service',
+            metadata: {
+              name: 'helloworld-app-svc',
+              namespace: 'feng-argo-hello',
+            },
+            name: 'helloworld-app-svc',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+          },
+          resourceCount: 1,
+          resources: undefined,
+        },
+        type: 'service',
+        uid: 'member--member--deployable--member--clusters----service--feng-argo-hello--helloworld-app-svc',
+      },
+      {
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        specs: {
+          clustersNames: ['feng-hs-import'],
+          isDesign: false,
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+          raw: {
+            apiVersion: 'apps/v1',
+            group: 'apps',
+            health: {
+              status: 'Healthy',
+            },
+            kind: 'Deployment',
+            metadata: {
+              name: 'helloworld-app-deploy',
+              namespace: 'feng-argo-hello',
+            },
+            name: 'helloworld-app-deploy',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+          },
+          resourceCount: 1,
+          resources: undefined,
+        },
+        type: 'deployment',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+      },
+      {
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        specs: {
+          clustersNames: ['feng-hs-import'],
+          isDesign: false,
+          parent: {
+            parentId:
+              'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy',
+            parentName: 'helloworld-app-deploy',
+            parentSpecs: undefined,
+            parentType: 'deployment',
+            resources: undefined,
+          },
+          replicaCount: 1,
+          resourceCount: 1,
+          resources: undefined,
+        },
+        type: 'replicaset',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+      },
+      {
+        id: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+        name: 'helloworld-app-deploy',
+        namespace: 'feng-argo-hello',
+        specs: {
+          clustersNames: ['feng-hs-import'],
+          isDesign: false,
+          parent: {
+            parentId:
+              'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
+            parentName: 'helloworld-app-deploy',
+            parentSpecs: undefined,
+            parentType: 'replicaset',
+            resources: undefined,
+          },
+          replicaCount: 1,
+          resourceCount: 1,
+          resources: undefined,
+        },
+        type: 'pod',
+        uid: 'member--member--deployable--member--clusters----deployment--feng-argo-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
+      },
+      {
+        id: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+        name: 'helloworld-app-route',
+        namespace: 'feng-argo-hello',
+        specs: {
+          clustersNames: ['feng-hs-import'],
+          isDesign: false,
+          parent: {
+            clusterId: 'member--clusters--',
+          },
+          raw: {
+            apiVersion: 'route.openshift.io/v1',
+            group: 'route.openshift.io',
+            health: {
+              message: 'Route is healthy',
+              status: 'Healthy',
+            },
+            kind: 'Route',
+            metadata: {
+              name: 'helloworld-app-route',
+              namespace: 'feng-argo-hello',
+            },
+            name: 'helloworld-app-route',
+            namespace: 'feng-argo-hello',
+            status: 'Synced',
+            version: 'v1',
+          },
+          resourceCount: 1,
+          resources: undefined,
+        },
+        type: 'route',
+        uid: 'member--member--deployable--member--clusters----route--feng-argo-hello--helloworld-app-route',
+      },
+    ],
+  }
+
+  expect(getArgoTopology(application2, argoData2, managedClusters, 'local-cluster')).toEqual(result)
 })
