@@ -812,7 +812,7 @@
   "Copy button": "ボタンのコピー",
   "Copy this private URL to share": "このプライベート URL をコピーして共有します",
   "Copy to clipboard": "クリップボードにコピー",
-  "copy.login.command.instructions": "マストヘッドを使用して、ユーザープロファイルの下にある <bold>Copy login command</bold> オプションにアクセスします。提供されている <code>oc login</code> コマンドを実行してログインします。",
+  "copy.login.command.instructions": "マストヘッドを使用して、ユーザープロファイルの下にある <bold>ログインコマンドのコピー</bold> オプションにアクセスします。提供されている <code>oc login</code> コマンドを実行してログインします。",
   "Core": "コア",
   "Could not find the AgentClusterInstall resource.": "AgentClusterInstall リソースが見つかりませんでした。",
   "Could not process request because of invalid data.": "データが無効なため、リクエストを処理できませんでした。",
