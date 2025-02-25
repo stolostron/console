@@ -455,12 +455,14 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
             path={`${selectorPath}.include`}
             label={t('Include namespaces')}
             placeholder={t('Add namespace')}
+            required
           />
           <WizStringsInput
             id="exclude-namespaces"
             path={`${selectorPath}.exclude`}
             label={t('Exclude namespaces')}
             placeholder={t('Add namespace')}
+            required
           />
           <WizKeyValue
             label={t('Namespaces match labels')}
@@ -721,6 +723,7 @@ function OperatorPolicy() {
           'operatorpolicy.version.labelHelper',
           `Versions is a list of non-empty strings that specify which installed versions are compliant when set to 'inform' mode, and which installPlans are approved when you set the parameter to 'enforce' mode.`
         )}
+        required
       />
     </Fragment>
   )
@@ -854,8 +857,8 @@ function ObjectTemplate() {
           collapsedPlaceholder={t('Expand to edit')}
         >
           <WizStringsInput label={t('API Groups')} path="apiGroups" />
-          <WizStringsInput label={t('Resources')} path="resources" />
-          <WizStringsInput label={t('Verbs')} path="verbs" />
+          <WizStringsInput label={t('Resources')} path="resources" required />
+          <WizStringsInput label={t('Verbs')} path="verbs" required />
         </WizArrayInput>
       </WizHidden>
 
