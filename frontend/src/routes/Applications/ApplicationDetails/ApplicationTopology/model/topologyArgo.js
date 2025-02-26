@@ -21,7 +21,7 @@ export function getArgoTopology(application, argoData, managedClusters, hubClust
   if (cluster) {
     // Argo app defined on remote cluster
     // set to empty string for now, depends on backend to provide argoapi from secrets
-    const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster)
+    const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName)
     const remoteClusterDestination = ''
     clusterNames.push(clusterName)
     clusters.push({
@@ -31,7 +31,7 @@ export function getArgoTopology(application, argoData, managedClusters, hubClust
     })
   } else {
     try {
-      const clusterName = getArgoDestinationCluster(destination, managedClusters)
+      const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName)
       clusterNames.push(clusterName)
       clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
     } catch {
