@@ -534,7 +534,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
+              return (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {getResourceTimestamp(resource, 'metadata.creationTimestamp')}
+                </span>
+              )
             },
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
