@@ -4,7 +4,6 @@ import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '../../../../ui-components'
 import { BulkActionModal, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_VERSION } from '../../../../lib/doc-util'
-import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 import { useOnUnbindHost } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 import {
   fetchSecret,
@@ -12,7 +11,7 @@ import {
   onApproveAgent,
   onChangeBMHHostname,
   onMassDeleteHost,
-  onSaveAgent,
+  onChangeHostname,
   onSaveBMH,
   useAssistedServiceConfigMap,
   useOnDeleteHost,
@@ -22,10 +21,12 @@ import {
   AgentAlerts,
   AgentK8sResource,
   BareMetalHostK8sResource,
+  EditAgentModal,
   EditBMHModal,
   InfoAndTroubleshootingNotification,
   InfraEnvAgentTable,
   getAgentsHostsNames,
+  onAgentChangeHostname,
 } from '@openshift-assisted/ui-lib/cim'
 import { useInfraEnvironmentDetailsContext } from './InfraEnvironmentDetailsPage'
 
@@ -77,7 +78,7 @@ const HostsTab: React.FC = () => {
                 onDeleteHost={onDeleteHost}
                 onEditBMH={setEditBMH}
                 onUnbindHost={onUnbindHost}
-                onChangeHostname={onSaveAgent}
+                onChangeHostname={onChangeHostname}
                 onChangeBMHHostname={onChangeBMHHostname}
                 onMassDeleteHost={onMassDeleteHost}
               />
@@ -91,7 +92,14 @@ const HostsTab: React.FC = () => {
                 fetchSecret={fetchSecret}
                 usedHostnames={usedHostnames}
               />
-              <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
+              {editAgent && (
+                <EditAgentModal
+                  agent={editAgent}
+                  usedHostnames={usedHostnames}
+                  onClose={() => setEditAgent(undefined)}
+                  onSave={onAgentChangeHostname([editAgent], bareMetalHosts, onChangeHostname, onChangeBMHHostname)}
+                />
+              )}
             </CardBody>
           </Card>
         </PageSection>
