@@ -56,6 +56,14 @@ spec:
     - 172.30.0.0/16
     userManagedNetworking: {{{ai.userManagedNetworking}}}
   sshPublicKey: '{{{ai.sshPublicKey}}}'
+  platformType: '{{convert ai.platform}}'
+  {{#switch ai.platform}}
+  {{#case 'external'}}
+  external:
+    platformName: 'External platform'
+    cloudControllerManager: External
+  {{/case}}
+  {{/switch}}
 
 ---
 apiVersion: v1
