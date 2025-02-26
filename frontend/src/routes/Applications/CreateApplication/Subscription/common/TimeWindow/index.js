@@ -20,7 +20,6 @@ import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
 import _ from 'lodash'
 import './style.css'
-import getTimeZones from '@vvo/tzdb'
 
 export class TimeWindow extends Component {
   static propTypes = {
@@ -49,14 +48,10 @@ export class TimeWindow extends Component {
     }
     this.props.control.validation = this.validation.bind(this)
 
-    const allTimezones = getTimeZones()
     const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const allTimezones = Intl.supportedValuesOf('timeZone')
 
-    this.timezoneList = this.renderTimezones(
-      allTimezones.map((tz) => tz.name),
-      localTimezone,
-      'timezone-dropdown'
-    ).map((tz) => (
+    this.timezoneList = this.renderTimezones(allTimezones, localTimezone, 'timezone-dropdown').map((tz) => (
       <SelectOption key={tz.key} value={tz.value}>
         {tz.label}
       </SelectOption>
@@ -524,7 +519,7 @@ export const reverse = (control, templateObject) => {
     let showTimeSection = false
     const timezone = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.location'))
     if (timezone) {
-      const allTimezones = getTimeZones().map((tz) => tz.name)
+      const allTimezones = Intl.supportedValuesOf('timeZone')
       control.active.timezone = allTimezones.includes(timezone.$v) ? timezone.$v : ''
     }
 
