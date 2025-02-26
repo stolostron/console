@@ -27,6 +27,7 @@ export class TimeWindow extends Component {
     controlId: PropTypes.string,
     handleChange: PropTypes.func,
     locale: PropTypes.string,
+    i18n: PropTypes.func,
   }
 
   constructor(props) {
