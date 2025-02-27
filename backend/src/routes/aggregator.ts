@@ -8,6 +8,7 @@ import {
   stopAggregatingApplications,
   getApplications,
   filterApplications,
+  addUIData,
 } from './aggregators/applications'
 import { requestAggregatedStatuses } from './aggregators/statuses'
 
@@ -26,7 +27,7 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
   if (type.length < 3) return notFound(req, res)
   switch (type[2]) {
     case 'applications':
-      return paginate(req, res, token, getApplications, filterApplications)
+      return paginate(req, res, token, getApplications, filterApplications, addUIData)
     case 'statuses':
       return requestAggregatedStatuses(req, res, token, getApplications)
   }

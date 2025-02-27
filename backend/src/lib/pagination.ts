@@ -60,7 +60,8 @@ export function paginate(
   res: Http2ServerResponse,
   token: string,
   getItems: () => ITransformedResource[],
-  filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
+  filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[],
+  addUIData: (items: ITransformedResource[]) => ITransformedResource[]
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -143,6 +144,9 @@ export function paginate(
 
     // remove the transform work attribute
     items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)
+
+    // add data required by ui
+    items = addUIData(items)
 
     const results: IResultListView = {
       page: rpage,

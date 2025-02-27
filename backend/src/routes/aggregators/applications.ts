@@ -1,10 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources } from '../events'
+import { getHubClusterName, getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { IResource } from '../../resources/resource'
+import {
+  ApplicationSetKind,
+  IApplicationSet,
+  IArgoApplication,
+  IResource,
+  IStatusResource,
+} from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
+import {
+  discoverSystemAppNamespacePrefixes,
+  getAppSetApps,
+  getAppSetRelatedResources,
+  getClusterList,
+  getClusters,
+  logApplicationCountChanges,
+  transform,
+} from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
 import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
@@ -17,45 +31,6 @@ export enum AppColumns {
   'repo',
   'timeWindow',
   'created',
-}
-export interface IArgoApplication extends IResource {
-  cluster?: string
-  spec: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any
-    destination: {
-      name?: string
-      namespace: string
-      server?: string
-    }
-  }
-  status?: {
-    cluster?: string
-    decisions?: [{ clusterName: string }]
-  }
-}
-export interface IOCPApplication extends IResource {
-  label?: string
-  status?: {
-    cluster?: string
-  }
-}
-export interface IDecision extends IResource {
-  status?: {
-    decisions?: [{ clusterName: string }]
-  }
-}
-export interface ISubscription extends IResource {
-  spec?: {
-    placement?: {
-      placementRef?: {
-        name: string
-      }
-    }
-  }
-  status?: {
-    decisions?: [{ clusterName: string }]
-  }
 }
 
 export type ApplicationCache = {
@@ -183,6 +158,46 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       }
     })
     return isFilterMatch
+  })
+  return items
+}
+
+// add data to the apps that can be used by the ui but
+// w/o downloading all the appsets, apps, etc
+export function addUIData(items: IResource[]) {
+  const argoApplications = applicationCache['localArgoApps'].resources
+  if (applicationCache['remoteArgoApps'].resources) {
+    argoApplications.push(...applicationCache['remoteArgoApps'].resources)
+  } else if (Object.keys(applicationCache['remoteArgoApps'].resourceMap).length) {
+    const allResources = Object.values(applicationCache['remoteArgoApps'].resourceMap)
+    argoApplications.push(...allResources.flat())
+  }
+  const argoAppSets = applicationCache['appset'].resources
+  const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+  const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
+  const managedClusters = getClusters()
+  const localName = getHubClusterName()
+  const localCluster = managedClusters.filter(({ name }) => name === localName)[0]
+
+  items = items.map((item) => {
+    return {
+      ...item,
+      uidata: {
+        clusterList: getClusterList(
+          item as IStatusResource,
+          argoApplications as IArgoApplication[],
+          placementDecisions,
+          subscriptions,
+          localCluster,
+          managedClusters
+        ),
+        appSetRelatedResources:
+          item.kind === ApplicationSetKind
+            ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
+            : ['', []],
+        appSetApps: getAppSetApps(argoApplications, item.metadata?.name),
+      },
+    }
   })
   return items
 }

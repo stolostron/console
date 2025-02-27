@@ -1,19 +1,213 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources, getHubClusterName } from '../events'
-import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
 import {
-  AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
+  Cluster,
+  IStatusResource,
+  IResource,
+  ManagedClusterInfo,
+  IApplicationSet,
   IArgoApplication,
-  IDecision,
-  IOCPApplication,
+  IPlacementDecision,
   ISubscription,
-} from './applications'
+  ApplicationSetDefinition,
+  ApplicationDefinition,
+  IResourceDefinition,
+  IOCPApplication,
+  ArgoApplicationDefinition,
+} from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
+
+//////////////////////////////////////////////////////////////////
+////////////// ADD UI DATA /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+// add ui data to each app would require all appsets, argo apps etc
+// but we don't want to send all that data to the browser
+// so we add it here in the backend
+
+const appSetPlacementStr =
+  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
+
+export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
+  const appSetsSharingPlacement: string[] = []
+  const currentAppSetGenerators = (appSet as IApplicationSet).spec.generators
+  const currentAppSetPlacement = currentAppSetGenerators
+    ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
+    : undefined
+
+  if (!currentAppSetPlacement) {
+    return ['', []]
+  }
+
+  applicationSets.forEach((item) => {
+    const appSetGenerators = item.spec.generators
+    const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
+    if (
+      item.metadata.name !== appSet.metadata?.name ||
+      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
+    ) {
+      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+        appSetsSharingPlacement.push(item.metadata.name)
+      }
+    }
+  })
+
+  return [currentAppSetPlacement, appSetsSharingPlacement]
+}
+
+export function getAppSetApps(argoApps: IResource[], appSetName: string) {
+  const appSetApps: string[] = []
+
+  argoApps.forEach((app) => {
+    if (app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === appSetName) {
+      appSetApps.push(app.metadata.name)
+    }
+  })
+
+  return appSetApps
+}
+
+export function getClusterList(
+  resource: IStatusResource,
+  argoApplications: IArgoApplication[],
+  placementDecisions: IPlacementDecision[],
+  subscriptions: ISubscription[],
+  localCluster: Cluster | undefined,
+  managedClusters: Cluster[]
+) {
+  // managed resources using search to fetch
+  if (isOCPAppResourceKind(resource.kind)) {
+    const clusterSet = new Set<string>()
+    if (resource.status.cluster) {
+      clusterSet.add(resource.status.cluster)
+    }
+    return Array.from(clusterSet)
+  }
+
+  if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
+    return getArgoClusterList([resource as IArgoApplication], managedClusters)
+  } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as IApplicationSet)) {
+    return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions, localCluster?.name ?? '')
+  } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
+    return getArgoClusterList(
+      argoApplications.filter(
+        (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
+      ),
+      managedClusters
+    )
+  } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
+    return getSubscriptionsClusterList(resource, placementDecisions, subscriptions)
+  }
+
+  return [] as string[]
+}
+
+//////////////////////////////////////////////////////////////////
+export const getArgoClusterList = (resources: IArgoApplication[], managedClusters: Cluster[]) => {
+  const clusterSet = new Set<string>()
+  resources.forEach((resource) => {
+    clusterSet.add(getArgoCluster(resource, managedClusters))
+  })
+  return Array.from(clusterSet)
+}
+
+export const isArgoPullModel = (resource: IApplicationSet) => {
+  if (get(resource, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
+    return true
+  }
+  return false
+}
+
+export const getArgoPullModelClusterList = (
+  resource: IApplicationSet,
+  placementDecisions: IPlacementDecision[],
+  hubClusterName: string
+) => {
+  const clusterSet = new Set<string>()
+  const placementName = get(
+    resource,
+    'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+    ''
+  ) as string
+  const placementNamespace = get(resource, 'metadata.namespace', '') as string
+  const placementDecision = placementDecisions.find(
+    (pd) =>
+      pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
+      pd.metadata.namespace === placementNamespace
+  )
+  const clusterDecisions = get(placementDecision, 'status.decisions', []) as { clusterName?: string }[]
+  clusterDecisions.forEach((cd: { clusterName?: string }) => {
+    if (cd.clusterName !== hubClusterName) {
+      clusterSet.add(cd.clusterName)
+    }
+  })
+  return Array.from(clusterSet)
+}
+
+const getSubscriptionsClusterList = (
+  resource: IResource,
+  placementDecisions: IPlacementDecision[],
+  subscriptions: ISubscription[]
+) => {
+  const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
+  const clusterSet = new Set<string>()
+
+  for (const sa of subAnnotationArray) {
+    if (isLocalSubscription(sa, subAnnotationArray)) {
+      // skip local sub
+      continue
+    }
+
+    const subDetails = sa.split('/')
+    subscriptions.forEach((sub) => {
+      if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
+        const placementRef = sub.spec.placement?.placementRef
+        const placement = placementDecisions.find(
+          (placementDecision) =>
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
+              placementRef?.name ||
+            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
+              placementRef?.name
+        )
+
+        const decisions = placement?.status?.decisions
+
+        if (decisions) {
+          decisions.forEach((cluster) => {
+            clusterSet.add(cluster.clusterName)
+          })
+        }
+      }
+    })
+  }
+  return Array.from(clusterSet)
+}
+
+export function isOCPAppResourceKind(kind: string) {
+  const ocpAppResourceKinds = ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet']
+  return ocpAppResourceKinds.includes(kind)
+}
+
+function getSubscriptionsFromAnnotation(app: IResource) {
+  return getSubscriptionAnnotations(app)
+}
+
+function isResourceTypeOf(resource: IResource, resourceType: IResourceDefinition | IResourceDefinition[]) {
+  if (Array.isArray(resourceType)) {
+    let isTypeOf = false
+    resourceType.forEach((rt) => {
+      if (rt.apiVersion === resource.apiVersion && rt.kind === resource.kind) {
+        isTypeOf = true
+      }
+    })
+    return isTypeOf
+  } else {
+    return resource.apiVersion === resourceType.apiVersion && resource.kind === resourceType.kind
+  }
+}
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
@@ -137,7 +331,7 @@ function getApplicationClusters(
   return [getHubClusterName()]
 }
 
-function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
+function getAppSetCluster(resource: IArgoApplication, placementDecisions: IPlacementDecision[]) {
   const clusterSet = new Set<string>()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const placementName =
@@ -162,7 +356,11 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
   return Array.from(clusterSet)
 }
 
-function getSubscriptionCluster(resource: IResource, subscriptions: ISubscription[], placementDecisions: IDecision[]) {
+function getSubscriptionCluster(
+  resource: IResource,
+  subscriptions: ISubscription[],
+  placementDecisions: IPlacementDecision[]
+) {
   const clusterSet = new Set<string>()
   const subAnnotationArray = getSubscriptionAnnotations(resource)
   for (const sa of subAnnotationArray) {
@@ -428,7 +626,7 @@ export function getClusters(): Cluster[] {
   })
 }
 
-function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
+function getKubeApiServer(clusterDeployment?: IStatusResource, managedClusterInfo?: ManagedClusterInfo) {
   return (
     clusterDeployment?.status?.apiURL ??
     managedClusterInfo?.spec?.masterEndpoint ??
@@ -493,7 +691,7 @@ interface ResultType {
 type SelectorType = string | ((item: IResource) => string)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function get(obj: any, path: string): string {
+export function get(obj: any, path: string, dflt?: any): any {
   const keys = path.split('.')
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let current = obj
@@ -502,7 +700,7 @@ function get(obj: any, path: string): string {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       current = current[key]
     } else {
-      return undefined // Path not found
+      return dflt // Path not found
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -512,7 +710,7 @@ function get(obj: any, path: string): string {
 function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {
-    const key = typeof selector === 'string' ? get(item, selector) : selector(item)
+    const key = typeof selector === 'string' ? (get(item, selector) as string) : selector(item)
     result[key] = item
   }
   return result

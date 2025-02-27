@@ -59,10 +59,8 @@ export function ApplicationOverviewPageContent() {
   const { t } = useTranslation()
   const localClusterStr = 'local-cluster'
 
-  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } =
-    useSharedAtoms()
+  const { channelsState, namespacesState, placementDecisionsState, subscriptionsState } = useSharedAtoms()
 
-  const argoApplications = useRecoilValue(argoApplicationsState)
   const channels = useRecoilValue(channelsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)

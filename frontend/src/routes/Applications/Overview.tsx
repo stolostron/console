@@ -39,6 +39,7 @@ import {
   DiscoveredArgoApplicationDefinition,
   getApiVersionResourceGroup,
   IResource,
+  IUIResource,
   OCPAppResource,
   Subscription,
 } from '../../resources'
@@ -60,12 +61,10 @@ import {
   getAge,
   getAnnotation,
   getAppChildResources,
-  getAppSetRelatedResources,
   getClusterCount,
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
-  getClusterList,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
@@ -311,25 +310,14 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
-  const {
-    applicationSetsState,
-    applicationsState,
-    argoApplicationsState,
-    channelsState,
-    placementRulesState,
-    placementsState,
-    placementDecisionsState,
-    subscriptionsState,
-  } = useSharedAtoms()
+  const { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } =
+    useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
-  const applicationSets = useRecoilValue(applicationSetsState)
-  const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
@@ -386,14 +374,7 @@ export default function ApplicationsOverview() {
   const generateTransformData = useCallback(
     (tableItem: IResource) => {
       // Cluster column
-      const clusterList = getClusterList(
-        tableItem,
-        argoApplications,
-        placementDecisions,
-        subscriptions,
-        localCluster,
-        managedClusters
-      )
+      const clusterList = (tableItem as IUIResource).uidata.clusterList
       const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
@@ -426,7 +407,7 @@ export default function ApplicationsOverview() {
       // Cannot add properties directly to objects in typescript
       return { ...tableItem, ...transformedObject }
     },
-    [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
+    [channels, getTimeWindow, localCluster, subscriptions, t]
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
@@ -535,14 +516,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Clusters'),
         cell: (resource) => {
-          const clusterList = getClusterList(
-            resource,
-            argoApplications,
-            placementDecisions,
-            subscriptions,
-            localCluster,
-            managedClusters
-          )
+          const clusterList = (resource as IUIResource).uidata.clusterList
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
@@ -554,14 +528,7 @@ export default function ApplicationsOverview() {
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
         exportContent: (resource) => {
-          const clusterList = getClusterList(
-            resource,
-            argoApplications,
-            placementDecisions,
-            subscriptions,
-            localCluster,
-            managedClusters
-          )
+          const clusterList = (resource as IUIResource).uidata.clusterList
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
@@ -640,18 +607,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [
-      t,
-      extensionColumns,
-      systemAppNSPrefixes,
-      argoApplications,
-      placementDecisions,
-      subscriptions,
-      localCluster,
-      managedClusters,
-      channels,
-      getTimeWindow,
-    ]
+    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels, getTimeWindow]
   )
   const filters = useMemo(
     () => [
@@ -923,8 +879,7 @@ export default function ApplicationsOverview() {
                     localCluster?.name ?? ''
                   )
                 : [[], []]
-            const appSetRelatedResources =
-              resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
+            const appSetRelatedResources = (resource as IUIResource).uidata.appSetRelatedResources
             const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
             let modalWarnings: string | undefined
             if (hostingSubAnnotation) {
@@ -946,7 +901,7 @@ export default function ApplicationsOverview() {
               appSetPlacement: appSetRelatedResources[0],
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
-              appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
+              appSetApps: (resource as IUIResource).uidata.appSetApps,
               deleted: /* istanbul ignore next */ (app: IResource) => {
                 setDeletedApps((arr) => {
                   arr = [app, ...arr].slice(0, 10)
@@ -997,8 +952,6 @@ export default function ApplicationsOverview() {
       placementRules,
       placements,
       channels,
-      applicationSets,
-      argoApplications,
       canCreateApplication,
       localCluster?.name,
     ]

@@ -123,9 +123,7 @@ export default function ApplicationDetailsPage() {
   const { t } = useTranslation()
   const {
     ansibleJobState,
-    applicationSetsState,
     applicationsState,
-    argoApplicationsState,
     channelsState,
     placementRulesState,
     placementsState,
@@ -165,8 +163,6 @@ export default function ApplicationDetailsPage() {
   let modalWarnings: string
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
-  const applicationSetsGetter = useRecoilValueGetter(applicationSetsState)
-  const argoApplicationsGetter = useRecoilValueGetter(argoApplicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
@@ -179,8 +175,6 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
-      applicationSets: applicationSetsGetter(),
-      argoApplications: argoApplicationsGetter(),
       ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
@@ -192,9 +186,7 @@ export default function ApplicationDetailsPage() {
     }),
     [
       ansibleJobGetter,
-      applicationSetsGetter,
       applicationsGetter,
-      argoApplicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
       placementRulesGetter,
@@ -281,9 +273,7 @@ export default function ApplicationDetailsPage() {
               )
             : [[], []]
         const appSetRelatedResources =
-          selectedApp.kind === ApplicationSetKind
-            ? getAppSetRelatedResources(selectedApp, recoilStates.applicationSets)
-            : ['', []]
+          selectedApp.kind === ApplicationSetKind ? getAppSetRelatedResources(selectedApp, []) : ['', []]
         setModalProps({
           open: true,
           canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
@@ -296,7 +286,7 @@ export default function ApplicationDetailsPage() {
           appSetPlacement: appSetRelatedResources[0],
           appSetsSharingPlacement: appSetRelatedResources[1],
           appKind: selectedApp.kind,
-          appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
+          appSetApps: getAppSetApps([], selectedApp.metadata?.name),
           close: () => {
             setModalProps({ open: false })
           },

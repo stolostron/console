@@ -147,8 +147,8 @@ const definitions: IWatchOptions[] = [
   { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
-  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
-  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
+  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
+  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
@@ -235,14 +235,20 @@ interface IWatchOptions {
   kind: string
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
+  isPolled?: boolean
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
 async function listAndWatch(options: IWatchOptions) {
+  const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {
-      const resourceVersion = await listKubernetesObjects(options)
-      await watchKubernetesObjects(options, resourceVersion)
+      const resourceVersion = await listKubernetesObjects(serviceAccountToken, options)
+      if (options.isPolled) {
+        await pollKubernetesObjects(serviceAccountToken, options)
+      } else {
+        await watchKubernetesObjects(serviceAccountToken, options, resourceVersion)
+      }
     } catch (err: unknown) {
       if (err instanceof SyntaxError) {
         // Happens when the response body is not JSON
@@ -276,11 +282,11 @@ async function listAndWatch(options: IWatchOptions) {
   }
 }
 
-async function listKubernetesObjects(options: IWatchOptions) {
-  const serviceAccountToken = getServiceAccountToken()
+async function listKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
   let resourceVersion = ''
   let _continue: string | undefined
   let items: IResource[] = []
+  const { isPolled } = options
   while (!stopping) {
     const url = resourceUrl(options, { limit: '100', continue: _continue })
     const request = got
@@ -305,7 +311,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
   }
 
   logger.info({
-    msg: 'list',
+    msg: isPolled ? 'polled' : 'list',
     kind: options.kind,
     labels: options.labelSelector,
     fields: options.fieldSelector,
@@ -321,7 +327,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
   })
 
   for (const item of items) {
-    cacheResource(item)
+    cacheResource(item, isPolled)
   }
 
   // Remove items that are no longer in kubernetes
@@ -344,14 +350,38 @@ async function listKubernetesObjects(options: IWatchOptions) {
   }
   for (const uid of removeUids) {
     const resource = cache[uid].resource
-    deleteResource(resource)
+    deleteResource(resource, isPolled)
   }
 
   return resourceVersion
 }
 
-async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-  const serviceAccountToken = getServiceAccountToken()
+async function pollKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
+  while (!stopping) {
+    logger.debug({
+      msg: 'poll',
+      kind: options.kind,
+      labels: options.labelSelector,
+      fields: options.fieldSelector,
+      apiVersion: options.apiVersion,
+    })
+
+    try {
+      await listKubernetesObjects(serviceAccountToken, options)
+    } catch (e) {
+      logger.error(`poll kubernetes exception ${e}`)
+    }
+
+    /* istanbul ignore if */
+    if (process.env.NODE_ENV !== 'test') {
+      await new Promise((r) => setTimeout(r, 30000))
+    } else {
+      stopping = true
+    }
+  }
+}
+
+async function watchKubernetesObjects(serviceAccountToken: string, options: IWatchOptions, resourceVersion: string) {
   while (!stopping) {
     logger.debug({
       msg: 'watch',
@@ -371,6 +401,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
       // TODO use abort signal when on node 16
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
+      const { isPolled } = options
       try {
         await pipeline(
           request,
@@ -381,10 +412,10 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object)
+                cacheResource(watchEvent.object, isPolled)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object)
+                deleteResource(watchEvent.object, isPolled)
                 break
             }
 
@@ -549,7 +580,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource) {
+function cacheResource(resource: IResource, isPolled: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -560,45 +591,51 @@ function cacheResource(resource: IResource) {
   const uid = resource.metadata.uid
   const existing = cache[uid]
 
-  if (existing) {
-    if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
-      return resource.metadata.resourceVersion
-    ServerSideEvents.removeEvent(existing.eventID)
-  }
+  let eventID = -1
+  if (isPolled) {
+    cache[uid] = { resource, eventID }
+  } else {
+    if (existing) {
+      if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
+        return resource.metadata.resourceVersion
+      ServerSideEvents.removeEvent(existing.eventID)
+    }
 
-  const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-  cache[uid] = { resource, eventID }
+    eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
+    cache[uid] = { resource, eventID }
 
-  if (resource.kind === 'ManagedCluster') {
-    if (resource?.metadata?.labels['local-cluster'] === 'true') {
-      hubClusterName = resource?.metadata?.name
+    if (resource.kind === 'ManagedCluster') {
+      if (resource?.metadata?.labels['local-cluster'] === 'true') {
+        hubClusterName = resource?.metadata?.name
+      }
     }
   }
 }
 
-function deleteResource(resource: IResource) {
+function deleteResource(resource: IResource, isPolled: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
-  const existing = cache[uid]
-  if (existing) ServerSideEvents.removeEvent(existing.eventID)
+  if (!isPolled) {
+    const existing = cache[uid]
+    if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-  const deletedID = ServerSideEvents.pushEvent({
-    data: {
-      type: 'DELETED',
-      object: {
-        kind: resource.kind,
-        apiVersion: resource.apiVersion,
-        metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+    const deletedID = ServerSideEvents.pushEvent({
+      data: {
+        type: 'DELETED',
+        object: {
+          kind: resource.kind,
+          apiVersion: resource.apiVersion,
+          metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+        },
       },
-    },
-  })
-  // after deletion has been broadcast to current clients, no need to retain
-  ServerSideEvents.removeEvent(deletedID)
-
+    })
+    // after deletion has been broadcast to current clients, no need to retain
+    ServerSideEvents.removeEvent(deletedID)
+  }
   delete cache[uid]
 }
 
