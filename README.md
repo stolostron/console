@@ -25,32 +25,26 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
 ```
-main → release-2.13 → backplane-2.8
+main → release-2.14 → backplane-2.9
+release-2.13 → backplane-2.8
 release-2.12 → backplane-2.7
 release-2.11 → backplane-2.6
 release-2.10 → backplane-2.5
 release-2.9 → backplane-2.4
-release-2.8 → backplane-2.3
 ```
 
 ## Core Dependencies - Release Branch Mapping
 
 A number of the core NPM package dependencies are published from other repositories. To allow development of new features in these projects, branches are created each time a new release is started.
 
-| console branch                          | patternfly-labs/react-form-wizard | stolostron/react-data-view | stolostron/ui-components | stolostron/temptifly |
-| --------------------------------------- | --------------------------------- | -------------------------- | ------------------------ | -------------------- |
-| main<br/>release-2.13<br/>backplane-2.8 | main                              | main                       | N/A                      | N/A                  |
-| release-2.12<br/>backplane-2.7          | v1.32.z                           | v1.15.z                    | N/A                      | N/A                  |
-| release-2.11<br/>backplane-2.6          | v1.29.z                           | v1.14.z                    | N/A                      | N/A                  |
-| release-2.10<br/>backplane-2.5          | v1.27.z                           | v1.13.z                    | N/A                      | N/A                  |
-| release-2.9<br/>backplane-2.4           | v1.26.z                           | v1.12.z                    | N/A                      | N/A                  |
-| release-2.8<br/>backplane-2.3           | v1.23.z                           | v1.10.z                    | N/A                      | N/A                  |
-| release-2.7<br/>backplane-2.2           | v1.13.z                           | v1.4.z                     | N/A                      | N/A                  |
-| release-2.6<br/>backplane-2.1           | v1.8.z                            | v1.0.z                     | N/A                      | N/A                  |
-| release-2.5<br/>backplane-2.0           | v1.7.z                            | N/A                        | v1.69.z                  | 2.5                  |
-| release-2.4                             | N/A                               | N/A                        | v1.25.z                  | 2.4                  |
-| release-2.3                             | N/A                               | N/A                        | v0.180.z                 | 2.3                  |
-| release-2.2                             | N/A                               | N/A                        | No branch; uses 0.1.214  | 2.2                  |
+| console branch                          | patternfly-labs/react-form-wizard | stolostron/react-data-view |
+| --------------------------------------- | --------------------------------- | -------------------------- |
+| main<br/>release-2.14<br/>backplane-2.9 | main                              | main                       |
+| release-2.13<br/>backplane-2.8          | v2.4.z                            | v2.3.z                     |
+| release-2.12<br/>backplane-2.7          | v1.32.z                           | v1.15.z                    |
+| release-2.11<br/>backplane-2.6          | v1.29.z                           | v1.14.z                    |
+| release-2.10<br/>backplane-2.5          | v1.27.z                           | v1.13.z                    |
+| release-2.9<br/>backplane-2.4           | v1.26.z                           | v1.12.z                    |
 
 ## Running
 

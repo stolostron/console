@@ -27,6 +27,7 @@ import {
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { exportObjectString, parseLabel } from '../../../resources/utils'
+import { isEqual } from 'lodash'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -54,7 +55,7 @@ function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
     kind: item.kind,
     policyName: item.name,
   })
-  if (noncompliant !== 0 || compliant !== 0 || pending != 0 || unknown !== 0) {
+  if (noncompliant !== 0 || compliant !== 0 || pending !== 0 || unknown !== 0) {
     return (
       <ClusterPolicyViolationIcons2
         compliant={compliant}
@@ -140,7 +141,17 @@ export default function DiscoveredPolicies() {
         header: t('Cluster violations'),
         cell: clusterCell,
         tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
-        sort: 'violations',
+        sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) => {
+          const aViolation = policyViolationSummary(a.policies)
+          const bViolation = policyViolationSummary(b.policies)
+          if (isEqual(aViolation, bViolation)) return 0
+          if (aViolation.noncompliant > bViolation.noncompliant) return -1
+          if (aViolation.noncompliant < bViolation.noncompliant) return 1
+          if (aViolation.compliant > bViolation.compliant) return -1
+          if (aViolation.compliant < bViolation.compliant) return 1
+
+          return 0
+        },
         search: 'violations',
         id: 'violations',
         exportContent: (item: DiscoverdPolicyTableItem) => {
