@@ -47,6 +47,7 @@ import {
   ResourceErrorCode,
   patchResource,
   getISOStringTimestamp,
+  filterLabelFn,
 } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import {
@@ -89,6 +90,7 @@ import { SearchOperator } from '../../../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../../../lib/search-utils'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { getClusterLabelData } from './utils/utils'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -537,6 +539,7 @@ export function ClustersTable(props: {
   }, [t, agentClusterInstalls, clusterImageSets, props.clusters])
 
   const filters = useMemo<ITableFilter<Cluster>[]>(() => {
+    const { labelOptions, labelMap } = getClusterLabelData(props.clusters) || {}
     return [
       {
         id: 'provider',
@@ -548,6 +551,13 @@ export function ClustersTable(props: {
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
+      },
+      {
+        id: 'label',
+        label: t('table.labels'),
+        options: labelOptions || [],
+        supportsInequality: true,
+        tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap),
       },
       {
         id: 'status',
@@ -655,6 +665,7 @@ export function ClustersTable(props: {
         advancedFilters={advancedFilters}
         id="managedClusters"
         showExportButton
+        secondaryFilterIds={['label']}
         exportFilePrefix="managedclusters"
       />
     </Fragment>
