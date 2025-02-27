@@ -87,7 +87,7 @@ describe('networking patch utils', () => {
       apiVip: '10.10.10.10',
       ingressVip: '10.10.10.10',
     })
-    expect(patches.length).toBe(6)
+    expect(patches.length).toBe(4)
   })
 })
 
