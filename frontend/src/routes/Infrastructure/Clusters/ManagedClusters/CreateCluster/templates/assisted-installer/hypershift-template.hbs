@@ -59,7 +59,7 @@ spec:
     {{#case 'NodePort'}}
       type: {{{hypershift-network.apiPublishingStrategy}}}
       nodePort:
-        address: {{{hypershift-network.nodePortAddress}}}
+        address: '{{{hypershift-network.nodePortAddress}}}'
         port: {{{hypershift-network.nodePortPort}}}
     {{/case}}
     {{#case 'LoadBalancer'}}
