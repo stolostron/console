@@ -112,4 +112,52 @@ describe('AcmTimestamp', () => {
     )
     expect(screen.getByText(timestamp)).toBeInTheDocument()
   })
+
+  test('renders with a Date object timestamp', () => {
+    const dateTimestamp = new Date('2025-01-03T18:53:00')
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={dateTimestamp} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText(String(dateTimestamp))).toBeInTheDocument()
+  })
+
+  test('renders with a numeric timestamp', () => {
+    const numericTimestamp = 1735732380000
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={numericTimestamp} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText(String(numericTimestamp))).toBeInTheDocument()
+  })
+
+  test('renders with empty string timestamp', () => {
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={''} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText('-')).toBeInTheDocument()
+  })
+
+  test('renders with custom noDateText', () => {
+    const customNoDateText = 'No date available'
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={undefined} noDateText={customNoDateText} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText(customNoDateText)).toBeInTheDocument()
+  })
+
+  test('handles null timestamp gracefully', () => {
+    render(
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <AcmTimestamp timestamp={null as unknown as string} />
+      </PluginContext.Provider>
+    )
+    expect(screen.getByText('-')).toBeInTheDocument()
+  })
 })
