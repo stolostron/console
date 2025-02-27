@@ -26,7 +26,7 @@ import './lib/test-shots'
 import { getUsername } from './lib/username'
 import { logout } from './logout'
 import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
-import { ResourceError, ResourceErrorCode } from './resources/utils'
+import { isRequestAbortedError } from './resources/utils'
 import { setLightTheme, ThemeSwitcher } from './theme'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
 
@@ -75,9 +75,7 @@ function UserDropdownToggle() {
         setName(payload.body.username ?? 'undefined')
       })
       .catch((error) => {
-        if (!(error instanceof ResourceError) || error.code !== ResourceErrorCode.RequestAborted) {
-          // eslint-disable-next-line no-console
-          console.error(error)
+        if (!isRequestAbortedError(error)) {
           setName('undefined')
         }
       })
