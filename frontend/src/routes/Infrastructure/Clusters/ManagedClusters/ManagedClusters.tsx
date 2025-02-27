@@ -539,7 +539,7 @@ export function ClustersTable(props: {
   }, [t, agentClusterInstalls, clusterImageSets, props.clusters])
 
   const filters = useMemo<ITableFilter<Cluster>[]>(() => {
-    const { labelOptions, labelMap } = getClusterLabelData(props.clusters) || {}
+    const { labelOptions, labelMap } = getClusterLabelData(props.clusters || []) || {}
     return [
       {
         id: 'provider',
@@ -619,7 +619,7 @@ export function ClustersTable(props: {
           }),
       },
     ]
-  }, [t])
+  }, [props.clusters, t])
 
   return (
     <Fragment>

@@ -20,8 +20,14 @@ export function getClusterLabelData(clusters: Cluster[]) {
     labelsArray.forEach(([key, value]) => {
       const stringLabel = `${key}=${value}`
       labelStrings.push(stringLabel)
-      pairs[key] = value
-      allLabels.add(stringLabel)
+      if (
+        !key.startsWith('name') &&
+        !key.startsWith('clusterID') &&
+        !key.startsWith('feature.open-cluster-management.io/addon')
+      ) {
+        pairs[key] = value
+        allLabels.add(stringLabel)
+      }
     })
 
     labelMap[cluster.uid] = { pairs, labels: labelStrings }

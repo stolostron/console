@@ -102,7 +102,7 @@ export const filterLabelFn = (selectedValues: any, item: any, labelMap: any) => 
   const allInequity = selectedValues.every((val: any) => {
     return val.includes('!=')
   })
-  const labels = labelMap?.[item.id]?.labels || []
+  const labels = labelMap?.[item.id]?.labels || labelMap?.[item.uid]?.labels || []
   if (allInequity) {
     return selectedValues.every((val: any) => {
       const p = parseLabel(val)
