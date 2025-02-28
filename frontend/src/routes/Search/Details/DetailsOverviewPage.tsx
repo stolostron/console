@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { findResourceFieldLineNumber } from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -28,6 +28,8 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
+import { PluginContext } from '../../../lib/PluginContext'
+import KubevirtPluginWrapper from './KubevirtPluginWrapper'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -35,8 +37,9 @@ export function ResourceSearchLink(props: {
   kind: string
   name: string
   namespace?: string
+  className?: string
 }) {
-  const { cluster, kind, name, namespace, apiversion } = props
+  const { cluster, kind, name, namespace, apiversion, className } = props
   let searchParams = `?filters={"textsearch":"cluster%3A${cluster}%20kind%3A${kind}%20name%3A${name}`
   if (namespace) {
     searchParams = `${searchParams}%20namespace%3A${namespace}`
@@ -48,6 +51,7 @@ export function ResourceSearchLink(props: {
   }
   return (
     <Link
+      className={className}
       to={{
         pathname: NavigationPath.search,
         search: searchParams,
@@ -355,6 +359,12 @@ export default function DetailsOverviewPage() {
     return ''
   }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservabilityInstalled])
 
+  const { acmExtensions } = useContext(PluginContext)
+  let VirtualMachinesOverviewTab: React.ComponentType<any> | undefined
+  if (acmExtensions?.searchDetails && acmExtensions.searchDetails.length) {
+    VirtualMachinesOverviewTab = acmExtensions.searchDetails[0].properties.component
+  }
+
   if (resourceError) {
     return (
       <PageSection>
@@ -376,7 +386,11 @@ export default function DetailsOverviewPage() {
   }
 
   if (resource && !resourceLoading && !resourceError) {
-    return (
+    return resource.kind === 'VirtualMachine' && VirtualMachinesOverviewTab ? (
+      <KubevirtPluginWrapper currentCluster={cluster}>
+        <VirtualMachinesOverviewTab obj={resource} />
+      </KubevirtPluginWrapper>
+    ) : (
       <PageSection>
         <PageSection variant={'light'}>
           <Stack hasGutter>
