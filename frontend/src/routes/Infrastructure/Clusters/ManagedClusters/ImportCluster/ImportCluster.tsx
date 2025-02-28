@@ -135,6 +135,8 @@ type Action =
   | ({ type: 'setCredential' } & Pick<State, 'credential'>)
   | { type: 'updateCredentials' }
 
+const AUTO_IMPORT_SECRET = 'auto-import-secret'
+
 const getImportMode = (presetDiscoveredCluster: boolean, discoveryClusterType?: string) => {
   if (presetDiscoveredCluster) {
     if (discoveryClusterType === 'ROSA') {
@@ -377,7 +379,6 @@ export default function ImportClusterPage() {
 
   const defaultData = useMemo(() => {
     const clusterAnnotations: Record<string, string> = {}
-    const secretName = 'auto-import-secret'
     if (discovered) {
       clusterAnnotations['open-cluster-management/created-via'] = 'discovery'
     }
@@ -398,7 +399,7 @@ export default function ImportClusterPage() {
         apiVersion: SecretApiVersion,
         kind: SecretKind,
         metadata: {
-          name: secretName,
+          name: AUTO_IMPORT_SECRET,
           namespace: initialClusterName,
         },
         stringData: {
@@ -418,7 +419,7 @@ export default function ImportClusterPage() {
         apiVersion: SecretApiVersion,
         kind: SecretKind,
         metadata: {
-          name: secretName,
+          name: AUTO_IMPORT_SECRET,
           namespace: initialClusterName,
         },
         stringData: {
@@ -772,7 +773,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     dispatch,
   } = props
   const { t } = useTranslation()
-  const secretName = 'auto-import-secret'
+
   const resources = useItem() as any[]
   const { update } = useData()
   const mode = useDisplayMode()
@@ -786,7 +787,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
       apiVersion: SecretApiVersion,
       kind: SecretKind,
       metadata: {
-        name: secretName,
+        name: AUTO_IMPORT_SECRET,
         namespace: clusterName,
       },
       stringData: {
@@ -798,10 +799,9 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   )
 
   const updateROSAImportSecret = useCallback(
-    (credentialName: string) => {
+    (credentialName: string, discoverySecret: Secret) => {
       const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
       const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
-      const discoverySecret = cloneDeep(autoImportSecret)
       // Updating the discovery secret based on the auth_method
       if (authMethod === 'service-account') {
         discoverySecret.stringData = {
@@ -822,7 +822,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
       discoverySecret.type = 'auto-import/rosa'
       return discoverySecret
     },
-    [autoImportSecret, clusterID, ocmCredentials]
+    [clusterID, ocmCredentials]
   )
 
   const getImportModeDescription = (m: ImportMode) => {
@@ -850,9 +850,16 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     }
   }
 
+  const getSecretTemplate = useCallback(
+    () => resources.find((item) => item.kind === 'Secret' && item?.metadata?.name === AUTO_IMPORT_SECRET),
+    [resources]
+  )
+
   const replaceSecretTemplate = useCallback(
     (newSecret?: Secret) => {
-      const secretIndex = resources.findIndex((item) => item.kind === 'Secret' && item?.metadata?.name === secretName)
+      const secretIndex = resources.findIndex(
+        (item) => item.kind === 'Secret' && item?.metadata?.name === AUTO_IMPORT_SECRET
+      )
       const deleteCount = secretIndex >= 0 ? 1 : 0
       if (newSecret) {
         resources.splice(deleteCount ? secretIndex : 1, deleteCount, newSecret)
@@ -877,6 +884,13 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const prevCredential = usePrevious(credential)
 
   if (prevImportMode !== importMode || prevCredential !== credential) {
+    // Preserve anything added to the secret by the user, like annotations
+    // For the stringData, preserve only changes to the autoImportRetry count
+    const {
+      stringData: { autoImportRetry = autoImportSecret?.stringData?.autoImportRetry ?? '' } = {},
+      ...currentAutoImportSecretRest
+    } = getSecretTemplate() ?? {}
+    const newAutoImportSecret = { ...autoImportSecret, stringData: { autoImportRetry }, ...currentAutoImportSecretRest }
     switch (importMode) {
       case ImportMode.manual:
         // Delete auto-import secret
@@ -884,21 +898,19 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         break
       case ImportMode.kubeconfig: {
         // Insert/Replace auto-import secret
-        const kubeconfigSecret = cloneDeep(autoImportSecret)
-        kubeconfigSecret.stringData = { ...kubeconfigSecret.stringData, kubeconfig }
-        replaceSecretTemplate(kubeconfigSecret)
+        newAutoImportSecret.stringData = { ...newAutoImportSecret.stringData, kubeconfig }
+        replaceSecretTemplate(newAutoImportSecret)
         break
       }
       case ImportMode.token: {
         // Insert/Replace auto-import secret
-        const tokenSecret = cloneDeep(autoImportSecret)
-        tokenSecret.stringData = { ...tokenSecret.stringData, token, server }
-        replaceSecretTemplate(tokenSecret)
+        newAutoImportSecret.stringData = { ...newAutoImportSecret.stringData, token, server }
+        replaceSecretTemplate(newAutoImportSecret)
         break
       }
       case ImportMode.discoveryOCM: {
         // Insert/Replace auto-import secret
-        const discoverySecret = updateROSAImportSecret(credential)
+        const discoverySecret = updateROSAImportSecret(credential, newAutoImportSecret)
         replaceSecretTemplate(discoverySecret)
         break
       }
@@ -1010,7 +1022,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         targetKind={ClusterCuratorKind}
         targetPath="metadata.namespace"
       />
-      <WizItemSelector selectKey="metadata.name" selectValue={secretName}>
+      <WizItemSelector selectKey="metadata.name" selectValue={AUTO_IMPORT_SECRET}>
         <WizTextInput
           id="server"
           path="stringData.server"
