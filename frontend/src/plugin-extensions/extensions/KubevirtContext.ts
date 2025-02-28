@@ -10,6 +10,10 @@ type MulticlusterResource<T> = { cluster?: string } & T
 export type SearchResult<R extends K8sResourceCommon | K8sResourceCommon[]> = R extends (infer T)[]
   ? MulticlusterResource<T>[]
   : MulticlusterResource<R>
+export type UseUtilizationQueries = (
+  prometheusQueries: Record<string, string>,
+  duration: string
+) => Record<string, string>
 
 /** Properties type */
 export type KubevirtPluginData = {
@@ -24,6 +28,7 @@ export type KubevirtPluginData = {
   useMulticlusterSearchWatch: <T extends K8sResourceCommon | K8sResourceCommon[]>(
     watchOptions: WatchK8sResource
   ) => [SearchResult<T> | undefined, boolean, Error | undefined]
+  useUtilizationQueries: UseUtilizationQueries
 }
 
 export type KubevirtPluginDataProps = {

@@ -24,6 +24,8 @@ import classNames from 'classnames'
 import { useK8sWatchResource } from './useK8sWatchResource'
 import { getBackendUrl } from '../../../resources/utils'
 import { KubevirtPluginData, SearchResult } from '../../../plugin-extensions/extensions/KubevirtContext'
+import { useUtilizationQueries } from './useUtilizationQueries'
+import { ObservabilityEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
 
 const KUBERNETES_API_PREFIX = '/api/kubernetes/'
 
@@ -252,6 +254,38 @@ const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch
   return [data as SearchResult<any>, !loading, error]
 }
 
+export const usePrometheusPoll: DefaultDynamicPluginSDK.UsePrometheusPoll = (pollOptions) => {
+  const searchParams = new URLSearchParams(decodeURIComponent(window.location.search))
+  const cluster = searchParams.get('cluster')
+  const singleClusterResult = DefaultDynamicPluginSDK.usePrometheusPoll(pollOptions)
+  const { query } = pollOptions
+  let endpoint = ObservabilityEndpoint.QUERY
+  const skip = !cluster || query?.includes('undefined')
+  if (!skip) {
+    switch (pollOptions.endpoint) {
+      case DefaultDynamicPluginSDK.PrometheusEndpoint.QUERY_RANGE:
+        endpoint = ObservabilityEndpoint.QUERY_RANGE
+        break
+      case DefaultDynamicPluginSDK.PrometheusEndpoint.RULES:
+        endpoint = ObservabilityEndpoint.RULES
+        break
+      case DefaultDynamicPluginSDK.PrometheusEndpoint.LABEL:
+        endpoint = ObservabilityEndpoint.LABEL
+        break
+      case DefaultDynamicPluginSDK.PrometheusEndpoint.TARGETS:
+        endpoint = ObservabilityEndpoint.TARGETS
+        break
+    }
+  }
+  const [response, error, loaded] = useMetricsPoll({
+    ...pollOptions,
+    endpoint,
+    query,
+    skip,
+  })
+
+  return skip ? singleClusterResult : [response, loaded, error]
+}
 const KubevirtPluginWrapper = ({
   children,
   currentCluster,
@@ -272,7 +306,7 @@ const KubevirtPluginWrapper = ({
       clusterScope: { ClusterScope, withCluster },
       currentCluster,
       currentNamespace,
-      dynamicPluginSDK: { ...withCluster(defaultClusterName), ResourceLink, useK8sWatchResource },
+      dynamicPluginSDK: { ...withCluster(defaultClusterName), ResourceLink, useK8sWatchResource, usePrometheusPoll },
       getResourceUrl,
       getStandaloneVMConsoleUrl: isLocalHub
         ? getStandaloneVMConsoleUrl
@@ -280,6 +314,7 @@ const KubevirtPluginWrapper = ({
       k8sAPIPath: getK8sAPIPath(localHubName, defaultClusterName),
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
+      useUtilizationQueries,
     }
   }, [currentCluster, currentNamespace, defaultClusterName, getStandaloneVMConsoleUrl, isLocalHub, localHubName])
 
