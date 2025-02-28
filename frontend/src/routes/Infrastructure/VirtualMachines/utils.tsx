@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next'
 import { NavigateFunction } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources/utils'
-import { IAcmRowAction, IAlertContext } from '../../../ui-components'
+import { IAcmRowAction, IAcmTableColumn, IAlertContext } from '../../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
@@ -14,6 +14,68 @@ import { ClosedDeleteModalProps, IDeleteModalProps } from '../../Search/componen
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { GetUrlSearchParam } from '../../Search/searchDefinitions'
 import { handleVMActions } from '../../Search/SearchResults/utils'
+import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
+import { IResourceDefinition } from '../../../resources'
+
+export function isResourceTypeOf(item: any, resourceType: IResourceDefinition | IResourceDefinition[]) {
+  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : item?.apiversion ?? item?.apiVersion
+  if (Array.isArray(resourceType)) {
+    let isTypeOf = false
+    resourceType.forEach((rt) => {
+      if (rt.apiVersion === apiVersion && rt.kind === item.kind) {
+        isTypeOf = true
+      }
+    })
+    return isTypeOf
+  } else {
+    return apiVersion === resourceType.apiVersion && item.kind === resourceType.kind
+  }
+}
+
+export function getVirtualMachineColumnExtensions(
+  listColumnExtensions: ListColumnExtensionProps[]
+): IAcmTableColumn<any>[] {
+  const columnExtensions: IAcmTableColumn<any>[] = []
+  listColumnExtensions.forEach((listColumnExtension) => {
+    const CellComp = listColumnExtension.cell
+    columnExtensions.push({
+      header: listColumnExtension.header,
+      transforms: listColumnExtension?.transforms,
+      cellTransforms: listColumnExtension?.cellTransforms,
+      tooltip: listColumnExtension?.tooltip,
+      isActionCol: listColumnExtension?.isActionCol ?? true,
+      cell: (item: any) => {
+        return <CellComp resource={item} />
+      },
+    })
+  })
+  return columnExtensions
+}
+
+export function getVirtualMachineRowActionExtensions(
+  item: any,
+  actionExtensions?: ActionExtensionProps[],
+  setPluginModal?: Dispatch<SetStateAction<JSX.Element | undefined>>
+): IAcmRowAction<any>[] {
+  const buttonsExtension: IAcmRowAction<any>[] = []
+  if (actionExtensions?.length && !!setPluginModal) {
+    actionExtensions.forEach((actionExtension) => {
+      // apiversion: kubevirt.io, apigroup: v1, kind: VirtualMachine
+      if (isResourceTypeOf(item, actionExtension?.model as IResourceDefinition[])) {
+        const ModalComp = actionExtension.component
+        const close = () => setPluginModal(<></>)
+        buttonsExtension.push({
+          id: actionExtension.id,
+          title: actionExtension.title,
+          click: async (item: any) => {
+            setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+          },
+        })
+      }
+    })
+  }
+  return buttonsExtension
+}
 
 // https://github.com/kubevirt/api/blob/9689e71fe2bed9e7da5f165760bbbf6981cc1087/core/v1/types.go#L1277
 export const printableVMStatus = {
@@ -37,7 +99,8 @@ export function getVirtualMachineRowActions(
   vmActionsEnabled: boolean,
   toast: IAlertContext,
   navigate: NavigateFunction,
-  t: TFunction<string, undefined>
+  t: TFunction<string, undefined>,
+  extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
 
@@ -203,6 +266,7 @@ export function getVirtualMachineRowActions(
     },
     isDisabled: printableStatus !== 'Paused',
   }
+
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
     ? [
@@ -212,6 +276,7 @@ export function getVirtualMachineRowActions(
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,
+        ...extensionButtons,
       ]
-    : [editButton, viewRelatedButton, deleteButton]
+    : [editButton, viewRelatedButton, deleteButton, ...extensionButtons]
 }

@@ -2,7 +2,7 @@
 
 import { ITransform } from '@patternfly/react-table'
 
-export type ApplicationListColumnProps = {
+export type ListColumnExtensionProps = {
   /** the header of the column */
   header: string
 
@@ -14,4 +14,8 @@ export type ApplicationListColumnProps = {
 
   /** component type*/
   cell: React.ComponentType<{ resource?: any }>
+
+  // If it is true, This column always the last one and isn't managed by column management filter
+  // By default it is true
+  isActionCol?: boolean
 }
