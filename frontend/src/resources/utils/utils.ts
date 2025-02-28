@@ -2,7 +2,6 @@
 
 import get from 'get-value'
 import { ReactNode } from 'react'
-import moment from 'moment'
 
 export function getLatest<T>(items: T[], key: string) {
   if (items.length === 0) {
@@ -84,13 +83,4 @@ export function matchesFilterValue(supportsInequality: boolean, label: string, f
   } else {
     return label === filterLabel
   }
-}
-
-export const getMoment = (timestamp: string, locale = '') => {
-  const momentObj = moment(
-    timestamp,
-    timestamp.toString().includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss'
-  )
-  momentObj.locale(locale.toLowerCase())
-  return momentObj
 }

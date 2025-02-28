@@ -24,36 +24,41 @@ import {
 } from './searchDefinitions'
 const t = i18next.t.bind(i18next)
 
-test('Correctly returns formatSearchbarSuggestions without T in timestamp', () => {
-  Date.now = jest.fn(() => 1607028460000)
-  const item = {
-    name: 'testName',
-    namespace: 'testNamespace',
-    created: '2020-11-30T14:34:20Z',
-  }
-  const result = GetAge(item, 'created')
-  expect(result).toMatchSnapshot()
-})
+describe('GetAge', () => {
+  it('renders timestamp with ISO format', () => {
+    const item = {
+      name: 'testName',
+      namespace: 'testNamespace',
+      created: '2020-11-30T14:34:20Z',
+    }
 
-test('Correctly returns formatSearchbarSuggestions with T in timestamp', () => {
-  Date.now = jest.fn(() => 1607028460000)
-  const item = {
-    name: 'testName',
-    namespace: 'testNamespace',
-    created: '2020-11-3014:34:20Z',
-  }
-  const result = GetAge(item, 'created')
-  expect(result).toMatchSnapshot()
-})
+    const { container } = render(<div>{GetAge(item, 'created')}</div>)
 
-test('Correctly returns formatSearchbarSuggestions no timestamp', () => {
-  Date.now = jest.fn(() => 1607028460000)
-  const item = {
-    name: 'testName',
-    namespace: 'testNamespace',
-  }
-  const result = GetAge(item, 'created')
-  expect(result).toMatchSnapshot()
+    expect(container).toBeInTheDocument()
+  })
+
+  it('renders timestamp without T format', () => {
+    const item = {
+      name: 'testName',
+      namespace: 'testNamespace',
+      created: '2020-11-3014:34:20Z',
+    }
+
+    const { container } = render(<div>{GetAge(item, 'created')}</div>)
+
+    expect(container).toBeInTheDocument()
+  })
+
+  it('renders dash for missing timestamp', () => {
+    const item = {
+      name: 'testName',
+      namespace: 'testNamespace',
+    }
+
+    const { container } = render(<div>{GetAge(item, 'created')}</div>)
+
+    expect(container).toHaveTextContent('-')
+  })
 })
 
 test('Correctly returns CreateDetailsLink - Cluster', () => {

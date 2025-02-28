@@ -2,7 +2,6 @@
 
 import { Icon, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import moment from 'moment'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
@@ -13,7 +12,7 @@ import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 interface HistoryTableData {
   message: string
-  timestamp: moment.MomentInput
+  timestamp: string
   index: number
 }
 
@@ -137,7 +136,7 @@ export function PolicyDetailsHistory(props: {
       {
         header: t('Last report'),
         sort: 'index',
-        cell: (item: any) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '-'),
+        cell: (item: any) => <AcmTimestamp timestamp={item.timestamp} />,
         exportContent: (item: any) => {
           if (item.timestamp) {
             return getISOStringTimestamp(item.timestamp)

@@ -11,26 +11,22 @@
 'use strict'
 
 import _ from 'lodash'
-import moment from 'moment'
 import R from 'ramda'
 import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
+import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
 export const pulseValueArr = ['red', 'orange', 'yellow', 'green', undefined]
 
 export const getAge = (value) => {
-  if (value) {
-    if (value.includes('T')) {
-      return moment(value, 'YYYY-MM-DDTHH:mm:ssZ').fromNow()
-    } else {
-      return moment(value, 'YYYY-MM-DD HH:mm:ss').fromNow()
-    }
+  if (!value) {
+    return '-'
   }
-  return '-'
+  return <AcmTimestamp timestamp={value} />
 }
 
 export const addDetails = (details, dets) => {
