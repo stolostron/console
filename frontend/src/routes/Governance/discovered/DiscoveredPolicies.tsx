@@ -26,7 +26,7 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { exportObjectString, parseLabel } from '../../../resources/utils'
+import { exportObjectString, filterLabelFn } from '../../../resources/utils'
 import { isEqual } from 'lodash'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
@@ -247,31 +247,7 @@ export default function DiscoveredPolicies() {
         label: t('Label'),
         options: labelOptions || [],
         supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
-        tableFilterFn: (selectedValues, item) => {
-          // if no filters, let all items thru
-          if (!selectedValues.length) return true
-          // if all fillters have != thru all items that don't have that label
-          const allInequity = selectedValues.every((val) => {
-            return val.includes('!=')
-          })
-          const labels = labelMap?.[item.id]?.labels || []
-          if (allInequity) {
-            return selectedValues.every((val) => {
-              const p = parseLabel(val)
-              return !labels.includes(`${p.prefix}=${p.suffix}`)
-            })
-          } else {
-            // else if an item has a match, but doen't have a !=, let it thru
-            let hasEquity = false
-            let hasInequity = false
-            selectedValues.forEach((val) => {
-              const p = parseLabel(val)
-              if (p.oper === '=' && labels.includes(val)) hasEquity = true
-              if (p.oper === '!=' && labels.includes(`${p.prefix}=${p.suffix}`)) hasInequity = true
-            })
-            return !hasInequity && hasEquity
-          }
-        },
+        tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap),
       },
       {
         id: 'source',
