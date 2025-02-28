@@ -1838,5 +1838,9 @@ describe('Policy Template Details Page', () => {
     expect(name.getAttribute('href')).toEqual(
       `/multicloud/search/resources/yaml?cluster=local-cluster&kind=Pod&apiversion=v1&name=nginx-pod-a&namespace=default&_hubClusterResource=true`
     )
+
+    const parameterTable = screen.getByRole('grid')
+    expect(within(parameterTable).queryByText('ValidatingAdmissionPolicy')).not.toBeInTheDocument()
+    expect(within(parameterTable).queryByText('Cluster')).not.toBeInTheDocument()
   })
 })
