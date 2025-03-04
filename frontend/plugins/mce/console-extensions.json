@@ -114,5 +114,19 @@
             "path": "/multicloud/credentials",
             "component": { "$codeRef": "credentials.default" }
         }
-    }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/environments/create",
+            "component": { "$codeRef": "cim.CreateInfraEnvPage" }
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/environments/details/:namespace/:name",
+            "component": { "$codeRef": "cim.InfraEnvDetails" }
+        }
+     }
 ]
